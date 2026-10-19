@@ -7,10 +7,10 @@
 // Model, Variables, Context, Resources, System and the message editor." That reading was
 // correct about the screen and wrong about the code — the tools picker was there the whole
 // time, as an unlabelled 28px wrench in a row of four bare icons beside the model name,
-// while Variables, Context and Resources each got a labelled row of their own. A capability
+// while Variables, Context and Resources each got a labeled row of their own. A capability
 // that only a person who already knows the icon can find is, for everybody else, absent.
 //
-// So Tools joins the other three: a labelled row that names, in plain words, every tool the
+// So Tools joins the other three: a labeled row that names, in plain words, every tool the
 // agent carries, with an Add button that opens the same picker the wrench always opened.
 // The wrench stays where it is for people who know it.
 
@@ -55,7 +55,7 @@ export function AgentToolsRow({ agentId }: AgentToolsRowProps) {
   const catalog = useToolCatalog(selectAllTools);
   const identityById = useToolCatalog(selectToolIdentityMap);
 
-  // The catalogue is what turns an id into a word. Every other consumer fetched
+  // The catalog is what turns an id into a word. Every other consumer fetched
   // it only when the picker opened, which is exactly the gesture this row exists
   // to make unnecessary.
   useEffect(() => {
@@ -76,9 +76,9 @@ export function AgentToolsRow({ agentId }: AgentToolsRowProps) {
     return map;
   }, [catalog, identityById]);
 
-  // A TOOL THIS AGENT CARRIES IS NEVER SHOWN AS AN ID. The picker's catalogue is
+  // A TOOL THIS AGENT CARRIES IS NEVER SHOWN AS AN ID. The picker's catalog is
   // filtered by organization eligibility (lib/knobs/toolKnobGating.ts), so an
-  // agent can legitimately carry a tool the catalogue withholds; that one is
+  // agent can legitimately carry a tool the catalog withholds; that one is
   // resolved by identity instead of printed as a uuid.
   useEffect(() => {
     for (const id of selected) {

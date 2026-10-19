@@ -1,7 +1,7 @@
 /**
  * THE ROOM IS USABLE ON A PHONE (jobs-bar-2026-09-16, item 19).
  *
- * At 390px the centre panel opened with six expert tabs wrapped over three
+ * At 390px the center panel opened with six expert tabs wrapped over three
  * rows — a third of the screen spent before one word of the conversation —
  * and the document controls beside them were unlabelled glyphs, because they
  * carried `hidden sm:inline` on their words. Both are the same mistake: a

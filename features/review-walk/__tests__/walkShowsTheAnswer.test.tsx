@@ -77,7 +77,7 @@ function renderLayer(out: DescendOut) {
 const text = () => container.textContent ?? "";
 
 describe("the walk window shows the answer beside the inputs", () => {
-  it("D8 + D9: a run that kept no chat shows what it was sent and what it answered, labelled as rebuilt", () => {
+  it("D8 + D9: a run that kept no chat shows what it was sent and what it answered, labeled as rebuilt", () => {
     const out = recorded.live_server_run as unknown as DescendOut;
     renderLayer(out);
 

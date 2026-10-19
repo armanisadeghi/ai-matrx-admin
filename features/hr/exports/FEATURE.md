@@ -173,7 +173,7 @@ Row → `getExportArtifact` (E-23) returns the URL envelope → bytes are stream
   are safe to persist; the URLs expire (`_durable_only`).
 - **Cross-origin `a.download` is silently ignored**, so a signed S3 URL saves as a bare UUID with
   no extension. Bytes are streamed through the file service and saved from a `blob:` URL so the
-  `Content-Disposition` filename survives. The signed link is still offered, labelled "open in a
+  `Content-Disposition` filename survives. The signed link is still offered, labeled "open in a
   new tab" — the truthful description of what it does.
 - **Mock mode swaps the HR transport only.** The runtime spine and the file service are live paths
   with no fixtures, so `useExportRun` reports `not_observable` rather than polling a server that

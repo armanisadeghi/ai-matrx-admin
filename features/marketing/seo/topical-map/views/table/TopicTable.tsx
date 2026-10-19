@@ -7,7 +7,7 @@
  * ONE STORE, TWO MODES (R10).
  * - Hierarchy: the rows are `selectVisibleMapTopics` in the order it returns —
  *   the store owns expansion, ancestor-keeping search and sibling order. A
- *   header-click sort the walk can honour (name ascending; pages / planned /
+ *   header-click sort the walk can honor (name ascending; pages / planned /
  *   keywords descending) becomes `setSiblingSort`; any other sort, and any
  *   column filter, flips the table to FLAT and says so in the toolbar.
  * - Flat: every loaded topic, processed by the canonical local engine

@@ -25,8 +25,8 @@ export const SYSTEM_RUNG_PERSONAL_HOLDER_REFUSAL =
 /**
  * Is the drafted holder a personal agent standing at the system rung?
  *
- * 🚨 SILENT UNTIL THE CATALOGUE IS READ. `builtinAgentIds` empty means "the
- * system catalogue has not loaded", never "this agent is not a system agent" —
+ * 🚨 SILENT UNTIL THE CATALOG IS READ. `builtinAgentIds` empty means "the
+ * system catalog has not loaded", never "this agent is not a system agent" —
  * a refusal printed against an unread list is a lie, and it would refuse every
  * legitimate save for as long as the fetch takes.
  */

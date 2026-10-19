@@ -651,7 +651,7 @@ export interface RunStreamEvent {
   resultId: string | null;
 }
 
-/** The run's server stream: it ends when the run finishes, pauses or is cancelled. */
+/** The run's server stream: it ends when the run finishes, pauses or is canceled. */
 export async function* followRun(
   runId: string,
   signal: AbortSignal,

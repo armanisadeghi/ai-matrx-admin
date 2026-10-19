@@ -16,7 +16,7 @@ import type { SeekRequest } from "@/lib/media/seek-request";
 /** The one Source screen. */
 export const SOURCE_STUDIO_ROOT = "/knowledge/sources";
 
-/** Search params an old viewer URL may carry that the Source screen honours. */
+/** Search params an old viewer URL may carry that the Source screen honors. */
 export const SOURCE_STUDIO_PARAMS = ["page", "chunk", "assets"] as const;
 export type SourceStudioParam = (typeof SOURCE_STUDIO_PARAMS)[number];
 

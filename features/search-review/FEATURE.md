@@ -17,7 +17,7 @@ websearch and we need someone to tell us what's what."
   Ignore. Rank and query open on hover; engine names show only for admin debuggers.
 - **Header:** subject, progress, a To answer / Later / Answered / All filter, and the canonical copy
   menu (`CopyButtons`: markdown list with answers, JSON of subject + results + answers).
-- **Window:** `searchReviewWindow` (catalogue, `features/overlays/definitions/<id>.overlay.ts (window block)`, `OverlayWorldHost`), opener
+- **Window:** `searchReviewWindow` (catalog, `features/overlays/definitions/<id>.overlay.ts (window block)`, `OverlayWorldHost`), opener
   `features/overlays/definitions/searchReviewWindow.overlay.tsx`, URL `?panels=search_review:<sessionId>`,
   fullscreen on phones. Not preserved across reload: the session lives with its host page.
 

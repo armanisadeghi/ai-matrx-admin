@@ -270,7 +270,7 @@ export function HelpDialog({
 }) {
   const steps = [
     ["Start", "jumps to your first field. Next field moves on."],
-    ["Coloured tags", "are yours. A star means required."],
+    ["Colored tags", "are yours. A star means required."],
     ["Finish later", "keeps what you entered. Open the same link to return."],
     ["Finish", "shows what is recorded before you finalize."],
   ] as const;

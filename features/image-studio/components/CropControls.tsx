@@ -191,7 +191,7 @@ export function CropControls({
             {(fit === "contain" || fit === "inside") && (
                 <p className="text-[11px] text-muted-foreground leading-snug rounded-md bg-muted/30 border border-border px-2 py-1.5">
                     {fit === "contain"
-                        ? "Padding is filled with the transparent-fill colour above."
+                        ? "Padding is filled with the transparent-fill color above."
                         : "Smaller output means no cropping, no padding — useful for previews."}
                 </p>
             )}

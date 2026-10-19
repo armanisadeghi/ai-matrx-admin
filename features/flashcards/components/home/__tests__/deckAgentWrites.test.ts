@@ -15,7 +15,7 @@ const DECKS: CurrentDeck[] = [
 ];
 
 describe("create_decks", () => {
-  it("accepts a list and normalises fields", () => {
+  it("accepts a list and normalizes fields", () => {
     const out = parseCreateDecksValue(
       [
         { name: " Photosynthesis ", topic: "Biology", difficulty: "Medium" },

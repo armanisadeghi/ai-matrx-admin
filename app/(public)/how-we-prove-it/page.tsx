@@ -32,7 +32,7 @@ export const metadata = createRouteMetadata("/how-we-prove-it", {
  * HOW WE PROVE IT — the proof-architecture page.
  *
  * Source of truth: `common-docs/systems/masterwork/doctrine/advantage-stack.md`
- *   §4 Proof Architecture v2 (the arms, the void rule, the programme metrics)
+ *   §4 Proof Architecture v2 (the arms, the void rule, the program metrics)
  *   and §1 beats 8–9.
  *
  * 🚨 CLAIM DISCIPLINE (advantage-stack §9). This page describes the METHOD.
@@ -144,7 +144,7 @@ const RULES: Rule[] = [
   },
 ];
 
-/** advantage-stack.md §4.4 — programme metrics. */
+/** advantage-stack.md §4.4 — program metrics. */
 const METRICS: Array<{ name: string; body: string }> = [
   {
     name: "Cost to parity",
@@ -345,7 +345,7 @@ export default function HowWeProveItPage() {
               put the human first, the panel is wrong — or the rubric is
               measuring the wrong thing, or the cases were badly chosen. Either
               way the run is thrown out and nothing from it is ever quoted to
-              you. A benchmark whose judge cannot recognise excellence when it
+              you. A benchmark whose judge cannot recognize excellence when it
               is sitting right there is not measuring excellence.
             </p>
             <p className="max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -395,7 +395,7 @@ export default function HowWeProveItPage() {
               &ldquo;Yes — that&apos;s mine.&rdquo;
             </blockquote>
             <p className="max-w-3xl text-pretty text-sm leading-relaxed text-muted-foreground md:text-base">
-              Your expert reads the output and recognises their own judgment in
+              Your expert reads the output and recognizes their own judgment in
               it. Including the strange call — especially the strange call, the
               one their peers would argue with, the one that is the reason you
               employ them and not somebody cheaper.
@@ -409,7 +409,7 @@ export default function HowWeProveItPage() {
           </div>
         </section>
 
-        {/* ── Programme metrics ────────────────────────────────────── */}
+        {/* ── Program metrics ────────────────────────────────────── */}
         <section className="mt-12 flex flex-col gap-5 lg:mt-16">
           <div className="flex flex-col gap-2">
             <h2 className="text-balance text-xl font-semibold tracking-tight md:text-2xl">

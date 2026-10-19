@@ -152,7 +152,7 @@ describe("relation format — the existing label columns are untouched", () => {
     const choices = [{ value: "On site" }, { value: "Invoiced" }];
     expect(FIELD_FORMATS.choice.format("On site", { choices })).toBe("On site");
     // An off-list value is a MISMATCH, which the renderer shows in amber — the
-    // same behaviour as before this wave, asserted so a change is visible.
+    // same behavior as before this wave, asserted so a change is visible.
     expect(FIELD_FORMATS.choice.format("Waiting on the city", { choices })).toBeNull();
   });
 });

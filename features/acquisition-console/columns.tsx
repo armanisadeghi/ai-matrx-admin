@@ -48,7 +48,7 @@ function countCell(value: number | null) {
 /** The "What happened" cell for a blocked row. `row.where` is always a plain
  * sentence (never a raw provider token — see
  * `lib/progress/failureSentence.ts`); `row.whereDetail` carries the raw token
- * ONLY when it was not one we recognised, shown as secondary detail beneath
+ * ONLY when it was not one we recognized, shown as secondary detail beneath
  * the sentence, never folded into it. */
 function whereCell(row: BlockedRow) {
   if (!row.whereDetail) return <TextCell value={row.where} />;

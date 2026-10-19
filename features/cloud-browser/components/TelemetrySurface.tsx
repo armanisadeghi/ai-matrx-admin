@@ -4,7 +4,7 @@
  * TelemetrySurface — human-visible usage/resource numbers (D-9).
  *
  * Measurement is a day-one requirement AND it must be visible to a human, not
- * just in a log. Anything not actually measured is labelled "not yet measured",
+ * just in a log. Anything not actually measured is labeled "not yet measured",
  * never rounded to 0.
  */
 

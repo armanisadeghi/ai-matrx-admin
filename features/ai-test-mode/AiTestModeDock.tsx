@@ -5,7 +5,7 @@
  *
  * Real (default) · Replay · Stand-in. Shown only when `GET /ai-test-mode/status`
  * says this person may use test modes right now — or when the tab still asks
- * for one the server has stopped honouring, so that is said plainly. Fixed at
+ * for one the server has stopped honoring, so that is said plainly. Fixed at
  * the bottom right: it never pushes content and measures nothing. Off Real it
  * turns warning-toned so nobody forgets the answers are saved ones.
  *

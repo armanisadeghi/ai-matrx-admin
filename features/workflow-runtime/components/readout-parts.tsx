@@ -649,7 +649,7 @@ export function RunErrorCard({
 
   // A run that stopped because a step's change is HELD for a person is not a
   // broken run (lane HELD-WRITE-TAILS, 2026-09-26): it says so, in the held
-  // colour, and the step's own card below carries Approve / Refuse. The step
+  // color, and the step's own card below carries Approve / Refuse. The step
   // stops with the code `held_for_approval`, which the engine records as the
   // run's `cause` (`matrx_graph.failure.Cause.HELD_FOR_APPROVAL`).
   const held =

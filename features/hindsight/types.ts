@@ -89,7 +89,7 @@ export function replayJudgeReasoning(replay: Replay): string | null {
 }
 
 /**
- * Backend failures arrive as raw operator output — ANSI colour codes and the
+ * Backend failures arrive as raw operator output — ANSI color codes and the
  * ORM's banner rules. Rendered verbatim they read as garbage (`[91m ------`),
  * so strip the terminal formatting and keep the sentence.
  */

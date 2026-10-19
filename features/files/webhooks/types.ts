@@ -82,7 +82,7 @@ export interface UpdateWebhookInput {
 }
 
 /**
- * The event catalogue users can subscribe to. `value` is the activity_log
+ * The event catalog users can subscribe to. `value` is the activity_log
  * `action`. Grows as more producers emit to platform.activity_log (run
  * lifecycle events land here as `*.run.*`).
  */

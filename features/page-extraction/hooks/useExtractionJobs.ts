@@ -30,7 +30,7 @@ import {
 // cache holds BOTH archived and active templates so a surface can reveal the
 // archived ones without a second fetch; the hook hands out the split, and the
 // plain `jobs` field stays active-only so every existing caller keeps the
-// hide-by-default behaviour it already had.
+// hide-by-default behavior it already had.
 const store = createSharedStore<PageExtractionJob[]>(async (fileId) => {
   return listJobsForFile(fileId, { includeArchived: true });
 });

@@ -101,7 +101,7 @@ type EditMap = Record<string, Record<string, FieldEdit>>;
  * invents. A missing key rendered `undefined` at a person.
  */
 const ACTION_COPY: Record<ContactFieldActionPending | "unknown", string> = {
-  unknown: "outcome not recognised",
+  unknown: "outcome not recognized",
   create: "will be written",
   fill: "fills an empty field",
   unchanged: "already the same",
@@ -758,15 +758,15 @@ export function GoogleContactsImportPanel({
                     <Badge variant="secondary" className="text-[11px]">
                       {/* NEVER "New Person" when the server says it will merge —
                           the preview names the Person it enriches, and how it
-                          recognised them (D4). */}
+                          recognized them (D4). */}
                       Will update{" "}
                       {plan.person_name ?? "the Person already here"}
-                      {/* HOW it was recognised, in words: the key used to reach a
+                      {/* HOW it was recognized, in words: the key used to reach a
                           person raw — `matched by external_id:google_contacts`
                           (R2 D9). `importMatchKeyWords` is the client twin of the
                           server's own `_match_key_words`. */}
                       {plan.matched_by
-                        ? ` (recognised by ${importMatchKeyWords(plan.matched_by)})`
+                        ? ` (recognized by ${importMatchKeyWords(plan.matched_by)})`
                         : ""}
                     </Badge>
                   ) : (
@@ -938,7 +938,7 @@ export function GoogleContactsImportPanel({
           {/* 🚨 REFRESH NEVER SILENTLY RE-RUNS A REQUEST WE KNOW WILL FAIL
               (F-113 NEW-2): while the server is waiting to be told WHICH
               Google account to read, the same read is the same refusal. It
-              used to stay on screen greyed out with the reason in a `title=`
+              used to stay on screen grayed out with the reason in a `title=`
               tooltip — a reason a sighted person never sees and a touch user
               cannot reach (check:hidden-alerts, 2026-09-22). The notice
               immediately below carries the same truth VISIBLY and owns both
@@ -1067,7 +1067,7 @@ export function GoogleContactsImportPanel({
                     <Badge variant="secondary" className="text-[11px]">
                       Will update {contact.person_name ?? "an existing Person"}
                       {contact.matched_by
-                        ? ` (recognised by ${importMatchKeyWords(contact.matched_by)})`
+                        ? ` (recognized by ${importMatchKeyWords(contact.matched_by)})`
                         : ""}
                     </Badge>
                   ) : null}

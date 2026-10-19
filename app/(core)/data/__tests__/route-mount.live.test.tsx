@@ -75,7 +75,7 @@ import { createClient as createSupabaseClient, type SupabaseClient } from "@supa
   for (const name of ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "setImmediate", "clearImmediate"]) g[name] = timers[name];
 
   // These five are REPLACED, not defaulted: jsdom ships its own `Headers`,
-  // `Request` and `Response`, and undici's fetch only recognises its own — a
+  // `Request` and `Response`, and undici's fetch only recognizes its own — a
   // half-and-half realm fails with a bare "fetch failed" that names nothing.
   const undici = require("undici") as Record<string, unknown>;
   for (const name of ["fetch", "Headers", "Request", "Response", "FormData"]) g[name] = undici[name];

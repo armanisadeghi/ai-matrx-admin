@@ -3,7 +3,7 @@
 //
 // The strip already knows the source: it prints `health.source` two spans to the
 // left ("Google Docs, Sheets & Drive files", "Search Console"). The one control
-// that actually leaves for it was labelled "Open at source" — a developer's
+// that actually leaves for it was labeled "Open at source" — a developer's
 // phrase, and the only place on the record where the person's own word for where
 // their file lives was thrown away.
 //

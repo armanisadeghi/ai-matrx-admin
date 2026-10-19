@@ -173,7 +173,7 @@ async function callKnobOverrideSet(options: KnobDoorWrite): Promise<KnobOverride
   if (error) throw new Error(`knob_override_set failed: ${error.message}`);
   // The runtime readers of this key (`lib/scoped-config/effectiveKnobs.ts`)
   // forget their cached answer, so the feature that consumes the setting
-  // changes behaviour in THIS tab the moment the screen says "saved".
+  // changes behavior in THIS tab the moment the screen says "saved".
   invalidateEffectiveKnob(`${options.feature}.${options.key}`);
   return data as KnobOverrideSetResult;
 }
@@ -487,7 +487,7 @@ async function callDeclaredDoor(doorName: string, options: KnobDoorWrite): Promi
  * value HERE", for the rungs the CALLER addressed. A screen that wants "which
  * tables have their own value for this key" does not know the rows to address
  * — that is the question. Addressing all 800 registered tables to discover the
- * three that are set would be a read of the whole catalogue per knob.
+ * three that are set would be a read of the whole catalog per knob.
  *
  * This is a LIST read, never a resolution read: it returns the rows that exist
  * and nothing about precedence, and no surface may derive an effective value

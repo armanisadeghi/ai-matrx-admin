@@ -10,7 +10,7 @@
  * (b) socials batched per platform: "Which of these Instagram accounts is you?" Pick one / None;
  * (d) aggregators dropped (a ZoomInfo snippet shows as a clue only).
  * Every "yes" teaches clues (server-read: employer, title, city, handle, site) that run targeted queries, until one
- * FIRM anchor is confirmed (an account, a personal site, an employer bio page or a licence record).
+ * FIRM anchor is confirmed (an account, a personal site, an employer bio page or a license record).
  * Server: aidream services/brand_intake/person_harder.py. Deeper pages run on click only.
  */
 

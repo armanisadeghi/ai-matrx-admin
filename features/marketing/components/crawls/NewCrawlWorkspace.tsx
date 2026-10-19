@@ -301,7 +301,7 @@ export function NewCrawlWorkspace() {
           toast.info("Connection dropped — still following the crawl");
         },
       });
-      // Unmounted, cancelled while following, or replaced by a new run: the
+      // Unmounted, canceled while following, or replaced by a new run: the
       // crawl goes on server-side and this visit no longer speaks for it.
       if (controller.signal.aborted) return;
       const terminalStatus = crawlRunVerdict(fromEvents, result);

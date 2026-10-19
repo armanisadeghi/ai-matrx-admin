@@ -303,7 +303,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     label: "Assistants",
     icon: Brain,
     parentId: "ai",
-    description: "Default assistant behaviour.",
+    description: "Default assistant behavior.",
     component: AssistantTab,
     persistence: "synced",
   },
@@ -772,7 +772,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     icon: Clapperboard,
     parentId: "organizations",
     description:
-      "How this organization catalogues Libraries, Sources and Actions. The server declares every setting here.",
+      "How this organization catalogs Libraries, Sources and Actions. The server declares every setting here.",
     searchKeywords: [
       "media",
       "library",

@@ -15,7 +15,7 @@
  *       so a transport code reached a person with no cause and no remedy;
  *   (b) the workspace derived the column's condition a SECOND time as
  *       `offerPending ? "loading" : "ready"`, so the error state arrived at
- *       `<OfferedInventoryColumn>` labelled "ready" with zero values and the
+ *       `<OfferedInventoryColumn>` labeled "ready" with zero values and the
  *       column printed its empty-state copy over a read that never happened.
  *
  * WHAT THIS DRIVES: the real chain, end to end — the real hook with the
@@ -25,7 +25,7 @@
  * RED BEFORE THE FIX (both proven; see the register row):
  *   · with `message: result.error.message` restored, "prints no bare transport
  *     code" fails on the literal string `HTTP 400`;
- *   · with `status={offerPending ? "loading" : "ready"}` restored — modelled
+ *   · with `status={offerPending ? "loading" : "ready"}` restored — modeled
  *     here by the second `describe`, which drives the exact expression — the
  *     column renders "offers nothing yet" and the contradiction assertions
  *     fail.

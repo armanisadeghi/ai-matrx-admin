@@ -145,7 +145,7 @@ function RunLiveBlock({ state }: { state: RunShellState }) {
 
 /**
  * The failure, in the server's words. Nothing is reworded and nothing is
- * summarised: these sentences are written for the person making the change and
+ * summarized: these sentences are written for the person making the change and
  * a paraphrase destroys the only explanation they will get.
  */
 function RunErrorBlock({

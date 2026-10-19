@@ -305,7 +305,7 @@ describe("rich text", () => {
 });
 
 describe("nothing dropped silently", () => {
-  it("unknown, button and meeting notes become labelled text blocks", () => {
+  it("unknown, button and meeting notes become labeled text blocks", () => {
     const { blocks, warnings } = convert(
       ['<unknown url="https://www.notion.so/x#blk" alt="button"/>', "<meeting-notes>", "\tWeekly standup", "</meeting-notes>"].join("\n"),
     );

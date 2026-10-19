@@ -476,7 +476,7 @@ export function useAiVisibility(siteId: string, organizationId: string) {
             signal: streamAbort.signal,
           }),
     );
-    // Cancelled by teardown or a newer run — settle silently. The run keeps
+    // Canceled by teardown or a newer run — settle silently. The run keeps
     // executing server-side and the stored run id keeps rejoin possible.
     if (streamAbort.signal.aborted || cancelledRef.current) return;
     if (response.error) {

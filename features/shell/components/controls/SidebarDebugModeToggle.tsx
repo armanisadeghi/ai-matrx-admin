@@ -2,7 +2,7 @@
 
 /**
  * SidebarDebugModeToggle — the admin debug switch, one press in the sidebar footer.
- * On: the bug and an "On" tag turn the success colour, and debug-gated tools (Watch AI,
+ * On: the bug and an "On" tag turn the success color, and debug-gated tools (Watch AI,
  * debug panels) appear. The admin indicator lives in the Production menu (SidebarEnvToggle).
  */
 

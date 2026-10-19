@@ -83,7 +83,7 @@ interface TargetMeta {
 }
 
 // Presentation for each convert target. Availability is read live from the
-// converter registry (isTargetAvailable) — a target greys out as "coming soon"
+// converter registry (isTargetAvailable) — a target grays out as "coming soon"
 // until its owning project registers a generator, then lights up with no change.
 const TARGETS: TargetMeta[] = [
   {

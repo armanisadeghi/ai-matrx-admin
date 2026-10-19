@@ -54,7 +54,7 @@ const DEFAULT_STATUS_WORDS: StatusWords = {
 /**
  * P17.3 — per-row health is a dot with a RULE: red = a required input is
  * unmapped, amber = something is unmapped, green = clean. The dot never
- * explains itself in colour alone: it carries the sentence too.
+ * explains itself in color alone: it carries the sentence too.
  */
 export function RowStatusDot({
   att,

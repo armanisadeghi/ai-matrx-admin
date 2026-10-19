@@ -11,12 +11,12 @@
 // READ-ONLY here… there is no write path on the server" — was true on
 // 2026-08-28 and is false now: `goal` is a promoted column post-cutover and
 // `PATCH /mandates/{key}/goal` writes it. The STORED goal is the truth and this
-// catalogue is the fallback for a row the DB read missed. Resolve the two in
+// catalog is the fallback for a row the DB read missed. Resolve the two in
 // ONE place — `./goal` (`resolveMandateGoal`) — never here, and never by
 // reading this alone.
 //
 // One in-flight request is shared by every caller — the console asks for the
-// whole catalogue while three drawers ask for their own row.
+// whole catalog while three drawers ask for their own row.
 
 import type { AppDispatch } from "@/lib/redux/store";
 import { callApi } from "@/lib/api/call-api";
@@ -71,7 +71,7 @@ export async function fetchMandateCatalogue(
     // deploy answering this path must fail loudly, not render blank goals.
     if (!isCatalogueBody(response.data)) {
       throw new Error(
-        "GET /mandates did not return a mandate catalogue — the goal of every mandate is unknown until it does.",
+        "GET /mandates did not return a mandate catalog — the goal of every mandate is unknown until it does.",
       );
     }
     const mandates = response.data.mandates;
@@ -90,8 +90,8 @@ export async function fetchMandateCatalogue(
 }
 
 /**
- * SYNCHRONOUS read of one declaration from the page-lifetime catalogue —
- * `null` when the catalogue was never fetched (or holds no such key). Never
+ * SYNCHRONOUS read of one declaration from the page-lifetime catalog —
+ * `null` when the catalog was never fetched (or holds no such key). Never
  * triggers a request: this is for callers that can use the answer when it is
  * already free and must not pay for it otherwise (the structured-output write
  * guard, `features/agents/redux/execution-system/utils/output-contract-guard.ts`).
@@ -104,7 +104,7 @@ export function peekMandateCatalogueEntry(
 }
 
 /**
- * DROP THE PAGE-LIFETIME CATALOGUE.
+ * DROP THE PAGE-LIFETIME CATALOG.
  *
  * 🚨 A GOAL WRITE STALES THIS CACHE (FIX-Q9, 2026-09-11). `cached` lives for
  * the life of the page because declarations only change when aidream redeploys

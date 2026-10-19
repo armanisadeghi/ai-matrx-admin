@@ -24,7 +24,7 @@
  *
  * There is no vocabulary constant for category or tool group: both are free
  * text on `tool.definition` with no enum, lookup table, or check constraint.
- * The live category vocabulary is data, not code — the catalogue emitter
+ * The live category vocabulary is data, not code — the catalog emitter
  * publishes it as the surface's `tool_categories` value.
  */
 

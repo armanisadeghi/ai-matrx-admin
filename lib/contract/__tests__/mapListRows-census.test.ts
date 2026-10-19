@@ -16,7 +16,7 @@
 // times over (adapters, items, recipients) and a fourth in `top_correspondents`
 // — all fixed in the same change this test guards.
 //
-// 🚨 WHY A STATIC SCAN, NOT JUST BEHAVIOURAL TESTS PER FILE. A behavioural
+// 🚨 WHY A STATIC SCAN, NOT JUST BEHAVIORAL TESTS PER FILE. A behavioral
 // test proves ONE call site is safe today; it says nothing about the next
 // list reader someone adds tomorrow in a fifth contract.ts. This test reads
 // every `contract.ts` under `features/**` and every reader in `lib/contract/`

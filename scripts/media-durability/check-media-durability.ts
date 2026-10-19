@@ -6,7 +6,7 @@
  *
  * THE POINT: an expiring signed URL is not a defect. A time-boxed share link, a
  * TTL cache, an audit row recording exactly what was issued — expiry is the
- * feature there, and "fixing" those breaks working behaviour. The defect is the
+ * feature there, and "fixing" those breaks working behavior. The defect is the
  * MISMATCH between a URL's lifetime and its consumer's contract: a column an
  * anonymous surface reads, or a column that must still resolve for its owner
  * tomorrow, holding something that dies in a week.
@@ -166,7 +166,7 @@ async function main(): Promise<void> {
         `${C.dim}  The guard lives in migrations/mtx_public_url_guard_schema_aware.sql.\n` +
           `  Read the LIVE body out of the database before replacing it — a\n` +
           `  create-or-replace written against a stale copy deletes working\n` +
-          `  behaviour and nothing fails.${C.reset}`,
+          `  behavior and nothing fails.${C.reset}`,
       );
     } else {
       console.log(

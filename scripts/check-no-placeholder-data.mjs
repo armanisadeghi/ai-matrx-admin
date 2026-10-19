@@ -494,7 +494,7 @@ if (process.argv.includes("--self-test")) {
   const ok = screenOk && doorsOk;
   console.log(
     ok
-      ? `check-no-placeholder-data --self-test: PASS — the guard caught ${hits.length} planted placeholder defects (${ids.join(", ")}), ${DOORS_AVAILABLE ? `${doorHits.length} planted account-door defects (${doorIds.join(", ")})` : "NO account-door check (the installed records predates it: SKIPPED)"} and honoured the exemptions.`
+      ? `check-no-placeholder-data --self-test: PASS — the guard caught ${hits.length} planted placeholder defects (${ids.join(", ")}), ${DOORS_AVAILABLE ? `${doorHits.length} planted account-door defects (${doorIds.join(", ")})` : "NO account-door check (the installed records predates it: SKIPPED)"} and honored the exemptions.`
       : `check-no-placeholder-data --self-test: FAIL — screen rules ${screenOk ? "ok" : `expected 3 hits across ${expected.join(", ")}, got ${hits.length} across ${ids.join(", ") || "nothing"}`}; account doors ${doorsOk ? "ok" : `expected ${doorExpected.join(", ")} (and none on the pragma line), got ${doorIds.join(", ") || "nothing"}`}.`,
   );
   process.exit(ok ? 0 : 1);

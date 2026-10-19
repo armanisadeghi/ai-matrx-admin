@@ -25,7 +25,7 @@
  *
  * 🚨 EVERY STATE IS WORDED, NEVER A RAW TOKEN. `approver_ineligible` is a machine string; *"the
  * person who should decide cannot"* is what a payroll administrator can act on. An unrecognised
- * class still renders — as itself, labelled as unrecognised — because swallowing it would recreate
+ * class still renders — as itself, labeled as unrecognised — because swallowing it would recreate
  * the exact blindness this panel was built to remove.
  *
  * NO CLIENT COMPUTES ANYTHING: every count and classification is the server's.

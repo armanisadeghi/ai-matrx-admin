@@ -73,7 +73,7 @@ const PRESET_SORTS: { ids: readonly string[]; label: string }[] = [
 
 /**
  * "A→Z" is a lie on a date column. A column declares its own words with
- * `sortWords`; a date column is recognised by its filter options and needs no
+ * `sortWords`; a date column is recognized by its filter options and needs no
  * declaration (jobs-bar-2026-09-16, item 8).
  */
 function sortWordsFor<TRow>(c: EntityColumnSpec<TRow>): {

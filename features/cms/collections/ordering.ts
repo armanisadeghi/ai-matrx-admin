@@ -9,7 +9,7 @@
  *   - `my-matrx/lib/collections/ordering.js`         — visitor HTTP + SSR
  *   - this file                                      — the admin API
  *
- * Why it exists: my-matrx honoured `site_collections.settings.default_order` on
+ * Why it exists: my-matrx honored `site_collections.settings.default_order` on
  * the published page from 2026-08-11, while this repo's `/api/cms/collections`
  * and aidream's service both hardcoded `created_at DESC`. An events collection
  * declaring `starts_at:asc` therefore read chronologically to a visitor and

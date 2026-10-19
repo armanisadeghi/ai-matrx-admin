@@ -1,6 +1,6 @@
 /**
- * The agent catalogue a coding session's picker reads, from this page: the same two reads the
- * computer makes (a catalogue RPC as the signed-in person, and an agent's light summary), so the
+ * The agent catalog a coding session's picker reads, from this page: the same two reads the
+ * computer makes (a catalog RPC as the signed-in person, and an agent's light summary), so the
  * picker on the web is the Mac's picker with the same data. The computer then loads the chosen
  * agent with its own sign-in; nothing here sends a token to it.
  */

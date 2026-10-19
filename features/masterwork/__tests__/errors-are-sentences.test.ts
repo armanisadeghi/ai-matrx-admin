@@ -20,7 +20,7 @@
  *
  * TWO LEGS, both of which fail on a one-line regression:
  *
- *  1. BEHAVIOUR. The real `getRulebook` and `saveRules` are called with the
+ *  1. BEHAVIOR. The real `getRulebook` and `saveRules` are called with the
  *     Supabase client mocked to answer the way PostgREST does on a refusal.
  *     What comes out must be an Error whose message is a sentence, and
  *     `String(thrown)` must never contain "[object Object]". Put

@@ -199,7 +199,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = ({
     [handleClick, isDir, expanded, node.name, node.path, onToggle, renaming],
   );
 
-  // ── Drop zone (existing behaviour preserved) ────────────────────────────
+  // ── Drop zone (existing behavior preserved) ────────────────────────────
   const [dragOver, setDragOver] = useState(false);
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {

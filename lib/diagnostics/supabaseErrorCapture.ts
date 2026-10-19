@@ -249,7 +249,7 @@ export function postgrestResultErrorMessage(
 }
 
 /**
- * A cancelled request is NOT a failure — it's expected control flow (navigation,
+ * A canceled request is NOT a failure — it's expected control flow (navigation,
  * unmount, a superseding fetch calling `controller.abort()`). postgrest-js does
  * not reject on abort: it RESOLVES with an error object
  * (`{ message: "AbortError: The operation was aborted.", hint: "Request was
@@ -260,7 +260,7 @@ export function postgrestResultErrorMessage(
  * Detect that shape and tag it with the canonical `name: "AbortError"` — the
  * same signature `captureApiError` uses — so the single `request-aborted`
  * downgrade rule silences aborts across every Supabase call site, not just the
- * throwing ones. Without this, one cancelled RPC surfaces as a red error.
+ * throwing ones. Without this, one canceled RPC surfaces as a red error.
  */
 // MATRX-EXCEPTION: `?? ""` defaults two explicitly-optional string fields
 // before a substring match — pure classification logic, not a boundary write.
@@ -341,7 +341,7 @@ function captureResult(
     // The browser read deadline's TimeoutError is checked FIRST: it carries
     // postgrest-js's no-retry code, so its hint also reads "Request was
     // aborted" — but a stalled connection is a transport failure, never
-    // cancelled control flow (utils/supabase/browserReadDeadline.ts).
+    // canceled control flow (utils/supabase/browserReadDeadline.ts).
     name: isBrowserReadDeadlineError(e)
       ? "TimeoutError"
       : isAbortResultError(e)
@@ -518,7 +518,7 @@ function wrapBuilder<T extends object>(builder: T, ctx: ChainContext): T {
           // THE SESSION BARRIER (DD-237), first seam. The synchronous path is
           // the one every healthy request takes — an attached session, a door
           // declared anonymous-by-design, or a browser with no auth cookie —
-          // and it is byte-identical to the behaviour before the barrier. Only
+          // and it is byte-identical to the behavior before the barrier. Only
           // a request whose session is EXPECTED but not yet in hand waits, and
           // only for a bounded budget.
           // Fail OPEN, always: a barrier that threw would take every read in

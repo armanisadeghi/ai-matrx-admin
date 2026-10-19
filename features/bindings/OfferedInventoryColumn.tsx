@@ -187,7 +187,7 @@ export function OfferedInventoryColumn({
                     you what a value MEANS; one example tells you what it IS,
                     and choosing where a value should land is much easier with
                     both. Static, declared with the provision, never read at run
-                    time — so it is labelled as an example and can never be
+                    time — so it is labeled as an example and can never be
                     mistaken for the value this run will carry. Absent means the
                     declaration gave none: say nothing, never invent one.
                     🚨 NOT `truncate`: the example exists so the reader can SEE

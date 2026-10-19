@@ -162,7 +162,7 @@ function TableCapture({
 export function UnifiedDataTablePage({ tableId }: { tableId: string }) {
   const router = useRouter();
   // "Open Side Chat" on a table opens the table's own expert (the Data Table Assistant), from the
-  // role the data-tables manifest declares. Behaviour only: it never replaces a conversation the
+  // role the data-tables manifest declares. Behavior only: it never replaces a conversation the
   // person already has, and the person can still switch agents.
   useShellChatContext({ chatMandateKey: TABLE_CHAT_ROLE.mandateKey });
   /**

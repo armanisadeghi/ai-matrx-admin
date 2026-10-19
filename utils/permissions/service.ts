@@ -585,7 +585,7 @@ export async function shareWithUser(
 
     // Fire-and-forget notice — failure doesn't affect the grant. ONE path: the
     // notification spine (`share.resource_shared`) emails the recipient and sends
-    // the paired DM (as the sharer, with the resource card), honouring their email
+    // the paired DM (as the sharer, with the resource card), honoring their email
     // switch. It used to be an email route plus a DM sent from here — two paths.
     //
     // 🚨 THE NOTICE IS FILED IN THE SHARED OBJECT'S ORGANIZATION (ACCESS-FIX-18, VERIFIER-18

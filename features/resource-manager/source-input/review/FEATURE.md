@@ -37,10 +37,10 @@ common-docs `projects/unified-source-input/` (DESIGN.md § "The follow-up page";
    It mirrors the server resolver rule for rule (chosen form, picked parts, `_cap`, grounding
    headers `### Chunk <id> (page N)`, `delivery:"context"` sends nothing), so the characters
    shown equal `/sources/resolve`'s text length whenever the manifest lists parts. Where a Source
-   has no listed parts (notes, generic records) the count is the body only and is labelled
+   has no listed parts (notes, generic records) the count is the body only and is labeled
    "(about)". Tests: `plan.test.ts`.
 2. **Budget = the target model's window** (`model_context_tokens` from the manifest). Unknown
-   model → the knob `sources.review_default_context_tokens` (128,000), labelled on screen.
+   model → the knob `sources.review_default_context_tokens` (128,000), labeled on screen.
    Tokens use the ONE client estimator `lib/tokens/estimate.ts` (conservative), so a set the
    planner says fits also fits the server's laxer check.
 3. **Nothing is dropped silently.** A Source that would overflow is named ("Won't go in: …")

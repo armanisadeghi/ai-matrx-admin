@@ -300,7 +300,7 @@ export async function wasAssistDecided(dedupeKey: string): Promise<boolean> {
 
 /**
  * Every row of mine (any status) whose `source_key` starts with `prefix` —
- * for a producer that must honour its own history: what the person declined,
+ * for a producer that must honor its own history: what the person declined,
  * snoozed or already ran, and what is pending right now. Mine-scope (THE VIEW
  * LAW); bounded by the producer's own catalog, so one page is the whole set.
  */

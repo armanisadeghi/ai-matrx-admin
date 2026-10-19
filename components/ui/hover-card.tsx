@@ -4,7 +4,7 @@
  * HOST RE-EXPORT ONLY — the HoverCard implementation lives in
  * `@ai-matrx/design-system`.
  *
- * Behaviour changes worth knowing (both fixes, both in the package CHANGELOG):
+ * Behavior changes worth knowing (both fixes, both in the package CHANGELOG):
  * - the content now PORTALS instead of rendering inline, so a card inside an
  *   `overflow-hidden` ancestor is no longer clipped and one inside a
  *   popped-out window panel works at all. It follows the same

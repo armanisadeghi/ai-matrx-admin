@@ -9,7 +9,7 @@ import {
 import type { RecommendedUse, AnalysisStatus } from "../../types";
 
 /**
- * The shared post-read VERDICT marker — the agent's bottom-line judgement on a
+ * The shared post-read VERDICT marker — the agent's bottom-line judgment on a
  * source after reading the page, distinct from the pre-read Authority score.
  *
  * Design (deliberately restrained, professional — never kindergarten):
@@ -19,7 +19,7 @@ import type { RecommendedUse, AnalysisStatus } from "../../types";
  *  • `cite_directly` earns the one quiet strong accent (muted emerald) — the
  *    standout. Everything else stays neutral/monochrome and lets the score lead.
  *  • A real `reject` (or an invalid/inaccessible/error status) is DE-EMPHASIZED:
- *    dimmed, the label struck through, and the ONLY coloured hue in the whole
+ *    dimmed, the label struck through, and the ONLY colored hue in the whole
  *    component — a single muted rose dot. No bright pills, no alarm red anywhere.
  *  • Legible in light + dark purely through theme tokens + low-opacity accents.
  *
@@ -104,7 +104,7 @@ function resolveVerdict(
       kind: "reject",
       presentation: {
         label: use === "reject" || !status ? "Reject" : STATUS_LABEL[status],
-        // The ONLY coloured hue in the component — a single muted rose dot.
+        // The ONLY colored hue in the component — a single muted rose dot.
         dotClass: "bg-rose-500/50",
         deemphasized: true,
       },

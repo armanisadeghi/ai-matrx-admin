@@ -406,7 +406,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
   /** True while this row's type is still waiting on the server's rules (a person's own pick never waits). */
   const kindPending = (item: DiscoveredItem) =>
     kindOverrides[item.id] === undefined && kindWaitsOnRules(item, rulesPending);
-  // A row filed under Other starts labelled by what the finder called it, so Confirm is never a dead button.
+  // A row filed under Other starts labeled by what the finder called it, so Confirm is never a dead button.
   const effectiveLabel = (item: DiscoveredItem) =>
     labelOverrides[item.id] ??
     (!kindPending(item) && effectiveKind(item) === LABEL_REQUIRED_KIND && item.guessed_kind

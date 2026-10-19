@@ -3,7 +3,7 @@
  * `allowedKinds`.
  *
  * 🚨 **ILLEGAL TRANSITIONS ARE NOT RENDERED** (§2.1). A `clocked_in` employee has no Clock In
- * button — not a disabled one, not a greyed one, none. But note *why* that is safe to do: the
+ * button — not a disabled one, not a grayed one, none. But note *why* that is safe to do: the
  * server refuses them anyway (§1.1). **The button's absence is courtesy; the server's refusal is the
  * contract.** So this component maps `clockState.allowedKinds` and never computes the set itself.
  * A hardcoded `["clock_out", "break_start"]` here would drift from the RPC the first time a

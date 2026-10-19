@@ -173,8 +173,8 @@ export function FlashcardsHome() {
     startTransition(() => router.push(path));
   };
 
-  // Page actions (page-pass 2026-09-27): "Review due" is the one labelled
-  // primary action; everything else is ONE labelled "More" menu. Navigation
+  // Page actions (page-pass 2026-09-27): "Review due" is the one labeled
+  // primary action; everything else is ONE labeled "More" menu. Navigation
   // is a real link (new tab, prefetch, the route's loading state at once).
   const headerActions: EducationToolAction[] = [
     {

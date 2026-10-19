@@ -8,7 +8,7 @@
  * which engine could stream or change speed mid-utterance.
  *
  * This file is the single source of truth for that. It declares CAPABILITIES,
- * never behaviour — the behaviour lives in the playback adapters (audio OUT)
+ * never behavior — the behavior lives in the playback adapters (audio OUT)
  * and in `transcribe.ts` (audio IN). Nothing here imports an SDK, so it is safe
  * to import from anywhere (settings UI, pickers, the lazy audio system).
  *

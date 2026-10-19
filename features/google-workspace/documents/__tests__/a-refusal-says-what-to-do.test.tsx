@@ -16,7 +16,7 @@
  *     rather than the Google Picker it promised.
  *   * N12 — a row whose `external_url` is null had no "Open in Google" anywhere,
  *     while the body copy told the person to open it in Google.
- *   * N14 — the one control that opens the file in Google was labelled "Open at
+ *   * N14 — the one control that opens the file in Google was labeled "Open at
  *     source".
  *
  * The connector half is deliberately HEALTHY (a connected account, a granted
@@ -472,7 +472,7 @@ describe("N12 + N14 — the door to Google, and what it is called", () => {
     const m = await mount();
     const empty = m.container.querySelector("[data-google-document-body-empty]")!;
     expect(empty.textContent).toContain("open it in Google");
-    // The instruction the copy gives is honoured on the same screen.
+    // The instruction the copy gives is honored on the same screen.
     expect(
       m.container.querySelector<HTMLAnchorElement>("[data-google-document-open-in-google]")!
         .getAttribute("href"),

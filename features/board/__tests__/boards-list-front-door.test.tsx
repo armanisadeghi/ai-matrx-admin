@@ -1,7 +1,7 @@
 // Boards work like every saved record: /board is the LIST (no special "My board"), a board
 // opens at /board/<id>, and the menu's "Add to your board" rows (`/board?add=<key>`) open the
 // board the person opened LAST (or a new one when they have none) and start the item there.
-// Each case fails when the behaviour it names breaks.
+// Each case fails when the behavior it names breaks.
 
 import fs from "fs";
 import path from "path";

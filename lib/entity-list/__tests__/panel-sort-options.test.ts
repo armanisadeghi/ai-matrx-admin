@@ -1,6 +1,6 @@
 // A column that declared `sortable: false` is never offered in the Filters &
 // Sort panel. /education/flashcards offered "Folders (A→Z)" — a multi-valued
-// column whose service ignores that sort — until the panel honoured the flag
+// column whose service ignores that sort — until the panel honored the flag
 // (page-pass 2026-09-27).
 
 import { panelSortOptions } from "../components/EntityFilterPanel";

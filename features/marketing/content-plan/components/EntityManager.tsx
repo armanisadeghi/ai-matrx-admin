@@ -1150,7 +1150,7 @@ export function EntityManager({
             }}
           />
         ) : null}
-        {/* Cancelling here closes the dialog only — the proposals stay staged
+        {/* Canceling here closes the dialog only — the proposals stay staged
             in the panel above, re-openable with nothing re-run. */}
         <ConfirmDialog
           open={confirmingAdd}
@@ -1159,7 +1159,7 @@ export function EntityManager({
           }}
           // read-gate-exempt: counts the staged research proposals being confirmed, not a read
           title={`Add ${pendingProposals.length} suggested entit${pendingProposals.length === 1 ? "y" : "ies"}?`}
-          description="Cancelling keeps the suggestions on screen — nothing is re-run."
+          description="Canceling keeps the suggestions on screen — nothing is re-run."
           content={
             <ul className="max-h-56 space-y-1 overflow-y-auto text-sm">
               {pendingProposals.map((item) => (

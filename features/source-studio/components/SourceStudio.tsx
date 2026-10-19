@@ -1074,7 +1074,7 @@ type StudioAction = {
 /**
  * The Source screen's actions when it sits in a host's pane: the SAME list the
  * shell header draws (Save, Edit, Process now, Capture again, Export, Knowledge
- * Assets, PDF tools), as one wrapping row of labelled buttons.
+ * Assets, PDF tools), as one wrapping row of labeled buttons.
  */
 function EmbeddedActionBar({
   status,

@@ -4,7 +4,7 @@
  * Specimens for the UI-unification decision board.
  *
  * Every specimen renders the REAL component exactly the way the competing call
- * sites in the app render it today. Raw colour classes and size overrides are
+ * sites in the app render it today. Raw color classes and size overrides are
  * allowed here ONLY because the override itself is the option being judged
  * (e.g. the raw-amber status badge, the hand-rolled tab bar). Counts quoted in
  * `decisions.tsx` come from the 2026-10-01 AST census of 9,761 .tsx files.

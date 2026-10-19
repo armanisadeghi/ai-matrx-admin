@@ -7,7 +7,7 @@
  * own subjects (its admins decide them). Data + rules: ./spendApprovals.ts.
  *
  * Arman 2026-10-10: default columns in his order; every $ to the cent; points hidden by default;
- * colours from knobs (billing.run_approval/color_*); "Temporary" approvals with an expiry; "Reset
+ * colors from knobs (billing.run_approval/color_*); "Temporary" approvals with an expiry; "Reset
  * tracking" restarts the "since" stats.
  *
  * Arman 2026-10-17: every view is a link (search, sort, filters, status and the open record live in
@@ -17,7 +17,7 @@
  */
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
+import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { CalendarClock, Check, History, RefreshCw, RotateCcw, TimerReset, X } from "lucide-react";
 import { Button, SegmentedControl, Select } from "@ai-matrx/design-system/controls";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";
@@ -25,7 +25,7 @@ import { FirstPlusMore } from "@/components/official/first-plus-more/FirstPlusMo
 import { ApprovalStatusText } from "./RunApprovalCell";
 import { ApprovalStatusSelect, dateInputValue, endOfLocalDayIso } from "./ApprovalStatusSelect";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
-import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
+import type { MatrxColumnDef, MatrxTableRowActionDef } from "@ai-matrx/design-system/data-table/types";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -370,6 +370,8 @@ export function SpendApprovalsBoard({
   );
   const [localStatus, setLocalStatus] = useState<StatusFilter>("all");
   const status = subject ? localStatus : urlStatus;
+  // The group-by column lives under the table's own namespace, so a record link carries it.
+  const [groupBy, setGroupBy] = useUrlState(`table.${spendApprovalsTableId(seat)}.group`, stringUrlCodec());
   const setStatus = (next: StatusFilter) => (subject ? setLocalStatus(next) : setUrlStatus(next));
   const [pending, setPending] = useState<Pending | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -765,44 +767,17 @@ export function SpendApprovalsBoard({
       hidden: true,
       cell: (r) => <span className="block truncate text-xs" title={r.expected_result ?? undefined}>{r.expected_result ?? "—"}</span>,
     },
-    {
-      id: "actions",
-      header: "Actions",
-      sortable: false,
-      customActions: (r) => (
-        <div className="flex items-center gap-1">
-          {r.can_decide && r.status !== "approved" && (
-            <Button variant="outline" onClick={() => setPending({ row: r, decision: "approve" })} aria-label="Approve">
-              <Check className="h-4 w-4" /> Approve
-            </Button>
-          )}
-          {r.can_decide && (
-            <Button variant="quiet" onClick={() => setPending({ row: r, decision: "approve_temporary" })} aria-label="Approve temporarily" title="Approve temporarily">
-              <CalendarClock className="h-4 w-4" />
-            </Button>
-          )}
-          {r.can_decide && r.status !== "rejected" && (
-            <Button variant="outline" onClick={() => setPending({ row: r, decision: "reject" })} aria-label="Reject" title="Reject">
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-          {r.can_decide && r.status !== "waiting" && (
-            <Button variant="quiet" onClick={() => setPending({ row: r, decision: "reopen" })} aria-label="Reopen" title="Reopen">
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          )}
-          {r.can_decide && (
-            <Button variant="quiet" onClick={() => setPending({ row: r, decision: "reset" })} aria-label="Reset tracking" title="Reset tracking">
-              <TimerReset className="h-4 w-4" />
-            </Button>
-          )}
-          <Button variant="quiet" onClick={() => setPending({ row: r, decision: "history" })} aria-label="History" title="History">
-            <History className="h-4 w-4" />
-          </Button>
-          {!r.can_decide && <span className="type-meta text-muted-foreground">Platform decides</span>}
-        </div>
-      ),
-    },
+  ];
+
+  // Approve and Reject stay inline (the two most used); the rest sit in the row's overflow menu.
+  // Declared once, so an action a row cannot take is drawn disabled in its slot and the column lines up.
+  const rowActionDefs: MatrxTableRowActionDef<SpendApprovalRow>[] = [
+    { id: "approve", icon: Check, label: "Approve", tone: "success", appliesTo: (r) => r.can_decide && r.status !== "approved", onClick: (r) => setPending({ row: r, decision: "approve" }) },
+    { id: "reject", icon: X, label: "Reject", tone: "destructive", appliesTo: (r) => r.can_decide && r.status !== "rejected", onClick: (r) => setPending({ row: r, decision: "reject" }) },
+    { id: "approve_temporary", icon: CalendarClock, label: "Approve temporarily", appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides", onClick: (r) => setPending({ row: r, decision: "approve_temporary" }) },
+    { id: "reopen", icon: RotateCcw, label: "Reopen", appliesTo: (r) => r.can_decide && r.status !== "waiting", onClick: (r) => setPending({ row: r, decision: "reopen" }) },
+    { id: "reset", icon: TimerReset, label: "Reset tracking", appliesTo: (r) => r.can_decide, unavailableTooltip: "Platform decides", onClick: (r) => setPending({ row: r, decision: "reset" }) },
+    { id: "history", icon: History, label: "History", onClick: (r) => setPending({ row: r, decision: "history" }) },
   ];
 
   return (
@@ -815,8 +790,17 @@ export function SpendApprovalsBoard({
       )}
       <div className="min-h-0 flex-1">
         <MatrxDataTable
+          look="mac"
           data={visible}
           columns={columns}
+          rowActionDefs={rowActionDefs}
+          rowActionsInline={2}
+          grouping={{
+            columnId: groupBy || null,
+            onColumnIdChange: (columnId) => setGroupBy(columnId ?? ""),
+            groupableColumnIds: ["subject_kind", "feature", "agent", "status", "organization", "started_by"],
+            rowNoun: "approval",
+          }}
           getRowId={(r) => r.id}
           isLoading={loading}
           tableId={subject ? `${spendApprovalsTableId(seat)}-subject` : spendApprovalsTableId(seat)}

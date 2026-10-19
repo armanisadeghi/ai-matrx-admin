@@ -4,7 +4,7 @@
  * The NAME of the table a held write is about — for the chip and the card.
  *
  * A chip that says "Held for your approval: 1 new record on b00bde4d…" names a
- * record nobody can recognise. Asked once per table through the store's own read
+ * record nobody can recognize. Asked once per table through the store's own read
  * door (`tableNameFor`), under the person's own rights; while it is unknown the
  * chip simply leaves the table out rather than showing an id.
  */

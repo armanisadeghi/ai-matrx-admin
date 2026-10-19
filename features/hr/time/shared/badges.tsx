@@ -7,10 +7,10 @@
  *
  * 1. 🚨 **LAW 3a — no cell prints a type name.** A category badge's label is
  *    `WorkIntervalRow.earningCodeName` (*Regular*, *PTO*, *Meal premium*), never `hoursCategory`.
- *    The category only picks the COLOUR.
+ *    The category only picks the COLOR.
  * 2. 🚨 **`isOvertime` carries distinct visual weight, not just a different word** (SPEC-TIME §5.2).
  *    A manager scanning forty rows finds overtime by shape, not by reading.
- * 3. 🚨 **Two state machines, labelled distinctly** (§14 D8). The row chip and the period chip use
+ * 3. 🚨 **Two state machines, labeled distinctly** (§14 D8). The row chip and the period chip use
  *    different words and different shapes on purpose, because `pay_period_employment.state` and
  *    `pay_period.state` are different machines that share three member names.
  */

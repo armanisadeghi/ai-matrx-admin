@@ -448,7 +448,7 @@ export async function listKindInstances(
   const listScope = await defaultListFilter("content_ir_kind_instance", { userId, requested: scope });
 
   // THE PERSON'S INSTANCES ACROSS EVERY ORGANIZATION — never the header's selected
-  // one. Two sources, merged and each row labelled with its organization:
+  // one. Two sources, merged and each row labeled with its organization:
   //   1. the OLD table, through the person-wide door `content_ir.kind_instances_everywhere`;
   //   2. the RECORD STORE, read per organization (each org that keeps its kind records there
   //      answers through its own kind-record Table, as this person) — HOW an instance lives

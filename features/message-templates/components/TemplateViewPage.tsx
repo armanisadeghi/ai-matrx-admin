@@ -715,7 +715,7 @@ export function TemplateViewPage({ template, canEdit, create = false }: Template
             ? [
                 // Save exists only when there is something to save; the
                 // "Saved" state is the status text beside the name.
-                // Discard is labelled and sits apart from Save (never an
+                // Discard is labeled and sits apart from Save (never an
                 // unlabelled undo arrow beside it).
                 ...(mode === "edit" && isDirty
                   ? [

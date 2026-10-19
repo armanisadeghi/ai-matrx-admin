@@ -59,9 +59,9 @@ export interface ItemTypeConfig {
   /** Lucide icon component. */
   icon: ComponentType<{ className?: string }>;
   /**
-   * The type's ONE identity (colour + icon) from `@ai-matrx/icons/domain`, when it
-   * is one of the platform's primitives or pieces. Its colour tints the card and
-   * the detail header; a type with none wears the neutral card. Never a local colour.
+   * The type's ONE identity (color + icon) from `@ai-matrx/icons/domain`, when it
+   * is one of the platform's primitives or pieces. Its color tints the card and
+   * the detail header; a type with none wears the neutral card. Never a local color.
    */
   identity?: Identity;
   /**
@@ -370,7 +370,7 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
     // default search params, agent config, metadata) rendered as a raw
     // `JSON.stringify` block on the record page — the try-everything guide's
     // step 21 finding, 2026-09-23. `refineResearchTemplateDetail` gives it the
-    // same curated, labelled field list the party dossier gets.
+    // same curated, labeled field list the party dossier gets.
     refineDetail: refineResearchTemplateDetail,
   },
   note: {
@@ -756,7 +756,7 @@ const REGISTRY: Record<KnownItemType, ItemTypeConfig> = {
   // 🚨 N6 (VERIFY-U-P1-R5) — THE TYPE'S LABEL IS THE HONEST GENERIC WORD.
   // `crm.party` holds 1,892 rows: 460 `person` and 1,432 `organization` (read
   // live 2026-09-18). The label was "Person", and a registration's label is per
-  // TYPE, not per row, so three records in four were labelled "Person" — twice
+  // TYPE, not per row, so three records in four were labeled "Person" — twice
   // on screen, above a field reading `organization`. A label resolved at type
   // time cannot know the kind, so it says what IS true of every row: this is a
   // contact record. "Contact" is the CRM's own existing generic ("Open contact
@@ -957,7 +957,7 @@ export function entityTokenForItemType(
  * (`<RecordDoor type="calendar_event" id={event.record_id}>`) and got an "Open"
  * control that opens a `calendar_event` with a foreign id. That is the V-21
  * `document → udt_document` defect in a new place: the protection a token-driven
- * reader has — `RecordDoor` renders NOTHING for a type it does not recognise — is
+ * reader has — `RecordDoor` renders NOTHING for a type it does not recognize — is
  * exactly what a hardcoded type throws away.
  *
  * This is the one resolution, derived from THE type map itself (`detailSource`'s

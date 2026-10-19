@@ -166,7 +166,7 @@ const config: Config = {
     "^webpack$":
       "<rootDir>/node_modules/next/dist/compiled/webpack/webpack-lib.js",
     // Our own published `@ai-matrx/*` packages ship an `exports` subpath
-    // map. Jest's default resolver does NOT honour `exports`, so a shipped
+    // map. Jest's default resolver does NOT honor `exports`, so a shipped
     // import like `@ai-matrx/api/stream` resolves to nothing and
     // the suite dies at import — 74 suites repo-wide the day the frontend
     // started consuming the published stream runtime. Map the subpaths to

@@ -20,7 +20,7 @@ Codex work orders for capturing the guide screenshots on Arman's real accounts. 
 - Save as PNG at the exact target path. Create the provider directory if missing.
 - Redact before saving: blur or block out all email addresses and all chat titles visible anywhere in the frame (sidebars included). Account names/initials may stay if generic; redact if they identify a real person's email.
 - Capture the relevant panel with enough surrounding context that a non-technical user recognizes where they are. Crop out unrelated browser chrome.
-- Do not request a real data export where a confirmation screen can be captured and cancelled — EXCEPT where the order explicitly requires completing the export (email screenshots).
+- Do not request a real data export where a confirmation screen can be captured and canceled — EXCEPT where the order explicitly requires completing the export (email screenshots).
 
 ## 1. ChatGPT
 

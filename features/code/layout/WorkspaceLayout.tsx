@@ -84,7 +84,7 @@ const PANEL_IDS = {
  *   - The body-group `useEffect` and the terminal `useEffect` skip their
  *     first run via `isMountedRef`. Server-rendered layout stays put on
  *     mount; the effects only fire on subsequent Redux state changes.
- *   - Toggle behaviour goes through a single `groupRef.setLayout()` call —
+ *   - Toggle behavior goes through a single `groupRef.setLayout()` call —
  *     never `panel.collapse()` for adjacent collapsibles (right + farRight
  *     are adjacent and the lib's pivot would push freed space into the
  *     other neighbour, re-expanding it).

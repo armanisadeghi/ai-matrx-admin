@@ -56,7 +56,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 // The fleet's money SHAPE detector (template `$${x}`, `"$" + x`, Intl currency
-// formatters and every `.format()` on them, labelled `.toFixed`, cents
+// formatters and every `.format()` on them, labeled `.toFixed`, cents
 // division) — reused so a helper named `fmt(n)` cannot hide a dollar sign.
 import { moneyShapeIn } from "./money-shape.mjs";
 

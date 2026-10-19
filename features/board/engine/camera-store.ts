@@ -226,7 +226,7 @@ export class BoardCameraStore {
 
   /**
    * Lock the camera to a page: zoom fixed so the column fits the view width (never above 100%),
-   * the column centred, and only vertical movement, clamped to the content. Every way the camera
+   * the column centered, and only vertical movement, clamped to the content. Every way the camera
    * moves (wheel, drag, keys, fit, fly-to) passes through `setCamera`, so all of them obey it.
    */
   setPageLock(lock: PageLock | null): void {
@@ -264,7 +264,7 @@ export class BoardCameraStore {
     const z = this.pageZoom(lock);
     const innerW = Math.max(1, this.size.w - left - right);
     const x = left + (innerW - lock.column.w * z) / 2 - lock.column.x * z;
-    // What was at the view's centre stays there (fit, fly-to and pinch keep their meaning).
+    // What was at the view's center stays there (fit, fly-to and pinch keep their meaning).
     const cy = this.size.h / 2;
     let y = cy - ((cy - next.y) / next.z) * z;
     const bounds = unionRects([...this.items.values()]);

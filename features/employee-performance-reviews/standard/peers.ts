@@ -3,7 +3,7 @@
 // PEER FEEDBACK display rules, pure so they can be proven: who may ask for it, what a peer is called on
 // screen, and which nominations still await the manager. The DOOR decides who can READ a peer's words
 // (manager and HR always, the employee only once shared, a peer only their own); this file only
-// decides how what the door sent is labelled.
+// decides how what the door sent is labeled.
 
 import type { PeerNomination, ResponseView, ReviewSummary } from "./types";
 

@@ -1,4 +1,4 @@
-/** What does a step of a planned system: the Architect's own words, normalised. */
+/** What does a step of a planned system: the Architect's own words, normalized. */
 export type StepDoer = "agent" | "ai-call" | "decision" | "code" | "human" | "unknown";
 
 export interface SystemPlanStep {

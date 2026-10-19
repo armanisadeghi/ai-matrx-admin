@@ -8,7 +8,7 @@ Since **2026-08-30 (@ai-matrx/diff 0.2.0)** the whole diff product —
 `AnimatedDiffReveal`/`useDiffReveal`, the structured entity viewer
 (`DiffViewerShell` + views + field adapters) and the diff palette — ships from
 `@ai-matrx/diff/react`. The originals in this directory were **deleted**, not
-shimmed. **Change diff behaviour IN THE PACKAGE**, release it, and adopt here
+shimmed. **Change diff behavior IN THE PACKAGE**, release it, and adopt here
 in the same session (THE SAME-SESSION LAW).
 
 What remains in this directory is host wiring only:

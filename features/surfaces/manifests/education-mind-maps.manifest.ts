@@ -68,7 +68,7 @@ const groups: SurfaceValueGroup[] = [
     label: "Generation request",
     sortOrder: 300,
     description:
-      "The create view: the live generate-a-mind-map request — where the material comes from and what angle to centre the map on.",
+      "The create view: the live generate-a-mind-map request — where the material comes from and what angle to center the map on.",
   },
   {
     key: "record",
@@ -140,7 +140,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "source_kind",
     label: "Source mode",
     description:
-      'Which source the create form is set to generate from: "deck" (a flashcard deck the learner owns — grounded, and generated nodes get linked back to the exact card they summarize) or "topic" (free text — ungrounded, labelled "inferred"). Absent outside the create view.',
+      'Which source the create form is set to generate from: "deck" (a flashcard deck the learner owns — grounded, and generated nodes get linked back to the exact card they summarize) or "topic" (free text — ungrounded, labeled "inferred"). Absent outside the create view.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 5,
@@ -162,7 +162,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "focus",
     label: "Focus",
     description:
-      'The optional angle to centre the map on (e.g. "the alliance system"), passed to the generator alongside the material. Applies in BOTH source modes. Absent when the field is blank and outside the create view.',
+      'The optional angle to center the map on (e.g. "the alliance system"), passed to the generator alongside the material. Applies in BOTH source modes. Absent when the field is blank and outside the create view.',
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 45,
@@ -515,7 +515,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "generation_focus",
     label: "Draft focus",
     description:
-      'Stages the optional angle to centre the mind map on into the create form (e.g. "the alliance system rather than the assassination", "how the stages feed back into each other"). Plain string, max 300 characters; REPLACES the whole field, so read `focus` first if you mean to extend it, and the empty string clears it back to no focus. Applies in both source modes and does not change which source is selected. The learner still presses "Generate mind map".',
+      'Stages the optional angle to center the mind map on into the create form (e.g. "the alliance system rather than the assassination", "how the stages feed back into each other"). Plain string, max 300 characters; REPLACES the whole field, so read `focus` first if you mean to extend it, and the empty string clears it back to no focus. Applies in both source modes and does not change which source is selected. The learner still presses "Generate mind map".',
     valueType: "string",
     updatesValue: "focus",
     mode: "draft",
@@ -544,7 +544,7 @@ Read \`view\` first; it decides which groups are populated.
 
 In "list" the learner is browsing their library: mind_maps is the whole set, recent-first, with no search or filter in between.
 
-In "create" they are composing a generation, and this is where you can help most. source_kind says whether the map will be built from a flashcard DECK (grounded — nodes get linked back to the exact card they summarize, and the result is cited) or from a free-text TOPIC (ungrounded, and honestly labelled "inferred"). \`topic\` and \`focus\` are the authored fields: turn "map the causes of WWI, but centre it on the alliance system" into topic + focus and stage them with generation_source and generation_focus. If you set deck_id it must be an id from available_decks — never invent one. Filling the form generates nothing; the learner presses "Generate mind map" themselves, because that spends a real agent run against their metered quota.
+In "create" they are composing a generation, and this is where you can help most. source_kind says whether the map will be built from a flashcard DECK (grounded — nodes get linked back to the exact card they summarize, and the result is cited) or from a free-text TOPIC (ungrounded, and honestly labeled "inferred"). \`topic\` and \`focus\` are the authored fields: turn "map the causes of WWI, but center it on the alliance system" into topic + focus and stage them with generation_source and generation_focus. If you set deck_id it must be an id from available_decks — never invent one. Filling the form generates nothing; the learner presses "Generate mind map" themselves, because that spends a real agent run against their metered quota.
 
 In "list" you can use create_mind_maps, update_mind_maps, and delete_mind_maps for approved saved-map changes. In "detail" one stored map is open. Someone with edit access can change its title, concepts, and connections; source and trust evidence remain visible as history from the generation, and an edit must not claim that generated verification still describes untouched content.
 

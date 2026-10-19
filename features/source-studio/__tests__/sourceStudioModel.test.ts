@@ -35,7 +35,7 @@ describe("sourceStudioPath — redirects keep their params", () => {
       `/knowledge/sources/${ID}?page=4`,
     );
   });
-  it("drops params it does not honour and empty values", () => {
+  it("drops params it does not honor and empty values", () => {
     expect(sourceStudioPath(ID, { page: "", other: "1" })).toBe(
       `/knowledge/sources/${ID}`,
     );

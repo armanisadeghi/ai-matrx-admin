@@ -4,7 +4,7 @@
  * The Applet record's parts, edited as the record (CONTRACTS §8):
  *   pages    [{ path, title, file }]
  *   mandates [{ alias, key }]          — jobs, picked from the Applet catalogue's job list
- *   sources  [{ alias, table_id, organization_id } | { alias, entity }] — from the catalogue
+ *   sources  [{ alias, table_id, organization_id } | { alias, entity }] — from the catalog
  *
  * Each editor keeps a local draft and saves the whole column through
  * `saveAppletRecord` (version-guarded; the snapshot trigger records a version).
@@ -101,7 +101,7 @@ function SaveBar({
   );
 }
 
-/** The catalogue of what this Applet's organization can run and read. */
+/** The catalog of what this Applet's organization can run and read. */
 function useAppletCatalogue(organizationId: string | null) {
   const [catalogue, setCatalogue] = useState<AppletCatalogue | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,8 +119,8 @@ function useAppletCatalogue(organizationId: string | null) {
 }
 
 /**
- * A job's name in words for the keys the catalogue does not label (another organization's job, or a
- * catalogue row with no label): the server's own description of the job, never the dotted key.
+ * A job's name in words for the keys the catalog does not label (another organization's job, or a
+ * catalog row with no label): the server's own description of the job, never the dotted key.
  * `undefined` = still asking; the select waits on a skeleton.
  */
 function useJobLabels(keys: readonly string[], catalogue: AppletCatalogue | null): Record<string, string | undefined> {

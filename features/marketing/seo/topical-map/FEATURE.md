@@ -85,7 +85,7 @@ mean something else.
 
 **What a view uses.** `pageTopicState(view)` in `redux/selectors.ts` answers where ONE page
 stands — `in_place` · `leaving` · `arriving` · `on_no_topic` · `intent_topic_hidden`. The first
-three are the `intent_colors` knob's own keys (§5); the last two have no colour entry and take
+three are the `intent_colors` knob's own keys (§5); the last two have no color entry and take
 §5's `missing` gray-dashed treatment. `selectPagesOnNoTopic(mapId)` is the client-side twin of
 `pages_on_no_topic` over the pages this workspace has listed — the slice stores an EMPTY
 coverage array rather than skipping it, so "covers nothing" can never be confused with "never

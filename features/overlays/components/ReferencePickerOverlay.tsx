@@ -57,7 +57,7 @@ export const REFERENCE_PICKER_TEXT: Readonly<Record<ReferenceDelivery, { title: 
 
 /**
  * A FIXED size, never one that follows the content (G6B review, 2026-10-02):
- * the dialog is centred, so a body that grew when the Task list finished
+ * the dialog is centered, so a body that grew when the Task list finished
  * loading re-centred it under the pointer — a click meant for "Change…" landed
  * on a list row and inserted a link. Every step scrolls inside this box; the
  * mobile sheet holds its height the same way. Guard:

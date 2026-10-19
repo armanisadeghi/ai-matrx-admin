@@ -56,7 +56,7 @@ async function flush() {
   });
 }
 
-describe("draft recovery hydration boundary (behaviour)", () => {
+describe("draft recovery hydration boundary (behavior)", () => {
   beforeEach(() => {
     draftsVersion = -1;
     fetchStatus = "full";

@@ -775,7 +775,7 @@ function CreateCategoryRow({
   const [isSystem, setIsSystem] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Auto-derive key from label until the user customises it.
+  // Auto-derive key from label until the user customizes it.
   const keyTouchedRef = useRef(false);
   useEffect(() => {
     if (keyTouchedRef.current) return;

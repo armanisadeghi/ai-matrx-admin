@@ -325,7 +325,7 @@ export interface UseSaveAsOpenOptions {
 }
 
 export interface UseSaveAsResult {
-  /** Resolves with the destination, or `null` if cancelled. */
+  /** Resolves with the destination, or `null` if canceled. */
   open: (options?: UseSaveAsOpenOptions) => Promise<SaveAsDestination | null>;
   element: React.ReactNode;
   isOpen: boolean;

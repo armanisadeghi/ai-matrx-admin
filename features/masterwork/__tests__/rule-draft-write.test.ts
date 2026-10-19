@@ -220,7 +220,7 @@ describe("rule_draft → the Rulebook", () => {
     fakeStore(rulebook);
 
     const withoutMode = {
-      name: "The tell that a behaviour is the child's work",
+      name: "The tell that a behavior is the child's work",
       statement: "Look at who chose the activity before judging the outcome.",
       severity: "critical",
     };

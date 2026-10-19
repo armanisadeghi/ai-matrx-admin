@@ -6,7 +6,7 @@
  * and grout restoration contractor, …"; after the interview's first turn the
  * interviewer's `update_meta` replaced it with "How this shop decides,
  * on-site, …" and the Rulebook page printed the rewrite as hers. (The server
- * behaviour belongs to another lane; this pins the SCREEN.)
+ * behavior belongs to another lane; this pins the SCREEN.)
  *
  *   1. her wording is recorded at creation (`metadata.expert_description`);
  *   2. a live description that differs from it is reported as a suggestion,

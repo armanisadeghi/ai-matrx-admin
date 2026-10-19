@@ -50,7 +50,7 @@ export function isLoadTimeoutError(error: unknown): boolean {
 
 /**
  * Settle with `work`, or reject with a named `TimeoutError` after `ms`.
- * The underlying request is not cancelled (not every loader takes a signal);
+ * The underlying request is not canceled (not every loader takes a signal);
  * a late answer is ignored by the caller's {@link useLoadSequence} guard.
  */
 export function withLoadDeadline<T>(

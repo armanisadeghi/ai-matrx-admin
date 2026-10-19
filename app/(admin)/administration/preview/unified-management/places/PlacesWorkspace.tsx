@@ -64,7 +64,7 @@ export function PlacesWorkspace() {
           data, built from real house components so the structure can be judged,
           not the polish. Controls with a dashed outline are inert on purpose;
           the scope switcher, auto-run toggles, exclusion valve and both dialogs
-          are live so the behaviour reads.
+          are live so the behavior reads.
         </PreviewBanner>
 
         {/* --- place header ------------------------------------------- */}

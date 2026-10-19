@@ -243,7 +243,7 @@ export function GmailReviewCard({ ask, organizationId, preflight, plan }: GmailR
      * This card used to split on every comma, so `"Doe, John" <john@x.com>` —
      * the form every mail client prints — became two pieces that the send
      * authority could not read, and it fails CLOSED: the message was refused in
-     * words that blamed the person's own address. `splitMailboxField` honours
+     * words that blamed the person's own address. `splitMailboxField` honors
      * quotes and angle brackets, and each piece keeps the form it was written in
      * (the gate and the server both parse it).
      */

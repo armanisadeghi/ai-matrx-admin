@@ -382,7 +382,7 @@ export function UnifiedTableBody({
     </>
   );
 
-  // The table page's own skeleton at its final geometry — never a line of text that a grey box
+  // The table page's own skeleton at its final geometry — never a line of text that a gray box
   // and then the page replace (lane STABLE-TABLES, Arman 2026-10-06).
   if (object.state === "resolving" || (object.state === "not-given" && pendingInvitation === undefined)) {
     return <>{loadingFrame}</>;

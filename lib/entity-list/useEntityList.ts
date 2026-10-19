@@ -4,7 +4,7 @@
 //
 // The query half of a canonical entity-list surface. Owns the server round
 // trip; owns nothing about presentation (that's useListViewPrefs). Lifted from
-// features/agents/browse/useAgentBrowse with behaviour unchanged.
+// features/agents/browse/useAgentBrowse with behavior unchanged.
 //
 // Every fetch is generation-guarded: a slow response for an abandoned query can
 // never overwrite a newer one. That class of bug is invisible until a user
@@ -140,8 +140,8 @@ export interface UseEntityListArgs<TRow> {
    * and the surface reads the lifted bag back — so a bucket control shows
    * "All", never a selected bucket the results ignore. A filter the person
    * set themselves (a chip click, a panel choice, a pasted link carrying one)
-   * is honoured exactly, search or no search: only the UNTOUCHED default is
-   * lifted, and it is recognised by identity (`query.filters` is still the
+   * is honored exactly, search or no search: only the UNTOUCHED default is
+   * lifted, and it is recognized by identity (`query.filters` is still the
    * very object `defaultFilters` handed in), never by value — an explicit
    * choice that happens to equal the default is still a choice.
    *

@@ -137,7 +137,7 @@ class Seat:
         SECRETS.append(self.jwt)
 
     def rpc(self, fn: str, args: dict, schema: str = "custom", retry: int = 0) -> tuple[int, object, str]:
-        """`retry` is for fixture writes only: a statement cancelled by the 8 s limit on a busy shared clone is
+        """`retry` is for fixture writes only: a statement canceled by the 8 s limit on a busy shared clone is
         retried (and each attempt logged); a door under test is never retried — its first answer is graded."""
         for attempt in range(retry + 1):
             out = http("POST", f"{DB_URL}/rest/v1/rpc/{fn}", args,

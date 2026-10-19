@@ -52,7 +52,7 @@ const RETIRED_STORAGE_HOST_REF = "txzxabzwovsujtloxrus";
  * Applet tab icon.
  *
  * Computed inline as a `data:` URI — there is no hosted favicon file and no
- * server round-trip. `faviconUrl` is only honoured for legacy rows that were
+ * server round-trip. `faviconUrl` is only honored for legacy rows that were
  * populated before the badge became render-time-generated (2026-07-26); new
  * apps never write it.
  */
@@ -62,7 +62,7 @@ export function getAppletIconsMetadata(
   _variant: AppletIconsVariant = "default",
 ): Metadata["icons"] {
   // A stored URL on the RETIRED database host points at a file that no longer exists (20 legacy
-  // published Applets carried one — feedback c59b2e74): it is never honoured, the badge is drawn.
+  // published Applets carried one — feedback c59b2e74): it is never honored, the badge is drawn.
   if (faviconUrl && !faviconUrl.includes(RETIRED_STORAGE_HOST_REF)) {
     return {
       icon: [{ url: faviconUrl, type: "image/svg+xml" }],

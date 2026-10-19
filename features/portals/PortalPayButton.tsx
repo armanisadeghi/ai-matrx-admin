@@ -2,7 +2,7 @@
 
 // PAYMENTS-CONNECT portal Pay: one press opens Stripe Checkout on the organization's own account.
 // Pending while the server opens the session (no double submit), a refusal is said in place
-// (REVIEW-PAYMENTS I2/I6), and after a cancelled checkout the same button reads "Pay again" (I7).
+// (REVIEW-PAYMENTS I2/I6), and after a canceled checkout the same button reads "Pay again" (I7).
 
 import { useActionState } from "react";
 import { Button } from "@ai-matrx/design-system/controls";

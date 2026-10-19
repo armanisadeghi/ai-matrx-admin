@@ -535,7 +535,7 @@ curl -X POST http://127.0.0.1:$PORT/tools/invoke \
 2. Send 3 scrape requests simultaneously with different IDs
 3. Verify all 3 responses come back (in any order) with correct IDs
 4. Send a `{"action": "cancel_all"}` during a Research call
-5. Verify the Research is cancelled
+5. Verify the Research is canceled
 
 ### Edge Cases to Test
 

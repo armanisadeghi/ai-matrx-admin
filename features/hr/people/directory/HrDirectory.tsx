@@ -12,7 +12,7 @@
 //  2. EMPTY ≠ FILTERED-EMPTY ≠ REFUSED. A real org with zero people gets the
 //     first-hire door. A filter that matched nothing states the filters IN WORDS
 //     and offers Clear. A refusal renders as a refusal. Three different facts,
-//     three different screens — never one grey "No results".
+//     three different screens — never one gray "No results".
 //  3. TABLE ⇄ CARDS IS A PER-USER PREFERENCE, and the platform default is CARDS
 //     (Arman's Q2 ruling: a spreadsheet of eleven people is a worse answer than
 //     eleven faces). It is `useListViewPrefs`, not a config key, not localStorage.

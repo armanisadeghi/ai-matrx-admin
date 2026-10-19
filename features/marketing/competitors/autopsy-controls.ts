@@ -180,7 +180,7 @@ export const AUTOPSY_MAX_DOMAIN_ENTRIES = 25;
  * for?" in one card and "Local keyword" in the other has to work out whether
  * they mean the same field. They do.
  *
- * Free text on purpose: the provider's location catalogue resolves the place,
+ * Free text on purpose: the provider's location catalog resolves the place,
  * and an ambiguous name comes back as a real message naming the candidates —
  * which the caller must SHOW, never swallow.
  */
@@ -287,7 +287,7 @@ export function parseAutopsyRunPlan(value: unknown): AutopsyRunPlanPatch {
   const unknownKeys = Object.keys(input).filter((key) => !known.has(key));
   if (unknownKeys.length > 0) {
     throw new Error(
-      `autopsy_run_plan does not accept ${unknownKeys.map((k) => `"${k}"`).join(", ")}. Only ${[...known].map((k) => `"${k}"`).join(", ")} may be set. The site being analysed, the cached-evidence toggle, and RUNNING the autopsy are not agent-writable.`,
+      `autopsy_run_plan does not accept ${unknownKeys.map((k) => `"${k}"`).join(", ")}. Only ${[...known].map((k) => `"${k}"`).join(", ")} may be set. The site being analyzed, the cached-evidence toggle, and RUNNING the autopsy are not agent-writable.`,
     );
   }
   if (unknownKeys.length === 0 && Object.keys(input).length === 0) {

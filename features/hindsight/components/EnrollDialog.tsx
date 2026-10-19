@@ -66,7 +66,7 @@ const WINDOW_MODE_OPTIONS: Array<{
   {
     value: "last_n_runs",
     label: "The most recent runs, every time",
-    hint: "Always looks at fresh behaviour, even if that means re-reading a run.",
+    hint: "Always looks at fresh behavior, even if that means re-reading a run.",
   },
 ];
 
@@ -189,7 +189,7 @@ export function EnrollDialog({
       // learning loop enrolled on an archived agent would watch a thing nobody
       // runs. Archived agents are excluded rather than revealed, the same
       // ruling F7 made for Mandate workflow-Holder and RAG grounding
-      // candidates. The browsable roster is the canonical agent catalogue,
+      // candidates. The browsable roster is the canonical agent catalog,
       // which carries the control.
       let q = supabase
         .schema("agent")

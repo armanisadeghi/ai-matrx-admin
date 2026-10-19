@@ -149,7 +149,7 @@ Return contract:
 Contract:
 - Idempotent. Engine may call it multiple times with the same `body` — no side effects other than the network write.
 - Errors caught + logged; next change triggers a fresh write. No retry storm.
-- Cancelled via `AbortSignal` if the slice changes again within the debounce window or identity swaps.
+- Canceled via `AbortSignal` if the slice changes again within the debounce window or identity swaps.
 
 ### 5.4 Dexie layer
 

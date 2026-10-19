@@ -5,7 +5,7 @@
  * window, a fork of "Agent Structure Builder"): the agent streams its answer
  * as one `directive_v1_action_create_agent_definition` document. The splitter
  * types it as a `matrx` block from its first bytes, but `DirectiveRender`
- * could only honour a COMPLETE shell, so for the whole stream the person
+ * could only honor a COMPLETE shell, so for the whole stream the person
  * watched the JSON grow in a `<pre>` and snap into the card at the last byte.
  *
  * The fix lives in `@ai-matrx/content-ir/react` 0.11.11 (THE PROVISIONAL

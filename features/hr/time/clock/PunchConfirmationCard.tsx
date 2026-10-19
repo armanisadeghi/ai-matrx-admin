@@ -90,7 +90,7 @@ export function PunchConfirmationCard({
             {exceptionsRaised.map((exception) => (
               /*
                 🚨 `hr.punch_record` returns `{id, kind}` and NO message (G2 N2's quiet half), so the
-                row is labelled from `kind` through the shared lexicon. Reading `.message` printed a
+                row is labeled from `kind` through the shared lexicon. Reading `.message` printed a
                 blank line; printing the raw token would be F7's defect.
 
                 We deliberately do NOT link to route 31 from here: that route is another lane's, and

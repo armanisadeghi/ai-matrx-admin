@@ -51,7 +51,7 @@ function gateRefusal(key: string, table: string) {
   };
 }
 
-describe("the metadata gate's refusal is recognised on every table", () => {
+describe("the metadata gate's refusal is recognized on every table", () => {
   it.each([
     ["source_set", "education.fc_set"],
     ["zz_probe", "workbench.notes"],

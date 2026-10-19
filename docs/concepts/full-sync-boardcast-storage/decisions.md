@@ -47,7 +47,7 @@ Related docs:
 - **A13** — Block rendering only for `boot-critical` hydration. `warm-cache` and `live-data` hydrate async and stream in.
 - **A14** — The engine is unit-testable without a DOM: all side-effect sinks (channel, localStorage, IDB) are injected.
 - **A15** — Persisted presets (`boot-critical`, `warm-cache`, `live-data`) support an optional declarative `partialize` field — a positive allow-list of top-level slice keys to persist. Unlisted keys stay in memory. This is not an escape hatch — it is the explicit mechanism for excluding transient UI fields (`isLoading`, errors, AbortControllers) from persistence while keeping one coherent slice. When secrets or auth concerns differ semantically from the rest of the data, a slice split is still required (see D1).
-- **A16** — `boot-critical` policies may declare `prePaint` as either a single `PrePaintDescriptor` or an array of them. Each descriptor supports an optional `systemFallback` ({ mediaQuery, applyWhenMatches }) that fires only when storage is empty or malformed — this is how we honour the user's OS dark/light preference on first visit without hand-written scripts. Exact shape defined in `phase-1-plan.md` §5.4.
+- **A16** — `boot-critical` policies may declare `prePaint` as either a single `PrePaintDescriptor` or an array of them. Each descriptor supports an optional `systemFallback` ({ mediaQuery, applyWhenMatches }) that fires only when storage is empty or malformed — this is how we honor the user's OS dark/light preference on first visit without hand-written scripts. Exact shape defined in `phase-1-plan.md` §5.4.
 
 ## 4. Presets (locked names and semantics)
 

@@ -406,7 +406,7 @@ async function verifyItemsOwnership(
  * Field names never reach SQL as text — `cms_item_matches_filter` takes the key
  * as a parameter and looks it up with `->>`, so there is no interpolation to
  * escape. The length/charset rule exists to keep filters legible, not as the
- * injection defence.
+ * injection defense.
  */
 const FILTER_FIELD_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const MAX_FILTER_COLUMNS = 12;

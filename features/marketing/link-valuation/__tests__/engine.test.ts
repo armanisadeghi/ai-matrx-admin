@@ -3,7 +3,7 @@
  *
  * Appendix B of the source PRD is the only end-to-end worked example the
  * original spreadsheet left behind. If these numbers ever move, the engine has
- * silently stopped agreeing with fifteen years of the owner's judgement — which
+ * silently stopped agreeing with fifteen years of the owner's judgment — which
  * is the one failure nobody would otherwise notice.
  */
 

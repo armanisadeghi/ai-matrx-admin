@@ -170,10 +170,10 @@ organizations" (`mineScope`), because the door counts the person's rows in every
   F1 and F3–F9: the knob rule and the no-other-knob-reader guard, records noun / sums / pager / cells,
   the finding's true count, the header's own Measure, a crumb's name asked of the door, the chips.
 - Walk: `scripts/drill-live-fixes-walk.mjs` (live preview, read-only, 1280 / 390, light / dark).
-- `__tests__/drill-wire.test.ts` — a relation's record kind, a choice's colour, a moment Measure, and
+- `__tests__/drill-wire.test.ts` — a relation's record kind, a choice's color, a moment Measure, and
   the admin user menu on administration pages only (5; red 5/5 on HEAD copies).
 - Walk: `scripts/drill-wire-walk.mjs` (shared preview, read-only: search an email, the person row's ⋯
-  and right-click admin menu never pressed, origin colours, Tool calls / finish reason, 390 px dark).
+  and right-click admin menu never pressed, origin colors, Tool calls / finish reason, 390 px dark).
 
 ## Change log
 
@@ -203,7 +203,7 @@ organizations" (`mineScope`), because the door counts the person's rows in every
   controls wrap instead of clipping; the note row is chips (interface text is layout).
 - `2026-09-30` — Lane DRILL-WIRE: adopted design-system 0.49.54 / records 0.58.120 — the answer
   searches its groups; a person row on an administration page carries the admin user menu (row ⋯ and
-  right-click); choices keep their chart colours (origin); a time Measure is a moment; the explorer and
+  right-click); choices keep their chart colors (origin); a time Measure is a moment; the explorer and
   its siblings share one Dimension/Measure mapping.
 - `2026-10-01` — Lane DRILL-D1: one name book for every surface (Findings rows on
   ai_usage_executions read "Reading the name…" forever — their ids never reached the names door);

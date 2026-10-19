@@ -17,7 +17,7 @@ export type Verdict = "ok" | "offender" | "opaque";
  * Every `knob_resolve(` call in `body`, with its arguments split at top level.
  * Paren-, quote- and dollar-quote-aware, so a nested call or a string containing a
  * comma never splits an argument. Named arguments (`p_scopes: …`, `p_scopes =>` …)
- * are recognised wherever they appear.
+ * are recognized wherever they appear.
  */
 export function knobResolveCalls(body: string): { args: string[]; at: number }[] {
   const out: { args: string[]; at: number }[] = [];

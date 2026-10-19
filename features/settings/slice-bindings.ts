@@ -106,7 +106,7 @@ export const sliceBindings: Record<string, SliceBinding> = {
     // Saved in this browser (localStorage `matrx:theme`, every tab follows),
     // never to the account — see `themePolicy`.
     persistence: "local-only",
-    // A new browser follows the device (the boot script honours
+    // A new browser follows the device (the boot script honors
     // prefers-color-scheme), so the default is "system".
     defaultValue: (key) => (key === "mode" ? "system" : undefined),
   },

@@ -8,7 +8,7 @@
 //   2. WHETHER the address in the To field is a contact point we hold. That
 //      single fact decides whether `crm.check_send_eligibility` is consulted at
 //      all, so a false match means a suppressed recipient is treated as an
-//      unknown address and the person is told they are on their own judgement
+//      unknown address and the person is told they are on their own judgment
 //      when in fact the gate would have refused.
 //
 // Both are pure functions over the record's OWN contact points, so they are

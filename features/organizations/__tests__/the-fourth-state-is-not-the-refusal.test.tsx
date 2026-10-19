@@ -39,7 +39,7 @@
  * The ruling makes the refusal a QUESTION: `required` stays LIVE, the press
  * opens the ONE picker (`ensureOrganizationContext`), and the act it was
  * wrapping runs with the organization the PERSON sets — never with a guess and
- * never with nothing. Cancelling is an answer meaning "not now", so it is
+ * never with nothing. Canceling is an answer meaning "not now", so it is
  * swallowed: no toast, no error, nothing moved. The case below asserts all
  * three, and keeps the half that never changed: the act never runs on a value
  * nobody chose, and the `unavailable` press is still the READ, never the act.
@@ -137,7 +137,7 @@ async function boot(): Promise<Record<string, unknown>> {
     signal: controller.signal,
     reason: "cold-boot",
   } as never);
-  // The engine honours `deserialize` on the fetch body before rehydrating.
+  // The engine honors `deserialize` on the fetch body before rehydrating.
   const state = appContextPolicy.config.deserialize!(result as never);
   return appContextReducer(undefined, {
     type: REHYDRATE_ACTION_TYPE,

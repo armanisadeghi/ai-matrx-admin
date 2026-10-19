@@ -55,7 +55,7 @@ function toParts(value: unknown): Record<string, string> {
   return out;
 }
 
-/** The lines a person recognises, in the order an envelope is written. */
+/** The lines a person recognizes, in the order an envelope is written. */
 export function addressLines(value: unknown): string[] {
   const parts = toParts(value);
   return [

@@ -4,9 +4,9 @@
  * SUT: `BoardItemType.accent` / `.status` across `BOARD_ITEM_TYPES`, the
  * accent tokens in `components/board-accents.css`, and `OverviewCard` /
  * `StatusChip` (`components/TileFace.tsx`).
- * Breaks it catches: a type added with no colour (its far-zoom card falls back
- * to grey — the compiler requires the field, this pins it to a real token);
- * an accent with no light or no dark value (the card goes colourless in one
+ * Breaks it catches: a type added with no color (its far-zoom card falls back
+ * to gray — the compiler requires the field, this pins it to a real token);
+ * an accent with no light or no dark value (the card goes colorless in one
  * theme); a type that neither reports its status nor says why it has none; a
  * card that drops the type name, icon or title.
  */
@@ -42,7 +42,7 @@ const block = (selector: string) => {
   return m ? m[2] : "";
 };
 
-it.each(BOARD_ITEM_TYPES.map((t) => [t.key, t]))("%s has a board colour", (_key, type) => {
+it.each(BOARD_ITEM_TYPES.map((t) => [t.key, t]))("%s has a board color", (_key, type) => {
   expect(BOARD_ACCENTS).toContain(type.accent);
 });
 

@@ -2,7 +2,7 @@
 
 // features/meet/components/invite/MeetingInviteButton.tsx
 //
-// The "Invite" control. Two looks, one behaviour:
+// The "Invite" control. Two looks, one behavior:
 //   stage — the meeting header / pre-join corner: light glass on the dark
 //           meeting stage (--mx-meet-stage-*), the same treatment as the AI
 //           jobs indicator beside it.

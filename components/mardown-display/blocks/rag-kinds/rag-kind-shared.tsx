@@ -15,12 +15,12 @@
  *  - the citation chip is `components/official/citation-chip/CitationChip.tsx`
  *    — shape-agnostic by design, consumed verbatim for the inline `source_ref`.
  *  - opening a cited source is `features/rag/components/source-inspector/
- *    useOpenCitation.ts` (the canonical open-at-the-exact-page behaviour) over
+ *    useOpenCitation.ts` (the canonical open-at-the-exact-page behavior) over
  *    `citationHrefFor` from `features/rag/api/search.ts`.
  *  - favicon / domain chrome is the search family's `search-kind-shared.tsx`,
  *    which is itself the convergence of the canonical `parseSearch.ts`.
  *  - score tiers and per-kind glyphs are `hit-card/scoreTier.ts` +
- *    `hit-card/kindGlyph.ts`; source-name normalisation is
+ *    `hit-card/kindGlyph.ts`; source-name normalization is
  *    `hit-card/adapters.ts::normalizeSourceName`.
  *
  * What genuinely did not exist before, and is therefore here: the IN-FORCE

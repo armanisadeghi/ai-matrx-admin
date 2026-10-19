@@ -18,7 +18,7 @@ export interface ConversationBattleFork {
 export interface ConversationBattleState {
   source: ConversationBattleSource | null;
   forks: ConversationBattleFork[];
-  /** Number the next fork is labelled with ("Fork 3"). */
+  /** Number the next fork is labeled with ("Fork 3"). */
   nextForkNumber: number;
   activeSetId: string | null;
   activeSetName: string | null;

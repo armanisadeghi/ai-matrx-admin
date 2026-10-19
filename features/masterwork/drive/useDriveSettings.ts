@@ -8,7 +8,7 @@ import { storedMandateKey, type AnyMandateKey } from "@ai-matrx/agents/mandates"
 // registered by aidream migration `0711_masterwork_interview_modes_are_knobs.sql`).
 //
 // 🚨 NO CODE FALLBACK — same contract as `record/useInterviewSettings.ts`, for
-// the same reason (law 6: every behavioural choice is settings data with a
+// the same reason (law 6: every behavioral choice is settings data with a
 // default that lives in `platform.feature_knob`, never in a constant here).
 // Three states, all of them honest: loading waits, failed SAYS so with the
 // reason, ready carries the resolved values.
@@ -38,7 +38,7 @@ export interface DriveSettingsValues {
   interviewerMandateKey: AnyMandateKey;
   /** How long a paused drive stays the SAME interview. */
   resumeWindowMinutes: number;
-  /** Whether "pause" / "carry on" / "I'm done" are honoured as commands. */
+  /** Whether "pause" / "carry on" / "I'm done" are honored as commands. */
   voiceCommands: boolean;
   /** Whether the page reconnects itself after signal loss. */
   autoReconnect: boolean;

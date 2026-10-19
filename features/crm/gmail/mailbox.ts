@@ -60,7 +60,7 @@ function hasRealDomain(address: string): boolean {
 }
 
 /**
- * Split an address field into its mailboxes, honouring quotes and angle
+ * Split an address field into its mailboxes, honoring quotes and angle
  * brackets: a comma inside `"Doe, John"` is part of the name, not a separator.
  */
 export function splitMailboxField(raw: string): string[] {
@@ -190,7 +190,7 @@ export function addressOfMailbox(raw: string): string | null {
  *
  * A display name that itself contains a comma — `"Doe, John" <john@x.com>` —
  * is still ONE mailbox and is still accepted; `splitMailboxField` already
- * honours the quotes.
+ * honors the quotes.
  */
 export function parseToField(raw: string): MailboxFieldParse {
   const parsed = parseMailboxField(raw);

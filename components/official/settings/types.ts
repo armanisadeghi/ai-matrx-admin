@@ -45,7 +45,7 @@ export type SettingsCommonProps = {
   helpText?: ReactNode;
   /**
    * Puts the setting back to its default. When given AND `modified` is true,
-   * the row shows one reset button (labelled with `resetLabel`) beside the
+   * the row shows one reset button (labeled with `resetLabel`) beside the
    * control; an unmodified row shows none, so the button never does nothing.
    */
   onReset?: () => void;

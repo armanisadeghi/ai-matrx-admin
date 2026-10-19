@@ -189,7 +189,7 @@ export function useReputationAnalysis(input: {
               signal: controller.signal,
             }),
       );
-      // Cancelled by teardown or a newer run — settle silently. The run keeps
+      // Canceled by teardown or a newer run — settle silently. The run keeps
       // executing server-side and the stored run id keeps rejoin possible.
       if (controller.signal.aborted) return;
       if (response.error) {

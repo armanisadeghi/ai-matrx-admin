@@ -353,7 +353,7 @@ export default function AiModelsContainer() {
         )}
         {/* Tab bar + audit button */}
         <div className="flex items-center shrink-0 bg-card">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 pr-2">
             <AiModelTabBar
               tabs={tabStates}
               activeTabId={activeTabId}
@@ -364,7 +364,7 @@ export default function AiModelsContainer() {
               onAddTab={() => openTab()}
             />
           </div>
-          <div className="shrink-0 px-2 border-l flex items-center gap-1">
+          <div className="shrink-0 pl-3 pr-2 border-l flex items-center gap-2">
             {/* Always rendered, counts included, so nothing pops in after load. The count slot is two digits wide at 0. */}
             <SegmentedControl<TierView>
               aria-label="Tier views"

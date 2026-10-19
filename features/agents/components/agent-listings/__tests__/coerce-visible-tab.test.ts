@@ -6,7 +6,7 @@
  * agents the list was showing. The active tab lives in the consumer's
  * REMEMBERED redux state and `initialTab` is applied once per mount, so a
  * person sitting on "Mine" who then moved a control that narrows the picker got
- * the forbidden catalogue with the tab bar removed: the wrong list, and no
+ * the forbidden catalog with the tab bar removed: the wrong list, and no
  * control that explained why. Hiding the door is not locking it.
  *
  * `coerceVisibleTab` is that rule alone, and the package's `useAgentListCore` runs it on

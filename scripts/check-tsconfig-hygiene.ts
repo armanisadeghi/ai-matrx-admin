@@ -171,7 +171,7 @@ if (existsSync(eslintPath)) {
   if (!/ignores:\s*\[\s*['"]\.next\*\/\*\*['"]/.test(src)) {
     problems.push(
       `eslint.config.mjs: missing the global \`{ ignores: ['.next*/**'] }\` entry. ` +
-        `Flat config does NOT honour .gitignore, so ESLint will walk generated build ` +
+        `Flat config does NOT honor .gitignore, so ESLint will walk generated build ` +
         `output and choke on half-written files.`,
     );
   }

@@ -309,7 +309,7 @@ function RuleSnapshotBody({ request }: { request: RuleSnapshotRequest }) {
 /**
  * 🚨 WHICH LAW PRODUCED THE FIGURE — names and thresholds, not bare uuids (§0 law 2).
  *
- * `calc_ref.rules` now serves each rule version's name, jurisdiction, status and NORMALISED
+ * `calc_ref.rules` now serves each rule version's name, jurisdiction, status and NORMALIZED
  * thresholds, so a reader can see *"California daily overtime · US-CA · after 8 hours"* instead of
  * `800b1208-1b69-…`. The id stays on screen because it is the evidence a dispute is argued from.
  *
@@ -322,7 +322,7 @@ function RuleSnapshotBody({ request }: { request: RuleSnapshotRequest }) {
  * name for a rule nobody resolved would be worse than showing the id it was stamped with.
  */
 /*
- * ⚠️ CAMELCASE KEYS ON PURPOSE. The server normalises these as `daily_ot_at` / `weekly_ot_at` /
+ * ⚠️ CAMELCASE KEYS ON PURPOSE. The server normalizes these as `daily_ot_at` / `weekly_ot_at` /
  * `dt_at`, and the RPC door camelizes every response key on the way in — so by the time a threshold
  * reaches this map it is `dailyOtAt`. Writing the snake spelling here silently misses every label
  * and prints the raw key at a reader (seen live before this comment existed).

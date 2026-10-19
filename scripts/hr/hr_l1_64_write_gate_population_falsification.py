@@ -3,7 +3,7 @@
 
 Run:  cd /Users/armanisadeghi/code/aidream && uv run --with asyncpg --with httpx \
         python /Users/armanisadeghi/code/matrx-frontend/scripts/hr/hr_l1_64_write_gate_population_falsification.py
-      (`--baseline` records the PRE-fix behaviour; directions (1) and (3) FAIL there, which is
+      (`--baseline` records the PRE-fix behavior; directions (1) and (3) FAIL there, which is
        the defect. Direction (2) — the must-not-break — passes in BOTH runs or the fix is wrong.)
 
 hr_l1_61 resolved the subject's nearest employment spell in `hr._l1_viewer` ONLY. Every write door

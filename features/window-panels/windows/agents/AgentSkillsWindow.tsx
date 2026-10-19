@@ -6,7 +6,7 @@
  * Non-blocking floating window hosting `SkillConfigPicker` for one agent's
  * `skill_config`. Replaces the old blocking `AgentSkillsModal` dialog — the
  * user can keep editing the agent (instructions, model, variables) while the
- * skills catalogue stays open beside it.
+ * skills catalog stays open beside it.
  *
  * The skill_config save piggybacks on the existing agent save flow —
  * `setAgentSkillConfig` marks the field dirty and the next `saveAgent` thunk
@@ -82,7 +82,7 @@ function AgentSkillsWindowInner({
     skillConfig.listed.length +
     skillConfig.forbidden.length;
 
-  // The catalogue wants ~1180px, but `registerWindow` does NOT clamp the
+  // The catalog wants ~1180px, but `registerWindow` does NOT clamp the
   // initial rect to the viewport — an unclamped 1180 on a 768-wide tablet
   // hangs the right column off-screen where the user can't reach it.
   const [{ width, height }] = useState(() => ({

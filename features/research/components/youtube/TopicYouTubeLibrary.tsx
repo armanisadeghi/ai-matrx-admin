@@ -4,7 +4,7 @@
 // found. Champion: YouTube's own home grid (Arman, 2026-10-17): 16:9 thumbnail,
 // channel avatar beside a two-line title, channel, "views · age", a ⋮ menu for
 // actions, and a Shorts shelf of tall cards. Nothing boxed, no extra text.
-// Bespoke type sizes inside this feature are deliberate; colours stay on tokens.
+// Bespoke type sizes inside this feature are deliberate; colors stay on tokens.
 
 import Image from "next/image";
 import Link from "next/link";
@@ -251,7 +251,7 @@ function useThumbnail(videoId: string, stored: string | null | undefined) {
     src,
     loaded,
     onError: () => setSrc(fallback),
-    // A missing size comes back as YouTube's 120px grey placeholder, not an error.
+    // A missing size comes back as YouTube's 120px gray placeholder, not an error.
     onLoad: (event: React.SyntheticEvent<HTMLImageElement>) => {
       if (event.currentTarget.naturalWidth <= 120 && src !== fallback) {
         setSrc(fallback);

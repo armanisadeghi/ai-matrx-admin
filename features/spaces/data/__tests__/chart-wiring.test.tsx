@@ -175,7 +175,7 @@ describe("ChartView passes its view to its data request", () => {
 
   // ONE CHART (CHART-CONVERGENCE): the donut is records-ui's ChartBlock, and Spaces hands it what only
   // Spaces knows — the total over every record (an average is the store's, never the groups added up)
-  // and each choice's own colour.
+  // and each choice's own color.
   it("draws the store's whole-table answer in the middle, not the drawn groups added up", async () => {
     await act(async () => {
       root.render(<ChartView tableId="t1" settings={{ ...settings, op: "count" }} title="Status" filter={{}} sorts={[]} />);
@@ -185,7 +185,7 @@ describe("ChartView passes its view to its data request", () => {
     expect(host.querySelector("[data-records-chart-center]")?.textContent).toBe("3");
   });
 
-  it("colours a slice by its choice's own colour", async () => {
+  it("colors a slice by its choice's own color", async () => {
     FIELDS.data = [{ key: "status", label: "Status", type: "choice", display_format: { options: { choices: [{ value: "Active", color: "green" }] } } } as never];
     try {
       await draw("donut", undefined, []);

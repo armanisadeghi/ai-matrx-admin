@@ -81,13 +81,13 @@ describe("the catalog tabs", () => {
     expect(laneOf("reviews", "appstore").id).toBe("appstore");
   });
 
-  it("recognises a tab only by its own name", () => {
+  it("recognizes a tab only by its own name", () => {
     expect(isToolTab("reviews")).toBe(true);
     expect(isToolTab("places")).toBe(false);
     expect(isToolTab(null)).toBe(false);
   });
 
-  it("never names a vendor a person would not recognise as where the reviews live", () => {
+  it("never names a vendor a person would not recognize as where the reviews live", () => {
     const labels = Object.values(TOOL_LANES).flat().map((l) => l.label);
     for (const vendor of ["DataForSEO", "Bright Data", "treg", "Apify", "Litescrape", "Cloro", "Crawl4ai"]) {
       expect(labels.join(" ").toLowerCase()).not.toContain(vendor.toLowerCase());

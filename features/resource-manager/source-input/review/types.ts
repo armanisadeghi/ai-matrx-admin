@@ -26,7 +26,7 @@ export interface SourceReviewOptions {
   /**
    * The model that will read these Sources. Its real context window sets the
    * budget. Overrides `sourceSet.target_model_id`; when neither is set the
-   * review says plainly that the model is unknown and uses a labelled default.
+   * review says plainly that the model is unknown and uses a labeled default.
    */
   targetModelId?: string;
   /** What the Sources are for, in the person's words ("your flashcard deck"). */

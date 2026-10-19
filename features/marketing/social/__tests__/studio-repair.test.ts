@@ -26,7 +26,7 @@ describe("repairDanglingNotes", () => {
     expect(out.nodes[1]).toBe(d.nodes[1]);
   });
 
-  it("recognises the tile an old starter renamed after its first form line, and gives it its real name back", () => {
+  it("recognizes the tile an old starter renamed after its first form line, and gives it its real name back", () => {
     const d = doc([noteTile("a", "Hook (first 3 seconds):", "gone")]);
     const out = repairDanglingNotes(d, new Set(["gone"]), seeds);
     expect(out.nodes).toHaveLength(1);

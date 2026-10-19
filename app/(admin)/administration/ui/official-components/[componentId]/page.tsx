@@ -77,7 +77,7 @@ export default function ComponentDetailPage({
     .slice(0, 3);
 
   // Surface emitter — SYNCHRONOUS over the entry resolved above. Everything is
-  // already in hand (the catalogue is a static in-repo array), so the Surface
+  // already in hand (the catalog is a static in-repo array), so the Surface
   // Context window's 400ms poll costs nothing and never touches the network.
   // `current_component_description` is omitted rather than blanked when the
   // entry authors none, so an absent description reads as absent, not empty.

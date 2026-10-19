@@ -28,7 +28,7 @@
 //      API routes under /api/admin get the lane by path already.
 //   3. Reads stay ordinary. A registered action never makes another person's
 //      private record visible; it acts on platform-owned things (system agents,
-//      global catalogues) the feature exists to maintain.
+//      global catalogs) the feature exists to maintain.
 //
 // Adding an entry needs Arman's ruling, quoted with its date (law 12).
 // Canonical doc: common-docs/systems/platform/access/STATE.md

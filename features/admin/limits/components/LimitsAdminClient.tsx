@@ -18,6 +18,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { enumUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { ArrowUpRight } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AccountAddonsPanel } from "./AccountAddonsPanel";
@@ -29,12 +30,16 @@ const SIBLING_SURFACES = [
   { href: "/administration/usage", label: "AI usage" },
 ] as const;
 
+const TABS = ["allowances", "addons", "knobs"] as const;
+
 export function LimitsAdminClient() {
   // A `?knob=` deep link names a FEATURE KNOB, so it opens that tab. Landing on
   // Plan allowances with an invisible filter applied one tab over is a link
   // that half-works, which is worse than one that does not.
   const searchParams = useSearchParams();
-  const defaultTab = searchParams?.get("knob") ? "knobs" : "allowances";
+  // The tab is the view: `?tab=` carries it, so a reload or a shared link lands on the same tab.
+  const [tabParam, setTab] = useUrlState("tab", enumUrlCodec(TABS, "allowances"));
+  const tab = searchParams?.get("tab") ? tabParam : searchParams?.get("knob") ? "knobs" : tabParam;
   return (
     <div className="space-y-6 px-[var(--matrx-page-gutter)] pt-[var(--matrx-page-top)] pb-[var(--matrx-page-end)]">
       <header>
@@ -53,7 +58,7 @@ export function LimitsAdminClient() {
           ))}
         </p>
       </header>
-      <Tabs defaultValue={defaultTab}>
+      <Tabs value={tab} onValueChange={(next) => setTab(next as (typeof TABS)[number], { history: "push" })}>
         {/* wrap: at 375 a scrolling row cut the last tab to "Feature kn"; three tabs wrap to a
             second row instead. The page sits on the page-rhythm scale, not a p-6 of its own. */}
         <TabsList overflow="wrap">

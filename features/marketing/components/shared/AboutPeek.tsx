@@ -6,7 +6,7 @@ import { Peek, PeekPopover, type PeekBlock } from "@ai-matrx/design-system";
 /**
  * THE explanation door for marketing surfaces: what a card, room or field is FOR lives in a Peek
  * behind a small info button — never as a paragraph on the page (interface text is layout).
- * `about` is the one-paragraph answer; `more` adds labelled sections (what feeds it, who reads it).
+ * `about` is the one-paragraph answer; `more` adds labeled sections (what feeds it, who reads it).
  */
 export function AboutPeek({
   title,

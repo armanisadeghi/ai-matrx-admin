@@ -134,7 +134,7 @@ interface CandidateDraft {
   agentId: string | null;
   versionId: string | null;
   /** Version number behind `versionId` — captured at pick time so the
-   * comparison can be labelled without refetching. */
+   * comparison can be labeled without refetching. */
   versionNumber: number | null;
   settingsOpen: boolean;
 }

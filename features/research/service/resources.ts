@@ -122,7 +122,7 @@ async function loadAnnotationCounts(
 }
 
 /**
- * The entities every analysed page named, read beside the manifest. A SECOND
+ * The entities every analyzed page named, read beside the manifest. A SECOND
  * read on purpose, like the experts: `rs_source.page_analysis` is a body, and
  * the manifest RPC carries no bodies. Only rows that HAVE an analysis are
  * read (a few dozen on a real topic, never the whole source table).

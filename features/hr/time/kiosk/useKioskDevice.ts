@@ -168,7 +168,7 @@ export function useKioskDevice(deviceId: string, mockCase?: HrFixtureCase): Kios
           /*
            * 🚨 R1: THIS BRANCH USED TO DESTROY A VALID SECRET.
            *
-           * It read EVERY refusal as "the server does not recognise this secret", called
+           * It read EVERY refusal as "the server does not recognize this secret", called
            * `clearKioskIdentity()`, and rendered `cause.userMessage` — which for the kiosk family
            * was the transport's template string `"hr_kiosk_authenticate refused"`. So a correctly
            * paired tablet waiting for approval **wiped the one secret it can never be issued

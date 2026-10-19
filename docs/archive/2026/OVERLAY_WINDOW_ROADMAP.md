@@ -59,7 +59,7 @@ The original task that started the April 2026 conflation was tab persistence —
 What's missing:
 
 - **URL write side**: middleware that subscribes to `openOverlay`/`closeOverlay` and updates `?panels=` on the URL (debounced). Today the URL only updates if a specific hook is wired per overlay.
-- **`persistenceMode` field** in the catalogue: `none` / `id-only` / `full`. Determines what gets saved.
+- **`persistenceMode` field** in the catalog: `none` / `id-only` / `full`. Determines what gets saved.
 - **`useWindowCollectData(cb)` hook** for full-mode windows to provide their ephemeral state for DB persistence.
 
 **Fix path**: This is Stage 7 in the overhaul plan. Real work — probably 2 focused days. Not blocking the cutover, but it's the original product feature that was never finished.
@@ -82,7 +82,7 @@ The "no JSX spread in OverlayController.tsx" rule is set to `warn` (not `error`)
 
 Also pending: the "no `openOverlay`/`closeOverlay`/`toggleOverlay` import outside `features/overlays/`" rule. Would currently fire on ~290 existing dispatch sites; need to migrate them first or accept hundreds of warnings.
 
-### 1.10 The catalogue isn't used as much as it could be
+### 1.10 The catalog isn't used as much as it could be
 
 [`features/overlays/catalogue.ts`](../features/overlays/catalogue.ts) has metadata for every overlay (label, instanceMode, isWindow). Currently it's used for nothing except documentation. It SHOULD be used by:
 
@@ -92,7 +92,7 @@ Also pending: the "no `openOverlay`/`closeOverlay`/`toggleOverlay` import outsid
 - Admin smoketest pages
 - Doctrine / drift-check scripts
 
-After the legacy registry is deleted (Stage 6), all those consumers need to migrate to the new catalogue. **This is a real piece of cleanup work that hasn't started.**
+After the legacy registry is deleted (Stage 6), all those consumers need to migrate to the new catalog. **This is a real piece of cleanup work that hasn't started.**
 
 ---
 
@@ -144,10 +144,10 @@ That's actually a `{...spread}` though — except now it's safe because the spre
 ### 2.3 An "overlay playground" admin page
 
 A `/administration/overlay-playground` page that:
-- Lists every overlay in the catalogue
+- Lists every overlay in the catalog
 - For each, shows a JSON editor pre-filled with the Options shape (from the Zod schema if we ship it, else from the Props interface)
 - "Open" button that calls the opener
-- Shows the catalogue metadata + persistence mode + URL key + instance mode in a sidebar
+- Shows the catalog metadata + persistence mode + URL key + instance mode in a sidebar
 
 Lets engineers exercise overlays without setting up the production flow. Free QA tooling. ~half day.
 
@@ -219,7 +219,7 @@ This is real new infrastructure — would want a small RFC before building. Prob
 
 Today, opening agent X's run window and X's history window means two independent overlays. Power users tile them manually. The system could:
 
-- Declare "window groups" in the catalogue (e.g., `agentRunGroup` = [`agentRunWindow`, `agentRunHistoryWindow`])
+- Declare "window groups" in the catalog (e.g., `agentRunGroup` = [`agentRunWindow`, `agentRunHistoryWindow`])
 - Provide a `useOpenAgentRunGroup({ agentId })` opener that arranges them side-by-side
 - Persist as one URL key
 
@@ -274,8 +274,8 @@ The legacy system has a `popoutMode: "pip" | "popup"` state. The current impleme
 A few things we explicitly decided against during the architectural conversation. Listing them so future agents don't propose them:
 
 - **A `kind: "window" | "modal" | "sheet"` discriminator on overlay metadata.** The whole point of the overhaul was to stop treating these as different things at the rendering layer. They're all just components. (If we ever need different chrome, we name new components, not branch on kind.)
-- **Auto-iterating the catalogue to render**. The catalogue is metadata only. Iterating it to render brings back the generic-spread bug class.
-- **A "smart" data merger that hydrates dispatch payloads from catalogue defaults**. Defaults live in the controller's JSX (`prop={data?.x ?? "default"}`). Inferring them from a separate "defaults" map is exactly the conflation we backed out of.
+- **Auto-iterating the catalog to render**. The catalog is metadata only. Iterating it to render brings back the generic-spread bug class.
+- **A "smart" data merger that hydrates dispatch payloads from catalog defaults**. Defaults live in the controller's JSX (`prop={data?.x ?? "default"}`). Inferring them from a separate "defaults" map is exactly the conflation we backed out of.
 - **Replacing `callbackManager` or `lib/refs/`**. They work. Use them.
 
 ---

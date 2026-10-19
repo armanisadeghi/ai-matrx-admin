@@ -15,7 +15,7 @@
 //     person now talks to an expert down the ORDINARY agent-chat path, which
 //     deleted the mechanism the Scribe used to ride on. This ping tells the
 //     server a turn landed; server-side it mirrors the conversation's new
-//     messages into `interview.turn`, honours the `<answered_questions>`
+//     messages into `interview.turn`, honors the `<answered_questions>`
 //     block, and runs the Scribe + answer tracker. Fire-and-forget: it returns
 //     `{scheduled: true}` immediately, the pass survives the tab closing, it
 //     is idempotent per `chat.message.id`, and a pass with nothing new to

@@ -48,8 +48,8 @@ const FN = "public.get_scope_trees(uuid[], uuid)";
 // not take is RED).
 const FORCE = { seat: "test@test.com", org: "0a54df90-eab8-4d07-ab29-81a45fb41e04", scope: "f3cf712a-d07b-41cd-b6bc-5dd3fb662ae4" };
 
-// The door's own body, read back from the catalogue, with ONE fault written into it — so a plant is the
-// shipped door minus one behaviour, never a hand-written look-alike.
+// The door's own body, read back from the catalog, with ONE fault written into it — so a plant is the
+// shipped door minus one behavior, never a hand-written look-alike.
 const PLANTS = {
   order: (src) => src.replaceAll("order by o.ord", "order by o.ord desc"),
   readable: (src) => src.replace("and s.id in (select r.id from readable r)", "and true"),

@@ -366,7 +366,7 @@ export const HANDOFF_KINDS = ["web_page", "youtube_captions"] as const;
 export type HandoffKind = (typeof HANDOFF_KINDS)[number];
 
 /**
- * The kind, or `null`. A row whose kind we do not recognise is NOT coerced to
+ * The kind, or `null`. A row whose kind we do not recognize is NOT coerced to
  * `web_page` here — a caller that must name the thing says "item" rather than
  * calling a future kind a page, which is the defect this vocabulary closes.
  */
@@ -504,7 +504,7 @@ export interface CaptureHandoff {
    * table after this interface was first written, which is exactly why every
    * screen called a video a page until 2026-09-20.
    *
-   * `null` means THIS BUILD does not recognise the server's value — never
+   * `null` means THIS BUILD does not recognize the server's value — never
    * "absent". The ingress parse keeps such a row and every sentence calls it an
    * "item"; see the note on the `handoff_kind` field in `captureHandoffTable.ts`.
    */

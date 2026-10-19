@@ -1,7 +1,7 @@
 // features/settings/universal/taxonomy.ts
 //
 // The left nav's vocabulary comes from `platform.taxonomy_node` — the SAME
-// registry the rest of the product is organised by (23 domains, 175 features).
+// registry the rest of the product is organized by (23 domains, 175 features).
 // Nothing here coins a name, a slug, or a grouping. The complete canonical
 // taxonomy is navigable even before a control is registered under a node.
 //

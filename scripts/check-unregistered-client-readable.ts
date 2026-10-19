@@ -175,7 +175,7 @@ function loadAllowlist(): AllowEntry[] {
 
 interface Verdict { readonly findings: string[]; readonly stale: string[]; readonly bad: string[]; readonly covered: number }
 
-/** The whole judgement, as a pure function of (census, allowlist), so the self-test can drive it. */
+/** The whole judgment, as a pure function of (census, allowlist), so the self-test can drive it. */
 function judge(rows: readonly Census[], allow: readonly AllowEntry[]): Verdict {
   const byRelation = new Map(rows.map((r) => [r.relation, r]));
   const allowed = new Map(allow.map((a) => [a.relation, a]));

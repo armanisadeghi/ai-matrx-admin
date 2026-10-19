@@ -1,4 +1,4 @@
-// Wave 3 logic: goal alignment and progress display, peer visibility labelling, template round trip.
+// Wave 3 logic: goal alignment and progress display, peer visibility labeling, template round trip.
 import { alignmentRows, parentChoices, parseGoal, progressLabel, type Goal } from "../goals";
 import { launchRefusalMessage, peerRefusalMessage, refusalMessage } from "../messages";
 import { canNominatePeers, peerLabel, pendingNominations, submittedPeerResponses } from "../peers";

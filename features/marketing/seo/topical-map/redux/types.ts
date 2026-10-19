@@ -139,9 +139,9 @@ export function emptyMapPageFilters(): MapPageFilters {
 
 /** The graph view's own state (CONTRACTS §3). */
 export interface MapGraphState {
-  /** The topic the graph is centred on. Null = the whole map. */
+  /** The topic the graph is centered on. Null = the whole map. */
   focusSlug: string | null;
-  /** What shape and colour encode: the tree, or where pages are converging. */
+  /** What shape and color encode: the tree, or where pages are converging. */
   encodingMode: "structure" | "convergence";
 }
 
@@ -276,10 +276,10 @@ export type PageIntentTone =
 
 /**
  * Where ONE page stands in the map's topic structure, independent of any one
- * topic's row — the answer the plain page list and the bulk screen colour by.
+ * topic's row — the answer the plain page list and the bulk screen color by.
  *
  * The first three keys are `intent_colors`' own (requirements §5: in_place
- * green, leaving amber, arriving blue), so a view reads the colour straight
+ * green, leaving amber, arriving blue), so a view reads the color straight
  * off the knob. The last two are round 22's new honest states, and they have
  * NO `intent_colors` entry on purpose: they are not a disposition, they are
  * the absence of a live topic, which §5 draws with the `missing` gray-dashed
@@ -294,7 +294,7 @@ export type PageIntentTone =
  *   rejected or retired, so the server no longer renders it. The decision is
  *   still true; the destination is gone, and the screen must say so.
  *
- * Disposition colour (`delete`, and the `planned` treatment of a `plan.node`)
+ * Disposition color (`delete`, and the `planned` treatment of a `plan.node`)
  * stays with {@link PageIntentTone} / `pageIntentTone`: that answers "how
  * should THIS topic's row draw this page", which is a different question.
  */

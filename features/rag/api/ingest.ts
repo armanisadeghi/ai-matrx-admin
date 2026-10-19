@@ -200,7 +200,7 @@ function parseEnvelope(env: {
       current = chunksDone ?? 0;
       total = chunksTotal ?? 0;
     }
-    // Fallback: if the backend ever sends generic current/total, honour them.
+    // Fallback: if the backend ever sends generic current/total, honor them.
     if (total === 0 && typeof data.total === "number") {
       total = data.total as number;
       current = (data.current as number) ?? 0;

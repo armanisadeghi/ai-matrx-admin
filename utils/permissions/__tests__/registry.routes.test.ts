@@ -47,7 +47,7 @@ function collectRoutes(dir: string, urlPath = ""): string[] {
     // that matches almost any two-segment URL, which silently made this very
     // guard pass on the `/apps/{id}` regression it exists to catch.
     if (dirent.name.startsWith("_")) continue;
-    // Route groups `(core)` are organisational only and add no URL segment.
+    // Route groups `(core)` are organizational only and add no URL segment.
     const isGroup = /^\(.*\)$/.test(dirent.name);
     out.push(
       ...collectRoutes(
@@ -140,7 +140,7 @@ describe("shareable_resource_registry: url_path_template points at a real route"
 
   it("canvas_item degrades honestly: no route invented while D137 is open", () => {
     // `/canvas/{id}` has no route and the canonical canvas route is Arman's
-    // call (D137). Until then the correct behaviour is NO link, never a guess.
+    // call (D137). Until then the correct behavior is NO link, never a guess.
     expect(getResourceSharePath("canvas_item", ID)).toBeNull();
     expect(SHAREABLE_RESOURCE_REGISTRY.canvas_item.urlPathTemplate).toBe("");
   });

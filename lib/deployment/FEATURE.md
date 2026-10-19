@@ -41,7 +41,7 @@ reason this section exists at all:
   `router.push` / `router.replace`.
 
 A plain lowercase `<a href="/administration">` was never broken and needs no
-change: the browser navigates the document and the proxy redirect is honoured.
+change: the browser navigates the document and the proxy redirect is honored.
 It is the Next ROUTER that must never be handed a foreign path.
 
 ## Shared Shape runtime

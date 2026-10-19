@@ -321,7 +321,7 @@ export function FindingFixCard({
             <p className="text-xs text-muted-foreground">
               {proposal
                 ? proposal.reasoning
-                : "This one needs judgement — the words are not already on the page. The SEO Finding Fixer reads the page, the words people actually search for, and your brand, then writes the exact replacement for you to approve."}
+                : "This one needs judgment — the words are not already on the page. The SEO Finding Fixer reads the page, the words people actually search for, and your brand, then writes the exact replacement for you to approve."}
             </p>
             {proposal?.manual_instruction ? (
               <p className="whitespace-pre-wrap rounded border border-border bg-muted/40 px-2 py-1.5 text-xs text-foreground">

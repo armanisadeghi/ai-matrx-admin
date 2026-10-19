@@ -10,7 +10,7 @@ import { PayPeriodsPage } from "@/features/hr/time/periods/components/PayPeriods
  * plus the org-wide export history that row 32 also names.
  *
  * Metadata goes through `createRouteMetadata` — the identifier `scripts/check-route-metadata.ts`
- * recognises. The tab-title rule is the SPECIFIC word first and the category last, so this reads
+ * recognizes. The tab-title rule is the SPECIFIC word first and the category last, so this reads
  * "Pay periods | Time": a payroll administrator with nine tabs open finds theirs by the first word.
  *
  * No `PageHeader`: `HrTimeShell` → `HrSubShell` → `HrShell` injects the route header, the HR nav,

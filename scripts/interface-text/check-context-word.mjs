@@ -5,7 +5,7 @@
  * WHY (Arman, 2026-10-02): "Nothing should call something context unless it's context." Context
  * is what an agent receives for a turn beyond the person's message and its own instructions
  * (common-docs/systems/platform/vocabulary/FEATURE.md § The word "Context"). A scope picker, a
- * record's scopes, a rules editor or a setting is not context, and was labelled "Context",
+ * record's scopes, a rules editor or a setting is not context, and was labeled "Context",
  * "Working context", "Set context" across the app until 2026-10-02.
  *
  * What it does: finds user-visible strings in .tsx (JSX text, label/title/aria-label/placeholder/

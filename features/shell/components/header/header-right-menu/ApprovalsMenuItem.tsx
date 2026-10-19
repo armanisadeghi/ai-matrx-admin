@@ -6,7 +6,7 @@
  *
  * Same shape as `MessagesMenuItem` (the unread badge next to a menu label) —
  * one pattern for "there are N things for you", not a second one. The badge is
- * absent at 0 and absent when the count could not be read: a grey zero and a
+ * absent at 0 and absent when the count could not be read: a gray zero and a
  * confident wrong number are both lies.
  */
 

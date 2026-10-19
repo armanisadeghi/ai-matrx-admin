@@ -270,7 +270,7 @@ interface Site {
   file: string;
   line: number;
   repo: string;
-  /** How the binding was recognised — reported in the coverage table. */
+  /** How the binding was recognized — reported in the coverage table. */
   shape: string;
 }
 
@@ -975,7 +975,7 @@ function annotationsFor(sf: ts.SourceFile, node: ts.Node): { schema: string; tab
  * `useRunListRealtime({ table, schema })` builds a real binding out of values
  * its CALLER supplies. The declaration site can never name a table, and its
  * call sites can. So each one is registered here with the default schema its
- * signature declares, the declaration is recognised as a forwarder, and every
+ * signature declares, the declaration is recognized as a forwarder, and every
  * CALL becomes a binding site in its own right.
  *
  * This registry is not optional politeness: a binding that forwards the
@@ -1117,12 +1117,12 @@ function displayPath(file: string): string {
  * Supabase client — so demanding a literal there is a demand that cannot be met,
  * and a guard nobody can satisfy is a guard somebody deletes.
  *
- * Two of them are recognised STRUCTURALLY, with no list at all:
+ * Two of them are recognized STRUCTURALLY, with no list at all:
  *   - `{ schema: X.schema, table: X.table }` — same opaque base, forwarded whole;
  *   - `{ ...binding, onChange: … }` — a caller's binding copied with a new handler.
  * That is precise: you cannot hide a real table behind either shape.
  *
- * The two below cannot be recognised structurally because they forward a binding
+ * The two below cannot be recognized structurally because they forward a binding
  * OBJECT rather than its fields, so they are named here WITH their reason. An
  * entry that matches nothing on a run is itself a finding — a stale allowlist
  * entry is how a list like this rots into a blanket exemption.

@@ -15,11 +15,11 @@ const source = readFileSync(join(__dirname, "../components/NoteWorkspace.tsx"), 
 
 it("the mode column scrolls rather than overflowing into the tools", () => {
   // The column wraps to its own row below 34rem (page-pass 2026-10-10) and
-  // centres with `safe` so an overflowing row never clips its left edge.
+  // centers with `safe` so an overflowing row never clips its left edge.
   const column = source.match(/<div className="([^"]*min-w-0[^"]*)">\s*<NoteModeSwitch/);
   expect(column).not.toBeNull();
   expect(column?.[1]).toContain("overflow-x-auto");
-  // Centred only while it fits.
+  // Centered only while it fits.
   expect(column?.[1]).toContain("justify-start");
   expect(column?.[1]).toContain("@[18rem]:[justify-content:safe_center]");
 });

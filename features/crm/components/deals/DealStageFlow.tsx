@@ -74,6 +74,7 @@ export function DealStageFlow({ deal, pipeline, onChanged }: Props) {
   return (
     <div className="space-y-1.5">
       <div className="flex flex-wrap items-stretch gap-1">
+        {/* list-exception: pipeline stage stepper, not records */}
         {pipeline.stages.map((stage, index) => {
           const isCurrent = stage.id === deal.stage_id;
           const reached =

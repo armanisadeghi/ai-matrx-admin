@@ -89,7 +89,7 @@ export function importDateText(value: string | null | undefined): string | null 
 }
 
 /**
- * How a Person was RECOGNISED, in words.
+ * How a Person was RECOGNIZED, in words.
  *
  * The Contacts review printed the server's own key — `Will update Ada (matched
  * by external_id:google_contacts)` — a column name and a provider slug at a

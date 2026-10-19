@@ -69,7 +69,7 @@ export interface RouteManifest {
  * The shells that render a REGISTERED promise in place of a real surface.
  *
  * 🚨 A NEW PLACEHOLDER SHELL MUST BE ADDED HERE IN THE SAME COMMIT THAT
- * INTRODUCES IT. This list is the one judgement call in an otherwise derived
+ * INTRODUCES IT. This list is the one judgment call in an otherwise derived
  * file, so it is kept short, named, and greppable rather than inferred: a shell
  * this walk does not recognize makes its routes look LIVE, and a route that
  * looks live is exactly how a link reaches a phone. `check-route-manifest`

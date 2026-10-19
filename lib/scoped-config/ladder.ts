@@ -148,7 +148,7 @@ function deriveControl(knob: ScopedKnob, ui: KnobUiHints): KnobControl {
   if (ui.control) {
     // "radio" is presented by the segmented primitive, and "toggle" is what
     // the live register spells a switch (agent_directives.auto_apply_allowed);
-    // the rest map 1:1. A hint nobody normalises is a hint that falls through
+    // the rest map 1:1. A hint nobody normalizes is a hint that falls through
     // to the free-text box, which is the whole defect this file answers.
     if (ui.control === "radio") return "segmented";
     if (ui.control === "toggle") return "switch";
@@ -287,7 +287,7 @@ export function resolveKnobLadder(
  * `personal_staff.escalation_mode` to "Never" at the ORGANIZATION rung, the
  * organization configuration pane read "Never" back, and the value actually
  * running for that same admin was still "auto" — because their own USER-rung
- * override outranks the organization's, which is correct ladder behaviour. The
+ * override outranks the organization's, which is correct ladder behavior. The
  * pane said nothing. It was not absent and it was not honest; it was
  * confidently wrong, and every key whose `overridable_by` names both a rung the
  * screen edits and a rung above it has that same shape.

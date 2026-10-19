@@ -19,7 +19,7 @@
 // would turn each one's render block into its OWN artifact and one deck would
 // land as eight. So: a multi-section run is BACKGROUND, and reports progress
 // through `ctx.onProgress` instead of a token stream. A single-section run
-// (a short paste) keeps the old live behaviour, and its conversationId is
+// (a short paste) keeps the old live behavior, and its conversationId is
 // returned so the caller can still go through the single-writer dedupe path.
 //
 // THE NO-FREEZE RULE (2026-09-30). A 4-card deck from an 87k-character
@@ -27,7 +27,7 @@
 // awaited with no end-to-end bound (the agent launch awaits the whole stream,
 // so the old 120s "ceiling" only covered extraction after it), and a section
 // whose server never answered held the run forever while the line never
-// moved. Now every attempt has a deadline and is cancelled when it passes; a
+// moved. Now every attempt has a deadline and is canceled when it passes; a
 // stalled or failed section is tried ONCE more; a section that still fails is
 // reported the moment it fails; and progress ticks from the start. The run
 // always ends, with whatever the sections that answered produced.
@@ -85,7 +85,7 @@ export interface SegmentedGenerateArgs<T> {
   /**
    * Deadline for ONE attempt at one section, end to end (launch, stream and
    * extraction). Defaults to 120s — one section is a small ask. A section that
-   * misses it is cancelled and tried once more (see THE NO-FREEZE RULE).
+   * misses it is canceled and tried once more (see THE NO-FREEZE RULE).
    */
   timeoutMs?: number;
   /**

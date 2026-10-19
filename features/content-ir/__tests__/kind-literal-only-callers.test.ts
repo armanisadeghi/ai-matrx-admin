@@ -66,7 +66,7 @@ describe("L-3 — text callers read every realistic spelling", () => {
     expect(source).toContain("hasKindKeyAnySpelling(rawAIResponse)");
     expect(source).not.toMatch(/\bhasKindKey\(rawAIResponse\)/);
   });
-  it("the labelled Raw AI Response view is a marked source view", () => {
+  it("the labeled Raw AI Response view is a marked source view", () => {
     const source = readFileSync(join(root, "features/code-editor/components/AICodeEditor.tsx"), "utf8");
     expect(source).toMatch(/<pre \{\.\.\.KIND_SOURCE_PROPS\}/);
   });

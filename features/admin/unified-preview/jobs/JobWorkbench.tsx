@@ -14,7 +14,7 @@
  * New here, because it exists NOWHERE in the product today (harvest gap #9):
  *  - THE GOAL EDITOR. The frozen triad's first element has no management
  *    surface anywhere; the workspace literally prints "No written goal — a
- *    registry gap worth fixing". Here it is front and centre, editable, with
+ *    registry gap worth fixing". Here it is front and center, editable, with
  *    an H / V / A grounding badge.
  *  - The FALLBACK leg of the ribbon, with a door to the leader, and the
  *    follower count stated inside the rebind confirm.

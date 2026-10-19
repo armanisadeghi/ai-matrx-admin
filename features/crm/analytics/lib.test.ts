@@ -2,7 +2,7 @@
 //
 // The reporting core, pinned to the one rule it exists to keep: a rate with no
 // denominator is NOT ZERO. A "0% reply rate" shown on a campaign that has never
-// sent a message reads as failure and gets a working campaign cancelled — by
+// sent a message reads as failure and gets a working campaign canceled — by
 // exactly the non-technical expert this platform is built for.
 
 import {

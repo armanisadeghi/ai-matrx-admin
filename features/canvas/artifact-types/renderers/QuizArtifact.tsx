@@ -17,7 +17,7 @@ import { useBlockEdit } from "@ai-matrx/rich-content/display/block-controls/bloc
  *
  * Payload shape: `{ quizTitle, category, multipleChoice: [...] }` (camelCase from
  * Python) or `{ quiz_title, multiple_choice: [...] }` (legacy LLM fences).
- * `parseQuizJSON` normalises both before render.
+ * `parseQuizJSON` normalizes both before render.
  *
  * Quiz progress is stored by the canonical quiz-session persistence hook.
  * Message content remains the immutable generated MessagePart history rather

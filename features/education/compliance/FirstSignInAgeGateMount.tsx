@@ -156,7 +156,7 @@ export function FirstSignInAgeGateMount() {
     let cancelled = false;
     void (async () => {
       // A tail of accounts created before the signup age field was removed may
-      // still carry `education_age_band` in auth metadata. Honour it silently —
+      // still carry `education_age_band` in auth metadata. Honor it silently —
       // never ask a question they already answered.
       if (!triedMetaApply.current) {
         triedMetaApply.current = true;

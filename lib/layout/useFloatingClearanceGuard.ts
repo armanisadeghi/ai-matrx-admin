@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Floating-clearance guard — the runtime half of the bottom-clearance defence
+ * Floating-clearance guard — the runtime half of the bottom-clearance defense
  * (lib/layout/floating-chrome.ts has the class and the mechanism).
  *
  * Development only. Whenever any scroller (or the page) is scrolled to its

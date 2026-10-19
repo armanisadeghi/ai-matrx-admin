@@ -3,7 +3,7 @@
 /**
  * Opens one non-artifact kind (a record peek, a source preview, an answer) on
  * the canvas — the kind-agnostic twin of `openArtifactContent`. Same rule:
- * a request the canvas cannot honour is announced through the ONE drop
+ * a request the canvas cannot honor is announced through the ONE drop
  * reporter, never dropped.
  */
 

@@ -76,7 +76,7 @@ describe("a server that said retrying is futile is believed", () => {
     ["the callApi error", apiCallError],
     ["the Error operationFailed threw", thrownError],
     ["the bare sentence, envelope lost", BUILD_DEFECT_ENVELOPE.user_message],
-  ])("recognises it through %s", (_what, raw) => {
+  ])("recognizes it through %s", (_what, raw) => {
     expect(retryIsPointless(raw)).toBe(true);
     expect(serverRefusal(raw).retryIsPointless).toBe(true);
   });
@@ -192,7 +192,7 @@ describe("a table the live database does not have yet is never offered a retry",
     request_id: TRACE_ID,
   };
 
-  it("is recognised by its code and keeps the sentence clean", () => {
+  it("is recognized by its code and keeps the sentence clean", () => {
     expect(retryIsPointless(SCHEMA_MISMATCH_ENVELOPE)).toBe(true);
     const refusal = serverRefusal(SCHEMA_MISMATCH_ENVELOPE);
     expect(refusal.retryIsPointless).toBe(true);
@@ -201,7 +201,7 @@ describe("a table the live database does not have yet is never offered a retry",
     expect(refusal.traceId).toBe(TRACE_ID);
   });
 
-  it("is recognised by the code alone, without the prose net", () => {
+  it("is recognized by the code alone, without the prose net", () => {
     expect(
       retryIsPointless({ error: "schema_mismatch", user_message: "This part of the app cannot load." }),
     ).toBe(true);

@@ -19,7 +19,7 @@
  * the balance before and after before the confirm button enables"*. The resulting figure below
  * is a PREVIEW OF THIS ACTION, not a rendered balance: the authority is the `balance_after` the
  * server writes on the ledger entry, which is read back and shown once the write lands. It is
- * labelled for exactly that, it is never persisted, and it never appears anywhere a balance is
+ * labeled for exactly that, it is never persisted, and it never appears anywhere a balance is
  * being reported.
  */
 
@@ -257,7 +257,7 @@ export function LeaveAdjustDialog({
             </p>
           </div>
 
-          {/* §6's before-and-after. Labelled as a preview of THIS action. */}
+          {/* §6's before-and-after. Labeled as a preview of THIS action. */}
           <div className="flex flex-wrap items-center gap-3 rounded-md border border-border bg-muted/40 p-3">
             <div className="space-y-0.5">
               <p className="text-[11px] text-muted-foreground">Balance now</p>

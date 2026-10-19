@@ -174,7 +174,7 @@ export async function setOrgModuleCustomValuePolicy(
  * for consumers that only care about a single kind — e.g. the scopes tag picker
  * checking `isScopeable` before allowing a kind to be tagged, or a share flow
  * reading `defaultPermission`. `moduleKey` is `moduleKey(entry)` from the
- * resource catalogue (canonical entity token).
+ * resource catalog (canonical entity token).
  */
 export async function getOrgModuleSetting(
   orgId: string,

@@ -115,7 +115,7 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({
   EntityRef: ({ id }: { id?: string }) => <span>{id ?? ""}</span>,
 }));
 // The free-text boxes drag the whole agent-action / context-menu tree in; they
-// are inputs this panel forwards, not behaviour this file tests.
+// are inputs this panel forwards, not behavior this file tests.
 jest.mock("@/components/official/ProTextarea", () => ({
   ProTextarea: (props: { value: string }) => (
     <textarea readOnly value={props.value} />

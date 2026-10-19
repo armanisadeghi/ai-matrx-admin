@@ -119,8 +119,8 @@ export function FindingsTable() {
       // cmd/middle-clickable into a new tab so opening a finding never costs
       // the user this filtered list.
       href: (row) => marketingRoutes.site(brandId, site.id, `/findings/${row.id}`),
-      // The catalogue label leads; the raw key stays visible underneath (it's
-      // what the filter and the server speak). A key with no catalogue row —
+      // The catalog label leads; the raw key stays visible underneath (it's
+      // what the filter and the server speak). A key with no catalog row —
       // a check the server added since — humanizes instead of blanking.
       cell: (row) => (
         <div className="min-w-64 max-w-xl">

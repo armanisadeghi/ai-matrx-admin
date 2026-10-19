@@ -8,7 +8,7 @@
  *  - a new sticky creates NO Note until its first typed character; typing
  *    creates exactly ONE Note, in the "Sticky notes" folder, in the board's
  *    organization; later words update that same Note;
- *  - a sticky's colour, size, place and Note id round-trip through save / load;
+ *  - a sticky's color, size, place and Note id round-trip through save / load;
  *  - Tab while typing on a sticky makes the next sticky beside it, typing;
  *  - a saved label tile (the retired Text tool tile) loads as plain text with
  *    its id, words and place;
@@ -112,7 +112,7 @@ describe("a sticky note's words are a Note", () => {
 });
 
 describe("sticky notes are first-class board objects", () => {
-  it("colour, size, place and Note id round-trip through save / load", () => {
+  it("color, size, place and Note id round-trip through save / load", () => {
     const sticky = { ...makeSticky({ x: 500, y: 300 }, { style: { sticky: "pink" }, size: 260 }), text: "Ideas", note: "note-7" };
     const doc: BoardDocument = { camera: { x: 0, y: 0, z: 1 }, nodes: [], groups: [], edges: [], shapes: [sticky] };
     const back = parseBoardDocument(JSON.parse(JSON.stringify(serializeBoardDocument(doc))));
@@ -127,7 +127,7 @@ describe("sticky notes are first-class board objects", () => {
     expect(hitShape(s, { x: 500, y: 0 }, 0, () => undefined)).toBeNull();
   });
 
-  it("Tab while typing makes the next sticky beside it, same colour, and keeps typing there", async () => {
+  it("Tab while typing makes the next sticky beside it, same color, and keeps typing there", async () => {
     const first = makeSticky({ x: 0, y: 0 }, { style: { sticky: "blue" } });
     const board = new BoardStore<Tile>({ tiles: [], shapes: [first] });
     const store = new BoardCameraStore({ x: 0, y: 0, z: 1 });

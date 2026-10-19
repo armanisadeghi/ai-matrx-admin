@@ -77,7 +77,7 @@ export function BookPreview({
   const wire = (binding?.id ?? "").toLowerCase().includes("wire");
   const glossy = (coverFinishId ?? "").toLowerCase().startsWith("gloss");
 
-  // Centre the whole object (spine + cover) on the stage.
+  // Center the whole object (spine + cover) on the stage.
   const totalWidth = spine + coverWidth;
   const left = (STAGE_W - totalWidth) / 2;
   const top = (STAGE_H - coverHeight) / 2 - 4;

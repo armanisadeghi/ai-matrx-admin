@@ -367,7 +367,7 @@ export function evaluateLink(
     }
 
     const floored = bucket.floorAtZero ? Math.max(raw, 0) : raw;
-    // `divisor` belongs to `fixed` mode only. A mean is already normalised, so
+    // `divisor` belongs to `fixed` mode only. A mean is already normalized, so
     // dividing it again would silently collapse every score the moment someone
     // flipped a bucket's mode in the tuning panel and left the old divisor behind.
     const divisor =

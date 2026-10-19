@@ -106,7 +106,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 
 /**
  * Any picture of a signature (the pad's PNG/JPEG, an uploaded photo) -> transparent paper-ink PNG.
- * Already-transparent images keep their alpha; flat images lose their paper colour.
+ * Already-transparent images keep their alpha; flat images lose their paper color.
  */
 export async function imageToInkPng(src: string): Promise<string> {
   const img = await loadImage(src);

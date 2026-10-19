@@ -1,6 +1,6 @@
 # Phase 0 — Theme: Union of Capabilities
 
-> Read-only. Produced 2026-04-20. Phase 1 theme migration must preserve every capability catalogued here (Constitution VIII — union-of-capabilities target). Regressions must be explicitly flagged + justified, not accidental.
+> Read-only. Produced 2026-04-20. Phase 1 theme migration must preserve every capability cataloged here (Constitution VIII — union-of-capabilities target). Regressions must be explicitly flagged + justified, not accidental.
 
 Sources audited (all files read in full on 2026-04-20):
 
@@ -83,7 +83,7 @@ These are real holes in the descriptor shape as specified in `phase-1-plan.md` �
 
 ### Gap G-1 — System-preference fallback (C-18)
 
-**Problem**: The current inline script honours `matchMedia('(prefers-color-scheme: light)')` on first visit when no `theme` value is stored. The descriptor shape as specified has no way to express "if no stored value, consult a media query to decide."
+**Problem**: The current inline script honors `matchMedia('(prefers-color-scheme: light)')` on first visit when no `theme` value is stored. The descriptor shape as specified has no way to express "if no stored value, consult a media query to decide."
 
 **Proposed extension** to `PrePaintDescriptor` (`classToggle` variant), additive, backwards compatible:
 
@@ -197,4 +197,4 @@ Anything else discovered at deletion time gets added to `phase-1-verification.md
 
 ## 7. TL;DR
 
-The current theme system has **21 catalogued capabilities**. Phase 1 preserves 16, gains 2 (cross-tab sync, peer hydration), drops 3 unused (`resolvedTheme`, `systemTheme`, `setTheme` updater form), and deliberately regresses 1 (cookie write, restored in Phase 3). Three descriptor-shape gaps (G-1, G-2, G-3) must be resolved in the design doc before Phase 1 code lands.
+The current theme system has **21 cataloged capabilities**. Phase 1 preserves 16, gains 2 (cross-tab sync, peer hydration), drops 3 unused (`resolvedTheme`, `systemTheme`, `setTheme` updater form), and deliberately regresses 1 (cookie write, restored in Phase 3). Three descriptor-shape gaps (G-1, G-2, G-3) must be resolved in the design doc before Phase 1 code lands.

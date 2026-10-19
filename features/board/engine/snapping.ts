@@ -1,7 +1,7 @@
 /**
  * Board — snapping while a tile is dragged or resized (pure; no React, no DOM).
  *
- *   smart guides (default ON) — the dragged rect's left / centre / right and
+ *   smart guides (default ON) — the dragged rect's left / center / right and
  *     top / middle / bottom snap to the same stops of nearby tiles, and a gap
  *     snaps to match a neighbouring gap (Figma smart guides, tldraw snapping).
  *     The threshold is in SCREEN px (`SNAP_THRESHOLD_PX / z` world px), so the

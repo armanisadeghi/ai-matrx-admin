@@ -1,9 +1,9 @@
 "use client";
 
 // features/spaces/editor/selection-format.tsx — a Space's formatting as REGISTERED actions of the ONE selection
-// toolbar (components/selection-toolbar): inline styles, Link, text colour and the block type, plus Ask AI and
-// Comment. The strip keeps one compact row (bold, italic, link, colour, Ask AI, Comment); the rest sit behind
-// More. Link and colour draw a small panel inside the toolbar's own frame — never a second bubble.
+// toolbar (components/selection-toolbar): inline styles, Link, text color and the block type, plus Ask AI and
+// Comment. The strip keeps one compact row (bold, italic, link, color, Ask AI, Comment); the rest sit behind
+// More. Link and color draw a small panel inside the toolbar's own frame — never a second bubble.
 
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -71,7 +71,7 @@ export function spaceSelectionActions({ editor, editable, hasComment, askAi, com
       run: (t) => selectionToolbarHostOf(t)?.ui.openPanel(LINK_PANEL),
     },
     {
-      ...base("selection:format-color", "Text colour", Palette, 12.6, "primary", "edit"),
+      ...base("selection:format-color", "Text color", Palette, 12.6, "primary", "edit"),
       eligible: edit("selection:format-color"),
       run: (t) => selectionToolbarHostOf(t)?.ui.openPanel(COLOR_PANEL),
     },
@@ -133,7 +133,7 @@ function LinkPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbarU
 }
 
 function ColorPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbarUi }) {
-  // Notion's "A" menu: a row of text colours, then a row of background colours (a highlight on the words).
+  // Notion's "A" menu: a row of text colors, then a row of background colors (a highlight on the words).
   const pick = (style: "textColor" | "backgroundColor", c: (typeof COLORS)[number]) => {
     editor.focus();
     if (c === "default") editor.removeStyles({ [style]: "default" } as never);
@@ -149,7 +149,7 @@ function ColorPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbar
             key={c}
             type="button"
             title={c === "default" ? "Default" : c}
-            aria-label={`Text colour ${c}`}
+            aria-label={`Text color ${c}`}
             onClick={() => pick("textColor", c)}
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent"
           >
@@ -166,7 +166,7 @@ function ColorPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbar
             key={c}
             type="button"
             title={c === "default" ? "Default background" : `${c} background`}
-            aria-label={`Background colour ${c}`}
+            aria-label={`Background color ${c}`}
             onClick={() => pick("backgroundColor", c)}
             className="flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent"
           >
@@ -183,7 +183,7 @@ function ColorPanel({ editor, ui }: { editor: SpacesEditor; ui: SelectionToolbar
   );
 }
 
-/** The zone's panels: Link's address field and the colour swatches, drawn inside the toolbar's frame. */
+/** The zone's panels: Link's address field and the color swatches, drawn inside the toolbar's frame. */
 export function spacePanel(editor: SpacesEditor, panel: string, ui: SelectionToolbarUi): ReactNode | null {
   if (panel === LINK_PANEL) return <LinkPanel editor={editor} ui={ui} />;
   if (panel === COLOR_PANEL) return <ColorPanel editor={editor} ui={ui} />;

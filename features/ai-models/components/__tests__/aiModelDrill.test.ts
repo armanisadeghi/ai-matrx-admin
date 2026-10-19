@@ -47,7 +47,7 @@ const columns = [
 const config = drillConfigFromColumns(columns, rows, AI_MODEL_DRILL);
 
 describe("ai model drill", () => {
-  it("declares only levels its Dimensions and Measures honour", () => {
+  it("declares only levels its Dimensions and Measures honor", () => {
     expect(
       drillLevelProblems(config.dimensions, config.measures, {
         attributeKeys: ["maker", "hosted_by", "input_kinds", "output_kinds"],

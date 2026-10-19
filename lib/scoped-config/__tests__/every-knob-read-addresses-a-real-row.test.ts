@@ -87,7 +87,7 @@ function declaredPairs(): { pairs: Set<string>; files: number } {
     // call site addressing it would have been reported as a miss. It only never
     // fired because the one client read of it was ALSO invisible — an inline
     // `{ feature: X.FEATURE, key: X.KEY }` the address reader cannot follow.
-    // Two blind spots cancelling out is not a green guard.
+    // Two blind spots canceling out is not a green guard.
     for (const file of sqlFiles(dir)) {
       // 🚨 RACE-SAFE READ. `migrations/inverse/` is also where
       // `scripts/__tests__/chair-step-confirmation.test.ts` writes and removes a

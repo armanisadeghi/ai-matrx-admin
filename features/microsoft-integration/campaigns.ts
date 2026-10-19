@@ -79,7 +79,7 @@ export const MICROSOFT_CAMPAIGN_DESCRIPTORS: readonly MicrosoftCampaignDescripto
       campaign: "outlook_calendar_basic",
       label: "Outlook calendar",
       grants:
-        "Read meetings across any date range, with who was invited and who organised them.",
+        "Read meetings across any date range, with who was invited and who organized them.",
       cannot: "Read meeting notes or attachments, and never change an event.",
       scopes: ["Calendars.ReadBasic"],
       alwaysOn: false,
@@ -173,7 +173,7 @@ export const MICROSOFT_RETURN_MESSAGES: Record<
   denied: {
     tone: "error",
     message:
-      "You cancelled at Microsoft's sign-in, so nothing was connected and nothing was saved.",
+      "You canceled at Microsoft's sign-in, so nothing was connected and nothing was saved.",
   },
   invalid_callback: {
     tone: "error",
@@ -194,7 +194,7 @@ export function microsoftReturnMessage(status: string): {
   return (
     MICROSOFT_RETURN_MESSAGES[status] ?? {
       tone: "error",
-      message: `Microsoft returned an outcome this screen does not recognise (${status}). Nothing was saved — start the connection again.`,
+      message: `Microsoft returned an outcome this screen does not recognize (${status}). Nothing was saved — start the connection again.`,
     }
   );
 }

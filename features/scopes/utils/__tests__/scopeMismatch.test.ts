@@ -169,7 +169,7 @@ describe("buildScopeDisplayItems", () => {
     ]);
   });
 
-  it("never drops an unresolvable id — labelled fallback instead", () => {
+  it("never drops an unresolvable id — labeled fallback instead", () => {
     expect(buildScopeDisplayItems(["ghost"], organizations)).toEqual([
       { id: "ghost", name: "Unknown scope", typeLabel: "Scope" },
     ]);

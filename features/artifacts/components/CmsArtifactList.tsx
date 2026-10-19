@@ -210,7 +210,7 @@ export function CmsArtifactList() {
 
   /**
    * Clicking an artifact opens it IN THE CANVAS, the same as clicking it in a
-   * note or a chat message — one artifact, one behaviour, wherever it appears.
+   * note or a chat message — one artifact, one behavior, wherever it appears.
    * The dedicated page stays reachable (cmd-click, the row menu, and the
    * pane's own "Open full page"), because it is where an artifact's metadata
    * and destructive actions live.

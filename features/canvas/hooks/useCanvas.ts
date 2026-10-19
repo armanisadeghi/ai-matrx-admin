@@ -17,7 +17,7 @@ export interface CanvasOpener {
 /**
  * useCanvas — open CanvasContent in THE canvas (@ai-matrx/canvas).
  *
- * `open` returns whether the canvas took it; a request it cannot honour is
+ * `open` returns whether the canvas took it; a request it cannot honor is
  * ANNOUNCED (`reportCanvasOpenDrop`), never dropped. Opening the same thing
  * twice focuses its existing tab.
  *

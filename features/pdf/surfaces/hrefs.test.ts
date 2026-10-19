@@ -1,7 +1,7 @@
 import { buildPdfExtractorHref, buildSourceHref } from "./hrefs";
 
 describe("buildPdfExtractorHref", () => {
-  it("a control labelled PDF Extractor opens the PDF tools on that document, never Knowledge", () => {
+  it("a control labeled PDF Extractor opens the PDF tools on that document, never Knowledge", () => {
     // The Source screen is the document's home (SOURCE-CONVERGENCE §8.2), but
     // the PDF tools stay at /tools/pdf-extractor?doc=<id>. Routing this to
     // /knowledge/sources sent every "Open in PDF Extractor" to Knowledge.

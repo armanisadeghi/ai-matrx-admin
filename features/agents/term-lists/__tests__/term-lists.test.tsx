@@ -19,7 +19,7 @@ jest.mock("@/lib/toast", () => ({
   },
 }));
 
-// Plain-element stand-ins for the design-system primitives: the behaviour
+// Plain-element stand-ins for the design-system primitives: the behavior
 // under test is the table's, not Radix's.
 jest.mock("@ai-matrx/design-system", () => {
   const Pass = ({ children }: { children?: ReactNode }) => <>{children}</>;
@@ -80,7 +80,7 @@ describe("term list entries — parsing and validation", () => {
     ]);
   });
 
-  it("honours quoted commas and names every skipped line", () => {
+  it("honors quoted commas and names every skipped line", () => {
     const result = parseTermCsv(
       '"Green, Inc.",Green Incorporated,spell as\n,orphan value\nR2v3,,shout\nAI Matrx,,pronounce',
     );

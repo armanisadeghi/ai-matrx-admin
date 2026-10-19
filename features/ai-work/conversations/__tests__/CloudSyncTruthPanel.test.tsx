@@ -368,7 +368,7 @@ describe("the reconcile door", () => {
   });
 
   // RED WHEN: the button stops showing progress, or the engine's returned
-  // verdict sentence is dropped in favour of a local "Done" toast.
+  // verdict sentence is dropped in favor of a local "Done" toast.
   it("shows progress, then the verdict the Mac returned", async () => {
     serverAnswers(diagnosis({ cloud_sentence: "Hook capture is a summary." }));
     mockedCapability.mockResolvedValue({ state: "ready", reasons: [] });

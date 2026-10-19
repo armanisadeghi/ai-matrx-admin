@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { PitchAdvisoryPanel } from "@/features/crm/pitch-advisories/PitchAdvisoryPanel";
 import { usePitchAdvisories } from "@/features/crm/pitch-advisories/usePitchAdvisories";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
 import {
@@ -244,6 +245,7 @@ export function AddMembersDialog({
           <div className="space-y-1">
             <Label className="text-xs">Source</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+              {/* list-exception: three source choices, not records */}
               {(
                 [
                   { value: "org", label: orgName, icon: Users },
@@ -298,30 +300,26 @@ export function AddMembersDialog({
                 </div>
               ) : (
                 <div className="max-h-44 space-y-1 overflow-y-auto pr-0.5">
-                  {views.map((view) => (
-                    <button
-                      key={view.id}
-                      type="button"
-                      onClick={() => setViewId(view.id)}
-                      className={cn(
-                        "flex w-full flex-col items-start gap-0.5 rounded-md border px-2.5 py-1.5 text-left transition-colors",
-                        viewId === view.id
-                          ? "border-primary/40 bg-accent"
-                          : "border-border hover:bg-accent/50",
-                      )}
-                    >
-                      <span className="flex w-full items-center gap-1.5 text-xs font-medium text-foreground">
-                        <Bookmark className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{view.name}</span>
-                        {view.visibility === "internal" && (
-                          <Users className="h-3 w-3 shrink-0 text-muted-foreground" />
-                        )}
-                      </span>
-                      <span className="line-clamp-2 text-[11px] text-muted-foreground">
-                        {describeDefinition(view.definition)}
-                      </span>
-                    </button>
-                  ))}
+                  <RecordList
+                    items={views}
+                    getKey={(view) => view.id}
+                    title={(view) => view.name}
+                    subtitle={(view) => describeDefinition(view.definition)}
+                    leading={() => (
+                      <Bookmark className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    )}
+                    trailing={(view) =>
+                      view.visibility === "internal" ? (
+                        <Users className="h-3 w-3 shrink-0 text-muted-foreground" />
+                      ) : null
+                    }
+                    activeKey={viewId}
+                    onOpen={(view) => setViewId(view.id)}
+                    openInPlace
+                    size="sm"
+                    sourceFeature="crm_saved_view"
+                    ariaLabel="Smart views"
+                  />
                 </div>
               )}
               <p className="text-[11px] text-muted-foreground">

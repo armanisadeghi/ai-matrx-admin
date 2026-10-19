@@ -873,7 +873,7 @@ function CodeAgentDriftPanel({
  * judge the HOLDER — the same holder a host's own three controls name, with the
  * same defect and the same remedy. Three judge the CODE DECLARATION against the
  * stored contract, which no holder control can say. A host that owns the holder
- * answer keeps only the second kind; nothing is disabled or greyed, it is
+ * answer keeps only the second kind; nothing is disabled or grayed, it is
  * simply not this panel's sentence to say twice.
  *
  * Exported so the guard can enumerate EVERY health value rather than the one
@@ -1215,7 +1215,7 @@ function FactsPanel({
       // row — but code-truth's `call_sites` were import-time discovery inside
       // ONE process, so a call in matrx-frontend, matrx-extend or matrx-local
       // could never appear there at all. The old declaration string survives
-      // as a LABELLED fallback for the declaration half only, used exactly
+      // as a LABELED fallback for the declaration half only, used exactly
       // when no scanner has reported a declaration for this key yet.
       const source = truth?.source;
       const registryPath = row.mandate.code_path?.trim();
@@ -1554,7 +1554,7 @@ function FactsPanel({
               <span className="font-medium text-rose-600">no variables</span>
             )}
           </PropertyRow>
-          {/* A fact about the CALLING CODE, labelled as one. Whether the
+          {/* A fact about the CALLING CODE, labeled as one. Whether the
               mandate itself accepts free text is the served surface's answer,
               rendered once, above. */}
           <PropertyRow label="Code passes user text">
@@ -1583,7 +1583,7 @@ function FactsPanel({
 // ── The goal + the provision — what the mandate IS ───────────────────────────
 //
 // THE GOAL BLOCK LIVES IN `@/features/mandates/MandateGoalBlock` (FIX-Q9,
-// 2026-09-11). It used to live here and read the code catalogue alone, which
+// 2026-09-11). It used to live here and read the code catalog alone, which
 // is how this pane came to print "No goal declared" about Mandates whose goal
 // was sitting in the row the very same drawer was rendering.
 

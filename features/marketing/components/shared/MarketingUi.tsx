@@ -53,7 +53,7 @@ export function formatDate(value: string | null): string {
  * `Intl` renders it as the 22nd — a Postgres `date` column silently loses a day
  * on every screen that shows it. A bare `YYYY-MM-DD` is therefore built as a
  * LOCAL date; anything carrying a time (an ISO timestamp) keeps the old
- * instant-aware behaviour, which is correct for it.
+ * instant-aware behavior, which is correct for it.
  */
 export function formatDateOnly(value: string | null): string {
   if (!value) return "—";

@@ -16,11 +16,11 @@
  * flattens that into a typed stream the Knowledge Asset UI renders.
  *
  * Cancel nuance (verified against aidream `rag.py::_run_derive_stream`):
- * when a run is cancelled the backend emits a `phase:"error"` progress
+ * when a run is canceled the backend emits a `phase:"error"` progress
  * event carrying `extra.cancelled === true` (NOT a `rag.stage.result`),
  * then ends the stream. Callers must treat that as a cancellation, not a
  * failure — `runDeriveStream` surfaces it as a dedicated `derive.cancelled`
- * event so the runner never paints a cancelled op red.
+ * event so the runner never paints a canceled op red.
  */
 
 import { getJson, postJson, postNdjson } from "@/lib/python-client";

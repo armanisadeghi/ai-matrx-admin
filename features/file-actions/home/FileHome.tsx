@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FileHome — the Workbooks and Documents homes, ONE component set, modelled on the Google Sheets /
+ * FileHome — the Workbooks and Documents homes, ONE component set, modeled on the Google Sheets /
  * Google Docs home: a search box, the "Start a new …" template band, our Google strip, then
  * "Recent …" with the owner filter (plus Starred and Trash), grid ⇄ list, Google's four sorts and
  * the upload door, grouped Today / Previous 7 days / Previous 30 days / Earlier.
@@ -18,7 +18,7 @@
  * The Microsoft 365 look (the person's Office look setting, switched right here or in Settings) is
  * a skin of this same home — Excel / Word / PowerPoint on the web's start page: a left app rail,
  * "Create" with Blank workbook/document/presentation and the templates, Recent · Pinned · Shared
- * with me tabs over a Name / Opened / Owner list, the app's colour and type. Same data, same menus.
+ * with me tabs over a Name / Opened / Owner list, the app's color and type. Same data, same menus.
  */
 
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
@@ -161,7 +161,7 @@ export interface FileHomeState<Row> {
   view: "cards" | "table";
 }
 
-/** A group plate paints a solid square behind its buttons (white on the Google Look's grey): the view and sort buttons are plain tap targets; only the "Open a file" row keeps the group. */
+/** A group plate paints a solid square behind its buttons (white on the Google Look's gray): the view and sort buttons are plain tap targets; only the "Open a file" row keeps the group. */
 function SortGroup({ single, children }: { single: boolean; children: ReactNode }) {
   // The wrapper has no gap: tap buttons space themselves (a parent's gap is the dev-mode "TAP BUTTON MISUSE" outline).
   return single ? <div className="flex shrink-0 items-center">{children}</div> : <TapTargetButtonGroup surface="solid">{children}</TapTargetButtonGroup>;
@@ -307,7 +307,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     {office ? <OfficeAppRail kind={kind} onCreate={scrollToCreate} onPickFile={props.onPickFile} /> : null}
     <div className="h-full min-w-0 flex-1 overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
       <div className="pt-[var(--shell-header-h)]">
-        {/* Google's search: one big filled pill (48px, ~720px) centred over the page, the Look switch
+        {/* Google's search: one big filled pill (48px, ~720px) centered over the page, the Look switch
             at the row's end. It stays here, not in the app header: the header is 44px (a 48px pill
             cannot sit in it) and its right side is the app's own icons. */}
         <div className="mx-auto flex w-full max-w-[80rem] items-center gap-3 px-3 pb-3 pt-2 sm:grid sm:grid-cols-[minmax(14rem,1fr)_minmax(0,45rem)_minmax(14rem,1fr)] sm:px-6">

@@ -22,7 +22,7 @@ export function SheetFooter({
   onHelp,
 }: SheetFooterProps) {
   return (
-    <footer className="mf-rule-t flex h-[var(--frame-footer-h)] shrink-0 items-center gap-1 pr-1 pl-3">
+    <footer className="mf-rule-t flex h-[var(--matrx-frame-footer-h)] shrink-0 items-center gap-1 pr-1 pl-3">
       <div className="type-meta flex min-w-0 flex-1 items-center gap-1.5 truncate text-muted-foreground">
         {status}
       </div>
@@ -44,7 +44,7 @@ export function SheetFooter({
 export function CompanionPlaceholder({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="mf-rule-b flex h-[var(--frame-tabs-h)] shrink-0 items-center gap-2 pr-1 pl-3">
+      <div className="mf-rule-b flex h-[var(--matrx-frame-tabs-h)] shrink-0 items-center gap-2 pr-1 pl-3">
         <Webhook className="size-4 text-muted-foreground" aria-hidden />
         <span className="type-title flex-1">Agent</span>
         <Button variant="quiet" icon={<X />} aria-label="Close agent" onClick={onClose} />

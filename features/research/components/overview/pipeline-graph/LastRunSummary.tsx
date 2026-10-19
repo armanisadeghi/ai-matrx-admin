@@ -179,7 +179,7 @@ export function LastRunSummary({
     (progress?.failed_keyword_syntheses ?? 0) +
     (progress?.failed_topic_syntheses ?? 0);
 
-  // Pages read (succeeded) vs attempted — integers only, honestly labelled.
+  // Pages read (succeeded) vs attempted — integers only, honestly labeled.
   const pagesRead = progress?.total_content ?? 0;
   const attempted = pagesAttempted(progress?.sources_by_status);
 

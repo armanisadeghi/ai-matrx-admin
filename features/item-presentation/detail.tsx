@@ -9,7 +9,7 @@
  * all three presentations (window / docked / page) from ONE registration and
  * never a second registry. It replaced `ItemDetailWindow.tsx` (2026-09-17):
  * the loader, the field formatting, the surface scope and the right-click
- * menu are the same behaviour, moved behind the contract.
+ * menu are the same behavior, moved behind the contract.
  *
  * Unknown types still resolve (the neutral fallback config, seed-only) —
  * exactly what the old window did — so an agent-emitted type nobody has

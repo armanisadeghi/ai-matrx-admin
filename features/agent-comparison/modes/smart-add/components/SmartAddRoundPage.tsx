@@ -279,7 +279,7 @@ export function SmartAddRoundPage({
   const missingAgents = JUDGMENTS.filter((j) => !bench.agents[j]);
 
   // Each mark labels Jev's answer once Jev's cell has finished — a mark made while Jev was still
-  // running is labelled when the answer lands. The label door is idempotent; each pair goes once per visit.
+  // running is labeled when the answer lands. The label door is idempotent; each pair goes once per visit.
   const labelled = useRef(new Set<string>());
   const pending = bench.items.flatMap((item) => {
     const t = bench.truth[item.id];

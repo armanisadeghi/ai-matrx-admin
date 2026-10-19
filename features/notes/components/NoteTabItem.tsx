@@ -294,7 +294,7 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
     label: string;
     fn: () => void;
     destructive?: boolean;
-    /** Greyed WITH this reason (absent-or-honest). */
+    /** Grayed WITH this reason (absent-or-honest). */
     disabledReason?: string;
   };
   // The tab's own rows: things about THIS TAB and the editor buffer. The
@@ -304,7 +304,7 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   // sit with the note's rows, never in the Tab section.
   const bufferItems: TabMenuItem[] = [
     // Read has nothing to save (and the registry's own "Save" submenu is
-    // there); elsewhere Save is greyed with its reason when nothing changed.
+    // there); elsewhere Save is grayed with its reason when nothing changed.
     ...(editorMode === "preview"
       ? []
       : [
@@ -424,7 +424,7 @@ export function NoteTabItem({ noteId, instanceId, standalone = false, showTitle 
   // The tab's "…": the Tab rows first (primary), and the whole note menu —
   // the same rows a right-click on the note shows — under one "Note ▸".
   // Inside "Note ▸" the note's own rows need no second "Note" heading (a
-  // labelled section folds under its label — it would read Note ▸ Note ▸).
+  // labeled section folds under its label — it would read Note ▸ Note ▸).
   const tabButtonSections: ContextMenuExtraSection[] = [
     ...tabExtraSections
       .filter((section) => section.id !== "note-tab")

@@ -4,7 +4,7 @@
 //
 // "GOING?" ON THE PRE-JOIN SCREEN — for a signed-in person on the meeting's
 // invitation list, before the meeting has happened. Absent for everyone else
-// (the host, an org member who was not invited, a guest), for a cancelled or
+// (the host, an org member who was not invited, a guest), for a canceled or
 // ended meeting, and until the list is read — never a control that would refuse.
 
 import { useEffect, useState } from "react";

@@ -3,7 +3,7 @@
 // admins read every row through platform_admin_read); every write is a gated SECURITY DEFINER
 // RPC (billing.coupon_create / coupon_revoke / coupon_mark_sent / free_months_apply). Sends reuse
 // the platform's own paths: in-app DM (/api/messages), admin email (/api/admin/email, super
-// admin), SMS (/api/sms/send → sendAndLogSms, which honours opt-outs and the off-production
+// admin), SMS (/api/sms/send → sendAndLogSms, which honors opt-outs and the off-production
 // loopback guard).
 
 import { createClient } from "@/utils/supabase/client";

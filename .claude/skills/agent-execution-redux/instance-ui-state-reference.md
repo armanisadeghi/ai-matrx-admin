@@ -41,6 +41,6 @@ value too. `destroyInstance` / `removeInstanceUIState` clear the record so a
 staged write is never replayed onto a later instance with the same id.
 
 Guard: `../aidream/apps/shared/chat/src/agents/redux/execution-system/instance-ui-state/__tests__/no-write-is-dropped-before-the-instance-lands.test.ts`
-— behaviour plus a census that fails if any setter returns to the drop pattern.
+— behavior plus a census that fails if any setter returns to the drop pattern.
 A surface must NOT gate its dispatch on the row's existence; that local
 workaround is what this replaced.

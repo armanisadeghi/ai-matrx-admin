@@ -50,7 +50,7 @@ describe("totals are real spend (finding 1)", () => {
     expect(total.inputAll).toBe(4544);
     expect(total.unfinished).toBe(1);
     expect(failedCellCount([done, failed])).toBe(1);
-    expect(unfinishedLabel([done, failed, cell({ status: "cancelled" })])).toBe("1 failed · 1 cancelled");
+    expect(unfinishedLabel([done, failed, cell({ status: "cancelled" })])).toBe("1 failed · 1 canceled");
   });
 
   it("adds earlier attempts only when asked", () => {
@@ -77,7 +77,7 @@ describe("cached input is its own number (finding 2)", () => {
   });
 });
 
-describe("queued is never labelled running (finding 3)", () => {
+describe("queued is never labeled running (finding 3)", () => {
   it("names the state each cell is in", () => {
     expect(cellStatusLabel([cell({ status: "queued", heartbeat_at: new Date().toISOString() })])).toBe("Queued");
     expect(cellStatusLabel([cell({ status: "running", heartbeat_at: new Date().toISOString() })])).toBe("Running");

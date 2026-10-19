@@ -178,7 +178,7 @@ describe("post card model", () => {
     expect(m.durationSeconds).toBe(6.5);
     expect(m.outlier.ageHours).toBeLessThan(24);
   });
-  it("prefers the analysed hook", () => {
+  it("prefers the analyzed hook", () => {
     expect(hookLineOf({ caption: "cap", title: null }, "  Real hook ")).toBe("Real hook");
   });
   it("carries the stored thumbnail id (the stable field), null when none was stored", () => {

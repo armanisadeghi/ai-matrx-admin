@@ -32,7 +32,7 @@ export function MandateBrowseRows({
       {rows.map((row) => {
         const layer = layerMeta(row.resolved_layer);
         const health = healthMeta(row.health);
-        // A dropped rung is not a badge colour, it is news: somebody's choice
+        // A dropped rung is not a badge color, it is news: somebody's choice
         // for this job could not be used. Say it in words on the row itself —
         // the campaign's own law is that a screen is absent or honest.
         const dropped = healthExplanation(row.health);

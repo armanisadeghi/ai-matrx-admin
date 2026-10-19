@@ -9,7 +9,7 @@
  * diagnostics.
  *
  * Scope guards — we do NOT capture non-failures:
- *   - `meta.aborted` (the request was cancelled / superseded)
+ *   - `meta.aborted` (the request was canceled / superseded)
  *   - `meta.condition` (the thunk's `condition` returned false — never ran)
  *   - AbortError / ConditionError by name, and every serialized form of an
  *     abort: DOMException code 20 / `ABORT_ERR`, and the STRINGIFIED shape

@@ -24,7 +24,7 @@ const LABEL: Record<RunStatus, string> = {
   running: "Running",
   success: "Success",
   failed: "Failed",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   skipped: "Skipped",
   interrupted: "Interrupted, continuing",
   stopped: "Stopped by limit",

@@ -130,7 +130,7 @@ export function NotesTreeView({
         });
         onSelectNote?.(note);
       } catch (cause) {
-        // Cancelling the picker is "nothing happened" — no toast.
+        // Canceling the picker is "nothing happened" — no toast.
         // A create that closes its input row and says nothing is a dead button.
         toast.error(noteCreateErrorMessage(cause));
       } finally {

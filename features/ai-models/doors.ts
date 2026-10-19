@@ -1,4 +1,4 @@
-/** Canonical admin catalogue route for AI models. */
+/** Canonical admin catalog route for AI models. */
 export const AI_MODELS_CONSOLE_ROUTE = "/administration/ai/ai-models";
 
 /** Search parameter consumed by `AiModelsContainer` to open one model. */

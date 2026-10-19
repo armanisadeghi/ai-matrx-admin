@@ -18,7 +18,7 @@
 // server's own `create_identity` would have promoted it (VERIFY-B1-B2-R5 W1).
 //
 // THE SERVER'S HALF (aidream lane B-26) IS WHAT THIS MODULE CONSUMES, and the
-// division of labour is deliberate:
+// division of labor is deliberate:
 //
 //   * the LIST is filtered server-side — `GET /sending-identities?purpose=` takes
 //     `outreach` (the default), `correspondence` or `all` — so the page asks for
@@ -32,7 +32,7 @@
 //     CAMPAIGN mailbox", the one case where setting it up again is meaningless.
 //
 // What this module adds is the client's half: which read to issue, how the reveal
-// is labelled, and THE CONSEQUENCE a person is told before promoting a mailbox,
+// is labeled, and THE CONSEQUENCE a person is told before promoting a mailbox,
 // because promotion turns on domain proof, warm-up and reading that mailbox's
 // incoming mail.
 //

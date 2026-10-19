@@ -5,7 +5,7 @@ description: "Sizing tokens for compact sidebars, nav panels, and menu lists. Us
 
 # Compact Navigation & Menu Panels
 
-Look rules (type, colour, components) come from the style guide: ../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md — this skill only adds menu structure.
+Look rules (type, color, components) come from the style guide: ../common-docs/systems/platform/ui-shell/STYLE-GUIDE.md — this skill only adds menu structure.
 
 Canonical sizing and spacing rules for navigation sidebars, list panels, and compact menus across the project. Every value below is a hard default — deviate only with justification.
 

@@ -39,7 +39,7 @@ import records from "@/features/workflow-runtime/__tests__/fixtures/masterwork-r
 import { MasterworkRunRow } from "../MasterworksPage";
 
 // The organization's points-per-dollar knob, answered — transport, not the
-// behaviour under test.
+// behavior under test.
 jest.mock("@/components/cost/pointsRate.client", () => ({
   usePointsRate: () => 20000,
 }));

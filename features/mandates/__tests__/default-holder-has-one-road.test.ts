@@ -23,7 +23,7 @@
  * written: NO client file may name those columns in a write, and the composer
  * that used to build them does not exist.
  *
- * The runtime behaviour of the door and of the lock is proven against
+ * The runtime behavior of the door and of the lock is proven against
  * PRODUCTION, not here:
  * `aidream/tests/test_mandate_definition_holder_lockdown_live.py`, RED then
  * GREEN.

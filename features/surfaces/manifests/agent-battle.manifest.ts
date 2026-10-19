@@ -154,7 +154,7 @@ Agent Battle runs the same work through several columns side by side so a person
 - battle_mode and battle say which experiment this is and which saved battle it belongs to.
 - battle_agent, shared_request and forked_from are what every column shares (which of them applies depends on the mode).
 - battle_columns holds each column's variant, request, answer, transcript, the person's scores and run numbers — the evidence.
-- While blind_state shows an active, unrevealed blind test, column identities, variants and run numbers are deliberately withheld; the answers are labelled anonymously.
+- While blind_state shows an active, unrevealed blind test, column identities, variants and run numbers are deliberately withheld; the answers are labeled anonymously.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(pickBaseline("content", "context"), surfaceSpecific),

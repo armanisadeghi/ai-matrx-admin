@@ -31,7 +31,7 @@ export interface MediaExtraAction {
   icon?: LucideIcon;
   /** Invoked on click/tap. */
   onClick: () => void;
-  /** Greys out + blocks the row when true. */
+  /** Grays out + blocks the row when true. */
   disabled?: boolean;
   /** Destructive styling (red text) when true. */
   danger?: boolean;

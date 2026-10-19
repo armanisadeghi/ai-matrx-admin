@@ -711,7 +711,7 @@ export default function PdfDocumentRenderer({
   // default fit-page view has no scrollable overflow and the wheel would
   // otherwise do nothing. When the page IS zoomed past the viewport we
   // defer to native scrolling first and only flip once the user has
-  // scrolled to the corresponding edge — standard PDF-reader behaviour.
+  // scrolled to the corresponding edge — standard PDF-reader behavior.
   //
   // Implemented as a NATIVE non-passive listener (not React's onWheel) so
   // we can call preventDefault() and stop the browser from rubber-banding

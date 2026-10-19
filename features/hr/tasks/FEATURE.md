@@ -191,7 +191,7 @@ the fix is in that pillar's flow declaration — never a second list on this pag
 | `components/HrTaskInbox.tsx` | The page: scopes, five sections, bulk. |
 | `components/HrTaskTable.tsx` | `MatrxDataTable` rows; every title is a door. |
 | `components/HrDecisionPanel.tsx` | `/hr/tasks/{instance}` — the focused decision surface. |
-| `components/HrDeliveryState.tsx` | `hr.workflow_notice` state, honestly labelled. |
+| `components/HrDeliveryState.tsx` | `hr.workflow_notice` state, honestly labeled. |
 | `components/HrRefusalNotice.tsx` | The refusal envelope, rendered in place. |
 | `components/HrActionDialog.tsx` | The confirm-plus-reason dialog every changing control uses. |
 | `components/HrFailureResolveDialog.tsx` | The failure-resolution terminal for the stuck class. |

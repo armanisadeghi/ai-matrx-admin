@@ -1,6 +1,6 @@
 /**
  * ONE FIELD SURFACE (page-pass 2026-09-27). ProInput and ProTextarea were
- * `bg-transparent` over `border-input`, so on a grey page they read grey beside
+ * `bg-transparent` over `border-input`, so on a gray page they read gray beside
  * the white Selects of the same form (/hr/settings/employer, the message-template
  * editor) and looked disabled. They wear the design system's field surface —
  * `FIELD_SURFACE_CLASS` in @ai-matrx/design-system (`border border-border bg-card`),

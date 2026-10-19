@@ -42,7 +42,7 @@ export interface GlobalRecordingApi {
   /**
    * Discard the active recording: stops capture and finalizes the audio safely
    * (no IndexedDB orphan) but does NOT deliver the transcript to the
-   * subscriber. Used by "cancel" affordances so a cancelled recording never
+   * subscriber. Used by "cancel" affordances so a canceled recording never
    * leaks text into the host field.
    */
   cancel: () => void;

@@ -82,7 +82,7 @@ Plan: `common-docs/projects/knowledge-system/KNOWLEDGE-HUB.md` §5.1.
   `ask_started → answer_delta… (answer_reset) → citations → sources_used → ask_done`, or `ask_refused`
   (org monthly cap / no organization). Not a body-carried read: Ask spends against the selected
   organization, so `postNdjson` refuses before sending when none is selected.
-- Contexts are labelled `[S1]…` by the server; `[1]` and `[S1]` both cite context 1.
+- Contexts are labeled `[S1]…` by the server; `[1]` and `[S1]` both cite context 1.
 - Tests: `ask/__tests__/askPanel.test.tsx` (citation links + click target, uncited sentence badge,
   per-Source on/off reaching `sources_used`, no-Sources and cap states, wire adapter).
 
@@ -131,7 +131,7 @@ Plan: `common-docs/projects/knowledge-system/KNOWLEDGE-HUB.md` §5.1.
 
 - `2026-10-09` — Scopes cutover (lane SCOPES-WEB-CONSUMERS): favorites and association results use `isAssociationsRpcErr` from `@ai-matrx/associations` (was `isScopesRpcErr`).
 
-- **2026-09-30** — V5-B: the Sources page (`/knowledge/library`) archives and restores through the one archive — each row's menu (Open · Archive / Restore), bulk Archive / Restore, and THE ARCHIVED-ITEMS LAW filter (`?archived=`, every read and count honours it; `applySourcesArchiveAxis`). The Source page has Archive with Undo. "Attached to" also reads decks made from a Source's file or transcript, and a web page a person adds now is listed now, not at its cached fetch time (DB: `docproc.source_list_facts`, `docproc._source_captured_at_of`). Test: `features/sources/__tests__/sourcesArchiveAxis.test.ts`.
+- **2026-09-30** — V5-B: the Sources page (`/knowledge/library`) archives and restores through the one archive — each row's menu (Open · Archive / Restore), bulk Archive / Restore, and THE ARCHIVED-ITEMS LAW filter (`?archived=`, every read and count honors it; `applySourcesArchiveAxis`). The Source page has Archive with Undo. "Attached to" also reads decks made from a Source's file or transcript, and a web page a person adds now is listed now, not at its cached fetch time (DB: `docproc.source_list_facts`, `docproc._source_captured_at_of`). Test: `features/sources/__tests__/sourcesArchiveAxis.test.ts`.
 
 - **2026-09-30** — Showcase headline uses separate source-flow and system lines, balanced paragraph wrapping, and a compact phone subtitle. Verified on localhost at desktop and phone widths with an independent visual review.
 

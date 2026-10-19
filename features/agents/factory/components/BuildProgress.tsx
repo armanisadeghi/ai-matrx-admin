@@ -116,7 +116,7 @@ function OutcomePanel({
   onBuildAsText: () => void;
 }) {
   // A build whose worker died before the reaper settled it: the spine says failed or
-  // cancelled while the checkpoint never got an outcome — show it stopped, never blank.
+  // canceled while the checkpoint never got an outcome — show it stopped, never blank.
   const outcome =
     state.outcome ?? (spineStatus === "failed" || spineStatus === "cancelled" ? "worker_lost" : null);
   const greenfield = state.facts?.greenfield ?? !state.request?.mandate_key;

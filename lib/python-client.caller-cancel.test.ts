@@ -25,7 +25,7 @@ import { capturePythonClientError } from "@/lib/diagnostics/capturePythonClientE
 import { getJson, postJson, requestRaw, uploadWithProgress } from "@/lib/python-client";
 
 /**
- * A request the caller cancelled is not an incident (live 2026-10-01: the
+ * A request the caller canceled is not an incident (live 2026-10-01: the
  * inspector filed "signal is aborted without reason" for a superseded search).
  * python-client's one failure chokepoint (`failClient`) skips the capture when
  * the caller's own signal aborted; a TimeoutError reason still captures.
@@ -45,7 +45,7 @@ function hangUntilAborted() {
   ) as unknown as typeof fetch;
 }
 
-describe("python-client and a cancelled request", () => {
+describe("python-client and a canceled request", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     hangUntilAborted();
@@ -86,7 +86,7 @@ describe("python-client and a cancelled request", () => {
 });
 
 /** Upload rides `sendMatrxRequest` (`onUploadProgress`); outside a browser it is one fetch. */
-describe("uploadWithProgress and a cancelled upload", () => {
+describe("uploadWithProgress and a canceled upload", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     hangUntilAborted();

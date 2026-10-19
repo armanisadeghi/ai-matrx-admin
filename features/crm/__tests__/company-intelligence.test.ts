@@ -11,7 +11,7 @@ import {
 const byKey = (k: string) => INTEL_SOURCES.find((s) => s.key === k)!;
 
 describe("company intelligence mapping", () => {
-  it("reads a LinkedIn company record into labelled facts", () => {
+  it("reads a LinkedIn company record into labeled facts", () => {
     const facts = intelFacts("linkedin_company", {
       employees_in_linkedin: 16665,
       company_size: "5,001-10,000 employees",

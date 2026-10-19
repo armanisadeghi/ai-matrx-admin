@@ -315,7 +315,7 @@ export async function adoptValueVocabulary(
 /**
  * Replace the WHOLE vocabulary. `reassign` maps an identity being removed to a
  * surviving one — without it the DB refuses to drop a band that still carries
- * expert rulings, which is the behaviour we want.
+ * expert rulings, which is the behavior we want.
  */
 export async function saveValueVocabulary(
   siteId: string,
@@ -629,7 +629,7 @@ export function assertStarterPackDetail(value: unknown): StarterPackDetail {
  * rule) and `geoPlaces` to typed words, for the names the gazetteer has never
  * heard of.
  * A pack ships geo areas as archetypes with no places in them, so adopting
- * without this writes labelled shells that match nothing — the RPC stamps
+ * without this writes labeled shells that match nothing — the RPC stamps
  * those `metadata.places_pending` and reports them in `geo_areas_pending` so
  * the screens can put a door in front of them. Passing places for an area the
  * site already has but never filled FILLS it (that is "writing only what is

@@ -1,5 +1,5 @@
 /**
- * THE KNOB CATALOGUE IS A LIST WE TREAT AS COMPLETE.
+ * THE KNOB CATALOG IS A LIST WE TREAT AS COMPLETE.
  *
  * THE DEFECT THIS PINS. `platform.feature_knob` holds ~870 live rows against
  * PostgREST's 1000-row cap. A bare `.select()` does not error at the cap: it
@@ -86,7 +86,7 @@ const fakeClient = {
   }),
 };
 
-// 🚨 `.is("archived_at", null)` — the catalogue reader stopped serving
+// 🚨 `.is("archived_at", null)` — the catalog reader stopped serving
 // archived knobs (settings3, 2026-09-22) and four bespoke fakes of this one
 // builder did not grow the verb, so all four went red on
 // "…select(...).is is not a function". THE REAL DEBT IS FOUR FAKES OF ONE
@@ -107,7 +107,7 @@ afterEach(() => {
   invalidateFeatureKnobs();
 });
 
-describe("the feature-knob catalogue read", () => {
+describe("the feature-knob catalog read", () => {
   it("THE BUG: a bare .select() over the same fake returns 2 of 3 knobs", async () => {
     // This is the read this module used to perform, written out verbatim.
     const { data } = (await fakeClient
@@ -133,7 +133,7 @@ describe("the feature-knob catalogue read", () => {
     expect(requestedRanges[0]).toEqual({ from: 0, to: SERVER_CAP - 1 });
   });
 
-  it("still raises for an address the complete catalogue does not hold", async () => {
+  it("still raises for an address the complete catalog does not hold", async () => {
     await expect(knobInt("alpha", "four")).rejects.toThrow(
       /Missing feature knob/,
     );

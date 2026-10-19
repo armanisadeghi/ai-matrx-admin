@@ -3,7 +3,7 @@
 // "Saved by batching" — the Platform Spend dashboard's savings headline for the
 // explorer's selected window, with the breakdown one click away.
 //
-// Modelled on AWS Cost Explorer's Savings Plans "savings realized" view: one
+// Modeled on AWS Cost Explorer's Savings Plans "savings realized" view: one
 // confident number (what batching saved), the effective discount beside it, the
 // on-demand equivalent it was measured against, and a breakdown by consumer and
 // by provider/model underneath. Every number names its window and the item
@@ -11,7 +11,7 @@
 //
 // THE HONESTY RULE: the saving is `live_equivalent_cost_usd − actual_cost_usd`
 // from `batch.savings_summary` — actual tokens at the live catalog rate. The
-// pre-submission estimate is shown only labelled as an estimate.
+// pre-submission estimate is shown only labeled as an estimate.
 //
 // Doc: features/batch-savings/FEATURE.md
 

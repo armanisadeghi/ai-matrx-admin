@@ -2,7 +2,7 @@
 //
 // Reproduced at `e64a912f`: `openNeighbour` on the page presentation called
 // `toPage`, which is `router.push`. Five presses of `]` produced five pushes, so
-// twenty records meant twenty Backs — and the chevron labelled "Back" returned
+// twenty records meant twenty Backs — and the chevron labeled "Back" returned
 // to the PREVIOUS RECORD rather than to the list the person came from. Linear
 // and Gmail both replace rather than push when moving inside a list.
 //

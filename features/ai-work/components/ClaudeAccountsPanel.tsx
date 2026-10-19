@@ -397,7 +397,7 @@ export function ClaudeAccountsPanel() {
           role="status"
         >
           <Loader2 aria-hidden className="size-3.5 shrink-0 animate-spin text-muted-foreground" />
-          <span className="truncate">Cancelling…</span>
+          <span className="truncate">Canceling…</span>
         </div>
       )}
 

@@ -13,7 +13,7 @@ Verified against code and live data 2026-09-14.
   rate, written by the matrx-batch poller beside `actual_cost_usd`.
 - **`est_live_cost_usd` is never a saving basis.** It prices ESTIMATED tokens before
   submission: the 2026-09-13 run read 76.8% on it for what was really 50%. It may be
-  shown only labelled as an estimate. Guard: aidream
+  shown only labeled as an estimate. Guard: aidream
   `scripts/check_batch_savings_source.py` (static over both repos + `--live` over DB
   function bodies, `--self-test`).
 - **Batch spend is already inside the platform headline.** Every completed, priced
@@ -52,7 +52,7 @@ Window `[p_from, p_to)` on `work_item.completed_at` (NULL = open); `lanes` sums
 (completed + priced), `completed_items`, `unpriced_items` (excluded, stated),
 `batch_items`, `escalated_items`, `actual_usd`, `live_equivalent_usd`, `saved_usd`,
 `discount_pct`, token totals, `undelivered_items/usd`, `pre_submission_estimate_usd`
-(labelled only), `by_purpose`, `by_model`, `by_organization`, `lanes`.
+(labeled only), `by_purpose`, `by_model`, `by_organization`, `lanes`.
 
 ## Change Log
 

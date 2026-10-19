@@ -9,7 +9,7 @@
 //              a stored file by its file id (the server keeps its `file → conversation` edge), every other kind
 //              as its typed resource block. Never pasted into her message (THE USER-INPUT LAW).
 //   job      — one of her agents or workflows, made a job (mandate) of the Applet's organization
-//              (`applet-job.ts`). The catalogue lists it first with its real inputs (`attachedJobs`), and the
+//              (`applet-job.ts`). The catalog lists it first with its real inputs (`attachedJobs`), and the
 //              Applet runs it through the one job path (`useJob` → `POST /ai/mandates/<key>`).
 
 import type { AppletLayout } from "@ai-matrx/applets";
@@ -98,14 +98,14 @@ export function referenceResources(list: readonly BuildReference[]): Resource[] 
   return list.flatMap((r) => (r.kind === "resource" ? [r.resource] : []));
 }
 
-/** The jobs the catalogue must list (and the build checks run against). */
+/** The jobs the catalog must list (and the build checks run against). */
 export function attachedJobKeys(list: readonly BuildReference[]): string[] {
   return list.flatMap((r) => (r.kind === "job" ? [r.mandate_key] : []));
 }
 
 /**
  * The named context entry each round carries: WHAT she attached, by name — the material itself rides the
- * attach path, the jobs the catalogue. Null when nothing is attached (removes the entry on a continued turn).
+ * attach path, the jobs the catalog. Null when nothing is attached (removes the entry on a continued turn).
  */
 export function attachmentsContext(list: readonly BuildReference[]): string | null {
   if (!list.length) return null;
@@ -120,7 +120,7 @@ export function attachmentsContext(list: readonly BuildReference[]): string | nu
               layout: r.layout,
               use: "start from this stock layout (the Stock layouts section of the reference): the entry file renders it over the attached job with these options; build only what she asks beyond it",
             }
-          : { attached: r.label, what: r.holder, job: r.mandate_key, use: "a job this Applet runs (listed in the catalogue with attached: true)" },
+          : { attached: r.label, what: r.holder, job: r.mandate_key, use: "a job this Applet runs (listed in the catalog with attached: true)" },
     ),
   );
 }

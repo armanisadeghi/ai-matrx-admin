@@ -86,7 +86,7 @@ export function arrange(
   return out;
 }
 
-/** Line items up on one edge (or centre line) of the group's bounding box. */
+/** Line items up on one edge (or center line) of the group's bounding box. */
 export function align(items: readonly Placed[], edge: AlignEdge): Placed[] {
   if (items.length === 0) return [];
   const x0 = Math.min(...items.map((i) => i.rect.x));
@@ -141,7 +141,7 @@ export interface Scene {
   frames: readonly Placed[];
 }
 
-/** The frame a tile belongs to: the smallest frame holding its centre. */
+/** The frame a tile belongs to: the smallest frame holding its center. */
 export function frameOf(tile: Rect, frames: readonly Placed[]): string | null {
   const cx = tile.x + tile.w / 2;
   const cy = tile.y + tile.h / 2;
@@ -152,6 +152,16 @@ export function frameOf(tile: Rect, frames: readonly Placed[]): string | null {
     if (!best || r.w * r.h < best.rect.w * best.rect.h) best = f;
   }
   return best?.id ?? null;
+}
+
+/**
+ * The frame a tile sits in by PLACE: the one holding its top edge (a point just inside its top, at its
+ * horizontal middle). The top, not the center: growing to content never moves a tile's top, and the
+ * server's board reader (aidream `board_state.py`) files by the top edge too, so both sides agree.
+ */
+export function frameAtTop(tile: Rect, frames: readonly Placed[]): string | null {
+  const probe = { x: tile.x + tile.w / 2 - 1, y: tile.y, w: 2, h: Math.min(2, tile.h) };
+  return frameOf(probe, frames);
 }
 
 /**

@@ -89,7 +89,7 @@ via `refineDetail` (`detail.tsx`). Bodies: `components/CandidateRunBody.tsx`,
   one batched `public.mnd_candidate_cells` read for all cells on screen). Paused while the page is
   hidden, and reads at once when the page is seen again (V2 N1); a beat never stacks on a read in
   flight. The knob is read only when something collects. **Stop signal = the candidate is
-  terminal-for-now** (ready / promoted / discarded / cancelled — `candidateStillMoving`), never
+  terminal-for-now** (ready / promoted / discarded / canceled — `candidateStillMoving`), never
   "all pairs in": the judge verdict and the server's status/recommendation land after the last
   pair, so a pair window keeps reading while its candidate still collects (V2 N1).
 - **Every decision asks first (V2 N3).** Promote, Put back and Discard confirm on the Candidates

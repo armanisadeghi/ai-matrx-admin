@@ -15,7 +15,7 @@
  * ALSO CAUGHT: a visually hidden PARENT (`sr-only` wrapper, `<VisuallyHidden>`) around the
  * announcement, the bare `hidden` attribute, and `title=` / `aria-label=` expressions that carry an
  * error (baselined, only shrinks). NOT CATCHABLE STATICALLY, and said so rather than implied: a
- * className held in a variable. The behavioural guard for that is the hook test
+ * className held in a variable. The behavioral guard for that is the hook test
  * (features/notes/hooks/useDraftInitializationControl.test.tsx): the BOUNDARY announces, so a surface
  * that hides its copy cannot make the failure silent.
  *

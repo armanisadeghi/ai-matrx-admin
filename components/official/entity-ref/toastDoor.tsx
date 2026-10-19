@@ -35,7 +35,7 @@ export interface ToastDoorOptions {
   /** Button text. Defaults to "Open". */
   label?: string;
   /**
-   * Override the registry route. Honoured exactly: `null` means "no door" and
+   * Override the registry route. Honored exactly: `null` means "no door" and
    * must not fall through to the registry.
    */
   href?: string | null;

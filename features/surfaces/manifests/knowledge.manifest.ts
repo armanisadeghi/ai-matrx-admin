@@ -724,7 +724,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "graph_layout",
     label: "Graph layout",
     description:
-      'Switches the canvas layout algorithm. Exactly one of: "fcose" (Force / organic — the balanced default for exploring clusters) | "cola" (Force / live — physics keeps running, drag resettles the graph) | "concentric" (By importance — rings by centrality, the most-connected hubs at the centre) | "grid" (plain deterministic grid, ignores structure). Re-runs the layout client-side; the underlying data is untouched. Requires a drawn graph.',
+      'Switches the canvas layout algorithm. Exactly one of: "fcose" (Force / organic — the balanced default for exploring clusters) | "cola" (Force / live — physics keeps running, drag resettles the graph) | "concentric" (By importance — rings by centrality, the most-connected hubs at the center) | "grid" (plain deterministic grid, ignores structure). Re-runs the layout client-side; the underlying data is untouched. Requires a drawn graph.',
     valueType: "string",
     updatesValue: "graph_layout",
     mode: "ui",

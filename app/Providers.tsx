@@ -76,7 +76,7 @@ import { AssociationsHost } from "@/features/scopes/host/AssociationsHost";
 import { DetailHost } from "@/features/window-panels/detail/DetailHost";
 
 // THE ONE `@ai-matrx/agents/catalog` mount — the agent picker and every piece
-// of its state (rows, tabs, sort, search, filters, favourites, counts,
+// of its state (rows, tabs, sort, search, filters, favorites, counts,
 // freshness, the mandate-resolved default row) live in the package behind this
 // provider. Owner ruling D1 (2026-09-08): the host receives `onSelect(agentId)`
 // and nothing more; there is NO second agent-list store in this app. Inside

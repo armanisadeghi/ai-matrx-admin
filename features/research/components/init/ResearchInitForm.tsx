@@ -843,7 +843,7 @@ function AiCanvas({
 
   return (
     <div className="space-y-10">
-      {/* Status rail — a thin coloured line + text label, no icon. */}
+      {/* Status rail — a thin colored line + text label, no icon. */}
       <div className="flex items-center gap-3">
         <div
           className={cn(

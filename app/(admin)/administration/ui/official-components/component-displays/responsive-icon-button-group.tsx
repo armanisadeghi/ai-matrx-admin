@@ -124,11 +124,11 @@ const buttons: IconButtonConfig[] = [
       isMobile ? (
         <Button variant="ghost" className="w-full h-14 justify-start gap-4 text-base rounded-xl">
           <Star className="w-5 h-5 text-yellow-500" />
-          <span>Favourite</span>
+          <span>Favorite</span>
         </Button>
       ) : (
         <Button variant="ghost" size="sm" className="gap-1 text-yellow-500">
-          <Star className="w-4 h-4" /> Favourite
+          <Star className="w-4 h-4" /> Favorite
         </Button>
       ),
   },
@@ -182,14 +182,14 @@ const buttons: IconButtonConfig[] = [
             className="w-full h-14 flex items-center justify-start gap-4 text-base rounded-xl"
           >
             <Star className="w-5 h-5 text-yellow-500" />
-            <span className="flex-1 text-left">Favourite</span>
+            <span className="flex-1 text-left">Favorite</span>
           </SurfaceButton>
         ) : (
           <Button
             icon={<Star />}
             type="submit"
             variant="quiet"
-          > Favourite
+          > Favorite
           </Button>
         ),
     },
@@ -251,7 +251,7 @@ const buttons: IconButtonConfig[] = [
           key="custom-trigger"
           component={component}
           code={codeCustomTrigger}
-          description="mobileTrigger — swap the default '...' icon for any node. Useful when the group sits inside a toolbar that needs a labelled button."
+          description="mobileTrigger — swap the default '...' icon for any node. Useful when the group sits inside a toolbar that needs a labeled button."
         >
           <div className="inline-flex">
             <ResponsiveIconButtonGroup
@@ -286,7 +286,7 @@ const buttons: IconButtonConfig[] = [
           key="render-slot"
           component={component}
           code={codeRender}
-          description="render() — receives isMobile so you can provide entirely different desktop vs. sheet UI for the same logical button. The Favourite button here is a full labelled button on desktop and a full-width sheet row on mobile."
+          description="render() — receives isMobile so you can provide entirely different desktop vs. sheet UI for the same logical button. The Favorite button here is a full labeled button on desktop and a full-width sheet row on mobile."
         >
           <div className="inline-flex">
             <ResponsiveIconButtonGroup

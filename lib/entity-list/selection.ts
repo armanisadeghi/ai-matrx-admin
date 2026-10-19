@@ -189,7 +189,7 @@ export interface EntityBulkAction<TRow> {
   /**
    * Why this action cannot run on a selection of `count` rows right now
    * (e.g. "Select exactly one note to share"), or null when it can. The bar
-   * greys the button and shows the reason as its tooltip.
+   * grays the button and shows the reason as its tooltip.
    *
    * `selection` lets a verb say it would do NOTHING here (every selected row
    * is already in the state it sets) — the shell never offers a no-op click.
@@ -208,7 +208,7 @@ export interface EntityBulkAction<TRow> {
    * shell then KEEPS the selection and says nothing, exactly as it does when
    * the action throws. An action that DID work returns a result object, even
    * an empty one, which is what opts it into the default success toast and the
-   * default "clear the selection, the work is done" behaviour.
+   * default "clear the selection, the work is done" behavior.
    */
   run: (
     selection: EntityBulkSelection<TRow>,
@@ -225,7 +225,7 @@ export interface EntityBulkSelectionConfig<TRow> {
    */
   noun?: string;
   /**
-   * A row no bulk action can touch renders NO checkbox at all — not a greyed
+   * A row no bulk action can touch renders NO checkbox at all — not a grayed
    * one (the fourth law; the table enforces it).
    */
   isRowSelectable?: (row: TRow) => boolean;

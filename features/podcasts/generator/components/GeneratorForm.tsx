@@ -158,7 +158,7 @@ function mediaModeToCap(mode: MediaLimitMode): number | undefined {
   return undefined;
 }
 
-/** One labelled row with an All · One · Skip segmented control. */
+/** One labeled row with an All · One · Skip segmented control. */
 function MediaLimitField({
   icon: Icon,
   label,

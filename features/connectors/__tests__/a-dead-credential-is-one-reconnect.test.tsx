@@ -200,7 +200,7 @@ describe("the plan a dead credential produces", () => {
     });
     expect(plan.empty).toBe(false);
     expect(plan.alreadyGranted).toEqual([]);
-// YouTube is its own labelled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
+// YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
     expect(plan.request?.renewals.map((product) => product.key)).toEqual(
       provider.products
         .map((product) => product.key)
@@ -306,7 +306,7 @@ describe("the consent dialog for a dead account", () => {
       | { renewals: { key: string }[]; addedScopes: string[] }
       | undefined;
     expect(request?.addedScopes).toEqual([]);
-// YouTube is its own labelled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
+// YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
     expect(request?.renewals).toHaveLength(provider.products.length - 1);
     expect(container!.textContent ?? "").not.toContain("already connected");
     // And the switcher does not call a held-but-unusable account empty.

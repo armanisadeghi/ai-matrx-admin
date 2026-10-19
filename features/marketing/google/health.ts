@@ -23,7 +23,7 @@
  * column survives in `googleConnectionDiagnostics` only — the admin-grade
  * label/value list on the super-admin connections workspace, where an operator
  * is the reader. This holds whatever the server writes tomorrow: a reason we do
- * not recognise never reaches a screen.
+ * not recognize never reaches a screen.
  */
 import { GOOGLE_SCOPE, hasGoogleGrantedScope } from "@/lib/googleScopes";
 import type {
@@ -420,7 +420,7 @@ export function googleAccountRefusalSentence(
  * five-minute Search Console blip presented as nine broken products.
  *
  * Returns null whenever nothing of the shape is recorded, and null on any
- * value this reader does not recognise — never a guess at the server's words.
+ * value this reader does not recognize — never a guess at the server's words.
  */
 export function googleDiscoveryOutageSentence(
   connection: GoogleConnectionSummary,

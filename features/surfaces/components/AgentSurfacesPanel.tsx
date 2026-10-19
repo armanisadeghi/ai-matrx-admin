@@ -9,7 +9,7 @@ import type { AnyMandateKey } from "@ai-matrx/agents/mandates";
  * any surface in the platform.
  *
  * Conceptual model:
- * - This is NOT a "list of the agent's surfaces." It's a catalogue of every
+ * - This is NOT a "list of the agent's surfaces." It's a catalog of every
  *   active surface, with the agent's existing bindings shown inline against
  *   each one. The engineer can bind their agent to any surface from here.
  * - Surfaces are grouped by `client_name` (matrx-user, matrx-admin, ...)
@@ -224,7 +224,7 @@ export function AgentSurfacesPanel({ agent }: Props) {
   // org-filter: default-for-new pre-selects the organization a NEW binding is filed under; never narrows a list
   const currentOrgId = useAppSelector(selectOrganizationId);
 
-  // ── Redux-backed catalogue + bindings ─────────────────────────────────────
+  // ── Redux-backed catalog + bindings ─────────────────────────────────────
   const selectBindingsForAgent = useMemo(
     () => makeSelectBindingsForAgent(agent.id),
     [agent.id],
@@ -1189,7 +1189,7 @@ function SurfacePicker({
   );
 }
 
-// CustomScopeSection retired in favour of `<EntityScopeTagger />` in
+// CustomScopeSection retired in favor of `<EntityScopeTagger />` in
 // controlled mode — see the BindingEditorDialog above. Removing the local
 // rebuilds the canonical Surface B picker and drops the legacy
 // scopeTypesSlice / scopesSlice / scopeAssignmentsSlice imports.

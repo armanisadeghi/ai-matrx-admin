@@ -96,7 +96,7 @@ describe("describeTestRequest — every queued-test state has words", () => {
 describe("promoteBlockedBecause — Promote is offered only when the server would accept it", () => {
   const amb = [
     { code: "multiple_mmproj", variant: "q4_k_m", words: "More than one vision projector." },
-    { code: "quant_unparsed", variant: "weird", words: "Quant not recognised." },
+    { code: "quant_unparsed", variant: "weird", words: "Quant not recognized." },
   ];
 
   it("blocks with words while a chosen variant has an open decision", () => {

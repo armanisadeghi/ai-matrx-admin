@@ -7,14 +7,14 @@
  * elsewhere in the file (the RC-B12 verify F9 hole).
  *
  * An element is an ERROR DISPLAY when any of these hold:
- *   A. it carries role="alert" — whatever its colour (a grey or amber alert
+ *   A. it carries role="alert" — whatever its color (a gray or amber alert
  *      box is still an alert);
  *   B. its class list is error-styled (text/bg/border destructive, red, rose)
  *      and its own children render an error value (`{error}`, `{e.message}`,
  *      `{saveError}`, `{extractErrorMessage(err)}`…) or a failure sentence;
  *   C. its own children state a failure in words ("Couldn't load…",
  *      "Failed to save…", "Something went wrong", "Not saved") whatever its
- *      colour;
+ *      color;
  *   D. it is a status/notice element (role="status", or amber/warning styled)
  *      whose children render an error value — a stale-data notice IS a failed
  *      read shown to the person;
@@ -27,7 +27,7 @@
  * reveal) carries nothing. Round 3 added "Failed to compile", "Template
  * Error", "Permission denied", "timed out", red "Error: {…}", `reason`/`detail`
  * names, orange error text, and any error/message value rendered in an error
- * branch whatever its colour.
+ * branch whatever its color.
  * "Own children" means text and the values an expression actually renders —
  * the leaves of `a ? b : c`, `a && b`, `a ?? b` — never the inside of a
  * callback, a nested element, a comment or a prop. Controls (buttons, inputs,
@@ -529,7 +529,7 @@ function classify(node: JsxLike): ErrorDisplayHit["reason"] | null {
     [...errorLeaves, ...messageLeaves].some((leaf) => !/count|Count|length|\bn\b/.test(leaf));
   const red = RED.test(className) || STYLE_RED.test(attrText(node, "style") ?? "") || variantRed;
   // Red styling alone is not an error (RC-B12 r13 ruling): a notice that
-  // states a LIFECYCLE FACT ("This meeting was cancelled: “{reason}”") is
+  // states a LIFECYCLE FACT ("This meeting was canceled: “{reason}”") is
   // information — nothing failed, nothing to copy for AI. It counts only when
   // it also carries an error value or failure wording.
   const lifecycleNotice =
@@ -537,9 +537,9 @@ function classify(node: JsxLike): ErrorDisplayHit["reason"] | null {
   if (red && !lifecycleNotice && (errorLeaves.length > 0 || messageLeaves.length > 0 || FAILURE_WORDS.test(words) || RED_ONLY_WORDS.test(words))) {
     return "red-error";
   }
-  // Orange/amber text rendering an error value is an error shown in warning colours.
+  // Orange/amber text rendering an error value is an error shown in warning colors.
   if (NOTICE.test(className) && /\borange-\d/.test(className) && errorLeaves.length > 0) return "red-error";
-  // Whatever its colour, an error or message value rendered only in the error state IS the error.
+  // Whatever its color, an error or message value rendered only in the error state IS the error.
   if ((errorLeaves.length > 0 || messageLeaves.length > 0) && inErrorBranch(node)) return "red-error";
   // Anything painted red, rose or amber inside an error branch is the error
   // shown (`{load.status === "error" ? <p className="text-destructive">{load.detail}</p> : …}`).
@@ -1484,7 +1484,7 @@ const NOT_A_COUNT_TAG =
 export const COUNT_READ_PRIMITIVES = /^(?:UntrustedCount|KpiTile|MetricCell|ResearchFilterBar)$/;
 
 /**
- * Does `<Tag read={…}>` go to a primitive that honours `read`? A shared count
+ * Does `<Tag read={…}>` go to a primitive that honors `read`? A shared count
  * primitive, or a component defined in this same file whose props take `read`
  * (so a local `StatChip` that renders through `UntrustedCount` counts, and a
  * `read=` sprinkled on a component that ignores it does not).

@@ -139,7 +139,7 @@ const STATE_WORDS: Record<DirectiveState, string> = {
 };
 
 /**
- * Error text as it arrives from the server can carry terminal colour codes and
+ * Error text as it arrives from the server can carry terminal color codes and
  * a full ORM dump. Show the readable sentence; keep the cleaned full text one
  * click away and in the ErrorAlchemyMenu.
  */
@@ -157,7 +157,7 @@ function PanelError({
   recordLabel?: string | null;
 }) {
   const clean = stripTerminalCodes(raw).trim();
-  // The server's own sentence first (humanized: colour codes and ORM dumps
+  // The server's own sentence first (humanized: color codes and ORM dumps
   // removed); its generic status line only when there is no sentence at all.
   // Until 2026-10-02 aidream sent "Bad request. Please check your input." as
   // `user_message` with the real reason in `message` — preferring the status
@@ -556,7 +556,7 @@ export function DirectiveBuilderPanel({
       (e) => {
         // A server refusal carries a sentence written for a person
         // (`user_message`) and a technical `detail`; show the first, keep the
-        // second one click away. Terminal colour codes never reach the screen.
+        // second one click away. Terminal color codes never reach the screen.
         const raw =
           e instanceof BackendApiError
             ? e.detail

@@ -637,8 +637,8 @@ stage` / `Opportunity` / `Not tracked`, with hover explanations and one-line
 
 ## Archive is tenant-scoped (2026-09-17, aidream migrations 0840/0841 — AD248)
 
-`seo.keyword` is a shared catalogue (229,200 platform rows every signed-in account can
-read). "Archive from library" on a catalogue row no longer soft-deletes it for everybody:
+`seo.keyword` is a shared catalog (229,200 platform rows every signed-in account can
+read). "Archive from library" on a catalog row no longer soft-deletes it for everybody:
 `seo.fn_archive_keywords` soft-deletes only a keyword the caller holds **editor** on (their
 own row) and, for every other id, writes one `(organization)-[archived]->(seo_keyword)` edge
 on `platform.associations` for the caller's organization (resolved inside: the single
@@ -646,4 +646,4 @@ non-system org, else the personal org). `fn_restore_keywords` mirrors it. The li
 `data/queries.ts` (`listKeywordsWithMarket`, `listKeywordsWithMarketByPhrases`) read those
 edges (`hiddenKeywordIds`, RLS-scoped) and exclude them — that read is what makes the row
 disappear; the RPC alone only records the choice. Platform admins hold editor on the
-catalogue, so the global archive is theirs alone.
+catalog, so the global archive is theirs alone.

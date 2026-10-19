@@ -439,7 +439,7 @@ export function ValueWorkbench() {
    * the table."* He was right, and the reason was worse than a missing
    * feature: the Keyword Workbench's table shows Class as a dropdown that
    * ASSIGNS, while this table showed the same word, in the same kind of table,
-   * as dead grey text. Two near-identical tables behaving differently teaches
+   * as dead gray text. Two near-identical tables behaving differently teaches
    * a person that the platform is unpredictable.
    *
    * The fix is NOT a second write path. This cell now renders the SAME

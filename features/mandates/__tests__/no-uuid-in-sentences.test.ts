@@ -23,7 +23,7 @@
  * never "unknown". An id is a DIAGNOSTIC: it belongs in `console.*`, where the
  * developer who needs it looks, and that is the one exemption below.
  *
- * The census is by BEHAVIOUR, in `mandate-screen-vocabulary.test.ts`'s idiom:
+ * The census is by BEHAVIOR, in `mandate-screen-vocabulary.test.ts`'s idiom:
  * it reads the SOURCE of both mandate trees rather than any one delivery path,
  * so a sentence added tomorrow is covered without being listed.
  */

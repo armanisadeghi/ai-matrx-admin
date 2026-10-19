@@ -3,14 +3,14 @@
  * two POST /api/set-theme per load on /chat/new).
  *
  * Before the sync boot restores the saved choice, the store holds the slice's
- * initial "system". StoreProvider used to repaint from the device colour at
- * store creation and post that colour, then the boot restored the saved
+ * initial "system". StoreProvider used to repaint from the device color at
+ * store creation and post that color, then the boot restored the saved
  * explicit mode and it repainted + posted again.
  *
  * The server cookie / SyncBootScript paint is the only paint until the
  * person's choice is known: for every device x saved-choice pair the class
  * never flips and no set-theme call is made (the cookie already matches).
- * A real device colour change while the page is open still updates live.
+ * A real device color change while the page is open still updates live.
  *
  * Mutation: restore the unconditional `applySystemTheme()` call at store
  * creation in providers/StoreProvider.tsx -> the (device != saved) cases go RED.
@@ -158,14 +158,14 @@ describe("theme boot never flips and never double-posts", () => {
     },
   );
 
-  // First visit: no cookie yet, SyncBootScript painted the device colour, nobody changed anything.
+  // First visit: no cookie yet, SyncBootScript painted the device color, nobody changed anything.
   it.each(devices)("device %s, first visit (no cookie), system: no set-theme call", async (device) => {
     await boot(device, "system", { cookie: false });
     expect(flips).toBe(0);
     expect(posts).toEqual([]);
   });
 
-  it("a real device colour change while on the page (system) updates live, one post", async () => {
+  it("a real device color change while on the page (system) updates live, one post", async () => {
     await boot("light", "system");
     deviceDark = true;
     await act(async () => {

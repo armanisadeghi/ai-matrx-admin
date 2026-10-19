@@ -31,9 +31,9 @@ it only after you have formed your own list from the owner's words.
 
 ## What you do (in this container: no dev server, no browser)
 
-1. From the owner's words and PLAN §6 B alone, write your own list of every behaviour the Table
+1. From the owner's words and PLAN §6 B alone, write your own list of every behavior the Table
    view must have. Do this BEFORE opening any file under `views/table/`.
-2. Read the code and the tests. For every behaviour on your list, mark it: **present and
+2. Read the code and the tests. For every behavior on your list, mark it: **present and
    tested with recorded rows** / **present, untested** / **present but dishonest** (prints a
    number it did not load, hides a state, disables without a reason, lies about order) /
    **missing**.
@@ -51,14 +51,14 @@ it only after you have formed your own list from the owner's words.
    and persist through the store, never component state.
 5. Check the things a builder forgets: every column sorts AND filters; Lucide only; semantic
    tokens only; no browser dialogs; every destructive click names its consequence; every taste is
-   a knob (grep for hard-coded colours, thresholds, column sets); no new dynamic import; no
+   a knob (grep for hard-coded colors, thresholds, column sets); no new dynamic import; no
    barrel; the table scrolls (bounded-height chain, `useClippedContentGuard`); mobile does not
    need a horizontal page scroll.
 
 ## What you return (to the lane owner, as your final message)
 
 - A numbered list of **findings**, most serious first, each with: the owner's sentence it
-  violates, the file and line, and what you observed. A finding you cannot prove is labelled
+  violates, the file and line, and what you observed. A finding you cannot prove is labeled
   "suspected".
 - Your list from step 1 with each item's mark.
 - The verbatim command results from step 3.

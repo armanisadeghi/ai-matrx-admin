@@ -23,7 +23,7 @@
  * host, read once by the dialog, no per-kind cooperation required.
  *
  * `null` is a meaningful value — "this caller has no destination for this
- * record" — and is honoured exactly, so a peek opened from a doorless surface
+ * record" — and is honored exactly, so a peek opened from a doorless surface
  * does not quietly fall back to a route the caller deliberately withheld.
  *
  * ⚠️ **A peek that does not render `PeekDialog` cannot see this.** `AgentPeek`

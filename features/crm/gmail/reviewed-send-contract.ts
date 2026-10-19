@@ -546,7 +546,7 @@ export interface ReviewedGmailRefusal {
 export const GMAIL_SEND_REFUSED_CODE = "gmail_send_refused";
 
 /**
- * Recognise the 409 on the error the transport threw, or answer null.
+ * Recognize the 409 on the error the transport threw, or answer null.
  *
  * Reads the canonical `BackendApiError` shape without importing it (this module
  * stays pure): `code`, `userMessage` and `details` are what `parseHttpErrorBody`

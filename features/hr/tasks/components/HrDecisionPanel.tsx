@@ -858,7 +858,7 @@ export function HrDecisionPanel({
                 title={closeAction === "cancel" ? "Cancel this request?" : "Withdraw this request?"}
                 description={
                     closeAction === "cancel"
-                        ? "Cancelling closes it for everyone. The history stays — an instance is evidence and is never deleted."
+                        ? "Canceling closes it for everyone. The history stays — an instance is evidence and is never deleted."
                         : "Withdrawing closes it. The history stays — an instance is evidence and is never deleted."
                 }
                 confirmLabel={closeAction === "cancel" ? "Cancel request" : "Withdraw"}
@@ -885,7 +885,7 @@ export function HrDecisionPanel({
                         }
                         setCloseOutcome(
                             closeAction === "cancel"
-                                ? "Cancelled. The history stays."
+                                ? "Canceled. The history stays."
                                 : "Withdrawn. The history stays.",
                         );
                         await load();

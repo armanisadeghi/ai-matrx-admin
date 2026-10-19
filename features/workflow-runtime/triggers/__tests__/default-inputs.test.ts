@@ -102,7 +102,7 @@ describe("missingTriggerInputs", () => {
 });
 
 describe("collidingInputNames", () => {
-  it("is empty for a surface that honours its name-unique contract", () => {
+  it("is empty for a surface that honors its name-unique contract", () => {
     expect(collidingInputNames(INPUTS)).toEqual([]);
   });
 

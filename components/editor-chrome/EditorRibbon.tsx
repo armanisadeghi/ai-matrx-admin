@@ -2,7 +2,7 @@
 
 /**
  * The Microsoft 365 look's ribbon: a tab row (File · Home · Insert · … · View · Help) over a panel
- * of labelled groups with large and small buttons — Excel / Word / PowerPoint on the web. It is a
+ * of labeled groups with large and small buttons — Excel / Word / PowerPoint on the web. It is a
  * second presentation of the editor's ONE command map (`ribbon-model.ts`): every control is a row
  * of the same `EditorMenu[]` / `EditorToolbarItem[]` the Google menu bar and toolbar draw, File is
  * the same shared file menu, and the Menus search sits on the tab row.

@@ -9,7 +9,7 @@ import {
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 import type { OverlayId } from "@ai-matrx/summon/open";
 
-/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+/** The old catalogue's shape, read from the definitions (the catalog file is gone). */
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
@@ -104,7 +104,7 @@ describe("every product a person can switch on offers its first useful action", 
         expect(undeclared.map((product) => product.key)).toEqual([]);
       });
 
-      it("opens a real catalogued overlay wherever the action is a window", () => {
+      it("opens a real cataloged overlay wherever the action is a window", () => {
         const overlays = provider.products.flatMap((product) =>
           product.firstAction.kind === "overlay"
             ? [{ key: product.key, action: product.firstAction }]

@@ -232,7 +232,7 @@ function clickAction(scope: ParentNode, action: string): void {
 
 function typeInto(label: string, value: string): void {
   const input = document.body.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`);
-  if (!input) throw new Error(`no input labelled "${label}"`);
+  if (!input) throw new Error(`no input labeled "${label}"`);
   const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
   act(() => {
     setter?.call(input, value);
@@ -532,9 +532,9 @@ describe("(e) readOnly yields no checkbox, no bulk bar, no run controls, no revi
   });
 });
 
-// ── (f) every colour on the destination dot comes from the `intent_colors` knob
+// ── (f) every color on the destination dot comes from the `intent_colors` knob
 
-describe("(f) the destination dot's colour is read from the intent_colors knob, not a constant", () => {
+describe("(f) the destination dot's color is read from the intent_colors knob, not a constant", () => {
   const LINKS: MapLinks = {
     brandSeg: null,
     home: () => null,
@@ -555,7 +555,7 @@ describe("(f) the destination dot's colour is read from the intent_colors knob, 
     const r = createRoot(holder);
     act(() => {
       // p1: in_place tone (covers a live topic, no intent) — the tone whose
-      // colour is directly controlled by `intent_colors.in_place`.
+      // color is directly controlled by `intent_colors.in_place`.
       r.render(<>{cell(RECORDED_P1, 0)}</>);
     });
     const dot = holder.querySelector('span[aria-hidden="true"]');
@@ -565,7 +565,7 @@ describe("(f) the destination dot's colour is read from the intent_colors knob, 
     return cls;
   }
 
-  it("changes the rendered class when the mocked knob's in_place colour changes", () => {
+  it("changes the rendered class when the mocked knob's in_place color changes", () => {
     const greenClass = dotClassFor({
       in_place: "green",
       leaving: "amber",

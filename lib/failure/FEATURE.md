@@ -23,7 +23,7 @@ prose written for operators, and a retry is its honest remedy.
   `AbortError`/`TimeoutError`); so is a **database refusal**, classified by
   SQLSTATE via `databaseRefusal(error)` → `timeout` (57014) | `busy` (53xxx,
   57xxx) | `conflict` (40xxx) | `dropped` (08xxx), with the engine's verbatim
-  phrasings as a fallback when the code was lost upstream. A cancelled
+  phrasings as a fallback when the code was lost upstream. A canceled
   statement says "nothing was changed" (PostgREST runs each request in its own
   transaction, so the rollback is a fact); a dropped connection carries the same
   uncertainty a transport refusal does. A DECISION is not a refusal — `42501`

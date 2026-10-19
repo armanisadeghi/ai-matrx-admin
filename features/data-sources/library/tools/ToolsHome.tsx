@@ -42,7 +42,7 @@ export function ToolsHome({
   onFamily: (family: string | null) => void;
   onOpenTool: (hit: CatalogToolHit) => void;
   onGive: (hit: CatalogToolHit) => void;
-  /** The one box recognised a website, email, phone or person: open that lookup with the box filled. */
+  /** The one box recognized a website, email, phone or person: open that lookup with the box filled. */
   onLookup: (plan: LookupPlan) => void;
   /** The data sources that answer the same words, under the Tools. */
   dataSection: ReactNode;
@@ -65,7 +65,7 @@ export function ToolsHome({
   const firstLoad = (status === "idle" || status === "loading") && tools.length === 0;
   const line = verdictLine(verdict, query);
   const lookup = planLookup(query);
-  // A recognised lookup is the answer to the box; the list of Tools waits one press away (and returns on a new query).
+  // A recognized lookup is the answer to the box; the list of Tools waits one press away (and returns on a new query).
   const [listOpenFor, setListOpenFor] = useState<string | null>(null);
   const hideList = lookup !== null && listOpenFor !== query;
   const help = !lookup && (family === "people" || family === "company") ? lookupHelp(query) : null;

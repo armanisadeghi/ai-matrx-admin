@@ -2,7 +2,7 @@
 //
 // 🚨 `readOnly` MEANS THE WRITE CONTROLS ARE ABSENT, NOT DISABLED. A record-only
 // grantee and a canvas viewer must not see a checkbox column or a bulk bar at
-// all — a greyed checkbox advertises a write `seo.set_page_intents` would
+// all — a grayed checkbox advertises a write `seo.set_page_intents` would
 // refuse, and a bulk bar that appears and then explains itself is the dead
 // control law 4 forbids.
 //

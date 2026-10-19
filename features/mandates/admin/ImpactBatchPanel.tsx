@@ -791,7 +791,7 @@ export function ImpactBatchPanel({
             ))}
           </>
         ) : null}
-        {/* The three piles, in words, so no colour has to be decoded. */}
+        {/* The three piles, in words, so no color has to be decoded. */}
         {impact && !error ? (
           <div className="flex flex-wrap gap-x-3 gap-y-1 pt-1">
             {BATCH_TIER_ORDER.map((tier) => (

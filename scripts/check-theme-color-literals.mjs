@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * check-theme-color-literals.mjs — a surface may not paint itself a colour the
+ * check-theme-color-literals.mjs — a surface may not paint itself a color the
  * theme does not own.
  *
  * THE CLASS (found 2026-09-17, Masterwork 390px/dark-mode cold walk): the sixth
@@ -12,7 +12,7 @@
  * stays white while the rest of the screen is dark, and no gate in this repo
  * notices. Dark mode only stays correct if it cannot be broken silently.
  *
- * THE RULE, for the roots this guard is pointed at: colours come from the
+ * THE RULE, for the roots this guard is pointed at: colors come from the
  * semantic tokens in `app/globals.css` (`bg-card`, `text-muted-foreground`,
  * `border-border`, `bg-textured`, …). A raw hex / rgb() / hsl() literal, or a
  * light-only Tailwind neutral (`bg-white`, `bg-gray-100`, `text-slate-700`,
@@ -24,11 +24,11 @@
  *    `bg-blue-500 text-white` reads the same in both themes;
  *  - a neutral that carries its own `dark:` counterpart in the same string;
  *  - anything outside a `className` / `class` string or an inline `style`
- *    colour property — prose, comments, ids, placeholders and `#4821` in a
+ *    color property — prose, comments, ids, placeholders and `#4821` in a
  *    claim number are untouched.
  *
  * Opt out on the line before, with a reason:
- *   {/* theme-color-literal-ok -- why this colour is theme-independent *\/}
+ *   {/* theme-color-literal-ok -- why this color is theme-independent *\/}
  *   // theme-color-literal-ok -- why
  *
  * Usage:
@@ -66,7 +66,7 @@ const WHITE_BLACK = new RegExp(`(?<![\\w-])(?:${PAINTS})-(?:white|black)(?![\\w-
 const SATURATED = new RegExp(`(?<![\\w-])(?:bg|from|via|to)-(?!(?:${NEUTRALS})-)[a-z]+-(?:[3-9]00|950)(?![\\w-])`);
 
 /**
- * Every colour literal a class string or inline style hard-codes.
+ * Every color literal a class string or inline style hard-codes.
  * Exported so the self-test drives the same function the sweep does.
  * @returns {{line:number, kind:string, text:string}[]}
  */
@@ -133,7 +133,7 @@ export function findThemeColorLiterals(source) {
     classRe.lastIndex = i;
   }
 
-  // Inline style colour properties: style={{ color: "#fff", background: "rgb(…)" }}
+  // Inline style color properties: style={{ color: "#fff", background: "rgb(…)" }}
   const styleRe = /\bstyle\s*=\s*\{\{([\s\S]{0,600}?)\}\}/g;
   while ((m = styleRe.exec(source))) {
     const body = m[1];
@@ -221,11 +221,11 @@ for (const rel of files) {
 
 if (total === 0) {
   console.log(
-    `check-theme-color-literals: ${files.length} file(s) under ${roots.join(", ")} carry no hard-coded light-only colour. Dark mode cannot be broken silently here.`,
+    `check-theme-color-literals: ${files.length} file(s) under ${roots.join(", ")} carry no hard-coded light-only color. Dark mode cannot be broken silently here.`,
   );
   process.exit(0);
 }
 console.error(
-  `\ncheck-theme-color-literals: ${total} hard-coded colour(s) under ${roots.join(", ")}. Use the semantic tokens in app/globals.css (bg-card, text-muted-foreground, border-border, …), or opt out on the line before with \`theme-color-literal-ok -- <reason>\`.`,
+  `\ncheck-theme-color-literals: ${total} hard-coded color(s) under ${roots.join(", ")}. Use the semantic tokens in app/globals.css (bg-card, text-muted-foreground, border-border, …), or opt out on the line before with \`theme-color-literal-ok -- <reason>\`.`,
 );
 process.exit(1);

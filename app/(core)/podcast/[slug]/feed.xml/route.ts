@@ -98,7 +98,7 @@ export async function GET(
         ? await showQuery.eq('id', slug).single()
         : await showQuery.eq('slug', slug).single();
 
-    // 🚨 "Podcast not found" is a claim about the CATALOGUE, and a refused query
+    // 🚨 "Podcast not found" is a claim about the CATALOG, and a refused query
     // cannot support it. PostgREST answers `PGRST116` for a genuine no-row
     // `.single()`; anything else — 42501 above all — means we were REFUSED, and
     // telling the open web the show does not exist would be the same silent lie

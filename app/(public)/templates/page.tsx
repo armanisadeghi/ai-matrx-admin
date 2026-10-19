@@ -1,5 +1,5 @@
 // app/(public)/templates/page.tsx — THE TEMPLATE GALLERY, one route for everyone (lane CHAIR-GALLERY,
-// 2026-10-05; first public in MAKE-HOME wave 4b). Server-rendered from the public catalogue door, so a
+// 2026-10-05; first public in MAKE-HOME wave 4b). Server-rendered from the public catalog door, so a
 // signed-out visitor, a signed-in person and a crawler read the same cards, each with a live thumbnail.
 
 import type { Metadata } from "next";

@@ -131,7 +131,7 @@ export function AskPanel({
 
   // No abort-on-unmount: a route kept alive in <Activity> runs effect cleanups
   // while its state survives, and aborting there left the panel reading
-  // "Answering" forever over a cancelled stream (seen live, 2026-09-27). A
+  // "Answering" forever over a canceled stream (seen live, 2026-09-27). A
   // running answer is only replaced by the next question.
 
   const state = given ?? loaded;

@@ -47,7 +47,7 @@
  *
  * 🚨 UNMEASURED IS NOT PASSED — same three degenerate outcomes as
  * check-soft-delete-cascade.ts, and the same `LIVE PULL FAILED` banner that
- * run-release-gates.sh's advisory-marker regex already recognises.
+ * run-release-gates.sh's advisory-marker regex already recognizes.
  *
  * Exit codes:
  *   0  every check ok, OR findings/unmeasured in default (advisory) mode

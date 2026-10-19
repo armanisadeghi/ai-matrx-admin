@@ -265,10 +265,10 @@ function ProviderConnectorsPanel({
       toast.success(verb === "Connect" ? "Connected." : "Reconnected.");
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
-        // A cancelled press leaves no card focus behind: the body goes back
+        // A canceled press leaves no card focus behind: the body goes back
         // to defaulting to the viewer's own account.
         setCardConsent(null);
-        toast.info("Authorization cancelled — nothing changed.");
+        toast.info("Authorization canceled — nothing changed.");
         return;
       }
       setFailure(consentFailureAnswer(cause));
@@ -345,7 +345,7 @@ function ProviderConnectorsPanel({
       toast.success("Permissions reviewed.");
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
-        toast.info("Authorization cancelled — nothing changed.");
+        toast.info("Authorization canceled — nothing changed.");
         return;
       }
       setFailure(consentFailureAnswer(cause));

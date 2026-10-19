@@ -2,7 +2,7 @@
 
 // features/vision-interview/components/StageTabs.tsx
 //
-// The v3 room's stage tabs — the bar across the top of the CENTRE panel.
+// The v3 room's stage tabs — the bar across the top of the CENTER panel.
 // ONE tab per stage that has a primary role (capture · ground · enhance ·
 // articulate · stress · shape), and one tab IS one expert IS one ordinary
 // agent conversation.

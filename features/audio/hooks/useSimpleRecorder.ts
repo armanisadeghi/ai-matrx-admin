@@ -8,7 +8,7 @@
  * canonical controller — `features/media-capture/recording/
  * media-recorder-controller.ts` — this hook only composes the audio-system
  * discipline around it: captureLock claim/release, the shared mic singleton,
- * the audio session registry row, and the analyser level meter.
+ * the audio session registry row, and the analyzer level meter.
  *
  * Public API is unchanged: { isRecording, isPaused, duration, audioBlob,
  * audioLevel, startRecording, stopRecording, pauseRecording,
@@ -64,7 +64,7 @@ export function useSimpleRecorder({
   const chunksRef = useRef<Blob[]>([]);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   // The shared AudioContext is never closed (only resumed); we only own the
-  // analyser + the source node we connect into it, and disconnect those.
+  // analyzer + the source node we connect into it, and disconnect those.
   const analyserRef = useRef<AnalyserNode | null>(null);
   const analyserSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -85,7 +85,7 @@ export function useSimpleRecorder({
       animationFrameRef.current = null;
     }
 
-    // Disconnect (don't close — the context is shared) the analyser graph.
+    // Disconnect (don't close — the context is shared) the analyzer graph.
     if (analyserSourceRef.current) {
       try {
         analyserSourceRef.current.disconnect();

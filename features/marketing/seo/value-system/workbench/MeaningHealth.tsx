@@ -25,7 +25,7 @@
  * states now collapse to one compact status door. Its popover keeps every
  * verbatim database sentence and every route to the screen that fixes it.
  * Still deliberately NOT a score, a health
- * percentage or a progress ring — a number invites optimising the number
+ * percentage or a progress ring — a number invites optimizing the number
  * instead of the business. Nothing worth showing → nothing renders, never a
  * green all-clear badge.
  *

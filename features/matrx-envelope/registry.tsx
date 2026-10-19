@@ -12,7 +12,7 @@
  * receipt, and the content-planning renderers.
  *
  * THE PREFIX RULE still does the work: registering `reference` ONCE gives every
- * one of the 419 catalogued nouns a live chip, and a noun that needs something
+ * one of the 419 cataloged nouns a live chip, and a noun that needs something
  * richer registers by name and wins. The four side-effect classes are NOT
  * registered here — the package's own side-effect tier covers them, so a
  * brand-new server shape renders with zero edits on either side.

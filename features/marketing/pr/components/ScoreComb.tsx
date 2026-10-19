@@ -18,7 +18,7 @@
  * breakdown a mouse-only door. It is now purely decorative: `aria-hidden`
  * visuals plus one short `sr-only` sentence, and `title` for the hover
  * convenience. **`ScoreBreakdown` in the expanded row is THE accessible source
- * of the five axes** — labelled, weighted, in the open, and reachable by the
+ * of the five axes** — labeled, weighted, in the open, and reachable by the
  * same Enter that opens the row. A hover was never a door on a touch screen
  * either. The weighting is declared and un-configurable (see `scoring.ts`): a
  * readiness number the user can tune is a number they can no longer compare

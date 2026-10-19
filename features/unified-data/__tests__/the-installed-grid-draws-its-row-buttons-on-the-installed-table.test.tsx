@@ -102,7 +102,7 @@ const config = {
   dataSource: {
     async rpc(name: string, args: Record<string, unknown>) {
       const door = doors[name];
-      return door ? door(args ?? {}) : { data: null, error: { code: "P0001", message: `Not modelled: custom.${name}` } };
+      return door ? door(args ?? {}) : { data: null, error: { code: "P0001", message: `Not modeled: custom.${name}` } };
     },
   },
   organizationId: ORG,

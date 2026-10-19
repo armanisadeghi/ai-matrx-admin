@@ -8,13 +8,13 @@
 // Null/"" means "the builder's own model" (the Holder bound to the
 // agent-authoring mandate answers with the model its version declares).
 //
-// WHERE IT IS HONOURED:
+// WHERE IT IS HONORED:
 //   · here — the interactive Agent Generator's run (`AgentGenerator.tsx`) sends
 //     it as the run's explicit `llmOverrides.model`;
 //   · aidream — the Agent Factory's structure-builder run
 //     (`aidream/services/agent_factory/builder.py::_run_meta_agent`) reads the
 //     same knob through `scoped_knob_raw` for the ambient principal, so the
-//     Agent Service / MCP `agent_author` path honours it too.
+//     Agent Service / MCP `agent_author` path honors it too.
 
 import {
   resolvePreferredModelChoice,

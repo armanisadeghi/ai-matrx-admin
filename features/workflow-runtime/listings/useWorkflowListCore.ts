@@ -5,7 +5,7 @@
 // The workflow picker's brain — the twin of `useAgentListCore`.
 //
 // TWO DELIBERATE DIFFERENCES FROM THE AGENT CORE, both because a workflow list
-// is answered by an RPC rather than a redux catalogue:
+// is answered by an RPC rather than a redux catalog:
 //
 //  1. THE SERVER FILTERS. Scope, search, sort, category/tag/favorite filters
 //     and the tab counts are all arguments to `wfx_list_scoped` and its
@@ -18,7 +18,7 @@
 //     new redux slice for it would be a layer nobody asked for.
 //
 // Everything else — the hover grace window, the pinned "current" row, the
-// detail panel handoff — is the same behaviour, reusing the agent core's
+// detail panel handoff — is the same behavior, reusing the agent core's
 // constant so the two can never drift apart by a number.
 
 import { useCallback, useEffect, useRef, useState } from "react";

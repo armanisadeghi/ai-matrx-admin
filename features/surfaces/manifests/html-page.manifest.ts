@@ -326,7 +326,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *   publishes the instant it is saved, so flipping noindex→index is a
  *   publishing decision with SEO consequences the agent cannot own.
  * - `canonical_url` — a wrong canonical silently de-indexes the page in
- *   favour of someone else's URL. Identity/routing, not authored content.
+ *   favor of someone else's URL. Identity/routing, not authored content.
  * - `og_image` — points at a real uploaded asset. An agent can only invent a
  *   plausible-looking URL, and a broken OG image is worse than none.
  * - Save/publish, promote-to-site, and delete — actions, human-owned. The

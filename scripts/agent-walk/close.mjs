@@ -90,7 +90,7 @@ async function shot(page, name) {
 /**
  * CONTENTION IS NOT A VERDICT. The record store is shared with every other lane, and a
  * statement that could not get a turn says so in its own words. Treating that as "the product
- * refused" would be reporting somebody else's load as this product's behaviour.
+ * refused" would be reporting somebody else's load as this product's behavior.
  */
 const CONTENTION =
   /statement timeout|did not answer in time|The store refused this|canceling statement|taking longer than it should|didn.t finish loading/i;
@@ -175,7 +175,7 @@ async function typeInto(page, selector, value, attempts = 40) {
 
 /**
  * The form is a one-field-per-step wizard (`1 of 5`) whose real fields carry `id="form-<key>"`.
- * 🚨 THE HONEYPOT IS NOT A FIELD. Every step also renders `#hp-confirm_…` labelled "Leave this
+ * 🚨 THE HONEYPOT IS NOT A FIELD. Every step also renders `#hp-confirm_…` labeled "Leave this
  * field empty" — a bot filler that sweeps `input,textarea` fills it and gets the submission
  * thrown away, which would look exactly like the product losing the row. It is never touched.
  */

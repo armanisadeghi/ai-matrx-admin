@@ -222,7 +222,7 @@ export function PrDirectorPanel({
   const [pendingAsk, setPendingAsk] = useState<string | null>(null);
   // The ONE open per surface. Held in a ref so a re-render that changes the effect's inputs (the
   // launcher's identity, the organization landing a moment after a cold reload) re-attaches to the
-  // same open instead of cancelling it — the 2026-10-05 walk found the panel stranded on "Opening
+  // same open instead of canceling it — the 2026-10-05 walk found the panel stranded on "Opening
   // your PR director…" that way. `openNonce` restarts it on demand (Try again).
   const opening = useRef<{ key: string; promise: Promise<string> } | null>(null);
   const [openNonce, setOpenNonce] = useState(0);

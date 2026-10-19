@@ -1,7 +1,7 @@
 /**
  * THE OVERLAY REGISTRATION GUARD for `copySubsetWindow`.
  *
- * The overlay-system skill's three steps are catalogue entry → component →
+ * The overlay-system skill's three steps are catalog entry → component →
  * controller block + opener. A missing step fails silently at runtime (the
  * dispatch fires, nothing renders). This test pins all three from source so
  * a refactor that drops one is loud in CI, not on Arman's screen.
@@ -11,7 +11,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
-/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+/** The old catalogue's shape, read from the definitions (the catalog file is gone). */
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );
@@ -20,7 +20,7 @@ const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanc
 const ROOT = process.cwd();
 
 describe("copySubsetWindow overlay registration", () => {
-  it("is in the catalogue as a multi-instance window", () => {
+  it("is in the catalog as a multi-instance window", () => {
     expect(OVERLAYS_BY_ID).toHaveProperty("copySubsetWindow");
     const entry = (OVERLAYS_BY_ID as Record<string, unknown>)
       .copySubsetWindow as { instanceMode: string; isWindow: boolean };

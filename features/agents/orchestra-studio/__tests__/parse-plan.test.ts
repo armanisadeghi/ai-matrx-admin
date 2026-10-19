@@ -135,7 +135,7 @@ describe("the dental reminders answer (real Architect answer, 2026-10-17)", () =
     expect(plan.steps[1].markdown).toMatch(/^\s*4\.\s/m);
   });
 
-  it("summarises a multi-part step by all its parts, not its first sub-step", () => {
+  it("summarizes a multi-part step by all its parts, not its first sub-step", () => {
     const daily = plan.steps[1].summary ?? "";
     expect(daily).toContain("4 parts");
     for (const t of ["Pull the appointments", "Build the messages", "Flag unconfirmed patients", "Write the manager summary"]) {

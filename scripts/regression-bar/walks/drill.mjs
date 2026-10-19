@@ -67,7 +67,7 @@ try {
 
   // ── R01–R03 a table drilled by a Dimension (the custom-table kind) ───────────────────────────
   // ONE level (`?by=status`) groups the grid's ROWS and never asks the drill (records-ui 70c60014f1, the ruled
-  // behaviour). The drill's answer view is its own mode: a real drill question — a SECOND level, a pivot, a
+  // behavior). The drill's answer view is its own mode: a real drill question — a SECOND level, a pivot, a
   // window, a comparison or a trail — opens it (gridDrill.tsx `useGridDrillQuestion`). The merged grid has no
   // button for it (its Group control is the one-level select), so the drill is entered the way a saved link or
   // another page enters it: a two-level address. Status is a choice column, so it is a Dimension (B4-05).

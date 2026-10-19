@@ -193,7 +193,7 @@ export function MeetingInviteDialog({
             </div>
             <p className="text-xs text-muted-foreground">
               {meeting.cancelledAt
-                ? "This meeting was cancelled. The link still opens its page, but nobody can join it."
+                ? "This meeting was canceled. The link still opens its page, but nobody can join it."
                 : ended
                 ? "This meeting has ended. The link opens its record: the summary, decisions and transcript."
                 : meeting.lobbyEnabled

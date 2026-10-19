@@ -4,12 +4,12 @@
  *
  * The doors (`components/ui/{select,tabs,switch,textarea}.tsx`, and the package-root `Input`)
  * now render THE ONE CONTROL from `@ai-matrx/design-system/controls`: 28px capsule, 13px label,
- * 16px glyph, geometry + colour locked in `@layer matrx-tap-lock`, no size. This codemod brings
+ * 16px glyph, geometry + color locked in `@layer matrx-tap-lock`, no size. This codemod brings
  * the call sites along (AST, TypeScript compiler API, text edits by node position):
  *
  *   - strips `size=` on SelectTrigger / Switch, and `variant=` on Input (legacy look-only props);
  *   - strips VISUAL className tokens — the SAME predicate `matrx/one-control` lints with
- *     (`controlVisualTokens`: spacing, height, radius, shadow, typography, border, colour) — and
+ *     (`controlVisualTokens`: spacing, height, radius, shadow, typography, border, color) — and
  *     keeps placement (width, flex/grid item, margin, position, visibility, alignment);
  *   - TabsList: an underline recipe (`border-b` / `bg-transparent` list, `border-b-2` trigger)
  *     becomes `variant="underline"`; a `grid … grid-cols-N` / `w-full` track becomes `fill`;

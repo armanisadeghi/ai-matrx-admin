@@ -11,8 +11,16 @@ import { selectTreeError, selectTreeStatus } from "@/features/scopes/redux/selec
 import { ensureScopeTree } from "@/features/scopes/redux/thunks/ensureScopeTree";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 
+/**
+ * Scope types, scopes and context items are rows of `custom.record` (same ids since the move off
+ * `context.*`), so the platform answers for them as `record` — in Trash with a Restore, missing,
+ * or denied. Asking as `scope_type` named a dropped table and read "We couldn't work out what
+ * happened" (walk-core 2026-10-18).
+ */
+const SCOPE_ROWS_TOKEN = "record";
+
 interface ScopeNotFoundProps {
-  /** Canonical entity token of the record the route segment addresses. */
+  /** Which scope record the route segment addresses (the gate asks as `record`; see above). */
   token: "scope_type" | "scope" | "context_item";
   /** The raw slug-or-id route segment that failed to resolve. */
   param: string;
@@ -32,7 +40,6 @@ interface ScopeNotFoundProps {
  * exactly that and never upgrade it to "doesn't exist" or "no permission".
  */
 export function ScopeNotFound({
-  token,
   param,
   entityLabel,
   backHref,
@@ -67,7 +74,7 @@ export function ScopeNotFound({
   if (isUuidShape(param)) {
     return (
       <AccessGate
-        token={token}
+        token={SCOPE_ROWS_TOKEN}
         id={param}
         fallbackHref={backHref}
         fallbackLabel={backLabel}
@@ -82,13 +89,9 @@ export function ScopeNotFound({
         <div className="w-12 h-12 rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto mb-3">
           <SearchX className="h-6 w-6" />
         </div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">
+        <h2 className="text-lg font-semibold text-foreground mb-5">
           This address doesn&apos;t match {article} {entityLabel} you can open
         </h2>
-        <p className="text-sm text-muted-foreground mb-5">
-          Links here can use a short name, and &ldquo;{param}&rdquo;
-          didn&apos;t resolve for your account. Check the link, or go back.
-        </p>
         <Button asChild variant="outline">
           <Link href={backHref}>{backLabel}</Link>
         </Button>

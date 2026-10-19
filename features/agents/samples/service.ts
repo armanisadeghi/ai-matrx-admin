@@ -121,7 +121,7 @@ export function sampleInputText(
 /**
  * THE LIBRARY PROVENANCE. A sample written by the media catalog's
  * "Use as test cases for an agent…" action carries `source = 'library'` and,
- * under `metadata.media_catalog`, the Library it came from plus the catalogued
+ * under `metadata.media_catalog`, the Library it came from plus the cataloged
  * items behind it (server twin: the `use_as_agent_test_cases` action in
  * aidream). This reads that block defensively: a row whose source says
  * `library` ALWAYS answers with an origin, even when the block is missing or
@@ -141,7 +141,7 @@ export interface SampleLibraryOrigin {
   adapter: string | null;
   jobId: string | null;
   itemCount: number;
-  /** Only when the sample was written from exactly ONE catalogued item. */
+  /** Only when the sample was written from exactly ONE cataloged item. */
   item: SampleLibraryItem | null;
 }
 

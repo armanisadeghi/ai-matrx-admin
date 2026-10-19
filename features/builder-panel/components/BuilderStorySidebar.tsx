@@ -3,7 +3,7 @@
 /**
  * The window's sidebar: the run as a numbered story, in order. Row 0 is what the person typed;
  * each run heads a section; each step and each external call inside it is one row with its exact
- * query or URL, status, time and cost. Steps that did nothing are greyed with their reason.
+ * query or URL, status, time and cost. Steps that did nothing are grayed with their reason.
  */
 
 import {

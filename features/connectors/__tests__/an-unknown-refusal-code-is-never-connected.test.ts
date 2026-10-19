@@ -11,7 +11,7 @@
  *
  * And the second half of it: `refusalDisposition` returned `undefined` for an
  * unknown code while `health.ts` tested `=== null`, so the branch meant to catch
- * "we cannot classify this" was unreachable dead defence (law 4: a defence that
+ * "we cannot classify this" was unreachable dead defense (law 4: a defense that
  * cannot fire is worse than none).
  *
  * THE RULE NOW: an unrecognised code keeps its refusal, the row states the

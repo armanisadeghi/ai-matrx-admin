@@ -222,7 +222,7 @@ TRUTH = {
     "Q3": 147,  # copay where status = Completed: 35+32+35+45
     "Q4": 275,  # copay total as of T0 (before the 30 → 32 edit): 35+40+25+30+0+35+40+45+25
     "Q5": 130,  # roll-up: copay across the visits of patients Dr. Samuel Okafor referred (Daniel 40+40, Hannah 25+25)
-    "Q6": 0,  # visits with status Cancelled: none — an empty answer, never an error and never a total
+    "Q6": 0,  # visits with status Canceled: none — an empty answer, never an error and never a total
     "Q7": "withheld",  # sum of Write-off, a restricted column: a member gets the withheld state, never a number
     "Q8": 9,  # how many visits: 9 for a member (the 10th is "Only me")
     "Q9": {"2026-09-28": 3, "2026-09-29": 2, "2026-09-30": 2, "2026-10-01": 2},  # visits per day
@@ -235,7 +235,7 @@ QUESTIONS = {
     "Q3": "What is the total copay of Completed visits?",
     "Q4": "What was the total copay before this morning's correction (as of T0)?",
     "Q5": "What is the total copay across the visits of patients Dr. Samuel Okafor referred?",
-    "Q6": "What is the total copay of Cancelled visits?",
+    "Q6": "What is the total copay of Canceled visits?",
     "Q7": "What is the total Write-off?",
     "Q8": "How many visits are there?",
     "Q9": "How many visits were there each day?",
@@ -388,7 +388,7 @@ def door_answers(member: Seat, fx: dict) -> dict:
     okafor = [p["id"] for p in (pts if s == 200 else []) if (p.get("document") or {}).get("referring_physician") == "Dr. Samuel Okafor"]
     rule = {"op": "or", "args": [{"op": "eq", "args": [{"field": F["patient"]}, {"const": pid}]} for pid in okafor]}
     out["Q5"] = _num(_one(_agg(member, V, [{"op": "sum", "key": "copay"}], filt=rule), "sum_copay")) if okafor else {"refused": "no Okafor patients read"}
-    rows = _agg(member, V, [{"op": "count"}], filt={"status": "Cancelled"})
+    rows = _agg(member, V, [{"op": "count"}], filt={"status": "Canceled"})
     out["Q6"] = rows if isinstance(rows, dict) else (_num(rows[0]["row_count"]) if rows else 0.0)
     out["Q7"] = _one(_agg(member, V, [{"op": "sum", "key": "write_off"}]), "sum_write_off")
     out["Q8"] = _num(_one(_agg(member, V, [{"op": "count"}]), "count"))
@@ -415,7 +415,7 @@ def ask_args(fx: dict) -> dict:
         "Q3": {**base, "measure": "sum", "field_key": "Copay", "match": {"Status": "Completed"}},
         "Q4": {**base, "measure": "sum", "field_key": "Copay", "as_of": fx["t0"]},
         "Q5": {**base, "measure": "sum", "field_key": "Copay", "match": {"Patient.Referring physician": "Dr. Samuel Okafor"}},
-        "Q6": {**base, "measure": "count", "match": {"Status": "Cancelled"}},
+        "Q6": {**base, "measure": "count", "match": {"Status": "Canceled"}},
         "Q7": {**base, "measure": "sum", "field_key": "Write-off"},
         "Q8": {**base, "measure": "count"},
         "Q9": {**base, "measure": "count", "group_by": "Visit date"},

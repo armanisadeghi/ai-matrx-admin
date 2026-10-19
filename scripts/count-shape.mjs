@@ -31,7 +31,7 @@
  *
  * NEGATIVES, all of them live shapes in this fleet:
  *   - `.toLocaleString()` ON A DATE, which is the commonest call of that name
- *     in the fleet by a wide margin — recognised by the receiver naming itself
+ *     in the fleet by a wide margin — recognized by the receiver naming itself
  *     a date, by `new Date(`, or by the options object carrying date or time
  *     fields;
  *   - a count used ONLY in a COMPARISON or as arithmetic — `if (rows.length >

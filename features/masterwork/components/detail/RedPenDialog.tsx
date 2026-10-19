@@ -390,7 +390,7 @@ export function RedPenDialog({
   // THE PASSAGE YOU ARE TALKING ABOUT HAS TO BE VISIBLE WHILE YOU TALK ABOUT
   // IT (jobs-bar-2026-09-16 lanes-b, item 3). Only SAVED corrections were
   // marked, so the moment a selection became "pending" the browser's own
-  // highlight was lost on the next render and the work went back to plain grey
+  // highlight was lost on the next render and the work went back to plain gray
   // — leaving a box asking "what's wrong with it?" above a passage the Expert
   // could no longer see. The pending span is segmented like any other so the
   // offsets on screen are exactly the offsets we will send.

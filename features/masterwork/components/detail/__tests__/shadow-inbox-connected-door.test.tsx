@@ -8,7 +8,7 @@
  * for every user today the answer is "no".
  *
  * The temptation, and the defect this suite refuses, is to render the picker
- * anyway and grey it out, or to render it and fail on click. Law 4, NOTHING
+ * anyway and gray it out, or to render it and fail on click. Law 4, NOTHING
  * FAILS SILENTLY / a screen never lies: a control is ABSENT or HONEST, never
  * dead, disabled-looking, or wearing a false sentence. So when the server says
  * `connected: false` there is no third door at all — and one sentence saying

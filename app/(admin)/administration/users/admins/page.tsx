@@ -136,7 +136,7 @@ function AdminsManagementPageContent() {
   // `?user=<id>` — the door every surface that names a user now offers
   // ("Admin level"). Accounts linked here for months while this page read no
   // param at all, landing the user on an unfiltered roster while promising a
-  // filtered one. The admins search matches user id, so seeding it honours the
+  // filtered one. The admins search matches user id, so seeding it honors the
   // link with the table's own primitive rather than a second filter.
   const searchParams = useSearchParams();
   const focusedUserId = searchParams.get("user") ?? "";

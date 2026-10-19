@@ -45,7 +45,7 @@ const TILES: Tile[] = [
     slugSegment: "categories",
     label: "Categories",
     description:
-      "Organise organization shortcuts and content blocks by placement and hierarchy.",
+      "Organize organization shortcuts and content blocks by placement and hierarchy.",
     icon: Folder,
     count: (c) => c.categories,
   },

@@ -41,7 +41,7 @@ export async function GET(
     ? await episodeQuery.eq("id", slug).single()
     : await episodeQuery.eq("slug", slug).single();
 
-  // "Episode not found" is a claim about the catalogue; a refused read cannot
+  // "Episode not found" is a claim about the catalog; a refused read cannot
   // support it (DD-230). `PGRST116` is a genuine no-row `.single()`; anything
   // else means we were refused and must say so instead of denying the episode.
   if (episodeError && episodeError.code !== "PGRST116") {

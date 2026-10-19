@@ -64,7 +64,7 @@ export interface BattleState {
   masterFields: MasterField[];
   /**
    * Per-column live mirror of the latest-feedback `rank` for the active
-   * request. Lets the rank picker grey out ranks already taken on other
+   * request. Lets the rank picker gray out ranks already taken on other
    * columns without every bar fetching every other bar's data on render.
    * Keyed by conversationId. Source of truth is the DB; this is a cache
    * updated by ResponseFeedbackBar on hydrate + save.

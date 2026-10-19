@@ -9,7 +9,7 @@
 //                           default "In stock"), "Clinic Equipment Log" 46ae8d53… (native, imported)
 //
 //   PHASE=owner    sort, edit re-sorts, click-off clears, the enum nudge (ask / Cancel / ask again /
-//                  Add), a column with a default + a row, a column named after an old key, colours
+//                  Add), a column with a default + a row, a column named after an old key, colors
 //                  with Cancel, a type change with Undo, the row menu (stable, Delete confirm names
 //                  the row), 1600 / 390, light / dark
 //   PHASE=member   test@test.com: an organization table as a member (viewer), a table shared to
@@ -346,7 +346,7 @@ try {
     step("both removed (Delete column…)", gone);
     if (Object.values(gone).some((v) => v !== true)) friction(`a column did not go: ${JSON.stringify(gone)}`);
 
-    // ── 7 · colours: colour by Stock Status, Cancel puts it back ───────────────────────────────
+    // ── 7 · colors: color by Stock Status, Cancel puts it back ───────────────────────────────
     // Each row's paint before the dialog opens — Cancel must put back exactly this.
     const paint = () => page.evaluate(() => [...document.querySelectorAll("tbody tr")].map((tr) => (tr.className.match(/(^|\s)bg-[\w-]+-50\b/g) ?? []).join(" ").trim()));
     const paintBefore = await paint();
@@ -355,7 +355,7 @@ try {
     await colors.waitFor({ timeout: 20000 });
     await colors.getByRole("combobox", { name: "Column to color by" }).click();
     await sleep(500);
-    // The first column the table can be coloured by (a choice or a tick box).
+    // The first column the table can be colored by (a choice or a tick box).
     await page.getByRole("option").nth(1).click();
     await sleep(1500);
     const tinted = await page.evaluate(() => [...document.querySelectorAll("tbody tr")].filter((tr) => /(^|\s)bg-\w+-50(\s|$)/.test(tr.className)).length);
@@ -364,8 +364,8 @@ try {
     await sleep(2500);
     const untinted = await page.evaluate(() => [...document.querySelectorAll("tbody tr")].filter((tr) => /(^|\s)bg-\w+-50(\s|$)/.test(tr.className)).length);
     const paintAfter = await paint();
-    step("colour by another column, then Cancel", { tinted_before: paintBefore.filter(Boolean).length, tinted_while_open: tinted, tinted_after_cancel: untinted, same_paint_as_before: JSON.stringify(paintBefore) === JSON.stringify(paintAfter) });
-    if (JSON.stringify(paintBefore) !== JSON.stringify(paintAfter)) friction(`Cancel on Table colors did not put the rows' colours back: before ${JSON.stringify(paintBefore)} after ${JSON.stringify(paintAfter)}`);
+    step("color by another column, then Cancel", { tinted_before: paintBefore.filter(Boolean).length, tinted_while_open: tinted, tinted_after_cancel: untinted, same_paint_as_before: JSON.stringify(paintBefore) === JSON.stringify(paintAfter) });
+    if (JSON.stringify(paintBefore) !== JSON.stringify(paintAfter)) friction(`Cancel on Table colors did not put the rows' colors back: before ${JSON.stringify(paintBefore)} after ${JSON.stringify(paintAfter)}`);
 
     // ── 8 · a type change and its Undo (on the moved table) ────────────────────────────────────
     await open(T.orders);

@@ -208,7 +208,7 @@ export const toggleTaskEnabled =
   async (dispatch, getState) => {
     // Resolve the organization BEFORE the optimistic flip: the schedule's own,
     // or — only for a row that has none loaded — the gate's answer. A control
-    // never reads "paused" while a question is still open, and a cancelled
+    // never reads "paused" while a question is still open, and a canceled
     // question leaves it exactly as it was (nothing flipped, nothing sent).
     const organizationId =
       taskOrganizationId(getState, id) ??

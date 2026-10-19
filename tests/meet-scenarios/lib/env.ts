@@ -80,7 +80,7 @@ export const TIMEOUTS = {
   knockExpiryMs: Number(process.env.MEET_KNOCK_EXPIRY_S ?? 300) * 1000,
   /** Host-absent grace before a headless meeting must promote someone (catalog: N seconds). */
   hostTransferMs: Number(process.env.MEET_HOST_TRANSFER_S ?? 120) * 1000,
-  /** Empty-room auto-end window the server sweep must honour. */
+  /** Empty-room auto-end window the server sweep must honor. */
   emptyRoomEndMs: Number(process.env.MEET_EMPTY_END_S ?? 360) * 1000,
   /** How long a reconnecting client may take before it must give up or recover. */
   reconnectGiveUpMs: Number(process.env.MEET_GIVE_UP_S ?? 90) * 1000,

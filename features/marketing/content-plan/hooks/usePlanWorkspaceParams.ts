@@ -16,7 +16,7 @@
  * PARAMS ARE ADDRESSES: the site UUID and the canonical segments come from
  * `MarketingSiteProvider`/`MarketingBrandProvider`, which the layout resolved
  * server-side. The shell header controls and the body workbench both read and
- * write through this ONE hook, so the header can live in the PageHeader centre
+ * write through this ONE hook, so the header can live in the PageHeader center
  * zone (core-route doctrine: no in-body toolbar) while the body stays in sync.
  */
 import { useCallback } from "react";

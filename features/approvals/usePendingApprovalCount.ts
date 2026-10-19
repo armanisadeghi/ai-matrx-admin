@@ -18,7 +18,7 @@
  * keyword kinds live on each site's own queue and say so there
  * (`ApprovalKind.scopeRequirement`).
  *
- * 0 renders NO badge — never a grey zero, which reads as a broken control.
+ * 0 renders NO badge — never a gray zero, which reads as a broken control.
  *
  * 🚨 CODE ON FIRST PAINT: this hook is in the header bell, on every page. Both counts' code (the
  * kinds registry, the record store's client) loads INSIDE the idle-gated query functions, from

@@ -177,7 +177,7 @@ export function ContactCandidatesCard({
     if (candidate.is_role_address) {
       const ok = await confirm({
         title: "This is a shared inbox, not one person",
-        description: `${candidate.address} belongs to the organisation — anyone might read it, and nobody in particular will. Add it anyway?`,
+        description: `${candidate.address} belongs to the organization — anyone might read it, and nobody in particular will. Add it anyway?`,
         confirmLabel: "Add the shared inbox",
       });
       if (!ok) return;

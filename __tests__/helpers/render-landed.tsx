@@ -5,7 +5,7 @@
  * false (its server snapshot is `notYet`), and since frontend 2218dbc83bf `AnswerValueView` answers
  * "false" with a waiting skeleton (`data-answer-waiting-for-host`) instead of drawing a kind before
  * the lazily loaded rich-content host has registered the kind registry's database tiers. That is the
- * intended behaviour (a nested kind must never settle on the floor view for good), but it means a
+ * intended behavior (a nested kind must never settle on the floor view for good), but it means a
  * static render of a payload with nested children can only ever show the skeleton.
  *
  * The browser render has the host landed (Jest has no lazy loader: `richContentHostReady()` is true),

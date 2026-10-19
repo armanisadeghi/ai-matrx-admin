@@ -19,7 +19,7 @@ describe("DocumentEditor Univer preset contract", () => {
     expect(source).toContain("UniverDocsDrawingPreset()");
   });
 
-  it("states the page's own colours, not just Univer's chrome", () => {
+  it("states the page's own colors, not just Univer's chrome", () => {
     // Cold walk 18: a black sheet in a bright frame, in a dark app.
     // `toggleDarkMode` (useUniverDarkModeSync) only recolours Univer's chrome;
     // `@univerjs/engine-render` paints the desk and the paper from module-level

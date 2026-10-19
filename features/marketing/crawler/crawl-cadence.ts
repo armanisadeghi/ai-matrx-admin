@@ -376,7 +376,7 @@ function formatMinutes(minutes: number): string {
   return `${minutes} minutes`;
 }
 
-/** The 24 hour options, labelled the way a non-technical user reads a clock. */
+/** The 24 hour options, labeled the way a non-technical user reads a clock. */
 export const CRAWL_HOUR_OPTIONS: ReadonlyArray<{ value: number; label: string }> =
   Array.from({ length: 24 }, (_unused, hour) => ({
     value: hour,

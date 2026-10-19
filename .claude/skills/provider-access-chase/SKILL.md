@@ -56,7 +56,7 @@ declared Mandate by `mandate_key`; it may not take a hardcoded agent UUID or sil
 
 ## Check order
 
-1. Existing provider email thread or labelled provider mailbox state.
+1. Existing provider email thread or labeled provider mailbox state.
 2. Developer/reviewer portal status.
 3. Support ticket or escalation route when the promised window has elapsed.
 4. Canonical AI Matrx connection state when an approval may have landed.

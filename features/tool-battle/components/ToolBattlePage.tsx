@@ -26,7 +26,7 @@ const STATUS: Record<BattleStatus, { label: string; tone: "neutral" | "info" | "
   running: { label: "Running", tone: "info" },
   completed: { label: "Done", tone: "success" },
   failed: { label: "No answers", tone: "destructive" },
-  cancelled: { label: "Cancelled", tone: "warning" },
+  cancelled: { label: "Canceled", tone: "warning" },
 };
 
 export function ToolBattlePage({ battleId }: { battleId: string }) {

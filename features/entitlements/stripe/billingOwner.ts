@@ -246,7 +246,7 @@ export class BillingOrganizationContextUnavailableError extends Error {
     super(
       `Could not read which organization this request is acting in (${reason}). ` +
         "Nothing was written, because a Stripe customer, subscription or payout " +
-        "account labelled with the wrong owner is worse than one that is missing. " +
+        "account labeled with the wrong owner is worse than one that is missing. " +
         "Send the request again.",
     );
   }

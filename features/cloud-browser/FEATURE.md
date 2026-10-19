@@ -216,7 +216,7 @@ browser that parks and waits for a human on every expired session is not a cloud
   default only when the stored value is not a boolean, so nobody's opt-out is overridden.
 - `sensitiveActionsRequireHuman` is unchanged and always on: payments, security settings
   and destructive changes still stop for a person, and the row says so and is locked.
-- `components/AccountSettings.tsx` copy names each switch as on-by-default behaviour the
+- `components/AccountSettings.tsx` copy names each switch as on-by-default behavior the
   person can turn off — a switch whose description reads like an opt-in while it is
   already on is the screen lying.
 
@@ -291,7 +291,7 @@ browser that parks and waits for a human on every expired session is not a cloud
   (2.5 s measured) but the worker records no per-step timing.
 - **The normal aidream deploy train never replaces the browser worker** — that is a
   gated `deploy_browser_worker` + drain-confirmed release. A change that needs new
-  worker behaviour is not live until that runs; prefer control-plane-only fixes.
+  worker behavior is not live until that runs; prefer control-plane-only fixes.
 - The in-app DM channel is offered as an opt-in but its server producer is assist-first
   in the first release (NOTIFICATIONS.md §1.4).
 
@@ -441,7 +441,7 @@ The frontend never receives a password, seed, or generated code from that path.
      off `browser.profile.metadata` onto the canonical preference tables (see
      *Consumes canonical primitives*), the server reads them before notifying, and
      the in-app row is now stated as always-on instead of a switch that defaulted
-     OFF and was never honoured.
+     OFF and was never honored.
 
   Also: **"Take control" no longer notifies the person who pressed it.**
 
@@ -478,7 +478,7 @@ The frontend never receives a password, seed, or generated code from that path.
   `adoptCloudBrowserRunFromStream`, so a run that stops for a person opens the
   canvas even when the panel has never been opened — previously the watcher only
   saw handoffs a mounted `useCloudBrowser` had already loaded, i.e. the person
-  had to go find the browser themselves. Both payload shapes are honoured
+  had to go find the browser themselves. Both payload shapes are honored
   (`cloud_browser*` names `session_id`, `credential_login` names `handoff_id`
   and no run). It hydrates through the canonical snapshot path rather than
   fabricating a handoff from the tool payload, and `loadSnapshotForRun` refuses
@@ -495,7 +495,7 @@ The frontend never receives a password, seed, or generated code from that path.
   inventing a takeover channel (`useCloudBrowserTakeover` + its test suite).
   Closed three seams in the same pass: the conversation⇄run binding now flows
   opener → canvas metadata → body (the composer rail routes through the ONE opener
-  instead of its own `openCanvas`, and `loadSnapshot` honours a pinned `runId`);
+  instead of its own `openCanvas`, and `loadSnapshot` honors a pinned `runId`);
   "Request control" became the real `control-requests` queue instead of an alias for
   Take; and `ControllerState.pendingRequestFrom` is read from `browser.control_request`
   instead of hardcoded `null`, so a queued request is visible to the one person who

@@ -92,7 +92,7 @@ export const GOOGLE_CONNECTIONS_HREF = "/user-settings/integrations";
  *
  * Deliberately a scan for the SHAPE rather than a positional parse of the
  * server's wording: the account list is the part of that sentence we can
- * recognise without depending on its prose, and a wording change degrades to
+ * recognize without depending on its prose, and a wording change degrades to
  * "named none" (the honest sentence above) instead of to a wrong picker.
  */
 export function googleAccountsNamedIn(sentence: string): string[] {

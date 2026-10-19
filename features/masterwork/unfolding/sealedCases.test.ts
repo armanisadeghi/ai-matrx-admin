@@ -40,7 +40,7 @@ it("refuses while the list is unknown — loading, idle, or failed", () => {
   expect(chosenSealedCaseIsCurrent("case-a", { status: "error" })).toBe(false);
 });
 
-it("still recognises a desk by its oracle node, under either shape", () => {
+it("still recognizes a desk by its oracle node, under either shape", () => {
   expect(
     findCaseDiscloseNodeId({
       nodes: [{ id: "oracle", type: "masterwork.case.disclose" }],

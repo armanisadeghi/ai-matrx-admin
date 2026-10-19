@@ -23,7 +23,7 @@ describe("settings defaults behind Reset", () => {
     expect(defaultOf("theme.toggle")).toBeUndefined();
   });
 
-  it("theme is labelled as saved in this browser, not the account", () => {
+  it("theme is labeled as saved in this browser, not the account", () => {
     expect(getSliceBinding("theme").persistence).toBe("local-only");
   });
 });

@@ -24,7 +24,7 @@ describe("matching a step to an existing agent needs real fit", () => {
   });
 
   it("calls a partial fit only a possible match", () => {
-    const m = matchStep({ title: "Medical Fact-Checker", job: "Checks claims." }, [{ id: "e", name: "Medical notes helper", description: "Summarises clinic notes" }]);
+    const m = matchStep({ title: "Medical Fact-Checker", job: "Checks claims." }, [{ id: "e", name: "Medical notes helper", description: "Summarizes clinic notes" }]);
     expect(m === null || m.confidence === "possible").toBe(true);
   });
 

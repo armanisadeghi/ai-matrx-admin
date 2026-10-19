@@ -5,7 +5,7 @@ import {
   resolveVariableNameEdit,
 } from "../variable-name-edit";
 
-// The live case: agent 0237fc41… carries key `vocabulary` labelled "Store vocabulary".
+// The live case: agent 0237fc41… carries key `vocabulary` labeled "Store vocabulary".
 const diverged = { key: "vocabulary", label: "Store vocabulary", existingNames: ["vocabulary"] };
 
 describe("variable name edits", () => {

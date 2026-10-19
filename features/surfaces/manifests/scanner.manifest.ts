@@ -348,7 +348,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * - **The captured page images and `scan_items` themselves** — this is the
  *   EVIDENCE. The photographs are the one artifact in the session that
  *   cannot be regenerated, and their order, crops, rotations and enhance
- *   derivatives are the user's judgement about their own documents made
+ *   derivatives are the user's judgment about their own documents made
  *   against pixels an agent on this surface cannot see (the scanner loads
  *   no extracted text — `full_document_text` / `current_page_text` are
  *   always empty here). Add, remove, reorder, crop, rotate and enhance all

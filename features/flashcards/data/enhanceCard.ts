@@ -333,7 +333,7 @@ export function enrichCard(args: {
       // a launch/timeout/stream error came back as an empty array and every
       // caller reported it to the learner as a polite "nothing new" — and the
       // bulk summary counted it in the wrong bucket. Partial data from a
-      // soft-failed stream is still honoured.
+      // soft-failed stream is still honored.
       if (!result.success && details.length === 0) return null;
       return details;
     } catch (err) {

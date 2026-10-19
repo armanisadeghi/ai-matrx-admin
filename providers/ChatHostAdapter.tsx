@@ -5,7 +5,7 @@
 // THE ONE `@ai-matrx/chat` host mount (PACKAGE-INDEPENDENCE §2.1, slice P1).
 // The package's ports are wired here to what this app already has — nothing
 // in the package reads them yet (each port slice P4–P22 switches its call
-// sites), so mounting this changes no behaviour.
+// sites), so mounting this changes no behavior.
 //
 //   identity    → Redux userAuth/userProfile (lane-aware admin level), read by
 //                 lib/redux/chat-host-from-app — the same reading the root

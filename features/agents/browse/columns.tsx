@@ -39,7 +39,7 @@ import type { AgentBrowseRow } from "./types";
 /**
  * THE agent category → chip tone table (one-ui-system: a feature maps its kinds onto the
  * package's named hues, never a class). Categories are open-ended, so a category not named here
- * takes a stable hue from its name — the same category is the same colour on every row and page.
+ * takes a stable hue from its name — the same category is the same color on every row and page.
  */
 const CATEGORY_HUES: readonly ChipHue[] = ["violet", "blue", "teal", "amber", "rose", "indigo", "emerald", "orange", "cyan", "fuchsia", "lime", "sky"];
 export function agentCategoryTone(category: string): ChipHue {

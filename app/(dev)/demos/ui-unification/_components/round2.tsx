@@ -8,7 +8,7 @@
  * - Space goes where it helps reading (between groups), never as padding
  *   stacked inside padding. One surface level; rows separated by hairlines.
  * - Content first: the thing you care about gets the width.
- * - Colour is a token role (primary / success / warning / destructive), used
+ * - Color is a token role (primary / success / warning / destructive), used
  *   sparingly as a tint, never raw palette classes.
  */
 
@@ -374,8 +374,8 @@ export function LoadingCenterSpinner() {
 }
 
 /* ------------------------------ Empty state ------------------------ */
-/* The structure of "icon + title + action" with the colour of           */
-/* EmptyStateCard (a tinted icon disc), at dense sizes, token colours.   */
+/* The structure of "icon + title + action" with the color of           */
+/* EmptyStateCard (a tinted icon disc), at dense sizes, token colors.   */
 
 export function EmptyCombined(_props: { size: "inline" | "block" }) {
   return (

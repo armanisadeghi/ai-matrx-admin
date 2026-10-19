@@ -7,7 +7,7 @@
 //
 // 🚨 THE ANSWER IS THE SAME SENTENCE EITHER WAY, and it comes from the route,
 // not from here, so the screen cannot drift from the endpoint's promise. There
-// is deliberately no "we don't recognise that address" branch to write.
+// is deliberately no "we don't recognize that address" branch to write.
 
 import { useState, type FormEvent } from "react";
 import { Loader2, Mail } from "lucide-react";

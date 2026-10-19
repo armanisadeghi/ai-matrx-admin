@@ -3,7 +3,7 @@
 // StaffSidebarMenu — the `/staff` rail, rendered INSIDE the app shell sidebar
 // (registered in `route-menu-registry`).
 //
-// Architecture (load-bearing — modelled on `ChatSidebarMenu`, do not invent a
+// Architecture (load-bearing — modeled on `ChatSidebarMenu`, do not invent a
 // parallel structure):
 //
 //   Every row uses the EXACT `.shell-nav-item shell-tactile-subtle` markup the

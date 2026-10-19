@@ -1,7 +1,7 @@
 /**
  * Lane A1 — WHAT SHE ATTACHED REACHES THE BUILDER, AND STAYS. A build's references (files, notes, pages; her
  * agents and workflows made jobs) live on the build's record, so a reload keeps them; every round sends the
- * material through THE attach path (never her message) and the jobs through the catalogue.
+ * material through THE attach path (never her message) and the jobs through the catalog.
  */
 import type { Resource } from "@ai-matrx/chat/agents/resources/types";
 
@@ -36,7 +36,7 @@ describe("lane A1: what she attached", () => {
     expect(withoutReference(twice, "file:file-1")).toEqual([]);
   });
 
-  it("the material rides the attach path and the jobs the catalogue — never mixed", () => {
+  it("the material rides the attach path and the jobs the catalog — never mixed", () => {
     const refs = [resourceReference(csv), resourceReference(note), agent];
     expect(referenceResources(refs)).toEqual([csv, note]);
     expect(attachedJobKeys(refs)).toEqual(["applets.run_dog_namer_373970"]);

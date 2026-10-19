@@ -3,7 +3,7 @@
  *
  * The analyzer owns DETECTION (open / refresh / reopen / resolve — see aidream
  * `web_crawl/analysis_write.py::reconcile_findings`, which explicitly never
- * touches suppression). The USER owns JUDGEMENT: "I've seen this", "I fixed
+ * touches suppression). The USER owns JUDGMENT: "I've seen this", "I fixed
  * this", "this is intentional, stop telling me", "no, it's back". Those verbs
  * live here.
  *
@@ -13,7 +13,7 @@
  *
  * Why this exists: every finding needs an honest exit. Some checks
  * (`meta_robots_conflicts` on a deliberately hidden page, `broken_page_4xx`
- * on a page you retired on purpose) are CORRECT behaviour for this site, and
+ * on a page you retired on purpose) are CORRECT behavior for this site, and
  * a register that cannot record that is a register the user stops reading.
  *
  * ## The vocabulary is the schema's, and it is closed

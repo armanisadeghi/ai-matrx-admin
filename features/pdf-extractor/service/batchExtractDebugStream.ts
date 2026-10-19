@@ -11,7 +11,7 @@ export interface BatchExtractStreamTap {
  * for admin debug. Framing, compact-event expansion, and torn-line handling
  * are the shared kernel's (`@ai-matrx/api/stream`); the tap rides
  * its observation hooks, which carry the exact wire line — valid envelopes,
- * malformed lines, and valid JSON with no recognised envelope alike.
+ * malformed lines, and valid JSON with no recognized envelope alike.
  */
 export async function* consumeBatchExtractNdjsonStream(
   response: Response,

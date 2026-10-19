@@ -222,7 +222,7 @@ export function MappingRow({
           </TooltipTrigger>
           <TooltipContent className="max-w-xs">
             {indexing
-              ? "Saved for this folder: its files should feed knowledge, so agents can search and cite them. Indexing starts when the file service begins honouring this setting — nothing from this folder is searchable yet."
+              ? "Saved for this folder: its files should feed knowledge, so agents can search and cite them. Indexing starts when the file service begins honoring this setting — nothing from this folder is searchable yet."
               : "Files here sync and are not marked to feed knowledge."}
           </TooltipContent>
         </Tooltip>

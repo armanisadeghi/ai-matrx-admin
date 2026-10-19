@@ -1,5 +1,5 @@
 /**
- * The colours are worthless unless they REACH Univer. This drives the applier
+ * The colors are worthless unless they REACH Univer. This drives the applier
  * against a stand-in with the exact shape of Univer's `IRender` and asserts
  * every surface cold walk 18 measured is written:
  *
@@ -108,7 +108,7 @@ describe("applyUniverDocSurfaceColors", () => {
     expect(h.fills.at(-1)![0]).toBe(dark.page);
   });
 
-  it("a theme flip repaints the surface with the new colours", () => {
+  it("a theme flip repaints the surface with the new colors", () => {
     const h = harness();
     applyUniverDocSurfaceColors(h.render, light);
     applyUniverDocSurfaceColors(h.render, dark);

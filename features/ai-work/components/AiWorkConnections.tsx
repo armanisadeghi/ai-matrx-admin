@@ -99,7 +99,7 @@ export function AiWorkConnections() {
 
   // Keyed on the active organization so choosing one in the inline notice
   // re-runs the read instead of leaving a dead card. The bridge verdict is per
-  // user AND per organization, so this is not an optimisation.
+  // user AND per organization, so this is not an optimization.
   useEffect(() => {
     let cancelled = false;
     setCapability(INITIAL_BRIDGE_CAPABILITY);

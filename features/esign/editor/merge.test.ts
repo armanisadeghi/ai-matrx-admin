@@ -32,7 +32,7 @@ describe("mergeDrafts — two tabs editing one draft (CONTRACT §15)", () => {
     expect(takeTheirs(merged, conflicts).recipients[0].email).toBe("theirs@example.com");
   });
 
-  it("honours their delete of an item I did not touch, and keeps an item only I added", () => {
+  it("honors their delete of an item I did not touch, and keeps an item only I added", () => {
     const b = base();
     const c = newRecipient(b.recipients, { key: "c", full_name: "Cy", email: "c@example.com" });
     const mine = { ...b, recipients: [...b.recipients, c] };

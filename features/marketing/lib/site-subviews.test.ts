@@ -65,7 +65,7 @@ describe("marketing site sub-view registry", () => {
 
   it("keeps the backlinks debt from spreading", () => {
     // The debt is backlinks ALONE and it is frozen until Arman's split lands.
-    // A second entry here means someone normalised a breach instead of
+    // A second entry here means someone normalized a breach instead of
     // recording it — which is exactly how the tenth slot shipped silently.
     expect(Object.keys(MARKETING_SUBNAV_SECTION_DEBT)).toEqual(["backlinks"]);
     expect(MARKETING_SUBNAV_SECTION_DEBT.backlinks).toBe(10);

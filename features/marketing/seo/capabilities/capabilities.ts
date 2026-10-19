@@ -13,7 +13,7 @@ export interface SeoCapability {
 
 /**
  * The site SEO inventory is intentionally route-relative. It is the shared,
- * testable catalogue behind the capabilities page; execution and reads remain
+ * testable catalog behind the capabilities page; execution and reads remain
  * owned by their existing workspaces.
  */
 export function siteSeoCapabilities(
@@ -37,9 +37,9 @@ export function siteSeoCapabilities(
     },
     {
       key: "catalogue-analysis",
-      label: "Catalogue analysis",
+      label: "Catalog analysis",
       description:
-        "The deeper check catalogue turns stored crawl evidence into scored analysis results and a durable findings register.",
+        "The deeper check catalog turns stored crawl evidence into scored analysis results and a durable findings register.",
       group: "catalogue",
       destination: marketingRoutes.site(brandId, siteId, "/analysis"),
       evidenceLabel: "Open prioritized results",
@@ -48,7 +48,7 @@ export function siteSeoCapabilities(
       key: "findings-register",
       label: "Findings register",
       description:
-        "Every unresolved catalogue finding, with affected pages, evidence, status, and remediation guidance.",
+        "Every unresolved catalog finding, with affected pages, evidence, status, and remediation guidance.",
       group: "catalogue",
       destination: marketingRoutes.site(brandId, siteId, "/findings"),
       evidenceLabel: "Open all findings",

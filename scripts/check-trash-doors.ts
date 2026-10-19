@@ -2,18 +2,18 @@
 /**
  * `pnpm check:trash-doors` — THE TRASH LISTING LINT (lane TRASH-2, 2026-09-25).
  *
- * Every function in the live catalogue whose name says it lists Trash (`trash`, not a restore,
+ * Every function in the live catalog whose name says it lists Trash (`trash`, not a restore,
  * gate, keep or purge) must filter by the PERSON before it reads a row: no `iam.has_access` per
  * row, no walk over `iam.my_orgs()`, no organization-wide grant, and an Organization Trash door
- * must pass `public._org_trash_gate` first. The judgement is `judgeTrashDoorBody` in
+ * must pass `public._org_trash_gate` first. The judgment is `judgeTrashDoorBody` in
  * scripts/lib/trash-doors.ts (jest: scripts/lib/__tests__/trash-doors.test.ts proves it RED on the
  * pre-TRASH-2 body and GREEN on the current one). Exit 1 on any finding; exit 2 when the
- * catalogue cannot be read (UNMEASURED is never a pass).
+ * catalog cannot be read (UNMEASURED is never a pass).
  *
  * THE COVERAGE PASS (lane TRASH-TABLES, 2026-09-26): every soft-deletable Entity with an archived
  * row, and every record-store class (custom.record.data_class) with one, must be findable in its
  * owner's Trash — its owner's newest archived row is asked of public._trash_kind_rows — or carry a
- * reason in TRASH_COVERAGE_EXEMPT. Judgement: judgeTrashCoverage. Reads only.
+ * reason in TRASH_COVERAGE_EXEMPT. Judgment: judgeTrashCoverage. Reads only.
  *
  * THE ORGANIZATION PROBE (lane STORE-RESTORE-DOORS, 2026-09-26): every row the personal probe finds is
  * asked of its ORGANIZATION's Trash too (organization mode, the owner's seat). The personal-only probe

@@ -414,7 +414,7 @@ export interface SocialCredits {
   spend_error: string | null;
 }
 
-/** One ad as the cards render it (a `social.ad` row, normalised). */
+/** One ad as the cards render it (a `social.ad` row, normalized). */
 export interface AdCardModel {
   adId: string;
   library: string;

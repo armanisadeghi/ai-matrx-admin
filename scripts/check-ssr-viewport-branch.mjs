@@ -15,7 +15,7 @@
  * Rules:
  *   structural-viewport-branch    a viewport boolean chooses between JSX trees:
  *                                 `if (isMobile) return …`, `isMobile ? <A/> : <B/>`,
- *                                 `isMobile && <A/>`. Behaviour (a prop value, a
+ *                                 `isMobile && <A/>`. Behavior (a prop value, a
  *                                 handler, an effect, a className) is not flagged.
  *   unhinted-viewport-branch      the same, from useMediaQuery / useMediaQueryState
  *                                 (no server hint at all — always a flash on phones).
@@ -115,7 +115,7 @@ function selfTest() {
     ["ternary between trees is RED", `${imp}function A(){ const m = useIsMobile();\n return <div>{m ? (\n <Phone/>) : <Desk/>}</div>; }`, ["structural-viewport-branch"]],
     ["&& tree is RED", `${imp}function A(){ const isMobile = useIsMobile();\n return <div>{!isMobile && <Sidebar/>}</div>; }`, ["structural-viewport-branch"]],
     ["useMediaQuery tree is RED (unhinted)", `function A(){ const wide = useMediaQuery("(min-width: 1024px)");\n return wide ? <Wide/> : <Narrow/>; }`, ["unhinted-viewport-branch"]],
-    ["a prop value is GREEN (behaviour)", `${imp}function A(){ const isMobile = useIsMobile();\n return <Sheet side={isMobile ? "bottom" : "right"} />; }`, []],
+    ["a prop value is GREEN (behavior)", `${imp}function A(){ const isMobile = useIsMobile();\n return <Sheet side={isMobile ? "bottom" : "right"} />; }`, []],
     ["an effect / handler is GREEN", `${imp}function A(){ const isMobile = useIsMobile();\n useEffect(() => { if (isMobile) close(); }, [isMobile]);\n return <B/>; }`, []],
     ["CSS-picked trees are GREEN", `function A(){ return <><div className="md:hidden"><Phone/></div><div className="hidden md:block"><Desk/></div></>; }`, []],
     ["a reasoned exemption is GREEN", `${imp}function A(){ const isMobile = useIsMobile();\n // ssr-viewport-ok: only after the user opens the picker\n if (isMobile) return <Phone/>;\n return <Desk/>; }`, []],
@@ -131,7 +131,7 @@ function selfTest() {
     console.error(`ssr-viewport-branch self-test: ${failed} case(s) failed`);
     process.exit(1);
   }
-  console.log("ssr-viewport-branch self-test: OK — fails on the tree-switching shapes, passes on behaviour and CSS.");
+  console.log("ssr-viewport-branch self-test: OK — fails on the tree-switching shapes, passes on behavior and CSS.");
 }
 
 function main() {
@@ -184,7 +184,7 @@ function main() {
   for (const f of fresh) console.log(`  NEW  ${f.file}:${f.line}  [${f.rule}] ${f.title}`);
   for (const [key, n] of stale) console.log(`  STALE  ${key}  baseline ${n} → now ${counts[key] ?? 0} (run --write-baseline to shrink it)`);
   if (fresh.length) {
-    console.log("\nFix: render both trees and let CSS pick (`md:hidden` / `hidden md:block`, or `@container`), or keep the viewport answer to behaviour (props, handlers, effects).");
+    console.log("\nFix: render both trees and let CSS pick (`md:hidden` / `hidden md:block`, or `@container`), or keep the viewport answer to behavior (props, handlers, effects).");
   }
   if (strict && (fresh.length || stale.length)) process.exit(1);
 }

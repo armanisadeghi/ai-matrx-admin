@@ -1,7 +1,7 @@
 "use client";
 
 // features/spaces/templates/UseTemplateFromWeb.tsx — "Use this template" on a Space template's public page
-// (/templates/<slug>) lands here, inside the app (/spaces/use-template?template=<catalogue id>). The person's
+// (/templates/<slug>) lands here, inside the app (/spaces/use-template?template=<catalog id>). The person's
 // press was on the public page (a guest signed up on the way), so the install starts on arrival: the newest
 // platform version of that template, through the same door as the Spaces gallery's "Use template"
 // (SpacesProvider.packs.use: tables into the active organization, its pages made there, the root opened).
@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useSpaces } from "../state/SpacesProvider";
 import { listSpaceTemplates } from "./use-pack";
 
-/** The newest platform version of a catalogue id, or null when the library has none. */
+/** The newest platform version of a catalog id, or null when the library has none. */
 async function newestPlatformId(catalogueId: string): Promise<{ id: string; title: string } | null> {
   const cards = (await listSpaceTemplates(null)).filter((c) => c.catalogue_id === catalogueId && c.scope === "platform");
   const card = cards.sort((a, b) => b.version - a.version)[0];

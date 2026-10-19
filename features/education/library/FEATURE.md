@@ -24,7 +24,7 @@ Data: `education.content_certification` (public read; writes only by super-admin
 - **The library is a STUDY library.** Enrichment (`item_count`, `topic`, `difficulty`, `duration_seconds`, `source_title`, `studied_count`, `accuracy_pct`, `due_count`, `last_studied_at`) is applied AFTER `LIMIT`/`OFFSET` — never move it into `edu_library_scope_rows`, or every list load pays for the whole corpus.
 - **Accuracy, never `mastery_score`:** `mastery_score` is a decayed write-time snapshot; lifetime `correct_count / attempt_count` does not decay.
 - **`libraryRowStats(row)` is the only reader of the raw enrichment fields** (the generator types function columns as non-null; reading raw renders a never-studied deck as "0% correct").
-- **Presentation comes from `TARGET_PRESENTATION`** (`convert/targetPresentation.ts`) via `artifactVisuals.ts`; add a format there plus one line in `SUBTYPE_TO_TARGET`. Never declare a colour here.
+- **Presentation comes from `TARGET_PRESENTATION`** (`convert/targetPresentation.ts`) via `artifactVisuals.ts`; add a format there plus one line in `SUBTYPE_TO_TARGET`. Never declare a color here.
 - **Progress renders nothing before the first attempt** (`StudyProgressBar` returns null; surfaces say "Not started").
 
 ## Open

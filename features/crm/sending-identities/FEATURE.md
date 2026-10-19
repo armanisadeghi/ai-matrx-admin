@@ -90,7 +90,7 @@ contract via generated `@ai-matrx/api` operations (`serverApi`) so a backend ren
   removed); guessing optimistically would put a wrong, safety-critical status on
   screen.
 - **A system pause is stated as a system pause.** The copy says nothing will
-  resume it on its own — that is the product behaviour, not a UI opinion.
+  resume it on its own — that is the product behavior, not a UI opinion.
 - **The from-address is never a free-text field.** The server only accepts the
   address the OAuth account actually authenticated as, so a text input would
   only manufacture refusals.

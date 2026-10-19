@@ -237,7 +237,7 @@ function GoogleWorkspaceConnectBodyContent({
       await work();
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
-        toast.info("Google authorization cancelled");
+        toast.info("Google authorization canceled");
         return;
       }
       toast.error(extractErrorMessage(cause));

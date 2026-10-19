@@ -1,7 +1,7 @@
 /**
  * Knowledge search (2026-09-27 audit, the #1 gap): the kind filter offered only
  * Files / Notes / Code while the Sources page lists web pages, transcripts and
- * pasted text; results were labelled by id ("Transcript source 61cdb294") and
+ * pasted text; results were labeled by id ("Transcript source 61cdb294") and
  * opened on legacy routes instead of the Source screen at the matched chunk.
  */
 import {

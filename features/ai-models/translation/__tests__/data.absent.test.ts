@@ -48,7 +48,7 @@ describe("readTranslationBundle on a database without the tables", () => {
     await expect(readTranslationBundle()).rejects.toMatchObject({ code: "42501" });
   });
 
-  it("recognises the not-here codes only", () => {
+  it("recognizes the not-here codes only", () => {
     expect(isAbsentRelationError({ code: "PGRST205" })).toBe(true);
     expect(isAbsentRelationError({ code: "42P01" })).toBe(true);
     expect(isAbsentRelationError({ code: "42501" })).toBe(false);

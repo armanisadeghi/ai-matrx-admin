@@ -293,7 +293,7 @@ function selfTest() {
   }
 
   // GREEN-9 / RED-7 — the `ledger-rebase:` trailer `db:apply --ledger-rebase` writes when a
-  // corrected INVERSE lands in its file (chair ruling 2026-09-23): honoured for the exact path
+  // corrected INVERSE lands in its file (chair ruling 2026-09-23): honored for the exact path
   // and bytes, and laundering nothing for any other path.
   check(
     "GREEN-9 the runner's ledger-rebase trailer passes",

@@ -134,7 +134,7 @@ describe("scheduleAlarmItems", () => {
     expect(d.reenable.mock.calls[0]?.[0]?.task_id).toBe("a7c1e2d3-0000-4e5f-9a00-000000000544");
   });
 
-  it("summarises in a person's words", () => {
+  it("summarizes in a person's words", () => {
     const items = scheduleAlarmItems(
       [
         row({ task_id: "1" }),

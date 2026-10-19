@@ -241,7 +241,7 @@ const values: SurfaceValue[] = [
  *
  * This is a FIND-AND-SURFACE surface, not an authoring one. Nothing on this
  * page is authored copy an agent could draft; every control shapes WHICH
- * records the user is looking at. So the adoption is modelled on the shipped
+ * records the user is looking at. So the adoption is modeled on the shipped
  * `matrx-user/images` library (query + filter targets, `mode:"ui"`) rather
  * than on `tasks` or `marketing-page` (draft-into-editor). The useful agent
  * job here is exactly "find and put the records matching this description in

@@ -29,13 +29,13 @@ describe("skill sets — the one client reader/writer of config.set_members", ()
     expect(next).toEqual({ ingested_from: "doc_manifest", set_members: ["b", "a"] });
   });
 
-  it("recognises a set by its skill type only", () => {
+  it("recognizes a set by its skill type only", () => {
     expect(isSkillSet({ skillType: "set" })).toBe(true);
     expect(isSkillSet({ skillType: "reference" })).toBe(false);
     expect(isSkillSet(null)).toBe(false);
   });
 
-  it("resolves members against the catalogue, keeping unknown ids visible", () => {
+  it("resolves members against the catalog, keeping unknown ids visible", () => {
     const byId = new Map([["a", row("a", "Doc A")]]);
     const members = resolveSetMembers({ config: { set_members: ["a", "gone"] } }, byId);
     expect(members.map((m) => [m.id, m.skill?.label ?? null])).toEqual([

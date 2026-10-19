@@ -59,7 +59,7 @@ describe("waitForAnswerText — a failed run carries the server's reason", () =>
     ).rejects.toThrow("boom");
   });
 
-  it("rejects when the run timed out or was cancelled", async () => {
+  it("rejects when the run timed out or was canceled", async () => {
     await expect(
       waitForAnswerText(stateWith({ status: "cancelled" }), "r1", 1_000, 10),
     ).rejects.toThrow("cancelled");

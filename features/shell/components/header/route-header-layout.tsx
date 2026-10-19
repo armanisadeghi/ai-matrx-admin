@@ -1,4 +1,4 @@
-// route-header-layout — the pure pieces behind RouteHeader's narrow-width behaviour.
+// route-header-layout — the pure pieces behind RouteHeader's narrow-width behavior.
 //
 // Two platform guarantees every RouteHeader consumer inherits without touching its own markup:
 //
@@ -7,7 +7,7 @@
 //      they do not all fit beside a title of `TITLE_MIN_PX`, the lowest-priority actions —
 //      the leftmost, since a row's primary action sits at its trailing edge — fold into ONE
 //      "…" overflow. The primary (trailing) action never folds when it can go icon-only:
-//      a labelled tap button (`label` + `icon`) drops its caption and keeps its icon, its
+//      a labeled tap button (`label` + `icon`) drops its caption and keeps its icon, its
 //      accessible name and a tooltip — the Linear / Notion / Apple phone header, where the
 //      page's one primary action stays one tap away. `fitActions` is the decision.
 //
@@ -249,7 +249,7 @@ interface LabelledActionProps {
 }
 
 /**
- * The caption of an action that can go icon-only: a labelled tap button (a `label`
+ * The caption of an action that can go icon-only: a labeled tap button (a `label`
  * string beside an `icon`). Anything else returns null and keeps its natural shape.
  */
 export function iconOnlyLabel(node: ReactNode): string | null {

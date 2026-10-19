@@ -558,7 +558,7 @@ function ComparisonView({
     if (!ok) return;
     const { error } = await cancelArmRun(dispatch, arm.run_id);
     if (error) toast.error(error);
-    else toast.success(`Cancelling ${arm.label}…`);
+    else toast.success(`Canceling ${arm.label}…`);
   };
 
   const totalCost = arms.reduce((sum, a) => sum + (a.cost_usd ?? 0), 0);

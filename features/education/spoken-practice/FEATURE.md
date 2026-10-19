@@ -20,7 +20,7 @@ Never reuse the FastFire flashcard grader or review lane (flashcard and tool-nar
 gloss), `grade` (mode rides as FACTUAL data on the first line of `rubric`), `grade_pronunciation`
 (same `SpokenGrade` plus optional `pronunciation {accuracy, fluency, intelligibility, prosody, notes}`),
 `review` (tools disabled; `{summary, strengths[], weaknesses[]}`). Pronunciation is holistic
-transcript-level judgement, never phoneme scores — the UI says so. Mode config:
+transcript-level judgment, never phoneme scores — the UI says so. Mode config:
 `constants.ts#MODE_CONFIG`; manifest/validator vocabulary: `vocabulary.ts`.
 
 ## Data model — no new table

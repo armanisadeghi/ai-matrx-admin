@@ -10,7 +10,7 @@
 > (people, time, hiring, settings, tasks, exports…) own their own sections below
 > and their own sub-`FEATURE.md` files beside their code.
 >
-> **The specs are the authority, not this file.** Behaviour rulings live in
+> **The specs are the authority, not this file.** Behavior rulings live in
 > `../../../common-docs/systems/human-resources/projects/hr-domain/specs/` — `SPEC-UI-IA.md` (routes, nav,
 > sensitivity rendering) and `SPEC-EMPLOYEES.md` (universal states, effective-dated
 > editing) govern everything described here.
@@ -123,13 +123,13 @@ place. See `types.ts` for the full contract.
 
 1. **Lists span employers; aggregates and actions take exactly one.** `useHrContext().scope`
    says which employers a list reads (`fanOutHr` in `shared/hrScope.tsx`, one door call each,
-   rows labelled with their employer, `HrOrgFilter` visible); `HrPageState` shows the
+   rows labeled with their employer, `HrOrgFilter` visible); `HrPageState` shows the
    pick-an-organization prompt while `active` is null. Switching employers is the SAME route
    with a new `?org_filter=`, built only by `hrSwitchEmployerHref`. Never a merged total.
 2. **Nav, tab and action visibility are CAPABILITY-driven, never role-string
    driven.** `useHrPersona().can(…)`; the persona picks the label and the
    self-scoped destination, never the access decision.
-3. **Absent, not disabled.** No greyed nav item, no greyed tab, no masked field, no
+3. **Absent, not disabled.** No grayed nav item, no grayed tab, no masked field, no
    disabled enable-button. `HrRouteTab.visible === false` means the tab is not
    rendered at all.
 4. **Every page runs the universal states before its own** — through `HrPageState`,
@@ -141,7 +141,7 @@ place. See `types.ts` for the full contract.
    neither is a compliance defect, and
    `features/hr/__tests__/employer-substitution-is-stated-on-every-route.test.ts`
    fails on one.
-5. **Effective dating is asked, never guessed.** The date is first and labelled
+5. **Effective dating is asked, never guessed.** The date is first and labeled
    _Effective_; a future date flips the verb to _Schedule change_; the
    correction-vs-amendment question is asked in the three exact sentences from
    `HR_CHANGE_INTENTS`, and only when the date is in the past.

@@ -122,7 +122,7 @@ The studio matches the audio recorder's bar. Three rules:
 - **Recording is ceremonial, and every number is honest.** `RecordingHud` replaces the idle strip while recording: `text-3xl font-mono` monotonic timer (controller clock, never chunk-derived), `<AudioLevelIndicator>` fed by `useStreamAudioLevel(handle.getRecordingStream())` — the COMPOSED stream, so it reads 0 with the mic off — plus Duration and Estimated Size `<Progress>` gauges. The size gauge reads `controller.getEstimatedBytes()`, the same number `maxBytes` enforcement uses, so a gauge can never disagree with the hard stop it is about to trigger.
 - **Review goes A-to-Z.** Playback routes through the selected speaker (`useOutputSinkRef`); after a successful save of video/audio, **Transcribe** calls `transcribeCloudFile({fileId})` → `POST /audio/transcribe-file` (server-side demux + chunking, bytes never re-uploaded) and renders the transcript with the shared `<ContentActionBar />` (Save to Notes/Tasks/File/copy — never rebuilt here). Transcription state carries its `file_id`, so a new capture can never display the previous one's transcript and a late response for an old file is discarded.
 
-`useStreamAudioLevel` (`features/audio/useStreamAudioLevel.ts`) is the canonical level-meter hook — shared `AudioContext`, analysis-only, disconnect on every exit. Five modules still carry inline analyser copies (see FOUND_DEFECTS D-level meter); new code consumes the hook.
+`useStreamAudioLevel` (`features/audio/useStreamAudioLevel.ts`) is the canonical level-meter hook — shared `AudioContext`, analysis-only, disconnect on every exit. Five modules still carry inline analyzer copies (see FOUND_DEFECTS D-level meter); new code consumes the hook.
 
 ## Change log
 

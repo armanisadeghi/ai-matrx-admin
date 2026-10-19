@@ -11,7 +11,7 @@
 //
 // WHAT THIS SCREEN REFUSES TO DO
 //
-// * It never shows a card it cannot honour. A deck shorter than the round asked
+// * It never shows a card it cannot honor. A deck shorter than the round asked
 //   for says so in words; a card the server could not write is not padded.
 // * It never pretends a save happened. Each answered card carries its OWN
 //   status — saving, what it added, or the failure with a Try again that
@@ -655,7 +655,7 @@ export function TriadGamePage({
         <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-background/95 pb-safe pt-3 backdrop-blur sm:flex-row-reverse">
           {/* NEVER SILENTLY DISABLED (jobs-bar-2026-09-16 lanes-b, item 9).
               This was a bare `disabled={!pick || !reason.trim()}`: a first-timer
-              picked a card, watched the button stay grey, and was told nothing.
+              picked a card, watched the button stay gray, and was told nothing.
               Two steps, no sentence. `GatedActionButton` names the ONE next
               thing to do and wires it to the button for a screen reader too. */}
           <GatedActionButton

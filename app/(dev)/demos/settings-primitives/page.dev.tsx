@@ -181,7 +181,7 @@ export default function SettingsPrimitivesDemoPage() {
 
           <SettingsSubHeader
             title="AI & Models"
-            description="Configure AI behaviour."
+            description="Configure AI behavior."
             icon={Brain}
           />
 
@@ -298,7 +298,7 @@ export default function SettingsPrimitivesDemoPage() {
 
           <SettingsSubHeader
             title="Keyboard & Editor"
-            description="Shortcuts and code editor behaviour."
+            description="Shortcuts and code editor behavior."
             icon={Keyboard}
           />
 

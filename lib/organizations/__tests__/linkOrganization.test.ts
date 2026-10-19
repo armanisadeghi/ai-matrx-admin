@@ -1,5 +1,5 @@
 /**
- * linkOrganization.test.ts — A LINK THAT NAMES AN ORGANIZATION IS HONOURED,
+ * linkOrganization.test.ts — A LINK THAT NAMES AN ORGANIZATION IS HONORED,
  * AND EVERY OTHER OUTCOME IS SAID OUT LOUD.
  *
  * THE DEFECT THIS FILE WAS WRITTEN AGAINST (lane TAILS-3, 2026-09-21)
@@ -8,19 +8,19 @@
  * cold — from an email, a text, or the notifications screen in a fresh
  * session — landed on "Select an organization first" instead of the thing the
  * link named. The server half now stamps `?org=<uuid>` on every deep link the
- * platform emits. This is the client half: the app honours it.
+ * platform emits. This is the client half: the app honors it.
  *
  * 🚨 WHY THIS IS NOT A preselected organization RUNG (the thing the guards refuse).
  * `check-no-default-organization` exists because nothing may PICK an
  * organization for a person out of a cookie, a saved preference, or "their
  * first organization" — each of those is the platform GUESSING. A link's `org=`
  * is the opposite of a guess: it is an explicit, externally-stated,
- * per-navigation instruction that names ONE organization, and it is honoured
+ * per-navigation instruction that names ONE organization, and it is honored
  * only when the person is already a member of it. Nothing is substituted when
  * it is absent; the ladder below it is untouched.
  *
- * THE SIX BEHAVIOURS PINNED HERE:
- *   1. a link naming an organization they belong to is honoured on arrival;
+ * THE SIX BEHAVIORS PINNED HERE:
+ *   1. a link naming an organization they belong to is honored on arrival;
  *   2. a link naming an organization they do NOT belong to refuses IN WORDS,
  *      without naming that organization, and switches them nowhere;
  *   3. a link naming the organization they are ALREADY working in is a silent
@@ -122,7 +122,7 @@ describe("readLinkOrganizationParam", () => {
  * exactly like an id — and like an id, it can open nothing she does not belong to.
  */
 describe("a link that names an organization by its ADDRESS (slug)", () => {
-  it("is honoured when the address is one of hers — never 'could not be read'", () => {
+  it("is honored when the address is one of hers — never 'could not be read'", () => {
     const d = decide("second-harvest", { current: PLUMBING });
     expect(d.kind).toBe("honoured");
     if (d.kind !== "honoured") return;
@@ -154,7 +154,7 @@ describe("a link that names an organization by its ADDRESS (slug)", () => {
 });
 
 describe("a link that names an organization she belongs to", () => {
-  it("is honoured on a cold arrival, so the donor list renders instead of the picker", () => {
+  it("is honored on a cold arrival, so the donor list renders instead of the picker", () => {
     const d = decide(FOOD_BANK.id);
     expect(d.kind).toBe("honoured");
     if (d.kind !== "honoured") return;
@@ -207,7 +207,7 @@ describe("a link that names an organization she does NOT belong to", () => {
 });
 
 describe("the knob: switch organization when a link asks", () => {
-  it("defaults ON — the decision honours the link with no knob passed", () => {
+  it("defaults ON — the decision honors the link with no knob passed", () => {
     const d = decideLinkOrganization({
       param: readLinkOrganizationParam(`?org=${PLUMBING.id}`),
       memberships: MEMBERSHIPS,
@@ -231,7 +231,7 @@ describe("the knob: switch organization when a link asks", () => {
     expect(d.actionLabel).toContain(PLUMBING.name);
   });
 
-  it("turned OFF still honours a link when she is working in NO organization — there is no switch to refuse", () => {
+  it("turned OFF still honors a link when she is working in NO organization — there is no switch to refuse", () => {
     const d = decide(FOOD_BANK.id, { switchWhenALinkAsks: false });
     expect(d.kind).toBe("honoured");
   });

@@ -1,5 +1,5 @@
 // /administration/applications — Overview tab of the Applications hub.
-// Per-application cards summarising remote configuration, remote catalogs,
+// Per-application cards summarizing remote configuration, remote catalogs,
 // and the installed fleet, with a loud warning when instances are running
 // below the published minimum supported version.
 //

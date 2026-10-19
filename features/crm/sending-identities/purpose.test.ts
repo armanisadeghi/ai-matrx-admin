@@ -63,7 +63,7 @@ const preB26Row: Omit<PurposeRow, "purpose" | "purpose_note"> &
 };
 
 describe("purpose, read off the row", () => {
-  it("recognises the row a reviewed send creates", () => {
+  it("recognizes the row a reviewed send creates", () => {
     expect(purposeOf(correspondenceRow)).toBe("correspondence");
     expect(isCorrespondenceMailbox(correspondenceRow)).toBe(true);
   });

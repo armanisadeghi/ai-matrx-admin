@@ -8,7 +8,7 @@
  * render a row state with the period's vocabulary by accident — the label sets are separate
  * constants in `../periodStateMachine.ts` and neither is reachable through the other.
  *
- * Semantic colour tokens only. No emoji.
+ * Semantic color tokens only. No emoji.
  */
 
 import { cn } from "@/lib/utils";

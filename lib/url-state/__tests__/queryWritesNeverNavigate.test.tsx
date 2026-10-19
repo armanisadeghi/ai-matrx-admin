@@ -12,7 +12,7 @@
  *      UrlStateDoor injects the door
  *   E. a literal own-route path (`/tasks?task=…`) — replaceAddressOrNavigate
  *
- * Next is modelled faithfully (./nextHistoryModel): its history patch skips any state carrying
+ * Next is modeled faithfully (./nextHistoryModel): its history patch skips any state carrying
  * `__NA`, and `useSearchParams` moves only through that patch. Every router call is a navigation
  * (a `?_rsc=` server round trip in the real app).
  *

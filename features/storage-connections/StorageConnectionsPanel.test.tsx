@@ -184,7 +184,7 @@ test("connected accounts confirm the exact account before disconnect", async () 
   expect(mockDisconnect).toHaveBeenCalledWith("box", "box-connection");
 });
 
-test("cancelling disconnect has no effect", async () => {
+test("canceling disconnect has no effect", async () => {
   mockList.mockResolvedValue([connection("dropbox", "connected")]);
   mockConfirm.mockResolvedValueOnce(false);
   await render();

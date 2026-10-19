@@ -35,7 +35,7 @@ export const TAP_HALF_GAP_PX = 3;
 export const INLINE_CONTROLS_MIN_HEIGHT_PX = SUBMIT_BUTTON_WIDTH_PX + 2 * TAP_HALF_GAP_PX;
 
 /**
- * The inline-controls text padding: centred on one tap row vertically (whatever
+ * The inline-controls text padding: centered on one tap row vertically (whatever
  * the host's line height — `1lh`), and a right gutter the measured cluster
  * width plus the half-gap, so text never runs under a control.
  */

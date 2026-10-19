@@ -40,7 +40,7 @@
  *
  * 🚨 THE RATCHET (2026-09-13). The registry is seeded SPEC-FIRST by design:
  * the HR program (`hr.*`, `esign.*`) writes its rows before the screens that
- * honour them exist, and the unfinished-work alarm forbids deleting them. So
+ * honor them exist, and the unfinished-work alarm forbids deleting them. So
  * this guard carries the same shrinking baseline the hardcoded and env-toggle
  * guards do — `scripts/settings-orphans-baseline.json`, today's true orphans by
  * namespace WITH the registry domain that owns them. It only shrinks: `--write`
@@ -153,7 +153,7 @@ async function main(): Promise<void> {
   // first screen and the admin limits page quote every key they render, so
   // scanning them made a key with zero runtime readers count as "forwarded"
   // (2026-09-12: the three first-screen keys read as consumed while the UI
-  // itself said "Not connected yet"). They edit settings; they do not honour
+  // itself said "Not connected yet"). They edit settings; they do not honor
   // them.
   const fe = collectFrontend().filter(
     (f) => !featureRegExp(/matrx-frontend\/(features\/settings\/(universal|tabs)|features\/admin\/limits)\//).test(f.rel),
@@ -188,7 +188,7 @@ async function main(): Promise<void> {
   // four retired `custom` guards, `orm.write_retry`, `scheduler.lease`,
   // `personal_staff`, and both rows this lane was fixing) read as consumed the
   // moment the apps were scanned. It edits and mirrors settings; it does not
-  // honour them.
+  // honor them.
   const aiApps = (collectAidreamApps() ?? []).filter(
     (f) => !/\.generated\.tsx?$/.test(f.rel),
   );

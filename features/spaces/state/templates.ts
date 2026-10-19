@@ -1,7 +1,7 @@
 // features/spaces/state/templates.ts — I2 / I3: the "template" label on a Space, and "Use template".
 //
 // The label is the platform category `document_label` / `template`, assigned by the association
-// `document → category` labelled `labeled` (common-docs spaces STATE.md § Applied). "Templates I can open"
+// `document → category` labeled `labeled` (common-docs spaces STATE.md § Applied). "Templates I can open"
 // is one `assoc_for_targets` read (it already filters to Spaces the caller can open). "Use template" is
 // `content.space_duplicate` into the active organization at the top level, keeping the template's title.
 //

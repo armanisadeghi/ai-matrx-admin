@@ -152,7 +152,7 @@ function RowLink({
   trailing?: React.ReactNode;
   /** Chips under the meta line (a catalog row's trust labels). */
   badges?: React.ReactNode;
-  /** The kind's colour: the tile behind the glyph. */
+  /** The kind's color: the tile behind the glyph. */
   tone?: HubKindTone;
 }) {
   return (
@@ -256,13 +256,13 @@ function DataStoresGroup({ group }: { group: Group }) {
   );
 }
 
-// ─── Libraries (a whole channel or feed, catalogued) ────────────────────────
+// ─── Libraries (a whole channel or feed, cataloged) ────────────────────────
 
 const SYNC_WORDS: Record<LibraryRow["sync_status"], string> = {
-  never_synced: "Not catalogued yet",
-  syncing: "Cataloguing now",
-  idle: "Catalogued",
-  failed: "Last catalogue failed",
+  never_synced: "Not cataloged yet",
+  syncing: "Cataloging now",
+  idle: "Cataloged",
+  failed: "Last catalog failed",
 };
 
 const PAGE = 50;
@@ -342,7 +342,7 @@ function LibrariesGroup({ group, set }: { group: Group; set: (k: string, v: stri
           <div className="flex items-start gap-2">
             <BookOpen className="mt-0.5 size-4 shrink-0" />
             <p className="min-w-0 leading-relaxed">
-              Paste the channel, feed, or address here first: we catalogue every Source in a Library, and from there you can
+              Paste the channel, feed, or address here first: we catalog every Source in a Library, and from there you can
               send the ones you want to {handoff.backHref ? "the Rulebook you came from" : "a Rulebook"}.
             </p>
           </div>
@@ -374,7 +374,7 @@ function LibrariesGroup({ group, set }: { group: Group; set: (k: string, v: stri
         <Link
           href="/acquisition/blocks"
           className="ml-auto text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-          title="Libraries that stopped mid-sync, exports we recognise but cannot read, books we may not open"
+          title="Libraries that stopped mid-sync, exports we recognize but cannot read, books we may not open"
         >
           Blocked
         </Link>
@@ -396,7 +396,7 @@ function LibrariesGroup({ group, set }: { group: Group; set: (k: string, v: stri
           <Notice>
             {words || adapters.length
               ? "No Library matches these filters."
-              : `No Libraries in “${LIBRARY_LANE_LABEL[lane]}”. Paste a YouTube channel, a podcast feed, a blog, or a slide deck link above; the whole catalogue lists in seconds.`}
+              : `No Libraries in “${LIBRARY_LANE_LABEL[lane]}”. Paste a YouTube channel, a podcast feed, a blog, or a slide deck link above; the whole catalog lists in seconds.`}
           </Notice>
         ) : null}
         {read.problems.length ? (

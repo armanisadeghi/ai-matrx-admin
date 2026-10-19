@@ -19,7 +19,7 @@
  * Scanned: this repo's .tsx and every `../aidream/apps/shared/<pkg>` source file (the packages ship UI too).
  * Out of scope: the peek's own home (design-system `peek*.tsx`, `hover-card.tsx`), tests, demos, labs.
  *
- * A surface that is genuinely not a record peek (a chart's data-point readout, a colour swatch's
+ * A surface that is genuinely not a record peek (a chart's data-point readout, a color swatch's
  * preview) says so with `peek-exception: <reason>` on the line or within the 3 lines above it — and
  * that exception is itself an item (`peek-exception|<file>`) on the same shrink-only ratchet, so a
  * new one is NEW and gets looked at; it is never a free pass.

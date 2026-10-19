@@ -309,10 +309,10 @@ const EXEMPT_RE =
  * exist by accident", so Copy/Export/AI are switched off on purpose. A fleet
  * worker read that, understood it, and correctly refused to wire the file.
  *
- * Without a marker, that judgement survives exactly until the next agent is
+ * Without a marker, that judgment survives exactly until the next agent is
  * handed the file by a census that still lists it — and that agent may not
  * read the header. So a deliberate refusal must be RECORDED where the census
- * looks, not just honoured once. A file declaring:
+ * looks, not just honored once. A file declaring:
  *
  *   // context-menu: deliberately-absent — a CSV of complaints must not exist by accident
  *
@@ -357,11 +357,11 @@ function exemptSlots(src: string): Set<string> {
 /**
  * 🚨 A SHARED BUILDER SUPPLIES SLOTS ON THE CONSUMER'S BEHALF.
  *
- * A file that ADOPTS a registered section builder (the behaviour this whole
+ * A file that ADOPTS a registered section builder (the behavior this whole
  * rollout exists to produce) gets its `entity` from that builder, not from its
  * own text. Grading only the consuming file therefore marked every correct
  * adopter a SHELL — penalising the right answer and rewarding inlining, which
- * is precisely backwards. If the fleet optimised for the grade it would stop
+ * is precisely backwards. If the fleet optimized for the grade it would stop
  * adopting builders. So: follow the import, and credit what the builder gives.
  */
 function slotsFromImportedBuilders(
@@ -663,7 +663,7 @@ function stripNoise(src: string): string {
  *   separator — nothing (it is not a control)
  *
  * THE HONEST EXIT. `disabled: true` (the literal) is always conformant: the row
- * renders greyed and unclickable, so the screen is not lying — that is the
+ * renders grayed and unclickable, so the screen is not lying — that is the
  * "absent or honest" half of law 4, and the codebase already uses it for
  * informational rows (`FileTreeNode`'s fixed-height summary) and for real
  * refusals (`crm-member-no-party`, which pairs it with a `description` reason).
@@ -923,7 +923,7 @@ function gradeItem(
   if (!declared && !label) return null;
   if (!declared && !id && !onSelect && !onCheckedChange && !href && !build) return null;
 
-  // THE HONEST EXIT — `disabled: true` renders greyed; the screen is not lying.
+  // THE HONEST EXIT — `disabled: true` renders grayed; the screen is not lying.
   const disabled = prop(obj, "disabled");
   if (disabled && disabled.kind === ts.SyntaxKind.TrueKeyword) return null;
 
@@ -1226,7 +1226,7 @@ function main() {
    *
    * Features legitimately wrap v3 once and re-export it under their own name —
    * `FileRightClickMenu` is the files feature's per-file wrapper, and a window
-   * that adopts it is CORRECTLY wired. Recognising only the two literal v3
+   * that adopts it is CORRECTLY wired. Recognizing only the two literal v3
    * component names reported those files as having no menu at all, which sends
    * the next agent to add a SECOND, nested one — and the inner trigger wins, so
    * the outer never opens. The detector's false negative would have manufactured

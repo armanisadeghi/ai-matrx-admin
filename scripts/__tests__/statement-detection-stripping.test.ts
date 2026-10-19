@@ -89,7 +89,7 @@ describe("the autocommit detector reads statements, not prose", () => {
     });
   }
 
-  it("a real top-level CREATE INDEX CONCURRENTLY is still detected — unchanged behaviour", () => {
+  it("a real top-level CREATE INDEX CONCURRENTLY is still detected — unchanged behavior", () => {
     expect(
       judge("real", "create index concurrently if not exists jobs_status_idx on public.jobs (id);\n").autocommit,
     ).toBe(true);

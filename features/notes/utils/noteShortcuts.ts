@@ -71,7 +71,7 @@ export function handleNoteShortcut(e: NoteShortcutEvent, ctx: NoteShortcutContex
     return true;
   }
 
-  // `e.key` honours CapsLock (caps→"F"), so normalize before comparing.
+  // `e.key` honors CapsLock (caps→"F"), so normalize before comparing.
   const keyLower = e.key.length === 1 ? e.key.toLowerCase() : e.key;
 
   // Ctrl+F — open the find bar (and re-focus + select-all if already open).

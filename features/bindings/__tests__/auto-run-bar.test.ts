@@ -1,5 +1,5 @@
 /**
- * P14, HELD — a behavioural promise is offerable only when it is factually
+ * P14, HELD — a behavioral promise is offerable only when it is factually
  * true, and it says why not.
  *
  * These assert the TRANSLATION and the SENTENCES, which are the two things this

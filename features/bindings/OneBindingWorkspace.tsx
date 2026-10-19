@@ -715,7 +715,7 @@ function BindingDraft({
 
   // 🚨 ONE DERIVATION, NOT TWO (FIX-Q8). The sentence and the column's status
   // used to be computed separately — the sentence knew about `error`, the
-  // status did not — so a failed read arrived at the column labelled "ready"
+  // status did not — so a failed read arrived at the column labeled "ready"
   // with zero values and it printed "This job offers nothing yet" under a
   // header saying the inputs could not be read. Both now come from one place
   // and cannot disagree again. See `offer-column-state.ts`.
@@ -1097,7 +1097,7 @@ function BindingDraft({
   // ONE RULE for "a personal agent may not be the system answer" — the same
   // function the bar's alert uses, so the screen's warning and the thing that
   // actually stops the write can never disagree. Silent until the system
-  // catalogue is read (see `systemRungHolderIsPersonal`).
+  // catalog is read (see `systemRungHolderIsPersonal`).
   const builtinAgents = useBuiltinAgents();
   const systemHolderIsPersonal =
     holder.kind === "agent" &&
@@ -1789,7 +1789,7 @@ function BindingDraft({
    * 🚨 NO DOOR WHERE THE ANSWER IS NOT THIS PERSON'S TO WRITE. The door spends
    * a model run and creates a real agent row, so offering it to someone whose
    * Save is already refused for a PERMISSION reason burns money and litters
-   * the catalogue with an agent they can never bind. Only the permission
+   * the catalog with an agent they can never bind. Only the permission
    * refusals are read here — "choose an agent first" and the mapping problems
    * are reasons to USE this door, not to hide it.
    */
@@ -2049,7 +2049,7 @@ function BindingDraft({
           perspective={perspective}
           // 🚨 ONE VERDICT ON SCREEN, ALWAYS ABOUT THE HOLDER IN THE CONTROLS
           // (FIX-R9-UI round 2). The pre-flight below judges the DRAFTED agent
-          // and gates Save; `healthNote` is the DOOR's judgement of what is
+          // and gates Save; `healthNote` is the DOOR's judgment of what is
           // saved. When the pre-flight is speaking they are the same defect in
           // two voices — which is the repetition Arman rejected — so the door's
           // sentence stands only while the pre-flight has nothing to say.

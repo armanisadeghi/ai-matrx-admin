@@ -203,7 +203,7 @@ export function mergeInsertSql(args: {
  * §13 point 2, second half — rows the new production snapshot no longer has.
  *
  * Returns `null` when the marker cannot express campaign ownership as a
- * predicate, and that null IS the behaviour: with no way to tell a campaign row
+ * predicate, and that null IS the behavior: with no way to tell a campaign row
  * from a row production dropped, the merge deletes nothing at all. The caller
  * prints why.
  *

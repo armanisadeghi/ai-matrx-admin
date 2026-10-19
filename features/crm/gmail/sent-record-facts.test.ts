@@ -79,7 +79,7 @@ function row(overrides: Partial<InteractionRow> = {}): InteractionRow {
 }
 
 describe("isGmailSentRecord", () => {
-  it("recognises the row by provider and by the metadata marker", () => {
+  it("recognizes the row by provider and by the metadata marker", () => {
     expect(isGmailSentRecord(row())).toBe(true);
     expect(isGmailSentRecord(row({ provider: null }))).toBe(true);
     expect(

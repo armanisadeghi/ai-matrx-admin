@@ -650,7 +650,7 @@ Hard rules: node_route, node_depth, node_pillar_label, and node_cluster_label ar
       // The brief-writer Mandate — the panel's "Draft brief" button.
       // Distinct from Deepen (which writes brief + sources server-side and
       // SAVES): this one is neighbour-aware and STAGES into the panel draft
-      // for review, which is the behaviour Deepen does not offer. The DB
+      // for review, which is the behavior Deepen does not offer. The DB
       // decides the Holder (re-pointed from a pinned id 2026-08-23).
       mandateKey: MANDATE_KEYS.content_plan__brief_writer,
       defaultAgentId: null,

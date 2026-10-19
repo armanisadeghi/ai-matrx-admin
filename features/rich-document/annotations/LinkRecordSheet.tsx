@@ -148,7 +148,7 @@ export function LinkRecordPickerSheet({
               if (ok === true) onOpenChange(false);
               return ok === true
                 ? { ok: true }
-                : { ok: false, error: ok === "cancelled" ? "cancelled, nothing was linked" : "Not linked — the panel says why." };
+                : { ok: false, error: ok === "cancelled" ? "canceled, nothing was linked" : "Not linked — the panel says why." };
             }}
             onDetach={async () => ({ ok: false, error: "Detach a link from the annotations panel." })}
           />

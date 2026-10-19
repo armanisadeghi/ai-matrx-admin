@@ -121,7 +121,7 @@ export function SingleFileTopBar({ fileId, className }: SingleFileTopBarProps) {
             )}
           </nav>
           {/* File name + lineage sit IN FLOW after the breadcrumb, never in the absolutely
-           * centred slot: that slot is for a route's mode nav, and when the actions on the right
+           * centered slot: that slot is for a route's mode nav, and when the actions on the right
            * were wide it fell back to full width and drew the name over the breadcrumb
            * (VERIFIER-23 #4). In flow, a long name truncates and nothing overlaps. The
            * right-click menu wraps it so a right-click here gives the full action set. */}

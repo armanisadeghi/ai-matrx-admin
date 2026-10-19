@@ -48,7 +48,7 @@ survives reloads, tabs and devices until turned off.
 
 **Truth rules (pure, tested)** — `watch-run-truth.ts`: captures filtered by request id (children
 nested), rejoin repeats merged, retried attempts superseded, live capture kept over the recorded
-snapshot (labelled; a shortfall is an error), mandate identity only from the run's own frame.
+snapshot (labeled; a shortfall is an error), mandate identity only from the run's own frame.
 A continuation turn's frame (`provision_applied: false` — server `build_turn_frame` for continue,
 fork-and-run and resume) renders through `continuationView` / `earlierFrames`: "This turn ·
 provision not re-applied" with who wrote the turn, its words or host line and its context, and a
@@ -107,7 +107,7 @@ stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run
   not re-applied, instead of "attributed to <key>".
 - **2026-10-13** — Phase 1 of the admin watch window: per-request identity (server id, the
   `mandate_run` frame), the 5-second time-window match deleted, captures filtered by request id,
-  recorded snapshot labelled and never a silent replacement, mandate/provision/goal/version
+  recorded snapshot labeled and never a silent replacement, mandate/provision/goal/version
   sections, admin+debug gate on the window and every button, orange sidebar light, Applet job
   Watch door, Improve this agent / Send to developers, runs-list errors shown.
 - 2026-10-17 — Everything view (`EverythingFeed.tsx`, `everything-feed.ts`): platform-wide recent runs from `chat.user_request`, server-side filters (person, organization, door, mandate, agent, background) and keyset paging, loaded only when switched on; a row opens in the same detail. The eval fact judge's call (`outcome.judge.conversation_id/request_id`, aidream `agent_tests`) is a followed step. Watch AI lives in one place (`watch-ai-one-place.ts`, enforced in `AutoWatch`). Scalars that quote a kind key render through the answer pipeline (`RowText`). The from-chat door follows each sub-run conversation.

@@ -180,8 +180,8 @@ export function resultReasoning(metadata: Json): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-/** Catalogue labels for a set of item ids — `Map<item_id, label>`. A key the
- * catalogue does not carry yet is simply absent (never an error). */
+/** Catalog labels for a set of item ids — `Map<item_id, label>`. A key the
+ * catalog does not carry yet is simply absent (never an error). */
 async function loadAnalysisItemLabels(
   itemIds: Array<string | null>,
   signal: AbortSignal,
@@ -690,7 +690,7 @@ export async function listFindingResults(
 // The rollup the Audit workspace renders over the REAL analysis rows the
 // per-page workers write (matrx-scraper `analyze_site_pages`, commissioned
 // 2026-08-08): current site score (`web.v_site_score`), freshness, open
-// findings grouped by catalogue item, and the score-ranked worst pages
+// findings grouped by catalog item, and the score-ranked worst pages
 // (`web.v_page_score`). Read-only; grouping happens client-side over a
 // bounded fetch whose truncation is surfaced, never silent.
 

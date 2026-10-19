@@ -189,7 +189,7 @@ function toFacetValues(raw: Json): FacetValue[] {
 export async function getFacetDimensionCatalog(
   /**
    * The site whose own dimensions to include. Pass `null` for the PLATFORM
-   * catalogue alone (the admin default-rules editor). An empty string is not a
+   * catalog alone (the admin default-rules editor). An empty string is not a
    * site — it reached the RPC as `p_site_id: ""` and Postgres rejected it with
    * `invalid input syntax for type uuid`, so the caller silently got no
    * dimensions at all (2026-08-26).

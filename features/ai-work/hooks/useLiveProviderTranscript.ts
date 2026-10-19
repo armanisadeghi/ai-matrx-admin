@@ -22,7 +22,7 @@
 // A poll therefore covers strictly more with strictly one mechanism, and the
 // indicator says which mode it is rather than implying push.
 //
-// The freeze-loop rules still apply and are honoured: one in-flight cycle at a
+// The freeze-loop rules still apply and are honored: one in-flight cycle at a
 // time, ONE batched state update per cycle, dedup by id, error backoff to a
 // 30s ceiling, and no polling at all once the session settles.
 

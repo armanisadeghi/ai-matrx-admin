@@ -100,7 +100,7 @@ export function mapPagesBody(input: MapPagesInput = {}): MapPagesRequestBody {
  * 🚨 EVERY "dropped" AND "kept" NUMBER IS AN ANSWER, NOT A FAILURE.
  * `kept_existing` means the map already held that page+topic from a person or a
  * higher-ranked source and the pass correctly left it alone; a screen that
- * lumps it into failures punishes the behaviour we want. `dropped_geography_topic`
+ * lumps it into failures punishes the behavior we want. `dropped_geography_topic`
  * above zero means this map still HAS a geography branch — say so and offer
  * the region pass, which is exactly what `notes` already explains.
  */

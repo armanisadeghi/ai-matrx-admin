@@ -5,11 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Edit, Shield, ShieldAlert, Trash2 } from 'lucide-react';
 import { MatrxDataTable } from '@ai-matrx/design-system/data-table';
 import type { MatrxColumnDef } from '@ai-matrx/design-system/data-table/types';
+import { useSearchParams } from 'next/navigation';
 import { getSqlFunctionKey } from '../utils/functionIdentity';
 import { confirm } from '@/components/dialogs/confirm/ConfirmDialogHost';
 import type { ReadOutcome } from "@ai-matrx/design-system";
-interface SqlFunctionsListProps { functions: SqlFunction[]; loading: boolean; /** The list read's outcome (RC-B12 r13). */ read?: ReadOutcome; selectedFunctionKey?: string | null; onViewDetails: (func: SqlFunction) => void; onEditFunction: (func: SqlFunction) => void; onDeleteFunction: (schema: string, name: string, argumentTypes: string) => Promise<boolean>; onSortChange: (field: SqlFunctionSort['field']) => void; sortField: SqlFunctionSort['field']; sortDirection: SqlFunctionSort['direction']; }
-export default function SqlFunctionsList({ functions, loading, read, selectedFunctionKey, onViewDetails, onEditFunction, onDeleteFunction }: SqlFunctionsListProps) {
+interface SqlFunctionsListProps { functions: SqlFunction[]; loading: boolean; /** The list read's outcome (RC-B12 r13). */ read?: ReadOutcome; selectedFunctionKey?: string | null; /** `list` is the record page's sidebar: one compact line per function, the open one highlighted. */ presentation?: 'table' | 'list'; onViewDetails: (func: SqlFunction) => void; onEditFunction: (func: SqlFunction) => void; onDeleteFunction: (schema: string, name: string, argumentTypes: string) => Promise<boolean>; onSortChange: (field: SqlFunctionSort['field']) => void; sortField: SqlFunctionSort['field']; sortDirection: SqlFunctionSort['direction']; }
+export default function SqlFunctionsList({ functions, loading, read, selectedFunctionKey, presentation = 'table', onViewDetails, onEditFunction, onDeleteFunction }: SqlFunctionsListProps) {
+  const searchParams = useSearchParams();
+  // A function's address is `?selected=`, carrying the list's own view (search, sort, filters).
+  const hrefFor = (row: SqlFunction) => {
+    const next = new URLSearchParams(searchParams?.toString() ?? '');
+    next.set('selected', getSqlFunctionKey(row));
+    return `?${next.toString()}`;
+  };
   const columns = useMemo((): MatrxColumnDef<SqlFunction>[] => [
     { id: 'name', header: 'Function name', accessorKey: 'name', width: 240, cell: (row) => <button type="button" className="font-medium hover:text-primary" onClick={() => onViewDetails(row)}>{row.name}</button> },
     { id: 'schema', header: 'Schema', accessorKey: 'schema', filter: 'select', width: 140 },
@@ -31,6 +39,10 @@ export default function SqlFunctionsList({ functions, loading, read, selectedFun
       viewTabs={false}
       emptyState={{ title: 'No SQL functions found' }}
       rowClassName={(row) => selectedFunctionKey === getSqlFunctionKey(row) ? 'bg-primary/10' : undefined}
+      presentation={presentation}
+      getRowHref={hrefFor}
+      activeRowId={selectedFunctionKey}
+      listItem={{ title: (row) => row.name, subtitle: (row) => row.schema }}
       onRowOpen={(row) => onViewDetails(row)}
       rowActions={(row) => [
         {

@@ -80,7 +80,7 @@ describe("useBlockMediaSource private image transport", () => {
 
 describe("useBlockMediaSource never binds our authenticated endpoint as a CDN URL", () => {
   // A matrx block whose adapter filed the durable `?inline=1` endpoint into
-  // the `cdnUrl` slot and labelled the row `public` — exactly what the chat
+  // the `cdnUrl` slot and labeled the row `public` — exactly what the chat
   // produced for a `personal` gpt-image-2 result on 2026-09-16 (the block
   // carried no visibility, the adapter guessed). Taking the "public + CDN →
   // element" shortcut here binds the third-party-cookie lane to an <img>:

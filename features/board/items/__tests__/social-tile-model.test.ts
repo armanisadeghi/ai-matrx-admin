@@ -106,7 +106,7 @@ describe("sparklinePath", () => {
     expect(path).toBe("M3.0 37.0 L97.0 3.0");
   });
 
-  it("draws a flat series as a centred line", () => {
+  it("draws a flat series as a centered line", () => {
     const path = sparklinePath(
       [
         { t: 0, value: 7 },

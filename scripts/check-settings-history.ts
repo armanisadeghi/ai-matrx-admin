@@ -2,7 +2,7 @@
  * pnpm check:settings-history — the settings change log, proven live.
  *
  * Every knob/setting write lands exactly ONE row in `platform.knob_override_audit`,
- * labelled with the door it came through, and the two read doors answer from it:
+ * labeled with the door it came through, and the two read doors answer from it:
  *
  *   ui         a signed-in browser request (PostgREST with Origin)      → door 'ui'
  *   api        a signed-in request without a browser (supabase-js/node) → door 'api'

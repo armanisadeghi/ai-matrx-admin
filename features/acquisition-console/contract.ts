@@ -5,7 +5,7 @@
 // 🚨 WHY A CONTRACT ON A *DATABASE* READ, not just on a server boundary.
 // Four of the five registers this screen reads carry a `jsonb` column that the
 // SERVER writes and Postgres does not type: `media.source_library.metrics` is a
-// different shape per adapter (a catalogued Library has `transcripts`, an export
+// different shape per adapter (a cataloged Library has `transcripts`, an export
 // Library has `total_items`), and it has already changed twice this month. A
 // generated database type says `Json` and checks nothing. So the same rule the
 // REST boundaries here live by applies: a component may only render a value one
@@ -82,7 +82,7 @@ export interface LibraryFacts {
 /**
  * `metrics` is read DEFENSIVELY on purpose: it is the one column whose shape the
  * server owns and changes. A Library whose metrics blob is missing, null, or a
- * shape nobody recognises is still a Library the person has — so the yield reads
+ * shape nobody recognizes is still a Library the person has — so the yield reads
  * as unknown and the row survives. Only the row's IDENTITY (id, adapter) is
  * required, because a row without those is not a Library at all.
  */
@@ -310,7 +310,7 @@ const LANE_TO_LIST_SCOPE: Record<string, string> = {
  *
  * Until 2026-09-20 this was a bare `/libraries` and deliberately so (D343): the
  * server declared none of the three filters API-CONTRACT.md §3 published, so a
- * parameter the destination could not honour would have been a worse lie than
+ * parameter the destination could not honor would have been a worse lie than
  * no parameter. aidream `d7093434f6` closed that; the link is now exact.
  */
 export function librariesHref(adapter: string, lane: string): string {

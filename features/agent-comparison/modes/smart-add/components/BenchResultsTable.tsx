@@ -2,7 +2,7 @@
 
 /**
  * Smart Add bench — every result as one normalized row: where it came from, the person's truth,
- * and each system's answer with its label and probability. Sort, filter and analyse with the
+ * and each system's answer with its label and probability. Sort, filter and analyze with the
  * canonical table; correct the truth in place (or take a system's answer as the truth with one
  * click) when the person realizes the system was right.
  */

@@ -77,7 +77,7 @@ export function SocialConnectionsPanel({
       else
         setFailure(
           status === "cancelled"
-            ? "Connection cancelled."
+            ? "Connection canceled."
             : status === "usage_limit_reached"
               ? "Your AI Matrx usage limit has been reached. Review Plan & usage."
               : status === "quota_exhausted"

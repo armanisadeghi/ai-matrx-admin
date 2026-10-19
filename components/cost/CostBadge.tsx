@@ -4,7 +4,7 @@
  * components/cost/CostBadge.tsx
  *
  * The canonical "what will this cost" chip beside an expensive action. Tier-
- * coloured so a large run reads as a warning at a glance. Renders through
+ * colored so a large run reads as a warning at a glance. Renders through
  * `useCostDisplay`, so a member sees points and only an admin who flipped the
  * switch sees dollars. (Replaces the retired 2,000-per-dollar
  * "Processing Units" badge — points are the one unit.)

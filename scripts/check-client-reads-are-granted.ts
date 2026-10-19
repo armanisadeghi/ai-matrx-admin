@@ -443,7 +443,7 @@ export function parseSelectString(sel: string): string[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The judgement
+// The judgment
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** A relation NAME can exist in several schemas — `provision` is both

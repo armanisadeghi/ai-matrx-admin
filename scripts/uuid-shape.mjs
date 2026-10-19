@@ -17,7 +17,7 @@
  *   - a `new RegExp("^…$", flags)` string, a `new RegExp(NAME)` whose NAME is
  *     a file-level string constant, and a `new RegExp(\`^${NAME}$\`)` template
  *     whose NAME resolves the same way.
- * The UUID is recognised by STRUCTURE, not by spelling: a tiny tokenizer reads
+ * The UUID is recognized by STRUCTURE, not by spelling: a tiny tokenizer reads
  * the body into 36 positions, so `[0-9a-f]{8}` and eight repeated classes,
  * `(?:[0-9a-f]{4}-){3}`, `[\da-f]`, `[0-9a-fA-F]` and `[a-f0-9]`, one wrapping
  * capture group, and every version/variant spelling all land on the same shape.

@@ -32,7 +32,7 @@ export interface ContextMenuPage {
   description: string;
   /** Icon key resolved via `_registry.icons.tsx` in client components. */
   icon: ContextMenuIconKey;
-  /** When `"planned"`, the card is greyed out and the link is disabled. */
+  /** When `"planned"`, the card is grayed out and the link is disabled. */
   status: PageStatus;
   /** Hidden from nav strip when true (still in hub). Defaults to false. */
   hiddenFromNav?: boolean;
@@ -57,7 +57,7 @@ export const CONTEXT_MENU_PAGES: ContextMenuPage[] = [
     tagline:
       "The SAME notes menu four ways: current, compact, tiered (icon strip, lossless), command (type-to-filter).",
     description:
-      "Pick the arrangement of the universal menu. Every panel is the exact /notes wiring (matrx-user/notes + the full notes extraSections) — only the layout / density knobs differ. Right-click each textarea and compare. Behaviour is identical across all four; they share one engine and one model.",
+      "Pick the arrangement of the universal menu. Every panel is the exact /notes wiring (matrx-user/notes + the full notes extraSections) — only the layout / density knobs differ. Right-click each textarea and compare. Behavior is identical across all four; they share one engine and one model.",
     icon: "layout-grid",
     status: "wip",
   },
@@ -87,7 +87,7 @@ export const CONTEXT_MENU_PAGES: ContextMenuPage[] = [
     tagline:
       "Four live panels exercising different placement / context combinations side-by-side.",
     description:
-      "Multi-panel smoke test. Panel 1 is a production-accurate code editor harness (`CodeEditorDemoPanel` → same props/context as `/code`). Other panels pin different placement / context combinations. Use this to verify behavioural deltas at a glance — content-editor vs read-only hiding, disable showcase, etc.",
+      "Multi-panel smoke test. Panel 1 is a production-accurate code editor harness (`CodeEditorDemoPanel` → same props/context as `/code`). Other panels pin different placement / context combinations. Use this to verify behavioral deltas at a glance — content-editor vs read-only hiding, disable showcase, etc.",
     icon: "layout-grid",
     status: "stable",
   },

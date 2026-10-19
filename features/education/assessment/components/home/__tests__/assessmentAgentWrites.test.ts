@@ -18,7 +18,7 @@ const MINE: CurrentAssessment[] = [
 ];
 
 describe("create_quizzes", () => {
-  it("accepts a list, normalises fields and strips markdown from titles", () => {
+  it("accepts a list, normalizes fields and strips markdown from titles", () => {
     const out = parseCreateAssessmentsValue(
       "quizzes",
       [

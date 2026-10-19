@@ -15,7 +15,7 @@
  *   1. A then B in quick succession → A is the turn sent, B is queued into
  *      that run, in that order; the composer ends empty.
  *   2. The second submit is visible the moment it is pressed (never silent).
- *   3. A submit cancelled at a gate returns its text to the composer, and a
+ *   3. A submit canceled at a gate returns its text to the composer, and a
  *      next message typed meanwhile is kept after it.
  *   4. The same draft submitted twice still goes once.
  */
@@ -320,7 +320,7 @@ describe("a second message typed while the first is being sent is never lost", (
     expect(refusals).toHaveLength(0);
   });
 
-  it("a send cancelled at a gate returns its text — and keeps the next line typed meanwhile", async () => {
+  it("a send canceled at a gate returns its text — and keeps the next line typed meanwhile", async () => {
     const id = "conv-gate-cancel";
     const store = makeStore(id);
     orgGateMode = "hold";

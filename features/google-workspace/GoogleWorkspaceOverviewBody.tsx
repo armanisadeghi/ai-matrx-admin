@@ -148,7 +148,7 @@ function GoogleWorkspaceOverviewBodyContent({
       toast.success("Google account reconnected.");
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause))
-        toast.info("Google authorization cancelled");
+        toast.info("Google authorization canceled");
       else toast.error(extractErrorMessage(cause));
     } finally {
       setBusy(null);
@@ -247,7 +247,7 @@ function GoogleWorkspaceOverviewBodyContent({
       toast.success(`${capability.title} enabled.`);
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
-        toast.info("Google authorization cancelled");
+        toast.info("Google authorization canceled");
       } else {
         toast.error(extractErrorMessage(cause));
       }

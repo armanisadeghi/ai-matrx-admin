@@ -274,7 +274,7 @@ function AgendaEventRow({
   const [createdNoteId, setCreatedNoteId] = useState<string | null>(null);
   const attendees = attendeesOf(event.attendees);
   const googleHref = googleCalendarHref(event);
-  // 🚨 N6 — a frozen row is MARKED. The same judgement and the same words the
+  // 🚨 N6 — a frozen row is MARKED. The same judgment and the same words the
   // record's own notice uses, from the one place both read (`frozenEventNotice`).
   const frozen = frozenEventNotice(event);
 
@@ -486,7 +486,7 @@ function AttendeeLine({
         <li key={attendee.email} className="flex flex-wrap items-center gap-1">
           <span
             className={cn("h-1.5 w-1.5 shrink-0 rounded-full", rsvpDotClass(attendee.rsvp))}
-            // The dot is never the only carrier of the state — colour alone is
+            // The dot is never the only carrier of the state — color alone is
             // not information a person can rely on.
             title={`${attendee.displayName ?? attendee.email}: ${rsvpLabel(attendee.rsvp)}`}
             aria-label={`${attendee.displayName ?? attendee.email}: ${rsvpLabel(attendee.rsvp)}`}

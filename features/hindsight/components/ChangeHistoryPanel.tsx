@@ -59,8 +59,8 @@ const ROLE_COLOR: Record<ChangeRole, string> = {
 /**
  * Provenance (C-11). A NULL tier is the PRE-PROVENANCE ERA, not an unknown
  * author and not a system one — the platform's standing rule is that it reads
- * as human, and it is never backfilled. Labelling it "unknown" would invent a
- * mystery; labelling it "human" flat would hide that nothing was stamped. It is
+ * as human, and it is never backfilled. Labeling it "unknown" would invent a
+ * mystery; labeling it "human" flat would hide that nothing was stamped. It is
  * shown as human, muted, and says which on hover.
  */
 type CanonicalTier = "user" | "agent" | "system";

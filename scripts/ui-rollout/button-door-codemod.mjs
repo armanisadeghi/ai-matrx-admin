@@ -607,7 +607,7 @@ export function transform(text, file, ctx) {
       Play: "Play", Pause: "Pause", Printer: "Print", ExternalLink: "Open in new tab", Info: "Details",
       MoreHorizontal: "More actions", MoreVertical: "More actions", Ellipsis: "More actions", EllipsisVertical: "More actions",
       X: "Close", Plus: "Add", Minus: "Decrease", Filter: "Filter", Eye: "Show", EyeOff: "Hide",
-      Volume2: "Play audio", Mic: "Record", Star: "Favourite", Heart: "Like", Save: "Save",
+      Volume2: "Play audio", Mic: "Record", Star: "Favorite", Heart: "Like", Save: "Save",
     };
     if (tag && GLYPH_LABELS[tag]) return JSON.stringify(GLYPH_LABELS[tag]);
     return null;

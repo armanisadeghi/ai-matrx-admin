@@ -80,7 +80,7 @@ import { Terminal } from "lucide-react";
 import { Skeleton } from "@ai-matrx/design-system";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 
-/** Extract text from a TextBlock. Canonical field is `.text` — normalised at the Redux boundary. */
+/** Extract text from a TextBlock. Canonical field is `.text` — normalized at the Redux boundary. */
 function extractTextFromBlock(block: Record<string, unknown>): string {
   return (block.text as string | undefined) ?? "";
 }

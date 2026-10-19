@@ -40,7 +40,7 @@ const STATUS_LABEL: Record<DatedChange["status"], string> = {
   applied: "Applied",
   refused: "Refused",
   failed: "Failed",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 type Pending = { kind: "cancel" | "resolve" | "zone"; change: DatedChange } | null;
@@ -70,7 +70,7 @@ export default function DatedChangesPage() {
     try {
       if (pending.kind === "cancel") {
         await cancelDatedChange(pending.change.id, note.trim());
-        toast.success("Cancelled. The price will not change on that date.");
+        toast.success("Canceled. The price will not change on that date.");
       } else if (pending.kind === "zone") {
         await setDatedChangeTimeZone(pending.change.id, note.trim());
         toast.success("Time zone confirmed. The change now applies at midnight in that zone.");

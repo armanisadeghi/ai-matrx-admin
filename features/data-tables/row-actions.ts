@@ -322,7 +322,7 @@ export function describeRowAction(action: RowAction, fields: readonly RowActionF
  * channel (THE USER-INPUT LAW).
  *
  * `row_json` is the row exactly as stored; `row_fields_summary` is the same row
- * one line per column in column order, labelled by display name, for a holder
+ * one line per column in column order, labeled by display name, for a holder
  * that should not have to parse JSON.
  */
 export function agentActionOffer(args: {

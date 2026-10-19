@@ -1,7 +1,14 @@
 "use client";
 
-/** Prompt blocks library: lanes Mine | Organization | System, search, one row per block. */
+/**
+ * Prompt blocks library: lanes Mine | Organization | System, search, one row per block.
+ * The lane (`?lane=`) and the search (`?q=`) live in the URL, so a link or a reload
+ * opens the same view (walk-core 2026-10-18).
+ */
 import { useEffect, useMemo, useState } from "react";
+import { commitUrlParams } from "@ai-matrx/kit/url-state";
+import { useListSearchParams } from "@/lib/entity-list/useListSearchParams";
+import { ENTITY_LIST_URL_PARAMS } from "@/lib/entity-list/urlQuery";
 import Link from "next/link";
 import { Boxes, Plus } from "lucide-react";
 import { Badge, Button, EmptyState, SearchField, Tabs } from "@ai-matrx/design-system/controls";
@@ -12,15 +19,27 @@ import { RecordList } from "@ai-matrx/design-system/record-list";
 import { RowSelectionBar, useRowSelection } from "@/lib/entity-list/RowSelectionBar";
 import { standardBulkActionsFor } from "@/lib/entity-list/standardBulkActions";
 import { invalidateBlocks, loadBlocks } from "../blocksCache";
-import { BLOCK_LANES, BLOCK_LANE_LABEL, matchesQuery, partitionByLane, type BlockLane } from "../lanes";
+import {
+  BLOCK_LANE_LABEL,
+  BLOCK_LANE_PARAM,
+  BLOCK_LANES,
+  blockLaneFromParam,
+  matchesQuery,
+  partitionByLane,
+  type BlockLane,
+} from "../lanes";
 import type { PromptBlockRow } from "../types";
 
 export function PromptBlockLibrary() {
   const meId = useAppSelector(selectUserId);
   const [rows, setRows] = useState<PromptBlockRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [lane, setLane] = useState<BlockLane>("organization");
+  const params = useListSearchParams();
+  const query = params.get(ENTITY_LIST_URL_PARAMS.search) ?? "";
+  const lane = blockLaneFromParam(params.get(BLOCK_LANE_PARAM));
+  const setQuery = (next: string) =>
+    commitUrlParams({ [ENTITY_LIST_URL_PARAMS.search]: next || null }, "replace");
+  const setLane = (next: BlockLane) => commitUrlParams({ [BLOCK_LANE_PARAM]: next }, "push");
 
   useEffect(() => {
     loadBlocks()

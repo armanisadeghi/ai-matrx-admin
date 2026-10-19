@@ -1,10 +1,10 @@
 // features/admin/applications/attestation/components/AttestationClient.tsx
 //
 // Applications › Attestation: for one application and one attested build, every
-// config key it stores, declares or reads, coloured by platform.config_attestation_status.
+// config key it stores, declares or reads, colored by platform.config_attestation_status.
 // Header: health, release-run coverage, and the advisory release-mismatch flag
 // (builds running that the release pipeline never attested). The bootstrap block
-// shows what each build fixes at build time; it is information, never coloured.
+// shows what each build fixes at build time; it is information, never colored.
 "use client";
 
 import { useCallback, useMemo, useState } from "react";

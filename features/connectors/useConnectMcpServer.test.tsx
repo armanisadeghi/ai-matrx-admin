@@ -116,7 +116,7 @@ describe("MCP connection intent", () => {
     });
     expect(container.textContent).toBe("notion");
     await act(async () => {
-      finish({ ok: false, error: "Connection cancelled", cancelled: true });
+      finish({ ok: false, error: "Connection canceled", cancelled: true });
       await pending;
     });
     expect(container.textContent).toBe("idle");
@@ -124,7 +124,7 @@ describe("MCP connection intent", () => {
     mockPopup.mockResolvedValue({
       ok: false,
       cancelled: true,
-      error: "Cancelled",
+      error: "Canceled",
     });
     await act(async () => {
       await controller.connect(notion);
@@ -146,7 +146,7 @@ describe("MCP connection intent", () => {
     mockPopup.mockResolvedValue({
       ok: false,
       cancelled: true,
-      error: "Cancelled",
+      error: "Canceled",
     });
     await act(async () => {
       await controller.connect(supabase, endpoint);
@@ -169,7 +169,7 @@ describe("MCP connection intent", () => {
     mockPopup.mockResolvedValue({
       ok: false,
       cancelled: true,
-      error: "Cancelled",
+      error: "Canceled",
     });
     await act(async () => {
       await controller.connect(notion);

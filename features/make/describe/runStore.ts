@@ -26,7 +26,7 @@ export function newRequestKey(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** The one-off template's catalogue stamp, from the request key: the same submission always declares the same template. */
+/** The one-off template's catalog stamp, from the request key: the same submission always declares the same template. */
 export function stampOf(key: string): string {
   return key.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20).toUpperCase();
 }

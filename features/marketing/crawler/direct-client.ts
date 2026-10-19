@@ -446,7 +446,7 @@ async function organizationContextHeaders(
   request: { method: string; interactive?: boolean },
 ): Promise<Record<string, string>> {
   // ORG-GATE-AUDIT: THE GATE, never the bare kernel. Starting, re-scraping or
-  // cancelling a crawl with no organization selected asks, then continues
+  // canceling a crawl with no organization selected asks, then continues
   // this same request instead of a bare refusal.
   const organizationId = await ensureOrgId(null);
   return applyOrganizationContextHeader(base, organizationId);
@@ -830,7 +830,7 @@ export function checkSiteLinks(
 }
 
 /**
- * Run the deterministic page-analysis catalogue over the site's stored crawl
+ * Run the deterministic page-analysis catalog over the site's stored crawl
  * evidence (matrx-scraper `analyze_site_pages`): writes immutable
  * `web.analysis_result` rows and reconciles the `web.finding` register, which
  * the score views (`v_page_score` / `v_site_score`) and the priority queue

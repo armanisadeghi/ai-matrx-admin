@@ -40,7 +40,7 @@ export interface FindingListRow extends MarketingFinding {
   page_path: string | null;
   page_url: string | null;
   /**
-   * The catalogue's human label for `item_key`, when the catalogue knows it.
+   * The catalogue's human label for `item_key`, when the catalog knows it.
    * A brand-new server check has no `analysis_item` row yet — null here is
    * normal and the UI falls back to the humanized key.
    */

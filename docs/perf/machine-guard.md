@@ -85,7 +85,7 @@ tree it may only raise the ceiling, capped at the largest kind ceiling.
   carries the notice; an untagged one beside it is untouched; a dry run stops nothing; the wrapper
   stops its job (exit 137); a second `solo` job waits for the slot.
 - Live on the machine: the daemon (enforce) started 23:45, classifying ~160 agent jobs using ~60 GB at
-  normal pressure. The build lab's running `pnpm build` was recognised as kind next-build (64 GB).
+  normal pressure. The build lab's running `pnpm build` was recognized as kind next-build (64 GB).
   It stopped one real job: this lane's own test command, whose tree a 0.3 GB test ceiling had wrongly
   covered; the notice landed in that command's output. That defect is fixed (declared ceilings only
   raise) and pinned by a test.

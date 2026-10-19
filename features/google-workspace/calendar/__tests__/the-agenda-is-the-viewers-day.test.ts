@@ -163,7 +163,7 @@ describe("groupAgenda", () => {
 });
 
 describe("agendaDays", () => {
-  it("honours the knob and clamps to what the server accepts", () => {
+  it("honors the knob and clamps to what the server accepts", () => {
     expect(agendaDays(14)).toBe(14);
     expect(agendaDays("14")).toBe(14);
     expect(agendaDays(0)).toBe(1);

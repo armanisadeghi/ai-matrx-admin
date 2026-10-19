@@ -43,7 +43,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * The response, checked rather than cast. A shape we do not recognise is a
+ * The response, checked rather than cast. A shape we do not recognize is a
  * refusal with a remedy, never a silent success: the change may or may not have
  * landed, and saying "approved" over an unreadable answer is the screen lying.
  */
@@ -65,7 +65,7 @@ function decision(body: unknown): GoogleApprovalDecisionPending {
     typeof appliedNow !== "boolean"
   ) {
     throw new Error(
-      "The approval service answered in a shape this screen does not recognise, so it cannot say whether the change was made. Reload the queue to see where this proposal stands.",
+      "The approval service answered in a shape this screen does not recognize, so it cannot say whether the change was made. Reload the queue to see where this proposal stands.",
     );
   }
   return {

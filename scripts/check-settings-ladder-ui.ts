@@ -12,7 +12,7 @@
  * keep — the pay-group rung exists in the registry, resolves in
  * `platform.knob_index`, and no human can reach it. The theme stored seven
  * ways, `force_ocr` wired through an API contract that no UI call site ever
- * passes — same class: the system honours a rung the surface never offers.
+ * passes — same class: the system honors a rung the surface never offers.
  *
  * WHAT "REACHABLE" MEANS — four checks, each measured, none guessed:
  *
@@ -609,7 +609,7 @@ async function main(): Promise<void> {
     console.log(`${C.green}✓ Every customer-tunable knob is filed and reachable at every rung it names.${C.reset}`);
   } else {
     console.log(
-      `${C.red}${C.bold}[LOUD] ${unreachableKeys.size} knob(s) the universal settings UI cannot honour — ${findings.length} finding(s)${C.reset}`,
+      `${C.red}${C.bold}[LOUD] ${unreachableKeys.size} knob(s) the universal settings UI cannot honor — ${findings.length} finding(s)${C.reset}`,
     );
     console.log(`${C.dim}A registry that promises a rung the screen never offers is a control that lies by omission.${C.reset}\n`);
 

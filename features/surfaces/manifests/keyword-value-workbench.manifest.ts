@@ -127,7 +127,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "levels_are_template",
     label: "Levels are still the template",
     description:
-      "True when this site has not customised its levels yet and is still reading the platform template. False once the site owns its own vocabulary. Absent while the vocabulary is loading.",
+      "True when this site has not customized its levels yet and is still reading the platform template. False once the site owns its own vocabulary. Absent while the vocabulary is loading.",
     valueType: "boolean",
     alwaysAvailable: false,
     typicalCharCount: 5,

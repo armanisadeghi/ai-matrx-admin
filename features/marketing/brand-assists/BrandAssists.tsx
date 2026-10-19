@@ -3,8 +3,8 @@
 /**
  * Brand assists on a brand's home (Smart Add VISION Part 24): the producer and the results.
  *
- * Producer — on mount, reads the brand's ranked offers (aidream GET /brand-assists/{id}/offers: pre-filled,
- * exact cost) and my `brand.assist.*` history, drops what I declined or already ran, and emits the best ones
+ * Producer — on mount, reads the brand's ranked offers (aidream GET /brand-assists/{id}/offers: pre-filled;
+ * the server ranks by cost, the card never shows it) and my `brand.assist.*` history, drops what I declined or already ran, and emits the best ones
  * through the ONE door (`emitAssistTracked`). That door refuses past the producer policy's pending budget
  * (`brand.assist.`, max 3 across every brand) and while assists are quiet, so emitting stops at the first null.
  * Nothing runs here: a chip only runs from its card's verb button (THE INTENTIONAL-ACTION LAW).
@@ -28,7 +28,6 @@ import {
   BRAND_ASSIST_SURFACE,
   brandAssistDedupeKey,
   brandAssistSourceKey,
-  costLine,
   offersToEmit,
   type BrandAssistOffers,
 } from "./select-offers";
@@ -82,21 +81,18 @@ export function BrandAssists({ brandId, organizationId }: { brandId: string; org
       if (offers.error || !offers.data) return;
       const data = offers.data as unknown as BrandAssistOffers;
       for (const offer of offersToEmit(data, mine)) {
-        const cost = costLine(offer);
         const id = await emitAssistTracked(
           userId,
           {
             sourceKey: brandAssistSourceKey(offer.assist_id),
             sourceKind: "deterministic",
             title: offer.title,
-            body: `${offer.body}\n\n**${cost}** · about 30 seconds`,
+            body: offer.body,
             action: {
               kind: "brand_assist",
               brandId,
               assistId: offer.assist_id,
               label: offer.verb,
-              costPoints: offer.cost_points,
-              costUsd: offer.cost_usd,
               lands: offer.lands,
             },
             surfaceName: BRAND_ASSIST_SURFACE,

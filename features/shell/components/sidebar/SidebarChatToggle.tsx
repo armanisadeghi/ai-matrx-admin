@@ -10,7 +10,7 @@
 // ShellChatToggle / the phone's ⋮ row are the door.
 //
 // It is named "Side Chat" with its own square bubble (owner, 2026-10-15: two
-// chat icons both labelled "Chat" read as one thing) and sits apart from the
+// chat icons both labeled "Chat" read as one thing) and sits apart from the
 // navigation under a hairline: the nav's "Chat" goes to the chat pages, this
 // opens a chat beside the page you are on.
 

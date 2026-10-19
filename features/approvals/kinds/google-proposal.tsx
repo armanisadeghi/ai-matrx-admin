@@ -248,7 +248,7 @@ export function useGoogleProposalSource(
             "Records it as rejected so it stops waiting on you. Nothing in Google changes.",
           blocked: {
             reason:
-              "This proposed change was written in a shape this queue does not recognise, so it cannot be shown or applied.",
+              "This proposed change was written in a shape this queue does not recognize, so it cannot be shown or applied.",
             whoCan:
               "Reject it and ask for the change again; the agent that proposed it needs fixing.",
           },

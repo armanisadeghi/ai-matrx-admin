@@ -148,7 +148,7 @@ export const PRINT_CLEANUP_FALLBACK_MS = 60_000;
 
 /**
  * Runs `cleanup` exactly once, on whichever comes first: `afterprint`, the tab becoming visible again
- * (a print dialog that closed without the event, e.g. a cancelled iOS/Safari sheet), or a timeout.
+ * (a print dialog that closed without the event, e.g. a canceled iOS/Safari sheet), or a timeout.
  * Without the fallbacks the offscreen host and the print style leak for the life of the page.
  */
 export function attachPrintCleanup(cleanup: () => void, timeoutMs = PRINT_CLEANUP_FALLBACK_MS): () => void {

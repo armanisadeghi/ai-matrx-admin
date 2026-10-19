@@ -229,7 +229,7 @@ export type HrSettingsStructure = {
    * 🚨 ADDED 2026-08-26 — THE DOOR SENDS THIS AND THIS TYPE DID NOT DECLARE IT, which
    * made the doc-comment above ("narrowed to what the function actually builds") false
    * and cost route 68 an audited confidential list call to learn an id it was already
-   * being handed. The server lane labelled the addition in the SQL itself: "RECORDED
+   * being handed. The server lane labeled the addition in the SQL itself: "RECORDED
    * DECISION 28: route 68 had to make an audited confidential call just to learn the id
    * of the profile it was editing." `hr_my_context` also carries it, at
    * `.active.employer_profile_id`.

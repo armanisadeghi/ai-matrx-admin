@@ -101,7 +101,7 @@ export function PunchStatusPanel({
           <ul className="flex flex-col gap-1">
             {state.openExceptions.map((exception) => (
               /*
-                🚨 This read sends no `message` (G2 F6) — it sends `exception_kind`. Labelling it
+                🚨 This read sends no `message` (G2 F6) — it sends `exception_kind`. Labeling it
                 through the shared lexicon is honest; rendering `exception.message` printed an empty
                 line, and printing the raw token would be F7's defect.
               */

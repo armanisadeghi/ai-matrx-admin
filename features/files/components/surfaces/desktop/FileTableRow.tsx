@@ -457,6 +457,9 @@ function FolderCell({
 const ROW_ACTIONS_CLASS = cn(
   "flex shrink-0 items-center gap-1 pr-1 transition-opacity lg:ml-auto",
   "lg:opacity-0 lg:group-hover/matrx-row:opacity-100 lg:focus-within:opacity-100",
+  // Hidden = zero width too, so the Name cell never loses its text to an
+  // invisible strip (blank Name when the preview panel narrows the table).
+  "lg:w-0 lg:overflow-hidden lg:p-0 lg:group-hover/matrx-row:w-auto lg:group-hover/matrx-row:overflow-visible lg:group-hover/matrx-row:pr-1 lg:focus-within:w-auto lg:focus-within:overflow-visible lg:focus-within:pr-1",
   // pointer-events off while hidden (D72): invisible buttons never swallow a
   // click meant for the row, and hit areas never move mid-click.
   "lg:pointer-events-none lg:group-hover/matrx-row:pointer-events-auto lg:focus-within:pointer-events-auto",

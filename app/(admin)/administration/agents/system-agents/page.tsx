@@ -77,7 +77,7 @@ const TILES: Tile[] = [
     href: "/administration/agents/system-agents/categories",
     label: "Categories",
     description:
-      "Organise shortcuts and content blocks by placement and hierarchy.",
+      "Organize shortcuts and content blocks by placement and hierarchy.",
     icon: Folder,
     count: (c) => c.categories,
   },

@@ -3,14 +3,14 @@
 // THE HUE CHANNEL'S PALETTE, in one pure place because TWO surfaces must agree
 // on it: the topic bodies (`nodes.tsx`) paint a topic with the bar of the facet
 // value it belongs to, and the SAME function paints that value's pill on the
-// axis. If the two ever computed their colour differently the legend's promise
+// axis. If the two ever computed their color differently the legend's promise
 // — "the bar on a topic matches the bar on its value in the column on the
 // left" — would be a lie, so there is exactly one implementation and both call
 // it.
 //
-// 🚨 SIX TOKENS CANNOT BE 255 COLOURS, AND THE LEGEND SAYS SO. All Green's
+// 🚨 SIX TOKENS CANNOT BE 255 COLORS, AND THE LEGEND SAYS SO. All Green's
 // `region` facet has 255 values; hashing them onto six chart tokens means
-// collisions, by arithmetic. That is not a defect to hide — the colour is a
+// collisions, by arithmetic. That is not a defect to hide — the color is a
 // shortcut for finding a topic's neighbours on screen, and the COLUMN is the
 // key. `encoding.ts` reads {@link GRAPH_HUE_BAR_COUNT} to decide when the
 // legend must state the collisions out loud.
@@ -19,7 +19,7 @@
 
 /**
  * Six chart tokens, chosen by a stable hash of the value slug so the same value
- * is the same colour on every render and on every machine — a colour that moves
+ * is the same color on every render and on every machine — a color that moves
  * when the sort order changes teaches the person nothing.
  */
 export const GRAPH_HUE_BARS = [

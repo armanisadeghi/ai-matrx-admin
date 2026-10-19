@@ -318,7 +318,7 @@ export function CloudBrowserBody({
   }, [cb]);
 
   // The agent-raised capture card, while it is still open. A recorded outcome
-  // (saved, cancelled, expired) retires it — the row itself outlives the card.
+  // (saved, canceled, expired) retires it — the row itself outlives the card.
   const captureRequest =
     cb.handoff?.captureRequest && !cb.handoff.captureOutcome
       ? cb.handoff.captureRequest

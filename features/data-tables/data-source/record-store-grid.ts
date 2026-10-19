@@ -6,8 +6,8 @@
 // `features/record-change-approvals/applyRecordChange.ts` calls `work_approval_*`: through
 // the SAME data source the records client uses, schema `custom`, with the store's refusal
 // mapped by the package's own `mapPgError`:
-//   custom.record_change_actions  — lane GRID-PORT's presence door for G8 (not in the catalogue)
-//   custom.migrate_retype         — in the catalogue, no client method
+//   custom.record_change_actions  — lane GRID-PORT's presence door for G8 (not in the catalog)
+//   custom.migrate_retype         — in the catalog, no client method
 // 🚨 SWAP WHEN WRAPPED: each becomes a one-line client call and this file goes away.
 //
 // A door that is not on the database this browser talks to (production before

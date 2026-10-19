@@ -4,7 +4,7 @@
  * 🚨 **THE CLIENT-AGNOSTIC CONTRACT (D1, SPEC-TIME §0 law 6).** Every function here is a thin,
  * typed call onto a `public.hr_*` RPC and nothing more. The later native HR mobile app is a
  * committed client and will call the **identical** RPCs — so this module is a re-skin boundary, not
- * a place for behaviour. **A behaviour that could only be described by naming a React component is
+ * a place for behavior. **A behavior that could only be described by naming a React component is
  * a defect in the build, exactly as it is in the spec.** If you find yourself writing a rule here,
  * it belongs in the RPC.
  *
@@ -12,7 +12,7 @@
  * subtracts timestamps, multiplies a rate, sums a week, rounds an interval, assigns a category or
  * derives a weighted average. Those numbers arrive computed and snapshot-backed. The single
  * permitted client-side figure anywhere in this lane is a **preview** total from a `prospective`
- * calc call, visibly labelled as a preview.
+ * calc call, visibly labeled as a preview.
  */
 
 "use client";

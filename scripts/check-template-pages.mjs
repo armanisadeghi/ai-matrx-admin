@@ -2,7 +2,7 @@
 // scripts/check-template-pages.mjs — lane CHAIR-GALLERY guard (2026-10-05).
 //
 // Every published platform template has a public page at /templates/<slug>. This guard reads the
-// LIVE catalogue the way a signed-out visitor does (public.templates_public, publishable key, no
+// LIVE catalog the way a signed-out visitor does (public.templates_public, publishable key, no
 // session) and fails when any published template:
 //   - has no slug, a slug that is not lowercase-words-with-hyphens, or a slug another template uses;
 //   - has no description (the card's persona — the page's meta description and lead sentence).
@@ -10,7 +10,7 @@
 // /templates/<slug> pages and fails unless each answers 200 with the template's name in <title> and
 // its sample rows in the server-rendered HTML (no client JavaScript involved).
 //
-//   pnpm check:template-pages                 # catalogue only
+//   pnpm check:template-pages                 # catalog only
 //   pnpm check:template-pages --render        # + server render on the shared preview
 
 import { readFileSync, existsSync } from "node:fs";
@@ -61,7 +61,7 @@ for (const c of cards) {
   if (!c.persona || !String(c.persona).trim()) problems.push(`${c.catalogue_id} "${c.name}" has no description`);
 }
 
-if (cards.length === 0) problems.push("the public catalogue answered no templates at all");
+if (cards.length === 0) problems.push("the public catalog answered no templates at all");
 
 const renderAt = process.argv.indexOf("--render");
 if (renderAt !== -1 && cards.length) {

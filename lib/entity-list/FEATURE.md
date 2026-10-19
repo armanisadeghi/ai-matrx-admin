@@ -348,7 +348,7 @@ names on one page.
 ## Rules
 
 1. **The config is generic.** A feature-specific field in `EntityListConfig` is
-   a defect — bespoke behaviour goes through the render props
+   a defect — bespoke behavior goes through the render props
    (`views.cards/rows`), the `useRowActions` hook (which also returns the
    feature's modals), or the per-feature service/columns.
 2. **`useRowActions` is a hook called by the shell** — must be unconditional
@@ -419,7 +419,7 @@ names on one page.
 
 ## Parity contracts (break these and users notice, not CI)
 
-**Search scorer — three implementations, one behaviour.**
+**Search scorer — three implementations, one behavior.**
 `features/agents/search/score.ts` ↔ `public.agx_search_score` ↔
 `public.trx_search_score` share the same tiers. Server paging forces the SQL
 copies (ranking must happen before `LIMIT`). **Change one, change the others
@@ -602,8 +602,8 @@ how that savior page gets built.
   a BROWSING default; a search is a different intent. With the knob on, a search typed
   over the UNTOUCHED default bag runs over the whole corpus (fetch, counts, facets) and
   the surface reads the lifted bag back, so a bucket control shows "All". Untouched is
-  recognised by identity — `query.filters` is still the very `defaultFilters` object —
-  never by value, so a chip click that equals the default is still honoured; the URL
+  recognized by identity — `query.filters` is still the very `defaultFilters` object —
+  never by value, so a chip click that equals the default is still honored; the URL
   writes an explicitly-set bag even when it equals the default for the same reason.
   Why: a Claude Code session id pasted into /work/conversations found nothing — the
   row sat one bucket over, behind a chip count nobody reads while staring at an empty
@@ -638,7 +638,7 @@ how that savior page gets built.
   banner with "select all M matching this filter" resolved through the surface's
   own service, selection that survives sort/filter/paging, keyboard (`x`,
   `cmd/ctrl-A`, `Escape`), phone-card checkbox, confirms that name the
-  consequence. Zero behaviour change for the eighteen surfaces that declare
+  consequence. Zero behavior change for the eighteen surfaces that declare
   nothing — proven by `__tests__/bulk-selection.test.tsx`, whose opt-out block
   goes RED (3 failures) the moment the shell passes `selection` unconditionally
   and whose banner block goes RED (4 failures) without the banner; 21 GREEN.
@@ -752,7 +752,7 @@ how that savior page gets built.
   sideways scroll, with the record name a 2,483px anchor 20px tall. A default
   phone card now renders for every surface that declares none
   (`phoneCards.tsx`), derived from the door column, the date columns and
-  declaration order, honouring the user's hidden-column preference, carrying
+  declaration order, honoring the user's hidden-column preference, carrying
   `data-row-id` for the pane menu and `.matrx-touch-targets` for the 44px
   floor. Four surfaces declared a `phone` role where the derivation was wrong
   (agents, workflows, masterwork). Measured after, at 390×844 in both themes:

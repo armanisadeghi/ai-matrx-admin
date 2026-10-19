@@ -56,7 +56,7 @@ export type StoredRemedy =
  * field is genuinely optional in the data, and a remedy must degrade. */
 export interface FindingRemedyContext {
   itemKey: string;
-  /** `web.analysis_item.label` when the catalogue knows this key. */
+  /** `web.analysis_item.label` when the catalog knows this key. */
   itemLabel?: string | null;
   itemDescription?: string | null;
   /** `web.analysis_item.remedy` — raw from the row; validated here. */
@@ -93,9 +93,9 @@ export interface ManualRemedy {
 export type FindingRemedy = AiRemedy | ManualRemedy;
 
 export interface ResolvedFinding {
-  /** Human title — catalogue label, else the key de-snake-cased. */
+  /** Human title — catalog label, else the key de-snake-cased. */
   title: string;
-  /** Plain-language "what's wrong" — reasoning first, catalogue description
+  /** Plain-language "what's wrong" — reasoning first, catalog description
    * next, and only then a generic sentence built from the key itself. */
   explanation: string;
   /** True when `explanation` came from the DB's `metadata.reasoning`. */

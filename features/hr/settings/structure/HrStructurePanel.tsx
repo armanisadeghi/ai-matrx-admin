@@ -432,7 +432,7 @@ function DepartmentsSection({
       header: "Reports into",
       filter: "select",
     },
-    { id: "cost_center", accessorKey: "cost_center", header: "Cost centre", mobileHidden: true },
+    { id: "cost_center", accessorKey: "cost_center", header: "Cost center", mobileHidden: true },
     {
       id: "assignments",
       accessorKey: "assignment_count",
@@ -672,7 +672,7 @@ function DepartmentEditor({
       />
       <EditorField
         id={`${uid}-cc`}
-        label="Cost centre"
+        label="Cost center"
         value={costCenter}
         onChange={setCostCenter}
         disabled={busy}

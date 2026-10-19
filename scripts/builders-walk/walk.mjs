@@ -11,7 +11,7 @@
  *   1. Ironline Fitness — a gym's class signup is the canonical public form:
  *      a stranger with no account adds a member row.
  *   2. Ironclad Mobile Mechanic — a mobile mechanic sells time, so a booking
- *      page is the product, and cancelling has to work or nobody trusts it.
+ *      page is the product, and canceling has to work or nobody trusts it.
  *   3. Rincon Plumbing Co — a plumber's customer wants her own jobs and her
  *      own invoices and must never see her neighbour's.
  *   4. Hands & Hope Alliance — a nonprofit's Monday donor summary is the

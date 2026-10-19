@@ -271,7 +271,7 @@ export default function ToolTestingClient() {
     } catch (err) {
       if (controller.signal.aborted) {
         setExecutionStatus("cancelled");
-        toast.info("Execution cancelled");
+        toast.info("Execution canceled");
       } else {
         setErrorMessage(
           err instanceof Error ? err.message : "Execution failed",

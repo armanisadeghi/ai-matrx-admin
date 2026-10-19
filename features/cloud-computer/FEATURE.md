@@ -39,7 +39,7 @@ The person's ONE persistent cloud Linux machine, shared by all their agents, sho
 
 1. **Open = wake.** Opening the tab IS the person asking for their computer: an off machine
    is woken with initiation `"user"` (no Wake press). "Waking up…" shimmers in the same
-   centred slot (no layout shift). Failed/expired → Try again, never an automatic re-wake.
+   centered slot (no layout shift). Failed/expired → Try again, never an automatic re-wake.
    Clicks from "+" to a live picture: **3** ("+", Environment, Computer); was 4 plus a
    second Cloud Browser tab.
 2. **Ready → the machine's Chrome.** Only after `ready`, the screen loads a snapshot limited

@@ -85,7 +85,7 @@ describe("the history section", () => {
     m.unmount();
   });
 
-  it("still shows WHO when no token has a door — the raw value, honestly labelled", async () => {
+  it("still shows WHO when no token has a door — the raw value, honestly labeled", async () => {
     const { m } = await mountWithHistory(() => null);
     const row = m.container.querySelector('[data-detail-section="history"]')!;
     expect(row.textContent).toContain(ACTOR);

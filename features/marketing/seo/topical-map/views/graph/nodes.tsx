@@ -15,7 +15,7 @@
 // wraps, it is never truncated. `whitespace-normal break-words` below is that
 // ruling, and `line-clamp` is deliberately absent from the card title.
 //
-// Every colour is a semantic token, so light and dark both work without a
+// Every color is a semantic token, so light and dark both work without a
 // second palette.
 
 import { ChevronRight, MoreHorizontal } from "lucide-react";
@@ -87,14 +87,14 @@ function tierRing(depth: number | null): string {
  * 10px dot in the legend and a solid unreadable block behind a card's text.
  * The first landing composed them with `bg-opacity-10 dark:bg-opacity-20` —
  * utilities Tailwind 4 REMOVED (opacity is the `/` modifier now), so nothing
- * lowered the alpha and every coloured card painted solid in both themes.
+ * lowered the alpha and every colored card painted solid in both themes.
  *
  * So the tones are written out once, here, as real fills: the four filled tones
  * at `/15` (a tint the foreground text survives in light AND dark), and the two
  * dashed tones transparent, the way `ui/intentColorClasses.ts` draws them.
  *
  * The table is keyed on the same `MapIntentColorName` vocabulary, guarded by
- * that module's own `isMapIntentColorName`, so a colour added there and not
+ * that module's own `isMapIntentColorName`, so a color added there and not
  * here fails to compile rather than drawing the wrong thing.
  */
 const INTENT_FILL: Record<MapIntentColorName, string> = {
@@ -106,14 +106,14 @@ const INTENT_FILL: Record<MapIntentColorName, string> = {
   purple_dashed: "bg-transparent border-dashed border-primary",
 };
 
-/** The treatment for a colour we could not resolve — the same one the swatch uses. */
+/** The treatment for a color we could not resolve — the same one the swatch uses. */
 const MISSING_INTENT_FILL = INTENT_FILL.gray_dashed;
 
 /**
  * One convergence tone as a fill. An unknown name gets the `missing` treatment
  * AND reaches the Error Inspector — the capture lives in `intentColorClasses`,
  * which is called here for exactly that side effect so there is one place in
- * the feature that reports an unknown colour name.
+ * the feature that reports an unknown color name.
  */
 export function intentFillClasses(name: string): string {
   if (isMapIntentColorName(name)) return INTENT_FILL[name];
@@ -303,9 +303,9 @@ export interface FacetValueNodeBodyData {
  * topic with `hueBar(<its value's slug>)`; this pill paints itself with
  * `hueBar(<its own slug>)` — the SAME function on the SAME string, so the bar
  * on a topic is the bar on its value and the legend can honestly tell the person
- * to read across. Six chart tokens cannot be 255 distinct colours, and the
+ * to read across. Six chart tokens cannot be 255 distinct colors, and the
  * legend says so out loud when the axis is longer than six: the column is the
- * key, the colour is the shortcut.
+ * key, the color is the shortcut.
  */
 export function FacetValueBody({ data }: { data: FacetValueNodeBodyData }) {
   const value = data.value;

@@ -2,7 +2,7 @@
 
 /**
  * Shell-header controls for one map's workspace — injected into the PageHeader
- * centre zone, never rendered as an in-body toolbar (core-route-headers,
+ * center zone, never rendered as an in-body toolbar (core-route-headers,
  * failure class 1).
  *
  * Back to the brand's maps + the map's name as a sibling dropdown + the six

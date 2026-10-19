@@ -365,7 +365,7 @@ export function DocumentRecord({
       toast.error(err instanceof Error ? err.message : String(err));
     }
   };
-  // File → Version history → Name current version: a labelled snapshot of the open text.
+  // File → Version history → Name current version: a labeled snapshot of the open text.
   const [nameVersionOpen, setNameVersionOpen] = useState(false);
   const [versionName, setVersionName] = useState("");
   const saveNamedVersion = async () => {

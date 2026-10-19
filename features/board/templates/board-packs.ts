@@ -1,6 +1,6 @@
 /**
  * BOARD TEMPLATE PACKS — a Space template pack that carries a `board` (lib/spaces-blocks/template-pack.ts
- * `PackBoard`), listed in the Board gallery beside the built-ins. ONE catalogue: the pack is a platform
+ * `PackBoard`), listed in the Board gallery beside the built-ins. ONE catalog: the pack is a platform
  * `custom.template` row published by `pnpm spaces:templates:publish`, read through `custom.space_templates`
  * (cards whose face carries `board`).
  *

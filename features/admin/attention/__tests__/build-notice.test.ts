@@ -108,7 +108,7 @@ describe("buildAttentionNotice", () => {
     expect(buildAttentionNotice([src], { "s:m": NOW + 10 }, NOW)!.title).toBe("1 scheduled jobs are switched off.");
   });
 
-  it("a LOCAL mute hides the item too, and an expired one is not honoured", () => {
+  it("a LOCAL mute hides the item too, and an expired one is not honored", () => {
     const only = item({ id: "o" });
     const src = source({ id: "a", items: [only] });
     expect(buildAttentionNotice([src], { "s:o": NOW + 10 }, NOW)).toBeNull();

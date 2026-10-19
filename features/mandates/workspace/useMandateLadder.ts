@@ -80,8 +80,8 @@ export interface MandateLadderRow {
    * offers, never blocks") an output mismatch is NEVER a drop — it arrives as
    * `output_warning` on a rung that still decides.
    *
-   * V-PARITY/UX F2: a client that re-derives the door's judgement will always
-   * be one rule behind it, so it renders the judgement instead.
+   * V-PARITY/UX F2: a client that re-derives the door's judgment will always
+   * be one rule behind it, so it renders the judgment instead.
    */
   dropped_code?: string | null;
   /**
@@ -227,7 +227,7 @@ export function ladderRowChangesHolder(row: MandateLadderRow): boolean {
   return row.chose_holder || row.holder_version_id !== null;
 }
 
-/** True when the rung carries behaviour but no holder. */
+/** True when the rung carries behavior but no holder. */
 export function ladderRowHasSettings(row: MandateLadderRow): boolean {
   return (
     row.config_overrides !== null ||

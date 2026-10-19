@@ -882,7 +882,7 @@ function applyEvent(
         payload: asRecord(event.payload) ?? {},
         checkpointId: event.checkpoint_id ?? "",
       };
-      // A pause on a HELD CHANGE is said as held, in the held colour — the
+      // A pause on a HELD CHANGE is said as held, in the held color — the
       // same words the approval card uses (lane HELD-WRITE-RESUME).
       if (asRecord(asRecord(event.payload)?.[HELD_WRITE_MARKER])) {
         // Sticky, replay-safe: read by node_skipped (approved resume) and by
@@ -1016,7 +1016,7 @@ function applyEvent(
         pushActivity(run, {
           nodeId: event.node_id,
           // An older run STOPPED on a held change (code `held_for_approval`):
-          // held, not failed — the card's words, not the error colour.
+          // held, not failed — the card's words, not the error color.
           kind: invocation.error.type === HELD_FOR_APPROVAL ? "held" : "failed",
           text:
             invocation.error.type === HELD_FOR_APPROVAL

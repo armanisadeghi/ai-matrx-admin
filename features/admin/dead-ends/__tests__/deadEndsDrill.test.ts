@@ -13,7 +13,7 @@ const rows = DEAD_END_REPORT.findings;
 const config = drillConfigFromColumns([], rows, DEAD_ENDS_DRILL);
 
 describe("dead ends drill (levels read the page's own totals)", () => {
-  it("declares only levels its Dimensions and Measures honour", () => {
+  it("declares only levels its Dimensions and Measures honor", () => {
     expect(drillLevelProblems(config.dimensions, config.measures, { attributeKeys: ["severity", "rule", "entity", "feature", "file"] })).toEqual([]);
   });
 

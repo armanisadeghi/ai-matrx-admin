@@ -28,7 +28,7 @@ describe("stripCommentsQuoteAware — the one shared stripper rehearse-migration
     expect(stripped).toContain("says -- something with a ''quoted'' word");
     expect((stripped.match(/'/g) ?? []).length).toBe(6);
 
-    // RED under the old behaviour: it truncates at the first `--` inside the literal,
+    // RED under the old behavior: it truncates at the first `--` inside the literal,
     // leaving the trailing quote and semicolon dangling — an unbalanced string.
     const old = oldNaiveStrip(sql);
     expect((old.match(/'/g) ?? []).length).toBe(1);
@@ -42,7 +42,7 @@ describe("stripCommentsQuoteAware — the one shared stripper rehearse-migration
     expect(stripped).toContain("$tag$");
     expect(stripped).toContain("raise notice 'x -- y';");
 
-    // RED under the old behaviour: the naive stripper has no concept of a dollar-quote tag,
+    // RED under the old behavior: the naive stripper has no concept of a dollar-quote tag,
     // so it treats the `--` line INSIDE the tagged body as a real comment and eats it.
     const old = oldNaiveStrip(sql);
     expect(old).not.toContain("not a real comment marker inside the tag body test");

@@ -70,7 +70,7 @@ today — see `../../../../common-docs/policies/native-mobile-layout.md`.
 
 `__tests__/driveSession.test.ts` and `__tests__/voiceCommands.test.ts`, plus
 the platform-level `../aidream/apps/shared/chat/src/voice-agent/relay/utteranceQueue.test.ts`. Each
-carries an executable description of the behaviour it replaced, so the guard
+carries an executable description of the behavior it replaced, so the guard
 can be watched failing without a commit archaeology trip. The voice-command
 suite's most important half is the NEGATIVE one: a false positive cuts an
 Expert off mid-story, which is the worst thing this lane can do.

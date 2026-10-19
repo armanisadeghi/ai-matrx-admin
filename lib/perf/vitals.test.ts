@@ -69,7 +69,7 @@ describe("per-route sample rates (quiet routes report every load)", () => {
 
   it("a route in the map is sampled at its own rate while every other route keeps the global rate", () => {
     const s = store("0.05", JSON.stringify(rates));
-    expect(loadIsSampled(0.99, s, "/meetings")).toBe(true); // the old behaviour drew against 0.05 and said no
+    expect(loadIsSampled(0.99, s, "/meetings")).toBe(true); // the old behavior drew against 0.05 and said no
     expect(loadIsSampled(0.99, s, "/data/7ea2340a-f0a8-4a4f-a8f6-29c8604d63cd")).toBe(true);
     expect(loadIsSampled(0.99, s, "/hr")).toBe(false);
     expect(loadIsSampled(0.04, s, "/hr")).toBe(true);

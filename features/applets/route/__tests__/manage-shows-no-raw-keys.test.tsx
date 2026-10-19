@@ -17,7 +17,7 @@ async function render(ui: React.ReactElement): Promise<HTMLElement> {
   await act(async () => {
     createRoot(container).render(ui);
   });
-  // Let the catalogue read and the describe calls settle.
+  // Let the catalog read and the describe calls settle.
   for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve(); });
   return container;
 }
@@ -34,7 +34,7 @@ jest.mock("@/features/agents/redux/applets/thunks", () => ({ saveAppletRecord: j
 jest.mock("@/components/official/ProInput", () => ({
   ProInput: (p: { value: string; "aria-label"?: string }) => <input aria-label={p["aria-label"]} value={p.value} readOnly />,
 }));
-// The catalogue knows one job, unlabelled; the Applet also uses a job outside it.
+// The catalog knows one job, unlabelled; the Applet also uses a job outside it.
 jest.mock("@ai-matrx/applets/catalogue", () => ({
   readAppletCatalogue: async () => ({ jobs: [{ key: "notes.summarize", label: "", own: true }], tables: [], entities: [], gaps: [] }),
 }));

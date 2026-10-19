@@ -334,7 +334,7 @@ export function buildConsentPlan({
   // A RENEWAL IS NOT A NEW GRANT. When YouTube's scopes are all already held
   // (a dead credential) YouTube is not moved to a new connection — that would
   // leave the dead one dead — but beside other products it is still its own
-  // labelled step. Only a YouTube row that ADDS scopes gets the isolated request.
+  // labeled step. Only a YouTube row that ADDS scopes gets the isolated request.
   const youtubeEntry = wanted.find(({ product }) => product.key === "youtube");
   const youtubeAdds = youtubeEntry !== undefined && !youtubeEntry.renewal;
   // YouTube beside other products is NEVER one combined press — new grant or

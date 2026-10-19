@@ -1,6 +1,6 @@
 // app/(core)/libraries/[id]/page.tsx
 //
-// One Library: metrics that fill in while the catalogue streams, the Sources
+// One Library: metrics that fill in while the catalog streams, the Sources
 // list, the server's Actions on a selection, and the jobs they start.
 // Feature: features/source-library/.
 

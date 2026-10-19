@@ -10,7 +10,7 @@
  * view's one-panel identity could not be checked because the overlay-bound
  * window had none either.
  *
- * WHAT THIS CHECKS, over the live catalogue and the live registry metadata —
+ * WHAT THIS CHECKS, over the live catalog and the live registry metadata —
  * never a hand-written list of windows, which would go stale the first time a
  * window was added:
  *
@@ -35,7 +35,7 @@ import { join } from "node:path";
 import baseline from "../registry/window-address-baseline.json";
 import { APP_OVERLAYS } from "@/features/overlays/definitions/registry";
 
-/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */
+/** The old catalogue's shape, read from the definitions (the catalog file is gone). */
 const OVERLAYS_BY_ID: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(
   APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),
 );

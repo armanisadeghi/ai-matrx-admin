@@ -2,7 +2,7 @@
  * The retry helper and the browser capture proxy, wired together for real.
  *
  * 2026-10-01: the super-admin dock's `scheduler.system_schedule_alarms` poll was
- * cancelled once at the 8 s statement timeout during a live-DDL lock storm and
+ * canceled once at the 8 s statement timeout during a live-DDL lock storm and
  * landed as a red inspector row. The proxy captures every failed call when it
  * resolves — before any retry owner has decided to ask again — so a transient
  * that the helper RECOVERS must not be captured, while a transient it gives up

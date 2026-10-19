@@ -69,7 +69,7 @@ describe("featured templates", () => {
   it("documents carry real tables and styled headings", () => {
     const withTables = docs.filter((d) => JSON.stringify(d.snapshot).includes('"tableSource"'));
     expect(withTables.length).toBeGreaterThanOrEqual(7);
-    // Every document but the personal letter opens with a coloured heading.
+    // Every document but the personal letter opens with a colored heading.
     const headed = docs.filter((d) =>
       (d.snapshot as { body: { textRuns: Array<{ ts: { fs?: number; cl?: unknown } }> } }).body.textRuns.some(
         (r) => (r.ts.fs ?? 0) >= 13 && r.ts.cl,

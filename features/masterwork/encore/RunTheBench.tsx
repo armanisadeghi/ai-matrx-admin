@@ -312,7 +312,7 @@ export function RunTheBench({
   }, [verdict, seenVerdict, onVerdict]);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // THE DOOR CANNOT OPEN. It is then not a control at all — never a greyed
+  // THE DOOR CANNOT OPEN. It is then not a control at all — never a grayed
   // button, never a button that does nothing. The sentence is the server's.
   // ─────────────────────────────────────────────────────────────────────────
   if (bench.status === "loading") return null;

@@ -4,9 +4,9 @@
  * THE DECISION `withTransientRetry` MAKES, tested on the real thing.
  *
  * Only the DB LEAF is faked — a function that hands back what PostgREST hands
- * back. Every judgement the primitive exists to make (is this retryable? may
+ * back. Every judgment the primitive exists to make (is this retryable? may
  * this statement have committed? what do we tell the caller?) runs for real,
- * because that judgement is what the 2026-09-20 report loss turned on.
+ * because that judgment is what the 2026-09-20 report loss turned on.
  *
  * THE USE CASE behind the fixtures is the one that produced the defect: crew C
  * was entering a US National Parks trip itinerary through the live system,
@@ -95,7 +95,7 @@ describe("withTransientRetry — which failures are worth asking again", () => {
   });
 
   it("retries a canceled statement even for a call that CREATES a row", async () => {
-    // 57014 means the server cancelled and rolled back, so the row provably
+    // 57014 means the server canceled and rolled back, so the row provably
     // does not exist and asking again can only ever produce it once.
     const leaf = leafReturning(
       { data: null, error: STATEMENT_TIMEOUT },

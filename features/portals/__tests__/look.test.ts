@@ -22,7 +22,7 @@ const rincon: PortalStyle = {
 };
 
 describe("a portal's look", () => {
-  it("carries the business's own name, welcome, logo and colour", () => {
+  it("carries the business's own name, welcome, logo and color", () => {
     const look = portalLook(rincon, "Rincon Plumbing Co");
     expect(look.name).toBe("Rincon Plumbing");
     expect(look.welcome).toMatch(/service calls/);
@@ -40,7 +40,7 @@ describe("a portal's look", () => {
     ]);
   });
 
-  it("is never blank: no look of its own shows the organization's name and the app's colour", () => {
+  it("is never blank: no look of its own shows the organization's name and the app's color", () => {
     const bare: PortalStyle = {
       display_name: "Ironclad Mobile Mechanic",
       welcome: null,
@@ -59,7 +59,7 @@ describe("a portal's look", () => {
     expect(portalLook(undefined, "Rincon Plumbing Co").name).toBe("Rincon Plumbing Co");
   });
 
-  it("refuses a colour that is not a design-system name and a logo that is not https", () => {
+  it("refuses a color that is not a design-system name and a logo that is not https", () => {
     const odd = { ...rincon, accent: "#ff00ff" as unknown as PortalStyle["accent"], logo_url: "http://insecure.test/logo.png" };
     const look = portalLook(odd, "Rincon Plumbing Co");
     expect(look.bandClass).toBeNull();

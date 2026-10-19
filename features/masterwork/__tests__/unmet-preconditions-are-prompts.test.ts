@@ -37,7 +37,7 @@
  * rule from the scanner and exactly that self-test goes red.
  *
  * THE ALLOW-LIST is reasoned, per entry, and never a silence: an entry says
- * WHY red is the honest colour there (a real failure, a real destruction), or
+ * WHY red is the honest color there (a real failure, a real destruction), or
  * that the file belongs to another lane right now and the member is filed.
  */
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -57,7 +57,7 @@ const ROOTS = [
 ];
 
 /**
- * Every entry is a judgement, not a silence. `file` + `sentence` must both
+ * Every entry is a judgment, not a silence. `file` + `sentence` must both
  * match, so moving the code or changing the words re-opens the question.
  */
 interface Allowed {
@@ -71,7 +71,7 @@ const ALLOW_LIST: ReadonlyArray<Allowed> = [
     file: "features/vision-interview/hooks/useInterviewRun.ts",
     sentence: "There is no active run to answer — start the interview first.",
     why:
-      "A GENUINE FAILURE, and red is the honest colour. The person has typed " +
+      "A GENUINE FAILURE, and red is the honest color. The person has typed " +
       "an answer and pressed send; there is no run to deliver it to, so " +
       "something is WRONG rather than not-yet-done. Flattening this to a " +
       "muted prompt would hide a real loss.",
@@ -307,7 +307,7 @@ describe("the live feature", () => {
     const stale = ALLOW_LIST.filter(
       (a) => !found.some((v) => v.file === a.file && v.sentence.trim() === a.sentence.trim()),
     );
-    // An allow-list entry that no longer matches anything is a licence nobody
+    // An allow-list entry that no longer matches anything is a license nobody
     // needs: delete it, so the next real member cannot hide behind it.
     expect(stale.map((a) => `${a.file} — ${a.sentence}`)).toEqual([]);
   });

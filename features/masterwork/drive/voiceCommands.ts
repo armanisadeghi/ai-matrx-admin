@@ -27,7 +27,7 @@ export type DriveVoiceCommand = "pause" | "resume" | "end";
 export const MAX_COMMAND_WORDS = 10;
 
 /**
- * The phrase tables. Each entry is matched against the NORMALISED utterance
+ * The phrase tables. Each entry is matched against the NORMALIZED utterance
  * (lower case, punctuation stripped, whitespace collapsed) as a whole phrase
  * or as the whole utterance minus leading filler.
  *
@@ -144,7 +144,7 @@ function stripFiller(phrase: string): string {
  * Read one completed utterance as a command, or `null` when it is what it
  * almost always is: the Expert talking.
  *
- * `enabled` lets the surface honour the `masterwork.drive.voice_commands` knob
+ * `enabled` lets the surface honor the `masterwork.drive.voice_commands` knob
  * without every call site branching.
  */
 export function matchDriveVoiceCommand(

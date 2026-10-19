@@ -6,7 +6,7 @@
  * war-room tools, by contrast, HITL-gate every write (`dispatchWarRoomTool`).
  *
  * Unlike the per-tile dispatcher we do NOT flip the instance to `paused`: the
- * tool runs, the result posts, the loop resumes. The shared behaviour (Zod
+ * tool runs, the result posts, the loop resumes. The shared behavior (Zod
  * validation, handler run, the single result funnel) lives in the chat
  * package's `createNotifyAndPlayDispatcher`; this file only names the family.
  */

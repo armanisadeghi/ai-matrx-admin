@@ -3,7 +3,7 @@
 // features/messaging/lib/useMessagingIntelligences.ts
 //
 // IDENTITY INJECTION for `@ai-matrx/messaging`'s four conversation
-// intelligences — and nothing else (C22). The package owns every behaviour: the
+// intelligences — and nothing else (C22). The package owns every behavior: the
 // chips, what rides `variables`, the transcript window, the streaming render,
 // what "catch me up" means. This hook answers only two host questions:
 //

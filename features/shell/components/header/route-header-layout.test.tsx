@@ -109,7 +109,7 @@ describe("foldCount — the primary action outlasts the title's comfort width", 
   });
 
   it("folds even the primary when the title would drop below its floor", () => {
-    // /documents: a 137px labelled "New document" beside a 169px row.
+    // /documents: a 137px labeled "New document" beside a 169px row.
     expect(foldCount([137], 73, 44, 113)).toBe(1);
   });
 });
@@ -123,7 +123,7 @@ describe("fitActions — the primary action goes icon-only, never into the …",
     });
   });
 
-  it("keeps the labelled primary when it fits after the secondaries fold", () => {
+  it("keeps the labeled primary when it fits after the secondaries fold", () => {
     expect(fitActions([36, 36, 90], 130, 36, 170, 44)).toEqual({
       fold: 2,
       compactPrimary: false,

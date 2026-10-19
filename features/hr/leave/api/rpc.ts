@@ -98,7 +98,7 @@ const OPAQUE_VALUE_KEYS = new Set(["detail", "details", "metadata", "parameters"
  * `hr.leave_ledger_view` selects `engine_key`, `engine_version` and `calc` and does **not**
  * select `rule_version_ids`. Testing only for `rule_version_ids` would therefore camelize
  * INSIDE a stored calc payload on every ledger row — silently rewriting the evidence a wage
- * claim is answered with. So an evidence block is recognised by carrying EITHER marker.
+ * claim is answered with. So an evidence block is recognized by carrying EITHER marker.
  */
 function isEvidenceBlock(obj: Record<string, unknown>): boolean {
   return (

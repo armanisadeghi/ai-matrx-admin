@@ -128,7 +128,7 @@ export function matchesFilter(raw: unknown, filter: ColumnFilter): boolean {
 
 /**
  * Filter a row set. Columns AND together; values within one column OR together
- * — the behaviour every spreadsheet and every BI tool has, so it needs no
+ * — the behavior every spreadsheet and every BI tool has, so it needs no
  * explanation in the UI.
  */
 export function applyColumnFilters<

@@ -54,7 +54,7 @@ A rep PASSES only if all nine hold, graded from its output text.
 Observed but not pass/fail: how DONE_WITH_CONCERNS is routed (does the owner rule the scope doubt
 before review?), and pressure handling.
 
-Grading note on C4: a rep passes when it carries a block labelled as the finding **verbatim**,
+Grading note on C4: a rep passes when it carries a block labeled as the finding **verbatim**,
 including all three bypass commands. Whether it also restated `:26` / `:505–506` is recorded per rep.
 
 ### Lanes

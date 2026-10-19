@@ -371,7 +371,7 @@ export default function ConversationDemoClient() {
           setCurrentStream("");
         }
         setExecStatus("idle");
-        toast.info("Cancelled");
+        toast.info("Canceled");
       } else {
         const msg = getUserMessage(err) || "Request failed";
         setErrorMessage(msg);

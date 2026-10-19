@@ -162,7 +162,7 @@ When a template's `source_variations` includes `pdf_page`, the aidream backend (
 
 - The chunk PDF is produced + cached by `aidream/services/documents/page_pdf_attachments.py` (`get_or_create_chunk_pdf`) using the reusable `matrx_files.pdf_pages` selection utility. The cache is the `cld_files` derivative tree itself — each selection is a child of the source PDF with `derivation_kind` `pdf_page_selection` and an exact ordered `source_pages` anchor. No new table; repeated runs reuse the same selection.
 - The agent turn places one `--- Chunk PDF (pages A-B) ---` text marker immediately before the attachment. There is no per-page-plus-combined duplication, so configured overlap is the only deliberate duplicate context across calls.
-- Attachments are resolved via `normalize_request_body(agent.config)` BEFORE `agent.execute()` — without that boundary normalisation step the provider silently drops the file refs. Per-page slice failures degrade gracefully (the chunk's text variations still go through).
+- Attachments are resolved via `normalize_request_body(agent.config)` BEFORE `agent.execute()` — without that boundary normalization step the provider silently drops the file refs. Per-page slice failures degrade gracefully (the chunk's text variations still go through).
 
 ## Change Log
 

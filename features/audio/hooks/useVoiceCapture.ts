@@ -94,7 +94,7 @@ export function useVoiceCapture(
   const provider = useGlobalRecordingOptional();
 
   // The origin declared by the surrounding surface (null on every surface that
-  // declares none — i.e. today's behaviour, unchanged). An explicit option
+  // declares none — i.e. today's behavior, unchanged). An explicit option
   // wins; `undefined` means "not specified", `null` means "deliberately none".
   const inheritedOrigin = useRecordingOrigin();
   const origin =

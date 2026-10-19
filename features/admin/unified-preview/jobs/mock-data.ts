@@ -182,7 +182,7 @@ export const PREVIEW_JOBS: readonly PreviewJob[] = [
   {
     id: "job-03",
     mandate_key: "seo.serp_intent_summary",
-    goal: "Summarise what the searcher actually wants from the top ten SERP results, in the client's voice.",
+    goal: "Summarize what the searcher actually wants from the top ten SERP results, in the client's voice.",
     goal_grounding: "ai",
     output_kind: "markdown",
     input_source: "provision",
@@ -237,7 +237,7 @@ export const PREVIEW_JOBS: readonly PreviewJob[] = [
       system: following(
         "seo.generic_analysis",
         "Generalist SEO Analyst",
-        "No explicit intelligence. Risk judgement is being made by a generalist that was never given the risk criteria.",
+        "No explicit intelligence. Risk judgment is being made by a generalist that was never given the risk criteria.",
       ),
     },
   },

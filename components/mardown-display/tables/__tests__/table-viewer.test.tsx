@@ -69,7 +69,7 @@ describe("the table's action row", () => {
     expect(html).toContain("Chart this");
   });
 
-  it("groups a signed-in person's writes behind one labelled Save to, and keeps Edit", () => {
+  it("groups a signed-in person's writes behind one labeled Save to, and keeps Edit", () => {
     mockSignedIn = true;
     mockMobile = false;
     const html = render();
@@ -81,7 +81,7 @@ describe("the table's action row", () => {
 });
 
 describe("a table on a phone", () => {
-  it("reflows into the phone-stack card list with every cell whole and labelled", () => {
+  it("reflows into the phone-stack card list with every cell whole and labeled", () => {
     mockSignedIn = false;
     mockMobile = true;
     const html = render();

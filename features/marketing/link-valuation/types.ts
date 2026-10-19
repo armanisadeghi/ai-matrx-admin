@@ -186,7 +186,7 @@ export type TermInput =
  *
  * `average` — participates in a weighted MEAN over the terms that actually
  *   arrived. This is what makes a missing input cost confidence instead of
- *   points, and it is the right mode for any signal normalised to a 0–100
+ *   points, and it is the right mode for any signal normalized to a 0–100
  *   scale.
  * `additive` — added to the bucket after the mean. The right mode for bonuses
  *   and penalties, which must not dilute the average they are adjusting.

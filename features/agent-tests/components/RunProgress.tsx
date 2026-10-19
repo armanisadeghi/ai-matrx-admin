@@ -14,7 +14,7 @@ const BAR_TONE: Record<string, string> = {
 };
 
 /**
- * A run's progress: one segmented bar (each verdict its own colour) plus the
+ * A run's progress: one segmented bar (each verdict its own color) plus the
  * counts. Never a spinner — while the run is live every finished result moves
  * the bar (the page re-reads the run while it is queued or running).
  */

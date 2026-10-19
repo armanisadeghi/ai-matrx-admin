@@ -74,7 +74,7 @@ jest.mock("@/lib/diagnostics/errorCaptureStore", () => ({
  * app-wide, in `app/Providers.tsx`) and that refusal is correct: a door with no
  * host behind it would be a lie. What this suite owns is the contract on THIS
  * side of it — that a Record id becomes a control at all, and that a type with
- * no wired opener produces NO control. The opener's own behaviour is its own
+ * no wired opener produces NO control. The opener's own behavior is its own
  * tests' business.
  *
  * 🚨 The real module is SPREAD, never replaced wholesale (DD-239): a new export
@@ -665,7 +665,7 @@ const FIXTURES: Fixture[] = [
     visible: ["Nothing was written", "OOPS-NOT-AN-ARRAY"],
   },
   {
-    name: "a read carries keys neither the kind nor the component modelled through to the reader",
+    name: "a read carries keys neither the kind nor the component modeled through to the reader",
     kind: WORKSPACE_KIND,
     Component: GoogleWorkspaceResultBlock,
     data: {
@@ -770,7 +770,7 @@ const FIXTURES: Fixture[] = [
     visible: [
       "Budget review",
       "stale",
-      "does not recognise",
+      "does not recognize",
       "Open it here and refresh it, or open it in Google.",
     ],
     // NEW-14's other half: the raw instant never reaches a person.
@@ -2148,7 +2148,7 @@ describe("V-24 NEW-2: an empty read inside a stated frame says so, and names the
       <GoogleMarketingResultBlock content={JSON.stringify(emptyGa4)} metadata={undefined} />,
     );
     expect(markup).toContain("asked about");
-    // The MetaStrip's own "Start date: " labelling is what read as an answer.
+    // The MetaStrip's own "Start date: " labeling is what read as an answer.
     expect(markup).not.toContain("Start date: ");
     expect(markup).not.toContain("End date: ");
   });

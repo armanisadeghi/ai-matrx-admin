@@ -3,7 +3,9 @@
 // THE APP GRID — the 9-dot button and its popover of product tiles, grouped by
 // family, with an editable "Your favorites" group on top (Google's apps
 // popover). A tile ALWAYS opens its product in a new tab (owner ruling,
-// 2026-10-17). Arrow keys move between tiles by position; Esc closes (Radix).
+// 2026-10-17). The grid is ONE Tab stop (roving tabindex); arrow keys move
+// between tiles by position; Esc closes (Radix). A favorite appears once for
+// the keyboard: its copy in its family list is mouse-only.
 import { useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { Check, Grip, Pencil, Star } from "lucide-react";
@@ -67,6 +69,7 @@ export function AppGrid({
 }: AppGridProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [rovingKey, setRovingKey] = useState<string | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
 
   const favoriteProducts = favorites
@@ -85,12 +88,31 @@ export function AppGrid({
     if (moveByArrow(bodyRef.current, target, e.key)) e.preventDefault();
   }
 
+  // The keyboard's tile order: favorites, then each family without its favorites.
+  const navKeys = [
+    ...favoriteProducts.map((p) => `fav-${p.id}`),
+    ...families.flatMap((f) =>
+      products
+        .filter((p) => p.family === f.id && (editing || !favorites.includes(p.id)))
+        .map((p) => `${f.id}-${p.id}`),
+    ),
+  ];
+  const activeKey = rovingKey && navKeys.includes(rovingKey) ? rovingKey : navKeys[0];
+
   function renderTile(product: FrameProduct, group: string) {
     const Icon = product.icon;
     const isFavorite = favorites.includes(product.id);
+    const key = `${group}-${product.id}`;
+    const navigable = navKeys.includes(key);
+    const keyboard = {
+      // Only navigable tiles join arrow movement; only the active one is a Tab stop.
+      ...(navigable ? { "data-mf-tile": "" } : {}),
+      tabIndex: key === activeKey ? 0 : -1,
+      onFocus: () => navigable && setRovingKey(key),
+    };
     const glyph = (
       <span
-        className="mf-glyph flex size-10 items-center justify-center rounded-[10px]"
+        className="mf-glyph flex size-10 items-center justify-center rounded-xl"
         style={
           {
             "--mf-hue": `var(--matrx-chip-${product.color})`,
@@ -107,15 +129,15 @@ export function AppGrid({
       </span>
     );
     const tileClass = cn(
-      "relative flex min-h-[88px] flex-col items-center justify-start gap-1.5 rounded-lg px-1 pt-3 pb-2",
+      "relative flex min-h-22 flex-col items-center justify-start gap-1.5 rounded-lg px-1 pt-3 pb-2",
       "outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
     );
     if (editing) {
       return (
         <button
-          key={`${group}-${product.id}`}
+          key={key}
           type="button"
-          data-mf-tile
+          {...keyboard}
           aria-pressed={isFavorite}
           aria-label={`${isFavorite ? "Remove" : "Add"} ${product.name} ${isFavorite ? "from" : "to"} favorites`}
           className={tileClass}
@@ -135,17 +157,18 @@ export function AppGrid({
     }
     return (
       <a
-        key={`${group}-${product.id}`}
+        key={key}
         href={product.homeHref}
         target="_blank"
         rel="noopener noreferrer"
-        data-mf-tile
+        {...keyboard}
         aria-current={product.id === currentProductId ? "page" : undefined}
         className={cn(tileClass, product.id === currentProductId && "bg-accent")}
         onClick={() => setOpen(false)}
       >
         {glyph}
         {label}
+        <span className="sr-only">(opens in a new tab)</span>
       </a>
     );
   }
@@ -168,7 +191,7 @@ export function AppGrid({
         surface="solid"
         onOpenAutoFocus={(e) => {
           e.preventDefault();
-          bodyRef.current?.querySelector<HTMLElement>(TILE_SELECTOR)?.focus();
+          bodyRef.current?.querySelector<HTMLElement>(`${TILE_SELECTOR}[tabindex="0"]`)?.focus();
         }}
       >
         <div
@@ -176,7 +199,7 @@ export function AppGrid({
           role="group"
           aria-label="Products"
           onKeyDown={onKeyDown}
-          className="max-h-[min(70dvh,560px)] overflow-y-auto overscroll-contain p-2"
+          className="mf-grid-scroll overflow-y-auto overscroll-contain p-2"
         >
           <section aria-label="Your favorites" className="pb-2">
             <div className="flex h-8 items-center justify-between pl-2">

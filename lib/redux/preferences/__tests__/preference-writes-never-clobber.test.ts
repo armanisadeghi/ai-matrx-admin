@@ -9,7 +9,7 @@
  *
  * Proven through the REAL write path — `userPreferencesPolicy.remote.write`,
  * and the whole sync engine (middleware → debounced scheduler → write) — with
- * only the Supabase client replaced by one in-memory row that honours the
+ * only the Supabase client replaced by one in-memory row that honors the
  * `version` compare-and-swap exactly like Postgres + `platform._touch_row`.
  *
  * Red on the old code (whole-record update): both "two clients" cases lose
@@ -28,7 +28,7 @@ const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  * over ONE row. Reads return a copy; an UPDATE filtered by `version` matches
  * only the live version (CAS), and every UPDATE bumps `version` the way the
  * `trg_touch_row` trigger does. `.update({ preferences })` with no version
- * filter (the old whole-record write) is honoured too, so the red run
+ * filter (the old whole-record write) is honored too, so the red run
  * exercises the old code honestly.
  */
 function mockTable() {

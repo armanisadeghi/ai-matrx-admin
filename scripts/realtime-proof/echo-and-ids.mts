@@ -49,13 +49,13 @@ const { isOwnOp } = (await import(DANA_OPS)) as {
 // 🚨 TWO BROWSERS ARE TWO MODULE INSTANCES, AND THE FIRST DRAFT OF THIS FILE FORGOT IT.
 // The op ledger lives at module scope — one tab, one ledger, one person — which is right in a
 // browser and WRONG in a single Node process pretending to be two people: Dana's write went
-// into the one shared ledger and Marco's side then recognised her op id as its own, which
+// into the one shared ledger and Marco's side then recognized her op id as its own, which
 // would mean dropping a real change. The harness was lying, not the product. Marco therefore
 // gets his OWN instance of the module, which is exactly what a second browser is.
 // The `?browser=` suffix is a RUNTIME instruction to the loader (give me a second
 // instance), and TypeScript resolves specifiers, not loaders — a literal here makes it
 // assert TS2307 about a module that loads perfectly. Holding the specifier in a const
-// keeps the runtime behaviour exactly and stops the compiler claiming a false fact.
+// keeps the runtime behavior exactly and stops the compiler claiming a false fact.
 const MARCO_OWN_INSTANCE = "../../../aidream/apps/shared/records/src/ops.ts?browser=marco";
 const marcoOps = (await import(MARCO_OWN_INSTANCE)) as {
   isOwnOp: (id: string | null | undefined) => boolean;
@@ -213,12 +213,12 @@ async function main(): Promise<void> {
     bad("Dana's own socket heard nothing at all, so the echo clause cannot be judged");
   } else if (hers.every((n) => isOwnOp(n.op_id))) {
     ok(
-      `Dana's browser recognises all ${hers.length} notice(s) for her own write as her own — ` +
+      `Dana's browser recognizes all ${hers.length} notice(s) for her own write as her own — ` +
         "0 reads, so her grid cannot double-apply",
     );
   } else {
     bad(
-      "Dana's browser did NOT recognise the echo of her own write " +
+      "Dana's browser did NOT recognize the echo of her own write " +
         `(op_id ${String(hers[0]?.op_id)}), so her grid re-reads a page it has already updated`,
     );
   }
@@ -233,7 +233,7 @@ async function main(): Promise<void> {
     bad("Marco's browser thinks Dana's write was its own — a real change would be dropped");
   } else {
     ok(
-      "Marco's browser does NOT recognise Dana's op id, so the change is his to apply " +
+      "Marco's browser does NOT recognize Dana's op id, so the change is his to apply " +
         "(his own ledger, as a second browser has)",
     );
   }

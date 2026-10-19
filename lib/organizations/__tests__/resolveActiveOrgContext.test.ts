@@ -207,7 +207,7 @@ describe("resolveActiveOrgContext — a link that names an organization", () => 
     membership(PLUMBING, "Bluejacket Plumbing & Drain"),
   ];
 
-  it("is honoured on a cold arrival, so the donor list renders instead of the picker", async () => {
+  it("is honored on a cold arrival, so the donor list renders instead of the picker", async () => {
     orgs = twoBusinesses();
 
     const resolved = await resolveActiveOrgContext(USER, {
@@ -285,7 +285,7 @@ describe("resolveActiveOrgContext — a link that names an organization", () => 
     }
   });
 
-  it("an ADDRESS (slug) she belongs to is honoured like an id — the /hr routes write it", async () => {
+  it("an ADDRESS (slug) she belongs to is honored like an id — the /hr routes write it", async () => {
     orgs = [
       { ...membership(FOOD_BANK, "Second Harvest Valley Food Bank"), slug: "second-harvest" },
       { ...membership(PLUMBING, "Bluejacket Plumbing & Drain"), slug: "bluejacket" },

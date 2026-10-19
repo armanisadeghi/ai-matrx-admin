@@ -5,7 +5,7 @@
  * `communication.inbox_notifications` (the triage door, migration
  * `notifications_inbox_triage.sql`) or — while that door is not on this database —
  * the pre-triage `communication.my_notifications`, whose missing columns read as
- * null here and whose rows are labelled `triage: false` by the service.
+ * null here and whose rows are labeled `triage: false` by the service.
  *
  * The columns mirror the door's RETURNS TABLE exactly. When
  * `types/database.types.ts` is regenerated (`pnpm db-types`) after the door lands

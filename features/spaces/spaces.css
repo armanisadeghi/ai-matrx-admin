@@ -1476,7 +1476,7 @@
    tile's single title keeps its own shrink rule below. */
 .spaces-db-frame:not([data-layout="chart"]) .spaces-db-tabs > * { flex: none; }
 .spaces-db-frame:not([data-layout="chart"]) .spaces-db-tabs > [role="tab"] { max-width: min(220px, 70cqw); }
-/* A chart tile's view name is Notion's grey pill (screenshot 1): the view's icon + the name as typed at
+/* A chart tile's view name is Notion's gray pill (screenshot 1): the view's icon + the name as typed at
    14px / 600, cut with an ellipsis at the pill's edge, the view-settings icon right after it at rest. */
 .spaces-db-frame[data-layout="chart"] .spaces-db-tabs { gap: 6px; }
 .spaces-chart-title { display: inline-flex; align-items: center; justify-content: flex-start; gap: 6px; height: 32px; min-width: 0; flex: 0 1 auto; max-width: 100%; padding: 0 10px; border-radius: 16px; background: var(--spaces-hover-strong); color: var(--spaces-ink); font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; }
@@ -1789,7 +1789,7 @@ tr:hover .spaces-entity-openpill, .spaces-entity-open:focus-visible .spaces-enti
   height: 13px;
 }
 
-/* The open view's tab: Notion's grey pill at toolbar size (screenshot 1 "All"). */
+/* The open view's tab: Notion's gray pill at toolbar size (screenshot 1 "All"). */
 /* Measured (NOTION-MEASUREMENTS §6, O6): a 32px pill, radius 20px, padding 6px 12px, weight 500,
    rgba(33,27,23,0.05) behind the open view. */
 .spaces-view-pill {
@@ -1825,7 +1825,7 @@ tr:hover .spaces-entity-openpill, .spaces-entity-open:focus-visible .spaces-enti
 .spaces-db-body tbody tr > td { height: 37px; padding-top: 0; padding-bottom: 0; vertical-align: middle; }
 .spaces-db-body tbody tr { border-bottom-color: var(--spaces-hairline); }
 
-/* O14: a table row's title cell starts with the record's icon — the grey page circle (screenshot 1) while the
+/* O14: a table row's title cell starts with the record's icon — the gray page circle (screenshot 1) while the
    record has none of its own. ONE route for both table types: a ::before circle that sits beside the title on its
    line (the custom grid's cell content and the built-in table's title button are both flex rows, 37px rows hold). */
 .spaces-db-body tbody tr > td:first-child [data-matrx-cell-content]:not(:has(.spaces-entity-open)) { display: flex; align-items: center; }

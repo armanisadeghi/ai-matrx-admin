@@ -58,7 +58,7 @@ describe("checkPack: the board key", () => {
     expect(found).toContain("spec.tables (shadow).rows[0].values.value");
     expect(found).toContain("spec.tables (color).rows[1].values.reads_on");
   });
-  it("names a colour read on itself, and two rows of one name when rows are found by name", () => {
+  it("names a color read on itself, and two rows of one name when rows are found by name", () => {
     const p = fresh();
     const color = p.spec.tables.find((t) => t.token === "color")!;
     const primaryFg = color.rows.findIndex((r) => r.values.name === "primary-foreground");

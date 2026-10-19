@@ -229,7 +229,7 @@ async function generatorArm(db: Client, t: Registered): Promise<Finding[]> {
         target: rel,
         detail:
           `iam.apply_table_grants(${t.schema_name}, ${t.table_name}, ${live}) GRANTS ${r.priv} back to ${r.role_name} — ` +
-          `the generator does not honour platform.stamped_write_table, so the next regeneration re-opens this table (rolled back)`,
+          `the generator does not honor platform.stamped_write_table, so the next regeneration re-opens this table (rolled back)`,
       });
     }
   } finally {
@@ -629,7 +629,7 @@ async function main(): Promise<number> {
 
     // ── THE SELF-TEST: RED then GREEN, against this database, writing nothing. ──
     // The violation is PLANTED inside a transaction and rolled back, so the RED is
-    // this guard meeting the real defect shape on the real catalogue, not a fixture.
+    // this guard meeting the real defect shape on the real catalog, not a fixture.
     const green = await census(db);
     if (green.findings.length !== 0) {
       console.log(`${FAIL} self-test cannot run: the live surface is already RED —`);

@@ -5,7 +5,7 @@
  * step of the definition the run used, in the order it finished, and inside a step each external
  * call it made (the aidream request ledger on `output.requests`). Search calls to one engine from
  * one step share a row (Google: "a" · "b" · "c"). A step that did nothing, or has not run, is a
- * greyed row with its reason (`ready_when` from the definition). Rows carry the stored records
+ * grayed row with its reason (`ready_when` from the definition). Rows carry the stored records
  * untouched; only titles are written here. FEATURE: ./FEATURE.md.
  */
 import type { DefinitionNode, NodeOutcomeRow, RunTruth } from "./data";
@@ -25,7 +25,7 @@ export interface StoryRow {
   /** The exact query, URL or point, when the row has one. */
   detail: string | null;
   status: StoryStatus | null;
-  /** Why a greyed row did nothing ("waits for: name confirmed"). */
+  /** Why a grayed row did nothing ("waits for: name confirmed"). */
   reason: string | null;
   ms: number | null;
   costUsd: number | null;

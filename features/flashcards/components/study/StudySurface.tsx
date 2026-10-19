@@ -43,7 +43,7 @@ export function StudySurface({ setId }: { setId: string }) {
           backHref={`${EDU_BASE}/${setId}`}
           actions={
             <div className="flex items-center gap-2">
-              {/* Download where the learner actually is when they realise
+              {/* Download where the learner actually is when they realize
                   they're about to lose signal — the SAME control as the deck
                   page, not a second variant. */}
               <OfflineDeckButton

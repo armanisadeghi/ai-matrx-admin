@@ -43,7 +43,7 @@ export interface SourcePreviewDoc {
   bodyKind: SourceBodyKind;
   /** Programming language for code bodies (best-effort). */
   language: string | null;
-  /** Small labelled facts shown above the body (type, size, updated, …). */
+  /** Small labeled facts shown above the body (type, size, updated, …). */
   meta: { label: string; value: string }[];
   /** Relative href to the source's full native surface (opens in a new tab). */
   href: string | null;

@@ -20,7 +20,7 @@
  * on TOKEN while `platform.deprecated_relations` keys on schema.table text, so
  * the registry row is the only surviving token->meaning binding once the table
  * is gone. This view is therefore expected to sit at a nonzero count forever;
- * it was previously labelled "Stale registry" under a "Migration backlog"
+ * it was previously labeled "Stale registry" under a "Migration backlog"
  * header, which read as permanently unworked work (owner-ruled 2026-08-21).
  */
 

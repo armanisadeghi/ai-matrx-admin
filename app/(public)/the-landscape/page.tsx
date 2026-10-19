@@ -56,9 +56,9 @@ export const metadata = createRouteMetadata("/the-landscape", {
  *   • Salesforce's umbrella is "Agentforce 360"; ServiceNow's products are AI
  *     Agent Studio / Orchestrator; SAP's is Joule Studio. Re-check Salesforce
  *     naming after Dreamforce — a rename wave started 2026-09-14.
- *   • Vertical AI vendors DO customise per account (Harvey Agent Builder,
+ *   • Vertical AI vendors DO customize per account (Harvey Agent Builder,
  *     Decagon AOPs, Sierra Agent Studio, Abridge per-clinician style). The
- *     surviving point is organisational vs. personal customisation.
+ *     surviving point is organizational vs. personal customization.
  *   • "Fine-tuning needs volume" is refuted by OpenAI's own RFT guidance
  *     ("several dozen to a few hundred examples"). Removed.
  * Named eval harnesses we may cite: Harvey's BigLaw Bench, Sierra's τ-bench.
@@ -130,9 +130,9 @@ const CATEGORIES: Category[] = [
     title: "Vertical AI products",
     examples: "Harvey, Abridge, Sierra, Decagon, EvenUp, and the rest",
     better:
-      "The most honest section here. These are strong companies with deep domain investment and, in several cases, serious public eval harnesses — Harvey publishes BigLaw Bench, Sierra publishes τ-bench. The customer-service agent companies in particular have built much of what we are describing, for one domain. That is a validation of the model, not a refutation of it. They also customise per account: firm playbooks, agent operating procedures, per-clinician note style.",
+      "The most honest section here. These are strong companies with deep domain investment and, in several cases, serious public eval harnesses — Harvey publishes BigLaw Bench, Sierra publishes τ-bench. The customer-service agent companies in particular have built much of what we are describing, for one domain. That is a validation of the model, not a refutation of it. They also customize per account: firm playbooks, agent operating procedures, per-clinician note style.",
     stops:
-      "The customisation is organisational, not personal. You configure a firm's policy, its tone, its procedures — but the starting point is still the field's consensus, because a vertical product has to serve every customer in the field. For eighty percent of the work, industry-standard is fine and you should buy theirs. For the twenty percent where your expert's deviation is your margin, it cannot help — and the vendor cannot build it for you without building it for your competitor. You can also only buy one for a field somebody has already productised.",
+      "The customization is organizational, not personal. You configure a firm's policy, its tone, its procedures — but the starting point is still the field's consensus, because a vertical product has to serve every customer in the field. For eighty percent of the work, industry-standard is fine and you should buy theirs. For the twenty percent where your expert's deviation is your margin, it cannot help — and the vendor cannot build it for you without building it for your competitor. You can also only buy one for a field somebody has already productised.",
     posture:
       "The question to ask is simple: does it do it your way, or the industry's way?",
   },
@@ -141,7 +141,7 @@ const CATEGORIES: Category[] = [
     title: "Build it yourself",
     examples: "LangChain and LangGraph, LlamaIndex, DSPy, Temporal, plus APIs",
     better:
-      "Genuinely viable for a company with a strong engineering team. The frameworks are real and mature — LangChain and LangGraph reached 1.0, DSPy-style automatic prompt optimisation is a real and actively advancing technique, and Temporal now markets durable execution for agents directly. You own everything.",
+      "Genuinely viable for a company with a strong engineering team. The frameworks are real and mature — LangChain and LangGraph reached 1.0, DSPy-style automatic prompt optimization is a real and actively advancing technique, and Temporal now markets durable execution for agents directly. You own everything.",
     stops:
       "They give you the machinery, not the method. The framework was never the hard part — capture and evaluation are, and every in-house team we have seen underestimates both by roughly an order of magnitude. They ship a working pipeline in six weeks and then spend eighteen months unable to answer “is it actually as good as Maria?”, because nobody built the oracle. Nothing in these frameworks tells you how to elicit one person's judgment, or how to know when you have captured it.",
     posture:
@@ -152,7 +152,7 @@ const CATEGORIES: Category[] = [
     title: "Fine-tuning and custom training",
     examples: "Supervised tuning and reinforcement fine-tuning",
     better:
-      "Sometimes the right answer, and our own doctrine says so out loud: if you could fine-tune it, fine-tune it. With clean labelled pairs, training can beat a workflow — and the data bar has come down. OpenAI's own reinforcement fine-tuning guidance tells you to start with several dozen to a few hundred examples, though Google's Vertex tuning still asks for a hundred as a floor. We will tell a prospect this and disqualify ourselves from that use case.",
+      "Sometimes the right answer, and our own doctrine says so out loud: if you could fine-tune it, fine-tune it. With clean labeled pairs, training can beat a workflow — and the data bar has come down. OpenAI's own reinforcement fine-tuning guidance tells you to start with several dozen to a few hundred examples, though Google's Vertex tuning still asks for a hundred as a floor. We will tell a prospect this and disqualify ourselves from that use case.",
     stops:
       "A tuning set needs pairs that already exist. There is no corpus of how one particular person decides, and no vendor today markets tuning as a way to capture one named individual's judgment. The nearest thing on the market learns a person's writing voice from their files — that is style, not judgment.",
   },
@@ -301,7 +301,7 @@ const TIERS: Array<{ icon: LucideIcon; name: string; body: string }> = [
   },
   {
     icon: Users,
-    name: "Vertical programme",
+    name: "Vertical program",
     body: "Several experts across one function — including the ones who disagree with each other, kept apart and routed rather than averaged into a bland middle.",
   },
   {

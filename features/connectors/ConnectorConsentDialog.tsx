@@ -110,7 +110,7 @@ const NEW_ACCOUNT = "__new_account__";
  * The line under the button, which must describe the request that is actually
  * about to be made. A RENEWAL is not "nothing you already granted is asked for
  * again" — it is precisely a fresh approval of what is already granted, because
- * the provider stopped honouring the old grant. Saying otherwise on the one
+ * the provider stopped honoring the old grant. Saying otherwise on the one
  * screen a person reaches from "Not working" would tell them their press cannot
  * fix the thing it is there to fix.
  */
@@ -132,7 +132,7 @@ export function consentRequestSentence(
     return `${providerName} will ask you to approve ${label}. Nothing you already granted is asked for again.`;
   }
   if (request.addedScopes.length === 0) {
-    return `${providerName} will ask you to approve ${label} again, which renews the access it stopped honouring. Nothing new is asked for.`;
+    return `${providerName} will ask you to approve ${label} again, which renews the access it stopped honoring. Nothing new is asked for.`;
   }
   return `${providerName} will ask you to approve ${label}. That renews ${request.renewals
     .map((product) => product.name)
@@ -446,13 +446,13 @@ function resolveFirstActionData(
 
 /**
  * THE FIRST USEFUL ACTION, whatever shape the product declared it in. A route is
- * a link; a catalogued overlay is a press that opens the window IN PLACE and
+ * a link; a cataloged overlay is a press that opens the window IN PLACE and
  * then steps the dialog aside, because a window opened behind a modal is a
  * control that looks like it did nothing. A row that has nothing to offer yet
  * says so in the config and renders no control — never a dead link.
  *
  * The provider is still not named here: the row carries an overlay id from the
- * platform catalogue, so the next provider's first action is a config row.
+ * platform catalog, so the next provider's first action is a config row.
  *
  * 🚨 An overlay action's `needs` is checked against `context` BEFORE rendering
  * the button. F-51 gave the Tasks row an overlay id and nothing else, so the
@@ -745,7 +745,7 @@ export function ConnectorConsentBody({
       await refetch();
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
-        toast.info(`${provider.name} authorization cancelled — nothing changed.`);
+        toast.info(`${provider.name} authorization canceled — nothing changed.`);
         setBusy(false);
         return;
       }

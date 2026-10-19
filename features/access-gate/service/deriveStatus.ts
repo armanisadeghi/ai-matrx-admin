@@ -72,7 +72,7 @@ export function deriveStatus(
   // admin to `level: 'admin'` because the `platform_admin_all` RLS policy
   // normally lets them read the row. When the surface's own read returned
   // nothing anyway, those two answers disagree — and the screen used to
-  // resolve the disagreement in favour of the claim, telling a person "You do
+  // resolve the disagreement in favor of the claim, telling a person "You do
   // have access to it — something went wrong on our side. Try again." about a
   // conversation the server had refused them with `404
   // conversation_not_found`, on a retry that could never succeed.

@@ -42,7 +42,7 @@ describe("splitAssociations over the recorded rows", () => {
 });
 
 describe("a kind the panel never special-cases", () => {
-  it("is grouped under exactly the string the function returned, and labelled by the item", () => {
+  it("is grouped under exactly the string the function returned, and labeled by the item", () => {
     expect(SPECIAL_KINDS.has(COMPOSED_GENERIC_ROW.association.kind)).toBe(false);
     const split = splitAssociations([...RECORDED_ASSOCIATIONS, COMPOSED_GENERIC_ROW]);
     expect(split.generic.map((group) => group.kind)).toEqual(["web_youtube_video"]);

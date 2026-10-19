@@ -90,7 +90,7 @@ The previously proposed crawl foundations now exist:
 
 - `web.crawl_url` is the append-only per-session URL outcome ledger. It covers
   captured, skipped, excluded, external, invalid, duplicate, redirected,
-  failed, and cancelled URLs without promoting them automatically to `page`.
+  failed, and canceled URLs without promoting them automatically to `page`.
 - `web.crawl_event` is the append-only durable event/log stream keyed by crawl
   session and sequence.
 - `web.page_evidence` is the mutable/upsert source-evidence plane for manual,

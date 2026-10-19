@@ -41,7 +41,7 @@ const REFUSED_COLUMN = {
       action: "gmail.send",
       code: "grant_expired_or_revoked",
       sentence:
-        "Google is no longer honouring this account's permission for Gmail. Reconnect it to send email again.",
+        "Google is no longer honoring this account's permission for Gmail. Reconnect it to send email again.",
       http_status: 401,
     },
   },
@@ -215,7 +215,7 @@ describe("a Gmail-synced record whose grant has been refused", () => {
     const m = await mountDetail();
     const strip = m.container.querySelector("[data-detail-health]")!;
     expect(strip.textContent).toContain("Google");
-    expect(strip.textContent).toContain("no longer honouring");
+    expect(strip.textContent).toContain("no longer honoring");
     m.unmount();
   });
 

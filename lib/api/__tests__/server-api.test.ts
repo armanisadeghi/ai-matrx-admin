@@ -239,7 +239,7 @@ describe("server-api errors (the object callers catch)", () => {
     expect(noticeUsageRefusal).toHaveBeenCalledWith(null, { code: "usage_limit_reached" }, expect.anything(), expect.anything());
   });
 
-  it("a request the caller cancelled is not captured as an incident", async () => {
+  it("a request the caller canceled is not captured as an incident", async () => {
     const controller = new AbortController();
     fetchMock.mockImplementationOnce(async () => {
       controller.abort();

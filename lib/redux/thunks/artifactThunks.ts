@@ -23,7 +23,7 @@ import {
   selectTaskId,
 } from "@/lib/redux/slices/appContextSlice";
 // The ONE typed "no organization is selected" refusal — the same class the
-// transport kernel throws, so `isOrganizationRequiredError` recognises this and
+// transport kernel throws, so `isOrganizationRequiredError` recognizes this and
 // surfaces render the picker instead of a raw sentence.
 import { OrganizationContextError } from "@ai-matrx/api";
 import type {
@@ -112,7 +112,7 @@ export const registerArtifactThunk = createAsyncThunk<
   // 328 tables carrying `public._stamp_org_default`: a row sent without an
   // organization is filed in the WRITER'S PERSONAL organization, silently.
   // So a null selection fails HERE, before the network, with the one typed
-  // refusal every surface already recognises
+  // refusal every surface already recognizes
   // (`isOrganizationRequiredError` → `OrganizationRequiredNotice`).
   // common-docs/policies/context-is-carried-never-rebuilt.md
   const organizationId =

@@ -30,7 +30,7 @@ const BOOK = urlSourceKey(
 
 /** The book's chapters, with the yields the incident actually produced. */
 const CHAPTERS: [number, string, number, number][] = [
-  [1, "CHAPTER ONE — HOW THE BEHAVIOURIST STUDIES INFANTS", 3049, 21],
+  [1, "CHAPTER ONE — HOW THE BEHAVIORIST STUDIES INFANTS", 3049, 21],
   [2, "CHAPTER TWO — THE FEARS OF CHILDREN", 5156, 33],
   [3, "CHAPTER THREE — THE DANGERS OF TOO MUCH MOTHER LOVE", 3330, 22],
   [4, "CHAPTER FOUR — RAGE AND TEMPER TANTRUMS", 4429, 28],

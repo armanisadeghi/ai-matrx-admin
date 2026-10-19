@@ -130,7 +130,7 @@ export function outlierInputFrom(
   };
 }
 
-/** The hook line: the analysed hook, else the first caption/title line. */
+/** The hook line: the analyzed hook, else the first caption/title line. */
 export function hookLineOf(
   post: Pick<SocialPostRow, "caption" | "title">,
   analysisHook?: string | null,

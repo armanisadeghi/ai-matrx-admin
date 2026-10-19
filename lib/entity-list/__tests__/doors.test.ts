@@ -70,7 +70,7 @@ describe("entityListDoorColumnId", () => {
     ).toBe("title");
   });
 
-  it("honours an explicit column over the heuristic", () => {
+  it("honors an explicit column over the heuristic", () => {
     expect(
       entityListDoorColumnId(makeConfig({ token: "agent", column: "updated" })),
     ).toBe("updated");
@@ -120,7 +120,7 @@ describe("entityListRowHref", () => {
     ).toBe(`/workflows/${ID}`);
   });
 
-  it("honours hrefFor EXACTLY — undefined never falls through to the registry", () => {
+  it("honors hrefFor EXACTLY — undefined never falls through to the registry", () => {
     const config = makeConfig({
       token: "agent",
       hrefFor: (row) => (row.kind === "linked" ? `/custom/${row.id}` : undefined),

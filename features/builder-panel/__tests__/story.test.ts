@@ -1,6 +1,6 @@
 /**
  * The run story: steps in the order they finished, each engine's searches on one row with the exact
- * queries, a single-call step merged with its call, steps that did nothing greyed with the
+ * queries, a single-call step merged with its call, steps that did nothing grayed with the
  * definition's `ready_when`, and a derived value traced to the place in the raw response it came from.
  */
 import { buildStory, derivedFor, findInResponse } from "../story";

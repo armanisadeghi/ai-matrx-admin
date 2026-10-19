@@ -20,7 +20,7 @@ const opts = (collapsed: string[] = [], over = {}) => ({
 });
 
 describe("layoutOrgForest", () => {
-  it("centres a parent over its children, children one row below", () => {
+  it("centers a parent over its children, children one row below", () => {
     const tree = node("r", [node("a"), node("b")], null);
     const { nodes } = layoutOrgForest([tree], opts([], { stackThreshold: Infinity }));
     const byKey = Object.fromEntries(nodes.map((n) => [n.key, n]));

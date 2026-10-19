@@ -251,7 +251,7 @@ export function DenseIntake({
 /**
  * Which inputs refuse the dense two-column grid. The legacy form read a field
  * `type` ("long_text" | "file"); a served input carries a value contract and a
- * named variant instead, so the same judgement is made from those.
+ * named variant instead, so the same judgment is made from those.
  */
 function spansBothColumns(
   jsonSchema: Record<string, unknown>,

@@ -1,5 +1,5 @@
 /**
- * A topical-map read the caller cancelled (a query unmounting, a superseded read) is control flow,
+ * A topical-map read the caller canceled (a query unmounting, a superseded read) is control flow,
  * never an incident: it still rejects, but nothing reaches the Error Inspector. A failure the caller
  * did NOT cancel, or a timeout, is still captured. Live instance (2026-10-14): "readAllRows(seo.topical_map):
  * query failed — AbortError: signal is aborted without reason" was filed red.

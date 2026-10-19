@@ -354,7 +354,7 @@ export function ShareLinkDialogBody({
 }
 
 // ---------------------------------------------------------------------------
-// UrlRow — one labelled URL with copy + open-in-new-tab buttons. Built so
+// UrlRow — one labeled URL with copy + open-in-new-tab buttons. Built so
 // long URLs always truncate inside the dialog instead of overflowing.
 // ---------------------------------------------------------------------------
 

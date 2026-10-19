@@ -2,7 +2,7 @@
 //
 // The table's two convergence columns — LEAVING and ARRIVING — are per-topic
 // rollups of the page intents the workspace holds (PLAN §6 B). One page is
-// two different colours depending on whose row is being drawn, which is why
+// two different colors depending on whose row is being drawn, which is why
 // the rollup walks every topic a page touches (the topics it covers today AND
 // the topic its intent names) and asks `pageIntentTone` the same question
 // every other view asks: "how should THIS topic's row draw THIS page?".

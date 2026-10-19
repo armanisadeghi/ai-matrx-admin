@@ -7,7 +7,7 @@
  * catalog's "Use as samples for an agent…" action started writing rows into
  * it, and a sample whose material is somebody's channel is useless if the
  * screen cannot say which channel. THE DOOR LAW applies to both names printed
- * here: the Library opens at /libraries/<id>, and a single catalogued item
+ * here: the Library opens at /libraries/<id>, and a single cataloged item
  * opens at its own url.
  *
  * It renders NOTHING for every other source (captured, borrowed, bench) —

@@ -216,7 +216,7 @@ export default function SourceLibrarySettingsTab() {
             <>
                 <SettingsSubHeader
                     title="Media Source Catalog"
-                    description="How this organization catalogues Libraries, Sources and Actions."
+                    description="How this organization catalogs Libraries, Sources and Actions."
                     icon={Settings2}
                 />
                 <SettingsCallout tone="error" title="These settings are not available">
@@ -243,7 +243,7 @@ export default function SourceLibrarySettingsTab() {
         <>
             <SettingsSubHeader
                 title="Media Source Catalog"
-                description="How this organization catalogues Libraries, Sources and Actions. Every choice here applies to everyone in the organization; a Library can override it."
+                description="How this organization catalogs Libraries, Sources and Actions. Every choice here applies to everyone in the organization; a Library can override it."
                 icon={Settings2}
             />
 

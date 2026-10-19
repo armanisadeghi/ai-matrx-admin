@@ -42,7 +42,7 @@ const ORIGIN_LABELS: Record<OriginClass, string> = {
 // Stable per-class colors: a class keeps its color across the cx-dashboard
 // chart and the per-user table, so the eye can carry meaning between the two.
 // Trust descends warm→cool: human is the signal color, machine lanes are muted,
-// unknown is deliberately grey so it never looks like a finding.
+// unknown is deliberately gray so it never looks like a finding.
 const ORIGIN_COLORS: Record<OriginClass, string> = {
   human: "hsl(215, 70%, 55%)",
   client_auto: "hsl(190, 70%, 45%)",
@@ -64,7 +64,7 @@ export function originClassLabel(value: string | null | undefined): string {
   return isKnown(value) ? ORIGIN_LABELS[value] : value;
 }
 
-/** Stable chart/legend color; anything unrecognized falls back to the unknown grey. */
+/** Stable chart/legend color; anything unrecognized falls back to the unknown gray. */
 export function originClassColor(value: string | null | undefined): string {
   if (!value) return ORIGIN_COLORS.unknown;
   return isKnown(value) ? ORIGIN_COLORS[value] : ORIGIN_COLORS.unknown;

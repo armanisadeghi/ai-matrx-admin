@@ -893,10 +893,10 @@ export async function cancelInvitation(
 ): Promise<OperationResult> {
   const result = await invitationsService.revoke(invitationId);
   if (isRecordsErr(result)) {
-    console.error("Error cancelling invitation:", result.error.message);
+    console.error("Error canceling invitation:", result.error.message);
     return { success: false, error: result.error.message };
   }
-  return { success: true, message: "Invitation cancelled successfully" };
+  return { success: true, message: "Invitation canceled successfully" };
 }
 
 /**

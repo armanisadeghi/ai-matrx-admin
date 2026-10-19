@@ -56,7 +56,7 @@ function queryString(params: Record<string, string | number | boolean | undefine
 
 /**
  * WHAT YOU CAN DROP HERE — always from the server, never a hardcoded list.
- * The unreadable half is part of the answer: a format we recognise and cannot
+ * The unreadable half is part of the answer: a format we recognize and cannot
  * read ships its own `block` sentence so dropping one is never "unknown file".
  */
 export async function fetchExportAdapters(

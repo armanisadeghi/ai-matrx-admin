@@ -1,7 +1,7 @@
 /** @jest-environment node */
 // REVIEW-PAYMENTS I4: the form and booking pages say "paid" only when the server read a paid payment
 // for THIS subject. ?payment=paid typed into the address bar, or a pid of another page's payment,
-// shows nothing. A cancelled return offers Pay again for the payment's own record (I7).
+// shows nothing. A canceled return offers Pay again for the payment's own record (I7).
 
 jest.mock("server-only", () => ({}));
 const verifiedReturn = jest.fn();
@@ -37,7 +37,7 @@ describe("payment notice is read on the server", () => {
     expect((await paymentNoticeFor(SUBJECT, { payment: "cancelled", pid: PID }, "/b/x"))?.outcome).toBe("paid");
   });
 
-  it("cancelled offers Pay again for the payment's own record", async () => {
+  it("canceled offers Pay again for the payment's own record", async () => {
     verifiedReturn.mockResolvedValue({ status: "pending", recordId: REC });
     const n = await paymentNoticeFor(SUBJECT, { payment: "cancelled", pid: PID }, "/b/x");
     expect(n).toEqual({ outcome: "cancelled", retry: { subjectId: SUBJECT, recordId: REC, back: "/b/x" } });

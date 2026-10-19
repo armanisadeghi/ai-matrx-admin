@@ -83,7 +83,7 @@ function bareNames(text) {
   return { textarea, field };
 }
 
-/** The opening tag's text starting at `start` (the "<"), honouring {…} and quoted attribute values. */
+/** The opening tag's text starting at `start` (the "<"), honoring {…} and quoted attribute values. */
 function tagText(text, start) {
   let depth = 0;
   let quote = null;

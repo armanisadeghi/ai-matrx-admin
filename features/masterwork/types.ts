@@ -730,7 +730,7 @@ export interface RulebookRule {
  * The wall it closes: the decision fields were added beside the prose fields as
  * a second, parallel set of state. They were absent from the draft snapshot,
  * from the draft restore, and from the open/reset effect, so Cancel-then-reopen
- * kept a cancelled toggle and a later Save silently converted or stripped a
+ * kept a canceled toggle and a later Save silently converted or stripped a
  * policy rule (Bugbot, c016fe96). A field that rides this set cannot be
  * forgotten by one consumer and remembered by another.
  *

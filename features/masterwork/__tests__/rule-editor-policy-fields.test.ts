@@ -6,7 +6,7 @@
  * set of state beside the prose. They were missing from the draft snapshot,
  * from the draft restore, from the open/reset effect, and from the
  * context-menu's hand-written list of replaceable field ids (Bugbot on
- * c016fe96). So Cancel-then-reopen kept a cancelled toggle, a later Save
+ * c016fe96). So Cancel-then-reopen kept a canceled toggle, a later Save
  * silently converted or stripped a policy rule, and a replacement inside a
  * decision field threw.
  *
@@ -54,7 +54,7 @@ describe("the rule editor's form values", () => {
     expect(SAVED.risk).toBe("medium");
   });
 
-  it("reopening after Cancel restores the SAVED policy state, not the cancelled edit", () => {
+  it("reopening after Cancel restores the SAVED policy state, not the canceled edit", () => {
     // The Expert turns the decision shape off and rewrites the next action…
     const edited = mergeRuleFieldValues(SAVED, {
       isPolicy: false,

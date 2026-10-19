@@ -15,7 +15,7 @@
  *
  *   A. CENSUS (static, catches a sibling with no data yet): no `public.*_list_scoped` body may carry
  *      a literal `false, 'org'` arm.
- *   B. BEHAVIOUR (the real seat): as admin@admin.com, every orgs-lane row whose owner column is the
+ *   B. BEHAVIOR (the real seat): as admin@admin.com, every orgs-lane row whose owner column is the
  *      viewer must come back `is_owner = true`, for every list function that has a `mine` lane.
  *   C. PUBLIC LANE: inside a transaction that is ALWAYS rolled back, one of admin@admin.com's own
  *      agents and workflows gets a public card; as test@test.com the Public lane must then list it.
@@ -83,7 +83,7 @@ async function main(): Promise<number> {
       ]);
     };
 
-    // ── B. behaviour, from admin's seat ──────────────────────────────────────────────────────
+    // ── B. behavior, from admin's seat ──────────────────────────────────────────────────────
     let ownRowsSeen = 0;
     for (const l of LISTS) {
       await db.query("begin");

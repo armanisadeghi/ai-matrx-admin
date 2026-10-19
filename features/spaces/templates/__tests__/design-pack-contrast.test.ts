@@ -1,5 +1,5 @@
 // Every design pack (the Design system board SP0363 and the ten starters from build-design-starters.py):
-// seeded text colours read at 4.5:1 on their ground and Lines colours (border, input, ring) at 3:1, in light
+// seeded text colors read at 4.5:1 on their ground and Lines colors (border, input, ring) at 3:1, in light
 // AND dark; every pack carries the one token vocabulary; the typed designProfile is validated.
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -47,7 +47,7 @@ describe("design packs", () => {
     expect(p.designProfile).toBeDefined();
   });
 
-  it("refuses a hint colour too faint on its ground in light", () => {
+  it("refuses a hint color too faint on its ground in light", () => {
     const p = load("design-starter-near-blank.pack.json");
     setColor(p, "muted-foreground", { light: "#b0b0b0", dark: "#a3a3a3" });
     expect(contrastFindings(p).map((f) => f.says)).toEqual([expect.stringMatching(/"muted-foreground" on "muted" reads at .*:1 in light/)]);
@@ -64,10 +64,10 @@ describe("design packs", () => {
     setColor(p, "input", { light: "#8a8a8a", dark: "#858585" }); // ~3.4:1 on white: fine for a line
     expect(contrastFindings(p)).toEqual([]);
     setColor(p, "input", { light: "#b5b5b5", dark: "#858585" }); // ~2:1: refused
-    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a Lines colour reaches 3:1/);
+    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a Lines color reaches 3:1/);
   });
 
-  it("refuses a design profile with an unknown mood or a bad colour", () => {
+  it("refuses a design profile with an unknown mood or a bad color", () => {
     const p = load("design-starter-calm-neutral.pack.json");
     p.designProfile = { ...p.designProfile, mood: ["sparkly"], primary: { light: "blue", dark: "#000000" } };
     const at = checkPack(p).map((f) => f.at);

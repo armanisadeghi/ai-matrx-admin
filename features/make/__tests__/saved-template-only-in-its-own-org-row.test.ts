@@ -42,7 +42,7 @@ const CARDS = [
   card("BRENNAN-1", "org", BRENNAN, "Client intake"),
 ];
 
-it("the row asks the catalogue door for the active organization's own templates only", () => {
+it("the row asks the catalog door for the active organization's own templates only", () => {
   expect(orgRowFilter(CEDAR)).toMatchObject({ scope: "org", organization_id: CEDAR, installed_in: CEDAR });
 });
 

@@ -39,7 +39,7 @@ function entry(
   };
 }
 
-describe("live chat connector catalogue", () => {
+describe("live chat connector catalog", () => {
   it("admits a live remote OAuth provider", () => {
     expect(
       isLiveChatMcpConnector(entry({ slug: "slack", name: "Slack" })),
@@ -121,7 +121,7 @@ describe("live chat connector catalogue", () => {
     expect(definitions.find(({ id }) => id === "custom")?.logo).toBeUndefined();
   });
 
-  it("tries the brand glyph, Google's 128px site icon, catalogue art, then the raw favicon", () => {
+  it("tries the brand glyph, Google's 128px site icon, catalog art, then the raw favicon", () => {
     const definitions = buildLiveConnectorDefinitions([
       entry({
         slug: "datadog",

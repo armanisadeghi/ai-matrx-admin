@@ -1,7 +1,7 @@
 // features/applets-host/builder/build-applet.ts — the data half of building an Applet by talking.
 //
 // THE PIPE (BUILD-LOOP §4; no second path):
-//   1. the catalogue is read AS HER (`@ai-matrx/applets/catalogue`) — her tables, fields, sample rows,
+//   1. the catalog is read AS HER (`@ai-matrx/applets/catalogue`) — her tables, fields, sample rows,
 //      the jobs that fit her sentence — so the builder copies ids, never guesses them;
 //   2. the mandate `applets.build` answers ONE whole Applet; a fix round is the next turn of the same conversation
 //      record; whoever holds the mandate owns its quality — this file writes no instruction;

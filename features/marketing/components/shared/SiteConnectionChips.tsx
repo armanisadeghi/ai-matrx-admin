@@ -131,7 +131,7 @@ export function SiteIdentityMark({
   className?: string;
 }) {
   const [failed, setFailed] = useState<Record<string, true>>({});
-  // A logo the tile's own colour swallows (a grey mark on the dark theme: MKT-048) gets a tile that shows it.
+  // A logo the tile's own color swallows (a gray mark on the dark theme: MKT-048) gets a tile that shows it.
   const [shade, setShade] = useState<Record<string, "light" | "dark">>({});
   const ordered =
     prefer === "logo"

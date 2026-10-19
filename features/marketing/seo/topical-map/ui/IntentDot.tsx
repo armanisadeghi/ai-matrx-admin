@@ -3,7 +3,7 @@
 /**
  * features/marketing/seo/topical-map/ui/IntentDot.tsx — the convergence dot.
  *
- * ONE dot answers "where is this page going", and its colour comes from the
+ * ONE dot answers "where is this page going", and its color comes from the
  * org's `intent_colors` knob, never from this file's taste.
  *
  * `on_no_topic` and `intent_topic_hidden` are ROUND 22's honest states and have

@@ -15,7 +15,7 @@ uploads them. Champions: TubeBuddy and vidIQ for the check; the GA panel next
 door for the delta.
 
 It is NOT the research corpus. `research.youtube_video` (3,065 rows, token
-`youtube_video`) is any video we have ever analysed; this feature is
+`youtube_video`) is any video we have ever analyzed; this feature is
 `web.youtube_video` (token `web_youtube_video`) — the channel the organization
 owns, authorized by a `users.integration_connection_resources` row.
 

@@ -14,7 +14,7 @@
  * from ground-truth verdicts", and these rows are those verdicts.
  *
  * Unsaved battles have no set id. That is stated on screen rather than
- * pretending a verdict was kept — a judgement that silently evaporates is
+ * pretending a verdict was kept — a judgment that silently evaporates is
  * worse than no verdict column at all.
  */
 

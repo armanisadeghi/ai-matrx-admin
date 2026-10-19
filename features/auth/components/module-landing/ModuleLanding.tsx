@@ -276,7 +276,7 @@ export function ModuleLanding({
               </p>
             )}
           </div>
-          {/* One card sits centred at a card's width — never one card left-aligned in a row of three (audit9 G3). */}
+          {/* One card sits centered at a card's width — never one card left-aligned in a row of three (audit9 G3). */}
           <div
             className={cn(
               "grid grid-cols-1 gap-4 sm:gap-6",

@@ -1,7 +1,7 @@
 # Pattern Patrol P2 — Inventory Law
 
-**Run:** 2026-08-30 ERADICATION, ranked catalogue item 12 (America/Los_Angeles)
-**Authority:** Tier C/R catalogue plus one bounded standing-authority adoption batch
+**Run:** 2026-08-30 ERADICATION, ranked catalog item 12 (America/Los_Angeles)
+**Authority:** Tier C/R catalog plus one bounded standing-authority adoption batch
 **Base:** `bb330ff93d2561da4edd9d3c5b5aa43f1032c114`
 **Candidate:** `478fc4a234136bdf2c5d938bf90b704335c6cf96`
 **Certification:** **CERTIFIED** — independent exact-candidate archive proof
@@ -29,7 +29,7 @@
   Browser runtime was unavailable; the canonical preview lease remained
   healthy, so this infrastructure limit did not reject a batch with no concrete
   defect.
-- **28 prior catalogue units remain** after closing ranked action-authority item
+- **28 prior catalog units remain** after closing ranked action-authority item
   12. The prior `/marketing/sites` conversion remains delivered in
   `v0.4.1495`; this Content Plan adoption first shipped in existing release
   `v0.4.1499`.
@@ -44,15 +44,15 @@
 - **4 detector-verified findings this run:** two bounded canonical-agent-door repairs, one blind-comparison product decision, and one skill-resource item blocked on missing populated evidence.
 - **2 fixed in this run:** the summary sub-agent in `ContextPolicyDetailSheet` and selected agent in `SurfaceAgentBindPanel` now use canonical `EntityRef` doors. Both preserve the current work by opening the label in a new tab and expose the registered agent peek.
 - `pnpm check:dead-ends --rule=no-doors-in-file`: **9 → 7**; both changed files cleared. The remaining seven alerts are two verified findings plus five reverified false positives.
-- **30 open catalogue units:** 2 detector findings + 28 manual conversions (8 list-shell, 9 action-authority, 4 peek/window, 7 assist-adoption tasks).
+- **30 open catalog units:** 2 detector findings + 28 manual conversions (8 list-shell, 9 action-authority, 4 peek/window, 7 assist-adoption tasks).
 - **3 total delivered repairs across P2:** the prior Master Input repair plus this run's two certified agent-door repairs. The permanent record was reconciled to `delivered` on 2026-08-29; no redundant release was created.
 - `pnpm check:reuse-index` exits zero but loudly reports four stale Primitives Index paths (`services/message_templates`, its FEATURE, `services/outreach_single_send`, and its FEATURE). This is baseline documentation debt, not P2 product evidence.
 - **Only genuine product decision:** after a comparison is revealed, should each agent name in the comparison header become a canonical new-tab agent door? Blind mode must keep every identity-bearing link, title, peek control, and accessible label out of the DOM.
-- No exception was proposed or approved. The skill-resource and architectural catalogue items are evidence/machinery work, not product decisions.
+- No exception was proposed or approved. The skill-resource and architectural catalog items are evidence/machinery work, not product decisions.
 
 ## Prior delivered repair — 2026-08-12
 
-Arman approved a narrow repair attempt based on two concrete examples rather than approving the full catalogue.
+Arman approved a narrow repair attempt based on two concrete examples rather than approving the full catalog.
 
 1. **Master Input agent labels:** verified as a real dead end. The attempted repair used the canonical `EntityRef` with a new-tab route, preserved inert unconfigured columns, and deliberately disabled Quick Look after the shared preview action failed inside the floating window. Focused ESLint, `git diff --check`, `pnpm type-check`, and the dead-end detector passed in the primary run; the detector removed this file from its findings.
 2. **Skill resource filenames:** excluded before shipping. A live read of `platform.associations` found zero `code_file` → `skill` resource rows, so there was no populated user surface on which to prove the change was useful and behavior-preserving. The experimental change was fully reverted.
@@ -104,7 +104,7 @@ Weekly structural-novelty scope plus a full detector pass:
 - the Primitives Index against live importer counts;
 - the standing inventory worklist, reverified against current source rather than trusted as fact;
 - hand-rolled list shells, action registries, preview/window paths, and assist adoption;
-- the open P2 ledger entry and every previously routed catalogue unit;
+- the open P2 ledger entry and every previously routed catalog unit;
 - the prior P2 report, permanent lifecycle projection, and automation memory.
 
 ## Mechanical detector triage
@@ -149,10 +149,10 @@ Stale worklist claims closed during triage:
 - `useListViewPrefs` has no surviving hand-rolled list-style localStorage copies in the four named surfaces.
 - the seven `features/overlays/openers/*Window` files are canonical re-export/controller façades over the hand-written window hooks, not rival implementations; do not delete them as duplicates.
 - `DocumentSearch` now has a real new-tab Knowledge Search door, and `OverlayErrorFallback` now has canonical Copy/Copy-for-AI controls. Those old worklist claims are not findings.
-- `/notes` is not a missing list: its route page intentionally returns `null` because the route layout renders `NotesRouteBody` and the complete `NotesView`. The prior catalogue item was factually wrong and is removed.
+- `/notes` is not a missing list: its route page intentionally returns `null` because the route layout renders `NotesRouteBody` and the complete `NotesView`. The prior catalog item was factually wrong and is removed.
 - zero-import overlays are not automatically “dead residue.” Under the Unfinished Work Alarm they route to the `check:unwired` finish-the-wiring workflow unless Arman explicitly retires them. The prior deletion item was doctrinally invalid and is removed from P2.
 
-## Ranked manual catalogue and conversion prompts
+## Ranked manual catalog and conversion prompts
 
 Each numbered item is one Tier-C task unit. Do not combine ranks into a big-bang refactor. Any implementation must invoke the relevant named skill and receive adversarial certification before shipping.
 
@@ -207,11 +207,11 @@ Compared the exact route and top-level feature inventories at the prior baseline
 - Current route groups: `(admin)` 182, `(auth-pages)` 6, `(core)` 555, `(dev)` 234, `(oauth-review)` 1, `(popup)` 1, `(public)` 44, `(transitional)` 26, non-grouped 8.
 - The prior report's feature hash was not reproducible because its recipe did not read the `features` tree object correctly. The reproducible prior count is still 121, with sorted hash `55eb39f6c3ec0c300fe39d18884dde94665eee90e99d92b1527959b2ee998c7b` from `git ls-tree -d --name-only <sha>:features | sort`.
 
-Structural surface-signature review found no new clearly poorer duplicate outside the existing catalogue. The added feature set contains strong canonical adoption: `ai-work`, `masterwork`, and `vision-interview` consume `EntityListPage`; `change-policy` and `workflow-runtime` consume `MatrxDataTable`; `access-gate`, `review-walk`, `ai-work`, and `masterwork` consume canonical entity doors; `masterwork` also consumes assists and v3 context menus. Custom tables in directive-catalog/hindsight are comparison or aggregate displays rather than interchangeable entity lists.
+Structural surface-signature review found no new clearly poorer duplicate outside the existing catalog. The added feature set contains strong canonical adoption: `ai-work`, `masterwork`, and `vision-interview` consume `EntityListPage`; `change-policy` and `workflow-runtime` consume `MatrxDataTable`; `access-gate`, `review-walk`, `ai-work`, and `masterwork` consume canonical entity doors; `masterwork` also consumes assists and v3 context menus. Custom tables in directive-catalog/hindsight are comparison or aggregate displays rather than interchangeable entity lists.
 
 ## Loop health and candidates
 
-- This is the second scheduled P2 pass. The patrol still has 30 routed catalogue units, so retain the weekly cadence.
+- This is the second scheduled P2 pass. The patrol still has 30 routed catalog units, so retain the weekly cadence.
 - The two unambiguous canonical-door repairs executed under standing authority and certified. The remaining detector findings are correctly separated into one genuine product decision and one missing-evidence task rather than a generic report-only bucket.
 - No new patrol candidate was nominated. The recurring classes found here are already P2 Inventory Law classes, and the hydration-mount-gate candidate was already nominated in the ledger on 2026-08-09.
 - **Recursive learning:** structural baselines must store the exact feature-list reconstruction command (`git ls-tree <sha>:features`) rather than only a count/hash; the previous hash was not reproducible even though its count was right.

@@ -225,7 +225,7 @@ async function main() {
       key: "status",
       label: "Status",
       parity_type: "select",
-      options: ["Scheduled", "Completed", "Cancelled"],
+      options: ["Scheduled", "Completed", "Canceled"],
     });
     log("field_declare(pickups.status choice)", !f4.error, f4.error || {});
     const f5 = await declareField(r.data, { key: "service_fee_usd", label: "Service Fee", parity_type: "currency" });

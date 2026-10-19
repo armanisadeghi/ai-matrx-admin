@@ -180,7 +180,7 @@ beforeEach(() => {
   // A faithful stand-in for the write: the row that comes back is the row
   // that was sent, with the version bumped — exactly what the CAS does. A
   // receipt that echoed the OLD row would make the reducer settle the note
-  // back to its pre-move values, which is a different (real) behaviour and
+  // back to its pre-move values, which is a different (real) behavior and
   // not the one these tests are about.
   persistNoteUpdate.mockImplementation(
     async (id: string, updates: Record<string, unknown>) => ({

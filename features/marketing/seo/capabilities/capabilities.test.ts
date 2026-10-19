@@ -11,7 +11,7 @@ describe("siteSeoCapabilities", () => {
     }
   });
 
-  it("distinguishes snapshot, catalogue, and provider systems", () => {
+  it("distinguishes snapshot, catalog, and provider systems", () => {
     expect(new Set(capabilities.map((item) => item.group))).toEqual(
       new Set(["snapshot", "catalogue", "provider"]),
     );

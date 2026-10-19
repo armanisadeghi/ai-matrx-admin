@@ -85,7 +85,7 @@ describe("the engine's prose never becomes the sentence", () => {
     expect(new Set(sentences).size).toBe(4);
   });
 
-  it("says a cancelled statement changed nothing, because it rolled back", () => {
+  it("says a canceled statement changed nothing, because it rolled back", () => {
     const failure = describeFailure(THE_WALL, {
       action: "loading the ways to get started",
     });
@@ -110,7 +110,7 @@ describe("the engine's prose never becomes the sentence", () => {
     }
   });
 
-  it("recognises the engine's phrasing when the SQLSTATE was lost on the way", () => {
+  it("recognizes the engine's phrasing when the SQLSTATE was lost on the way", () => {
     // A message that was stringified into a plain Error somewhere upstream.
     const stringified = new Error(
       "canceling statement due to statement timeout",

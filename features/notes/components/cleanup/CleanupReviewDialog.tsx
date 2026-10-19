@@ -4,7 +4,7 @@
 // Leads with the actual changes as plain-language cards (each with real
 // Now -> After examples and an Apply/Skip switch), then tucks protected
 // sections + details below. Apply re-runs the real engine with only the
-// accepted operations (auto-versions); cancelling changes nothing.
+// accepted operations (auto-versions); canceling changes nothing.
 
 import { useState } from "react";
 import {

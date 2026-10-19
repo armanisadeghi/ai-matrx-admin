@@ -7,7 +7,7 @@
  * 2026-09-27). Below 768px a record title lost ~200px to two overflow buttons —
  * the page's own "…" (RouteHeader's fold) and the shell's ⋮ — and
  * "Lankanewspapers.com Local" was cut to "La…". Now the shell's ⋮ sheet hosts
- * the page's actions as a labelled section at its top, and `RouteHeader`
+ * the page's actions as a labeled section at its top, and `RouteHeader`
  * renders none in the row. Pages declare their actions exactly as before.
  *
  * HOW, without losing a single action's React context: the sheet owns a

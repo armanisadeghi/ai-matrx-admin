@@ -675,7 +675,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * re-reading `site_theme_config` still shows the old value — the editor is
  * ahead of the read twin until the human saves.
  *
- * ONE-CARD-AT-A-TIME (pre-existing page behaviour, observed in verification).
+ * ONE-CARD-AT-A-TIME (pre-existing page behavior, observed in verification).
  * Each section saves independently and then calls `refreshSite()`, and
  * `SiteAdvancedSettings` deliberately remounts its sections on the new
  * `site.updated_at` "so drafts re-seed from truth". The consequence for a
@@ -683,7 +683,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * each card in turn persisted only the FIRST — the refresh re-seeded the other
  * cards from the saved row and discarded what was staged there. Each target
  * persists correctly when staged and saved on its own. This is the settings
- * page's existing behaviour (a human editing two cards at once loses the same
+ * page's existing behavior (a human editing two cards at once loses the same
  * work), not something the write targets introduced, but write targets make it
  * far easier to hit, so the intro tells agents to warn the user.
  */

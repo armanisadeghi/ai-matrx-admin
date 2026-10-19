@@ -4,7 +4,7 @@
  *
  * The door is fixed — `POST /brand-assists/{brandId}/run` — so a ledger row
  * can only name a brand and an assist id, never an address. The server runs
- * the job through the capability that already owns the data (colours and
+ * the job through the capability that already owns the data (colors and
  * fonts → brand assets as unconfirmed suggestions; search volume → keyword
  * market; who ranks → the site's brand search), so the result lives on after
  * the chip is gone. The returned result is the row's receipt (`result`), and
@@ -33,7 +33,7 @@ export const brandAssistAction: AssistActionDefinition = {
   label: "Run brand assist",
   kind: "brand_assist",
   description:
-    "Run one priced, pre-filled job that enriches one brand and lands its result in the brand's normal home.",
+    "Run one pre-filled job that enriches one brand and lands its result in the brand's normal home.",
   handler: async (assist, ctx): Promise<AssistActionResult> => {
     const action = assist.action;
     if (action.kind !== "brand_assist") {

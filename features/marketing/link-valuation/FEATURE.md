@@ -51,13 +51,13 @@ arguable.
 
 ## What changed from the 2018 sheet, and why
 
-Each of these is a knob, not a rewrite — `sheet-2018` still reproduces the old behaviour exactly.
+Each of these is a knob, not a rewrite — `sheet-2018` still reproduces the old behavior exactly.
 
 1. **Correlated inputs collapse into composites.** The original summed seven authority metrics as
    though they were seven independent opinions; 52% of a domain's positive points came from one
    fact measured seven ways. They are now members of one group averaged over whatever arrived, so an
    extra source raises confidence rather than score.
-2. **Every signal normalises to 0–100 before weighting** — which is what makes a source swappable,
+2. **Every signal normalizes to 0–100 before weighting** — which is what makes a source swappable,
    and removes the index-size trap (global rank enters as a percentile, never a raw ordinal).
 3. **Placement promises left the relevance score.** Social amplification and feature placement are
    things a publisher agreed to do, not facts about topical fit. In the source's own worked example
@@ -65,7 +65,7 @@ Each of these is a knob, not a rewrite — `sheet-2018` still reproduces the old
 4. **Page authority left the relevance score** for the same reason — another 43% of that number.
    Between them, 97% of that example's "Relevance Score" came from non-relevance inputs, while both
    topical fields read "No Relevance".
-5. **AI carries the judgements nobody could buy in 2018** — topical match, editorial quality,
+5. **AI carries the judgments nobody could buy in 2018** — topical match, editorial quality,
    outbound-link hygiene, author credibility, link-selling risk.
 6. **Hard gates exist.** §1.2 of the source promised bad domains were "rejected"; no tab
    implemented it.

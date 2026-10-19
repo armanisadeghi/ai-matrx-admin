@@ -136,7 +136,7 @@ export function parseMemorySnapshot(text: string | null | undefined): MemorySnap
 const gb = (n: number): string => `${Math.round(n)} GB`;
 
 /**
- * THE MEMORY JUDGEMENT. Deterministic: the clock is an argument.
+ * THE MEMORY JUDGMENT. Deterministic: the clock is an argument.
  *   shed     — macOS pressure warn/critical, free memory under the shed line, or the preview at/over its shed size
  *   headroom — normal pressure, free memory at/over the admit line, preview under its admit size: a burst slot may open
  *   tight    — in between: no new burst slot, nobody shed (hysteresis)

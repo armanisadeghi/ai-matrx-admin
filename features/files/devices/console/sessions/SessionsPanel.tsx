@@ -7,7 +7,7 @@
  * bones); wide: the list beside the chat. The open chat lives in the URL (?s=<target>).
  *
  * Everything goes to the computer through the device protocol client (`createDesktopProtocolTransport`);
- * the agent catalogue is read here as the same person, so the picker is the Mac's picker.
+ * the agent catalog is read here as the same person, so the picker is the Mac's picker.
  */
 
 "use client";

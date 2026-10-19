@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "25a251542f13";
+export const KIND_REGISTRY_FINGERPRINT = "0c07d17678cc";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -30539,7 +30539,7 @@ export interface HttpResponse {
  * node's output. On resume, the scheduler populates this model from the
  * resume payload.
  *  *
- *  * Kind `human_answer` (registry v9).
+ *  * Kind `human_answer` (registry v10).
  */
 export interface HumanAnswer {
   /**
@@ -30560,6 +30560,16 @@ export interface HumanAnswer {
     __kind?: string;
     [key: string]: JsonValue | string | undefined;
   };
+  /**
+   * Decision preset only: every item of the gate joined with the person's verdict and settled value, plus the write target the AUTHOR declared. Built by the engine from the durable checkpoint on resume — never client-authored.
+   */
+  decision?: ({
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+    [key: string]: JsonValue | string | undefined;
+  })[] | null;
   /**
    * WHO decided — the person who was asked, or the fallback that decided for them once the deadline passed. Stamped by the engine on resume; never author-supplied, never client-supplied. Travels downstream with the answer so any surface can show a user that an agent decided because nobody answered in time.
    */
@@ -61066,10 +61076,14 @@ export interface WebPageHead {
 /**
  * Several pages as read, each once, in the order they were read.
  *  *
- *  * Kind `web_page_list` (registry v2).
+ *  * Kind `web_page_list` (registry v3).
  */
 export interface WebPageList {
   items?: WebPageRow[];
+  /**
+   * How many pages of this set exist when ``items`` holds only the first few; absent when ``items`` is the whole set.
+   */
+  total?: number | null;
   /**
    * The registered kind this payload is an instance of.
    */

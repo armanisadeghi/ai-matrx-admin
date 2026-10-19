@@ -45,7 +45,7 @@ export function colorForKind(kind: string): string {
 }
 
 // ── Hierarchy / tier palette ────────────────────────────────────────────────
-// Colour nodes by their depth in each cluster's tree: the "top" of a cluster
+// Color nodes by their depth in each cluster's tree: the "top" of a cluster
 // (a local importance peak — tier 0) down through the tiers it links to. A
 // sequential, ordered ramp so the level reads at a glance: deep/cool = top,
 // muted slate = deepest. Index by tier, clamped to the last bucket (5+).

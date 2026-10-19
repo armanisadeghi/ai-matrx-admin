@@ -319,7 +319,7 @@ that existing editor; private keys and client secrets remain outside
   the `current_component_*` set, and `data-surface-value` anchors were added to
   the rendered elements so Locate works. Both `getScope` callbacks are
   synchronous over live render state (the Surface Context window polls them
-  every 400ms). `readiness` `stub` → `partial`. No behavioural change to either
+  every 400ms). `readiness` `stub` → `partial`. No behavioral change to either
   page. The surface's standing NO on write targets was re-verified and left in
   place: `componentList` is a hardcoded in-repo array with no backing table,
   edit form, or mutation path, so the registry stays a read-only report.

@@ -1,7 +1,7 @@
 "use client";
 
 // lib/layout/usePublishPageBottomDock.ts — a page's own bottom bar or drawer tells the floating
-// chrome how tall it is. Floating chrome that honours `--page-bottom-dock-h` (the assists
+// chrome how tall it is. Floating chrome that honors `--page-bottom-dock-h` (the assists
 // launcher, the admin error badge) then rests ABOVE the bar instead of over its last control.
 // A fixed bottom drawer that never published this was covered by both (e-sign signer, a phone
 // "Accept terms" checkbox, 2026-10-07).

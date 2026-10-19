@@ -1,7 +1,7 @@
 // One map's workspace shell.
 //
 // Deliberately thin, like the content plan's site shell: it mounts the header
-// (an EntityModeHeader that portals into the shell's centre zone) once for all
+// (an EntityModeHeader that portals into the shell's center zone) once for all
 // six screens, so switching views never remounts the nav — and never puts
 // `{children}` behind unconditional vertical clipping.
 //

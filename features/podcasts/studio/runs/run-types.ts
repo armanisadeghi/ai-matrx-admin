@@ -140,7 +140,7 @@ export function livenessLabel(liveness: RunLiveness): string {
     case "draft":
       return "Draft";
     case "cancelled":
-      return "Cancelled";
+      return "Canceled";
   }
 }
 

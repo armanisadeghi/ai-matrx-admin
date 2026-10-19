@@ -3,7 +3,7 @@
  * Therapy's new-patient intake in teal with a clinic photo as its cover, and Rincon Plumbing's
  * request form in blue with no cover.
  *
- * The breaks this catches: the accent not reaching the page's primary colour (buttons and the
+ * The breaks this catches: the accent not reaching the page's primary color (buttons and the
  * progress line stay the app's blue), only `--primary` overridden (Tailwind's `--color-primary` is
  * computed at the root, so nothing changes), and a non-https cover being drawn.
  */
@@ -24,18 +24,18 @@ function style(over: Partial<PortalStyle>): PortalStyle {
   };
 }
 
-describe("a public form's colour and cover", () => {
+describe("a public form's color and cover", () => {
   it.each([
     ["teal", "hsl(175 84% 30%)"],
     ["blue", "hsl(221 83% 50%)"],
-  ] as const)("%s becomes the page's resolved primary colour", (accent, colour) => {
+  ] as const)("%s becomes the page's resolved primary color", (accent, colour) => {
     const vars = portalLook(style({ accent }), "Cedar Ridge Physical Therapy").primaryVars;
     expect(vars?.["--color-primary"]).toBe(colour);
     expect(vars?.["--color-ring"]).toBe(colour);
     expect(vars?.["--color-primary-foreground"]).toBe("hsl(0 0% 100%)");
   });
 
-  it("leaves the app's own colour when the look has none", () => {
+  it("leaves the app's own color when the look has none", () => {
     expect(portalLook(style({ accent: null }), "Cedar Ridge Physical Therapy").primaryVars).toBeNull();
   });
 

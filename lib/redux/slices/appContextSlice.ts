@@ -678,7 +678,7 @@ export const appContextPolicy = definePolicy<AppContextState>({
         return unreadable(organizationReadFailureReason(error));
       }
       if (signal.aborted) {
-        return unreadable("the organization read was cancelled before it ran");
+        return unreadable("the organization read was canceled before it ran");
       }
       if (!resolved) {
         // A genuine empty answer: no memberships. The shell offers to create one.

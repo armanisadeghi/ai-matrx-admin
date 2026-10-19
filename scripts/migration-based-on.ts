@@ -30,7 +30,7 @@
  *
  *     -- based-on: billing.plan_status(uuid) 9f3c…64 hex chars…
  *
- * The author generates it from the live catalogue with
+ * The author generates it from the live catalog with
  *
  *     pnpm db:based-on billing.plan_status
  *
@@ -467,7 +467,7 @@ export type Query = (sql: string, params?: unknown[]) => Promise<Record<string, 
 
 export interface LiveFunction {
   readonly oid: number;
-  /** `schema.name(identity args)` exactly as the catalogue spells it. */
+  /** `schema.name(identity args)` exactly as the catalog spells it. */
   readonly signature: string;
   /** SHA-256 of `pg_get_functiondef(oid)`. */
   readonly hash: string;

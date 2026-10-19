@@ -25,7 +25,7 @@ describe("the bar's counts", () => {
 });
 
 describe("numeric deltas", () => {
-  it("colours direction and strips float noise: 4.3 → 4.1 is ▼0.2", () => {
+  it("colors direction and strips float noise: 4.3 → 4.1 is ▼0.2", () => {
     expect(fieldDelta({ type: "number", before: 4.3, after: 4.1 })).toEqual({ delta: "▼0.2", direction: "down" });
     expect(fieldDelta({ type: "number", before: 4.1, after: 4.3 })).toEqual({ delta: "▲0.2", direction: "up" });
     expect(fieldDelta({ type: "number", before: 1000, after: 1250 }).direction).toBe("up");

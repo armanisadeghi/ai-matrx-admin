@@ -682,7 +682,7 @@ function safeDecode(s: string): string {
   }
 }
 
-/** Notion-flavored Markdown → Space blocks. Never fetches; unknown constructs become labelled text blocks. */
+/** Notion-flavored Markdown → Space blocks. Never fetches; unknown constructs become labeled text blocks. */
 export function notionMarkdownToBlocks(md: string, ctx: NotionMarkdownContext): NotionMarkdownResult {
   const conv = new Converter(ctx);
   const blocks = conv.parse(toLines(md), "");

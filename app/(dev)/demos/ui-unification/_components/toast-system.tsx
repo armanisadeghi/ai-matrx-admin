@@ -30,7 +30,7 @@
  * `features/agents/orchestras/components/AgentPeekButton.tsx`), loaded through
  * `next/dynamic` so the window stack stays behind the lazy boundary. The
  * window is hosted by `ToastWindowHost`, NOT inside the toast, so it outlives
- * the toast's dismissal. The static column shows a labelled mock of it.
+ * the toast's dismissal. The static column shows a labeled mock of it.
  * @registry-status: inline-window
  *
  * Layer 4 never navigates the current page: the link is an `<a

@@ -102,7 +102,7 @@ const COMPONENTS: Components = {
 
 /**
  * `urlTransform` is react-markdown's own hook for the same job. We keep it as
- * the second line of defence: the component overrides above never see a URL
+ * the second line of defense: the component overrides above never see a URL
  * this rejected, and a future element with a URL slot we did not override is
  * still covered.
  */

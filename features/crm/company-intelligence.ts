@@ -1,5 +1,5 @@
 /**
- * Company intelligence: what the live-data sources say about a company party, as short labelled
+ * Company intelligence: what the live-data sources say about a company party, as short labeled
  * facts for the record page. Pure mapping (no network): the card fetches, these functions read.
  *
  * Storage: `crm.party.attributes.company_intelligence[sourceKey]` = {@link StoredIntel}. The
@@ -151,7 +151,7 @@ function hoursSummary(rec: DataRecord): string | null {
   return null;
 }
 
-/** Display-ready facts for one source's fetched record. Empty when the record has nothing we recognise. */
+/** Display-ready facts for one source's fetched record. Empty when the record has nothing we recognize. */
 export function intelFacts(sourceKey: string, rec: DataRecord | null): IntelFact[] {
   if (!rec) return [];
   switch (sourceKey) {

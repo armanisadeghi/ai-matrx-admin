@@ -307,7 +307,7 @@ const COPY_TABLES: readonly CopyTable[] = [
      * CONSEQUENCE, stated rather than discovered at 3 a.m.: NOBODY CAN SIGN IN
      * ON THE BRANCH AS A COPIED USER — no password hash is copied AND every
      * copied row is written `banned_until` far-future, which GoTrue itself
-     * honours, so the refusal does not rest on the absence of a hash alone.
+     * honors, so the refusal does not rest on the absence of a hash alone.
      * Exactly two identities can sign in on the branch, `test@test.com` and
      * `admin@admin.com`, and they are CREATED by `mintSignInIdentities()` after
      * the copy — given their branch-only passwords from the environment — not
@@ -376,7 +376,7 @@ const COPY_TABLES: readonly CopyTable[] = [
      *   500 {"error_code":"unexpected_failure","msg":"Database error loading user"}
      * for EVERY copied identity: not "cannot sign in", which is the intent, but
      * "cannot be read at all", which is not. An empty credential is the empty
-     * string; NULL is a missing column. This normalisation runs after the copy,
+     * string; NULL is a missing column. This normalization runs after the copy,
      * is counted, and is printed.
      */
     afterCopy: {
@@ -546,7 +546,7 @@ const COPY_TABLES: readonly CopyTable[] = [
     },
   },
   /**
-   * EVERY ORGANIZATION-CONFIGURABLE BEHAVIOUR ON THE PLATFORM, and without it the
+   * EVERY ORGANIZATION-CONFIGURABLE BEHAVIOR ON THE PLATFORM, and without it the
    * rehearsal answers knob questions the real system stopped asking.
    *
    * Measured 2026-09-17: production 769 rows, the branch TEN — all ten this
@@ -957,7 +957,7 @@ interface SelfFk {
  * which was true of the tables in the set on 2026-09-16 and is a measurement, not
  * a property.
  *
- * THE FIX IS GENERAL AND DERIVED FROM THE CATALOGUE, not configured per table:
+ * THE FIX IS GENERAL AND DERIVED FROM THE CATALOG, not configured per table:
  * every VALIDATED, single-column, NULLABLE foreign key whose `conrelid` equals
  * its `confrelid` is written NULL during the copy, its `(primary key, value)`
  * pairs are kept, and one `update … from (values …)` pass per column resolves
@@ -1089,7 +1089,7 @@ async function secondaryUniquesOf(
  *
  * Their production ids are LOOKED UP (`where email = $1`, two known test
  * addresses) rather than copied, because the access graph's foreign keys point
- * at those ids and a corpus that recognised a different id would prove nothing.
+ * at those ids and a corpus that recognized a different id would prove nothing.
  *
  * 🚨 THE ADDRESSES ARE LITERALS, AND THAT IS DELIBERATE (measured 2026-09-16).
  * The first revision of this step read the address from `TEST_USER_EMAIL`,
@@ -1254,7 +1254,7 @@ const REFRESH_RUN_MIGRATION = "migrations/rehearsal/campaign_watch_refresh_run.s
  *
  * THE COMPARISON IS BY NAME AND BY DEFINITION HASH, never by count. A count
  * cannot tell "production added five doors" from "five doors changed their
- * policy and five were removed". The door's own name is its catalogue identity —
+ * policy and five were removed". The door's own name is its catalog identity —
  * `client_callable_door_catalog_identity_key` is UNIQUE on
  * (schema_name, function_name, identity_argtypes) — and its DEFINITION is the
  * policy the row states: who may call it, under what gate, with what reason.
@@ -1290,7 +1290,7 @@ const DOOR_SURFACE_SQL =
  * so twenty doors that are present on BOTH databases were reported missing from
  * the branch, and the clause failed for a reason that had nothing to do with the
  * door surface. `identity_args` is the declared argument list as TEXT — portable,
- * unique per overload, and the string an operator would recognise.
+ * unique per overload, and the string an operator would recognize.
  */
 
 /**
@@ -1777,7 +1777,7 @@ async function main(): Promise<number> {
         const { table: t, policy } = entry;
         const only = entry.columns;
         const allCols = await columnsOf(prod, t);
-        // 🚨 THE PERSONAL-DATA CENSUS, MEASURED AGAINST PRODUCTION'S CATALOGUE.
+        // 🚨 THE PERSONAL-DATA CENSUS, MEASURED AGAINST PRODUCTION'S CATALOG.
         // `identity-shell-contract.ts` judges these tables column by column out
         // of a declared list, and a declared list rots the moment production
         // grows a column — it would read green while a person's new value went
@@ -2180,7 +2180,7 @@ async function main(): Promise<number> {
         if (entry.afterCopy) {
           const res = await branch.query(entry.afterCopy.sql);
           console.log(
-            `${INFO}${entry.afterCopy.note} — ${res.rowCount ?? 0} row(s) normalised`,
+            `${INFO}${entry.afterCopy.note} — ${res.rowCount ?? 0} row(s) normalized`,
           );
         }
         if (displaced)

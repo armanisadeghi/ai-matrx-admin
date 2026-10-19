@@ -19,7 +19,7 @@ export const revalidate = 3600;
 
 // A slow or unreachable database at BUILD time must never fail the release
 // (v0.4.3266 died on a 9s restDeadline here). Pre-rendering is an
-// optimisation: with dynamicParams every slug still renders on demand, and the
+// optimization: with dynamicParams every slug still renders on demand, and the
 // request-time read keeps its loud throw. So the build screams and continues.
 export async function generateStaticParams(): Promise<{ slug: string[] }[]> {
   try {

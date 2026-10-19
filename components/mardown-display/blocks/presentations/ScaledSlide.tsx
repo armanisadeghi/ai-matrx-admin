@@ -10,7 +10,7 @@ export const SLIDE_STAGE = { width: 960, height: 540 } as const;
  * A slide laid out at one fixed 16:9 stage and scaled to fit its box, keeping
  * the aspect ratio — so a narrow canvas pane shows the same slide, smaller,
  * instead of reflowing its text until it overflows. The box is whatever the
- * parent gives it (`className`); the stage is centred inside it.
+ * parent gives it (`className`); the stage is centered inside it.
  */
 export function ScaledSlide({
   children,

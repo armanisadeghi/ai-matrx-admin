@@ -443,7 +443,7 @@ export default async function FeatureAdminPage({ map }: FeatureAdminPageProps) {
                     <ResourceRow
                       key={entry.overlayId}
                       title={entry.overlayId}
-                      label="(missing from catalogue)"
+                      label="(missing from catalog)"
                       status="Deprecated"
                     />
                   );

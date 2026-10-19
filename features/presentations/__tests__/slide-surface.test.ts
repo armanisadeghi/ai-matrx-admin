@@ -1,7 +1,7 @@
 /**
- * The deck's theme decides the slide's colours everywhere. The editor canvas pins CSS tokens from
+ * The deck's theme decides the slide's colors everywhere. The editor canvas pins CSS tokens from
  * `slidePaperStyle`; the HTML, PPTX and PDF exports read the surface resolver directly. These tests
- * resolve BOTH sides for every preset and require the same colours — and prove the check can fail.
+ * resolve BOTH sides for every preset and require the same colors — and prove the check can fail.
  */
 
 import { PRESET_LIST, resolveDeckTheme } from "@/components/mardown-display/blocks/presentations/presets";
@@ -41,14 +41,14 @@ describe.each(PRESET_LIST.map((p) => p.key))("preset %s", (key) => {
   const theme = { preset: key };
   const surface = slideSurface(resolveDeckTheme(theme));
 
-  it("editor canvas page colour === HTML export page colour", () => {
+  it("editor canvas page color === HTML export page color", () => {
     const style = slidePaperStyle({ theme }) as Record<string, string>;
     expect(style["--card"]).toBe(hexToHslTriplet(surface.background));
     const html = generatePresentationHTML({ slides, theme });
     expect(html).toContain(`background: ${surface.background};`);
   });
 
-  it("editor canvas page colour === PPTX slide background, and body text matches", async () => {
+  it("editor canvas page color === PPTX slide background, and body text matches", async () => {
     pptxCalls.length = 0;
     await exportToPowerPoint({ slides, theme }, { returnBlob: true });
     const style = slidePaperStyle({ theme }) as Record<string, string>;

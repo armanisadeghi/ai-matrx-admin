@@ -255,7 +255,7 @@ function RepoCard({ repo }: { repo: MandateReferenceBoardRepo }) {
  *  * show an empty table when the numbers are simply unreadable. A scheduler
  *    outage says so in red.
  */
-function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
+export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
   const { unit, rate: costRate, format: formatCostDisplay } = useCostDisplay();
   const runColumns: MatrxColumnDef<MandatePatrolRun>[] = [
     {
@@ -312,6 +312,7 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
     },
     {
       id: "cpu",
+      hidden: true,
       header: "CPU",
       align: "right",
       accessorFn: (run) => run.cpu_seconds ?? -1,
@@ -357,7 +358,7 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         </span>
       ),
     },
-    { id: "rows", header: "Rows", align: "right", accessorFn: (run) => run.rows_submitted ?? -1, filter: "number", width: 80, cell: (run) => run.rows_submitted ?? "—" },
+    { id: "rows", hidden: true, header: "Rows", align: "right", accessorFn: (run) => run.rows_submitted ?? -1, filter: "number", width: 80, cell: (run) => run.rows_submitted ?? "—" },
     {
       id: "filed",
       header: "Filed",
@@ -382,9 +383,10 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         );
       },
     },
-    { id: "resolved", header: "Resolved", align: "right", accessorFn: (run) => run.error_rows_resolved ?? -1, filter: "number", width: 90, cell: (run) => run.error_rows_resolved ?? "—" },
+    { id: "resolved", hidden: true, header: "Resolved", align: "right", accessorFn: (run) => run.error_rows_resolved ?? -1, filter: "number", width: 90, cell: (run) => run.error_rows_resolved ?? "—" },
     {
       id: "clone",
+      hidden: true,
       header: "Clone",
       align: "right",
       accessorFn: (run) => run.git_clone_bytes ?? -1,
@@ -509,7 +511,12 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
               ? "No run recorded yet. The first one appears here after the next due time."
               : "The patrol is disabled, so there are no runs and nothing re-scans on its own.",
         }}
-        detail={{ enabled: false }}
+        window={{
+          title: (run) => `Patrol run · ${run.started_at ?? run.due_at ?? "unscheduled"}`,
+          renderEdit: false,
+          defaultTab: "view",
+        }}
+        paginationLabelFormat={(_start, _end, total) => `Latest ${total} of ${patrol.runs_counted} runs`}
         copy={{
           label: "Mandate patrol runs",
           location: "Mandate Reference Board, patrol runs",

@@ -905,7 +905,7 @@ export interface SaveGuard {
   /**
    * The document this tab last knew the stored board to hold. With it, a board another tab
    * changed is MERGED per tile (`mergeBoardDocuments`) and saved, never refused; without it the
-   * old behaviour stands (a conflict).
+   * old behavior stands (a conflict).
    */
   base?: BoardDocument;
 }

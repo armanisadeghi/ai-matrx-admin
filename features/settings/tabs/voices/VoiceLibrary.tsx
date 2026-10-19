@@ -2,7 +2,7 @@
 
 // features/settings/tabs/voices/VoiceLibrary.tsx
 //
-// Every catalogue voice (ai.voices) a builder can give to something they make,
+// Every catalog voice (ai.voices) a builder can give to something they make,
 // grouped by provider, each one playable. A recorded sample (sample_url) plays
 // straight from the CDN; a voice without one gets a one-line sample rendered by
 // the server for its model (useVoiceSample → speak({ sample })).

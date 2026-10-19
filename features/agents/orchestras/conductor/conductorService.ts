@@ -240,7 +240,7 @@ export const conductorService = {
   /**
    * Ensure the conductor's system prompt HAS an `<available_agents>` section
    * so "Sync agent listings" can fill it. Idempotent — a no-op when the marker
-   * already exists. Otherwise appends a labelled EMPTY section to the end of the
+   * already exists. Otherwise appends a labeled EMPTY section to the end of the
    * system message (Sync fills it later). LOUD if there is no system message.
    */
   async ensureAvailableAgentsSection(

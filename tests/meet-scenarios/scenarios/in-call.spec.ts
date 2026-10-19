@@ -58,7 +58,7 @@ scenario("share-picker-cancelled", async ({ cast }) => {
   // The guest opens the share picker and cancels it.
   await guest.page.getByRole("button", { name: /^Share screen$/ }).click();
   // Silent no-op: still in the call, still seen by the host.
-  await keepsSeeing(guest, "still in the call after cancelling the picker", (o) => o.phase === "in-call", 15_000);
+  await keepsSeeing(guest, "still in the call after canceling the picker", (o) => o.phase === "in-call", 15_000);
   await keepsSeeing(host, `${GUEST} still in the call`, guestIn, 5000);
   // A browser that cannot share at all gets a message, not an exit.
   await guest.page.evaluate(() => {

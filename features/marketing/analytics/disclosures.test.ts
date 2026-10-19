@@ -139,7 +139,7 @@ describe("disclosedMetricLine / previousSeriesDisclosure", () => {
 
 /*
   …and the panel itself must not assemble a second list. This is a SOURCE guard
-  because the defect was not in any function's behaviour: `SiteAnalyticsPanel`
+  because the defect was not in any function's behavior: `SiteAnalyticsPanel`
   hand-built `${integer(current)} (was ${integer(previous)})` inline and appended
   `data.caveats` only, so no test of a shared helper could have caught it. It
   fails on the pre-fix bytes of that file.

@@ -176,7 +176,7 @@ describe("the host tells the frame about the reader's window", () => {
         render();
         const frame = container!.querySelector("iframe") as HTMLIFrameElement;
         // A `title` on a frame wider than its column pops a browser tooltip
-        // centred on the hidden width, far from the component (2026-10-14).
+        // centered on the hidden width, far from the component (2026-10-14).
         expect(frame.getAttribute("aria-label")).toMatch(/ — component$/);
         expect(frame.hasAttribute("title")).toBe(false);
     });

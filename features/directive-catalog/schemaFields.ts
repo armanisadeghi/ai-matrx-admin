@@ -19,7 +19,7 @@
  *   - Update sends ONLY what the person set: an action button that sets a
  *     task's status must not also overwrite every other column with blanks.
  *     A blank field is never sent — not as "", not as null.
- *   - The noun's title column is always labelled "Title" (a note's is stored
+ *   - The noun's title column is always labeled "Title" (a note's is stored
  *     as `label`; people never see storage names).
  *   - Validation OFFERS, never blocks (common-docs/policies/
  *     validation-offers-never-blocks.md): `buildSchemaPayload` returns

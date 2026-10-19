@@ -141,7 +141,7 @@ The layout settles a pending claim on a signed-in load (`settlePendingGuestClaim
 
 - 2026-10-09 (lane F14): the draft preview seeds a not-yet-made table with its declared example rows (`holdWrites(host.data, { seed })` in `AppletHostMount`, `@ai-matrx/applets` 0.18.9) - in memory only, saved on "Use it". The builder's "+" shows "Getting ready" until React has attached (a press before then reached no handler and did nothing). The builder agent's `ask_person` `payload` reached Gemini as a keyless object and arrived as `{}`; aidream now offers a free-form object as a JSON string. Kit 0.42.1 adopted (`resolveShortLinkPath`).
 
-- 2026-10-09 (lane A1): the builder's "+" — files, notes, documents and pages reach the builder agent through THE attach path every round and persist on the build; her agents and workflows become the Applet's jobs (`applets.run_*`), listed in the catalogue with their real inputs. Tests: `builder/build-references.test.ts`; chat `a-turn-carries-what-the-person-attached.test.ts`; applets `src/catalogue/attached-jobs.test.ts`.
+- 2026-10-09 (lane A1): the builder's "+" — files, notes, documents and pages reach the builder agent through THE attach path every round and persist on the build; her agents and workflows become the Applet's jobs (`applets.run_*`), listed in the catalog with their real inputs. Tests: `builder/build-references.test.ts`; chat `a-turn-carries-what-the-person-attached.test.ts`; applets `src/catalogue/attached-jobs.test.ts`.
 
 - 2026-10-09 (lane F12): a returning guest's account line shows on open (`@ai-matrx/applets` 0.18.2 fires `onGuestSaved` once on open); at the ceiling the line is the package's one sentence, kept in view (sticky).
 - 2026-10-09 (lane F11): the saved card's new-table line wraps (the example count drops to its own line when narrow) and the Applet link shows in full (`break-all`; Copy was already the full link). A reload no longer breaks the build conversation panel: `@ai-matrx/rich-content` bare kind floor supplies its own content-IR provider (or text) and the host gate calls `use()` every render; guard `builder/build-conversation-reload.test.tsx`. `platform.knob_defaults` stays signed-in only (it returns the whole register); the cold read no longer leaves an unhandled rejection. New-table naming field is required by default and `rowLabel` is the one "Untitled" (`@ai-matrx/applets`).
@@ -215,7 +215,7 @@ The layout settles a pending claim on a signed-in load (`settlePendingGuestClaim
   (never in the builder's first chunk). THE FIX CLAIM (`claimFixRound`, `fix_entry_id` on the refused entry):
   exactly one tab starts a refusal's automatic fix round, every other tab follows that run
   (`session.beginFix` / `session.follow`); reopening starts it only for a fresh, unclaimed refusal
-  (`reopenOutcome`, `FIX_ROUND_FRESH_MS`) — an old one shows "Fix it" and spends nothing. Tests are behaviour
+  (`reopenOutcome`, `FIX_ROUND_FRESH_MS`) — an old one shows "Fix it" and spends nothing. Tests are behavior
   pairs (`applet-code-checks.test.ts`, `build-session.test.ts`), no source-reading regexes.
 - 2026-10-08 — Lane AI (the builder repairs its own output): EVERY refusal of her request goes to the ONE
   automatic fix round (`repairs`/`repairRefusal`) — a live run, a run rejoined after a refresh (the planner's
@@ -263,7 +263,7 @@ The layout settles a pending claim on a signed-in load (`settlePendingGuestClaim
   makes, the bound tables by name and organization (`features/applets/hooks/useSourceTableNames.ts`, linked to
   `/data/<id>`); the preview answers new tables empty with held writes; "Use it" (`publishApplet`) makes them through
   `makeNewTables` (records `ensureTable`, as her, in the Applet's organization), binds the record, then publishes.
-  The catalogue offers only the Applet organization's tables. Overview names each source's real table, not its alias.
+  The catalog offers only the Applet organization's tables. Overview names each source's real table, not its alias.
 
 - 2026-10-07 — The builder's answer is the kind `applet_build_result` (aidream `aidream/kinds/applets.py`; `applets.build` / `applets.fix` declare it): the "Building your app" window renders it through `AppletBuildResultBlock` (name + pages as they stream, the finished app in words, code behind "Show the code"). `coerceBuildAnswer` ignores `__kind`; Open stays on the builder card (the slug exists only after save). Conversation Applet rows use `<ConversationComposer>` (applets 0.7.6).
 - 2026-10-07 — `files`, `embedded` and `renderDataPage`; the Applet's jobs are disclosed in the Agents menu; adopts applets 0.7.1, records 0.76.8, agents 0.48.0 (AP-0 lane A).

@@ -6,7 +6,7 @@
  * Tracks:
  *   - The source files the user has dropped
  *   - The set of selected preset ids (applied to all files)
- *   - Global format + quality + background colour overrides
+ *   - Global format + quality + background color overrides
  *   - The processing/save lifecycle
  *
  * Side effects:
@@ -469,7 +469,7 @@ export function useImageStudio(
   // Python `/assets/preview/multipart` endpoint and fold the returned URLs
   // (data: for small variants, ephemeral https for large) back into the
   // file entry. The studio runs zero image processing client-side; the
-  // Next.js sharp route this used to call was deleted in favour of the
+  // Next.js sharp route this used to call was deleted in favor of the
   // unified backend pipeline.
   const generate = useCallback(async () => {
     if (files.length === 0 || selectedPresetIds.length === 0) return;
@@ -489,7 +489,7 @@ export function useImageStudio(
     // Map the studio's `inside` fit value (Sharp-flavoured "don't
     // enlarge") onto Python's `contain`. The studio has always sent the
     // resize with withoutEnlargement: false, so `inside` and `contain`
-    // were already behaviourally identical for callsites here.
+    // were already behaviorally identical for callsites here.
     const apiFit: PreviewVariantSpec["fit"] =
       fit === "inside" ? "contain" : fit;
 

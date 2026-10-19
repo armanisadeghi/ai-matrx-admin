@@ -417,7 +417,7 @@ export interface Site {
   /** How it matched: import spec, "definition", or heuristic snippet. */
   detail: string;
   typeOnly?: boolean;
-  /** Barrel the import travelled through, when not the origin file. */
+  /** Barrel the import traveled through, when not the origin file. */
   via?: string;
 }
 

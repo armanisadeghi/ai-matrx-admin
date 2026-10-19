@@ -241,7 +241,7 @@ async def main() -> int:
         print(f"    resolver answered: basis={d.get('basis')!r} period={d.get('pay_period_id')}")
         print(f"    focus_local_work_date={d.get('focus_local_work_date')!r}")
         print(f"    focus_note={d.get('focus_note')!r}")
-        check("the resolver honours the punch", d.get("basis") == "punch")
+        check("the resolver honors the punch", d.get("basis") == "punch")
         check("it focuses the punch it was given", d.get("focus_punch_id") == repl)
         check("it names the CORRECTED day", str(d.get("focus_local_work_date")) == "2026-08-27")
         pid = d.get("pay_period_id")

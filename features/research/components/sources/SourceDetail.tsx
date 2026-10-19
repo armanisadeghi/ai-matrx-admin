@@ -268,7 +268,7 @@ function SignalRow({ present, label }: { present: boolean; label: string }) {
   );
 }
 
-/** A neutral entity chip — monochrome, never coloured (one per entity string). */
+/** A neutral entity chip — monochrome, never colored (one per entity string). */
 function EntityChip({ value }: { value: string }) {
   return (
     <span className="inline-flex max-w-[18rem] truncate rounded-md border border-border/60 bg-background px-2 py-0.5 type-secondary text-foreground">

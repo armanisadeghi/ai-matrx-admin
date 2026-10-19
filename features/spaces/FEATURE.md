@@ -281,7 +281,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   at Can view: a signed-in viewer sees the questions on a fresh load and answers (walk `form-answer.walk.mjs`, now as
   the admin's page shared Can view + the published page signed out). (4) Main menu: walk `main-menu.walk.mjs`
   (Content's first row, opens /spaces, admin and member). (5) New property → Relation → a database of the table's
-  organization (`data/NewProperty.tsx`); the selection colour menu has a Background row (`editor/selection-format.tsx`);
+  organization (`data/NewProperty.tsx`); the selection color menu has a Background row (`editor/selection-format.tsx`);
   the by-hand walk scores a narrow left column, "All" + an added view tab, the relation and a struck-through to-do.
   (6) Walks: calc-row real click, property-edit instant Duplicate property, byhand-r26 comes back from the opened
   "/page", property-menu makes its own page, walk login waits out a restarting / loaded server.
@@ -397,21 +397,21 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   media signed out, custom domain, embed).
 - 2026-10-07 — builder round 25: the real chart-tile rule (round 24 overstated it). Tile width follows the window (172px at 1699,
   114px at 1280). Name pill: 14px/600 and a 10px/10px symmetric pad, start-aligned and cut with an ellipsis, down to a 130px-wide
-  tile; at or under 130px the name is 12px, 4px/5px pad, no icon. Centre number: ONE size, 20px, for any value of up to five
+  tile; at or under 130px the name is 12px, 4px/5px pad, no icon. Center number: ONE size, 20px, for any value of up to five
   characters ("4", "8.6", "355", "12,345"); 16px for six or seven, 13px beyond, so it stays inside the 72px inner ring. Tile height:
   373px minimum (reference ~375); a tile carrying the "Only showing 200 options" chip (34px + 21px of space) is 428px, the other
   tiles stay 373 (they no longer stretch to match). The pill's dev-guard break ("pill ink is off-centre") came from an 8/10px
   hand-shaved pad on a pill whose text is cut by an ellipsis. Table title dot: ONE `::before` route for both table types
   (custom grid cell content and the built-in title button are flex rows, dot beside the title, 37px rows). Chart sort test now
   reads what is drawn (donut slice titles, real ChartBlock bar heights) over a store order that is neither A-Z, Z-A nor by value.
-- 2026-10-07 — builder round 24: chart tiles on the reference (172px tile at 1699, 80px ring, 4px stroke, 20px centre number
+- 2026-10-07 — builder round 24: chart tiles on the reference (172px tile at 1699, 80px ring, 4px stroke, 20px center number
   [corrected in round 25: not a fixed size, see that entry], 14px/600 name cut with an ellipsis, view-settings icon at rest; a column row inside a column takes a 62px gutter that narrows
   with the window, five across keep 16px); a bar/line chart now follows the view's sort (rows reach ChartBlock in point order);
-  table rows start with the grey record circle (O14, `.spaces-row-dot`; a record's own icon still needs records-ui, NEEDS row);
+  table rows start with the gray record circle (O14, `.spaces-row-dot`; a record's own icon still needs records-ui, NEEDS row);
   image page icon 124px over the cover by 72px; toggle triangles in the text ink; the sort icon turns blue (the control's own
-  colour won over the button rule — the svg is coloured); built-in tables (`EntityDatabase`) now run on the same spreadsheet cell
+  color won over the button rule — the svg is colored); built-in tables (`EntityDatabase`) now run on the same spreadsheet cell
   cursor as a custom table's grid (the cause: it passed only `onRowOpen`, so a click opened the record) — one click selects,
-  Enter or a typed letter opens the record window, nothing reaches the page; colours in spaces.css are semantic tokens defined
+  Enter or a typed letter opens the record window, nothing reaches the page; colors in spaces.css are semantic tokens defined
   once with dark values; the sample page is created with Small text (the reference's 14px set). Test
   `data/__tests__/chart-wiring.test.tsx` renders ChartView over a fake client.
 - 2026-10-06 — builder round 23: column gutter 46px (Notion's spacer; a column row nested in a column takes 16px);
@@ -469,7 +469,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   agency sample (`agency-spec.ts`, `templatePreview`) or a real table (`DataMount`, the table's own organization).
   "Add the sample" is idempotent and upgrades an older copy's slots in place.
 - 2026-10-05 — builder round 4 (visual parity): ring tiles measured on screenshot 1 (`data/ChartView.tsx` 112px ring,
-  5px stroke, Notion chart colors; `.spaces-chart-title` grey pill); the sample's charts read rows (never ask
+  5px stroke, Notion chart colors; `.spaces-chart-title` gray pill); the sample's charts read rows (never ask
   `record_aggregate`) and its mount binds an honest no-op realtime port (`data/DataMount.tsx`; live tables use
   `useAppRecordsConfig`); `page/TocRail.tsx` (A11); `page/gallery.ts` + `assets/` (bundled cover landscapes and a
   portrait icon, stored as `gallery:<key>`); BlockNote's trailing line is off and the page ends in a click zone
@@ -506,7 +506,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   Ask about this page; disclosed through `useDeclaredSurfaceMandates`). Data: `ViewSwitcher embedded` + `sortOverride` + "New page" line;
   built-in boards on `TablePage source`, built-in charts on `EntityChartBlock`, New adds task / project rows.
 - 2026-10-05 — builder round 11: "Add the sample" installs the agency spec as REAL custom tables in the active org
-  (`data/agency-install.ts`: `template_declare` upsert on catalogue id `T-SPACES-1` + `runTemplateDoor("template_install")`,
+  (`data/agency-install.ts`: `template_declare` upsert on catalog id `T-SPACES-1` + `runTemplateDoor("template_install")`,
   the same door as the template gallery's Install; a second add answers `already` with the same tables) and points the
   page's ring and client blocks at them (`{kind:"table", tableId, viewId}`, no `sample`); an older copy is repointed in
   place. The source picker's "Sample agency" rows install too. Date fields carry `absoluteDates`; title fields are not
@@ -517,7 +517,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   `createDatabaseSpacesStore(org)`), and repoints any block left on another organization's agency tables. The install is
   the gallery's whole Install: after `template_install`, `addInstalledAgent` (features/make) copies and notes the "Agency
   assistant" with the gallery's ports (`installAgencySample(org, dispatch)`). Embedded grids hand every date column
-  `presentation.formats` date `long` ("January 1, 2026"); records-ui 0.101.29's embedded look (40px centred rows,
+  `presentation.formats` date `long` ("January 1, 2026"); records-ui 0.101.29's embedded look (40px centered rows,
   dividers, choice dots) needs nothing from the host. Rhythm: link-to-page rows 32.5px, to-dos 29px (measured).
 - 2026-10-06 — builder round 14 (phase 5, collaboration): `collab/`. Comments on the ONE comment store — `comments.ts` reads
   `cmt_list` raw and writes `cmt_add` with `part_anchor` `block:<id>` (the quoted text in `label`); edit / delete (archive) / resolve /
@@ -530,12 +530,12 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   the platform `ShareModal` on `document` (Invite) beside Copy link.
 - 2026-10-06 — builder round 15 (H3 live co-editing): `collab/space-collab.ts` + `collab/useSpaceCollab.ts`. The page body is a Yjs
   fragment shared over Supabase broadcast through the workbook provider (`yjs:spaces:<id>`, imported as-is) and bound by BlockNote's
-  `CollaborationExtension` (named cursors in `personColor`, the same colour rings the top-bar avatar); title / icon / cover / settings
+  `CollaborationExtension` (named cursors in `personColor`, the same color rings the top-bar avatar); title / icon / cover / settings
   ride a Yjs map. An empty room is seeded from the stored version in a scratch doc whose client id hashes (page, version), so two
   people opening at once write identical items (no duplicated blocks). Exactly one host saves: editors still on the page's presence
   channel, lowest `uid:clientID`, the room's tab leader; it saves through `space_save` on knobs `spaces.collab.snapshot_debounce_ms` /
   `snapshot_max_wait_ms` (page org; platform value for an outside sharee) and on leave; a save whose content is stored is skipped,
-  and the seed's own normalisation is the baseline (opening a page writes nothing). Others' saves only teach the version. Offline
+  and the seed's own normalization is the baseline (opening a page writes nothing). Others' saves only teach the version. Offline
   marker in the top bar; on reconnect the provider is rebuilt and this member's state re-sent (works around the provider dropping
   late `y-state` answers). Viewers / commenters (`useAccess` below edit) get the live room read-only and no Add icon / Add cover.
 - 2026-10-06 — builder round 16: "Add the sample" on an older install runs `upgradeTemplateInstall` (custom.template_upgrade)
@@ -553,7 +553,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   id after the picker's await (`editor/slash-insert.ts`; proof `run-editor-proof.sh slash-insert`). A page trashed from the
   sidebar while open shows the Trash banner (`page/trash-state.ts` + test). "Saving…" only while a write is in flight. A
   built-in read that never answers is retried once, then named with Try again. Built-in charts group by a choice by
-  default. Slash menu fits the page's scroll area. Sample: thinner rings, dashed many-group ring, grey pill on the open
+  default. Slash menu fits the page's scroll area. Sample: thinner rings, dashed many-group ring, gray pill on the open
   view tab, lightning → the table's automations (`NotifyRuleEditor`), Claude Skills / Auto posting lines as the reference
   (`upgradeLinkLines` on Add the sample).
 - 2026-10-06 — builder round 18: column lists are always well formed across the store boundary (`editor/columns.ts`, run by
@@ -565,17 +565,17 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   elects no host (`trash-state.ts` `mayWrite` / `roomCanEdit`). Use template on the sample copies it (`state/template-plan.ts`);
   the sample is the oldest page with its title. Pages this tab made (new, duplicate) seed their room at once. Enter at the end
   of an open toggle's title writes its first child (`editor/toggle-enter.ts`). Inline tables at natural widths, scrolling
-  sideways; grey toggle triangles; no selection ring between columns. Viewer search on table blocks (records-ui
+  sideways; gray toggle triangles; no selection ring between columns. Viewer search on table blocks (records-ui
   `searchOverride`); built-in Load more reads one 50-row page by offset.
 - 2026-10-06 — builder round 21 (by-hand rebuild): a margin click beside a line puts the caret there (`editor/rubber-band.ts`
   `lineBeside`; the next "/" went nowhere); "/2 columns" in a column and a drop beside a block sharing its column nest a
-  column row there (`slash-insert.ts`, `column-drop.ts`); colour "Default" (renamed from Auto) draws the callout's border;
+  column row there (`slash-insert.ts`, `column-drop.ts`); color "Default" (renamed from Auto) draws the callout's border;
   Enter in a callout writes inside the box (`toggle-enter.ts`); Link to page / `[[` / `[+` offer New page "name"
   (QuickFind `create`); `/Database - Inline|Full page` make a real table (`data/new-database.ts`); Properties → edit / New
   property in records-ui `FieldEditor`; view names and database titles typed in place; column gutter bar on hover; any
   Lucide name draws (DynamicIcon) and the icon search reaches all of Lucide; Use template into another organization
   copies its tables (`state/template-tables.ts`); collab resync rebuild removed, teardown synchronous. Walk tooling:
-  `__tests__/walk/lib.mjs` (dev-login, org pick, sample-page guard, block menu / colour helpers).
+  `__tests__/walk/lib.mjs` (dev-login, org pick, sample-page guard, block menu / color helpers).
 - 2026-10-06 — builder round 20 (Arman: Use template on the former built-in sample "set up" but the first page was empty):
   the sample page gets its content the moment it is made and every later write lands on its CURRENT version
   (`store/sample.ts` `saveOnCurrent`) — opening it mid-install used to write the editor's empty starting line and the

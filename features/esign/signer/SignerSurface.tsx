@@ -6,7 +6,7 @@
 // emailed link, and the sender's own preview. The bar is the owner's DocHub session and Docusign
 // (champion S1–S14): every page of every document in one scroll; "Action required — N required
 // fields remaining" with a progress bar; Start / Next field / Skip; a callout on the active field;
-// compact inline tags in the signer's colour; an input for every field kind; missed-required
+// compact inline tags in the signer's color; an input for every field kind; missed-required
 // recovery; a Finish that turns green and takes the focus; the actions one click away; a message to
 // the sender; a "Finalized!" screen that says what happens next. On a phone: the document at full
 // width, one top bar, and a bottom input drawer.

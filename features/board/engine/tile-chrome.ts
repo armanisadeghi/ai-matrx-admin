@@ -13,7 +13,7 @@
  */
 
 import type { Rect } from "./camera";
-import { frameOf } from "./arrange";
+import { frameAtTop } from "./arrange";
 import type { BoardLayoutMode } from "./page-layout";
 
 /** Two names are the same name: trimmed, case and inner spacing ignored. */
@@ -32,13 +32,21 @@ interface ChromeTile {
   id: string;
   rect: Rect;
   title: string;
+  /** The chapter (frame id) the tile is filed in, when it is (page layout keeps it; `pageMembership`). */
+  chapter?: string;
 }
 
-/** Frame id → its tiles' ids (a tile belongs to the frame holding its centre). */
+/** The frame a tile belongs to: the one it is filed in while that frame exists, else the one holding its top edge. */
+export function homeFrame(tile: { rect: Rect; chapter?: string }, frames: readonly { id: string; rect: Rect }[]): string | null {
+  if (tile.chapter && frames.some((f) => f.id === tile.chapter)) return tile.chapter;
+  return frameAtTop(tile.rect, frames);
+}
+
+/** Frame id → its tiles' ids (`homeFrame`: its filing, else the frame holding its top edge). */
 export function frameMembers(frames: readonly ChromeFrame[], tiles: readonly ChromeTile[]): Map<string, string[]> {
   const out = new Map<string, string[]>(frames.map((f) => [f.id, []]));
   for (const t of tiles) {
-    const f = frameOf(t.rect, frames);
+    const f = homeFrame(t, frames);
     if (f) out.get(f)?.push(t.id);
   }
   return out;
@@ -60,20 +68,22 @@ export interface TileChrome {
   headerless: boolean;
   /** No tile border or background: the body is the card (never a card inside a card). */
   bare: boolean;
-  /** The tile takes its content's height (page layout). */
+  /** The tile takes its content's height (page layout): the body lays out at its natural height. */
   autoHeight: boolean;
+  /** The tile grows until nothing inside it scrolls (page layout): the body keeps filling the tile. */
+  growToFit: boolean;
 }
 
-export const FULL_CHROME: TileChrome = { headerless: false, bare: false, autoHeight: false };
+export const FULL_CHROME: TileChrome = { headerless: false, bare: false, autoHeight: false, growToFit: false };
 
 /** A tile's chrome in a layout, from what its type says about this source. */
 export function tileChrome(
   layout: BoardLayoutMode,
-  type: { namesItself?: boolean; autoHeight?: boolean },
+  type: { namesItself?: boolean; autoHeight?: boolean | "fill" },
 ): TileChrome {
   if (layout !== "page") return FULL_CHROME;
   const own = type.namesItself === true;
-  return { headerless: own, bare: own, autoHeight: type.autoHeight === true };
+  return { headerless: own, bare: own, autoHeight: type.autoHeight === true, growToFit: type.autoHeight === "fill" };
 }
 
 /**
@@ -82,8 +92,8 @@ export function tileChrome(
  */
 /**
  * The moves an auto-height write makes: the tile takes its new height, and the frame holding it grows
- * with it (never shrinks here — page layout re-sizes frames after), so the tile's centre stays inside
- * its own chapter. Growing a tile alone pushed its centre into the next chapter and the page re-flow
+ * with it (never shrinks here — page layout re-sizes frames after), so the tile's center stays inside
+ * its own chapter. Growing a tile alone pushed its center into the next chapter and the page re-flow
  * then filed it there.
  */
 export function autoHeightMoves(
@@ -91,9 +101,11 @@ export function autoHeightMoves(
   id: string,
   h: number,
   frames: readonly { id: string; rect: Rect }[],
+  /** The chapter the tile is filed in (its `chapter`): that frame grows, whatever else overlaps it. */
+  chapter?: string,
 ): { id: string; x: number; y: number; w?: number; h?: number }[] {
   const moves: { id: string; x: number; y: number; w?: number; h?: number }[] = [{ id, x: rect.x, y: rect.y, w: rect.w, h }];
-  const home = frameOf(rect, frames);
+  const home = homeFrame({ rect, chapter }, frames);
   const f = home ? frames.find((x) => x.id === home) : undefined;
   if (f) {
     const bottom = rect.y + h + 8;
@@ -106,6 +118,55 @@ export function autoHeightChange(current: number, measured: number, min = 48): n
   if (!Number.isFinite(measured) || measured <= 0) return null;
   const next = Math.max(min, Math.ceil(measured));
   return Math.abs(next - current) >= 1 ? next : null;
+}
+
+/** What `innerSlack` reads of a scroller inside a tile. */
+export interface ScrollerBox {
+  scrollHeight: number;
+  clientHeight: number;
+  /** Its computed `overflow-y`. */
+  overflowY: string;
+  /**
+   * Where its content really ends (px from its scroll top): the lowest child's bottom less that child's
+   * own bottom padding (an editor's "scroll past the end" room is not content). Null when it has no
+   * child elements (a textarea): then only `scrollHeight` tells.
+   */
+  contentBottom: number | null;
+}
+
+/**
+ * How much taller (positive) or shorter (negative) a grow-to-fit tile should be so its content shows
+ * whole and nothing inside scrolls: read from the scrollers that take most of the tile's height (they
+ * grow with it). A small inner box with its own max height (a code block) never counts: growing the
+ * tile would not reveal it, and counting it would grow the tile forever. 0 = leave it.
+ */
+export function innerSlack(tileHeight: number, scrollers: readonly ScrollerBox[]): number {
+  let most: number | null = null;
+  for (const s of scrollers) {
+    if (s.overflowY !== "auto" && s.overflowY !== "scroll") continue;
+    if (s.clientHeight < tileHeight * 0.4) continue;
+    const slack = s.contentBottom !== null ? s.contentBottom - s.clientHeight : Math.max(0, s.scrollHeight - s.clientHeight);
+    if (most === null || slack > most) most = slack;
+  }
+  if (most === null || Math.abs(most) <= 1) return 0;
+  return most > 0 ? Math.ceil(most) : Math.floor(most);
+}
+
+/**
+ * One grow-to-fit step. `slack` is `innerSlack` now; `floor` the overflow growing does not reveal;
+ * `last` the previous growth. A growth that did not reduce the overflow (by at least half of what it
+ * added) raises the floor to it and stops: never a runaway. Otherwise the tile grows by what is hidden
+ * above the floor (content added since — typing — still grows it), or shrinks by what is spare.
+ */
+export function growStep(
+  slack: number,
+  floor: number,
+  last: { hidden: number; by: number } | null,
+): { grow: number; floor: number; hidden: number } {
+  if (slack < -1) return { grow: slack, floor: 0, hidden: slack };
+  if (last && slack > last.hidden - last.by / 2) return { grow: 0, floor: slack, hidden: slack };
+  const above = slack - floor;
+  return { grow: above > 1 ? above : 0, floor: Math.min(floor, Math.max(0, slack)), hidden: slack };
 }
 
 /**

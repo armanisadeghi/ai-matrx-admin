@@ -9,7 +9,7 @@
  * (`notes.noteModes`). The defaults change only on the Notes settings page.
  *
  * Two halves, each able to go red on its own:
- *   1. Behaviour — `useSelectNoteMode` (the ONE click handler every notes mode
+ *   1. Behavior — `useSelectNoteMode` (the ONE click handler every notes mode
  *      control uses) on a real notes + preferences store: the note's mode and
  *      its remembered mode move; both defaults do not.
  *   2. Census — no notes source file other than the reader

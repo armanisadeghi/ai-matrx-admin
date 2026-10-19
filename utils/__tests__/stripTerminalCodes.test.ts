@@ -1,6 +1,6 @@
 /**
  * Terminal codes never reach a screen (2026-09-30: the directive builder showed
- * a server/ORM error with its colour codes). Both shapes that arrive are
+ * a server/ORM error with its color codes). Both shapes that arrive are
  * covered: the real ESC sequences, including multi-parameter and cursor codes,
  * and the ESC-less leftovers some transports produce.
  */
@@ -11,7 +11,7 @@ const ESC = "\u001b";
 const RAW = `${ESC}[1;31mDatabaseError${ESC}[0m: ${ESC}[2Krelation "x" does not exist [1;33mHint[0m: check it`;
 
 describe("stripTerminalCodes", () => {
-  it("removes ESC colour, multi-parameter and cursor sequences", () => {
+  it("removes ESC color, multi-parameter and cursor sequences", () => {
     expect(stripTerminalCodes(RAW)).toBe(
       'DatabaseError: relation "x" does not exist Hint: check it',
     );

@@ -627,7 +627,7 @@ export const UnifiedImageBlockRenderer: React.FC<
                   // intrinsic size via aspect-ratio + capped width. The
                   // img fills it so there's no layout shift on load. When
                   // dimensions are unknown we fall back to the previous
-                  // behaviour (the img drives the wrapper via min-size +
+                  // behavior (the img drives the wrapper via min-size +
                   // h-auto) — there will be a small jump in that case,
                   // but it's the best we can do without metadata.
                   dimsKnown

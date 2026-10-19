@@ -30,7 +30,7 @@ import {
 const KIND_ID = "spreadsheet_create";
 const PAYLOAD_KIND = "spreadsheet_create_dry_run";
 
-/** Enough rows to recognise the sheet; the count below says what is left. */
+/** Enough rows to recognize the sheet; the count below says what is left. */
 const PREVIEW_ROWS = 8;
 
 function titleOf(payload: GoogleProposalPayload): string | null {

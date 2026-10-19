@@ -50,7 +50,7 @@ export function MatrxCollapsible(
                     // `--radix-COLLAPSIBLE-content-height`, so the target height was
                     // always an undefined var and nothing moved, silently. The package
                     // now owns the transition (`.matrx-collapsible-content`, reduced
-                    // motion honoured) and applies it by default. Do not re-add an
+                    // motion honored) and applies it by default. Do not re-add an
                     // `animate-*` class here.
                     "text-sm",
                     contentClassName

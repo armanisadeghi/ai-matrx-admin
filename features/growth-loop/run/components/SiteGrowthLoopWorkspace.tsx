@@ -82,7 +82,7 @@ function LoopSummary({ loop }: { loop: LoopStateView }) {
           ? "Running"
           : loop.status === "completed"
             ? "Finished"
-            : "Cancelled";
+            : "Canceled";
 
   return (
     <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">

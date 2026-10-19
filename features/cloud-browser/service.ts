@@ -1385,7 +1385,7 @@ export async function saveAndFillHumanLogin(input: {
  *
  * The card SAVES; it does not fill. The agent signs in afterwards with
  * `credential_login action='auto'`, which is what keeps it value-free — the
- * same division of labour the Matrx Extend card has.
+ * same division of labor the Matrx Extend card has.
  */
 export async function submitCredentialCapture(input: {
   runId: string;

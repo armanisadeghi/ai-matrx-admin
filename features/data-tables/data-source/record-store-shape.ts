@@ -38,7 +38,7 @@ function rangeKind(field: Pick<Field, "config">): string | null {
   return typeof kind === "string" ? kind : null;
 }
 
-/** The older storage type for a store Field. Total over the five behaviours plus boolean. */
+/** The older storage type for a store Field. Total over the five behaviors plus boolean. */
 export function gridDataType(field: Pick<Field, "type" | "config" | "format" | "multi">): FieldDataType {
   const behaviour = String(field.type);
   const format = field.format ?? null;
@@ -93,7 +93,7 @@ export function gridFormat(
   const config = (field.config ?? {}) as Record<string, unknown>;
   const display = displayFormatOf(field);
   // SEAM HONESTY: the settings a kind's own keys do not hold (an autonumber's prefix, a
-  // choice's colours, a relation's suffix …) ride the Field's `display_format`, which the
+  // choice's colors, a relation's suffix …) ride the Field's `display_format`, which the
   // store keeps verbatim; they come back here, beside the kind's own keys.
   const displayed = (id: string): Record<string, unknown> =>
     display && display.id === id && display.options ? { ...(display.options as Record<string, unknown>) } : {};
@@ -123,8 +123,8 @@ export function gridFormat(
     const looks = Array.isArray(extra.choices) ? (extra.choices as FieldChoice[]) : [];
     delete extra.choices;
     delete extra.allowOther;
-    // The option Table is the vocabulary; a choice's colour, label, group and hover help are
-    // presentation kept on the Field — over the option's own colour, which the mover carried.
+    // The option Table is the vocabulary; a choice's color, label, group and hover help are
+    // presentation kept on the Field — over the option's own color, which the mover carried.
     const merged = choices?.map((c) => {
       const look = looks.find((l) => l && l.value === c.value);
       return look ? { ...c, ...choiceLook(look) } : c;
@@ -260,7 +260,7 @@ export function gridColumnFromField(
 // the Doctrine forbids (v2 readiness audit, blocker 4). Where the store keeps a setting:
 //
 //   choice words            the list's option Table (settings arm `options`)
-//   choice colour / label /  `display_format.options.choices` — presentation, kept verbatim;
+//   choice color / label /  `display_format.options.choices` — presentation, kept verbatim;
 //     group / hover help     the option Table stays the one vocabulary
 //   allow other values      `allow_other` (config.allow_other)
 //   relation settings       relation_target · relation_max · on_target_delete · display
@@ -440,7 +440,7 @@ export function storeFormatWrite(
       heldOrder === null ||
       heldOrder.some((k, i) => k !== sentOrder[i]);
     const wasAList = kindNow === "select" || kindNow === "multi_select";
-    // An existing list's words are edited through the SETTINGS arm; the behaviour arm (a `type`
+    // An existing list's words are edited through the SETTINGS arm; the behavior arm (a `type`
     // word) reads words only for a list it is making. So a list that stays a list never sends a
     // type for its words, and one → several sends its words first, then the type.
     const settings: Record<string, unknown> = {};
@@ -481,7 +481,7 @@ export function storeFormatWrite(
       into.multi = relation_max > 1;
     }
     if (typeof on_delete === "string") into.on_target_delete = on_delete;
-    // The behaviour arm's spec has no `display`, so it always goes through the settings arm.
+    // The behavior arm's spec has no `display`, so it always goes through the settings arm.
     if (typeof display === "string" && display) settings.display = display;
     into.display_format = hasKeys(rest) ? { id: format!.id, options: rest } : null;
     if (!sameKind) patches.push(main);

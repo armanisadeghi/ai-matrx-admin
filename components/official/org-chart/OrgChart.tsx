@@ -2,7 +2,7 @@
 //
 // THE org chart. One component for every hierarchy the platform draws: it takes
 // a forest of typed nodes and renders it as a pannable, zoomable tree whose
-// links are coloured by kind, with a legend saying what each colour means.
+// links are colored by kind, with a legend saying what each color means.
 // The caller owns the cards (renderCard) and the meaning of each link kind;
 // this owns layout, navigation and chrome.
 //
@@ -10,8 +10,8 @@
 // layout credit in ./layout.ts). Matched: tidy top-down tree, elbow connectors,
 // drag to pan, zoom toward the pointer, pinch, zoom buttons, fit to screen,
 // clickable cards. Beyond it: collapse/expand with hidden-count badges, stacked
-// two-column teams, links coloured by kind with a legend, search that reveals
-// and centres a match, a minimap, trackpad-native scroll-to-pan, keyboard
+// two-column teams, links colored by kind with a legend, search that reveals
+// and centers a match, a minimap, trackpad-native scroll-to-pan, keyboard
 // control, and cards that glide when the tree reshapes.
 
 "use client";
@@ -57,7 +57,7 @@ export interface OrgChartEdgeKind {
   label: string;
   /** One sentence for the legend: what this kind of link means. */
   description?: string;
-  /** Any CSS colour — use a semantic token, e.g. `hsl(var(--primary))`. */
+  /** Any CSS color — use a semantic token, e.g. `hsl(var(--primary))`. */
   color: string;
   dashed?: boolean;
 }
@@ -111,7 +111,7 @@ export interface OrgChartProps<T> {
   onOpen?: (key: string) => void;
   /** Delete / Backspace with cards selected. */
   onDelete?: (keys: string[]) => void;
-  /** Reveal, select and centre this card whenever the value changes (deep links). */
+  /** Reveal, select and center this card whenever the value changes (deep links). */
   focusKey?: string | null;
   /** Remembers collapsed teams and the minimap toggle in this browser under this name. */
   persistKey?: string;
@@ -327,7 +327,7 @@ export function OrgChart<T>({
     onSelect(key);
   };
 
-  // Centre the selected node once it exists in the (possibly re-expanded) layout.
+  // Center the selected node once it exists in the (possibly re-expanded) layout.
   const pendingFocus = useRef<string | null>(null);
   useEffect(() => {
     const key = pendingFocus.current;
@@ -379,7 +379,7 @@ export function OrgChart<T>({
       return next;
     });
 
-  // Deep link / outside request: reveal, select and centre a card.
+  // Deep link / outside request: reveal, select and center a card.
   const lastFocus = useRef<string | null>(null);
   useEffect(() => {
     if (!focusKey || lastFocus.current === focusKey) return;
@@ -564,7 +564,7 @@ export function OrgChart<T>({
       const cur = liveDrag.current;
       liveDrag.current = null;
       setDrag(null);
-      // A cancelled pointer, a hold with no carry, or a release that isn't a drop
+      // A canceled pointer, a hold with no carry, or a release that isn't a drop
       // place (the card itself, chrome, outside the chart) changes nothing.
       if (!cur || ev.type === "pointercancel" || !cur.moved) return;
       const at = dropAt(ev.clientX, ev.clientY, cur.keys);

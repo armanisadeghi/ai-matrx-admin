@@ -5,7 +5,7 @@
 // own settings (mode "user": they set their own). ONE component so the two
 // surfaces can never drift on what a limit means or where it came from.
 //
-// Modelled on AWS Budgets and the OpenAI/Anthropic usage-limit pages: the
+// Modeled on AWS Budgets and the OpenAI/Anthropic usage-limit pages: the
 // entitlement, the self-imposed ceiling, and the effective number are three
 // distinct lines, and the binding one is named. Rules this card keeps:
 //   * A limit is never shown without its source.

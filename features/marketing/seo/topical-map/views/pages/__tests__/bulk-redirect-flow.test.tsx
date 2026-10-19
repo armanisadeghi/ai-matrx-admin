@@ -36,7 +36,7 @@ import type { PagesWorkspaceContext } from "../seams";
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 // jsdom has no ResizeObserver and no pointer capture; Radix's popover
-// positioning asks for both. Neither is a stand-in for behaviour under test.
+// positioning asks for both. Neither is a stand-in for behavior under test.
 class ResizeObserverStub {
   observe(): void {}
   unobserve(): void {}
@@ -262,7 +262,7 @@ function typeInto(label: string, value: string): void {
   const input = document.body.querySelector<HTMLInputElement>(
     `input[aria-label="${label}"]`,
   );
-  if (!input) throw new Error(`no input labelled "${label}"`);
+  if (!input) throw new Error(`no input labeled "${label}"`);
   const setter = Object.getOwnPropertyDescriptor(
     window.HTMLInputElement.prototype,
     "value",

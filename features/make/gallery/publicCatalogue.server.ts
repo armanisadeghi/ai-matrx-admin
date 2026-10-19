@@ -1,6 +1,6 @@
 // features/make/gallery/publicCatalogue.server.ts — LANE MAKE-HOME (v6), wave 4b.
 //
-// The signed-out read of the catalogue for /templates, its pages and the sitemap, through the public door
+// The signed-out read of the catalog for /templates, its pages and the sitemap, through the public door
 // `public.templates_public` (platform cards only, the same card shape as `custom.templates`; v7 TEMPLATES). It asks with the
 // publishable key and no session (never a secret key, never a cookie), so the page shows exactly what
 // a crawler may see. Shared by a page and its metadata in one request.
@@ -23,9 +23,9 @@ async function readOnce(): Promise<PublicRead> {
   return readPublicCatalogueWith((offset) => sb.schema("public").rpc("templates_public", { p_filter: platformFilter(offset) }));
 }
 
-// ONE catalogue read per server process for a few minutes, not one per page. React `cache()` lasts a
+// ONE catalog read per server process for a few minutes, not one per page. React `cache()` lasts a
 // single request, and the build prerenders every /templates/category/* and /templates/job/* page, so
-// each page re-read the whole paged catalogue: 192 RPC calls, ~4 minutes of waiting per build
+// each page re-read the whole paged catalog: 192 RPC calls, ~4 minutes of waiting per build
 // (measured 2026-10-08). The pages revalidate hourly, so a 5-minute shared read changes nothing a
 // visitor sees. A closed or failed read is never kept.
 const SHARED_READ_MS = 5 * 60 * 1000;
@@ -69,7 +69,7 @@ export interface PublicTemplatePage {
 
 /**
  * THE PAGE READ (`public.template_public_page`): one published platform template by its readable
- * address, its catalogue id or a version id — so an old address finds the template and the page
+ * address, its catalog id or a version id — so an old address finds the template and the page
  * sends it on to the readable one. Null when no published platform template answers to the key.
  */
 export const readTemplatePage = cache(async (key: string): Promise<PublicTemplatePage | null> => {

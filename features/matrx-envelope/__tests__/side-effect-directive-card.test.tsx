@@ -7,7 +7,7 @@
  * destructive action without any clue as to what this thing is."
  *
  * The CARD is now `@ai-matrx/content-ir/react`'s (0.11.0) and the package's own
- * tests pin its behaviour. What only this repo can prove is that the four seams
+ * tests pin its behavior. What only this repo can prove is that the four seams
  * it refuses to own are actually plugged in here: rendering a real ```matrx
  * fence through `MatrxEnvelopeBlock` — the production entry point, nothing
  * mocked — must name the write, offer Apply (the `confirm` seam), open the item
@@ -176,7 +176,7 @@ describe("the production entry point draws the real card", () => {
     const overlays = store.getState().overlays;
     const open = JSON.stringify(overlays);
     expect(open).toContain("directiveItemWindow");
-    expect(open).toContain("agent_definition"); // itemKind travelled through
+    expect(open).toContain("agent_definition"); // itemKind traveled through
     expect(open).toContain("Masterwork Conductor"); // the same title the card shows
     cleanup(host, root);
   });

@@ -49,7 +49,7 @@ function rectCoversTrigger(
   );
 }
 
-// ─── State dot colours ────────────────────────────────────────────────────────
+// ─── State dot colors ────────────────────────────────────────────────────────
 
 const STATE_DOT: Record<WindowState, string> = {
   windowed: "bg-emerald-400",

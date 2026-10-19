@@ -34,10 +34,10 @@ function row(overrides: Partial<JudgeVerdictRow> & { metadata?: unknown }): Judg
       probability: 0.96,
       method: "native",
       conversation_id: "conv",
-      instructions: "Is this a defect in existing behaviour rather than a request for new behaviour?",
+      instructions: "Is this a defect in existing behavior rather than a request for new behavior?",
       options: [
-        { key: "true", label: "existing behaviour is wrong" },
-        { key: "false", label: "new behaviour is wanted" },
+        { key: "true", label: "existing behavior is wrong" },
+        { key: "false", label: "new behavior is wanted" },
       ],
     },
     ...overrides,

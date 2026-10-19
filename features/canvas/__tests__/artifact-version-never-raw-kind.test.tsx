@@ -1,7 +1,7 @@
 /**
  * KIND_NEVER_RAW S5 (round 4): the artifact "Version history" popover printed
  * the selected version through JSON.stringify in a <pre>. A kind version now
- * draws through `AnswerValueView`; raw JSON is behind the labelled "View JSON"
+ * draws through `AnswerValueView`; raw JSON is behind the labeled "View JSON"
  * toggle; the compare diff reads the readable text; restore keeps the stored data.
  */
 import React, { act } from "react";

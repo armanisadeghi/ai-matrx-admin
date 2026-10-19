@@ -19,7 +19,7 @@
  * This is not hypothetical. THREE lanes — `sorting_table`, `teach_back` and
  * `daily_drip` — went live in `platform.approach` DURING the afternoon this
  * program was built, by other sessions. Two of them belong in a plan and one
- * emphatically does not (a daily-drip programme inside a plan means two things
+ * emphatically does not (a daily-drip program inside a plan means two things
  * deciding when to interrupt the same person). Without this test the difference
  * would have been decided by whichever of us edited last.
  *
@@ -141,11 +141,11 @@ describe("every Approach in the catalog has a plan posture (snapshot)", () => {
     expect(METHOD_POSTURE.capture_plan.kind).toBe("excluded");
   });
 
-  it("never nests two scheduling programmes", () => {
+  it("never nests two scheduling programs", () => {
     const drip = METHOD_POSTURE.daily_drip;
     expect(drip.kind).toBe("excluded");
     if (drip.kind === "excluded") {
-      expect(drip.why).toMatch(/programme of its own/);
+      expect(drip.why).toMatch(/program of its own/);
     }
   });
 });

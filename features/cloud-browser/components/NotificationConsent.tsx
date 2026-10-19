@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * NotificationConsent — D-14 consent surface, front and centre.
+ * NotificationConsent — D-14 consent surface, front and center.
  *
  * A browser that pauses for a person is worthless if the person is not told.
  * Consent is asked at setup AND at first use.
@@ -38,7 +38,7 @@ const ROWS: {
     key: "in_app",
     label: "In AI Matrx",
     // Explained, not offered — §2. A switch here would promise a choice the
-    // server does not honour.
+    // server does not honor.
     desc: "A one-click card that takes you straight to the browser. Always on — it is how the app shows you what is waiting.",
     icon: <Inbox className="h-4 w-4" />,
     alwaysOn: true,

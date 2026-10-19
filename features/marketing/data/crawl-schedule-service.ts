@@ -87,7 +87,7 @@ export type SaveCrawlScheduleResult =
  * Create or update the site's schedule.
  *
  * Always clears `next_run_at`. That is not laziness — it is the only correct
- * behaviour for every case that reaches here:
+ * behavior for every case that reaches here:
  *   • cadence changed  → the standing occurrence belongs to the OLD cadence
  *     (switching monthly → daily must not leave a month-out occurrence),
  *   • re-enabled       → a `next_run_at` from before the pause is in the past,

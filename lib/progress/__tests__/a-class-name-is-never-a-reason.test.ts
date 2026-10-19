@@ -85,7 +85,7 @@ describe("a class name is never a reason", () => {
     expect(text).toContain("prove it is not a robot");
   });
 
-  it("recognises a class name wherever it is written", () => {
+  it("recognizes a class name wherever it is written", () => {
     expect(namesAnExceptionClass("failed (AppError).")).toBe(true);
     expect(namesAnExceptionClass("AppError")).toBe(true);
     expect(namesAnExceptionClass("failed (asyncio.TimeoutError)")).toBe(true);

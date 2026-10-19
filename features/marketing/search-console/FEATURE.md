@@ -113,7 +113,7 @@ UI deliberately beyond it. Status: **live core** (2026-07-30).
   for a page) and `rowScopeDrillFor` (this row alone, same dimension: its
   KPIs, its trend, its table). Extend it; never write a drill inline.
 - 🚨 **A drill opens a PANEL; the table underneath never re-filters** (P25,
-  keyword-system-decisions.md). Row click keeps its cross-filter behaviour
+  keyword-system-decisions.md). Row click keeps its cross-filter behavior
   because the user asked for that one explicitly; every right-click entry is
   additive. A change that makes a panel drill mutate the host table's
   filters, sort, or scroll is a regression, not a simplification.
@@ -876,7 +876,7 @@ its dismiss-layer race — the input "flashed and disappeared").
   EMPTY offering catalog renders the sentence plus that door instead of a dead
   dropdown. `useSiteServices` gained an `enabled` gate so the Pages / Countries
   / Devices tabs never pay for a catalog they do not show.
-  Placing commits on pick (the canonical offering control's behaviour
+  Placing commits on pick (the canonical offering control's behavior
   everywhere else), not through the table's Save pill — and it invalidates the
   Class/Score/Level read too, because the placement is what the value resolver
   scores from. NOT offered here: "this isn't something we offer", which is the

@@ -11,7 +11,7 @@
  * browser IGNORE the `download` attribute and NAVIGATE the tab instead —
  * which both leaks the ephemeral URL into the address bar (against our media
  * rules) and destroys the studio's in-memory state (back-button returns to a
- * blank studio). A `blob:` URL is same-origin, so `download` is honoured and
+ * blank studio). A `blob:` URL is same-origin, so `download` is honored and
  * nothing navigates.
  */
 

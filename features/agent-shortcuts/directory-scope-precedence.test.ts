@@ -1,4 +1,4 @@
-// The guard for "a global shortcut is labelled Personal / <the admin who made it>".
+// The guard for "a global shortcut is labeled Personal / <the admin who made it>".
 //
 // The admin All-Shortcuts directory merges TWO sources that overlap and
 // disagree about the same row:
@@ -12,7 +12,7 @@
 //      `created_by IS NOT NULL → 'user'` BEFORE the organization, while
 //      `mandate.vw_shortcut`'s trigger does `COALESCE(NEW.created_by, v_actor)`.
 //
-// So a global shortcut an admin had just saved came back from source 2 labelled
+// So a global shortcut an admin had just saved came back from source 2 labeled
 // `user`, and because it was written into the merge map SECOND it overwrote the
 // correct row. Verified on production v0.4.1593: Scope read exactly
 // "Personal / admin@admin.com".

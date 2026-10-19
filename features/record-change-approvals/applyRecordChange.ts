@@ -222,7 +222,7 @@ export async function declineRecordChange(
  * What the table a pending change belongs to is CALLED.
  *
  * A card that says "a column on table 8f3c…" names a record a person cannot
- * recognise, which is the same dead end in a smaller font. The store's own read
+ * recognize, which is the same dead end in a smaller font. The store's own read
  * door answers, under the person's own rights; when it cannot, the caller says
  * nothing about the table rather than showing an id.
  */

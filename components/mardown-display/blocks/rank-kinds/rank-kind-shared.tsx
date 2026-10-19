@@ -64,7 +64,7 @@ export const RankBadge: React.FC<{
 /**
  * Positions gained since the previous reading. POSITIVE IS AN IMPROVEMENT
  * (the model says so), and a lower rank number is better — so a positive
- * movement gets the up arrow and the success colour, and 0 is "no change",
+ * movement gets the up arrow and the success color, and 0 is "no change",
  * never a blank.
  */
 export const MovementIndicator: React.FC<{

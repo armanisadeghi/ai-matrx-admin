@@ -942,7 +942,7 @@ export function AgentContextPoliciesManager({
 
   const title = editIndex === null ? "Add context policy" : "Edit context policy";
   // A policy declares a key clients may pass in the request `context` object; listed keys get
-  // typed handling, labels, inline behaviour and optional mutation.
+  // typed handling, labels, inline behavior and optional mutation.
   const description =
     editIndex === null
       ? "A context value this agent can receive, and its rules"

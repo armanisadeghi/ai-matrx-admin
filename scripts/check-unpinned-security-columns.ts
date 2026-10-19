@@ -204,7 +204,7 @@ export type Severity = "critical" | "warning";
  *
  * In this codebase the word "credential" means two unrelated things, and the name cannot tell
  * them apart. In `users.credential_items` it means a VAULT ITEM — a saved login, an API key, a
- * token bundle. In `hr` it means an OCCUPATIONAL QUALIFICATION: a forklift licence, a food
+ * token bundle. In `hr` it means an OCCUPATIONAL QUALIFICATION: a forklift license, a food
  * handler card, a nursing registration. `hr.course.credential_name` is the NAME OF A
  * QUALIFICATION, printed on a certificate; presenting that string authenticates nothing.
  *
@@ -234,7 +234,7 @@ export type Severity = "critical" | "warning";
  * `hr.employee_private` (`ssn_ciphertext`, `ssn_hmac`, `national_id_ciphertext`), are named in
  * that table's `client_excluded_columns`, and are readable only through the audited
  * `hr.reveal_ssn` door. `hr.credential.credential_number` is plain `text` with none of that
- * machinery, because it is the number printed on a licence, not a national identifier — a
+ * machinery, because it is the number printed on a license, not a national identifier — a
  * deliberate separation in the schema, which is why it is classified here rather than masked.
  */
 export interface ColumnClassification {
@@ -281,13 +281,13 @@ export const COLUMN_CLASSIFICATION: Readonly<Record<string, ColumnClassification
   "hr.credential.credential_category_id": {
     verdict: "descriptive",
     reason:
-      "a foreign key into the shared platform.categories taxonomy — the organization's own classification of its licences and certificates.",
+      "a foreign key into the shared platform.categories taxonomy — the organization's own classification of its licenses and certificates.",
     evidence: "migrations/hr_05_identity_satellites.sql:391",
   },
   "hr.credential.credential_number": {
     verdict: "descriptive",
     reason:
-      "the ISSUING BODY'S identifier for a licence or certificate — the number printed on a CDL, a nursing licence, a food-handler card. Holding the string authenticates nothing here: the truth of the credential comes from verification_state / verified_by_employment_id. It is NOT a national identifier; SSNs and national IDs live encrypted in hr.employee_private behind the audited hr.reveal_ssn door and are named in that table's client_excluded_columns.",
+      "the ISSUING BODY'S identifier for a license or certificate — the number printed on a CDL, a nursing license, a food-handler card. Holding the string authenticates nothing here: the truth of the credential comes from verification_state / verified_by_employment_id. It is NOT a national identifier; SSNs and national IDs live encrypted in hr.employee_private behind the audited hr.reveal_ssn door and are named in that table's client_excluded_columns.",
     evidence: "migrations/hr_05_identity_satellites.sql:395, beside issuer_ref and issued_on; the SSN machinery at :42-47 and :87",
   },
   "hr.crew.required_credential_ids": {
@@ -735,7 +735,7 @@ select w.schema_name,
        -- so a column it genuinely names is pinned no matter what iam.apply_rls regenerates --
        -- which is why it is the mechanism for the ~36 user_id-names-the-caller tables, and
        -- why the guard has to see it. "with check (false)" (the closed CTE above) is only the
-       -- bluntest member of this family. The naming/tautology judgement is made in TypeScript,
+       -- bluntest member of this family. The naming/tautology judgment is made in TypeScript,
        -- beside its self-test, not in this query.
        (select coalesce(jsonb_agg(jsonb_build_object(
                  'policy',    rp.polname,
@@ -1053,13 +1053,13 @@ function selfTest(): number {
     classificationFor("hr", "credential", "credential_number")?.verdict === "descriptive" &&
       /not a national identifier/i.test(classificationFor("hr", "credential", "credential_number")!.reason),
     "hr.credential.credential_number is classified where it was read, and its reason records " +
-      "that it is a licence number and NOT a national identifier (SSNs live encrypted in " +
+      "that it is a license number and NOT a national identifier (SSNs live encrypted in " +
       "hr.employee_private behind hr.reveal_ssn — sensitive data is a different guard)",
   );
   say(
     Object.values(COLUMN_CLASSIFICATION).every((c) => c.reason.length > 40 && c.evidence.length > 0),
     "every read classification carries what the value IS and where that was read — an entry " +
-      "without a reason is an exemption, not a judgement",
+      "without a reason is an exemption, not a judgment",
   );
 
   // THE IDENTITY HALF OF THE SAME RULE, on the column that proved `descriptive` has to be the
@@ -1256,7 +1256,7 @@ async function main(): Promise<number> {
     // 🚨 A READ CLASSIFICATION MAY NEVER OUTLIVE THE THING IT EXPLAINS. Every entry in
     // COLUMN_CLASSIFICATION answers a real finding on a real, client-writable column. If the
     // column is dropped, renamed, or withdrawn from the client grant, the entry stops being a
-    // judgement and becomes an unexamined exemption sitting in a security classifier waiting
+    // judgment and becomes an unexamined exemption sitting in a security classifier waiting
     // for a future column to walk into it. That is exactly how a baseline rots into permission,
     // which this guard already refuses for the baseline — so it refuses it here too.
     const seen = new Set<string>();

@@ -47,7 +47,7 @@ describe("agent-stream-transport capture and a leaving page", () => {
     expect(getSnapshot().filter((c) => c.source === "agent-stream-transport")).toHaveLength(0);
   });
 
-  it("captures again after a cancelled leave", () => {
+  it("captures again after a canceled leave", () => {
     window.dispatchEvent(new Event("beforeunload"));
     window.dispatchEvent(new Event("pageshow"));
     captureStreamTransportError(dropped(), { conversationId: "conv-1" });

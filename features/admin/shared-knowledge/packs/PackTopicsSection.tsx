@@ -112,7 +112,7 @@ function TopicPicker({ onPick, exclude }: { onPick: (t: TopicOption) => void; ex
           <li className="px-2.5 py-2 text-xs text-muted-foreground">No topics match.</li>
         ) : (
           <>
-            {/* Stale-while-error: the earlier results stay, labelled as possibly out of date. */}
+            {/* Stale-while-error: the earlier results stay, labeled as possibly out of date. */}
             {searchError ? (
               <li>
                 <StaleDataNotice

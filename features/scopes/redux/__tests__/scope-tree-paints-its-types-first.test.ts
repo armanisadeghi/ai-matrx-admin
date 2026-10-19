@@ -2,7 +2,7 @@
  * THE PAGED TREE (lane SCOPES-TREE-PAGED): the first paint reads the skeleton, a type's scopes come
  * page by page, and the whole tree still means what it always meant.
  *
- * What must hold, each case a behaviour some reader of the tree depends on:
+ * What must hold, each case a behavior some reader of the tree depends on:
  *   - the skeleton sits BESIDE the whole tree: a reader of the whole tree sees nothing until every
  *     scope is in, exactly as before (it never meets a type with no scopes that has some); the
  *     paged reader sees the types at once;

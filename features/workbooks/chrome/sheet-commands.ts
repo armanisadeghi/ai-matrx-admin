@@ -428,7 +428,7 @@ export function showColumnStats(h: SheetChromeHost, r: RangeLike) {
   });
 }
 
-/** Apply a workbook theme (fonts + header/banding colours) to every sheet's used data. */
+/** Apply a workbook theme (fonts + header/banding colors) to every sheet's used data. */
 export function applyThemeToAllSheets(h: SheetChromeHost, themeId: string): number {
   const theme = SHEET_THEMES.find((t) => t.id === themeId);
   const sheets = h.api.getActiveWorkbook()?.getSheets?.() ?? [];

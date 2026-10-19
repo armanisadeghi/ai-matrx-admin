@@ -33,7 +33,7 @@ const EXISTING: ExistingTable[] = [
       { key: "groomer_name", label: "Groomer's name", kind: "text" },
       { key: "owner_phone", label: "Owner phone", kind: "phone" },
       { key: "next_visit", label: "Next visit", kind: "datetime" },
-      { key: "status", label: "Status", kind: "select", choices: ["Booked", "Completed", "Cancelled"] },
+      { key: "status", label: "Status", kind: "select", choices: ["Booked", "Completed", "Canceled"] },
       { key: "notes", label: "Notes", kind: "text" },
     ],
   },

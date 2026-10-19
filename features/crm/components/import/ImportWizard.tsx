@@ -24,11 +24,9 @@ import {
   Download,
   FileUp,
   Loader2,
-  UserRound,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import {
   Select,
@@ -59,39 +57,15 @@ import type {
   ImportPlan,
   ImportResult,
   ParsedImportData,
-  RowPlan,
 } from "../../import/types";
 import { IMPORT_FIELD_LABELS } from "../../import/types";
 import { persistConnectorCursor } from "../../import/connectors/service";
 import { ConnectorSources } from "./ConnectorSources";
+import { ImportPreviewTable, isImportable } from "./ImportPreviewTable";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { downloadFile } from "@ai-matrx/kit/download";
 
 type Step = "source" | "map" | "preview" | "done";
-
-const STATUS_META: Record<
-  RowPlan["status"],
-  { label: string; className: string }
-> = {
-  create: {
-    label: "New",
-    className: "bg-primary/10 text-primary-ink border border-primary/30",
-  },
-  exists: {
-    label: "Exists",
-    className: "bg-muted text-muted-foreground border border-border",
-  },
-  duplicate_in_file: {
-    label: "Duplicate row",
-    className:
-      "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30",
-  },
-  invalid: {
-    label: "Invalid",
-    className:
-      "bg-destructive/10 text-destructive-ink border border-destructive/30",
-  },
-};
 
 export function ImportWizard() {
   const router = useRouter();
@@ -330,27 +304,15 @@ export function ImportWizard() {
 
   // Fields already assigned to some header (a field feeds at most one column).
   const assigned = new Set(Object.values(mapping).filter(Boolean));
-  const importablePreviewRows =
-    plan?.rows.filter(
-      (row) => row.status === "create" || row.status === "exists",
-    ) ?? [];
+  const importablePreviewRows = plan?.rows.filter(isImportable) ?? [];
   const selectedPreviewCount = importablePreviewRows.filter((row) =>
     selectedRowNumbers.has(row.rowNumber),
   ).length;
-  const allPreviewRowsSelected =
-    importablePreviewRows.length > 0 &&
-    selectedPreviewCount === importablePreviewRows.length;
-  const toggleAllPreviewRows = (checked: boolean) =>
-    setSelectedRowNumbers(
-      checked
-        ? new Set(importablePreviewRows.map((row) => row.rowNumber))
-        : new Set(),
-    );
 
   return (
     // The (core) shell header is transparent glass floating OVER the body, so
     // static top chrome must clear it — same offset CrmListPage uses.
-    <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden px-3 pt-[calc(var(--shell-header-h)+0.375rem)]">
+    <div className={cn("mx-auto flex h-full w-full flex-col overflow-hidden px-3 pt-[calc(var(--shell-header-h)+0.375rem)]", step === "preview" ? "max-w-7xl" : "max-w-5xl")}>
       {/* Step rail */}
       <div className="flex shrink-0 items-center gap-1 pb-2 text-xs text-muted-foreground">
         <ChevronLeftTapButton
@@ -718,144 +680,12 @@ export function ImportWizard() {
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50 text-left text-muted-foreground">
-                    <th className="px-2.5 py-1.5 font-medium">
-                      <span className="inline-flex items-center gap-2">
-                        <Checkbox
-                          aria-label="Select all importable rows"
-                          checked={
-                            allPreviewRowsSelected
-                              ? true
-                              : selectedPreviewCount > 0
-                                ? "indeterminate"
-                                : false
-                          }
-                          onCheckedChange={(value) =>
-                            toggleAllPreviewRows(value === true)
-                          }
-                        />
-                        #
-                      </span>
-                    </th>
-                    <th className="px-2.5 py-1.5 font-medium">Name</th>
-                    <th className="px-2.5 py-1.5 font-medium">Contact</th>
-                    {plan.kind === "person" && (
-                      <th className="px-2.5 py-1.5 font-medium">Company</th>
-                    )}
-                    <th className="px-2.5 py-1.5 font-medium">Status</th>
-                    <th className="px-2.5 py-1.5 font-medium">Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {plan.rows.map((row) => (
-                    <tr
-                      key={row.rowNumber}
-                      className="border-b border-border last:border-0"
-                    >
-                      <td className="px-2.5 py-1.5 text-muted-foreground">
-                        <span className="inline-flex items-center gap-2">
-                          <Checkbox
-                            aria-label={
-                              "Select row " +
-                              row.rowNumber +
-                              " " +
-                              (row.displayName || "unnamed")
-                            }
-                            checked={selectedRowNumbers.has(row.rowNumber)}
-                            disabled={
-                              row.status !== "create" && row.status !== "exists"
-                            }
-                            onCheckedChange={(value) =>
-                              setSelectedRowNumbers((current) => {
-                                const next = new Set(current);
-                                if (value === true) next.add(row.rowNumber);
-                                else next.delete(row.rowNumber);
-                                return next;
-                              })
-                            }
-                          />
-                          {row.rowNumber}
-                        </span>
-                      </td>
-                      <td className="px-2.5 py-1.5 font-medium text-foreground">
-                        <span className="inline-flex items-center gap-1.5">
-                          {plan.kind === "person" ? (
-                            <UserRound className="h-3 w-3 text-muted-foreground" />
-                          ) : (
-                            <Building2 className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          {row.displayName || "—"}
-                        </span>
-                      </td>
-                      <td className="max-w-56 truncate px-2.5 py-1.5 text-muted-foreground">
-                        {[...row.emails, ...row.phones].join(" · ") || "—"}
-                      </td>
-                      {plan.kind === "person" && (
-                        <td className="px-2.5 py-1.5 text-muted-foreground">
-                          {row.companyName ? (
-                            row.existingEmployer ? (
-                              <EntityRef
-                                token="party"
-                                id={row.existingEmployer.id}
-                                name={row.existingEmployer.display_name}
-                                openInNewTab
-                                alwaysShowActions
-                              />
-                            ) : (
-                              <span>
-                                {row.companyName}
-                                {row.status === "create" ? " (new)" : ""}
-                              </span>
-                            )
-                          ) : (
-                            "—"
-                          )}
-                        </td>
-                      )}
-                      <td className="px-2.5 py-1.5">
-                        <span
-                          className={cn(
-                            "rounded px-1.5 py-0.5 text-[11px] font-medium",
-                            STATUS_META[row.status].className,
-                          )}
-                        >
-                          {STATUS_META[row.status].label}
-                        </span>
-                      </td>
-                      <td className="max-w-72 px-2.5 py-1.5 text-muted-foreground">
-                        {row.existing && (
-                          <EntityRef
-                            token="party"
-                            id={row.existing.id}
-                            name={row.existing.display_name}
-                            openInNewTab
-                            alwaysShowActions
-                          />
-                        )}
-                        {row.duplicateOfRow !== undefined && (
-                          <span>same as row {row.duplicateOfRow}</span>
-                        )}
-                        {row.problems.length > 0 && (
-                          <span
-                            className={cn(
-                              row.existing || row.duplicateOfRow !== undefined
-                                ? "ml-1.5"
-                                : "",
-                            )}
-                          >
-                            {row.problems.join("; ")}
-                            <ErrorAlchemyMenu />
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ImportPreviewTable
+              plan={plan}
+              mapping={mapping}
+              selectedRowNumbers={selectedRowNumbers}
+              onSelectedRowNumbersChange={setSelectedRowNumbers}
+            />
           </div>
         )}
 

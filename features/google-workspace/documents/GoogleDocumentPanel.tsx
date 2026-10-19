@@ -242,7 +242,7 @@ function KeepAndArchiveActions({
       onDetached();
     } catch (error: unknown) {
       // NOTHING FAILS SILENTLY, and never with the raw wire sentence either:
-      // `presentOrganizationRefusal` recognises the fail-closed refusal and
+      // `presentOrganizationRefusal` recognizes the fail-closed refusal and
       // shows the honest, actionable toast instead of "Select an organization
       // before sending this request."
       if (presentOrganizationRefusal(error, { act: "kept" })) return;
@@ -379,7 +379,7 @@ function BodyView({ row }: { row: GoogleDocumentRow }) {
   const body = row.body_text?.trim() ?? "";
   const href = googleFileHref(row);
   if (!body) {
-    // 🚨 N12 — NEVER AN INSTRUCTION THE SCREEN CANNOT HONOUR. This copy told the
+    // 🚨 N12 — NEVER AN INSTRUCTION THE SCREEN CANNOT HONOR. This copy told the
     // person to open the file in Google on a record that offered no way to; the
     // door is derived from the file id now, and the sentence appears only with it.
     return (
@@ -642,10 +642,10 @@ export function GoogleDocumentPanel({ initialRow }: { initialRow: GoogleDocument
           </p>
         ) : row.mime_kind !== "document" ? (
           // 🚨 Cursor Bugbot (PR 228, thread 4043568378) — this composer only
-          // ever called `appendGoogleDocument` and was labelled "Add to the
+          // ever called `appendGoogleDocument` and was labeled "Add to the
           // end of this doc", so ANY non-document record (`mime_kind`
           // "spreadsheet" or "other") presented a write the Docs API cannot
-          // honour and would have failed at Google, not here. Never guessed
+          // honor and would have failed at Google, not here. Never guessed
           // from the title: `mime_kind` is the type the row itself carries.
           // F-67 fixed `spreadsheet` by pointing at the real A1 range editor,
           // but the sentence it wrote was hardcoded and ran for `other` too —

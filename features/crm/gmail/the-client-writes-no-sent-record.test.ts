@@ -14,9 +14,9 @@
 //
 // TWO WRITERS WOULD BE THE DEFECT COMING BACK: the same send would land on the
 // timeline twice, or land twice with different facts. So this proves the browser
-// writes NOTHING on a send — behaviourally (the real transport, with the HTTP
+// writes NOTHING on a send — behaviorally (the real transport, with the HTTP
 // call stubbed, touching no Supabase client) and as a CENSUS over the feature's
-// own source, because a future edit could add a write this behavioural test does
+// own source, because a future edit could add a write this behavioral test does
 // not happen to run through.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";

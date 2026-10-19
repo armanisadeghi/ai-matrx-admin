@@ -5,7 +5,7 @@
 // WHAT THIS SUITE IS FOR. Before this component existed, a key whose registry
 // row says `overridable_by = {organization, table}` could only ever be written
 // at `organization` from this screen: the table rung resolved, the database
-// honoured it on every write, and no human could reach it. These three cases
+// honored it on every write, and no human could reach it. These three cases
 // are the three things a person actually does with an exception — see the ones
 // that exist, add one, take one away — and each is asserted through the REAL
 // component tree (the section, the one editor row, the one control renderer).

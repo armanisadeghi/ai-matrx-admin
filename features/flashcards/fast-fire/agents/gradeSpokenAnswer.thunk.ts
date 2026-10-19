@@ -56,7 +56,7 @@ export interface GradeSpokenAnswerArgs {
   itemId?: string;
   method?: string;
   sessionId?: string | null;
-  /** For telemetry / folder labelling. */
+  /** For telemetry / folder labeling. */
   surface?: string;
   /** Canonical `ui_surface.name` of the lane driving this grade (threads into
    *  the shared grader launch so surface bindings resolve). */

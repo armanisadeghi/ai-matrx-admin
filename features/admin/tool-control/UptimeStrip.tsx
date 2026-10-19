@@ -10,7 +10,7 @@ const CELL_CLASS = {
   none: "bg-muted",
 } as const;
 
-/** The last 48 hours, one cell per hour: green answered, amber some failed, red mostly failed, grey quiet. */
+/** The last 48 hours, one cell per hour: green answered, amber some failed, red mostly failed, gray quiet. */
 export function UptimeStrip({ rows }: { rows: readonly StripRow[] }) {
   const cells = stripCells(rows);
   return (

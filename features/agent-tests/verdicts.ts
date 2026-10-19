@@ -47,7 +47,7 @@ export const RUN_STATUS_META: Record<
   running: { label: "Running", tone: "info", live: true },
   succeeded: { label: "Finished", tone: "success", live: false },
   failed: { label: "Failed", tone: "destructive", live: false },
-  cancelled: { label: "Cancelled", tone: "neutral", live: false },
+  cancelled: { label: "Canceled", tone: "neutral", live: false },
   paused_limit: { label: "Paused: spend cap", tone: "warning", live: false },
   paused_approval: { label: "Paused: approval", tone: "warning", live: false },
   paused_credential: { label: "Paused: key", tone: "warning", live: false },

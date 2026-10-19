@@ -101,7 +101,7 @@ export const PATROLS = [
     rrule: "FREQ=WEEKLY;BYDAY=TU;BYHOUR=0;BYMINUTE=10",
     cadence: "Tuesdays 12:10 AM",
     runInstruction:
-      "Catalogue poorer duplicates and automatically replace them when one canonical primitive clearly subsumes the copy with bounded behavior risk. Create focused tasks for missing machinery; escalate only competing product behavior.",
+      "Catalog poorer duplicates and automatically replace them when one canonical primitive clearly subsumes the copy with bounded behavior risk. Create focused tasks for missing machinery; escalate only competing product behavior.",
   },
   {
     patrolId: "P3",
@@ -349,7 +349,7 @@ CHECK:
 - SELF-REPAIR CONTRACT: retry, reconcile, or create focused machinery work for operational failures without asking Arman to diagnose them. Ask Arman only when a genuine product choice, policy exception, external account/capacity decision, or destructive action requires his authority. Phrase that request as one ordinary-language question with the consequences of each option.
 - ALL-REPOSITORY REPAIR CONTRACT: run from ${PATROL_PATHS.workspaceRoot}, where every Matrx repository is directly available. Trace deterministic failures into the owning repository and repair internal tools, integrations, local services, or orchestration instead of turning them into Arman's diagnosis task. Use each repository's own instructions and authorized local credentials/browser path. Report an external blocker only after the in-scope repair paths are genuinely exhausted.
 
-RESPONSE: do not publish a daily catalogue of unchanged defects. If every patrol has independently verified zero backlog, return one line: "PATTERN PATROL FLEET HEALTHY — ZERO VERIFIED BACKLOG." If eradication work is active, return one line with the number of active repair waves and newly closed units. Use "AUTOMATION DEGRADED — ACTION REQUIRED" only for a stalled repair wave, configuration failure, or hard blocker; name only the affected patrol and automatic next step. Ask a question only when Arman truly must decide. Never make incomplete work look clean.`;
+RESPONSE: do not publish a daily catalog of unchanged defects. If every patrol has independently verified zero backlog, return one line: "PATTERN PATROL FLEET HEALTHY — ZERO VERIFIED BACKLOG." If eradication work is active, return one line with the number of active repair waves and newly closed units. Use "AUTOMATION DEGRADED — ACTION REQUIRED" only for a stalled repair wave, configuration failure, or hard blocker; name only the affected patrol and automatic next step. Ask a question only when Arman truly must decide. Never make incomplete work look clean.`;
 }
 
 export function automationUpdateSpecs(): AutomationUpdateSpec[] {

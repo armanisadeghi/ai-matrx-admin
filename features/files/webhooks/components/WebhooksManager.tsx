@@ -391,7 +391,7 @@ export function WebhooksManager() {
   );
   // ONE CUSTOM TABLE (lane INTEG-CLIENTS, F19): a custom table's changes reach a
   // webhook only when the webhook names that table, so "what to listen to" is either the
-  // catalogue below or one table. The list holds every custom table the person can open, in ANY of
+  // catalog below or one table. The list holds every custom table the person can open, in ANY of
   // their organizations (never narrowed by the active one); the webhook is filed in the chosen
   // table's OWN organization.
   const ALL_EVENTS_SCOPE = "__catalogue__";

@@ -10,7 +10,7 @@
  * inline in prose she was meant to read. They are not a rendering artefact and
  * the agent did not truncate them: they are EXACT stored rule ids, cut at 48
  * characters by `kebabRuleId`'s `.slice(0, 48)` at mint time. The agent cites
- * the handle it was given, verbatim, which is the correct behaviour for an
+ * the handle it was given, verbatim, which is the correct behavior for an
  * agent — a ruling that paraphrased its own citations would be worse.
  *
  * So the fix belongs on the READING side, and it is a resolution, never a
@@ -321,7 +321,7 @@ const DECLARED_TOKEN = /\b(?:not_applicable)\b/g;
  * It is the same shape as `not_applicable` above and has the same owner. The
  * key comes out of a schema WE declared and handed the model
  * (`aidream/services/masterworks/build.py`, the Editor's output shape); the
- * model quoted what it was given, which is the correct behaviour for an agent
+ * model quoted what it was given, which is the correct behavior for an agent
  * citing its own input; and the READING side is where it becomes words. A
  * closed list was the right answer for one enum value and the wrong one for a
  * schema that grows — so the rule is now the SHAPE, shared with

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * File → Page setup, Google Docs' dialog: Pages / Pageless, orientation, paper size, page colour,
+ * File → Page setup, Google Docs' dialog: Pages / Pageless, orientation, paper size, page color,
  * margins in inches, and "Set as default" for new documents. It edits values only; the host
  * decides how they reach the document (Univer's `docs.command.page-setup`).
  */

@@ -40,7 +40,7 @@ export type ReminderChannel = "preferences" | "in_app" | "email" | "sms" | "off"
 export type StopRule = "yield_flat" | "coverage_met" | "either" | "horizon_only";
 
 /**
- * Every behaviour of a plan, as the Expert chose it. Each field opens at the
+ * Every behavior of a plan, as the Expert chose it. Each field opens at the
  * `masterwork.capture_plan` knob's resolved value and is then the PLAN's own —
  * changing the knob later never rewrites a running plan behind someone's back.
  */

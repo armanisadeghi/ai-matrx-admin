@@ -2,9 +2,9 @@
 
 /**
  * The floating toolbar's sections for words on the canvas (`SelectionToolbar`):
- *  - sticky notes: the six sticky colours, right on the bar (FigJam), and
+ *  - sticky notes: the six sticky colors, right on the bar (FigJam), and
  *    alignment;
- *  - plain text: size (S / M / L / XL), bold, colour and alignment (tldraw).
+ *  - plain text: size (S / M / L / XL), bold, color and alignment (tldraw).
  * Each change is ONE undo step across everything selected
  * (`BoardStore.restyleShapes`).
  */

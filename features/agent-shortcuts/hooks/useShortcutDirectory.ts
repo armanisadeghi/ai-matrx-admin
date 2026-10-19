@@ -135,7 +135,7 @@ export function useShortcutDirectory({
       // Worse, its scope CASE tests `created_by IS NOT NULL → 'user'` BEFORE it
       // tests the organization, and `mandate.vw_shortcut`'s write trigger does
       // `COALESCE(NEW.created_by, v_actor)` — so a global shortcut an admin just
-      // created came back labelled `user` and, because it was written into the
+      // created came back labeled `user` and, because it was written into the
       // map SECOND, relabelled the correct row "Personal / <that admin>".
       // A row the GLOBAL read already claimed is global by definition, so it is
       // written LAST and a list of non-global rows cannot overrule it.

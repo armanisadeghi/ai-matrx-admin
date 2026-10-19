@@ -67,7 +67,7 @@ describe("normalizeAuthDestination", () => {
   });
 });
 
-describe("readAuthDestination — every alias is honoured", () => {
+describe("readAuthDestination — every alias is honored", () => {
   it("reads the canonical param", () => {
     expect(readAuthDestination(new URLSearchParams("redirectTo=/tasks"))).toBe(
       "/tasks",

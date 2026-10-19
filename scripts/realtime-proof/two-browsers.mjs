@@ -199,7 +199,7 @@ async function main() {
       window.__realtimeProofToken = t;
     }, marcoToken);
 
-    // Tap the socket before the app opens it, so the assertion about what travelled is made
+    // Tap the socket before the app opens it, so the assertion about what traveled is made
     // against what this browser actually received rather than against the database.
     await marcoPage.addInitScript(() => {
       const OriginalWebSocket = window.WebSocket;

@@ -6,7 +6,7 @@
  * wrapClientForCapture (which installs the deadline) → postgrest-js's retry
  * loop and error shaping → the capture store and tier rules. A stalled read is
  * captured once as `TimeoutError` under supabase-browser-transport-loss —
- * never as a cancelled request, never retried.
+ * never as a canceled request, never retried.
  */
 import { createClient } from "@supabase/supabase-js";
 

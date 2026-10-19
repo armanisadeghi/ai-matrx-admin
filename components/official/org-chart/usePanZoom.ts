@@ -34,7 +34,7 @@ export function usePanZoom(
   { minZoom = 0.15, maxZoom = 2 }: PanZoomOptions = {},
 ) {
   const [view, setView] = useState<PanZoomView>({ x: 0, y: 0, zoom: 1 });
-  /** True while a programmatic move (fit / centre / button zoom) should glide. */
+  /** True while a programmatic move (fit / center / button zoom) should glide. */
   const [smooth, setSmooth] = useState(false);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{
@@ -199,7 +199,7 @@ export function usePanZoom(
     return true;
   };
 
-  /** Centre a world-space point, keeping (or setting) the zoom. */
+  /** Center a world-space point, keeping (or setting) the zoom. */
   const centerOn = (wx: number, wy: number, zoom?: number) => {
     const { w, h } = size();
     setSmooth(true);

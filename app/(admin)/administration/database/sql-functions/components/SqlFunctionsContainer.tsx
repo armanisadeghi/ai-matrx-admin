@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Search, RefreshCw, Plus, X } from "lucide-react";
 import SqlFunctionsList from "./SqlFunctionsList";
+import { ListDetailSplit } from "@/components/official/side-panel/ListDetailSplit";
 import SqlFunctionDetail from "./SqlFunctionDetail";
 import SqlFunctionForm from "./SqlFunctionForm";
 import { getSqlFunctionKey } from "../utils/functionIdentity";
@@ -387,15 +388,16 @@ export default function SqlFunctionsContainer({
               </div>
             </div>
 
-            {/* Split area: list (top) + detail panel (bottom) */}
-            {selectedFunction ? (
-              /* When a function is selected: list shrinks to content (capped), detail fills the rest */
-              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                {/* List — natural content height, capped so detail always has room */}
-                <div
-                  className="shrink-0 overflow-auto"
-                  style={{ maxHeight: "260px" }}
-                >
+            {/* The list stays whole: opening a function turns it into the sidebar beside the detail. */}
+            <ListDetailSplit
+              panelId="sql-function-record"
+              open={selectedFunction !== null}
+              aria-label="SQL function"
+              sizes={{ defaultPx: 760, minPx: 420, maxPx: 1300 }}
+              maxShare={0.7}
+              className="flex-1"
+              list={
+                <div className="flex-1 min-h-0 overflow-auto">
                   {/* A create/update/delete refusal; the list read's own failure is the table's (RC-B12 r13). */}
                   {error && !loadError ? (
                     <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 m-2 text-red-800 dark:text-red-300 text-sm">
@@ -403,25 +405,23 @@ export default function SqlFunctionsContainer({
                       <ErrorAlchemyMenu error={error.message} />
                     </div>
                   ) : null}
-                    <SqlFunctionsList
-                      functions={functions}
-                      loading={loading || isRefreshing}
-                      read={readOf({ loading, error: loadError }, { what: "SQL functions", onRetry: refreshFunctions })}
-                      selectedFunctionKey={selectedFunctionKey}
-                      onViewDetails={(func) => selectFunction(func)}
-                      onEditFunction={handleEditFunction}
-                      onDeleteFunction={handleDeleteFunction}
-                      onSortChange={updateUrlSort}
-                      sortField={sort.field}
-                      sortDirection={sort.direction}
-                    />
+                  <SqlFunctionsList
+                    functions={functions}
+                    loading={loading || isRefreshing}
+                    read={readOf({ loading, error: loadError }, { what: "SQL functions", onRetry: refreshFunctions })}
+                    selectedFunctionKey={selectedFunctionKey}
+                    presentation={selectedFunction ? "list" : "table"}
+                    onViewDetails={(func) => selectFunction(func)}
+                    onEditFunction={handleEditFunction}
+                    onDeleteFunction={handleDeleteFunction}
+                    onSortChange={updateUrlSort}
+                    sortField={sort.field}
+                    sortDirection={sort.direction}
+                  />
                 </div>
-
-                {/* Divider */}
-                <div className="shrink-0 border-t-2 border-slate-200 dark:border-slate-700" />
-
-                {/* Detail panel — fills remaining space */}
-                <div className="flex-1 min-h-0 overflow-hidden">
+              }
+              detail={
+                selectedFunction ? (
                   <SqlFunctionDetail
                     key={selectedFunctionKey ?? undefined}
                     func={selectedFunction}
@@ -435,34 +435,9 @@ export default function SqlFunctionsContainer({
                       )
                     }
                   />
-                </div>
-              </div>
-            ) : (
-              /* No selection: list fills everything */
-              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-                <div className="flex-1 overflow-auto">
-                  {/* A create/update/delete refusal; the list read's own failure is the table's (RC-B12 r13). */}
-                  {error && !loadError ? (
-                    <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3 m-2 text-red-800 dark:text-red-300 text-sm">
-                      {error.message}
-                      <ErrorAlchemyMenu error={error.message} />
-                    </div>
-                  ) : null}
-                    <SqlFunctionsList
-                      functions={functions}
-                      loading={loading || isRefreshing}
-                      read={readOf({ loading, error: loadError }, { what: "SQL functions", onRetry: refreshFunctions })}
-                      selectedFunctionKey={selectedFunctionKey}
-                      onViewDetails={(func) => selectFunction(func)}
-                      onEditFunction={handleEditFunction}
-                      onDeleteFunction={handleDeleteFunction}
-                      onSortChange={updateUrlSort}
-                      sortField={sort.field}
-                      sortDirection={sort.direction}
-                    />
-                </div>
-              </div>
-            )}
+                ) : null
+              }
+            />
           </TabsContent>
 
           {/* CREATE TAB */}

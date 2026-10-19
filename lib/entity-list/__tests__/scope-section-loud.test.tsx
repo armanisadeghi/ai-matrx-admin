@@ -29,7 +29,7 @@ import { createRoot, type Root } from "react-dom/client";
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 // The popover measures itself; jsdom has no ResizeObserver. This is the panel's
-// own layout machinery, not the behaviour under test.
+// own layout machinery, not the behavior under test.
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver =
   class {
     observe() {}

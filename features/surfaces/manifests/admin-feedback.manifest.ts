@@ -147,7 +147,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *    undeclared.
  *  - IDS AND DERIVED KEYS. `announcement_id`, `category_id`, and the category
  *    `slug` (derived from the name on save when left blank) are identity, not
- *    copy. The colour and sort order are presentation nobody would ask an agent
+ *    copy. The color and sort order are presentation nobody would ask an agent
  *    to pick.
  *  - CREATE AND DELETE. Deleting a feedback record destroys a user's report and
  *    deleting a category orphans every row filed under it. Delete stays human,
@@ -233,7 +233,7 @@ const writeTargets: SurfaceWriteTarget[] = [
       `\`name\` — the category label, rendered as a badge on every feedback row filed under it; a non-empty plain-text string, ONE line only, at most ${CATEGORY_NAME_MAX_CHARS} characters. ` +
       `\`description\` — what belongs in this category; a non-empty plain-text string, at most ${CATEGORY_DESCRIPTION_MAX_CHARS} characters. Plain text, no markup is parsed. ` +
       `Send both as plain text, not JSON and not JSON-encoded. ` +
-      `NOT writable here: the URL slug (derived from the name on save), the badge colour, sort order, whether the category is active, and deleting a category — deleting one orphans every feedback row filed under it. ` +
+      `NOT writable here: the URL slug (derived from the name on save), the badge color, sort order, whether the category is active, and deleting a category — deleting one orphans every feedback row filed under it. ` +
       `Refused while the form is saving.`,
     valueType: "object",
     updatesValue: "category_editor",

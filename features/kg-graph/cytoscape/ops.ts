@@ -127,7 +127,7 @@ export function fitTo(
   cy.animate({ fit: { eles, padding } }, { duration: 400, easing: EASE });
 }
 
-/** Animated zoom about the viewport centre. */
+/** Animated zoom about the viewport center. */
 export function zoomByFactor(cy: cytoscape.Core, factor: number): void {
   cy.stop(true);
   const next = Math.min(Math.max(cy.zoom() * factor, cy.minZoom()), cy.maxZoom());

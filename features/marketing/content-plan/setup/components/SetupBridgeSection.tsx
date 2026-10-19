@@ -151,7 +151,7 @@ type BridgeAction =
  * routinely outlives a couple of seconds — several of them are full LLM passes
  * — so none of them may sit behind a bare spinner.
  *
- * `fillCancel` is deliberately ABSENT: cancelling is a single fast write, and a
+ * `fillCancel` is deliberately ABSENT: canceling is a single fast write, and a
  * plain busy state on the button is the honest thing to show for it.
  */
 const RUN_STAGES: Partial<Record<BridgeAction, readonly RunStage[]>> = {
@@ -358,7 +358,7 @@ export function SetupBridgeSection({
   const fillRunning = fillStatus?.status === "pending" || fillStatus?.status === "processing";
 
   // ESTIMATE BEFORE THE BUTTON — every tier priced for THIS site from measured
-  // history, per-page overrides honoured. Never enforced: it informs the click
+  // history, per-page overrides honored. Never enforced: it informs the click
   // and nothing else (a mid-run budget kill spends the money AND loses the work).
   const overrideCount = 0;
 

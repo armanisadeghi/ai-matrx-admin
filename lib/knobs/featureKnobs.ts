@@ -14,7 +14,7 @@
 //     to fire) and the value is live within a minute, everywhere.
 //   - One fetch per FEATURE per window, shared: concurrent callers await the same
 //     promise, so a kit fan-out asking eight generators for their knobs costs ONE
-//     query — and never the whole catalogue.
+//     query — and never the whole catalog.
 
 import { readAllRows } from "@ai-matrx/data/db";
 
@@ -32,7 +32,7 @@ const DEFAULT_PAGE_SIZE = 1000;
 let pageSize = DEFAULT_PAGE_SIZE;
 
 /**
- * TEST SEAM. A fixture proving the catalogue is paged would otherwise need
+ * TEST SEAM. A fixture proving the catalog is paged would otherwise need
  * 1001 rows; this lets it stand up three. Pass 0 to restore the real size.
  */
 export function __setFeatureKnobPageSizeForTests(rows: number): void {
@@ -43,7 +43,7 @@ type KnobValue = unknown;
 
 /**
  * ONE FEATURE AT A TIME (2026-10-09, startup reads). Every knob read used to page the WHOLE
- * catalogue (~3,500 rows, four requests) — on every signed-in page load, because a single
+ * catalog (~3,500 rows, four requests) — on every signed-in page load, because a single
  * startup read (the workspace wait, the spend popover) asked for one knob. A read now fetches only
  * its own feature's rows: one small request, cached per feature for the same 60 s window, shared by
  * concurrent callers of that feature. Still paged through `readAllRows` — a feature is a list we

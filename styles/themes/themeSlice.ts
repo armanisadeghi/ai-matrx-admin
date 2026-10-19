@@ -75,7 +75,7 @@ export default themeSlice.reducer;
 //   - broadcasts setMode/toggleMode (with its resolved source) across tabs in <20ms
 //   - persists `mode` to localStorage (key `matrx:theme`) synchronously
 //   - pre-paints `.dark` class + `data-theme` attribute before first paint via
-//     `<SyncBootScript />`, honouring OS `prefers-color-scheme` on first visit
+//     `<SyncBootScript />`, honoring OS `prefers-color-scheme` on first visit
 //
 // See `docs/concepts/full-sync-boardcast-storage/phase-1-plan.md` §6.
 
@@ -137,7 +137,7 @@ export const themePolicy = definePolicy<ThemeState>({
 // ---- Saved-choice-known signal ------------------------------------------
 //
 // Until the sync boot has restored the saved choice, Redux holds the initial
-// "system" for EVERYONE, so nothing may repaint or post the device colour over
+// "system" for EVERYONE, so nothing may repaint or post the device color over
 // the server-painted theme. boot.ts calls `markThemeChoiceKnown()` once the
 // saved mode has been read; StoreProvider registers its "system" reconcile via
 // `whenThemeChoiceKnown`. Guard: providers/__tests__/theme-boot-never-flips.test.tsx

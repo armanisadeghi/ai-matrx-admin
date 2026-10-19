@@ -136,14 +136,14 @@ export function BackgroundDialog({ open, onOpenChange, deck, current, dispatch, 
             Reset
           </Button>
           <Button variant="primary" onClick={() => apply({ color })}>
-            Apply colour
+            Apply color
           </Button>
         </>
       }
     >
-      <Row label="Colour">
-        {/* ui-exception: a raw colour value, not user-authored text */}
-        <input type="color" aria-label="Background colour" value={color} onChange={(e) => setColor(e.target.value)} className="h-7 w-14 rounded border border-border bg-transparent" />
+      <Row label="Color">
+        {/* ui-exception: a raw color value, not user-authored text */}
+        <input type="color" aria-label="Background color" value={color} onChange={(e) => setColor(e.target.value)} className="h-7 w-14 rounded border border-border bg-transparent" />
       </Row>
       <Row label="Image">
         <Button variant="outline" onClick={() => fileRef.current?.click()}>
@@ -299,16 +299,16 @@ export function ThemeBuilderDialog({ open, onOpenChange, deck, dispatch }: Commo
   const t = resolveDeckTheme(deck.theme ?? undefined);
   const set = (theme: Record<string, string>) => dispatch({ type: "setTheme", theme });
   const colors: Array<[string, string, string]> = [
-    ["primaryColor", "Heading colour", t.primaryColor ?? "#4F46E5"],
-    ["secondaryColor", "Second colour", t.secondaryColor ?? "#7C3AED"],
-    ["accentColor", "Accent colour", t.accentColor ?? "#06B6D4"],
-    ["textColor", "Text colour", t.textColor ?? "#0F172A"],
+    ["primaryColor", "Heading color", t.primaryColor ?? "#4F46E5"],
+    ["secondaryColor", "Second color", t.secondaryColor ?? "#7C3AED"],
+    ["accentColor", "Accent color", t.accentColor ?? "#06B6D4"],
+    ["textColor", "Text color", t.textColor ?? "#0F172A"],
   ];
   return (
     <Shell open={open} onOpenChange={onOpenChange} title="Theme builder" marker="data-deck-theme-builder">
       {colors.map(([key, label, value]) => (
         <Row key={key} label={label}>
-          {/* ui-exception: a raw colour value, not user-authored text */}
+          {/* ui-exception: a raw color value, not user-authored text */}
           <input type="color" aria-label={label} value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#000000"} onChange={(e) => set({ [key]: e.target.value })} className="h-7 w-14 rounded border border-border bg-transparent" />
         </Row>
       ))}

@@ -230,7 +230,7 @@ export function NewSoftMandatePage({ level, orgId = null, orgName = null }: NewS
    * server's verbatim key refusal. Nothing cleared it, so filling in the name,
    * the key and the goal left a red "still needs a name (the top field), the
    * key, the goal" standing under a form that had all three, three inches from
-   * a grey line that had updated correctly. Two sentences about one form, one
+   * a gray line that had updated correctly. Two sentences about one form, one
    * of them false.
    *
    * The missing-pieces refusal is a pure function of the fields, so it is now

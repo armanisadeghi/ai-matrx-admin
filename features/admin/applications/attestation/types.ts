@@ -3,7 +3,7 @@
 // Config attestation (Applications › Attestation): is every config value an app
 // has stored actually read by the build installs run? Rows come from
 // platform.config_attestation_status / config_attestation_releases (platform-admin
-// SECURITY DEFINER doors) and platform.config_manifest. The colour of each row is
+// SECURITY DEFINER doors) and platform.config_manifest. The color of each row is
 // decided ONLY in SQL (the status RPC's CASE); this UI renders it.
 // System of record: common-docs/systems/platform/app-config/attestation/FEATURE.md
 
@@ -27,7 +27,7 @@ export interface AttestationApplication {
   updated_at: string;
 }
 
-/** The manifest's build-fixed bootstrap: shown as information, never coloured. */
+/** The manifest's build-fixed bootstrap: shown as information, never colored. */
 export interface ManifestBootstrap {
   database_url?: string;
   database_realtime_url?: string;

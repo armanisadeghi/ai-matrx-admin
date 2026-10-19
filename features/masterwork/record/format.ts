@@ -187,7 +187,7 @@ export function tallyContributions(
  * at all, so a seeded turn the Expert never answered is never counted, never
  * adds a character, and can never be quoted.
  *
- * Never filter by recognising the sentence: it lives in an `agent.definition`
+ * Never filter by recognizing the sentence: it lives in an `agent.definition`
  * row and changes the moment someone edits that agent.
  */
 export interface ExpertTurnSummary {
@@ -201,7 +201,7 @@ export interface ExpertTurnSummary {
   firstExpertLine: string | null;
 }
 
-/** First non-empty line, ellipsised — how an Expert recognises a conversation. */
+/** First non-empty line, ellipsised — how an Expert recognizes a conversation. */
 export function firstLine(text: string, max = 140): string | null {
   const line = text.split("\n").map((l) => l.trim()).find(Boolean);
   if (!line) return null;

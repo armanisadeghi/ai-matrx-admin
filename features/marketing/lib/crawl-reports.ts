@@ -28,7 +28,7 @@ export interface CrawlReportDefinition {
 }
 
 /**
- * One canonical catalogue drives the report index, route validation, page
+ * One canonical catalog drives the report index, route validation, page
  * headings, metadata, and navigation. Add a report here before adding UI.
  */
 export const CRAWL_REPORTS: readonly CrawlReportDefinition[] = [

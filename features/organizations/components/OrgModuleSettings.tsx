@@ -3,11 +3,11 @@
 /**
  * OrgModuleSettings — per-module org rules, live.
  *
- * Every scopeable module from the resource catalogue, with org-level controls
+ * Every scopeable module from the resource catalog, with org-level controls
  * persisted to `org_module_settings` (admin-gated RPC). Two controls are
  * enforced server-side today (Members can add + Needs approval, via
  * `share_resource_with_org`); the rest are saved for upcoming enforcement and
- * labelled accordingly. Non-admins see the controls read-only.
+ * labeled accordingly. Non-admins see the controls read-only.
  */
 
 import React from "react";

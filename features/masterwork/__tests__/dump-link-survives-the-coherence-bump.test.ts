@@ -37,7 +37,7 @@ let row: Row;
 /** Fires once, between the CAS read and the CAS write, like the live Partner. */
 let bumpBeforeNextWrite: (() => void) | null = null;
 
-/** A fake `platform.rulebook` with the real row's CAS behaviour. */
+/** A fake `platform.rulebook` with the real row's CAS behavior. */
 function table() {
   const filters: Record<string, unknown> = {};
   let payload: Record<string, unknown> | null = null;
@@ -80,14 +80,14 @@ function table() {
 
 
 /**
- * THE `rulebook_save` DOOR, faked with the behaviour the LIVE one has.
+ * THE `rulebook_save` DOOR, faked with the behavior the LIVE one has.
  *
  * `platform` is not a client-writable schema (chair ruling, VERIFIER-8 HIGH-3), so the service
  * under test no longer sends an UPDATE to `platform.rulebook` — it calls `public.rulebook_save`,
  * which carries the compare-and-swap INSIDE the database and answers NULL on a miss. That is the
- * same three-state answer this fixture always modelled; only the transport moved.
+ * same three-state answer this fixture always modeled; only the transport moved.
  *
- * Two behaviours are modelled on purpose, because this guard is about exactly them:
+ * Two behaviors are modeled on purpose, because this guard is about exactly them:
  * the CAS (`p_expected_version`, a miss is NULL and not an error — a conflict retry must stay a
  * conflict) and the MERGE (`p_metadata_patch` merges into `metadata` at the top level, never
  * replacing the column; a fake that replaced it would pass a service that had kept its

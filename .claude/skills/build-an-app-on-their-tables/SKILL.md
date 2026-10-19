@@ -13,7 +13,7 @@ what. Never copy data, never add a table the app needs "for itself" when the per
 it, never read with a service key.
 
 **The person builds it herself first.** `/applets/build` takes one sentence ("a page where I see my
-clients and approve their posts"): it reads the **catalogue** as her, runs the mandate `applets.build`
+clients and approve their posts"): it reads the **catalog** as her, runs the mandate `applets.build`
 (the builder; `applets.fix` for "Fix it"), saves the record as a draft, previews it with her real rows
 and every write held back, and "Use it" publishes. "Change it" on the same page saves a new version.
 Only build by hand when that path cannot (and say why in your report).
@@ -24,11 +24,11 @@ Worked examples on Holloway Creative (org `344cfaa8-2b0c-4971-854a-9694614816f2`
 Read either: `select files, pages, sources, mandates from app.definition where slug = '<slug>'`.
 
 Contract: `common-docs/projects/applets/CONTRACTS.md` (§2 hooks, §8 record). Host:
-`features/applets-host/FEATURE.md`. Catalogue: `@ai-matrx/applets/catalogue`.
+`features/applets-host/FEATURE.md`. Catalog: `@ai-matrx/applets/catalogue`.
 
 ## Steps (by hand)
 
-1. **Read the catalogue — never guess an id.** `readAppletCatalogue(client, { organizationId, request })`
+1. **Read the catalog — never guess an id.** `readAppletCatalogue(client, { organizationId, request })`
    (`@ai-matrx/applets/catalogue`, with the person's own client) answers her tables with `table_id`,
    `organization_id`, field keys, kinds, choices, sample rows and a `suggested_alias`; platform entity
    types; the jobs that fit the request with their input names and output kinds; and the hooks
@@ -60,7 +60,7 @@ Contract: `common-docs/projects/applets/CONTRACTS.md` (§2 hooks, §8 record). H
    Pages: `<Pages layout="tabs" />` in the entry file, `usePage().params`, `<Link to="/clients/123">`.
 3. **Insert the record** in her organization (explicit `organization_id`; slugs are unique
    platform-wide): `files` (name → source), `entry`, `pages` (`[{ path, title, file, parent? }]`),
-   `sources` (`[{ alias, table_id, organization_id }]` copied from the catalogue), `mandates`
+   `sources` (`[{ alias, table_id, organization_id }]` copied from the catalog), `mandates`
    (`[{ alias, key }]`, keys from the catalogue's jobs), `component_code` `''`, `shell_kind`
    `'fully_custom'`, `status` `'draft'` until it works, then `'published'`. Applets name jobs, never
    agents: leave `agent_id` null. Through the MCP, SQL holding JS text can hang — send each file

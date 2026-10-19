@@ -4,7 +4,7 @@
  * THE DEFECTS (G6B review, 2026-10-02, nightly clone):
  *   1. Under "All types", every row repeated its group heading on the right
  *      ("Workspace" heading, then "Note … Workspace", "Task … Workspace").
- *   2. A Note action card was labelled "Sources & Outputs" while the picker
+ *   2. A Note action card was labeled "Sources & Outputs" while the picker
  *      filed Note under "Workspace": the card read the catalog's `family`
  *      (`platform.entity_types.category`), the picker read its own group rule.
  */

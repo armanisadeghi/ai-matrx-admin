@@ -176,14 +176,14 @@ describe("the RSVP page", () => {
     view.unmount();
   });
 
-  it("a cancelled meeting says so, takes no answer and offers no join", async () => {
+  it("a canceled meeting says so, takes no answer and offers no join", async () => {
     mockInvitation = invitation({
       cancelledAt: "2026-10-01T00:00:00.000Z",
       cancellationReason: "Client moved to Q1",
     });
     const view = await render("accepted");
     expect(view.text()).toContain(
-      "This meeting was cancelled: “Client moved to Q1”",
+      "This meeting was canceled: “Client moved to Q1”",
     );
     expect(view.text()).not.toContain("Going?");
     expect(view.text()).not.toContain("Join the meeting");

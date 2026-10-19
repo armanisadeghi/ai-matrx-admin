@@ -1,7 +1,6 @@
 import type { Assist } from "@/features/assists/types";
 import {
   brandAssistDedupeKey,
-  costLine,
   offersToEmit,
   type BrandAssistOffers,
 } from "../select-offers";
@@ -64,12 +63,5 @@ describe("brand assist offers", () => {
     data.offers[0].done = true;
     const history = [row("colors_fonts", {}), row("name_volume", { status: "accepted" })];
     expect(offersToEmit(data, history, NOW)).toEqual([]);
-  });
-
-  it("states cost exactly in points and dollars", () => {
-    expect(costLine({ cost_points: 0, cost_usd: "0" })).toBe("Free");
-    expect(costLine({ cost_points: 1000, cost_usd: "0.05" })).toBe("1,000 points ($0.05)");
-    expect(costLine({ cost_points: 100, cost_usd: "0.005" })).toBe("100 points ($0.0050)");
-    expect(costLine({ cost_points: null, cost_usd: null })).toBe("Price not set");
   });
 });

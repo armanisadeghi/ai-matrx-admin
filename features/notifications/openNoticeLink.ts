@@ -13,7 +13,7 @@
  * and the `?panels=` token hydrates the window there on first load.
  *
  * A link whose `?panels=` key has no registered hydrator cannot open in place;
- * it falls back to navigating (the pre-2026-09-30 behaviour, where the target
+ * it falls back to navigating (the pre-2026-09-30 behavior, where the target
  * page's own `UrlPanelManager` announces the unopenable key too) and says so
  * here first — console + the app's error-capture channel. Never a dead click.
  *

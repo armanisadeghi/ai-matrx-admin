@@ -1,6 +1,6 @@
 // features/marketing/seo/topical-map/views/table/__tests__/tableRows.test.ts
 //
-// R10 in the small: which header sorts the hierarchy can honour, when the
+// R10 in the small: which header sorts the hierarchy can honor, when the
 // table must flip to flat, and how the column set resolves from the knob.
 // Every case drives the REAL reducer + `selectVisibleMapTopics` for the rows.
 //
@@ -96,7 +96,7 @@ describe("flat rows", () => {
   });
 });
 
-describe("R10 — sorts the hierarchy can honour", () => {
+describe("R10 — sorts the hierarchy can honor", () => {
   it("maps name ascending and the three counts descending onto the sibling sort", () => {
     expect(classifyHierarchySort({ id: "topic", direction: "asc" })).toEqual({ kind: "sibling", sort: "name" });
     expect(classifyHierarchySort({ id: "pages", direction: "desc" })).toEqual({ kind: "sibling", sort: "pages" });

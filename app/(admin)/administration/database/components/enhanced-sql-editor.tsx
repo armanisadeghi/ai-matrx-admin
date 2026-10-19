@@ -265,7 +265,7 @@ export const EnhancedSQLEditor = ({
   //
   // NOTHING here can run a query. `handleExecuteQuery`,
   // `onClearCache` and `setUseCache` are deliberately absent: execution and
-  // cache behaviour stay human-only (see the write-target doctrine block in
+  // cache behavior stay human-only (see the write-target doctrine block in
   // admin-database.manifest.ts).
   //
   // Validation happens in the PURE core before any setState, so a bad value

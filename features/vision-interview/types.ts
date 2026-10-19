@@ -715,7 +715,7 @@ export const ROLE_TABS: { stage: InterviewStage; role: RoleKey }[] =
     return role ? [{ stage, role }] : [];
   });
 
-/** The stage whose primary is this role (for tab labelling). */
+/** The stage whose primary is this role (for tab labeling). */
 export function stageForRole(role: RoleKey): InterviewStage | null {
   return ROLE_TABS.find((t) => t.role === role)?.stage ?? null;
 }
@@ -726,7 +726,7 @@ export function defaultRoleTab(stage: InterviewStageWire): RoleKey {
 }
 
 /**
- * The record views reachable from the room's centre panel: the Scribe's
+ * The record views reachable from the room's center panel: the Scribe's
  * living document, plus the three finalize deliverables once the guided run
  * has written them. `null` == the expert's chat is on screen.
  *

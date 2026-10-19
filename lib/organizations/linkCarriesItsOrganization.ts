@@ -43,7 +43,7 @@ import { createAdminClient } from "@/utils/supabase/adminClient";
 /**
  * The query key every AI Matrx surface reads an organization from. Not a new
  * convention: `/hr` has used it since 2026-08-28 and the app's org-selection primitive
- * honours it (`lib/organizations/linkOrganization.ts`).
+ * honors it (`lib/organizations/linkOrganization.ts`).
  */
 export const ORGANIZATION_QUERY_KEY = "org";
 

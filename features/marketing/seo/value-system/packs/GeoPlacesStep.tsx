@@ -5,7 +5,7 @@
  *
  * A pack carries geo areas as ARCHETYPES with nothing in them, on purpose: "a
  * pack never carries somebody else's cities". That is right, and it was also
- * the defect — adoption wrote four labelled, banded areas that match no keyword,
+ * the defect — adoption wrote four labeled, banded areas that match no keyword,
  * so the ideal / acceptable / expansion / excluded model was a NO-OP on every
  * adopting site until somebody happened to notice. Measured 2026-08-22 on
  * datadestruction.com: all four areas empty, `inert` in meaning health.
@@ -72,7 +72,7 @@ const EMPTY_AREA: AreaDraft = { tokensText: "", places: [] };
 /**
  * Suggestions drawn from the brand's saved locations. A locality is a real
  * place name; a region ("New Jersey") is offered separately and clearly
- * labelled, because serving a whole state is a much bigger claim than sitting
+ * labeled, because serving a whole state is a much bigger claim than sitting
  * in one.
  */
 function suggestionsFromLocations(
@@ -232,7 +232,7 @@ export function GeoPlacesStep({
   /**
    * Prefill the FIRST archetype — the pack's own primary/ideal area — with the
    * cities the brand actually has addresses in, and nothing else. The wider
-   * bands are judgements only the expert can make, so they start empty rather
+   * bands are judgments only the expert can make, so they start empty rather
    * than starting wrong.
    */
   const [draft, setDraft] = useState<Record<string, AreaDraft>>({});

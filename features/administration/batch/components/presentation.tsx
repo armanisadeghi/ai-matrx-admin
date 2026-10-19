@@ -153,7 +153,7 @@ export function DeliveryBadge({ handlerStatus }: { handlerStatus: string | null 
  *
  * `liveEquivalent` is the row's ACTUAL tokens at the same model's live rate —
  * the only honest basis for a discount. `estimate` is the pre-submission guess:
- * shown only on an unsettled row and labelled "est.", never turned into a
+ * shown only on an unsettled row and labeled "est.", never turned into a
  * percentage. Printing `$0.0000 -100%` on an unbilled row would read as a
  * measured total discount; the honest cell says nothing has been billed.
  */

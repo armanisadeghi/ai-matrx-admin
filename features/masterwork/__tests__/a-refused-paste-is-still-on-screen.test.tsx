@@ -26,7 +26,7 @@
  * Doubles: the network (`callApi` via the store's `dispatch`, forced to refuse
  * exactly as the live 422 did), and the heavy `ProTextarea`/`Input` editor
  * chrome, reduced to plain controlled fields that still carry value/onChange.
- * Everything that owns the behaviour under test is real: the dialog's own
+ * Everything that owns the behavior under test is real: the dialog's own
  * `useState`, its `useDialogSitting` snapshot/apply wiring, the real
  * `createSittingStore`, and real `localStorage`.
  */

@@ -13,7 +13,7 @@
  *
  * Why a provider at all (vs a bare hook)? Two reasons:
  *   1. Different surfaces (route, modal, embedded picker) may want to
- *      override the browse behaviour later — e.g. the modal might prefer
+ *      override the browse behavior later — e.g. the modal might prefer
  *      to expand the tile inline rather than open the viewer overlay.
  *   2. The callback can take an *array* of images so consumers like the
  *      cloud-images grid can pass the entire visible page and let the

@@ -526,7 +526,7 @@ describe("the Google proposal kinds render the producer's dry run", () => {
     mockPayload = { __kind: "something_else", preview: {} } as unknown as Json;
     const node = await mount(documentAppendKind);
     expect(node.querySelectorAll('[data-testid="row"]').length).toBe(1);
-    expect(text(node, "blocked")).toContain("does not recognise");
+    expect(text(node, "blocked")).toContain("does not recognize");
     expect(text(node, "accept-effect")).toContain("Nothing");
   });
 });

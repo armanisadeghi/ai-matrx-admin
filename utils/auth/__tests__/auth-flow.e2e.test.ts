@@ -220,14 +220,14 @@ describe("Journey 6 — OAuth", () => {
 });
 
 describe("Journey 7 — the legacy links that shipped dead", () => {
-  it("honours a `?next=` link (17 of these existed)", () => {
+  it("honors a `?next=` link (17 of these existed)", () => {
     expect(loginSucceeded("/login?next=%2Fvault")).toBe("/vault");
     expect(loginSucceeded("/login?next=/podcast/studio")).toBe(
       "/podcast/studio",
     );
   });
 
-  it("honours a `?returnUrl=` link (8 of these existed)", () => {
+  it("honors a `?returnUrl=` link (8 of these existed)", () => {
     expect(loginSucceeded("/login?returnUrl=%2Fnotes")).toBe("/notes");
   });
 

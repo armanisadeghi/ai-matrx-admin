@@ -235,7 +235,7 @@ export type GoogleConnectionResourceRow = {
  * `health` would prove nothing about the status word it is judging (V17-1).
  */
 export function connectionSummary(row: ConnectionRow): GoogleConnectionSummary {
-  // 🚨 EVERY WORD THIS DOES NOT RECOGNISE USED TO BECOME `connected` (V17-1).
+  // 🚨 EVERY WORD THIS DOES NOT RECOGNIZE USED TO BECOME `connected` (V17-1).
   // The column is written by aidream and the two repos deploy independently, so
   // the day the server gained `unavailable` — "the provider or our own platform
   // configuration blocks every call" — this function would have painted the

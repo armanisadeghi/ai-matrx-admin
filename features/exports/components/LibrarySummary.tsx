@@ -293,7 +293,7 @@ export function LibrarySummary({
                     onNarrow("container_label", value);
                     setDetailsOpen(false);
                   }}
-                  empty="This export is not organised into threads or channels."
+                  empty="This export is not organized into threads or channels."
                 />
 
                 {summary.warnings.length > 0 && (

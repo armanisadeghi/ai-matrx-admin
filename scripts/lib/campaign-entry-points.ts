@@ -139,7 +139,7 @@ export function mightReach(source: string): boolean {
     return NEEDLES.some((n) => source.includes(n));
 }
 
-/** THE JUDGEMENT. Given the reaches found and the register, what is wrong? */
+/** THE JUDGMENT. Given the reaches found and the register, what is wrong? */
 export function judge(
     reaches: Reach[],
     entries: readonly CampaignEntryPoint[],

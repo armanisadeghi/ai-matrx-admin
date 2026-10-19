@@ -792,7 +792,7 @@ button.shell-nav-item {
   color: rgb(244, 114, 182); /* pink-400 */
 }
 
-/* A switch that is ON (the footer's Debug mode): the success colour, hover included. */
+/* A switch that is ON (the footer's Debug mode): the success color, hover included. */
 .shell-nav-icon.shell-nav-icon-on,
 .shell-nav-item:hover .shell-nav-icon.shell-nav-icon-on {
   color: hsl(var(--success));
@@ -897,7 +897,7 @@ button.shell-nav-item {
   font-weight: 400;
 }
 
-/* The palette's dialog close button: centred on its 48px input row. */
+/* The palette's dialog close button: centered on its 48px input row. */
 [role="dialog"]:has([data-menu-search-palette]) > button.absolute {
   top: 0.75rem;
 }
@@ -966,7 +966,7 @@ button.shell-nav-item {
 /* Keep the icon at the LEFT (`padding-left`) of the row when the sidebar
    collapses — don't snap to `justify-content: center` like the main nav
    does. Without this, the moment the user toggles collapse, the icon
-   jumps to the centre of the still-wide (208px) row, then slides ~80px
+   jumps to the center of the still-wide (208px) row, then slides ~80px
    leftward as the sidebar width animates down to 44px. With this
    override the icon stays at `iconX=12` (padding-left=0.375rem inside an
    item that starts at itemX=6) throughout the transition — the
@@ -1702,7 +1702,7 @@ button.shell-nav-flyout-item {
 /* THE HEADER BAND — and THE TOP BOUNDARY, owned ONCE here (owner, 2026-10-03).
    Page content scrolls UNDER the header (`.shell-main` is pulled up beneath
    it), so the header's own box is painted solid in the PAGE'S OWN background
-   colour: the shell's controls never sit on whatever the page put there (a
+   color: the shell's controls never sit on whatever the page put there (a
    hero cover once ate the back button and the avatar), and no page text ever
    runs through the header (2026-09-17: 8% see-through was readable text). It is
    solid, so nothing moves behind it — which is why every control in the header
@@ -1710,7 +1710,7 @@ button.shell-nav-flyout-item {
 
    Below the band there is NO border and NO shadow. There is exactly one
    boundary treatment: `.shell-header-fade`, rendered by the shell's `Header`
-   (never by a route), a few pixels of fade from the band colour to nothing,
+   (never by a route), a few pixels of fade from the band color to nothing,
    positioned absolutely below the header with pointer-events off — it takes
    ZERO layout space. Routes cannot change it: route header content is portaled
    INTO the header's center/right slots and never reaches the band. A route

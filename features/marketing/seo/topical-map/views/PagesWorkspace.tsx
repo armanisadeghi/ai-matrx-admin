@@ -22,7 +22,7 @@
  * person came to work on says so in the query string — `?topic=`,
  * `?disposition=`, `?state=`, `?onNoTopic=1` — and this workspace applies them
  * ONCE, on mount, through `setPageFilters` (`./pages/pageFilterParams.ts` owns
- * the vocabulary and names anything it cannot honour). Only on the PAGE host:
+ * the vocabulary and names anything it cannot honor). Only on the PAGE host:
  * a window, drawer or canvas has no URL of its own, and reading the address bar
  * there would hand it the filters of whatever page happens to be underneath it
  * (CONTRACTS §1 keeps URL reading on the route for the same reason).

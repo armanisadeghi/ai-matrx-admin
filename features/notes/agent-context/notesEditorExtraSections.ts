@@ -173,7 +173,7 @@ export function createNotesEditorExtraSections(
     },
   ];
 
-  // The tab's rows carry Save too ("note-buffer", greyed with its reason), and
+  // The tab's rows carry Save too ("note-buffer", grayed with its reason), and
   // both join the one menu on the note's content: a second "save" was yielded
   // twice and refused by the action registry (2026-09-30).
   const shared = new Set(["save", "duplicate", "export", "move", "tabs", "delete-sep", "delete"]);

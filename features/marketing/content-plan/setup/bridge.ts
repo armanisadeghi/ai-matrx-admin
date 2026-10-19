@@ -340,7 +340,7 @@ export interface FillEstimate {
 /**
  * One effort tier priced for THIS site, before the button. `calls` is exact;
  * `usd === null` means the steps have no measured history yet — never a guess.
- * Per-page overrides are honoured, so the row is the real job, not an average.
+ * Per-page overrides are honored, so the row is the real job, not an average.
  */
 export interface FillTierEstimate {
   tier: EffortTier;

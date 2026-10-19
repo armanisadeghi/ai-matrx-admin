@@ -379,7 +379,7 @@ export function useCartesiaStreamingSpeaker({
 
   /**
    * Speak the given text with progressive streaming. Any prior speak() session
-   * is cancelled first so the latest click always wins.
+   * is canceled first so the latest click always wins.
    */
   const speak = useCallback(
     async (inputText: string) => {

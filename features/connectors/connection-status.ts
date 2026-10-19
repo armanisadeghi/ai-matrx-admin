@@ -30,7 +30,7 @@
 // heard of. `readConnectionStatus` answers `null` for it and the surfaces then
 // render honestly with no live control — never "Connected", which is what
 // `features/marketing/google/service.ts` used to do by collapsing everything it
-// did not recognise into `connected`.
+// did not recognize into `connected`.
 //
 // The set is MEASURED against the server's own declaration by
 // `__tests__/connection-statuses-are-the-servers-statuses.test.ts`, the same way
@@ -39,7 +39,7 @@
 // to kill (V14-4).
 
 /**
- * Every status this build recognises, in the order a person would rank them from
+ * Every status this build recognizes, in the order a person would rank them from
  * "works" to "gone". The census asserts this is a SUPERSET of what the server
  * declares, and names every entry the server does not, so an extra word here has
  * to carry its reason below.

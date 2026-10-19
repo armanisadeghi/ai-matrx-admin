@@ -228,7 +228,7 @@ export function isSubstantiveValue(item: unknown, depth = 0): boolean {
     // A container that is only containers all the way down carries no fact. The
     // bound stops a cyclic or pathological value from hanging the render; at the
     // bound we say "substantive" rather than "empty", because a payload this
-    // deep is never the empty read this predicate exists to recognise, and the
+    // deep is never the empty read this predicate exists to recognize, and the
     // safe answer is the one that does not claim nothing came back.
     if (depth >= MAX_SUBSTANCE_DEPTH) return true;
     const children = Array.isArray(item) ? item : Object.values(item);
@@ -305,7 +305,7 @@ export const MetaStrip: React.FC<{
   );
 };
 
-/** A labelled section — the one heading treatment shared by all four families. */
+/** A labeled section — the one heading treatment shared by all four families. */
 export const Section: React.FC<{
   label: string;
   children: React.ReactNode;

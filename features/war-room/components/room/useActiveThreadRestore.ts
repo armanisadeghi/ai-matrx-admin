@@ -2,7 +2,7 @@
 
 // features/war-room/components/room/useActiveThreadRestore.ts
 //
-// Wires the focused-thread RESTORE behaviour on top of the EPHEMERAL staged-tile
+// Wires the focused-thread RESTORE behavior on top of the EPHEMERAL staged-tile
 // view state (roomViewContext) WITHOUT moving that state into Redux/persistence.
 // The staged tile stays a per-mount React-context value by design; this hook only
 // MIRRORS it to/from projects.war_rooms.active_thread_id so a room reopens on the

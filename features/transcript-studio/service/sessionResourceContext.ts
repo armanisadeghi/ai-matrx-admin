@@ -50,7 +50,7 @@ import { selectSessionById } from "../redux/selectors";
 const INLINE_BRIEF_CEIL = 12_000;
 /** Overview chars shown inline before we truncate + defer the full text. */
 const OVERVIEW_INLINE_CHARS = 600;
-/** Task rows listed inline before we summarise the tail ("+N more"). */
+/** Task rows listed inline before we summarize the tail ("+N more"). */
 const MAX_TASKS_IN_BRIEF = 24;
 
 // ── Read-only rich-form value shapes (dict + `content` ⇒ backend rich form) ──

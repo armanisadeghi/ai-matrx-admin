@@ -111,7 +111,7 @@ function typeInto(ariaLabel: string, value: string) {
   const el = container.querySelector<HTMLInputElement | HTMLTextAreaElement>(
     `[aria-label="${ariaLabel}"]`,
   );
-  if (!el) throw new Error(`no field labelled "${ariaLabel}" on the page`);
+  if (!el) throw new Error(`no field labeled "${ariaLabel}" on the page`);
   const prototype =
     el instanceof HTMLTextAreaElement
       ? HTMLTextAreaElement.prototype

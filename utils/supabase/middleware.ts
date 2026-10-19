@@ -173,7 +173,7 @@ export async function updateSession(
     }
   }
 
-  // Handle MEMBERS on auth pages with no destination to honour — send them to
+  // Handle MEMBERS on auth pages with no destination to honor — send them to
   // the surface's landing page. A guest stays: they came here to sign up.
   if (bouncesOffAccountEntryPage(pathname, user)) {
     const url = request.nextUrl.clone();

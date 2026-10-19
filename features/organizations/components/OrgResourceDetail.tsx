@@ -13,7 +13,7 @@
  * new-tab / Peek doors (registry-driven). The right-click menu is what EntityRef
  * does NOT cover: sharing the item with the team, or taking it back.
  *
- * No per-type code: everything reads from the org resource catalogue.
+ * No per-type code: everything reads from the org resource catalog.
  */
 
 import React from "react";
@@ -199,7 +199,7 @@ export function OrgResourceDetail() {
           <h2 className="text-xl font-semibold mb-2">Unknown resource</h2>
           <p className="text-sm text-muted-foreground mb-6">
             {
-              // access-errors: ok — `getEntry` is a static catalogue lookup; the kind in the URL genuinely is not in the catalogue
+              // access-errors: ok — `getEntry` is a static catalog lookup; the kind in the URL genuinely is not in the catalog
               "This resource kind doesn't exist."
             }
           </p>
@@ -235,7 +235,7 @@ export function OrgResourceDetail() {
   const role = getContentRole(entry.role);
   const Icon = entry.icon;
   /**
-   * Resolved by TOKEN, never by `entry.key`: six catalogue keys differ from
+   * Resolved by TOKEN, never by `entry.key`: six catalog keys differ from
    * their canonical token, and keying off the key silently loses both the
    * route and the peek.
    */

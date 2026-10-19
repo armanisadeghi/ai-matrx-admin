@@ -288,7 +288,7 @@ export const ServerSentence: React.FC<{
  * "nothing was written"**, and **a completed-write chip renders only in
  * `receipt` / `none`** — so a payload can never show a green receipt beside a
  * preview, and a contradiction is NAMED rather than resolved in the reader's
- * favour.
+ * favor.
  */
 export type WriteClaimState =
   | "receipt"
@@ -399,7 +399,7 @@ export function readWriteClaim(value: Record<string, unknown>): WriteClaim {
     awaiting,
   };
 
-  // 1. BOTH AT ONCE. Never resolved in the reader's favour: the contradiction is
+  // 1. BOTH AT ONCE. Never resolved in the reader's favor: the contradiction is
   //    the finding, and the safe reading is the one that claims nothing.
   if ((hasPreview || heldKeys.length > 0) && completedKeys.length > 0) {
     const said = saidAs(hasPreview ? previewKeys[0] : heldKeys[0]);
@@ -1088,7 +1088,7 @@ export function readRecordSyncNotice(
     tone: "warn",
     remedy:
       said ??
-      `This row reports a freshness this app does not recognise ("${word}"), so it may ` +
+      `This row reports a freshness this app does not recognize ("${word}"), so it may ` +
         `not be refreshing. ${REFRESH_REMEDY}`,
   };
 }

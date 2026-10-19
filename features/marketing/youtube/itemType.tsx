@@ -80,7 +80,7 @@ export function refineYouTubeVideoDetail(base: DetailRecordType): DetailRecordTy
     },
     fields: (row) => {
       const typed = asYouTubeVideoRow(row);
-      // A row this registration cannot recognise gets NO invented fields; the
+      // A row this registration cannot recognize gets NO invented fields; the
       // primitive's own absent state is honest about having nothing to show.
       return typed ? youtubeVideoFields(typed, new Date()) : [];
     },

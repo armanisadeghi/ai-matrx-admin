@@ -13,7 +13,7 @@
 //   3. Run — `rank_grid` with `center_confirmed` through `useToolAction`; a 5x5
 //      always asks, in the approve-spend dialog. Points under 24 hours old are
 //      reused free by the tool; "Reused from <date>" says when.
-//   4. Result — rank bubbles coloured by rank, "not found" read against the
+//   4. Result — rank bubbles colored by rank, "not found" read against the
 //      result count, and us against the three most visible competitors (the tool's
 //      `competitors` summary).
 //

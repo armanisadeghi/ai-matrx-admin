@@ -257,7 +257,7 @@ function endSentence(text: string): string {
  *
  * Same rule as the rest of this file, applied to a bare token instead of a
  * whole sentence: the token itself never reaches the sentence a person
- * reads. A recognised token gets a specific, plain sentence; anything else
+ * reads. A recognized token gets a specific, plain sentence; anything else
  * says "a provider error" and carries the token as a SECONDARY detail —
  * useful if the person reports it, never folded into the sentence itself.
  */
@@ -277,11 +277,11 @@ const KNOWN_PROVIDER_ERROR_TOKENS: Record<string, string> = {
 };
 
 /** What `providerErrorSentence` returns: a sentence that never names the raw
- * token, plus the token itself when it wasn't one we recognised. */
+ * token, plus the token itself when it wasn't one we recognized. */
 export interface ProviderErrorSentence {
   /** Always a plain sentence — never a raw token. */
   text: string;
-  /** The raw token, present ONLY when it was not a recognised one. Render it
+  /** The raw token, present ONLY when it was not a recognized one. Render it
    * as secondary detail, never inside the sentence itself. */
   detail?: string;
 }
@@ -867,7 +867,7 @@ export function personSentence(
 // Same class as the knob key above, one seam further out: a key out of a
 // schema WE declared and handed the model (`aidream/services/masterworks/
 // build.py`, the Editor's output shape), quoted back by the model — which is
-// correct behaviour for an agent citing what it was given — and printed raw
+// correct behavior for an agent citing what it was given — and printed raw
 // because nothing on the reading side turned it into words.
 //
 // `personSentence` answers a knob key with "this setting", which is right for

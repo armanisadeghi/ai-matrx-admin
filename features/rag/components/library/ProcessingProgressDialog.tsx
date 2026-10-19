@@ -200,7 +200,7 @@ export function ProcessingProgressDialog({
     setMounted(true);
   }, []);
 
-  // Reset minimized state when the dialog opens fresh — but honour the
+  // Reset minimized state when the dialog opens fresh — but honor the
   // caller's `defaultMinimized` preference. Without this branch, the
   // /files Document tab path always pops a full-screen overlay over
   // the file table even though the caller asked for the floating
@@ -805,7 +805,7 @@ function deriveStageStates(
     for (const s of STAGES) out[s.id] = "done";
     return out;
   }
-  // Honour explicit per-stage state from caller if present.
+  // Honor explicit per-stage state from caller if present.
   if (frame?.stageStates) {
     for (const k of Object.keys(frame.stageStates) as ProcessingStageId[]) {
       out[k] = frame.stageStates[k] ?? out[k];

@@ -75,15 +75,23 @@ export type OverrideTableRow = {
 
 const LEVEL_ORDER: Record<string, number> = { organization: 0, user: 2 };
 
+/** Which half of the directory has not arrived yet: its names print as "Loading name…", never as "not on the roster". */
+export type DirectoryPending = { organizations?: boolean; people?: boolean };
+
+const LOADING_NAME = "Loading name…";
+
 /** The rows of the override table, named from the roster, organizations first. */
 export function overrideTableRows(
   knob: ScopedKnob,
   rows: PlatformKnobOverrideRow[],
   directory: AdminKnobDirectory,
+  pending: DirectoryPending = {},
 ): OverrideTableRow[] {
   const orgById = new Map(directory.organizations.map((org) => [org.id, org]));
   const personById = new Map(directory.people.map((person) => [person.id, person]));
-  const orgName = (id: string) => orgById.get(id)?.name ?? "An organization no longer on the roster";
+  const orgName = (id: string) =>
+    orgById.get(id)?.name ?? (pending.organizations ? LOADING_NAME : "An organization no longer on the roster");
+  const personLabel = (id: string) => (pending.people && !personById.has(id) ? LOADING_NAME : personName(personById.get(id)));
   return rows
     .map((row) => {
       const organizationName = orgName(row.organization_id);
@@ -91,7 +99,7 @@ export function overrideTableRows(
         row.scope_kind === "organization"
           ? organizationName
           : row.scope_kind === "user"
-            ? personName(personById.get(row.scope_id))
+            ? personLabel(row.scope_id)
             : `One ${rungTitle(row.scope_kind).toLowerCase()} in ${organizationName}`;
       return {
         id: `${row.scope_kind}:${row.organization_id}:${row.scope_id}`,
@@ -103,7 +111,7 @@ export function overrideTableRows(
         scopeId: row.scope_id,
         value: row.value,
         valueWords: knobValueWords(knob, row.value),
-        setBy: row.updated_by ? personName(personById.get(row.updated_by)) : null,
+        setBy: row.updated_by ? personLabel(row.updated_by) : null,
         setAt: row.updated_at,
         note: row.set_note,
       };
@@ -240,39 +248,48 @@ export function parseAdminDraft(knob: ScopedKnob, raw: string): { value?: unknow
   }
 }
 
-let directoryPromise: Promise<AdminKnobDirectory> | null = null;
+let organizationsPromise: Promise<AdminOrganization[]> | null = null;
+let peoplePromise: Promise<AdminPerson[]> | null = null;
 
 /**
- * The admin roster for naming and picking: people from `/api/admin/users`
- * (super-admin gated, the Accounts console's own door) and organizations from
- * that same console's directory door. Loaded once per page.
+ * Organizations for naming and picking (the Accounts console's directory door). Fast, so the override
+ * table does not wait on the people roster (a full account read that takes seconds) to show its rows.
  */
-export function loadAdminKnobDirectory(force = false): Promise<AdminKnobDirectory> {
-  if (directoryPromise && !force) return directoryPromise;
-  directoryPromise = (async () => {
-    // People from THE shared admin roster (one read per tab, features/admin/users/adminRoster.ts).
-    const [usersJson, orgsResponse] = await Promise.all([
-      loadAdminRoster({ refresh: force }) as Promise<{ users?: AdminPerson[] }>,
-      fetch("/api/admin/users/organizations", { cache: "no-store" }),
-    ]);
-    const orgsJson = (await orgsResponse.json()) as {
-      directory?: { organizations: AdminOrganization[] };
-      error?: string;
-    };
-    if (!orgsResponse.ok) throw new Error(orgsJson.error ?? `The organization directory could not be read (HTTP ${orgsResponse.status}).`);
-    return {
-      people: (usersJson.users ?? []).map((user) => ({
-        id: user.id,
-        email: user.email,
-        display_name: user.display_name,
-        full_name: user.full_name,
-        organizations: (user.organizations ?? []).map((org) => ({ id: org.id, name: org.name })),
-      })),
-      organizations: (orgsJson.directory?.organizations ?? []).map((org) => ({ id: org.id, name: org.name, slug: org.slug })),
-    };
+export function loadAdminOrganizations(force = false): Promise<AdminOrganization[]> {
+  if (organizationsPromise && !force) return organizationsPromise;
+  organizationsPromise = (async () => {
+    const response = await fetch("/api/admin/users/organizations", { cache: "no-store" });
+    const json = (await response.json()) as { directory?: { organizations: AdminOrganization[] }; error?: string };
+    if (!response.ok) throw new Error(json.error ?? `The organization directory could not be read (HTTP ${response.status}).`);
+    return (json.directory?.organizations ?? []).map((org) => ({ id: org.id, name: org.name, slug: org.slug }));
   })();
-  directoryPromise.catch(() => {
-    directoryPromise = null;
+  organizationsPromise.catch(() => {
+    organizationsPromise = null;
   });
-  return directoryPromise;
+  return organizationsPromise;
+}
+
+/** People from THE shared admin roster (one read per tab, features/admin/users/adminRoster.ts). The slow half. */
+export function loadAdminPeople(force = false): Promise<AdminPerson[]> {
+  if (peoplePromise && !force) return peoplePromise;
+  peoplePromise = (async () => {
+    const usersJson = (await loadAdminRoster({ refresh: force })) as { users?: AdminPerson[] };
+    return (usersJson.users ?? []).map((user) => ({
+      id: user.id,
+      email: user.email,
+      display_name: user.display_name,
+      full_name: user.full_name,
+      organizations: (user.organizations ?? []).map((org) => ({ id: org.id, name: org.name })),
+    }));
+  })();
+  peoplePromise.catch(() => {
+    peoplePromise = null;
+  });
+  return peoplePromise;
+}
+
+/** Both halves together, for a caller that needs the whole directory at once. */
+export async function loadAdminKnobDirectory(force = false): Promise<AdminKnobDirectory> {
+  const [organizations, people] = await Promise.all([loadAdminOrganizations(force), loadAdminPeople(force)]);
+  return { organizations, people };
 }

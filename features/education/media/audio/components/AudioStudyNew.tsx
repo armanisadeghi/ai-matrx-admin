@@ -214,7 +214,7 @@ export function AudioStudyNew() {
         {sourceKind === "topic" && (
           <p className="text-[11px] text-muted-foreground">
             A topic isn&apos;t grounded in your own material — the audio is
-            reasoned from general knowledge and labelled honestly.
+            reasoned from general knowledge and labeled honestly.
           </p>
         )}
       </section>

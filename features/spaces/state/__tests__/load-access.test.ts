@@ -1,7 +1,7 @@
 /**
  * A refused tree read is a sign-in / no-access state, never database text in the sidebar.
  * readAllRows flattens PostgREST's error into a sentence and drops `.code`, so the refusal must be
- * recognised from that sentence as well as from a 42501 code.
+ * recognized from that sentence as well as from a 42501 code.
  */
 let mockSession: object | null = null;
 jest.mock("@/utils/supabase/client", () => ({

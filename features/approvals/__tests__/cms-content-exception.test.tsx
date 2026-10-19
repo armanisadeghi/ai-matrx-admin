@@ -278,7 +278,7 @@ describe("the CMS content-exception kind", () => {
   it("shows a payload it cannot read as an honest row with no Approve", async () => {
     mockPayload = { __kind: "something_else" } as unknown as Json;
     const node = await mount(cmsContentExceptionKind);
-    expect(text(node, "blocked")).toContain("does not recognise");
+    expect(text(node, "blocked")).toContain("does not recognize");
     expect(text(node, "accept-effect")).toContain("Nothing");
   });
 });

@@ -95,7 +95,7 @@ export type BoardSection = (typeof BOARD_SECTIONS)[number]["key"];
 export const boardSectionLabel = (key: BoardSection): string =>
   BOARD_SECTIONS.find((s) => s.key === key)?.label ?? key;
 
-/** A type's colour on the board (its card at far zoom, its kind label). Tokens
+/** A type's color on the board (its card at far zoom, its kind label). Tokens
  * `--board-accent-<name>` in `components/board-accents.css`, light and dark. */
 export const BOARD_ACCENTS = [
   "blue",
@@ -113,7 +113,7 @@ export const BOARD_ACCENTS = [
 ] as const;
 export type BoardAccent = (typeof BOARD_ACCENTS)[number];
 
-/** How a status reads: a tone (semantic colour) and one or two words. */
+/** How a status reads: a tone (semantic color) and one or two words. */
 export type ItemStatusTone = "neutral" | "active" | "attention" | "success" | "danger";
 export interface ItemStatus {
   tone: ItemStatusTone;
@@ -219,7 +219,7 @@ export interface BoardItemType {
   group: BoardItemGroup;
   /** The Add menu / Start panel / Board menu section it is listed under (see `BOARD_SECTIONS`). */
   section: BoardSection;
-  /** The type's colour on the board (see `BoardAccent`). */
+  /** The type's color on the board (see `BoardAccent`). */
   accent: BoardAccent;
   /** The item's live state on its tile (see `ItemStatusDoor`). */
   status: ItemStatusDoor;
@@ -293,11 +293,14 @@ export interface BoardItemType {
    */
   namesItself?: (source: NodeSource) => boolean;
   /**
-   * The body lays out at its content's natural height for this source (no `h-full`, no inner scroll
-   * when `useTileAutoHeight()` is true). In page layout such a tile grows and shrinks to its content
-   * and the page scrolls; on the canvas it keeps its size.
+   * In page layout the tile takes its content's height and the page scrolls — no tile scrolls inside
+   * itself there. On the canvas it keeps its size.
+   *   · `true`: the body lays out at its natural height (no `h-full`, no inner scroll when
+   *     `useTileAutoHeight()` is true); the tile grows and shrinks to it.
+   *   · `"fill"`: the body keeps filling the tile (a shared editor that owns its own scroller, like the
+   *     notes core); the tile grows until nothing inside it scrolls (`innerOverflow`).
    */
-  autoHeight?: (source: NodeSource) => boolean;
+  autoHeight?: (source: NodeSource) => boolean | "fill";
   /** The body reads `tier` (pauses media, paces streams). Others get a constant,
    * so a zoom across a tier boundary never re-renders their content. */
   usesTier?: boolean;

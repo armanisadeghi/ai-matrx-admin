@@ -16,7 +16,7 @@
  *
  *   THE CONTROL TO FINALIZE IT — one button that declares which skill OWNS the
  *   kind. NOTHING IS DELETED OR DEACTIVATED: the declaration is written to
- *   `content_ir.kind_definition.metadata.skill_owner`, the pure doctor honours
+ *   `content_ir.kind_definition.metadata.skill_owner`, the pure doctor honors
  *   it (and so does the CLI, which already reads the same column), and clearing
  *   it brings the red straight back. A container skill keeps demonstrating its
  *   children, which is what it is for.

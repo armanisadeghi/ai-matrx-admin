@@ -53,7 +53,7 @@ Triage rule for each: if it shows the admin extra *diagnostic* detail → switch
 
 ### Not started
 - **No guard prevents a new debug tool from using the power selectors again.** `check:admin-lane` stops identity being used as power, but not the reverse mistake (a debug panel gated on `selectIsSuperAdmin`, which goes invisible on user pages).
-- **The 5 s / 8 s floors are code constants**, not Feature Knobs. Platform rule: behavioural values become knobs (admin default → org override → user override).
+- **The 5 s / 8 s floors are code constants**, not Feature Knobs. Platform rule: behavioral values become knobs (admin default → org override → user override).
 
 ### Known issues / risks
 - **`console.error` is not captured in development by design** (`lib/diagnostics/globalErrorCapture.ts`, "NON-DEV ONLY" block). On localhost only real failures appear in the inspector; on deployed builds console errors appear too. Do not "fix" this.

@@ -55,7 +55,7 @@ second console and must be cut back to doors.
   mailbox count takes the brand's `organizationId`. Everything else on these
   pages (outreach campaigns, Chasebox queues, the reply inbox, earned-placement
   wins, message templates, the per-org template libraries) has NO brand link in
-  the data model. Those doors are **kept and labelled** — inside a brand each
+  the data model. Those doors are **kept and labeled** — inside a brand each
   one names its real reach ("across your clients", "in <client>'s
   organization"). Never fake a filter we cannot apply, and never delete a
   working door to make the page look tidy: a door removed is a dead end, a door
@@ -103,5 +103,5 @@ across all of them.
   never disagree. `EmailFrontDoor` gained `brandName` and now names this
   client's own template library first. Everything with no brand link stayed and
   gained an honest scope label — see the scope-honesty invariant above. All
-  props default to the org-wide behaviour, so the flat legacy doors are
+  props default to the org-wide behavior, so the flat legacy doors are
   unchanged.

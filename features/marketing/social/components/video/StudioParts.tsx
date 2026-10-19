@@ -131,7 +131,7 @@ export function CostLine({ usd, pts, label }: { usd: number | null | undefined; 
 
 // ── caption looks ───────────────────────────────────────────────────────────────────────────────────
 
-/** Content colour (the dark video frame captions sit on), not interface chrome. */
+/** Content color (the dark video frame captions sit on), not interface chrome. */
 const VIDEO_FRAME_BG = "#1c1f26";
 
 let fontsRequested = false;
@@ -146,7 +146,7 @@ function useVideoFonts() {
   }, []);
 }
 
-/** One caption look drawn from the preset itself (font, case, colours, outline, active-word style). */
+/** One caption look drawn from the preset itself (font, case, colors, outline, active-word style). */
 function CaptionSample({ presetId }: { presetId: string }) {
   const p = CAPTION_PRESETS[presetId];
   if (!p) return null;

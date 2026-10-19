@@ -217,7 +217,7 @@ export function YouTubeResearchActions({
         );
       }
     } catch (caught) {
-      // Cancelled by teardown or a newer run — settle silently; the analysis
+      // Canceled by teardown or a newer run — settle silently; the analysis
       // keeps running server-side and the saved record picks it up.
       if (abortController.signal.aborted) return;
       const message =

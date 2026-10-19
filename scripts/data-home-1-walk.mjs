@@ -6,7 +6,7 @@
 //   PHASE=before  the page as it was (point ORIGIN at the deployed site): the home, "All my
 //                 organizations", then the browser's Back — where does it land?
 //   PHASE=after   the page now (the shared preview): the home opens on All with every
-//                 organization's tables labelled; each of the five filters; /data → All →
+//                 organization's tables labeled; each of the five filters; /data → All →
 //                 Back lands on /data; a direct ?scope=all → the header's back arrow.
 //
 //   SEAT=admin (admin@admin.com, AI_ADMIN_* from .env.local) | SEAT=member (test@test.com,
@@ -111,7 +111,7 @@ if ((await page.locator("[data-hub-root]").count()) === 0) {
 
 if (PHASE === "before") {
   await home();
-  step("header centre text", { text: await page.locator(".hdr-structured-title").first().textContent().catch(() => null) });
+  step("header center text", { text: await page.locator(".hdr-structured-title").first().textContent().catch(() => null) });
   step("header back arrow present", { present: (await page.locator('[aria-label="Go back"]').count()) > 0 });
   step("filters", { choices: await page.locator("[data-hub-lane]").allTextContents() });
   step("tables", await tablesListing());
@@ -129,7 +129,7 @@ if (PHASE === "before") {
   }
 } else {
   await home();
-  step("header centre text", { text: await page.locator(".hdr-structured-title").count() });
+  step("header center text", { text: await page.locator(".hdr-structured-title").count() });
   step("header back arrow present", { present: (await page.locator('[aria-label="Go back"]').count()) > 0 });
   step("filters", {
     choices: await page.locator("[data-hub-scope-choice]").allTextContents(),

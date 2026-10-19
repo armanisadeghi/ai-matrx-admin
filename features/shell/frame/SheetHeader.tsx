@@ -5,6 +5,7 @@
 // when the item can be favorited) · "…" (always) · right slot.
 // Phone: back (or menu at a product's top level) · title · "…".
 import { Fragment } from "react";
+import { isPlainClick } from "./FrameSidebar";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,
@@ -85,8 +86,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {destructive.map((a) => {
           const Icon = a.icon;
           return (
-            // The package's DropdownMenuItem has no destructive option yet (reported).
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect} data-destructive="">
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} tone="danger">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>
@@ -123,7 +123,8 @@ export function SheetHeader({
   if (form === "phone") {
     const canGoBack = crumbs.length > 1 && onBack;
     return (
-      <header className="mf-rule-b flex h-[var(--frame-header-h)] shrink-0 items-center gap-1 px-2">
+      // matrx-touch-targets: the platform's 44px touch ring on every control here.
+      <header className="mf-rule-b matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2">
         {canGoBack ? (
           <Button variant="quiet" icon={<ArrowLeft />} aria-label="Back" onClick={onBack} />
         ) : (
@@ -137,7 +138,7 @@ export function SheetHeader({
   }
 
   return (
-    <header className="mf-rule-b flex h-[var(--frame-header-h)] shrink-0 items-center gap-1 px-2">
+    <header className="mf-rule-b flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2">
       {start}
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center pl-1">
         <ol className="flex min-w-0 items-center gap-0.5">
@@ -150,19 +151,13 @@ export function SheetHeader({
                     <ChevronRight className="size-3.5" />
                   </li>
                 ) : null}
-                <li className={cn("min-w-0", isLast ? "shrink" : "max-w-[180px] shrink-[2]")}>
+                <li className={cn("min-w-0", isLast ? "shrink" : "max-w-45 shrink-[2]")}>
                   {isLast ? (
                     <h1 aria-current="page" className="type-title truncate px-1">
                       {crumb.label}
                     </h1>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={crumb.onSelect}
-                      className="type-body block max-w-full truncate rounded-md px-1 text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      {crumb.label}
-                    </button>
+                    <CrumbLink crumb={crumb} />
                   )}
                 </li>
               </Fragment>
@@ -178,6 +173,36 @@ export function SheetHeader({
       {end ? <div className="flex shrink-0 items-center gap-0.5">{end}</div> : null}
     </header>
   );
+}
+
+const CRUMB_CLASS =
+  "type-body block max-w-full truncate rounded-md px-1 text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring";
+
+/** An ancestor crumb: a real link when it has an href (a plain click runs onSelect). */
+function CrumbLink({ crumb }: { crumb: FrameCrumb }) {
+  if (crumb.href) {
+    return (
+      <a
+        href={crumb.href}
+        className={CRUMB_CLASS}
+        onClick={(e) => {
+          if (!crumb.onSelect || !isPlainClick(e)) return;
+          e.preventDefault();
+          crumb.onSelect();
+        }}
+      >
+        {crumb.label}
+      </a>
+    );
+  }
+  if (crumb.onSelect) {
+    return (
+      <button type="button" onClick={crumb.onSelect} className={CRUMB_CLASS}>
+        {crumb.label}
+      </button>
+    );
+  }
+  return <span className="type-body block truncate px-1 text-muted-foreground">{crumb.label}</span>;
 }
 
 /** Placeholders for the existing right-side header icons (search, notifications, account). */

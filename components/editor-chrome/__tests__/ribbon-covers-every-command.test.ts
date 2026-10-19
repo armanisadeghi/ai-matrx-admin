@@ -155,7 +155,7 @@ describe.each(editors)("%s ribbon", (_name, ribbon, googleOnly, build) => {
           refs.add(ref);
           const model = c.kind === "toolbar" ? ("icon" in c.item ? c.item.icon : undefined) : c.kind === "action" ? c.action.icon : c.submenu.icon;
           const icon = c.icon ?? model;
-          // Icon-only controls are told apart by their icon alone; a labelled control is read.
+          // Icon-only controls are told apart by their icon alone; a labeled control is read.
           if (!icon || c.size !== "icon") continue;
           const prior = icons.get(icon);
           if (prior) dupes.push(`${tab.id}/${g.id}: ${ref} wears the same icon as ${prior}`);

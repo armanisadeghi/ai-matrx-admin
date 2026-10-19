@@ -34,8 +34,8 @@ doors). Product truth: SPEC-ESIGN in common-docs.
    first open required field; Next field (reading order, empty fields); Finish. Reaching the end
    with required work open (or Finish) enters missed-required recovery: red bar, "Next required",
    red outline per missed field. Nothing left → green bar, Finish turns green and takes focus.
-3. **Fields** — `parts/PaperField.tsx` draws each on the page (paper colours from
-   `contract/paper.ts`, never theme tokens): compact tags in the signer's colour, inline inputs on a
+3. **Fields** — `parts/PaperField.tsx` draws each on the page (paper colors from
+   `contract/paper.ts`, never theme tokens): compact tags in the signer's color, inline inputs on a
    desktop, a callout on the active field (label + star, Sign / Edit / Clear, Next field → / Skip →).
    A phone gets the bottom input drawer (`parts/ControlInput.tsx`); Form view lists every field with
    "Required field" / "Optional field" under each.

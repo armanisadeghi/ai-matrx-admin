@@ -114,7 +114,7 @@ export function InvitationManager({
   const handleCancel = async (invitation: PanelInvitation) => {
     const result = await cancel(invitation.id);
     if (result.success) {
-      toast.success(`Cancelled invitation to ${invitation.email}`);
+      toast.success(`Canceled invitation to ${invitation.email}`);
       refresh();
     } else {
       toast.error(result.error || "Failed to cancel invitation");

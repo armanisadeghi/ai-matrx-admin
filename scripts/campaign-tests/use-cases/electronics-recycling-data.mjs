@@ -58,7 +58,7 @@ async function main() {
   ];
 
   const materials = ["CRT Glass", "Circuit Boards", "Aluminum", "Steel", "Plastics", "Batteries", "Copper Wire"];
-  const statuses = ["Scheduled", "Completed", "Completed", "Completed", "Cancelled"]; // weighted toward completed
+  const statuses = ["Scheduled", "Completed", "Completed", "Completed", "Canceled"]; // weighted toward completed
   const drivers = ["R. Alvarez", "T. Nguyen", "M. Okafor", "S. Patel"];
 
   function rnd(a, b) { return Math.round((a + Math.random() * (b - a)) * 100) / 100; }

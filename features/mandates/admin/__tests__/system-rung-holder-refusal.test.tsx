@@ -14,7 +14,7 @@
  *
  * Two halves, both on the real component / the real rule:
  *   1. a pinned rung renders NO selector and states what it is;
- *   2. the holder picker reaches the system catalogue and nothing else, and a
+ *   2. the holder picker reaches the system catalog and nothing else, and a
  *      personal agent standing there is refused in words with a remedy.
  */
 import React, { act } from "react";
@@ -49,7 +49,7 @@ jest.mock("@/lib/redux/hooks", () => ({
 // The chat package reads these hooks through its own module (P3): one double covers both.
 jest.mock("@ai-matrx/chat/store/hooks", () => jest.requireMock("@/lib/redux/hooks"));
 
-/** A READ catalogue that does not contain the drafted agent — a real personal
+/** A READ catalog that does not contain the drafted agent — a real personal
  *  agent standing at the system rung, not an unloaded list. */
 jest.mock("@ai-matrx/chat/agents/redux/agent-definition/selectors", () => ({
   ...jest.requireActual("@ai-matrx/chat/agents/redux/agent-definition/selectors"),
@@ -171,7 +171,7 @@ describe("a pinned rung is STATED, never offered as a choice", () => {
 });
 
 describe("the system rung's holder picker refuses a non-system agent", () => {
-  it("can reach the system catalogue and nothing else", () => {
+  it("can reach the system catalog and nothing else", () => {
     const { root } = renderBar({ fixedRung: "system", agentId: null });
     expect(lastDropdownProps?.visibleTabs).toEqual(["system"]);
     expect(lastDropdownProps?.initialTab).toBe("system");
@@ -207,7 +207,7 @@ describe("the system rung's holder picker refuses a non-system agent", () => {
       /Duplicate it into a system agent/i,
     );
 
-    // A system agent passes, and an UNREAD catalogue refuses nothing — an
+    // A system agent passes, and an UNREAD catalog refuses nothing — an
     // accusation made against a list that has not loaded is a lie.
     expect(systemRungHolderIsPersonal("system-agent-1", catalogue)).toBe(false);
     expect(systemRungHolderIsPersonal(personal, [])).toBe(false);

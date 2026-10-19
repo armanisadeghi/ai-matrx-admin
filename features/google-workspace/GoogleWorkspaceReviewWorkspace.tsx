@@ -324,7 +324,7 @@ export function GoogleWorkspaceReviewWorkspace({
       await operation();
     } catch (operationError: unknown) {
       if (isGoogleAuthorizationCancelled(operationError)) {
-        toast.info("Google authorization cancelled");
+        toast.info("Google authorization canceled");
         return;
       }
       const message = errorMessage(operationError);

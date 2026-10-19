@@ -235,7 +235,7 @@ try {
         if (e.closest("[data-row-id]")) return false;
         return firstTop !== null && b.bottom <= firstTop + 1 && b.top >= 0;
       });
-      // A "row" = a band of controls whose vertical centres lie within 12 px.
+      // A "row" = a band of controls whose vertical centers lie within 12 px.
       const centres = controls.map((e) => {
         const b = e.getBoundingClientRect();
         return Math.round(b.top + b.height / 2);

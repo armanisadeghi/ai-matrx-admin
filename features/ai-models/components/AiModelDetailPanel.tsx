@@ -1212,7 +1212,7 @@ export default function AiModelDetailPanel({
   // ─── Surface write targets — `matrx-admin/ai-models` ────────────────────
   //
   // Registered from the DETAIL PANEL, not from AiModelsContainer: the
-  // container mounts the provider and owns the catalogue, but this component
+  // container mounts the provider and owns the catalog, but this component
   // owns the form state, the canonical save path and the `saving` flag a write
   // has to respect. Both live inside the same provider, so this is one surface
   // with one set of targets — the list itself registers none, because the only

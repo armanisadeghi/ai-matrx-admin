@@ -5,7 +5,7 @@
  * 🚨 THE DEFECT (Bugbot round 22, PR 228 comment 4042337969, Medium).
  * `PartyPeek`'s catch block stored only `e.message` and handed that STRING to
  * `AccessGate`. `fetchPartyDetail` throws `RecordUnavailableError` on a
- * zero-row/RLS miss; `classifyDataError` can only recognise that class (or a
+ * zero-row/RLS miss; `classifyDataError` can only recognize that class (or a
  * PostgREST error code) as an access question — a bare string has neither, so
  * it always classified as a transient `fault`. `useAccessGate` folds that
  * classification into the `read` hint it sends the resolver

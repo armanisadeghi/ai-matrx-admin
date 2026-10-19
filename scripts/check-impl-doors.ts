@@ -164,10 +164,10 @@
  *       reason; the file may only shrink and a stale entry fails.
  *
  *   D19 No `platform.client_callable_door` row's function body names a schema-
- *       qualified relation the catalogue does not have. DD-235 (2026-09-14):
+ *       qualified relation the catalog does not have. DD-235 (2026-09-14):
  *       `communication.set_my_sms_assistant_enabled` and
  *       `public.masterwork_improvement_summary` both named `agent.mandate`, which
- *       the Phase 1W mandate detach retired on 2026-08-29 in favour of
+ *       the Phase 1W mandate detach retired on 2026-08-29 in favor of
  *       `mandate.definition`. Both answered EVERY caller — the victim's own
  *       identical call included — with `42P01 relation "agent.mandate" does not
  *       exist`, proven live over HTTPS as test@test.com. A body is parsed, not
@@ -548,7 +548,7 @@ interface AnonDefinerRow {
 //
 // Shrink-only baseline (`scripts/impl-doors/anon-door-visibility-baseline.json`)
 // for the same reason D5 has one: 6 declared anon doors are in this state after
-// DD-116 fix 1, each needing its own judgement, and a gate that screams about
+// DD-116 fix 1, each needing its own judgment, and a gate that screams about
 // all of them every run is a gate nobody reads. It fails on GROWTH.
 const UNGATED_ANON_DOOR_QUERY = `
   with doors as (
@@ -1097,7 +1097,7 @@ interface NullUnsafeRoleHelperRow {
 // THE RULE, and why it is worded as prose rather than as body analysis. The bodies of these eleven
 // doors gate their ends five different ways (a materialized anchor boolean, a reduced id array, an
 // up-front RAISE, a per-edge conjunct, and one hop down into `assoc_add`/`assoc_remove`), so no
-// single structural pattern recognises "both ends are gated" across all of them without lying about
+// single structural pattern recognizes "both ends are gated" across all of them without lying about
 // at least one. What every one of them CAN do is say which ends it gates, in the register row that
 // is the only thing most reviewers ever read. So: the reason must contain `both ends`, and must not
 // contain a disclaimer that an end is ungated. A door that genuinely gates one end may not pass this
@@ -1228,7 +1228,7 @@ interface DoorFlagRow {
 // 2026-09-14: `web.create_site`'s row is spelled `p_visibility visibility` — the
 // guard's rendering, and the one that keeps the guard from revoking the site
 // builder's grant — and an exact string join from HERE drops it silently. So both
-// sides are normalised (`platform.visibility` → `visibility`) and a normalised
+// sides are normalized (`platform.visibility` → `visibility`) and a normalized
 // match that is not unique is itself a finding. The deeper fix is to key the
 // register on `proargtypes` the way `platform.definer_client_grant_grandfather`
 // already does (hr_l3_109) — that is a change to the §6d-4 guard, reported to the
@@ -1237,7 +1237,7 @@ interface DoorFlagRow {
 // 🚨 DD-223 (B-118, 2026-09-14) CLOSED THE CLASS THE PARAGRAPH ABOVE DESCRIBES.
 // Stripping schema qualifiers from both sides made two renderings comparable; it
 // did not make either of them an identity, and two different functions in the same
-// schema could still normalise to the same string. `platform.client_callable_door`
+// schema could still normalize to the same string. `platform.client_callable_door`
 // now carries `identity_argtypes` — `pg_proc.proargtypes` through
 // `platform.door_argtypes` — and every arm below joins on THAT. `identity_args` is
 // a display column from today; nothing matches on it anywhere in this file, in
@@ -2684,7 +2684,7 @@ async function main(): Promise<number> {
       `${C.dim}       door syntactically valid and broken for everyone. Replace the body against the live${C.reset}`,
     );
     console.log(
-      `${C.dim}       catalogue in a migration (pnpm db:based-on, then pnpm db:apply) — never re-grant around it.${C.reset}`,
+      `${C.dim}       catalog in a migration (pnpm db:based-on, then pnpm db:apply) — never re-grant around it.${C.reset}`,
     );
   }
 

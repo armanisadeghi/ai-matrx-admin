@@ -53,7 +53,7 @@ export interface BatchSavingsSummary {
   cacheReadTokens: number;
   undeliveredItems: number;
   undeliveredUsd: number;
-  /** The PRE-SUBMISSION ESTIMATE for the same items. Never a saving basis; shown only labelled. */
+  /** The PRE-SUBMISSION ESTIMATE for the same items. Never a saving basis; shown only labeled. */
   preSubmissionEstimateUsd: number;
   firstCompletedAt: string | null;
   lastCompletedAt: string | null;

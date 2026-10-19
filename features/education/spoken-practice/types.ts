@@ -1,6 +1,6 @@
 // features/education/spoken-practice/types.ts
 //
-// Types for the Spoken Practice surface (Education Hub). The session is modelled
+// Types for the Spoken Practice surface (Education Hub). The session is modeled
 // on the shared study spine — NO new table: a `study_session` (mode = one of the
 // three modes) whose `settings.prompts[]` jsonb holds the generated plan, plus
 // one `study_attempt` per spoken answer (item_type 'spoken_prompt', response_kind

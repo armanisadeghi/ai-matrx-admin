@@ -5,7 +5,7 @@
  *
  * THE RULE: a user asked to approve a large write gets to SEE the thing they
  * are approving. Not three lines and a shrug. The whole tree is here —
- * summarised at the top, drillable level by level, and dumpable as raw JSON —
+ * summarized at the top, drillable level by level, and dumpable as raw JSON —
  * because an informed yes is the only yes worth collecting.
  *
  * What it must never do (all three were real defects):

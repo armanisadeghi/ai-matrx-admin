@@ -54,7 +54,7 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
 
 - `buildAgentOrgForest.ts` (pure, tested) turns Orchestras + manual links into the forest. An agent
   under several parents appears under each and says how many other places it holds; a loop is cut where
-  it closes and labelled; an agent only reachable inside a loop still gets a tree.
+  it closes and labeled; an agent only reachable inside a loop still gets a tree.
 - `useAgentOrgChart.ts` loads level by level: Orchestra list → every reachable Orchestra's members →
   manual links of every reachable agent, until nothing new appears.
 - `useOrgChartActivity.ts` — live activity on every agent box: running (×N), stalled, or how its last
@@ -93,7 +93,7 @@ fill — vocabulary row ruled 2026-10-04). Box ids are `type:entityId` (`constan
   description summit are parked in the node task list.
 
 - 2026-10-05 — Live activity across the whole chart (any run the viewer may see, from any surface).
-  Second review fixed: a cancelled drag never unplaces; a touch hold no longer also opens the menu;
+  Second review fixed: a canceled drag never unplaces; a touch hold no longer also opens the menu;
   remembered view per chart; removed or re-typed links are not undone by an older read; a failed
   placement keeps the pair's hand-off; directory failures shown with Retry; fill picker scoped to
   the position's organization.

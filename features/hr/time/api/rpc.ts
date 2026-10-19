@@ -10,7 +10,7 @@
  * The `hr` schema is **not exposed to PostgREST**. Verified live 2026-08-26 against
  * `pgrst.db_schemas` on the `authenticator` role. Direct reads against the `hr` schema and
  * `.rpc("hr.x")` reach nothing from a browser, and they fail as PGRST106 rather than as anything a
- * reader would recognise. Adding a schema to that list replaces the whole value and a dropped name
+ * reader would recognize. Adding a schema to that list replaces the whole value and a dropped name
  * is an instant platform-wide PGRST002 outage — a fleet-wide config change, explicitly not a build
  * lane's call (FREEZE §4 D-10 recorded exactly this for `esign`).
  *
@@ -25,7 +25,7 @@
  * the sixty `/hr/*` HTTP operations only, and a punch is not one of them. So this module carries
  * its own fixture lane, under the same `NEXT_PUBLIC_HR_MOCK=1` flag read in the same single place,
  * and the same four-case discipline (happy · empty · error · edge). It is **not a fake server and
- * simulates no behaviour**: it returns the fixture you asked for, verbatim. Business logic in a
+ * simulates no behavior**: it returns the fixture you asked for, verbatim. Business logic in a
  * mock is how a UI ends up built against a fiction no real endpoint ever produced.
  *
  * An `error` fixture is **thrown, not returned**, so the caller's error path is built at the same
@@ -244,7 +244,7 @@ const OPAQUE_VALUE_KEYS = new Set([
  * `rule_version_ids`, `engine_key`, `engine_version` and `calc` is an unfinished surface"* — and the
  * evidence drawer opened empty, silently, on a wage record.
  *
- * So the exclusion is **structural, not by name**: a calc block is recognised by carrying
+ * So the exclusion is **structural, not by name**: a calc block is recognized by carrying
  * `rule_version_ids`, its own keys are mapped, and only its inner `calc` is left verbatim. See
  * {@link isCalcBlock}.
  */

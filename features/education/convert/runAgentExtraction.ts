@@ -44,7 +44,7 @@ export interface RunAgentExtractionOpts {
   timeoutMs?: number;
   /**
    * Abort to give up on this run: the call rejects at once, and the run's
-   * stream is cancelled (server told to stop, local read closed) so a stalled
+   * stream is canceled (server told to stop, local read closed) so a stalled
    * call never holds the caller — or a browser connection — open.
    */
   signal?: AbortSignal;
@@ -56,7 +56,7 @@ export interface RunAgentExtractionOpts {
   /**
    * Whether this run is a VISIBLE one the caller renders.
    *
-   * `true` (default) keeps the pre-D126 behaviour: displayMode "direct" plus a
+   * `true` (default) keeps the pre-D126 behavior: displayMode "direct" plus a
    * kept instance, so a live converter UI can stream it.
    *
    * `false` runs it fully in the background and destroys the instance after.

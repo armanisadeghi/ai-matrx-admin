@@ -26,7 +26,7 @@ import { useMandateAlchemyTabCapture } from "../workspace/MandateAlchemy";
  *     finished measuring.
  *  3. **The fallback announces itself.** When the reported inventory carries no
  *     declaration for this key, the old code-truth declaration is shown AND
- *     labelled as the older, partial source. A stand-in that looks like the
+ *     labeled as the older, partial source. A stand-in that looks like the
  *     real thing is the defect this rule prevents.
  */
 

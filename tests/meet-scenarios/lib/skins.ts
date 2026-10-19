@@ -12,7 +12,7 @@ export interface Skin {
   startPath: string;
   /** The page of one meeting, from its slug. */
   meetingPath: (slug: string) => string;
-  /** Recognises that a URL is one meeting's page (slug in group 1). */
+  /** Recognizes that a URL is one meeting's page (slug in group 1). */
   meetingUrl: RegExp;
   /** A code in this brand's own shape that names no meeting. */
   invalidCodePath: string;

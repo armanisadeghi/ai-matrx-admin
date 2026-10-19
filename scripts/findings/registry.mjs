@@ -170,7 +170,7 @@ export const FINDINGS_CHECKS = [
   {
     id: "ssr-viewport-branch",
     watch: featureRegExp(/^(app|features|components|lib|providers|packages\/[^/]+\/src)\/.*\.tsx$/),
-    fix: "Render both trees and let CSS pick (md:hidden / hidden md:block, or @container) — or keep useIsMobile to behaviour (props, handlers, effects). Two stateful trees that must not both mount: `// ssr-viewport-ok: request-hinted …` (ViewportHintProvider answers the server render).",
+    fix: "Render both trees and let CSS pick (md:hidden / hidden md:block, or @container) — or keep useIsMobile to behavior (props, handlers, effects). Two stateful trees that must not both mount: `// ssr-viewport-ok: request-hinted …` (ViewportHintProvider answers the server render).",
     ...fromRules("ssr-viewport-branch"),
   },
   {
@@ -190,7 +190,7 @@ export const FINDINGS_CHECKS = [
     // them (MATRX_FINDINGS_PATHS), so a changed-files run takes about a second.
     id: "ui-drift",
     watch: /\.tsx$/,
-    fix: "Use the design system instead of re-styling it: placement-only classes on primitives, semantic colour tokens, the type scale, the shared spinner, overlays and tabs — the item's own fix line names the rule.",
+    fix: "Use the design system instead of re-styling it: placement-only classes on primitives, semantic color tokens, the type scale, the shared spinner, overlays and tabs — the item's own fix line names the rule.",
     fixFor: uiDriftRemedyForKey,
     ...fromRules("ui-drift"),
   },

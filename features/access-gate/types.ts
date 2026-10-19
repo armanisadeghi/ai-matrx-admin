@@ -50,7 +50,7 @@ export type AccessDisclosure =
  * Only the surface knows that — the resolver deliberately never does, because
  * `access_denied_context` answers about ROWS, and this is a rule about PEOPLE.
  * So the surface declares it, and the default stays `"requestable"` so no
- * existing caller changes behaviour.
+ * existing caller changes behavior.
  *
  *  - `requestable` — the canonical Request-access panel renders (still self-gated
  *    on `canRequest`, a pending ask, and the report state).

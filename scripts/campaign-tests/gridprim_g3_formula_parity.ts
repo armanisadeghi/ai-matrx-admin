@@ -22,7 +22,7 @@
  * LANE VIEWS-AND-FIELDS F4 — SEVEN MORE OF AIRTABLE'S FUNCTIONS (SWITCH, FIND, SUBSTITUTE,
  * REGEX_MATCH, DATETIME_FORMAT, WORKDAY, ARRAYJOIN). The older grid never had them, so there is
  * no second evaluator to agree with: STORE_ONLY below carries, for each formula, an answer
- * worked out HERE in TypeScript from the same row (Airtable's documented behaviour), or the exact
+ * worked out HERE in TypeScript from the same row (Airtable's documented behavior), or the exact
  * refusal sentence. The day sheet gains one many-choice column, Services, for ARRAYJOIN. RED
  * before viewsfields_f4_a_formula_speaks_seven_more_airtable_functions.sql ("There is no function
  * called `SWITCH`…"), GREEN after.
@@ -189,7 +189,7 @@ const DATETIME_TOKENS: [string, string, string?][] = [
 ];
 
 /**
- * VIEWS-AND-FIELDS F4: the seven, each answer worked out here from the row (Airtable's behaviour)
+ * VIEWS-AND-FIELDS F4: the seven, each answer worked out here from the row (Airtable's behavior)
  * and each refusal in the store's own words. `type` is the kind formula_parse must report.
  */
 const STORE_ONLY: { text: string; expect: (r: Row) => Outcome; type?: string; once?: boolean }[] = [

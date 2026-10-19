@@ -60,7 +60,7 @@ import { toast } from "@/lib/toast";
 
 export type Icon = ComponentType<{ className?: string | undefined }>;
 
-/** ONE icon treatment for every mock on this page: same size, same colour. */
+/** ONE icon treatment for every mock on this page: same size, same color. */
 export const ICON_CLASS = "h-4 w-4 shrink-0 text-muted-foreground";
 
 export interface MockRow {

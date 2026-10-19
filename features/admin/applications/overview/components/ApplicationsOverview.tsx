@@ -3,7 +3,7 @@
 // features/admin/applications/overview/components/ApplicationsOverview.tsx
 //
 // Overview tab of the Applications hub — one card per shipped application,
-// summarising the three governed systems (remote configuration, remote
+// summarizing the three governed systems (remote configuration, remote
 // catalogs, installed fleet) with real numbers and a direct link into the tab
 // that owns each one.
 //

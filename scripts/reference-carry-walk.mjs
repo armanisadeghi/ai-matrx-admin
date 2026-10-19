@@ -1,6 +1,6 @@
 // scripts/reference-carry-walk.mjs — lane REFERENCE-CARRY owner-seat walk (admin@admin.com).
 //
-// PHASE=before  the installed @ai-matrx/records-ui draws references as grey words and a copied
+// PHASE=before  the installed @ai-matrx/records-ui draws references as gray words and a copied
 //               ```matrx reference fence as raw text (Arman's Department table, 2026-09-28).
 // PHASE=after   every reference is a chip that opens what it names; a kind value draws through the
 //               kind system; an entity-reference cell is edited with a picker.

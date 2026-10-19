@@ -97,7 +97,7 @@ function selfTest() {
   const mine = ownerOverlap("CRT and TV are consumer signals; enterprise is where the money is. The word free massively reduces value…", c);
   const other = ownerOverlap("Every system agent the platform runs, with its bindings and versions.", c);
   if (!mine || other) { console.error(`self-test FAILED — his words ${mine ? "found" : "MISSED"}, unrelated text ${other ? "WRONGLY matched" : "clean"}`); process.exit(3); }
-  console.log("self-test passed — the 2026-09-30 restored placeholder is recognised as his; unrelated text is not.");
+  console.log("self-test passed — the 2026-09-30 restored placeholder is recognized as his; unrelated text is not.");
 }
 
 if (process.argv[1] && process.argv[1].endsWith("check-owner-words.mjs")) {

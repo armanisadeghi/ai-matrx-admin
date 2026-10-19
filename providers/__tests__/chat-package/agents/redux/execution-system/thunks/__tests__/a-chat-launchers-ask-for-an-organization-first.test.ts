@@ -46,7 +46,7 @@ describe("resolveMandateAsking", () => {
     expect(resolved.agentId).toBe("agent-for-org-picked");
   });
 
-  it("cancel rejects as cancelled and resolves nothing", async () => {
+  it("cancel rejects as canceled and resolves nothing", async () => {
     const cancelled = Object.assign(new Error(""), { name: "OrganizationSelectionCancelled" });
     askOrganization.mockRejectedValue(cancelled);
     await expect(resolveMandateAsking(KEY)).rejects.toMatchObject({ name: "OrganizationSelectionCancelled" });

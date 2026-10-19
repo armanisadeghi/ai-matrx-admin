@@ -11,7 +11,7 @@
  *   a. `canvasTypeHasSource` → `return true` for every type  → the sandbox /
  *      cloud-browser / document cases go RED (the tab is offered again).
  *   b. `resolveCanvasSource` → `JSON.stringify(content)` (the shipped
- *      behaviour) → the envelope-leak cases go RED.
+ *      behavior) → the envelope-leak cases go RED.
  */
 
 import {

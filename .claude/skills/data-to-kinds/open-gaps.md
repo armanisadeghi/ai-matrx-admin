@@ -332,7 +332,7 @@ skill's `gap #14 of 2026-08-24` and `gap #16 of 2026-08-24` → the gate section
     LIVE rows before declaring Stage A done, and capture a fresh fixture for every new key you
     resolve.** Two of those three turned out to be real data we were discarding.
 32. **A TYPE THAT LOOKS OBVIOUS CAN SILENTLY DROP 100% OF THE VALUE.** `years_in_business` was
-    modelled `int` and measured `None` on every row — Google reports `"10+ years in business"`, a
+    modeled `int` and measured `None` on every row — Google reports `"10+ years in business"`, a
     floor, not a count. **Rule: after mapping a field, ASSERT ON THE MAPPED VALUE against a real
     capture, not on the field's presence.** The same discipline caught a `truncated` flag that was
     inferred from "we got exactly `limit` rows" and is wrong whenever a table holds exactly that
@@ -355,7 +355,7 @@ skill's `gap #14 of 2026-08-24` and `gap #16 of 2026-08-24` → the gate section
 > **Your move:** bring Arman these two readings and the consequence, get his ruling, then build.
 > Register: [`/operations/conflicts.md`](/operations/conflicts.md) · `CFL-054`
 
-35. **THE SECOND PROJECTION SHOULD BE THE CURRENT BEHAVIOUR, NOT THE RAW PAYLOAD.** The skill says
+35. **THE SECOND PROJECTION SHOULD BE THE CURRENT BEHAVIOR, NOT THE RAW PAYLOAD.** The skill says
     projection 2 is `include_raw`. In practice the demo panel that MOVED the argument in all three
     runs was "what the live path produces from this identical input, beside ours": 11 persisted
     rows vs 20 kind placements; 0/6 citations with a URL vs 6/6; a table with no column list vs 28
@@ -465,11 +465,11 @@ skill's `gap #14 of 2026-08-24` and `gap #16 of 2026-08-24` → the gate section
     counts the source ONLY when rows were actually cut; an uncountable source stays UNKNOWN
     rather than becoming a guess.)
 47. **A WIDE TABLE HIDES ITS OWN EMPTY STATE, AND EVERY `colSpan` EMPTY ROW IN THE PLATFORM HAS
-    THIS BUG.** A `<td colSpan={n}>` centred inside a horizontally-scrolling table puts its
-    message at the centre of the FULL table width — measured on a 32-column empty result, the
+    THIS BUG.** A `<td colSpan={n}>` centered inside a horizontally-scrolling table puts its
+    message at the center of the FULL table width — measured on a 32-column empty result, the
     "no rows" explanation sat far off the right edge, invisible exactly when it was the only
     content. **Rule: an empty-state cell inside an `overflow-x-auto` table is `sticky left-0`
-    and left-aligned, never centred.**
+    and left-aligned, never centered.**
 48. **THE LOCAL aidream SERVER DOES NOT HOT-RELOAD, AND THE SKILL NEVER SAYS IT.** `run.py` sets
     `reload=False`, so a Stage B fix to the Stage A service is invisible to the browser until
     the process is restarted — and the symptom is a demo that keeps rendering the OLD answer

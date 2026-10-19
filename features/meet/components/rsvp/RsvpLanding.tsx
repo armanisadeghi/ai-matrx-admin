@@ -244,7 +244,7 @@ export function RsvpLanding({
 
         {meeting.cancelledAt ? (
           <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
-            This meeting was cancelled
+            This meeting was canceled
             {meeting.cancellationReason
               ? `: “${meeting.cancellationReason}”`
               : "."}

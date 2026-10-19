@@ -67,7 +67,7 @@ export interface AttendeePerson {
   partyId: string;
   /**
    * The Person's name as `crm.party` holds it. Null only when the row could not
-   * be read — the door still opens, labelled by the address, never by nothing.
+   * be read — the door still opens, labeled by the address, never by nothing.
    */
   displayName: string | null;
   /**

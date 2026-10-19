@@ -16,7 +16,7 @@ export const STATUS_WORDS: Record<RunStatus, string> = {
   running: "Running",
 };
 
-/** Dot colour per status — semantic tokens only. */
+/** Dot color per status — semantic tokens only. */
 export const STATUS_DOT: Record<RunStatus, string> = {
   succeeded: "bg-success",
   warned: "bg-warning",

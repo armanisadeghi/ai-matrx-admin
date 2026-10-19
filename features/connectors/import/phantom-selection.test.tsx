@@ -26,7 +26,7 @@
  * `seenIds`, `unfilteredSearch` and `requestedExternalId` are one
  * `useReducer`, reset together on an organization change, so there is no
  * field left half-reset. Two independent abort controllers (unfiltered vs.
- * typed) mean a keystroke narrows the visible list without ever cancelling
+ * typed) mean a keystroke narrows the visible list without ever canceling
  * the one read that can prove the address's contact does not exist.
  */
 
@@ -291,7 +291,7 @@ describe("the address's externalId is reconciled against what the read returns",
         args.query
           ? {
               // Searching by name is how the contact is later PROVEN to
-              // exist — the selection must still be honoured once it is.
+              // exist — the selection must still be honored once it is.
               provider_key: "google_contacts",
               google_account: "me@example.com",
               contacts: [ADA],
@@ -504,7 +504,7 @@ describe("the address's externalId is reconciled against what the read returns",
  *     effect re-runs on every `query` change — so the FIRST keystroke aborted
  *     the one read that can prove the address's contact exists. Every test
  *     above missed it because the mock resolves whatever the signal says; the
- *     tests below honour the signal, exactly as `fetch` does.
+ *     tests below honor the signal, exactly as `fetch` does.
  *
  * (2) `requestedExternalId` survived its own promotion, so a person who
  *     un-ticked the deep-linked contact had it ticked again by the next

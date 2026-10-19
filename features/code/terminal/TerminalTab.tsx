@@ -219,7 +219,7 @@ export const TerminalTab: React.FC<TerminalTabProps> = ({
           (err instanceof DOMException && err.name === "AbortError") ||
           ac.signal.aborted;
         if (aborted) {
-          state.term.write(`${DIM}^C cancelled${RESET}\r\n`);
+          state.term.write(`${DIM}^C canceled${RESET}\r\n`);
         } else {
           const message = extractErrorMessage(err);
           state.term.write(`${RED}${message}${RESET}\r\n`);

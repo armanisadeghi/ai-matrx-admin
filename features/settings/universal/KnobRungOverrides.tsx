@@ -9,13 +9,13 @@
 // WHY IT EXISTS. `platform.feature_knob.overridable_by` is the one field that
 // decides whether a person is shown a control. Eight `records.confirmation.*`
 // keys say `{organization, table}` or `{organization, agent}`; the database
-// honours them per table on every write (`platform._stamp_actor_tier` resolves
+// honors them per table on every write (`platform._stamp_actor_tier` resolves
 // `confirmation.table_allows_born_confirmed` with the row's own table id). The
 // settings screen could reach exactly two rungs — the organization and the
 // person — so "this table is different" was a promise the registry made and
 // the screen could not keep. `check:settings-ladder-ui` calls that class
 // UNADDRESSED, and it is the same defect as a control that saves a value
-// nothing honours, seen from the other side.
+// nothing honors, seen from the other side.
 //
 // THE SHAPE, AND WHOSE IT IS. Salesforce's per-object override tables, Stripe's
 // and Linear's settings exceptions: the setting states ONE value plainly, and
@@ -396,7 +396,7 @@ export function KnobRungOverrides({
   // differs; reading only on open made "2 exceptions" invisible until you
   // opened the thing that was supposed to tell you. Only knobs that actually
   // HAVE a row-keyed rung mount a panel (11 keys today), so this is a handful
-  // of small reads per page, not the per-knob catalogue read the cache exists
+  // of small reads per page, not the per-knob catalog read the cache exists
   // to prevent. The context itself is idempotent per key.
   useEffect(() => {
     if (kinds.length === 0 || !organizationId) return;

@@ -221,7 +221,7 @@ describe("a kind that reads no assist row never claims one", () => {
 });
 
 describe("the kind contract can be answered for every registered kind", () => {
-  it("a kind reading a non-default family declares how it recognises a row", () => {
+  it("a kind reading a non-default family declares how it recognizes a row", () => {
     for (const kind of registry) {
       const family = kind.reads ?? "approval_proposal";
       if (family === "approval_proposal") continue;

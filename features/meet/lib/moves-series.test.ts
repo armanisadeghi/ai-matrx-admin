@@ -1,6 +1,6 @@
 /**
  * Moving a whole series re-homes or archives its per-date changes, so the form
- * must ASK first (verifier, 2026-09-29: a cancelled date came back silently).
+ * must ASK first (verifier, 2026-09-29: a canceled date came back silently).
  * `movesSeries` decides when that question exists.
  */
 import type { MeetingRecord } from "@ai-matrx/meet";

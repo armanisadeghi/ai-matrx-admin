@@ -133,7 +133,7 @@ export const ROW_STATE_LABELS: Record<PayPeriodEmploymentState, string> = {
   locked: "Locked",
 };
 
-/** 🚨 HEADER state — `hr.pay_period.state`. A different machine, labelled differently on screen. */
+/** 🚨 HEADER state — `hr.pay_period.state`. A different machine, labeled differently on screen. */
 export const PERIOD_STATE_LABELS: Record<PayPeriodState, string> = {
   open: "Open",
   submitted: "Submitted",

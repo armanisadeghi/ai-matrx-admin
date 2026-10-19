@@ -55,7 +55,7 @@ export function useFindReplace(instanceId: string, noteId: string | null) {
   // consume any pending "jump to match N in note X" request (set when the
   // user clicks a row in the global search results panel). The effect also
   // runs when the pending target changes so a queued jump aimed at the
-  // newly-active note is honoured immediately.
+  // newly-active note is honored immediately.
   useEffect(() => {
     if (!findReplace) return;
     const matchCountChanged = findReplace.matchCount !== matches.length;

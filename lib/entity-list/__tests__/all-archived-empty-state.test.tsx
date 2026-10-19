@@ -43,7 +43,7 @@ import { Provider } from "react-redux";
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
 // The toolbar's popover measures itself; jsdom has no ResizeObserver. Layout
-// machinery, not the behaviour under test.
+// machinery, not the behavior under test.
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
   observe() {}
   unobserve() {}

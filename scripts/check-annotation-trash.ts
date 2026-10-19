@@ -42,7 +42,7 @@ export interface TitleCensusRow {
 
 /**
  * Every annotation /trash kind is present in the title census, and no trashed row's title is
- * empty (a blank row on /trash is a row nobody can recognise to restore).
+ * empty (a blank row on /trash is a row nobody can recognize to restore).
  */
 export function evaluateTitles(kinds: readonly AnnotationKindStorage[], census: readonly TitleCensusRow[] | null): string[] {
   if (census === null) return ["platform.trash_annotation_title_census() is not in the database — apply migrations/annotation_trash_titles_and_passage_links.sql"];

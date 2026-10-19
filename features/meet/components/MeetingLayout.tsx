@@ -61,7 +61,7 @@ function useMeetingLayoutPreference(): [MeetingLayoutChoice, (next: MeetingLayou
 
 /**
  * How far above the bottom the Room | Board switch must float on a phone: the
- * package's control bar wraps to two centred rows there and its LAST button is
+ * package's control bar wraps to two centered rows there and its LAST button is
  * Leave, so "the free right end" does not exist — pinned to bottom-right the
  * switch sat on top of Leave (verified at 390px, 2026-09-27). Measured, because
  * the bar is one row for a guest and two for a host.

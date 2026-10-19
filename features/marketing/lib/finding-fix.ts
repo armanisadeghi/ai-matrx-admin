@@ -17,7 +17,7 @@
  *     tag search engines read".
  *
  * Everything else — a title that is too SHORT, thin content, alt text, an
- * H1 that must be authored — is judgement, and belongs to the AI pipe
+ * H1 that must be authored — is judgment, and belongs to the AI pipe
  * (`aidream` slot `seo.finding_fixer`). `planDeterministicFix` returns null
  * for those, loudly and by design. A null is not a failure; it is the code
  * pipe correctly declining.
@@ -231,7 +231,7 @@ function planTitle(evidence: FindingFixEvidence): FindingFixDraft | null {
   }
 
   // A title that is too SHORT (or fails only on pixel width) needs new words.
-  // That is judgement, and belongs to the AI pipe. Decline, loudly, by null.
+  // That is judgment, and belongs to the AI pipe. Decline, loudly, by null.
   return null;
 }
 
@@ -292,7 +292,7 @@ function planDescription(evidence: FindingFixEvidence): FindingFixDraft | null {
 
 /**
  * Plan the deterministic fix for one finding, or return null when the fix is
- * a judgement call. Never throws: a caller may hand it any item key and any
+ * a judgment call. Never throws: a caller may hand it any item key and any
  * partial evidence.
  */
 export function planDeterministicFix(

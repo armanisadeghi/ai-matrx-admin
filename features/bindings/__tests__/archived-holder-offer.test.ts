@@ -12,7 +12,7 @@ import { SYSTEM_ORGANIZATION_ID } from "@/constants/platform-orgs";
 const base: ArchivedHolderFacts = {
   kind: "workflow",
   id: "wf-1",
-  name: "Summarise Text & Write a Title",
+  name: "Summarize Text & Write a Title",
   isArchived: true,
   organizationId: "org-1",
   organizationName: "Riverside Clinic",
@@ -30,7 +30,7 @@ describe("archivedHolderOffer", () => {
     expect(offer.kind).toBe("restore");
     if (offer.kind === "restore") {
       expect(offer.label).toBe("Restore and use");
-      expect(offer.sentence).toContain("Summarise Text & Write a Title is archived");
+      expect(offer.sentence).toContain("Summarize Text & Write a Title is archived");
     }
   });
 

@@ -328,8 +328,8 @@ const WINDOW = 6;
  *      window cannot reach across a function boundary, and a formatter that
  *      takes its parts from a helper never will.
  *
- * THE SUBJECT IS THE VOICE, NOT THE ARITHMETIC. A colon clock is recognisable
- * on its own terms, the way a human recognises one: two or more numeric parts
+ * THE SUBJECT IS THE VOICE, NOT THE ARITHMETIC. A colon clock is recognizable
+ * on its own terms, the way a human recognizes one: two or more numeric parts
  * JOINED BY A COLON where at least one part is ZERO-PADDED TO TWO
  * (`padStart(2, "0")`, or the older `("0" + x).slice(-2)`). Nothing but a clock
  * pads a part of a colon join to two digits. The arithmetic then becomes one of

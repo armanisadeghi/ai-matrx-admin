@@ -82,7 +82,7 @@ const groups: SurfaceValueGroup[] = [
     label: "App selection",
     sortOrder: 100,
     description:
-      "Which backend service/environment the viewer is showing, and the catalogue of services it can switch between.",
+      "Which backend service/environment the viewer is showing, and the catalog of services it can switch between.",
   },
   {
     key: "fetch_state",
@@ -135,7 +135,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "available_apps",
     label: "Available apps",
     description:
-      "The static catalogue of services the viewer can switch to, each with { key, label, env }. Always present — does not depend on a fetch.",
+      "The static catalog of services the viewer can switch to, each with { key, label, env }. Always present — does not depend on a fetch.",
     valueType: "array",
     alwaysAvailable: true,
     typicalCharCount: 400,

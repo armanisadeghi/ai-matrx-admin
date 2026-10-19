@@ -118,7 +118,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /**
  * Reads the `map_page_intent` payload off an `intent`-role edge. A payload
- * this build does not recognise yields null — the row still renders, without a
+ * this build does not recognize yields null — the row still renders, without a
  * tone, rather than inventing a disposition.
  */
 function intentFromPayload(payload: unknown): {

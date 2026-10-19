@@ -237,7 +237,7 @@ async function main() {
     const danaAfterWrite = { ...danaReads };
     const marcoAfterWrite = { ...marcoReads };
     if (danaAfterWrite.read_records === 0 && danaAfterWrite.read_records_by_ids === 0) {
-      ok("Dana's browser made ZERO reads for her own write — it recognised the echo and dropped it");
+      ok("Dana's browser made ZERO reads for her own write — it recognized the echo and dropped it");
     } else {
       bad(
         `Dana's browser re-read its own write: ${danaAfterWrite.read_records} page read(s) and ` +

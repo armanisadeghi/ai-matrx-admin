@@ -469,7 +469,7 @@ export function PersonalTab({
             /*
               🚨 THIS SENTENCE PROMISES EXACTLY WHAT IS TRUE, AND IT HAS BEEN
               NARROWED AND WIDENED AS THAT CHANGED — twice on the chart, once more
-              on the scope. It claimed the org chart before the chart honoured it,
+              on the scope. It claimed the org chart before the chart honored it,
               was cut back to the directory alone when testing showed it did not,
               widened again when `hr_org_chart` shipped its suppression, and now
               also states the LIMIT of the control.

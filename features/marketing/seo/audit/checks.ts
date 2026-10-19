@@ -42,7 +42,7 @@ export const CONTENT_OK_WORDS = 300;
 export const CONTENT_WARN_WORDS = 200;
 export const CONTENT_FAIL_WORDS = 100;
 
-// `url_design_quality` — the deduction formula from its live catalogue row.
+// `url_design_quality` — the deduction formula from its live catalog row.
 export const URL_DESIGN_MAX_LENGTH = 115;
 export const URL_DESIGN_MAX_PARAMS = 2;
 export const URL_DESIGN_LONG_PENALTY = 15;
@@ -134,7 +134,7 @@ export const REDIRECT_CHAIN_MAX_HOPS = 2;
 /**
  * Weight ceiling for the HTML DOCUMENT — the only transfer size the crawl
  * measures. Subresource bytes (images, scripts, fonts) are NOT fetched, so
- * there is no total-page-weight number here and the catalogue row says so.
+ * there is no total-page-weight number here and the catalog row says so.
  */
 export const LARGE_PAGE_BYTES = 5_000_000;
 
@@ -174,7 +174,7 @@ export const OG_IMAGE_SUPPORTED_EXTENSIONS: ReadonlySet<string> = new Set([
   "webp",
 ]);
 
-/** The Open Graph tags a rich share preview requires, per the catalogue row. */
+/** The Open Graph tags a rich share preview requires, per the catalog row. */
 export const SOCIAL_REQUIRED_OG_TAGS = [
   "og:title",
   "og:description",
@@ -182,7 +182,7 @@ export const SOCIAL_REQUIRED_OG_TAGS = [
   "og:url",
   "og:type",
 ] as const;
-/** Deductions from the tag-coverage score — the catalogue row's formula, verbatim. */
+/** Deductions from the tag-coverage score — the catalog row's formula, verbatim. */
 export const SOCIAL_OG_URL_CONFLICT_PENALTY = 20;
 export const SOCIAL_NO_TWITTER_CARD_PENALTY = 10;
 /** Score bands the coverage formula maps to a status. */
@@ -248,7 +248,7 @@ export const CONTENT_DEPTH_COMMERCE_SCHEMA_TYPES: ReadonlySet<string> = new Set(
     "productmodel",
   ],
 );
-/** Types with no content expectation at all — exempt, per the catalogue row. */
+/** Types with no content expectation at all — exempt, per the catalog row. */
 export const CONTENT_DEPTH_UTILITY_SCHEMA_TYPES: ReadonlySet<string> = new Set([
   "aboutpage",
   "checkoutpage",
@@ -1354,7 +1354,7 @@ export function checkCanonicalConflicts(ev: PageEvidence): CheckOutcome {
 // --- Transport -------------------------------------------------------------
 //
 // Status and redirects are split into FOUR checks, not two, because the
-// `web.analysis_item` catalogue models them as four separate items
+// `web.analysis_item` catalog models them as four separate items
 // (`broken_page_4xx`, `server_error_5xx`, `redirect_chain`, `redirect_loop`)
 // with different weights and severity bands — a 5xx is a 3.0-weight outage, a
 // 4xx is a dead end, and a loop is categorically worse than a long chain. One
@@ -1399,7 +1399,7 @@ export function checkServerError5xx(ev: PageEvidence): CheckOutcome {
     );
   }
   // 0 is the crawler's "no response at all" (timeout / connection refused),
-  // which the catalogue item scores together with 5xx.
+  // which the catalog item scores together with 5xx.
   if (status === 0) {
     return outcome(
       "fail",
@@ -1554,7 +1554,7 @@ export function checkMixedContent(ev: PageEvidence): CheckOutcome {
  * The crawl downloads the document and reads every subresource URL out of the
  * markup, but it never fetches those subresources, so their transfer sizes do
  * not exist anywhere in the evidence. This check therefore grades the one
- * number that IS measured, and the catalogue row states the same scope. The
+ * number that IS measured, and the catalog row states the same scope. The
  * day subresource sizes are captured, both move together.
  */
 export function checkPageWeight(ev: PageEvidence): CheckOutcome {
@@ -2106,7 +2106,7 @@ export function checkImageLazyLoading(ev: PageEvidence): CheckOutcome {
 /**
  * Share of raster images served as WebP/AVIF instead of JPEG/PNG/GIF.
  *
- * The catalogue row asks for a BYTE-weighted share. Transfer bytes are not
+ * The catalog row asks for a BYTE-weighted share. Transfer bytes are not
  * captured, so this is image-COUNT weighted and says so in its reasoning — a
  * byte-weighted number would be invented.
  */
@@ -2175,7 +2175,7 @@ export function checkImageModernFormat(ev: PageEvidence): CheckOutcome {
 /**
  * Images delivered far larger than the box they are drawn into.
  *
- * The catalogue row scores this in bytes; per-image transfer bytes and decoded
+ * The catalog row scores this in bytes; per-image transfer bytes and decoded
  * dimensions both need a fetch the crawl never makes. The one intrinsic-size
  * fact HTML does carry is a srcset `w` descriptor, so this compares the widest
  * DECLARED candidate against the declared display width — and only for images
@@ -2316,7 +2316,7 @@ export function checkBrokenImages(ev: PageEvidence): CheckOutcome {
 /**
  * 302/307 where a 301/308 was meant.
  *
- * ⚠️ SINGLE-SESSION TIER ONLY. The catalogue row scores a 302 that survives
+ * ⚠️ SINGLE-SESSION TIER ONLY. The catalog row scores a 302 that survives
  * three or more crawl sessions harder than one seen once; this sweep reads
  * only the latest accepted snapshot per page, so that tier is not evaluated
  * here and this check never claims it.
@@ -2408,7 +2408,7 @@ export function checkTemporaryRedirectUsage(ev: PageEvidence): CheckOutcome {
 /**
  * A 200 that is really an error page.
  *
- * ⚠️ Two of the catalogue row's signals need evidence this per-page check
+ * ⚠️ Two of the catalog row's signals need evidence this per-page check
  * cannot see (a hash match against the SITE's own 404 template, and a redirect
  * to a generic error page). Only the page-local signals are scored here.
  */
@@ -2787,7 +2787,7 @@ export function checkOgImageValidity(ev: PageEvidence): CheckOutcome {
     return outcome(
       "fail",
       45,
-      "No share image (og:image) — links to this page post as a bare grey " +
+      "No share image (og:image) — links to this page post as a bare gray " +
         "rectangle everywhere, which collapses how often anyone clicks them.",
       1,
     );
@@ -3004,7 +3004,7 @@ function blockTypes(block: Record<string, unknown>): string[] {
     });
 }
 
-/** The declared value for `prop`, honouring the accepted alias spellings. */
+/** The declared value for `prop`, honoring the accepted alias spellings. */
 function propertyValue(node: Record<string, unknown>, prop: string): unknown {
   for (const name of SCHEMA_PROPERTY_ALIASES[prop] ?? [prop]) {
     const value = node[name];
@@ -3044,7 +3044,7 @@ export function richResultTypeOf(types: string[]): string | null {
 /**
  * Parse errors and rich-result completeness, from the stored capture.
  *
- * Order is the catalogue row's, top-down: a parse error voids the whole
+ * Order is the catalog row's, top-down: a parse error voids the whole
  * script, so it outranks any missing property.
  */
 export function checkStructuredDataValidity(ev: PageEvidence): CheckOutcome {
@@ -3237,7 +3237,7 @@ export function hreflangEntries(ev: PageEvidence): [string, string][] {
 /**
  * Codes, absolute URLs, self-reference, canonical agreement, x-default.
  *
- * Rule order is the catalogue row's and is deliberate: an invalid code breaks
+ * Rule order is the catalog row's and is deliberate: an invalid code breaks
  * the whole cluster for every page in it, so it is reported ahead of the
  * self-reference and canonical problems that break only this page's half.
  */

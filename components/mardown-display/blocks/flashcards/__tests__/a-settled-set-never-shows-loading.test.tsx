@@ -83,7 +83,7 @@ test("a stream cut off after a card's front says so instead of waiting", () => {
   });
 });
 
-test("settled server data: a card whose answer never arrived is labelled, never pending", () => {
+test("settled server data: a card whose answer never arrived is labeled, never pending", () => {
   const set = deriveFlashcardsSet({
     serverData: {
       cards: [

@@ -2,7 +2,7 @@
 //
 // THE ONE WAY A PACK FILE BECOMES A SPACES TEMPLATE EVERYONE CAN USE. Each pack is checked first (the same
 // checker as spaces:templates:check — a pack with any finding is not sent), then declared for everyone:
-// custom.template_declare('platform', …) as the platform administrator, an upsert on (catalogue id,
+// custom.template_declare('platform', …) as the platform administrator, an upsert on (catalog id,
 // version) in the system organization's scope — never a person's or a test organization's. The row is the
 // records template (card + install plan from the spec, so /make lists it too and it installs through the
 // one template_install door) with the pack's pages riding in its spec as `spacePack` and its card face as

@@ -7,14 +7,14 @@
 // is no second list store anywhere in this repo.
 //
 // C22 CENSUS — every line below INJECTS APP IDENTITY. Nothing here catches,
-// retries, validates, or branches on package behaviour:
+// retries, validates, or branches on package behavior:
 //
 //   client    → `@/utils/supabase/client`, the app's ONE browser singleton.
 //   identity  → `requireUserId` + `getUserId` from `@/utils/auth/getUserId`,
 //               the app's ONE synchronous Redux identity read (the same one
 //               the `@ai-matrx/associations` host binds). `getUserId` answers
 //               null for a signed-out visitor, so the package skips the
-//               catalogue read instead of firing a refused one.
+//               catalog read instead of firing a refused one.
 //   transport → ONE `createMatrxTransport(store.getState)`, the same
 //               production pipeline `useRunAgent` and the execution system
 //               ride. Needed only because a picker may pass
@@ -22,7 +22,7 @@
 //               ladder themselves (platform rule D-R1) — the package resolves
 //               the Holder through the aidream door.
 //   errorSink → `captureError` from `@/lib/diagnostics` (source
-//               `"agent-catalog"`), so a failed catalogue read lands in the
+//               `"agent-catalog"`), so a failed catalog read lands in the
 //               same inspector every other failure does.
 //   notifier  → `toast` from `@/lib/toast`, the app's ONE toast entry point.
 //               The package's in-picker banner is still the primary scream.
@@ -48,7 +48,7 @@ import { favoritesService } from "@/features/scopes/service/favoritesService";
 import type { RootState } from "@/lib/redux/store";
 
 /**
- * Thrown when the catalogue is asked for before the Redux store exists. The
+ * Thrown when the catalog is asked for before the Redux store exists. The
  * transport reads credentials and the active org out of Redux on every call,
  * so there is no honest catalog without it.
  */
@@ -88,7 +88,7 @@ export function toCatalogArchiveFilter(
  * package's own `globalThis` registry.
  *
  * `archiveFilter` seeds THE ARCHIVED-ITEMS LAW's default for every consumer
- * the catalog will ever register. It is honoured ONCE, at creation: the user
+ * the catalog will ever register. It is honored ONCE, at creation: the user
  * preference rehydrates after first paint, so `AgentCatalogHost` owns the
  * late-knob reconciliation for consumers that registered before the knob
  * landed (and for every later change of it).

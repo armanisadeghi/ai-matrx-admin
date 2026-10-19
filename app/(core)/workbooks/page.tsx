@@ -123,7 +123,7 @@ export default function WorkbooksLandingPage() {
   const handleImportXlsx = useCallback(
     async (file: File) => {
       // The file input has no `accept` filter (so Drive / Google Sheets
-      // pickers don't grey everything out) — validate here. Drive's
+      // pickers don't gray everything out) — validate here. Drive's
       // ".gsheet" shortcuts and Google-only mime types can't be parsed
       // client-side: give a clear, actionable error instead of a stack
       // trace from SheetJS.
@@ -159,7 +159,7 @@ export default function WorkbooksLandingPage() {
         }
       } finally {
         setImporting(false);
-        // Cancelling the organization picker leaves the chosen file intact so
+        // Canceling the organization picker leaves the chosen file intact so
         // the user can resume this exact import after selecting an org.
         if (!selectionCancelled && fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -292,7 +292,7 @@ export default function WorkbooksLandingPage() {
     <>
       {/*
         No `accept` filter — Drive / Google Sheets shortcuts and many
-        mobile pickers grey out everything when an accept whitelist is
+        mobile pickers gray out everything when an accept whitelist is
         set. We validate by extension/parse after the user picks so the
         error message is friendly + actionable.
       */}

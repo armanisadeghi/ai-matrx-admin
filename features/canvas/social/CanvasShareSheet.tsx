@@ -33,7 +33,7 @@
  *
  * Everything the two branches spelled out — portal, overlay, mobile geometry,
  * `dvh` caps, safe-area padding, the 44px grab-handle target, the close
- * control — is package behaviour now. All user-facing copy is unchanged.
+ * control — is package behavior now. All user-facing copy is unchanged.
  */
 
 import React, { useState, useEffect } from "react";

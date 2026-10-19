@@ -589,7 +589,7 @@ async function selfTest(env: { url: string; key: string }): Promise<number> {
     //
     // 🚨 THE SELF-TEST DELIBERATELY NEVER RUNS `CREATE POLICY`. Measured 2026-09-12:
     // through `public.execute_admin_query`, `create policy … using (true)` on an empty
-    // one-column table takes 8,127 ms and is cancelled by the door's hard ~8.2 s cap
+    // one-column table takes 8,127 ms and is canceled by the door's hard ~8.2 s cap
     // (CLAUDE.md § Migrations, DD-151) — every other statement here is 110-330 ms. So
     // arm C's GREEN half is the OTHER real repair: if nothing should read the table,
     // revoke the grant. Both repairs are honest; only one fits through the door.

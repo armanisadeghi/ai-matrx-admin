@@ -6,7 +6,7 @@
 // the left; round chip, human-controlled "Advance stage", and FINISH on the
 // right (stage advancement rides the resume payload — design-doc open Q4 — so
 // that control arms only while the run waits on the human). The stage
-// POSITION itself lives in the stage tabs of the centre panel (v3) — this
+// POSITION itself lives in the stage tabs of the center panel (v3) — this
 // header carries no stepper or stage chip.
 //
 // FINISH IS THE GUIDED RUN'S ONE DOOR (v3, 2026-08-18). The person drives the

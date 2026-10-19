@@ -13,7 +13,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
  *
  * Blind sessions: while a blind run is unrevealed, every identifying fact
  * (model, settings, prompt, tools, agent per column, metrics) is withheld and
- * columns are labelled anonymously, exactly as the page shows them.
+ * columns are labeled anonymously, exactly as the page shows them.
  */
 
 import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";

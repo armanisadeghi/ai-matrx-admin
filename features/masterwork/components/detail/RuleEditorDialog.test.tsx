@@ -27,7 +27,7 @@ import type { RulebookRule } from "../../types";
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean })
   .IS_REACT_ACT_ENVIRONMENT = true;
 
-// jsdom ships neither of these; layout machinery, not the behaviour under test.
+// jsdom ships neither of these; layout machinery, not the behavior under test.
 window.matchMedia = ((query: string) => ({
   matches: false,
   media: query,

@@ -305,7 +305,7 @@ export function formatRefusals(refusals, { where, verdict = "COMMIT REFUSED" }) 
   lines.push("      pnpm db:apply --amend-idempotent <file> --target production");
   lines.push("");
   lines.push(
-    "  It writes the trailer this guard honours. Nothing else does — not a flag, not a",
+    "  It writes the trailer this guard honors. Nothing else does — not a flag, not a",
   );
   lines.push("  hand-typed trailer, not editing migrations/LEDGER.json.");
   lines.push("");

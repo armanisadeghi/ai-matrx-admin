@@ -8,7 +8,7 @@
  *                                  job; 409 `rag_already_complete` if done)
  *   POST /files/{id}/refresh     — re-run a completed file (new derivative)
  *
- * Auth header + base URL + error normalisation come from python-client, so
+ * Auth header + base URL + error normalization come from python-client, so
  * a non-2xx throws a typed `BackendApiError` (see `isRagAlreadyComplete`).
  */
 

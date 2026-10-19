@@ -108,7 +108,7 @@ function unwrap(data: unknown, error: { message?: string } | null, fallback: str
  *     capture toggles off. Nobody had seen it only because the fleet was empty.
  *
  * `key()` therefore reads the snake spelling first and accepts a camel one, so this seam survives a
- * door that is later normalised either way instead of silently emptying again.
+ * door that is later normalized either way instead of silently emptying again.
  */
 function key(record: Record<string, unknown>, snake: string): unknown {
   const camel = snake.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());

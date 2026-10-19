@@ -5,7 +5,7 @@ import type { PdfSurfaceLinkIds } from "./registry";
  * An unprocessed file keeps its durable file id so the route can create the
  * missing processed-document bridge without asking for another upload.
  *
- * A control labelled "PDF Extractor" opens the PDF Extractor. A processed
+ * A control labeled "PDF Extractor" opens the PDF Extractor. A processed
  * document's HOME is its Source screen (SOURCE-CONVERGENCE §8.2, reached via
  * `buildSourceHref`), but the PDF tools stay at `/tools/pdf-extractor?doc=<id>`
  * — sending this link to /knowledge/sources made every "Open in PDF Extractor"

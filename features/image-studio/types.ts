@@ -40,7 +40,7 @@ export type ImagePositionAnchor =
 
 /**
  * Continuous focal point. `x` and `y` are normalized to [0, 1] — the
- * percentage across the source image where the centre of the crop should
+ * percentage across the source image where the center of the crop should
  * sit. The studio drag-to-adjust UI emits these and the server crops via
  * `sharp.extract(...)` + `.resize(...)`.
  */

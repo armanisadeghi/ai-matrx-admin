@@ -94,7 +94,7 @@ export function isBlockStateRow(value: unknown): value is BlockStateRow {
   );
 }
 
-/** Normalise a door/broadcast row (the broadcast omits nothing the hook reads). */
+/** Normalize a door/broadcast row (the broadcast omits nothing the hook reads). */
 export function toBlockStateRow(value: unknown): BlockStateRow | null {
   if (!isBlockStateRow(value)) return null;
   const r = value as unknown as Record<string, unknown>;

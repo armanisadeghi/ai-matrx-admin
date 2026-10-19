@@ -13,7 +13,7 @@ There is no second feedback store, and adding one is a defect.
 
 A 2026-08-15 audit found thumbs UI in three places and could not name a
 consumer. It was worse than "no consumer": there were three different
-behaviours and two of them wrote nothing at all.
+behaviors and two of them wrote nothing at all.
 
 | Surface | What it did before | Verdict |
 |---|---|---|
@@ -23,7 +23,7 @@ behaviours and two of them wrote nothing at all.
 
 Reuse was considered and rejected for `agent.cmp_response_feedback` (real, but a
 **component of a comparison set** — `comparison_set_id`, `rank`, `overall`;
-battle-mode semantics, not general output judgement) and `users.user_feedback`
+battle-mode semantics, not general output judgment) and `users.user_feedback`
 (the product bug/feature tracker behind the matrx-feedback MCP — feedback about
 *the app*, not about an output).
 

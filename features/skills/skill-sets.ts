@@ -37,7 +37,7 @@ export function withSetMembers(
   return { ...config, [SET_MEMBERS_KEY]: Array.from(new Set(memberIds)) };
 }
 
-/** Members of a set resolved against the loaded catalogue, in order (unknown ids kept as null). */
+/** Members of a set resolved against the loaded catalog, in order (unknown ids kept as null). */
 export function resolveSetMembers(
   skill: Pick<SkillRow, "config">,
   skillById: Map<string, SkillRow>,

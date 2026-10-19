@@ -8,7 +8,7 @@
  * index, exactly as the content plan's `…/plan/<site>` is the tree), and
  * `/table`, `/graph`, `/text`, `/pages`, `/history` are its siblings. `?site=`
  * is a genuine parameter — it narrows which site's pages and counts are in
- * scope and every view honours the same one.
+ * scope and every view honors the same one.
  */
 
 import { usePathname, useSearchParams } from "next/navigation";

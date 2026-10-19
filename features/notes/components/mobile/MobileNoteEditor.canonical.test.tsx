@@ -3,7 +3,7 @@
 // Each case below fails against the editor as it stood on 2026-09-14 (audit
 // N-01, N-05 mobile half, N-20):
 //   (a) text typed and left inside the debounce window reached nothing — the
-//       bespoke 2s timer was cancelled by this component's own unmount.
+//       bespoke 2s timer was canceled by this component's own unmount.
 //   (b) a CAS conflict was recorded on the record and mobile rendered NOTHING
 //       for it, so the save simply kept failing with no way to choose.
 //   (c) a streak of failing saves produced one toast and then silence — the

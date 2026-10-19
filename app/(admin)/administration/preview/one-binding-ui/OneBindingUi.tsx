@@ -15,7 +15,7 @@
  *   5  The real current value, previewed
  *   6  Options priced at the point of choice
  *   7  Live per-row refusal in domain words
- *   9  Absence behaviour on a non-guaranteed source
+ *   9  Absence behavior on a non-guaranteed source
  *  11  AI map / Map manually, proposing into the same editor
  *  13  Scope as one described control inside the flow
  *  14  The auto-run promise, narrated

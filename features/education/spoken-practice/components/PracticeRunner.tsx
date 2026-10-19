@@ -221,7 +221,7 @@ function Centered({ children }: { children: React.ReactNode }) {
 
 /**
  * The pronunciation / fluency scorecard shown after a Language & Pronunciation
- * answer. HONEST framing: these are a holistic judgement of the recording, not
+ * answer. HONEST framing: these are a holistic judgment of the recording, not
  * phoneme-level measurements — the caption says so.
  */
 function PronunciationCard({

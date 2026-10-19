@@ -52,7 +52,7 @@ export interface HaveRow {
   /**
    * THE YIELD — what this kind actually produced, as a sentence.
    *
-   * Transcripts for a catalogued Library, kept turns for a Rulebook Source. It is
+   * Transcripts for a cataloged Library, kept turns for a Rulebook Source. It is
    * the only column on this screen that answers "was any of this worth it".
    */
   yield: string;
@@ -177,7 +177,7 @@ export interface BlockedRow {
    * `lib/progress/failureSentence.ts` `providerErrorSentence`). */
   where: string;
   /** The raw token behind `where`, present ONLY when `where` fell back to
-   * "a provider error" because the token was not one we recognised. Render
+   * "a provider error" because the token was not one we recognized. Render
    * as secondary detail — never inside the sentence itself. */
   whereDetail?: string;
   since: string;

@@ -134,7 +134,7 @@ const ELSEWHERE_LIMIT = 30;
 
 /**
  * "Everywhere else" — the matching jobs of every OTHER Intelligence page,
- * under a labelled divider. Nothing renders without a query.
+ * under a labeled divider. Nothing renders without a query.
  */
 export function EverywhereElse({
   query,

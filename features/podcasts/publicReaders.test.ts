@@ -53,7 +53,7 @@ let selects: { table: string; select: string }[] = [];
 let rows: Record<string, Record<string, unknown>[]> = {};
 
 /**
- * PostgREST's own rule, modelled exactly: strip embeds, split on commas, and
+ * PostgREST's own rule, modeled exactly: strip embeds, split on commas, and
  * refuse the request when any requested name is outside the grant — `*`
  * included, because `*` IS every column.
  */
@@ -96,7 +96,7 @@ function builder(table: string) {
   // which is exactly the defect this file now has to catch: chapters.json
   // served a public-but-unpublished episode because it never asked for
   // `is_published`. The other operators below stay no-ops — no reader here
-  // depends on one, and modelling them badly would be worse than not at all.
+  // depends on one, and modeling them badly would be worse than not at all.
   const filters: { column: string; value: unknown }[] = [];
   const matches = (row: Record<string, unknown>) =>
     filters.every((f) => row[f.column] === f.value);
@@ -377,7 +377,7 @@ describe("a refused read is never rendered as an empty state", () => {
   /**
    * The second half, and the one that actually shipped. Even a reader that names
    * its columns can have one revoked tomorrow — and when that happens it must
-   * FAIL, not quietly claim the catalogue is empty.
+   * FAIL, not quietly claim the catalog is empty.
    */
   it("feed.xml does not answer 404 'Podcast not found' when the show read is denied", async () => {
     // Tomorrow's revoke: `slug` leaves podcast.pc_shows. The reader still names
@@ -428,7 +428,7 @@ describe("a refused read is never rendered as an empty state", () => {
       "@/features/pricing/education/loadEducationPricing"
     );
     // With no product row the honest answer is premium: null — that is a real
-    // empty catalogue, not a denial. The denial path is covered above.
+    // empty catalog, not a denial. The denial path is covered above.
     await expect(loadEducationPricing()).resolves.toMatchObject({ premium: null });
   });
 });

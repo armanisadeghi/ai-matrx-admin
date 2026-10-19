@@ -10,7 +10,7 @@
 //
 // 🚨 CAPABILITY-GATED ACTIONS ARE ABSENT, NEVER DISABLED (SPEC-EMPLOYEES §1.3,
 // §2.2 route 10). `hidden: true` removes the entry; there is deliberately no
-// call site here that sets `disabled` on a capability. A greyed "Start
+// call site here that sets `disabled` on a capability. A grayed "Start
 // offboarding" tells a manager that the capability exists and that they do not
 // have it — which is exactly the disclosure the rule forbids.
 //
@@ -180,7 +180,7 @@ export function useHrEmployeeMenu(args: {
                 icon: DoorOpen,
                 tone: "destructive",
                 // ABSENT without the capability (or a surface that can host the dialog) —
-                // never a greyed row. `canOffboard` already folds in `onStartOffboarding`.
+                // never a grayed row. `canOffboard` already folds in `onStartOffboarding`.
                 hidden: !canOffboard || alreadyGone,
                 onSelect: () => onStartOffboarding?.(subject),
               },

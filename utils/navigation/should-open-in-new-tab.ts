@@ -18,7 +18,7 @@ export type NewTabClickEvent = {
   button?: number;
 };
 
-/** True when the browser should keep native "open in new tab" behaviour. */
+/** True when the browser should keep native "open in new tab" behavior. */
 export function shouldOpenInNewTab(e: NewTabClickEvent): boolean {
   return Boolean(
     e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1,

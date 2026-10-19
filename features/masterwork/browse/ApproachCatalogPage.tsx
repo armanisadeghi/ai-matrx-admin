@@ -97,7 +97,7 @@ export function ApproachCatalogPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 pb-12 pt-2">
-      {/* THE PAGE SAYS WHAT IT IS. The body opened on a grey sentence with no
+      {/* THE PAGE SAYS WHAT IT IS. The body opened on a gray sentence with no
           title of its own — the only heading was 14px of chrome in the top bar,
           so the page read as a fragment of something else
           (jobs-bar-2026-09-16, item 1). */}

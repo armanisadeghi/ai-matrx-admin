@@ -33,7 +33,7 @@ jest.mock("next/link", () => ({
     ),
 }));
 // The panel always mounts the link modal (closed), and the modal reads its own
-// slice of shortcut/category state. Its behaviour is its own concern — this
+// slice of shortcut/category state. Its behavior is its own concern — this
 // suite is about the panel's doors, so the modal is stubbed out entirely.
 jest.mock("@/features/agent-shortcuts/components/LinkAgentToShortcutModal", () => ({
     __esModule: true,

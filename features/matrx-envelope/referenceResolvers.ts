@@ -813,7 +813,7 @@ function derivedResolver(noun: string): ReferenceResolver | undefined {
   const schema = dot === -1 ? "public" : entry.table.slice(0, dot);
   const table = dot === -1 ? entry.table : entry.table.slice(dot + 1);
   // THE SCOPE SYSTEM LIVES IN THE RECORD STORE (lane SCOPES-READS-WEB; the flip, 2026-10-03): the
-  // catalogue still names the old `context.*` tables for scope / scope_type / context_item, and those
+  // catalog still names the old `context.*` tables for scope / scope_type / context_item, and those
   // nouns resolve through the store resolvers above; a context-schema row is never read by table.
   if (schema === "context") return undefined;
   const titleFields = entry.title_column

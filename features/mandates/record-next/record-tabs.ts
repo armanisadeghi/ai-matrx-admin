@@ -58,7 +58,7 @@ export type RecordTabId = MandateWorkspaceTab | "overrides-simple" | "runs" | "c
 
 /**
  * A small badge beside a tab's name (the Candidates tab's "2/3"). `tone`
- * colours it: danger = a pair failed or regressed, warning = stalled.
+ * colors it: danger = a pair failed or regressed, warning = stalled.
  */
 export interface RecordTabCount {
   value: string;

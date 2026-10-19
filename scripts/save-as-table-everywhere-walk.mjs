@@ -455,7 +455,7 @@ if (STEP === "read-select") {
 if (STEP === "read-bullets") {
   // BREAKER-3 B3-16 / VERIFIER-30 #1: a nested list selected in Read mode, from the selection bar
   // and from the right-click menu.
-  const list = ["## Home programme", "", "- Stretching", "  - Hamstring stretch", "  - Calf stretch", "- Strength", "  - Wall sit", "  - Add weight after week 2", "- Balance", "  - Single-leg stance"].join("\n");
+  const list = ["## Home program", "", "- Stretching", "  - Hamstring stretch", "  - Calf stretch", "- Strength", "  - Wall sit", "  - Add weight after week 2", "- Balance", "  - Single-leg stance"].join("\n");
   await newNote(list);
   await page.getByRole("button", { name: /^Read$/ }).first().click().catch(() => {});
   await sleep(5000);

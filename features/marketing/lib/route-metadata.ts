@@ -167,7 +167,7 @@ const STATIC_ROUTES: Readonly<Record<string, MarketingRouteIdentity>> = {
   "/marketing/operations/capabilities": {
     titlePrefix: "SEO Capabilities",
     description:
-      "The shared measurement catalogue — what's on for each website, with evidence.",
+      "The shared measurement catalog — what's on for each website, with evidence.",
     letter: "Cb",
   },
   "/marketing/operations/data-quality": {
@@ -361,7 +361,7 @@ export function getMarketingRouteMetadata(
         graph: {
           titlePrefix: "Map Graph",
           description:
-            "The topical map drawn as a graph, sized and coloured by what each topic carries.",
+            "The topical map drawn as a graph, sized and colored by what each topic carries.",
           letter: "Mg",
         },
         text: {

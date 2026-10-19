@@ -158,7 +158,7 @@ export async function appendDraftRuleFromMessage(opts: {
       ? `${content.slice(0, STATEMENT_MAX_CHARS).trimEnd()}…`
       : content;
   // The name reads best as the QUESTION when there is one — that is the shape
-  // the Expert recognises in their review queue ("what do I do if…"), not the
+  // the Expert recognizes in their review queue ("what do I do if…"), not the
   // first line of the answer.
   const name = deriveRuleNameFromContent(question ?? content);
 

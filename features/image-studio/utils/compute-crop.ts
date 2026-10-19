@@ -33,7 +33,7 @@ export function isPositionAnchor(
 
 /**
  * Map an anchor name to its normalized [0..1] focal point. Smart anchors
- * fall back to centre.
+ * fall back to center.
  */
 export function anchorToFocalPoint(
     anchor: ImagePositionAnchor,
@@ -155,7 +155,7 @@ export function computeSourceCropRect(
     const maxX = srcW - cropW;
     const maxY = srcH - cropH;
 
-    // The focal point is the desired centre of the crop; clamp into the
+    // The focal point is the desired center of the crop; clamp into the
     // image so the rectangle never escapes the source.
     const idealLeft = focal.x * srcW - cropW / 2;
     const idealTop = focal.y * srcH - cropH / 2;

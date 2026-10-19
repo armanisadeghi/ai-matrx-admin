@@ -36,7 +36,7 @@ export type HrOrgSummaryState = {
   /**
    * True when this viewer has no answer at all — no HR standing, the module is
    * off for them, or the door is not live yet. EVERY consumer treats this as
-   * "render nothing", which is also the correct behaviour before the RPC ships.
+   * "render nothing", which is also the correct behavior before the RPC ships.
    */
   absent: boolean;
 };

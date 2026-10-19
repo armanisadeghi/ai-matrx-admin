@@ -10,7 +10,7 @@
  * Since @ai-matrx/associations 0.6.0 the failure semantics live in the
  * package (`useAssociationPickerBridge`) and the scream arrives through the
  * bound `notifier` port — which this app binds to `@/lib/toast`. The
- * behaviour under test is unchanged; the test renders the override inside a
+ * behavior under test is unchanged; the test renders the override inside a
  * real provider, exactly as `AssociationsHost` mounts it.
  *
  * What the host binding itself OWNS (and the forcing inputs below prove):

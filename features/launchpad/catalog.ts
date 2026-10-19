@@ -19,7 +19,7 @@ export interface LaunchpadDestination {
   description?: string;
   iconName: ShellIconName;
   color?: string;
-  /** The destination's ONE identity (colour + icon) when it has one; wins over `color`. */
+  /** The destination's ONE identity (color + icon) when it has one; wins over `color`. */
   identity?: Identity;
   groupLabel: string;
   external?: boolean;
@@ -70,7 +70,7 @@ const LAUNCHPAD_CARD_DESCRIPTIONS: Record<string, string> = {
   Files: "Your files and documents",
   HR: "People, time, pay, and records",
   CRM: "People, companies, and contacts",
-  Libraries: "Catalogue and transcribe YouTube",
+  Libraries: "Catalog and transcribe YouTube",
   "Legal Hub": "Legal tools and case utilities",
   "Medical Hub": "Medical calculators and clinical tools",
   "Education Hub": "Flashcards, quizzes, and a tutor",

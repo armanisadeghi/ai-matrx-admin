@@ -199,7 +199,7 @@ export const CAP_TRANSITION = "payroll.read";
  * and only the client's idea of who may knock was wrong.
  *
  * The lesson worth keeping: an invented capability token fails CLOSED and SILENTLY. There is no
- * error anywhere — the string simply never matches, the button greys out, and the surface looks
+ * error anywhere — the string simply never matches, the button grays out, and the surface looks
  * like a considered permission decision instead of a typo.
  *
  * It lives in THIS module, beside the offer logic it feeds and away from React, so the headless
@@ -304,7 +304,7 @@ function endDateHasPassed(period: PayPeriodRow, todayLocalDate: string): boolean
  * What route 33 renders as controls, with a reason attached to every one it does not offer.
  *
  * The reason matters as much as the offer: SPEC-ACCESS §4.2's rule — *"an unexplained denial is how
- * over-tightening hides"* — applies to a greyed button exactly as it applies to a 403.
+ * over-tightening hides"* — applies to a grayed button exactly as it applies to a 403.
  */
 export function offeredTransitions(ctx: PeriodOfferContext): PeriodActionOffer[] {
   const { period, role, allowPeriodReopen, todayLocalDate } = ctx;

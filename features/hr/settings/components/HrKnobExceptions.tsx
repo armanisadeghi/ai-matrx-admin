@@ -25,7 +25,7 @@
 // 🚨 NOTHING HERE IS A SECOND PICKER. `<KnobRungOverrides>` is imported whole —
 // the same searchable row list through `platform.knob_scope_rows`, the same
 // `knob_override_set` write, the same removal confirm that names the row, the
-// same read-only behaviour for a person who may not write. The only thing this
+// same read-only behavior for a person who may not write. The only thing this
 // file adds is the bridge: HR's own editor reads `hr_knob_index` (an HR-shaped
 // row), the picker reads `platform.knob_index` (a `ScopedKnob`), and the ladder
 // wants the latter. `UniversalSettingsProvider` is mounted once by the HR

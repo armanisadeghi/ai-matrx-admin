@@ -287,7 +287,7 @@ export const makeSelectEntityScopeIds = () =>
 // and returns the set of entityIds whose cached scope_ids satisfy the
 // match criteria. Both this selector factory and the legacy util only
 // see entities that have been explicitly fetched into their respective
-// caches — the behaviour is intentionally identical so the task filter
+// caches — the behavior is intentionally identical so the task filter
 // pipeline carries over with no regression.
 //
 // For reverse-indexing entities that have NOT been fetched into the

@@ -15,7 +15,7 @@
  * every operator and every test signs in as `admin@admin.com`. An admin is a
  * person too, and `masterwork.understudy` is not a word. So:
  *
- *   • an Expert still sees no chip at all — absent, never greyed;
+ *   • an Expert still sees no chip at all — absent, never grayed;
  *   • an admin sees the JOB'S NAME and a door to that job's own page;
  *   • nobody, in either state, sees a dotted key in the rendered words.
  *

@@ -281,7 +281,7 @@ const CAUSE_COPY: Record<string, CauseCopy> = {
       "Try again with a tighter job description — one job, one audience. If it keeps timing out, tell us; a slow run is our problem to fix, not yours to work around.",
   },
   cancelled: {
-    headline: (what) => `${what} was cancelled before it finished.`,
+    headline: (what) => `${what} was canceled before it finished.`,
     nextStep: "Press Run it again whenever you're ready.",
   },
   child_run_failed: {
@@ -434,7 +434,7 @@ export function explainRunFailure(
   // walk, blocking C). `engine_error` says the right thing by hand — "running
   // it again will most likely stop at the same place" — but every OTHER path
   // through this resolver can end on "Press Run it again", including the two
-  // that fire when the client does not recognise the cause. When the server's
+  // that fire when the client does not recognize the cause. When the server's
   // own message says retrying is futile (aidream's `build_defect`: "this part
   // of the server was built wrong and cannot run… trying again will fail the
   // same way until it is fixed"), that sentence is the next step, and the

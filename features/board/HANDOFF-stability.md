@@ -91,7 +91,7 @@ tiles on top of this foundation.
 | URL | A hash-only address write (`#cam=`) forwards Next's history state, so the router isn't woken | `lib/url-state/addressWithoutNavigating.ts`; `lib/url-state/__tests__/hashOnlyWrites.test.ts` |
 | CSS traps | (a) no `[style…]` attribute selector with a descendant part; (b) `::highlight()` rules only when annotations exist, scoped by root class | `styles/__tests__/no-style-attribute-descendant-selectors.test.ts`, `features/rich-document/annotations/__tests__/highlight-rules-scoped.test.ts` |
 | Annotation sidebar | Reads once per tab; one ref-counted pair of live channels per source; keeps working while asleep | `features/rich-document/annotations/useAnnotationSidecar.ts`; `__tests__/sidecar-reads-once.test.tsx`, `sidecar-write-while-asleep.test.tsx` |
-| Document render | Documents no longer draw solid black: Univer 1.0 theme names are now turned into real colours | `lib/univer/univer-theme-token-color.ts`, `features/documents/univer-doc-canvas-colors.ts` |
+| Document render | Documents no longer draw solid black: Univer 1.0 theme names are now turned into real colors | `lib/univer/univer-theme-token-color.ts`, `features/documents/univer-doc-canvas-colors.ts` |
 
 **Measured 2026-10-02** (headless Chromium, five long chats, about 8.9k elements):
 - menu-open restyle: 21 s with a crash → 7–58 ms;

@@ -289,7 +289,7 @@ const EmailCell: React.FC<{ value: string }> = ({ value }) => (
  * A temporal value, formatted for a reader with the exact source string on
  * hover. `declared` says whether a column CLAIMED to be temporal: a declared
  * temporal that does not parse is a fact the reader needs (shown verbatim, in
- * warning colour), while an undeclared string that merely looks like a date is
+ * warning color), while an undeclared string that merely looks like a date is
  * simply left alone when it does not parse.
  */
 const TemporalCell: React.FC<{

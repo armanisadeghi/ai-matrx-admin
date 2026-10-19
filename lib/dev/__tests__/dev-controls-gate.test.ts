@@ -1,4 +1,4 @@
-// Every control labelled "[DEV]" is a developer tool and renders in a
+// Every control labeled "[DEV]" is a developer tool and renders in a
 // development build only (lib/dev/devControls.ts). verify-6 #1 (2026-10-01):
 // the deck page showed "[DEV] Open study session in window panel" in
 // production to an admin, because three [DEV] controls were gated on an admin

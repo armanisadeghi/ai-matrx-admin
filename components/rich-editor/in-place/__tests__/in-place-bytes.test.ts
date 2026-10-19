@@ -1,6 +1,6 @@
 // BYTES ARE SACRED — edit in place, per host.
 //
-// For every host the rule is the same: opening the editor and cancelling, or
+// For every host the rule is the same: opening the editor and canceling, or
 // saving with no change, writes NOTHING; a one-word edit writes exactly that
 // word. Each host is driven through THE session (`in-place-session.ts`) with
 // its own write adapter — the real persistence function where it is pure

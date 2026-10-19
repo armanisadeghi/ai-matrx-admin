@@ -43,7 +43,7 @@ Pure core: `serialize.ts` (formats, size, column inference), `model.ts` (`comput
 
 ## Tests
 
-`serialize.test.ts` (formats, escaping, inference, size) · `model.test.ts` (THE ORIGIN-UNTOUCHED TEST + selection/hidden/default seeds + session leak check) · `overlay-registration.test.ts` (catalogue entry, controller lazy import + gated block, opener hook + controller, no rows in Redux data). Run: `npx jest components/agent-copy/copy-subset`.
+`serialize.test.ts` (formats, escaping, inference, size) · `model.test.ts` (THE ORIGIN-UNTOUCHED TEST + selection/hidden/default seeds + session leak check) · `overlay-registration.test.ts` (catalog entry, controller lazy import + gated block, opener hook + controller, no rows in Redux data). Run: `npx jest components/agent-copy/copy-subset`.
 
 ## Change Log
 

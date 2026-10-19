@@ -51,7 +51,7 @@ export const DEAD_END_ALLOWLIST: DeadEndAllowlistEntry[] = [
     reason:
       "The truncated id is shown INSTEAD of a name on purpose — the name in " +
       "scope belongs to the shortcut, not to the agent the id points at, and " +
-      "labelling the right link with the wrong name is worse than no name; " +
+      "labeling the right link with the wrong name is worse than no name; " +
       "peek supplies the identity. Sibling EntityDoorControls (not a linked " +
       "name) because a same-tab navigation would discard the note the user is " +
       "typing in this dialog.",

@@ -21,7 +21,7 @@
  *     changed or archived, how many you never took; with the three doors —
  *     see them in the Rulebook, take what's missing, reset to pack.
  *
- * Rulings honoured (Arman, 2026-08-22): per-item pick · two re-apply buttons ·
+ * Rulings honored (Arman, 2026-08-22): per-item pick · two re-apply buttons ·
  * one-click "review & accept" banner for a new site · industry-first ordering ·
  * and over all of it, individual AND all controls, nothing forced.
  */

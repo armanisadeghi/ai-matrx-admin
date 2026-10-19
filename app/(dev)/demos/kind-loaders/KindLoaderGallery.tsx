@@ -12,7 +12,7 @@
  *     the pair also proves the switch changes mood and not shape.
  *  2. YOUR KINDS — REAL rows from `content_ir.kind_definition`, each rendered
  *     through the real `KindSlot` with the silhouette it genuinely resolves
- *     to, and labelled declared / derived / generic. Nothing here is invented.
+ *     to, and labeled declared / derived / generic. Nothing here is invented.
  */
 
 import { useState } from "react";

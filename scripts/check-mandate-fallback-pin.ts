@@ -54,7 +54,7 @@
  *
  * 🚨 UNMEASURED IS NOT PASSED. No credentials, no connection, or no fixture to
  * build the probe from is a FAILURE under --strict and prints the same
- * `LIVE PULL FAILED` banner run-release-gates.sh already recognises. A guard that
+ * `LIVE PULL FAILED` banner run-release-gates.sh already recognizes. A guard that
  * cannot see the system reports that it cannot see it; it never reports green.
  *
  * Exit codes:
@@ -318,7 +318,7 @@ async function main(): Promise<void> {
     }
 
     // ── 0. THE TRIGGER'S SHAPE, pinned ──────────────────────────────────────
-    // A dropped trigger, or one recreated AFTER/STATEMENT, makes every behavioural
+    // A dropped trigger, or one recreated AFTER/STATEMENT, makes every behavioral
     // check below pass for the wrong reason: nothing clears anything.
     const trg = await client.query<{ def: string }>(
       `select pg_get_triggerdef(t.oid) as def

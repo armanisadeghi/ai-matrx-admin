@@ -511,7 +511,7 @@ export function BatchShortcutsEditor({
     if (problems.length > 0) {
       return problems.length === 1
         ? `${problems[0]}.`
-        : `${problems.length} inputs in this batch are set up in a way a run could not honour — the first is: ${problems[0]}.`;
+        : `${problems.length} inputs in this batch are set up in a way a run could not honor — the first is: ${problems[0]}.`;
     }
     return null;
   }, [rows, appliedKeys, ctx, targets]);

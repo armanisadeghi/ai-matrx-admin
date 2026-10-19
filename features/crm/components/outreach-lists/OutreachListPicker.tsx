@@ -17,7 +17,7 @@ import { Plus } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { Input } from "@ai-matrx/design-system/controls";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { RecordList } from "@ai-matrx/design-system/record-list";
 import { formatRelativeTime } from "@/utils/datetime";
 import { awaitEffectiveOrganizationId } from "@/features/organizations/awaitWorkspace";
 import { useCrmContext } from "../../hooks/useCrmContext";
@@ -164,29 +164,26 @@ export function OutreachListPickerFields({
               No outreach lists yet — create the first one below.
             </div>
           ) : (
-            lists.map((row) => (
-              <button
-                key={row.id}
-                type="button"
-                onClick={() => setChosenId(row.id)}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors",
-                  chosenId === row.id
-                    ? "border-primary/40 bg-accent"
-                    : "border-border hover:bg-accent/50",
-                )}
-              >
-                <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
-                  {row.name}
-                </span>
-                <ListKindBadge kind={row.list_kind} />
-                <ListStatusBadge status={row.status} />
-                <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
-                  {(row.members?.[0]?.count ?? 0).toLocaleString()} ·{" "}
-                  {formatRelativeTime(row.updated_at)}
-                </span>
-              </button>
-            ))
+            <RecordList
+              items={lists}
+              getKey={(row) => row.id}
+              title={(row) => row.name}
+              meta={(row) =>
+                `${(row.members?.[0]?.count ?? 0).toLocaleString()} · ${formatRelativeTime(row.updated_at)}`
+              }
+              trailing={(row) => (
+                <>
+                  <ListKindBadge kind={row.list_kind} />
+                  <ListStatusBadge status={row.status} />
+                </>
+              )}
+              activeKey={chosenId}
+              onOpen={(row) => setChosenId(row.id)}
+              openInPlace
+              size="sm"
+              sourceFeature="crm_outreach_list"
+              ariaLabel="Outreach lists"
+            />
           )}
         </div>
       )}

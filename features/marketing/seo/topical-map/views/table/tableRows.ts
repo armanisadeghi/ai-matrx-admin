@@ -155,7 +155,7 @@ export function flatRows(
   }));
 }
 
-// ── R10: which sorts the hierarchy can honour ──────────────────────────────
+// ── R10: which sorts the hierarchy can honor ──────────────────────────────
 
 /**
  * The sorts `selectVisibleMapTopics` can express while keeping the tree honest.
@@ -180,7 +180,7 @@ export function sortStateForSiblingSort(sort: MapSiblingSort): SortState | null 
 /**
  * What a header-click sort means in hierarchy mode.
  *
- * - `{ kind: "sibling", sort }` — the walk can honour it; dispatch `setSiblingSort`.
+ * - `{ kind: "sibling", sort }` — the walk can honor it; dispatch `setSiblingSort`.
  * - `{ kind: "flat", sort }` — it cannot; flip to flat carrying this sort.
  * - `null` sort → back to the tree's own order.
  */

@@ -12,11 +12,11 @@
  * answer.
  *
  * THE ONE RULE HERE: the monospace blocks are the server's `rendered` strings,
- * printed verbatim. Not re-rendered from `entries`, not summarised, not
+ * printed verbatim. Not re-rendered from `entries`, not summarized, not
  * re-ordered, not truncated. A prettified reconstruction would be a second
  * thing that can drift from the payload — i.e. exactly the class of bug this
  * screen is supposed to end. The tables beside them are strictly ADDITIVE:
- * they make "why was this page selected" auditable, and they are labelled as
+ * they make "why was this page selected" auditable, and they are labeled as
  * the structured twin of the text, never as the payload itself.
  *
  * Coverage is not a footnote. `coverage_line` and every caveat render at the

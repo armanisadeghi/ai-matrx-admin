@@ -425,7 +425,7 @@ export function TriadGoalSection({
 }) {
   const dispatch = useAppDispatch();
   // THE ONE READER (`features/mandates/goal`). This surface holds the row and
-  // no catalogue, so it passes the stored goal alone — but it goes through the
+  // no catalog, so it passes the stored goal alone — but it goes through the
   // same resolver as every other surface, so a whitespace-only goal is absence
   // here exactly as it is everywhere else (FIX-Q9, 2026-09-11).
   const goal = resolveMandateGoal({ stored: goalOfMandate(data.mandate) }).goal;

@@ -8,7 +8,7 @@
 // (features/scopes/registry) so it stays in lock-step with platform.entity_types.
 //
 // Use this ANY time a surface names an entity type (association/relationship
-// admin, resource catalogues, drift reports). Never re-map token → label/icon
+// admin, resource catalogs, drift reports). Never re-map token → label/icon
 // by hand — that drift is exactly what this kills.
 //
 // THE DOOR LAW: an entity TYPE is an identity too, and it has a canonical

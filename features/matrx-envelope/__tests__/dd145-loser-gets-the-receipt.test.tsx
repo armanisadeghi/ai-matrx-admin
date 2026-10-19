@@ -13,7 +13,7 @@
  * `aidream/tests_trials/dd145_loser_waits_for_the_receipt.py`.
  *
  * This is the CLIENT residue — a holder slower than the door itself. Pinned here:
- *   1. the id-less `already_applied` answer is recognised as "still finishing"
+ *   1. the id-less `already_applied` answer is recognized as "still finishing"
  *      and never rendered as a completed apply;
  *   2. the card states the server's sentence with its remedy while it waits —
  *      nothing silent, nothing dead-looking;
@@ -179,7 +179,7 @@ describe("DD-145 — the loser waits for the receipt instead of announcing the w
     });
     await settle();
 
-    // 1 + 2 — recognised as still finishing, stated in the server's words with
+    // 1 + 2 — recognized as still finishing, stated in the server's words with
     // its remedy. Never "Done", never "Already done", never a dead card.
     expect(view.host.querySelector('[data-outcome="in_flight"]')).not.toBeNull();
     expect(view.text()).toContain("Finishing");

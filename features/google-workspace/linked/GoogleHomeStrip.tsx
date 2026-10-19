@@ -82,7 +82,7 @@ const PRODUCT: Record<StripKind, { app: string; Mark: (p: { className?: string }
 const LINKED_SHOWN = 3;
 const UNLINKED_SHOWN = 2;
 
-/** Google's default-avatar colours: a signed-in account with no photo is its initial on one of these. */
+/** Google's default-avatar colors: a signed-in account with no photo is its initial on one of these. */
 const AVATAR_COLOURS = ["#1a73e8", "#e8710a", "#188038", "#d93025", "#9334e6", "#007b83", "#c5221f", "#b06000"];
 
 function avatarColour(seed: string): string {
@@ -159,7 +159,7 @@ function GButton({
 }: { kind: "filled" | "tonal"; busy?: boolean; icon?: ReactNode; children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button type="button" aria-busy={busy || undefined} className={`matrx-glyph-trim ${styles.btn} ${styles[kind]}`} {...rest}>
-      {/* Google's busy pill: same size, same colour, the label stays; a 16px spinner in the button's
+      {/* Google's busy pill: same size, same color, the label stays; a 16px spinner in the button's
           ink takes the icon's place (the trimmed 18px icon is 15.3–16px wide, so the pill holds still). */}
       {busy ? <Spinner size="xs" label="Working" className="text-current" /> : icon}
       {children}

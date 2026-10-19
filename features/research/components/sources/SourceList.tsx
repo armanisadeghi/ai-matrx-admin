@@ -188,7 +188,7 @@ function tierFromSource(source: ResearchSource): string | null {
  * (esp. "success" → "success at what?") are ambiguous, so we relabel each one to
  * say specifically what happened to the page. Kept local to this table (the
  * shared `StatusBadge` / `SCRAPE_STATUS_CONFIG` are consumed elsewhere and stay
- * untouched). `tone` drives a single restrained dot colour — no bright pills,
+ * untouched). `tone` drives a single restrained dot color — no bright pills,
  * and a failure is amber/rose, never a loud kindergarten red.
  */
 type ScrapeTone = "ok" | "warn" | "bad" | "muted";

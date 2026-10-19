@@ -6,7 +6,7 @@
  * `target="_blank" rel="noopener noreferrer"` (or a handler that calls
  * `window.open(url, "_blank", ...)`), and it is NEVER rendered disabled: if
  * there is nothing to open, the control is ABSENT (conditional render), not
- * greyed out.
+ * grayed out.
  *
  * THE CHECK: for every `<ExternalLink` / `<ExternalLinkIcon` JSX usage under
  * app/, features/, components/ (excluding the `(dev)` demo group), look back

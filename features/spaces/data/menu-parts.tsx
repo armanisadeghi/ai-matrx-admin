@@ -43,8 +43,8 @@ export function ViewTab({
     <Popover open={menu} onOpenChange={(o) => (editable ? setMenu(o) : null)}>
       <PopoverTrigger asChild>
         {pill || active ? (
-          // A chart tile's title is the tile's own layout (Notion's grey pill), not a toolbar control;
-          // the open view of a table sits in the same grey pill (screenshot 1's "All").
+          // A chart tile's title is the tile's own layout (Notion's gray pill), not a toolbar control;
+          // the open view of a table sits in the same gray pill (screenshot 1's "All").
           <button ref={openTab} type="button" className={pill ? "spaces-chart-title" : "spaces-chart-title spaces-view-pill"} role="tab" aria-selected={active} title={view.name}>
             {icon}
             <span>{view.name}</span>

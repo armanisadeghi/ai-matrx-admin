@@ -17,7 +17,7 @@ import type { Rect } from "../engine/camera";
 
 type Side = "n" | "e" | "s" | "w";
 const SIDES: readonly Side[] = ["n", "e", "s", "w"];
-/** Screen px from the tile edge to the dot's centre: clear of the resize handle's outer reach. */
+/** Screen px from the tile edge to the dot's center: clear of the resize handle's outer reach. */
 const REACH_PX = RESIZE_HANDLE_SCREEN_PX * 0.7 + 11;
 const DOT_PX = 16;
 

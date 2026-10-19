@@ -67,7 +67,7 @@ export function launchWhatsAppSignup(sdk: FacebookSdk, appId: string, configId: 
       const receipt = eventReceipt.safeParse(value);
       if (!receipt.success) return;
       if (receipt.data.event === "FINISH" || receipt.data.event === "FINISH_ONLY_WABA") { wabaId = receipt.data.data?.waba_id; finish(); }
-      else if (receipt.data.event === "CANCEL" || receipt.data.event === "ERROR") fail("WhatsApp signup was cancelled. Start again.");
+      else if (receipt.data.event === "CANCEL" || receipt.data.event === "ERROR") fail("WhatsApp signup was canceled. Start again.");
     };
     const timer = setTimeout(() => fail("WhatsApp signup expired. Start again."), 10 * 60 * 1000);
     window.addEventListener("message", receive);

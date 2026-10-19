@@ -48,7 +48,7 @@ describe("diagram: a portrait pane fits the graph to its width and scrolls down"
     const v = fit(PHONE);
     expect(v).not.toBeNull();
     expect(v!.zoom).toBeCloseTo((360 * 0.8) / 300);
-    expect(v!.y).toBeCloseTo(76); // top padding, not vertically centred
+    expect(v!.y).toBeCloseTo(76); // top padding, not vertically centered
     expect(diagramScrollPans(PHONE)).toBe(true);
   });
 

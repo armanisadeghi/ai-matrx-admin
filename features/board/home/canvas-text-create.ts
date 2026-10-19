@@ -2,7 +2,7 @@
  * Putting words on the canvas — the ONE creator every way in calls: the
  * toolbar's Sticky note (S) and Text (T) tools, a double-click on empty board,
  * and the Add menu's Canvas section (`createStickyOnBoard` /
- * `createTextOnBoard`, no position = the centre of the view).
+ * `createTextOnBoard`, no position = the center of the view).
  *
  * Each makes the object (one undo step), selects it and starts typing in it —
  * a sticky's Note is created only by its first typed character
@@ -50,7 +50,7 @@ export function createStickyOnBoard<T extends BoardTileBase>(
   at?: At,
   style?: Partial<ShapeStyle>,
 ): string {
-  // No position (the toolbar, the Add menu): the nearest free place to the view's centre, never on
+  // No position (the toolbar, the Add menu): the nearest free place to the view's center, never on
   // top of older content. A click or double-click names its own point and keeps it.
   const made = makeSticky(at ?? viewCentre(store), { style });
   const sticky = at ? made : settled(board, made);

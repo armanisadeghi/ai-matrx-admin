@@ -8,6 +8,8 @@ export interface FrameMenuItem {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Where the row goes — a real link (middle-click, copy link). Default: `<homeHref>/<id>`. */
+  href?: string;
   /** A count shown at the row's end (meta). */
   count?: number;
   /** Opens in a new tab (a studio that runs outside the product). */
@@ -36,12 +38,18 @@ export interface FrameProduct {
 /** body layouts; the header, tabs row and footer never change between them. */
 export type FrameVariant = "record" | "list" | "workspace" | "light";
 
-/** desktop = sidebar + sheet + footer; phone = drawer + compressed header, no footer. */
-export type FrameForm = "desktop" | "phone";
+/**
+ * desktop = sidebar + sheet + footer, side panels inline.
+ * medium  = the sidebar is a drawer; the companion and the properties panel take turns (the body keeps a min width).
+ * phone   = drawer + compressed header, no footer.
+ */
+export type FrameForm = "desktop" | "medium" | "phone";
 
 export interface FrameCrumb {
   id: string;
   label: string;
+  /** A real link; a plain click calls `onSelect` instead when both are given. */
+  href?: string;
   onSelect?: () => void;
 }
 

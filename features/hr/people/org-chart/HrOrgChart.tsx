@@ -25,7 +25,7 @@
 // This file owns only the HR data, the HR card and the HR states.
 //  5. THE HISTORY CONTROL IS ABSENT WHEN `history_available` IS FALSE. Not
 //     disabled. An employee who may not see history does not learn that history
-//     exists from a greyed date picker.
+//     exists from a grayed date picker.
 //
 // The NL query box is specified to return A HIGHLIGHTED SET OF NODES ON THIS
 // CHART, never a chat reply. The mandate `hr.employees.org_chart_query` is not

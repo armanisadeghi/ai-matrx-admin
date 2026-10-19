@@ -36,9 +36,9 @@ type LegacyRawQuizJSON = {
 };
 
 /**
- * Normalise quiz JSON from either canonical camelCase (Python server) or legacy
+ * Normalize quiz JSON from either canonical camelCase (Python server) or legacy
  * snake_case (raw LLM markdown fences). Wave B unified rendering dropped the
- * per-case normalisation that lived in BlockRenderer — this is the single path.
+ * per-case normalization that lived in BlockRenderer — this is the single path.
  */
 export function normalizeRawQuizJSON(data: unknown): RawQuizJSON | null {
   if (!data || typeof data !== "object") return null;

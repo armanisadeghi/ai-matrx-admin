@@ -101,7 +101,7 @@ describe("Masterwork copy never loses a space at an expression boundary", () => 
     expect(report).toBe("");
   });
 
-  it("recognises the exact shape it exists to catch (self-test)", () => {
+  it("recognizes the exact shape it exists to catch (self-test)", () => {
     const fixture = path.join(
       __dirname,
       "fixtures",

@@ -159,7 +159,7 @@ DDL: [`migrations/crm_01_schema.sql`](../../migrations/crm_01_schema.sql),
   so the 360° association surfaces still render, and maintains
   `party.primary_employer_party_id` / `party.job_title` so grids, sorts and exports are
   one column read. **It does NOT use the forbidden `platform._mirror_fk_to_assoc`** —
-  it is modelled on `plan._site_edge`.
+  it is modeled on `plan._site_edge`.
 - **`party_contact_point.channel` is denormalized from the medium by
   `crm._contact_point_shape()`** so "one primary per channel" can be a real partial
   unique index (a primary email AND a primary phone must both be legal). Never write it
@@ -248,7 +248,7 @@ person/company capture directly. All consume `features/crm/`:
 
 **WindowPanels:** `crmManagerWindow` is the full scoped list route inside
 WindowPanel chrome; `crmCreatePartyWindow` is the compact create flow. Both are
-registered through the overlay controller, metadata registry, catalogue,
+registered through the overlay controller, metadata registry, catalog,
 Tools-grid, and typed openers.
 
 **UI surfaces:** code-first manifests declare `matrx-user/crm`,
@@ -478,7 +478,7 @@ for once:
 - **Suppression is resolved BEFORE a number is offered** (`computeDialTargets`
   precedence: party `do_not_contact` → point `opt_out_at` → medium
   `dnc_state='listed'` → `verification_status='invalid'` → `suppressed_at` /
-  `is_contactable=false`). Blocked numbers render greyed WITH the reason; a
+  `is_contactable=false`). Blocked numbers render grayed WITH the reason; a
   claimed member with zero dialable numbers is auto-marked `suppressed`
   (tallied visibly, capped at 25/advance) — never silently dialed or skipped.
 - **"Do not call" scrubs the MEDIUM** (`suppressed_at` +
@@ -522,7 +522,7 @@ for once:
   (`recordEnrollmentSource` / `readEnrollmentSource` — the column that shipped
   with no writer), so the workspace header names the query that filled the
   queue and links back to it at `/crm?view=<id>`.
-- 🚨 **A MEMBER WHOSE PARTY YOU CANNOT READ IS RESOLVED, NEVER LABELLED.** The
+- 🚨 **A MEMBER WHOSE PARTY YOU CANNOT READ IS RESOLVED, NEVER LABELED.** The
   member row is a component of the LIST, so it is readable by anyone who can
   read the list — but its `party` embed is filtered independently by
   `crm.party` RLS, and enrollment across orgs makes that routine: the list can
@@ -860,7 +860,7 @@ writes the `crm.interaction` row, its `platform.associations` edges and the
 (`service.ts`) and edge writer (`associations.ts`) are DELETED: two writers meant
 any caller that was not this browser sent ungated, and no sending event existed to
 correlate a bounce or a complaint (VERIFY-B1-B2-R4 V4 / amendment A8). Guard:
-`the-client-writes-no-sent-record.test.ts` (behavioural + a census over every
+`the-client-writes-no-sent-record.test.ts` (behavioral + a census over every
 module in the folder + the two deleted filenames).
 
 **The rules this corner runs on**
@@ -1125,7 +1125,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   note; phone order identity → contact points → activity → notes → record
   data; More menu holds Copy link / Log an activity / Move to trash; compact
   "Why this is in your CRM"; identity fields show a pencil; add forms sit on
-  the card surface, address form is a labelled grid; phone "Find" keeps a word.
+  the card surface, address form is a labeled grid; phone "Find" keeps a word.
 - page-pass 2026-09-27 round 5 (/crm/[partyId]), "good" → excellent: "Contact
   points" vs "Suggested contacts"; platform brand icon and a visible link;
   one-row suggestions header on phones; honest email action (Send email /
@@ -1145,7 +1145,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   More menu; one Send email door (header); flat provenance card and Activity
   composer; Deals + Files/Tasks moved into the left rail; platform ids show a
   handle or the record's name; origin reads "YouTube · Open on YouTube"; the
-  call box is labelled Minutes; tab-title read bounded at 1.5s.
+  call box is labeled Minutes; tab-title read bounded at 1.5s.
 - page-pass 2026-09-27 round 3 (/crm/[partyId]): the employer picker is the
   standard searchable picker (Popover + Command) with `Create "typed"` through
   `resolveParty`; the Activity composer's channel and direction are
@@ -1316,7 +1316,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   `InboxReplyDialog`, and `features/research/components/experts/TopicExperts.tsx`
   / `features/marketing/content-plan/components/{NodeAssociations,EntityManager}.tsx`
   now names the Person through `EntityRef token="party"` (route + peek + the
-  explicit new-tab door), each keeping its own surface behaviour — a dialog
+  explicit new-tab door), each keeping its own surface behavior — a dialog
   or triage queue's door opens in a new tab so a reviewer never loses their
   place, a plain page's door stays in-place. `CrmListPage`'s row-open and
   `OutreachListDetailPage`'s member table were left as-is: both already open
@@ -1443,7 +1443,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   A5/D7, breaks A/B/C/D/I). **The disqualifying one:** every recipient field now
   goes through ONE RFC 5322 parser (`gmail/mailbox.ts`) BEFORE the send authority
   judges anything, so `Ada Lovelace <ada@example.com>` is Ada's address — it was
-  a string nothing could normalise, the lookup answered "no row", the preflight
+  a string nothing could normalize, the lookup answered "no row", the preflight
   read that as "no suppression can exist" and SENT, and the same input lost the
   record. A field the parser cannot read is refused with the form to use; a
   two-address To is checked address by address; `findMediumIdsForAddress`
@@ -1690,7 +1690,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   "Outcomes" view on `/crm/outreach-lists/[listId]` (`?view=outcomes&outcome=<id>`
   is the deep link the attribution assists emit). The evidence drawer shows EVERY
   signal the matcher checked — fired and not fired — because credit is taken on
-  Arman's low bar and the drawer is the defence. The ONE write path is
+  Arman's low bar and the drawer is the defense. The ONE write path is
   `platform.decide_outcome_event` (SECURITY DEFINER; stamps decided_by, completes
   a reputation-case subject on confirm) via `decideOutcomeEvent()` — never a raw
   row update; only the aidream attribution pass inserts rows. `match_detail` is

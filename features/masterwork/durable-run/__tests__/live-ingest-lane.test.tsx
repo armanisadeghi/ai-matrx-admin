@@ -703,7 +703,7 @@ describe("the Rulebook page after a refresh", () => {
   });
 
   it("closes for real while the rejoined run is still going, and stays closed", async () => {
-    // 🚨 THE OTHER SIDE OF D325 — the behaviour `6d424b231d` ("a close always
+    // 🚨 THE OTHER SIDE OF D325 — the behavior `6d424b231d` ("a close always
     // closes") bought, asserted here for the first time. Nothing in this file
     // proved it, which is why making the fake honest could not be checked
     // against it. Two halves, both real:

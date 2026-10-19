@@ -3,7 +3,7 @@
  *
  *   only a DECLARED `{{name}}` is filled, once, on the first turn; declared with no value → "";
  *   every other `{{...}}` stays exactly as written and nothing is added; `{{!name}}` in the author's
- *   text becomes `{{name}}`. In the editor `{{!name}}` is plain text — not coloured, not listed as
+ *   text becomes `{{name}}`. In the editor `{{!name}}` is plain text — not colored, not listed as
  *   undeclared (`@ai-matrx/content-ir/source` variable-tokens).
  *
  * The server half (the same cases, byte-exact, through the dry-run and continue doors) is aidream's
@@ -12,7 +12,7 @@
  * shows what the rule says, and the UI's own run reaches the model and the database byte-exact.
  *
  * THE BREAK EACH ASSERTION NAMES
- *   · the helper counting `{{!slot}}` as a variable → it is coloured and listed under Undeclared;
+ *   · the helper counting `{{!slot}}` as a variable → it is colored and listed under Undeclared;
  *   · the UI sending undeclared names, or the server filling them → `{{my}}` changes in what was stored/sent;
  *   · the escape not unescaping, or unescaping twice → "Use {{slot}} here" is not the paragraph;
  *   · the server adding a notice for an undeclared slot → "[matrx:not-delivered]" / "placeholder_left_out".
@@ -231,11 +231,11 @@ test.describe.serial("THE VARIABLE RULE in the UI", () => {
     expect(await page.content(), "no chip may offer to declare `!slot`").not.toMatch(/!slot\s*\+/);
 
     // {{!slot}} is plain text wherever the builder shows it — and {{my}} IS drawn as a chip, so the
-    // check can tell a chip from plain text (a helper that coloured both would fail the first line).
+    // check can tell a chip from plain text (a helper that colored both would fail the first line).
     const slots = await renderedTokens(page, "{{!slot}}");
     expect(slots.length, "the builder shows {{!slot}} in the system prompt and the user message").toBeGreaterThanOrEqual(2);
     for (const s of slots) {
-      expect(s.alpha, `{{!slot}} is plain text, not a coloured chip (${JSON.stringify(s)})`).toBe(0);
+      expect(s.alpha, `{{!slot}} is plain text, not a colored chip (${JSON.stringify(s)})`).toBe(0);
     }
     // `my` appears once in the Undeclared row and twice as a chip in the system prompt.
     expect(await buttonsNamed(page, "my"), "{{my}} twice in the prompt, once in the Undeclared row").toBe(3);

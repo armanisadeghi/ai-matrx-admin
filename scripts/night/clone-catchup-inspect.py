@@ -11,13 +11,13 @@ honest `parity` row on the CLONE naming what it compared, by hash. Never a row c
 "Checked, not assumed" is this script. It reads a migration file, names every schema object the file
 writes (a function by name — every overload —, a view, a table with its columns, constraints,
 indexes, triggers, policies and grants, a type, a publication's membership) and prints ONE
-catalogue query that hashes each of them the same way `body-drift.sh` does. The shell runs that
+catalog query that hashes each of them the same way `body-drift.sh` does. The shell runs that
 query on both databases (production inside a proven read-only transaction) and hands both answers
 back here to compare. An object absent on BOTH sides is level (a DROP production also carries, or
 an object production itself has since removed); absent on one side only is not.
 
     clone-catchup-inspect.py objects <file.sql>            kind<TAB>key, one per object
-    clone-catchup-inspect.py sql <file.sql>                the catalogue query (one statement)
+    clone-catchup-inspect.py sql <file.sql>                the catalog query (one statement)
     clone-catchup-inspect.py compare <clone.tsv> <prod.tsv>
           LEVEL<TAB><n objects><TAB><digest><TAB><note>   exit 0
           DIFFERS<TAB><kind key: clone … production …>   exit 1 (one line per object)
@@ -105,7 +105,7 @@ def lit(s: str) -> str:
 
 
 def hash_sql(kind: str, key: str) -> str:
-    """One row: kind, key, sha256 of the object's catalogue text (or 'absent')."""
+    """One row: kind, key, sha256 of the object's catalog text (or 'absent')."""
     if kind == "publication":
         body = f"""(select case when p.oid is null then null else
              p.pubinsert::text || p.pubupdate::text || p.pubdelete::text || p.pubtruncate::text || '|' ||
@@ -241,7 +241,7 @@ def self_test() -> int:
     check("a based-on declaration, iam.apply_rls and a pg_get_functiondef rewrite name what they write",
           gen == [("function", "custom.f"), ("function", "public.access_denied_context"), ("table", "runtime.work_item")], f"got {gen}")
     sql = catalogue_sql(got)
-    check("the catalogue query is one statement with one arm per object", sql.count("union all") == len(got) - 1 and sql.rstrip().endswith(";"))
+    check("the catalog query is one statement with one arm per object", sql.count("union all") == len(got) - 1 and sql.rstrip().endswith(";"))
 
     a = {("function", "public.f"): "aa" * 32, ("table", "custom.t"): "bb" * 32, ("view", "platform.v"): "absent"}
     rc, _ = compare(dict(a), {**a, ("table", "custom.t"): "cc" * 32})

@@ -47,7 +47,7 @@ import {
 const STOPPED_STATUSES = new Set(["failed", "errored", "cancelled"]);
 
 /**
- * A cancelled run has no recorded error, so there is nothing for the shared
+ * A canceled run has no recorded error, so there is nothing for the shared
  * primitive to read. Hand it the one fact we do have.
  *
  * Everything else passes the WHOLE `workflow.run.error` record through — the
@@ -81,10 +81,10 @@ export function RunFailureCard({
   if (status === null || !STOPPED_STATUSES.has(status)) return null;
 
   const cancelled = status === "cancelled";
-  // Status is authoritative over anything the row recorded: a run cancelled
-  // after a step had already errored must still read as cancelled. The
+  // Status is authoritative over anything the row recorded: a run canceled
+  // after a step had already errored must still read as canceled. The
   // recorded technical line is kept either way — never dropped.
-  // A run that ended because a person REFUSED a held change is cancelled on
+  // A run that ended because a person REFUSED a held change is canceled on
   // the row, but it was not stopped by anyone pressing Stop: it keeps its own
   // cause and the refusal's words (lane HELD-WRITE-RESUME).
   const refused = cancelled && error?.cause === "refused";
@@ -127,7 +127,7 @@ export function RunFailureCard({
   });
 
   // A step whose change is HELD for a person stopped the run, but nothing is
-  // broken: the held colour, never the destructive one (lane HELD-WRITE-TAILS).
+  // broken: the held color, never the destructive one (lane HELD-WRITE-TAILS).
   const held = explanation.cause === "held_for_approval";
 
   return (

@@ -72,7 +72,7 @@ export function renderedRecordFor(
   return pageId ? { recordType: "html_page", recordId: pageId } : null;
 }
 
-/** The viewer's colour scheme, as the app shell renders it. */
+/** The viewer's color scheme, as the app shell renders it. */
 export function viewerColorScheme(): "light" | "dark" {
   if (typeof document === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";

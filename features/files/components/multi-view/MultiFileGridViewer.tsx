@@ -6,7 +6,7 @@
  * just a tiny corner control to exit. Used by the "Open in grid" bulk action
  * via the `/files/view?ids=…` route.
  *
- * Behaviour:
+ * Behavior:
  *   - Smart `cols × rows` layout that adapts to item count and the live
  *     viewport aspect ratio (see `grid-layout.ts`).
  *   - Click a tile to enter focus mode (single image full-bleed). Arrow keys

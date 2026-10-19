@@ -18,15 +18,15 @@ export interface FaviconRouteEntry {
   favicon?: FaviconConfig;
 }
 
-// ─── Colour families (Arman, 2026-09-18) ──────────────────────────────────────
+// ─── Color families (Arman, 2026-09-18) ──────────────────────────────────────
 // "Red: Agents. Blue: Chat. Yellow: notes, docs, etc. Light blue: Data, sheets,
 //  etc. Purple: Workflows, etc. Green: Marketing. Need a good color for admin —
 //  maybe black or gray."
 //
-// The COLOUR says which family a tab belongs to; the LETTER says which page.
-// Routes outside these families keep their own curated colour — a family is a
+// The COLOR says which family a tab belongs to; the LETTER says which page.
+// Routes outside these families keep their own curated color — a family is a
 // statement about kinship, not a paint-everything rule. Admin, demo and test
-// colours are LOCKED in `utils/favicon-utils.ts` and win over anything here.
+// colors are LOCKED in `utils/favicon-utils.ts` and win over anything here.
 
 /** Agents. */
 export const AGENTS_COLOR = "#f43f5e";
@@ -82,7 +82,7 @@ export const faviconRouteData: FaviconRouteEntry[] = [
     href: "/transcripts",
     favicon: { color: "#9333ea", letter: "TR" },
   },
-  // Media Source Catalog — a whole channel, catalogued (features/source-library)
+  // Media Source Catalog — a whole channel, cataloged (features/source-library)
   { href: "/libraries", favicon: { color: "#dc2626", letter: "LB" } },
   // Bring your export — a service's own data download, read (features/exports)
   { href: "/exports", favicon: { color: "#0d9488", letter: "EX" } },

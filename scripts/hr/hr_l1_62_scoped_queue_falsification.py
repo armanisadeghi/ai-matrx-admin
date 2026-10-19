@@ -3,7 +3,7 @@
 
 Run:  cd /Users/armanisadeghi/code/aidream && uv run --with asyncpg --with httpx \
         python /Users/armanisadeghi/code/matrx-frontend/scripts/hr/hr_l1_62_scoped_queue_falsification.py
-      (`--baseline` records the PRE-fix behaviour; directions (b) and (c) are expected to FAIL there.)
+      (`--baseline` records the PRE-fix behavior; directions (b) and (c) are expected to FAIL there.)
 
 hr_l1_61 bound the queue's items to the organization the grant lives in. It left the POPULATION
 unasked, so a DEPARTMENT-scoped hr_admin read workflow items about every person in the employer.

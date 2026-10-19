@@ -56,7 +56,7 @@ export function MetadataPanel({
           </p>
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
             Generate filename, alt text, caption, SEO keywords, and dominant
-            colours — all in one click.
+            colors — all in one click.
           </p>
           {status === "error" && file.metadataError && (
             <p className="text-[11px] text-destructive mt-1 flex items-center gap-1">
@@ -367,7 +367,7 @@ function KeywordsEditor({
   );
 }
 
-// ─── Dominant colours ────────────────────────────────────────────────────────
+// ─── Dominant colors ────────────────────────────────────────────────────────
 
 function ColorSwatches({
   colors,
@@ -381,7 +381,7 @@ function ColorSwatches({
     <div className="space-y-1">
       <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground flex items-center gap-1">
         <Palette className="h-3 w-3" />
-        Dominant colours
+        Dominant colors
       </label>
       <div className="flex flex-wrap gap-1.5">
         {colors.map((c, i) => (

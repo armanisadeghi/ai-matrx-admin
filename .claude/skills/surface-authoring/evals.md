@@ -208,7 +208,7 @@ repair." · "`getScope` is a single `useCallback` that reads live state at trigg
 Class lesson recorded in skill-authoring §2: a routing list is read as complete.
 
 **Unguarded classes noted by reps (not built here):** `overlayId` values are not validated
-against the overlay catalogue (`features/overlays/definitions/registry.ts`) by the drift check (one rep; another cited `check:surface-overlays`);
+against the overlay catalog (`features/overlays/definitions/registry.ts`) by the drift check (one rep; another cited `check:surface-overlays`);
 nothing statically prevents a non-DOM provider as the direct child of a v3 context menu.
 ## Correction baseline — `/root/rule_baseline` (2026-09-18)
 

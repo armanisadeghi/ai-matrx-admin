@@ -308,7 +308,7 @@ function parseObjectArg(
  * Unknown keys are rejected rather than dropped: an agent that misspells
  * `name` for `display_name` would otherwise watch its filter silently do
  * nothing, which is a worse outcome than being told. Blank text and an empty
- * `party_kind` array mean "no filter on that column" — the same normalisation
+ * `party_kind` array mean "no filter on that column" — the same normalization
  * `fromTableFilters` applies to what the user types, so an agent write and a
  * user click produce the identical bag.
  */
@@ -423,7 +423,7 @@ function parseColumnFilters(value: unknown): PartyListFilters {
         `column_filters.written_by expects one of ${WRITTEN_BY_FILTER_ENUM_TEXT} — received ${describeValue(entry)}. Omitting the key means no filter at all: contacts a person saved and contacts an agent saved share one list until you ask.`,
       );
     }
-    // "anyone" IS the absence of the filter, so it is normalised away here the
+    // "anyone" IS the absence of the filter, so it is normalized away here the
     // same way the user's own click is — an agent write and a user click must
     // produce the identical bag (DD-131 slice 3).
     if (entry !== DEFAULT_WRITTEN_BY_FILTER) {

@@ -7,12 +7,12 @@ a fourth SEO data system. It explains and links the three systems that already
 exist:
 
 - snapshot audit metrics stored with page captures;
-- catalogue analysis results and durable findings;
+- catalog analysis results and durable findings;
 - provider intelligence such as Search Console, PageSpeed, backlinks, and rank
   tracking.
 
 Every named capability must link to its canonical working destination. Live
-status must come from an existing hook/service. Catalogue execution reuses
+status must come from an existing hook/service. Catalog execution reuses
 `CatalogueAnalysisPanel`, including its canonical `analyzeSite` action and
 query invalidation behavior; never add a second runner here.
 
@@ -27,7 +27,7 @@ This feature adds no schema, service, or duplicate registry.
 
 - Snapshot status: `useSiteAuditRollup`.
 - Provider/search coverage: `useSiteOverview`.
-- Catalogue status and execution: `CatalogueAnalysisPanel` and
+- Catalog status and execution: `CatalogueAnalysisPanel` and
   `useSiteAnalysisOverview` beneath it.
 - Navigation: canonical site and portfolio routes already owned by the
   marketing module.
@@ -35,5 +35,5 @@ This feature adds no schema, service, or duplicate registry.
 ## No dead ends
 
 Capability cards are links, including their counts/status statements. The
-catalogue panel links counts to findings and analysis destinations and exposes
+catalog panel links counts to findings and analysis destinations and exposes
 the one-click fix when analysis has never run.

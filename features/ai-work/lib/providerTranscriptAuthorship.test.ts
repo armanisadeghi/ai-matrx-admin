@@ -92,7 +92,7 @@ describe("transcriptAuthorship", () => {
  * XT-05b sibling — A CARRIED TURN IS NOT THIS CONVERSATION'S TOOL'S WORK.
  *
  * The break, seen live on 2026-09-18: a handoff rebind moved a Claude Code
- * session's binding onto a Codex conversation and its 2 turns travelled with
+ * session's binding onto a Codex conversation and its 2 turns traveled with
  * it, and the transcript bylined both of them "Codex" — the conversation's
  * provider — so the screen credited work to a tool that never did it. The row
  * carries `carried_from.provider`; the byline must come from there, and the

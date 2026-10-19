@@ -254,7 +254,7 @@ export function AssistCard({
             {assist.title}
           </div>
           {urgency !== "normal" && (
-            // The word, not just the colour — and it says what it means
+            // The word, not just the color — and it says what it means
             // rather than leaving a red border to be interpreted.
             <div className="mt-1 flex items-center gap-1.5">
               <span
@@ -376,7 +376,7 @@ export function AssistCard({
           <Button
             variant="quiet"
             // A brand assist is a treat, never a nag (Arman, 2026-10-16): its
-            // "Not now" is a decline the producer honours, not a close.
+            // "Not now" is a decline the producer honors, not a close.
             onClick={
               assist.id && assist.action.kind === "brand_assist"
                 ? () => void dismiss()

@@ -238,7 +238,7 @@ describe("no HR URL is hand-assembled in navigation position", () => {
     expect(caught("href={hrTasksHref(orgRef)}")).toBe(false);
   });
 
-  it("honours an authored exemption and nothing else", () => {
+  it("honors an authored exemption and nothing else", () => {
     const files = handBuiltHrUrls();
     // The exemption marker must be spelled out; a bare comment does not exempt.
     expect(files.every((v) => !v.source.includes(EXEMPT))).toBe(true);

@@ -22,7 +22,7 @@ interface StatusBadgeProps {
  * Restrained status marker: a small muted semantic dot + a monochrome label.
  * No bright pill — the dot carries the meaning, the text stays neutral so dense
  * tables read like a data console, not a tag cloud. Legible in light + dark via
- * theme tokens; the dot's hue is the only colour and it sits at low opacity.
+ * theme tokens; the dot's hue is the only color and it sits at low opacity.
  */
 export function StatusBadge({ status, className }: StatusBadgeProps) {
     const config = TOPIC_STATUS_CONFIG[status as TopicStatus] ?? SCRAPE_STATUS_CONFIG[status as ScrapeStatus];

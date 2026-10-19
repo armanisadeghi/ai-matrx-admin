@@ -88,7 +88,7 @@ export function useOrgSharedItems(
           const { data, error: ownedError } = await q;
           if (ownedError) throw ownedError;
           // MATRX-EXCEPTION: table + title column are resolved from the org
-          // resource catalogue at runtime (any cardable kind), so the row
+          // resource catalog at runtime (any cardable kind), so the row
           // shape cannot be a compile-time DbRpcRow guard.
           const ownedRows = (data ?? []) as unknown as Array<Record<string, unknown>>;
           for (const row of ownedRows) {

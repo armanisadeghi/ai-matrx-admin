@@ -139,14 +139,14 @@ export async function GET() {
   const recordUrls = await getIndexedRecordUrls(baseUrl)
 
   // The public template gallery (Arman 2026-10-02: public and indexed) — every platform template a
-  // signed-out visitor can open. A closed catalogue door lists none; any other failure throws.
+  // signed-out visitor can open. A closed catalog door lists none; any other failure throws.
   const catalogue = await readPublicCatalogue()
   const templateCards = catalogue.state === 'open' ? catalogue.cards : []
   const templateUrls = [
     { loc: `${baseUrl}${PUBLIC_GALLERY_PATH}`, changefreq: 'weekly', priority: '0.8' },
     ...facetValues(templateCards, 'industry').map((v) => ({ loc: `${baseUrl}${industryHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     ...facetValues(templateCards, 'job').map((v) => ({ loc: `${baseUrl}${jobHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
-    // Workspaces: the Space templates and each Space category (every category the catalogue holds).
+    // Workspaces: the Space templates and each Space category (every category the catalog holds).
     ...(templateCards.some(isSpaceCard) ? [{ loc: `${baseUrl}${workspacesHref()}`, changefreq: 'weekly', priority: '0.8' }] : []),
     ...spaceCategories(templateCards.filter(isSpaceCard)).map((v) => ({ loc: `${baseUrl}${workspacesHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     ...templateCards.map((c) => ({

@@ -14,7 +14,7 @@
 // So: the card itself is on screen from the first frame — its real front, its
 // real back — and its layers materialize INSIDE it, drawn by the registered
 // `card_enrichment` component (`card_enrichment_stack`, the DB-routed default:
-// coloured chips, per-kind icons, a rail per layer). A spinner is never the
+// colored chips, per-kind icons, a rail per layer). A spinner is never the
 // primary state; the most a live tile shows is a three-dot "writing…" line
 // UNDER a card the learner can already read, and only until the first layer's
 // first characters arrive.

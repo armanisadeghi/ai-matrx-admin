@@ -1,7 +1,7 @@
 // features/make/__tests__/one-gallery-source.test.ts — guard G3 (lane MAKE-HOME, wave 4).
 //
 // THE USE CASE. Cedar Ridge Physical Therapy's front desk opens /make and sees ONE template
-// gallery: the catalogue lane 8 fills, read through the catalogue door `custom.templates`. She never
+// gallery: the catalog lane 8 fills, read through the catalog door `custom.templates`. She never
 // sees a second list stitched beside it — the four store examples, the AI-setup kits, scope
 // templates — each from its own mechanism, each disagreeing about what a "template" is (HANDOFF
 // MAKE-HOME §2 item 4: six mechanisms). The day someone wires one back into the hub, this fails.
@@ -20,7 +20,7 @@ import ts from "typescript";
 
 const ROOT = process.env.MAKE_GALLERY_GUARD_ROOT ?? join(__dirname, "..");
 
-/** Code that reads a template source other than the catalogue door. */
+/** Code that reads a template source other than the catalog door. */
 const FORBIDDEN: Array<{ name: string; test: RegExp }> = [
   { name: "context.templates (scope templates)", test: /\bschema\(\s*["']context["']\s*\)[\s\S]{0,80}["']templates["']|["']context\.templates["']/ },
   { name: "catalog_entries (kits)", test: /["']catalog_entries["']/ },
@@ -48,7 +48,7 @@ function codeOnly(path: string): string {
   return ts.createPrinter({ removeComments: true }).printFile(source);
 }
 
-describe("G3 — /make has one gallery source: the catalogue door", () => {
+describe("G3 — /make has one gallery source: the catalog door", () => {
   const files = sources(ROOT);
 
   it("measures something (the hub's files are found)", () => {
@@ -66,9 +66,9 @@ describe("G3 — /make has one gallery source: the catalogue door", () => {
     expect(findings).toEqual([]);
   });
 
-  it("the gallery reads the catalogue door and installs through runTemplateDoor", () => {
+  it("the gallery reads the catalog door and installs through runTemplateDoor", () => {
     const gallery = codeOnly(files.find((f) => f.endsWith("TemplateGallery.tsx"))!);
-    // The catalogue door is the package's (storeDoors(...).templates): the app file never says the schema.
+    // The catalog door is the package's (storeDoors(...).templates): the app file never says the schema.
     expect(gallery).toMatch(/storeDoors\([^)]*\)\.templates\(|doors\.templates\(/);
     expect(gallery).not.toMatch(/schema: "custom"|\.schema\("custom"\)/);
     expect(gallery).toMatch(/runTemplateDoor/);

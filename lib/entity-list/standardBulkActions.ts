@@ -164,7 +164,7 @@ export function trashBulkAction<TRow>(args: {
   };
 }
 
-/** Favourite or unfavourite every selected row for the signed-in person (`ues_set`). */
+/** Favorite or unfavourite every selected row for the signed-in person (`ues_set`). */
 export function favoriteBulkAction<TRow>(args: {
   token: string;
   noun: string;
@@ -219,7 +219,7 @@ export function tagBulkAction<TRow>(args: {
         fields: [{ name: "tag", prompt: "Tag name" }],
       });
       const name = answers?.tag?.trim();
-      // Cancelled or empty: resolve with nothing, so the shell keeps the selection.
+      // Canceled or empty: resolve with nothing, so the shell keeps the selection.
       if (!name) return;
       return runPerRow(
         selection,

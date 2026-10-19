@@ -8,8 +8,8 @@ import { selectUserAvatarUrl } from "@/lib/redux/selectors/userSelectors";
 
 /**
  * The person's 24px mark in the account rail: their photo, else their initial
- * on a colour tile seeded by their id (the same palette the organization marks
- * use), else the person glyph. Client-side because the colour helper lives in
+ * on a color tile seeded by their id (the same palette the organization marks
+ * use), else the person glyph. Client-side because the color helper lives in
  * the client-only design-system bundle.
  */
 export function RailUserAvatar({

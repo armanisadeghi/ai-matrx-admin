@@ -239,7 +239,7 @@ test("a reload whose URL still carries an already-sent ?ask= beside ?director= r
 /*
  * Walk 2026-10-05 (independent, commit c5c632fbad): a reload mid-answer stuck on "Opening your
  * PR director…" or "Couldn't load this conversation", and Try again did nothing. Three causes:
- *  1. the open was cancelled by ANY re-render that changed the effect's inputs (the launcher's
+ *  1. the open was canceled by ANY re-render that changed the effect's inputs (the launcher's
  *     identity, the organization arriving), and a ref guard then refused to open again;
  *  2. the id was pinned to the URL the moment a run STARTED, before the server had written the
  *     conversation row — a reload in that window asked for a row that did not exist yet;

@@ -7,7 +7,7 @@
  * to reach it. The export lane names three of them — an employment, a workweek, a pay period —
  * and only the pay period has a route today. The other two get the platform's REGISTERED
  * primitive (`lib/coming-soon/registry.ts` + `announceComingSoon`), never a bare toast and never
- * an inert grey span: the promise is declared, countable, and reviewable, and the user gets a real
+ * an inert gray span: the promise is declared, countable, and reviewable, and the user gets a real
  * answer instead of a click that does nothing.
  *
  * 🚨 WHY AN EMPLOYMENT DOES **NOT** USE `hrEmployeeHref`, EVEN THOUGH THAT BUILDER EXISTS.

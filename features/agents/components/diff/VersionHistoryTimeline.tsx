@@ -76,7 +76,11 @@ export function VersionHistoryTimeline({
         changes: enriched ? (
           <VersionChanges agentId={agentId} version={version} />
         ) : (
-          <ContractBreak agentId={agentId} version={version} />
+          <div className="space-y-1">
+            <ContractBreak agentId={agentId} version={version} />
+            {/* The preview before Load Full History has read no snapshots. */}
+            <span className="text-muted-foreground">Not loaded</span>
+          </div>
         ),
         changesText: changedFields.map((n) => humanizeIdentifier(n.key) || n.key).join(", ") || null,
       };
@@ -232,7 +236,11 @@ function VersionChanges({ agentId, version }: { agentId: string; version: Enrich
         </ChipSet>
       ) : diff && changedFields.length === 0 ? (
         <span className="text-muted-foreground">No changes</span>
-      ) : !version.snapshotLoaded ? null : (
+      ) : !version.snapshotLoaded ? (
+        // An unread snapshot says so — never a lone contract-break button where the
+        // changes belong (walk-core 2026-10-18: v9–v2 showed only the shield).
+        <span className="text-muted-foreground">Not loaded</span>
+      ) : (
         <span className="text-muted-foreground">First version</span>
       )}
     </div>

@@ -7,13 +7,13 @@
 // at all?".
 //
 // 🚨 IT ASKS BOTH READERS (FIX-Q9, 2026-09-11). This hook used to read the code
-// catalogue and nothing else, while the workspace read the stored row — so a
+// catalog and nothing else, while the workspace read the stored row — so a
 // Mandate created in the UI (stored goal, no code declaration) had its goal
 // printed on one screen and *"No goal declared"* on another. The precedence now
 // lives once, in `./goal`: THE STORED GOAL IS THE TRUTH, the code declaration
 // is the fallback. Pass `storedGoal` whenever the surface already holds the row
 // (`goalOfMandate(row)`); a surface that genuinely has no row passes nothing
-// and gets the catalogue answer, which is still an answer, not a lie.
+// and gets the catalog answer, which is still an answer, not a lie.
 //
 // It also re-reads on invalidation: `patchMandateGoal` clears every goal-
 // bearing cache through `invalidateMandateCache`, and mounted surfaces must
@@ -41,7 +41,7 @@ export interface MandateGoalState {
   error: string | null;
   /**
    * True once the question is settled and a null `goal` really means "none".
-   * A stored goal settles it on its own: the catalogue cannot contradict it.
+   * A stored goal settles it on its own: the catalog cannot contradict it.
    */
   loaded: boolean;
 }
@@ -69,7 +69,7 @@ export function useMandateGoal(
   // effect (react-hooks/set-state-in-effect — cascading renders).
   const [entry, setEntry] = useState<GoalEntry | null>(null);
   // Bumped when a mandate write drops the caches, so this hook re-reads the
-  // catalogue instead of serving the text the write just replaced.
+  // catalog instead of serving the text the write just replaced.
   const [epoch, setEpoch] = useState(0);
 
   useEffect(
@@ -118,7 +118,7 @@ export function useMandateGoal(
     stored: storedGoal,
     catalogue: settled?.catalogueGoal ?? null,
   });
-  // The STORED goal needs no catalogue round trip to be true, so a surface
+  // The STORED goal needs no catalog round trip to be true, so a surface
   // holding one is never "loading" and never waits to print it.
   const storedIsEnough = resolved.source === "stored";
 

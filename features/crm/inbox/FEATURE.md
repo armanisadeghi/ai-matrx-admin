@@ -94,7 +94,7 @@ attributes.inbox                  = { handled_at, handled_by }   ← OURS, RPC-w
 `label` is narrowed onto the closed set `bounce | unsubscribe | ooo | interested |
 not_interested | other`. **An unrecognized string becomes `other`; a MISSING label stays
 `null` and renders as "Unclassified"** — those are different facts, and collapsing them
-would tell the user a model made a judgement it never made.
+would tell the user a model made a judgment it never made.
 
 A rename on the server is a one-line change in each of the two accessors. It is never a
 grep across the inbox, the Chasebox, the timeline and the record page — that is the entire
@@ -233,7 +233,7 @@ alone.
 is the contract) writes three chips to this surface: a draft approved and still unsent, drafts
 nobody has read past a day, and recipients the send gate refuses for a reason a human can FIX.
 The Chasebox's five queues remain deliberately NOT assists — they are the action surface itself
-— and the producer honours that: **a chip must say what these queues cannot.** The clearest case
+— and the producer honors that: **a chip must say what these queues cannot.** The clearest case
 is `pending_drafts`, which describes an approved draft and an unapproved one with the identical
 sentence *"waiting for a human to approve it"*; a count also never says how long.
 
@@ -242,7 +242,7 @@ there is no `useState` mirror, so there is no effect to keep in sync, and `openQ
 the URL on every switch (`router.replace`, no scroll). This exists because an assist chip may
 not point at a door the page cannot open: before it, `/crm/chasebox?queue=pending_drafts` would
 have landed on `fresh_replies` and looked like the chip lied. An unknown value falls back to
-`fresh_replies`. Adding a query param the page must honour? Derive, don't mirror.
+`fresh_replies`. Adding a query param the page must honor? Derive, don't mirror.
 
 ---
 

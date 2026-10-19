@@ -38,7 +38,7 @@ const schemas: KindSchema[] = [
       currency: { type: "string", nullable: true },
       line_item_costs: { type: "json[]", nullable: true },
       // `null` is a real state for both buckets — Lulu has not priced the
-      // basket yet — and @ai-matrx/content-ir 0.10.2 honours `nullable` on
+      // basket yet — and @ai-matrx/content-ir 0.10.2 honors `nullable` on
       // object-shaped fields, so the true shape is declared here.
       shipping_cost: { ...COST_GROUP, nullable: true },
       fulfillment_cost: { ...COST_GROUP, nullable: true },

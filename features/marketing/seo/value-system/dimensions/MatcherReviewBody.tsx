@@ -18,14 +18,14 @@
  *
  * REFERENCE PRODUCT: GitHub's pull-request Files-changed table crossed with
  * Linear's issue list — a dense scannable list where the LEFT edge carries a
- * status colour you read without reading, the middle carries the thing itself,
+ * status color you read without reading, the middle carries the thing itself,
  * and the right carries the numbers you sort by. Borrowed because the job is
  * identical: judge many rows fast, then act on the ones that are wrong.
  *
- * COLOUR CARRIES OUTCOME, NEVER DECORATION. Four states, four edges: held is
+ * COLOR CARRIES OUTCOME, NEVER DECORATION. Four states, four edges: held is
  * the accent, lost is a warning, blocked is neutral-locked, unstamped is
- * muted. A row's colour is a claim about what happened to it — so nothing else
- * on the row is allowed to be coloured.
+ * muted. A row's color is a claim about what happened to it — so nothing else
+ * on the row is allowed to be colored.
  *
  * UNDO IS THE MATCH'S OWN DELETE. It is not a separate journal or a snapshot:
  * deleting the matcher removes it AND every answer it alone was keeping, in one
@@ -421,8 +421,8 @@ export function MatcherReviewBody({
                       </span>
                     ) : null}
                     {/* Other dimensions are CONTEXT, never a verdict — they are
-                        deliberately colourless so the outcome edge stays the
-                        only thing colour is claiming anything about. */}
+                        deliberately colorless so the outcome edge stays the
+                        only thing color is claiming anything about. */}
                     {row.otherAnswers.slice(0, 4).map((answer) => (
                       <span
                         key={`${answer.dimension}:${answer.value}`}

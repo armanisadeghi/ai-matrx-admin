@@ -18,7 +18,7 @@ it("is content-sized while empty and definite-height once it has messages", () =
   expect(RECORD_CHAT_ACTIVE_FRAME).toMatch(/(^|\s)h-\[/);
 });
 
-it("hands the record's own facts to the first turn as context, labelled", () => {
+it("hands the record's own facts to the first turn as context, labeled", () => {
   const e = recordContextEntries({ title: "1A", tableName: "Rentals", entries: [{ key: "rent", label: "Rent", value: 1800, type: "text" }, { key: "tenant", label: "Tenant", value: "Rivera", type: "text" }] });
   expect(e.map((x) => x.key)).toEqual(["record_about", "record_fact_rent", "record_fact_tenant"]);
   expect(e[1].value).toEqual({ content: "1800", type: "text", label: "Rent" });

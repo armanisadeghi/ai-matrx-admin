@@ -11,7 +11,7 @@
 // 🚨 THE TAB SET IS `profile.tabs`, RENDERED VERBATIM. See `ProfileTabBar`.
 //
 // 🚨 ROUTE 13 REDIRECTS TO THE FIRST TAB THIS VIEWER CAN SEE. `resolveDefaultTab`
-// honours the `hr.employees.profile_default_tab` knob ONLY when that tab is
+// honors the `hr.employees.profile_default_tab` knob ONLY when that tab is
 // actually in the viewer's set — otherwise a knob pointing at Compensation lands
 // a manager on a blank page, which is the exact failure the redirect exists to
 // prevent.
@@ -51,7 +51,7 @@ import { LinkedRecordsSection } from "@/features/scopes/components/linked-record
 export const HR_PROFILE_DEFAULT_TAB_KEY = "hr.employees.profile_default_tab";
 
 /**
- * The first tab this viewer can see, honouring the knob when — and only when —
+ * The first tab this viewer can see, honoring the knob when — and only when —
  * the knob's tab is in their set.
  */
 export function resolveDefaultTab(
@@ -86,12 +86,12 @@ export function resolveDefaultTab(
  * (rule 3 silently re-infers their one employer); a MULTI-employer user landed on "Which
  * employer?" — told they had not chosen one when they had, in the URL they typed.
  *
- * Two defences, because either alone leaves a hole:
+ * Two defenses, because either alone leaves a hole:
  *
  *  1. FALL BACK TO THE RAW `?org_filter=`. Reading it off `useSearchParams()` is race-free by
  *     construction — it is the value already in the address bar, available on the first
  *     render, needing no round trip. `orgRef` is still PREFERRED when resolved, because it is
- *     normalised to the employer's slug and survives a uuid-vs-slug mismatch.
+ *     normalized to the employer's slug and survives a uuid-vs-slug mismatch.
  *  2. WAIT FOR THE CONTEXT when the URL carried nothing. With no param there is nothing to
  *     preserve, but redirecting early would still throw away the employer the context is
  *     about to resolve — so hold the redirect until it lands. `isLoading` is the FIRST

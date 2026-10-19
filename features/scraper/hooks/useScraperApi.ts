@@ -722,7 +722,7 @@ async function consumeScrapeStream(
   if (!sawEndEvent && results.length === 0) {
     if (signal?.aborted) {
       throw new Error(
-        "Scrape stream was cancelled (request aborted) before any results were parsed. " +
+        "Scrape stream was canceled (request aborted) before any results were parsed. " +
           "If you did not cancel, another scrape may have replaced this one (useScraperApi uses a single in-flight abort controller per hook).",
         {
           cause: {
@@ -910,7 +910,7 @@ export function useScraperApi(): UseScraperApiReturn {
   const [landedSentence, setLandedSentence] = useState<string | null>(null);
   const [landedReport, setLandedReport] = useState<SearchAndScrapeReport | null>(null);
 
-  // AbortController for in-flight requests — cancelled on unmount or via cancel()
+  // AbortController for in-flight requests — canceled on unmount or via cancel()
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {

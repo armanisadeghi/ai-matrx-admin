@@ -196,7 +196,7 @@ export interface KnowledgeSearchOptions {
   pass?: "instant" | "content";
   /**
    * Rerank passage results for this search. Omitted = the organization's setting
-   * (knowledge.search_rerank). Honoured on the content pass and on submit only.
+   * (knowledge.search_rerank). Honored on the content pass and on submit only.
    */
   rerank?: boolean;
   /** Called once with the engine that actually answered. */

@@ -5,7 +5,7 @@
 //
 // It lives beside `DetailHost` rather than inside it for the reason
 // `singletonReplacement.ts` does: the host binding is wiring, and the one piece
-// of judgement in this port — what happens when the CURRENT value cannot be
+// of judgment in this port — what happens when the CURRENT value cannot be
 // read — is worth a test of its own that does not boot the whole host.
 
 import {
@@ -35,7 +35,7 @@ export type SavePresentationResult = { ok: true } | { ok: false; reason: string 
  * commit 4cbd9e45). Refusing instead of guessing, and the fresh read that makes
  * two tabs saving two different types both survive, are the ONE primitive
  * `setUserKnobMapEntry` — read its header before changing anything here; every
- * map-valued knob needs the same two behaviours and gets them there, not here.
+ * map-valued knob needs the same two behaviors and gets them there, not here.
  */
 export async function savePresentation(args: {
   presentation: DetailPresentation;

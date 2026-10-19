@@ -121,7 +121,7 @@ export function effectiveSubject(d: Pick<EnvelopeDraftV1, "email_subject" | "tit
   return senderName ? `${senderName} sent you ${title} to sign` : `You have ${title} to sign`;
 }
 
-/** Lowest colour index no recipient holds; kept for life (paper.ts rule). */
+/** Lowest color index no recipient holds; kept for life (paper.ts rule). */
 export function nextColorIndex(recipients: readonly DraftRecipient[]): number {
   const used = new Set(recipients.map((r) => r.color_index));
   let i = 0;

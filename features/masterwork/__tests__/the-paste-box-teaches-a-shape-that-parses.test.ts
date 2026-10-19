@@ -10,7 +10,7 @@
  * the instruction literally and was told "Nothing to shadow — you never replied
  * in it", with nothing on screen naming what to change.
  *
- * THE CLASS: a door whose instruction the code behind it cannot honour. The
+ * THE CLASS: a door whose instruction the code behind it cannot honor. The
  * parser half is guarded in aidream
  * (`aidream/services/distillation/tests/test_the_paste_door_example_parses.py`,
  * which runs the declared example through the REAL parser). This is the copy
@@ -46,7 +46,7 @@ describe("the paste box teaches a shape that parses", () => {
     expect(after.join(" ").length).toBeGreaterThan(80);
   });
 
-  it("still tells people a real mail-app copy works, and how we recognise one", () => {
+  it("still tells people a real mail-app copy works, and how we recognize one", () => {
     expect(SHADOW_PASTE_PLACEHOLDER).toContain("wrote:");
     expect(SHADOW_PASTE_PLACEHOLDER).toContain("Original Message");
     expect(SHADOW_PASTE_PLACEHOLDER).toContain('">"');

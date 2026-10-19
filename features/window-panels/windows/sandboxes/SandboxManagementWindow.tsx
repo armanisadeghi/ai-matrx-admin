@@ -30,7 +30,7 @@ export interface SandboxManagementWindowProps {
 /**
  * A movable frame for the canonical sandbox diagnostics and controls.
  * `SandboxDiagnosticsPanel` owns the actual data, refresh, filesystem, and
- * reset behaviour so its detail, terminal, and window presentations agree.
+ * reset behavior so its detail, terminal, and window presentations agree.
  */
 export default function SandboxManagementWindow({
   isOpen,

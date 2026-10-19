@@ -32,7 +32,7 @@ import { Check, Copy } from "lucide-react";
 
 /**
  * THE ONE CONTROL (2026-10-05, wave 1B): `Textarea` is the controls' textarea — the field skin,
- * multi-line, 13px, 8px radius, colour locked. Height is its own business: `rows`,
+ * multi-line, 13px, 8px radius, color locked. Height is its own business: `rows`,
  * `minHeight` / `maxHeight` (px), `autoGrow`, `resize` — never a class. Options:
  * `variant="bare"` (a composer whose surface draws the frame), `mono`.
  * Codemod + census: `scripts/ui-rollout/doors-codemod.mjs`.

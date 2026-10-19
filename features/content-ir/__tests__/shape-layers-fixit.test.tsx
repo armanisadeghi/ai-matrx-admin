@@ -285,7 +285,7 @@ describe("review findings from slice 2", () => {
 
   it("resolveShared (package 0.25.91) answers the SHARED tier under a layered winner", () => {
     const registry = new ComponentRegistry(getSystemComponentEntries);
-    // The resolver only honours an overlay owned by the CURRENT viewer
+    // The resolver only honors an overlay owned by the CURRENT viewer
     // (0.25.89 viewer probe); this registry has no signed-in session.
     (
       registry as unknown as {

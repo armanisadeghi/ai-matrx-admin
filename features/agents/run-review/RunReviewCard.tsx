@@ -25,7 +25,7 @@ import { ProTextarea } from "@/components/official/ProTextarea";
  *
  * Persistence: `saveFeedback` upserts by (user, conversation, request_id) into
  * `agent.cmp_response_feedback`; the row's `metadata.surface` says where it was
- * given. Surface-specific behaviour (blind tests, cross-column ranks, mirroring
+ * given. Surface-specific behavior (blind tests, cross-column ranks, mirroring
  * into a surface's Redux) comes in through `RunReviewExtension` — never a fork.
  */
 
@@ -109,7 +109,7 @@ export interface RunReviewExtension {
     /** Free the rank on the other answers before this one claims it. False = do not claim. */
     claim: (rank: number, requestId: string) => Promise<boolean>;
   };
-  /** Mirror of the saved state, for surfaces that summarise every answer. */
+  /** Mirror of the saved state, for surfaces that summarize every answer. */
   onSnapshot?: (snapshot: RunReviewSnapshot | null) => void;
   /** Fired after every successful save. */
   onSaved?: (requestId: string) => void;

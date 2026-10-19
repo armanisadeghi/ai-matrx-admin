@@ -11,7 +11,7 @@
 // from the clone's `custom.template` rows (fixtures/clone-template-cards.json, 2026-10-03).
 //
 // BREAKS THIS CATCHES: an organization's saved template leaking onto a public page · the second page
-// of a long catalogue dropped · "Use this template" not leading through sign-up to that template's
+// of a long catalog dropped · "Use this template" not leading through sign-up to that template's
 // install · a closed or absent door crashing the page instead of an empty gallery · a real failure
 // read as an empty gallery · the public page drawing its own card instead of the shared one.
 //
@@ -42,8 +42,8 @@ jest.mock("../gallery/publicCatalogue.server", () => {
     });
   return {
     readPublicCatalogue,
-    // The page read answers only what the public catalogue holds (platform cards), by address,
-    // catalogue id or version id — the same rule as public.template_public_page.
+    // The page read answers only what the public catalog holds (platform cards), by address,
+    // catalog id or version id — the same rule as public.template_public_page.
     readTemplatePage: async (key: string) => {
       const read = await readPublicCatalogue();
       if (read.state !== "open") return null;
@@ -71,7 +71,7 @@ const ACCOUNTING = CAPTURED.find((c) => c.catalogue_id === "T0001")!;
 const PRIMARY_CARE = CAPTURED.find((c) => c.catalogue_id === "T0016")!;
 const SAVED_BY_BRENNAN = CAPTURED.find((c) => c.catalogue_id === "BV-INTAKE")!;
 
-/** A catalogue longer than one door page: 199 more practices + the org card on page 1, primary care on page 2. */
+/** A catalog longer than one door page: 199 more practices + the org card on page 1, primary care on page 2. */
 function twoPages(): DoorReply[] {
   const filler: GalleryCard[] = Array.from({ length: 199 }, (_, i) => ({
     ...ACCOUNTING,
@@ -115,7 +115,7 @@ describe("the public gallery index", () => {
     expect(page).not.toContain("BV-INTAKE");
   });
 
-  it("reads a catalogue longer than one page to its end", async () => {
+  it("reads a catalog longer than one page to its end", async () => {
     pages = twoPages();
     const page = await index();
     expect(offsetsAsked).toEqual([0, 200]);

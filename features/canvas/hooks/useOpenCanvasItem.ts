@@ -14,7 +14,7 @@
  * own library) dispatched `openCanvas(item.content)` — a full-payload snapshot
  * that the slice cannot dedupe against an item already showing that artifact,
  * even though it was holding the row id. The Content Library navigated to a
- * route instead of opening anything. Same artifact, three behaviours.
+ * route instead of opening anything. Same artifact, three behaviors.
  *
  * Opening is LOOKING: this never writes. It resolves an identity and hands it
  * to `openArtifactInCanvas`, which stores `{ artifactId }` — a pointer, never

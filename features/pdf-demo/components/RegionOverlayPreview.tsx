@@ -3,10 +3,10 @@
 /**
  * RegionOverlayPreview — renders one PDF page as an image (via
  * `/utilities/pdf/render-page`) and draws every detected region's bbox
- * on top as a coloured rectangle.
+ * on top as a colored rectangle.
  *
  * Used by the `/detect-repeated-regions` demo to visually confirm that
- * the detector caught the right zones. Each region gets a stable colour
+ * the detector caught the right zones. Each region gets a stable color
  * derived from its `region_id` so the bbox and the JSON entry can be
  * cross-referenced visually.
  *

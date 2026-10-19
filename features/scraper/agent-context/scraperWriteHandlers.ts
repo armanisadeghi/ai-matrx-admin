@@ -66,7 +66,7 @@ export interface ScraperWriteMount {
   /**
    * Switch modes. Only the floating workspace has this; on the `/scraper`
    * routes the mode is the route, so they omit it and get the no-op /
-   * refusal behaviour described above.
+   * refusal behavior described above.
    */
   setMode?: (mode: WorkspaceMode) => void;
   setUrl?: (url: string) => void;

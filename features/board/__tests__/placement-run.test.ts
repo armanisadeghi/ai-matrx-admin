@@ -1,7 +1,7 @@
 // Sequential adds fill the view in reading order (Miro, FigJam) — the Add
 // menu used 15 times in a row once built a diagonal staircase 7,000 units
 // tall: the camera flew to each new tile, so the next add searched from the
-// centre of the last one, and the nearest free spot was always up and right.
+// center of the last one, and the nearest free spot was always up and right.
 // Real BoardStore; `placeTiles` is the exact function UserBoard's `place()`
 // calls; after each add the camera goes where that add sent it.
 
@@ -68,7 +68,7 @@ describe("placing a run of adds", () => {
     }
   });
 
-  it("the first add of a run lands centred where the person is looking", () => {
+  it("the first add of a run lands centered where the person is looking", () => {
     const start = { x: 0, y: 0, z: 0.6 };
     const { rects } = addFifteen(start);
     const view = clearView({ camera: start, size: SIZE, insets: INSETS });

@@ -131,7 +131,7 @@ export default async function ActionRequestPage({
 
   // READY, BUT NOT FROM THIS SEAT. The ask is named, the server's own reason is
   // printed, and there is ONE action. The form is ABSENT — never drawn and
-  // greyed, which is a screen telling somebody they may do a thing and then
+  // grayed, which is a screen telling somebody they may do a thing and then
   // refusing them.
   if (!request.can_complete) {
     return (
@@ -152,7 +152,7 @@ export default async function ActionRequestPage({
   );
 }
 
-/** The shape every closed answer takes: one centred sentence, nothing else. */
+/** The shape every closed answer takes: one centered sentence, nothing else. */
 function OneSentence({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 pb-safe pt-8 text-center matrx-touch-targets">

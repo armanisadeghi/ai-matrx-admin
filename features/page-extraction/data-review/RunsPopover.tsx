@@ -109,7 +109,7 @@ export function RunsPopover({
       setBusy(runId);
       try {
         await cancelRun(runId);
-        toast.success("Run cancelled");
+        toast.success("Run canceled");
         await load();
         onChanged();
       } catch (e) {

@@ -19,7 +19,7 @@
  * Audition door.
  *
  * So: the PRESENTED payload wins, the stored output is the fallback, and the
- * three recognised result keys stay exactly what they were. Pure module — no
+ * three recognized result keys stay exactly what they were. Pure module — no
  * React, no Redux; the emissions it reads are the ones the run adapter already
  * folds from live SSE and from durable replay alike.
  */

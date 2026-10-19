@@ -1,7 +1,7 @@
 # features/source-library — the Media Source Catalog (the SCREEN)
 
 Paste a YouTube channel, `@handle`, playlist or any video link into one box and
-the whole catalogue lists in seconds, split into long videos, Shorts and live,
+the whole catalog lists in seconds, split into long videos, Shorts and live,
 with metrics, transcripts, and the server's Actions on any selection.
 
 Arman, 2026-09-17: *"provide a youtube channel and have the system get a list of
@@ -30,7 +30,7 @@ experience a human has and how quickly and easily we can do things."*
 reference from a finished job to what the Action produced, and where
 `lane_counts` lives).
 
-## Why the catalogue reads through the server and not Supabase
+## Why the catalog reads through the server and not Supabase
 
 House rule is that rows go direct to Supabase. Here the row set behind a Library
 is a join of `research.youtube_video` through `platform.associations`, ordered
@@ -44,7 +44,7 @@ Transcript text is a genuine direct Supabase read (`transcriptService.ts`).
 
 ## The four things this screen promises
 
-1. **The catalogue streams in.** `useLibrarySync` starts the one enumeration
+1. **The catalog streams in.** `useLibrarySync` starts the one enumeration
    door (§4) and writes pages into the slice as they land. There is **no
    schedule and no schedule UI** — "Bring up to date" is a button a person
    presses, and the contract says the platform will never sync on a timer
@@ -213,7 +213,7 @@ nothing moves; the claim is gone. The day the server publishes a word count,
   class aidream already closed on `GET /media/libraries/{id}/videos`. Nothing in
   this repo can close it: `urlState: true` here and a filtered link from the
   Acquisition Console both wait on the server half, because a `?q=` the
-  destination cannot honour is a worse lie than no parameter. Exact server
+  destination cannot honor is a worse lie than no parameter. Exact server
   change in `FOUND_DEFECTS.md` D343; the two comments that asserted the
   parameters worked are corrected in place.
 
@@ -236,19 +236,19 @@ nothing moves; the claim is gone. The day the server publishes a word count,
   the live shelf carries more — the server owns that vocabulary. §5's new
   `filtered` / `filtered_total` / `library_total` are read in `contract.ts` with
   ABSENT meaning unfiltered, never zero. The catalog's `fetchFacets` now asks
-  UNNARROWED on purpose: with the server honouring filters, counting each
+  UNNARROWED on purpose: with the server honoring filters, counting each
   dimension inside its own selection would drop every unpicked chip to zero and
   delete the section, leaving a person narrowed with no control to widen by.
   Guard proven failing-then-passing:
   `__tests__/the-libraries-link-is-a-query-the-list-runs.test.ts` — 11 cases
   walking console row → href → URL → reader → wire; 8 go red against the
-  pre-fix behaviour.
+  pre-fix behavior.
 - `2026-09-20` — **Four defects from the twelfth cold walk (D6, D6b, D10, D11),
   fixed and guarded.** D6: the Sources table used to render its empty state
   from the very first (pre-sync) row read and never re-asked when
   `library.sync.completed` landed rows — `serviceKey` (`catalog/listConfig.tsx`)
   now folds in `LibraryPage`'s `listGeneration`, the real fix, plus a
-  belt-and-suspenders `emptyState` override so "Nothing catalogued yet" can
+  belt-and-suspenders `emptyState` override so "Nothing cataloged yet" can
   never render while the sync banner (`sync.listed`) is reporting rows for this
   Library. D6b: podcast episodes were called "videos" throughout ("Transcribe 3
   videos", "Free, from YouTube's own captions" on a podcast job) — every
@@ -367,7 +367,7 @@ nothing moves; the claim is gone. The day the server publishes a word count,
   (`blog_feed`, `slide_deck` and the five connected-account adapters were missing).
   Separately, the metrics/library reads no longer fire before the active
   organization resolves, the transport's `organization_context_required` is
-  recognised as a not-yet instead of being recorded as "Select an organization
+  recognized as a not-yet instead of being recorded as "Select an organization
   before sending this request", both entity-list services say "Still opening your
   workspace" and stay retryable, and every metrics read takes a ticket so a stale
   answer cannot overwrite the one on screen. Guards:

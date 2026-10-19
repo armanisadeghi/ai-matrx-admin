@@ -76,7 +76,7 @@ export type KindCatalogEntry = {
    * The DB row's `is_contract_artifact`: a machine-minted snapshot of ONE
    * agent's / tool's I/O contract (665 of 838 active kinds), never a reusable
    * shape. False for compiled-only entries. Surfaces that offer a human a
-   * CHOICE of kind must filter these out — addressable data, not catalogue
+   * CHOICE of kind must filter these out — addressable data, not catalog
    * items.
    */
   isContractArtifact: boolean;

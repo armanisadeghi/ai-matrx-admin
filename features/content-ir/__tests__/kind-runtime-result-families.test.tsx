@@ -136,7 +136,7 @@ const FIXTURES: Fixture[] = [
     componentKey: "value_result",
     Component: ValueResultBlock,
     // An absent value is a RESULT. The floor renders `found: false` as one
-    // grey row; here it is the headline.
+    // gray row; here it is the headline.
     data: { found: false, value: null },
     visible: ["not found"],
   },

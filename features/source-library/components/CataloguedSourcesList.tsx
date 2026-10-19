@@ -5,7 +5,7 @@
  *
  * The capture ladder no longer writes `media.library_item` rows: a captured
  * page lands through the door as a Source and is filed in its Library by a
- * `processed_document → media_source_library` edge labelled
+ * `processed_document → media_source_library` edge labeled
  * `catalogued_source`. So this list reads THOSE edges and the Sources they
  * point at — direct from Supabase under RLS (the client rule), never through
  * the catalog server's item read, which cannot see them.

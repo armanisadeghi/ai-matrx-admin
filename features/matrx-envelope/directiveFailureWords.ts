@@ -3,10 +3,10 @@
  * `@ai-matrx/content-ir/react` (0.17.0).
  *
  * The package already shows verb-aware defaults with the raw text behind
- * "Details". This names the failures the app recognises, so the sentence says
+ * "Details". This names the failures the app recognizes, so the sentence says
  * what actually went wrong and what a person can do about it. Matched on the
  * server's own words (aidream `directive_apply/executor.py`); anything not
- * recognised returns null and the package default answers.
+ * recognized returns null and the package default answers.
  *
  *   - "unknown / non-writable noun 'task'. Writable: [...]" (executor) and the
  *     confirm door's no-detail line "Nothing was applied — this block isn't a

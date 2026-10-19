@@ -389,7 +389,7 @@ async function uploadCandidate(
   // organization they picked for the conversation a minute later. The
   // fix belongs at the one upload choke point, not in each door. A host that KNOWS the
   // workspace (the data grid's attachment cell: the table's organization) declares it,
-  // and the choke point honours a declared organization.
+  // and the choke point honors a declared organization.
   const normalized = await upload(
     { kind: "file", file },
     {

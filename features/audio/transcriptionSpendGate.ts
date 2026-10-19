@@ -13,7 +13,7 @@
  * (`features/audio/limits.ts`, feature `media.transcription`). There is no
  * server-side transcription cost endpoint — `/audio/transcribe*` quotes
  * nothing — so the figure is computed from duration × the knob rate and is
- * labelled an ESTIMATE everywhere it appears, never a charge.
+ * labeled an ESTIMATE everywhere it appears, never a charge.
  */
 
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";

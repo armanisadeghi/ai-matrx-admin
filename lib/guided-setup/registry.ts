@@ -7,7 +7,7 @@
  * mounts one with a key rather than by importing a bespoke component.
  *
  * Definitions are registered by their owning feature at import time — the same
- * shape the settings catalogue and the kind registry use. Keep the key
+ * shape the settings catalog and the kind registry use. Keep the key
  * namespaced by feature (`marketing.site_setup`, `outreach.sending_identity`).
  *
  * Contexts are per-checklist and deliberately not unified: a site checklist

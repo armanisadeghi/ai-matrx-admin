@@ -119,7 +119,7 @@ function toExtraItem(item: MatrxTableMenuItem): ContextMenuExtraItem {
     ...(item.shortcut ? { hint: item.shortcut } : {}),
     ...(item.destructive ? { destructive: true } : {}),
     // A disabled row keeps its place and says why; it can never fire, even
-    // if a layout forgets to honour `disabled` (the availability rule).
+    // if a layout forgets to honor `disabled` (the availability rule).
     ...(disabled ? { disabled: true, description: item.disabledReason } : {}),
     onSelect: disabled ? NOTHING : (item.onSelect ?? NOTHING),
   };

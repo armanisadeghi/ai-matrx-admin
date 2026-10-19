@@ -96,13 +96,13 @@ function getOrCreateClientStore(
   // default-org preference owns durable cross-device restore.
   let lastMode: ThemeMode | undefined = store.getState().theme?.mode;
   // Seed from the cookie the server already holds, so a "system" person whose
-  // device colour has not changed costs no POST on every page load.
+  // device color has not changed costs no POST on every page load.
   let lastCookieMode: ResolvedThemeMode | undefined = readThemeCookie();
   const mirrorResolvedTheme = (mode: ThemeMode, opts?: { onlyIfCookieHeld?: boolean }) => {
     const resolved = resolveThemeMode(mode);
     if (resolved === lastCookieMode) return;
     // The boot reconcile is not a theme CHANGE. With no cookie yet, the page was painted from the
-    // device colour by SyncBootScript and nobody changed anything: posting would only plant a cookie
+    // device color by SyncBootScript and nobody changed anything: posting would only plant a cookie
     // on every first visit (an /api/set-theme call after settle on an empty page). The cookie is
     // written when the person, or the device, actually changes the theme.
     if (opts?.onlyIfCookieHeld && lastCookieMode === undefined) return;
@@ -133,11 +133,11 @@ function getOrCreateClientStore(
     systemMedia.addEventListener("change", () => applySystemTheme());
     // 🚨 NOT called at creation: until the sync boot restores the saved
     // choice, theme.mode is the initial "system", so repainting now would paint
-    // + post the DEVICE colour over a saved explicit choice, then flip back
+    // + post the DEVICE color over a saved explicit choice, then flip back
     // (light -> dark -> light, two /api/set-theme). The server cookie /
     // SyncBootScript paint stands until the person's choice is known; the boot
     // then signals it and this reconciles once (a no-op post when the cookie
-    // already holds the device colour).
+    // already holds the device color).
     whenThemeChoiceKnown(() => applySystemTheme({ onlyIfCookieHeld: true }));
     // Guard: providers/__tests__/theme-boot-never-flips.test.tsx
   }

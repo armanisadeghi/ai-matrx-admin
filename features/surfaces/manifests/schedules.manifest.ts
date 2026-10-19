@@ -514,12 +514,12 @@ const writeTargets: SurfaceWriteTarget[] = [
 
   // ── Entity targets — the DETAIL route (`ScheduleDetail`) only ──────────
   // No draft state exists here, so these persist immediately. Scoped hard to
-  // the two fields that cannot change execution behaviour.
+  // the two fields that cannot change execution behavior.
   {
     name: "schedule_title",
     label: "Schedule title",
     description:
-      "Renames the open schedule and saves it immediately through the canonical update path. Plain string, 1-200 characters. Changes only how the schedule is labelled — not what it runs, and not when it fires.",
+      "Renames the open schedule and saves it immediately through the canonical update path. Plain string, 1-200 characters. Changes only how the schedule is labeled — not what it runs, and not when it fires.",
     valueType: "string",
     updatesValue: "schedule_title",
     mode: "entity",

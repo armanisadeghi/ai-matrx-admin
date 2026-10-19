@@ -14,7 +14,7 @@
  * {@link REOPEN_NOTICE} before the click, and the server's own `notice` verbatim after it.
  *
  * 🚨 A CONTROL THAT IS NOT OFFERED SAYS WHY. `unavailableBecause` is never null on an unoffered
- * action — a greyed button with no explanation is the same defect as a bare 403 (SPEC-ACCESS §4.2).
+ * action — a grayed button with no explanation is the same defect as a bare 403 (SPEC-ACCESS §4.2).
  *
  * `window.confirm` / `alert` / `prompt` are banned repo-wide: this uses `confirm()` from the
  * ConfirmDialogHost and `<TextInputDialog>` for the reason.

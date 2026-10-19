@@ -4,7 +4,7 @@
  * useFailedPrinterGate — "am I about to print on a printer this organization
  * already proved cannot print these labels?"
  *
- * The behaviour is NOT a hard-coded refusal. It is the org-configurable knob
+ * The behavior is NOT a hard-coded refusal. It is the org-configurable knob
  * `commerce.printer_certification / failed_printer_behavior`
  * (enum `warn` | `block`, platform default `warn`, overridable by the
  * organization) read through the canonical client path
@@ -51,7 +51,7 @@ export interface FailedPrinterGate {
   selected: CertifiedPrinter | null;
   /** True once the printer list AND the knob have both answered. */
   ready: boolean;
-  /** Effective behaviour — always `warn` when the knob could not be read. */
+  /** Effective behavior — always `warn` when the knob could not be read. */
   behavior: FailedPrinterBehavior;
   /** Non-null when the knob could not be read: what happened + the remedy. */
   knobProblem: string | null;

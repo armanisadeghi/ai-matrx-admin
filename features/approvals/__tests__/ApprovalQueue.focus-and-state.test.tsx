@@ -174,7 +174,7 @@ describe("ApprovalQueue: row state, deep links and scrolling", () => {
     mockReadProposalStatus.mockClear();
     scrolled = [];
     Element.prototype.scrollIntoView = function scrollIntoView(this: Element) {
-      scrolled.push(this.id);
+      scrolled.push(this.getAttribute("data-row-id") ?? this.id);
     };
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -227,7 +227,7 @@ describe("ApprovalQueue: row state, deep links and scrolling", () => {
     await flush();
 
     expect(container.textContent).toContain("row b");
-    expect(scrolled).toContain("approval-row-static-b");
+    expect(scrolled.some((id) => id.endsWith(":b"))).toBe(true);
   });
 
   it("never says a missing row was decided when a direct read says it is pending", async () => {

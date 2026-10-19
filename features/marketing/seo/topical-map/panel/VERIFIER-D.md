@@ -20,7 +20,7 @@ Only THEN open the code under `features/marketing/seo/topical-map/panel/**`.
 ## What to prove (each with evidence: a command and its output, a file:line, or a screenshot)
 
 A. **The generic associations section renders a kind the panel never special-cases, grouped and
-   labelled, with no code change.** Do not use the builder's fixture. Compose your OWN row from the
+   labeled, with no code change.** Do not use the builder's fixture. Compose your OWN row from the
    live function body (`aidream/packages/matrx-seo/matrx_seo/migrations/20260916100000_seo_topical_map_19_page_intents.sql`
    lines 392–447, `seo.map_topic_associations`) for a kind of your choice that is a real
    `platform.entity_types` token (e.g. `rulebook`, `crm_deal`), feed it through the panel in a jest
@@ -49,7 +49,7 @@ F. **The topic agent.** Prove: key comes from ONE constant; both doors use `useO
 G. **Doors (R17).** For every record the panel names (page, planned page, keyword, generic item,
    CMS record, site, parent crumb) say which door it has: Open / new tab / peek / window — and
    which it lacks. A bare id or a dead label is a finding.
-H. **Knobs.** Every taste the panel shows comes from `useTopicalMapKnobs`; list any literal colour,
+H. **Knobs.** Every taste the panel shows comes from `useTopicalMapKnobs`; list any literal color,
    threshold, mode or window. `performance_window_days` must be the function's own value printed,
    not the knob re-read on the client.
 I. **"Make a page here".** The builder ruled that the topical_map tool has no agent-less door and

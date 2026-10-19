@@ -272,7 +272,7 @@ function BindingSwatch({ value }: { value: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Interior colour — a printed page, showing what the ink does.
+// Interior color — a printed page, showing what the ink does.
 // ---------------------------------------------------------------------------
 
 function InteriorSwatch({ value }: { value: string }) {

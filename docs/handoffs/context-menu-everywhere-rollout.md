@@ -66,7 +66,7 @@ vision: [features/context-menu-v3/FEATURE.md, features/context-menu-v3/SECTIONS.
 ## Decisions needed
 
 **1. The Vault's right-click menu.**
-*Situation:* The credential Vault deliberately reports empty selection and empty content so a menu can never copy or send a revealed secret; a test pins that behaviour. It is now the only window in the app with no right-click menu at all, so it shows up on every backlog scan as unfinished work.
+*Situation:* The credential Vault deliberately reports empty selection and empty content so a menu can never copy or send a revealed secret; a test pins that behavior. It is now the only window in the app with no right-click menu at all, so it shows up on every backlog scan as unfinished work.
 *Decide:* (a) leave it permanently menu-less and record the reason in the file, or (b) give it a deliberately narrow menu — and if so, which actions are safe on a screen showing credentials.
 
 **2. Do short form fields get menus?**

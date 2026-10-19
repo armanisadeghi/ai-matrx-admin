@@ -2,7 +2,7 @@
 /**
  * check-univer-doc-theme.mjs — a Univer DOCUMENT surface may not be left
  * wearing Univer's hardcoded light page, and may not hand the renderer a
- * colour the renderer cannot paint.
+ * color the renderer cannot paint.
  *
  * ─── THE CLASS, TWICE ───────────────────────────────────────────────────────
  * WALK 18 (production, dark, 2026-09-21): a Rulebook's "Add more → New
@@ -22,7 +22,7 @@
  *    does not get "the default" — it gets whatever Univer happens to hold.
  * 2. Every `ctx.fillStyle = <string>` on Univer's rendering context goes
  *    through `ICanvasColorService.getRenderColor()`, which in dark mode
- *    INVERTS the colour. State "the page is white paper" and the canvas paints
+ *    INVERTS the color. State "the page is white paper" and the canvas paints
  *    black — walk 18, exactly.
  * 3. That same method calls `new ColorKit(color)` on anything that is not hex
  *    / rgb / rgba, and ColorKit's `hslToColor` THROWS on the space-separated
@@ -36,15 +36,15 @@
  *    hook that states all four fills and the canvas background from this app's
  *    theme tokens.
  * B. …and `renderDocumentCanvasColorsVerbatim`, which takes the inverting
- *    colour service off that instance's canvas. Without it the host's paper is
+ *    color service off that instance's canvas. Without it the host's paper is
  *    inverted to black and the ink with it.
- * C. Every colour the theme module produces, in BOTH themes, survives Univer's
+ * C. Every color the theme module produces, in BOTH themes, survives Univer's
  *    OWN `ColorKit` (imported here from `@univerjs/core` — the real vendor
  *    code that threw, not a description of it) and satisfies the page/frame
  *    luminance invariant.
  * D. Every theme TOKEN Univer's shipped docs renderer paints (`"gray.0"` page,
  *    `"gray.100"` desk, `"gray.900"` ink — Univer 1.0 writes its own fills as
- *    tokens) reaches the canvas as a colour Univer's ColorKit accepts, through
+ *    tokens) reaches the canvas as a color Univer's ColorKit accepts, through
  *    the resolver the editor installs. THE BLACK PAGE, 2026-10-03: the editor's
  *    `DumbCanvasColorService` handed the canvas `"gray.0"`, the canvas ignored
  *    it and kept its default black, and every document page was 0,0,0,255.
@@ -52,10 +52,10 @@
  *    its optional, structural `manager?.x?.(…)` calls exists in the shipped
  *    `@univerjs/engine-render`. Univer 1.0 renamed `getRenderById` to
  *    `getRenderUnitById`; the optional call quietly returned nothing and the
- *    host's colours never reached a single document (same day).
+ *    host's colors never reached a single document (same day).
  *
  * Usage:
- *   pnpm check:univer-doc-theme             # sweep + the colour engine check
+ *   pnpm check:univer-doc-theme             # sweep + the color engine check
  *   pnpm check:univer-doc-theme --self-test # plant each defect, prove it fails
  *
  * Exit: 0 clean · 1 finding(s) · 3 self-test failed
@@ -73,7 +73,7 @@ const SELF_TEST = process.argv.slice(2).includes("--self-test");
 
 /** The hook that states the four fills and the canvas background. */
 const REQUIRED_HOOK = "useUniverDocSurfaceTheme";
-/** The call that takes the dark-mode colour inversion off the canvas. */
+/** The call that takes the dark-mode color inversion off the canvas. */
 const REQUIRED_VERBATIM = "renderDocumentCanvasColorsVerbatim";
 /** The hook that is NOT enough on its own — chrome only. */
 const CHROME_ONLY_HOOK = "useUniverDarkModeSync";
@@ -108,23 +108,23 @@ export function findUniverDocThemeGaps(source) {
   if (!calls(REQUIRED_VERBATIM)) {
     findings.push({
       kind: "univer-document-without-verbatim-canvas-colors",
-      detail: `boots a Univer document and never calls ${REQUIRED_VERBATIM}, so Univer's dark-mode CanvasColorService still sits between the stated colours and the canvas — it inverts the paper to black and throws the whole draw away on any colour its ColorKit cannot parse`,
+      detail: `boots a Univer document and never calls ${REQUIRED_VERBATIM}, so Univer's dark-mode CanvasColorService still sits between the stated colors and the canvas — it inverts the paper to black and throws the whole draw away on any color its ColorKit cannot parse`,
     });
   }
   return findings;
 }
 
-// ─── C. the colour check, driven through Univer's OWN ColorKit ──────────────
+// ─── C. the color check, driven through Univer's OWN ColorKit ──────────────
 
 /**
- * Judge every colour the app would hand the renderer, in both themes, using
+ * Judge every color the app would hand the renderer, in both themes, using
  * the vendor code that actually failed.
  *
  * `CanvasColorService` itself cannot be imported outside a browser (its
  * package pulls `opentype.js`), so this reproduces its dark-mode branch from
  * the two `@univerjs/core` primitives it is built out of — `ColorKit`, whose
  * constructor threw, and `invertColorByMatrix`, which turned the paper black.
- * Nothing here is a description of Univer's behaviour; it is Univer's code.
+ * Nothing here is a description of Univer's behavior; it is Univer's code.
  *
  * @returns {Promise<string[]>} every violation, empty when clean
  */
@@ -226,7 +226,7 @@ export async function findTokenResolutionViolations(resolveColor) {
   return violations;
 }
 
-/** Rule D's static half: the colour service installed may not be the pass-through one. */
+/** Rule D's static half: the color service installed may not be the pass-through one. */
 export function findDumbColorService(source) {
   return /useClass\s*:\s*DumbCanvasColorService/.test(source)
     ? ["installs DumbCanvasColorService, which hands Univer 1.0's theme tokens (\"gray.0\") to the canvas unresolved — the page paints black"]
@@ -246,7 +246,7 @@ export function findMissingRenderManagerMembers(hookSource, engineRenderBundle) 
       engineRenderBundle.includes(`"${name}"`);
     if (!defined) {
       violations.push(
-        `calls manager?.${name}?.(…) but the shipped @univerjs/engine-render RenderManagerService has no "${name}" — the optional call returns nothing and the document keeps Univer's colours`,
+        `calls manager?.${name}?.(…) but the shipped @univerjs/engine-render RenderManagerService has no "${name}" — the optional call returns nothing and the document keeps Univer's colors`,
       );
     }
   }
@@ -289,7 +289,7 @@ async function selfTest() {
       .replace("renderDocumentCanvasColorsVerbatim(univer.__getInjector());", ""),
   );
 
-  // 2. THE WALK 19 EDITOR: colours stated, inverter still on the canvas.
+  // 2. THE WALK 19 EDITOR: colors stated, inverter still on the canvas.
   const walk19 = findUniverDocThemeGaps(
     fixed.replace(
       "renderDocumentCanvasColorsVerbatim(univer.__getInjector());",
@@ -305,9 +305,9 @@ async function selfTest() {
     `// UniverDocsCorePreset is heavy, so the canvas pane lazy-loads it.`,
   );
 
-  // 4. THE COLOUR ENGINE. The exact strings shipped on 2026-09-21 — the app's
+  // 4. THE COLOR ENGINE. The exact strings shipped on 2026-09-21 — the app's
   //    tokens passed through as space-separated hsl — must be caught, and the
-  //    colours this repo produces today must be clean.
+  //    colors this repo produces today must be clean.
   const { univerDocSurfaceColors } = await import(
     "../features/documents/univer-doc-surface-theme.ts"
   );
@@ -394,7 +394,7 @@ async function selfTest() {
   }
   for (const name of Object.keys(checks)) console.log(`  ✓ ${name}`);
   console.log(
-    "check-univer-doc-theme self-test: both cold walks' editors are caught by the sweep, and both cold walks' COLOURS are caught by Univer's own ColorKit and the luminance invariant.",
+    "check-univer-doc-theme self-test: both cold walks' editors are caught by the sweep, and both cold walks' COLORS are caught by Univer's own ColorKit and the luminance invariant.",
   );
   process.exit(0);
 }
@@ -452,11 +452,11 @@ for (const violation of findMissingRenderManagerMembers(
 
 if (total === 0) {
   console.log(
-    `check-univer-doc-theme: ${documentSurfaces} Univer document surface(s), every one of them stating its page and frame colours through ${REQUIRED_HOOK} and rendering them verbatim through ${REQUIRED_VERBATIM}; both themes' colours survive Univer's own ColorKit; every theme token Univer's docs renderer paints resolves to a colour.`,
+    `check-univer-doc-theme: ${documentSurfaces} Univer document surface(s), every one of them stating its page and frame colors through ${REQUIRED_HOOK} and rendering them verbatim through ${REQUIRED_VERBATIM}; both themes' colors survive Univer's own ColorKit; every theme token Univer's docs renderer paints resolves to a color.`,
   );
   process.exit(0);
 }
 console.error(
-  `\ncheck-univer-doc-theme: ${total} finding(s). A document surface must consume ${REQUIRED_HOOK} AND ${REQUIRED_VERBATIM} (features/data-tables/), and every colour it states must be one Univer's ColorKit can parse — hex, or rgb/rgba/hsl/hsla with COMMAS. ${CHROME_ONLY_HOOK} only reaches Univer's chrome.`,
+  `\ncheck-univer-doc-theme: ${total} finding(s). A document surface must consume ${REQUIRED_HOOK} AND ${REQUIRED_VERBATIM} (features/data-tables/), and every color it states must be one Univer's ColorKit can parse — hex, or rgb/rgba/hsl/hsla with COMMAS. ${CHROME_ONLY_HOOK} only reaches Univer's chrome.`,
 );
 process.exit(1);

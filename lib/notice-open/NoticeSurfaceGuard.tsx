@@ -5,7 +5,7 @@
  *
  * One capture-phase click listener on the document. A plain click on an
  * `<a href>` that would open in THIS tab, inside a notification surface
- * (`data-matrx-notice-surface` or the toast stack), is cancelled and opened in
+ * (`data-matrx-notice-surface` or the toast stack), is canceled and opened in
  * a new tab instead — whatever rendered the link (`Link`, `AppLink`, markdown,
  * an entity chip). `preventDefault` only: the link's own onClick still runs
  * (dismiss, mark-read), and Next's `<Link>` skips navigation when the event

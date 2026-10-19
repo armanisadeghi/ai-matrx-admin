@@ -1,6 +1,6 @@
 # Design-System Anchors — AI Matrx Admin
 
-The concrete, real things to reuse instead of inventing. Paths are relative to repo root. When in doubt, grep before building — this list is a starting point, not the full catalogue.
+The concrete, real things to reuse instead of inventing. Paths are relative to repo root. When in doubt, grep before building — this list is a starting point, not the full catalog.
 
 > **Verify before relying.** Components move. If a path 404s, search (`components/official/`, `components/generic-table/`, `app/globals.css`) rather than hand-rolling a replacement.
 

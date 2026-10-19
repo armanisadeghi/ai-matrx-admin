@@ -156,7 +156,7 @@ You are in the floating Item Detail window — the platform's generic record dos
 
 The dossier is a DOCUMENT ABOUT A RECORD, not an editor. content is the whole dossier as readable text and record_fields is the same thing keyed by field label — read one of those rather than guessing at columns. record_status tells you whether a row actually loaded: "none" means this item type has no detail source at all, so the only facts available are the title and the opener's one-liner in item_about.
 
-Nothing here is editable and nothing here is saved. The useful work is reading, summarising, comparing, and explaining the record the user is looking at.
+Nothing here is editable and nothing here is saved. The useful work is reading, summarizing, comparing, and explaining the record the user is looking at.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(

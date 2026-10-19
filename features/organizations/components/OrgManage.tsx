@@ -675,7 +675,7 @@ export function OrgManage({
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <p className="text-sm text-muted-foreground flex-1">
                 Six risk tiers with one-click presets, plus per-row overrides
-                across the full change-type catalogue. Members can request
+                across the full change-type catalog. Members can request
                 changes; owners and admins decide.
               </p>
               <Button asChild variant="outline">

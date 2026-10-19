@@ -111,7 +111,7 @@ export function ContactRecord({ contact }: { contact: SampleContact }) {
             .join("")}
         </span>
         <div className="min-w-0">
-          <h2 className="type-title truncate">{contact.name}</h2>
+          <p className="type-title truncate">{contact.name}</p>
           <p className="type-secondary truncate text-muted-foreground">
             {contact.role} · {contact.company}
           </p>
@@ -189,7 +189,7 @@ export function DocList({ phone, onOpen }: { phone: boolean; onOpen: () => void 
 export function DocPage() {
   return (
     <article className="flex flex-col gap-4">
-      <h2 className="type-title">Onboarding checklist for new clinics</h2>
+      <p className="type-title">Onboarding checklist for new clinics</p>
       <p className="type-body">
         Every new clinic goes through the same first two weeks. This page is the order we do it in
         and who owns each step.
@@ -232,7 +232,7 @@ export function ChatThread() {
       {THREAD.map((m, i) =>
         m.who === "you" ? (
           <div key={i} className="flex justify-end">
-            <p className="type-body max-w-[80%] rounded-2xl bg-muted px-3.5 py-2">{m.text}</p>
+            <p className="type-body max-w-4/5 rounded-2xl bg-muted px-3.5 py-2">{m.text}</p>
           </div>
         ) : (
           <div key={i} className="flex gap-3">

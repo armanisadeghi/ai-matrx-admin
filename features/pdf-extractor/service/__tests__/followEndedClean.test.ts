@@ -45,7 +45,7 @@ describe("resolveEndedClean — a stream that ended early resolves to the run's 
     expect(r).toEqual({ kind: "failed", message: "AI cleanup failed" });
   });
 
-  it("cancelled / no run: unresolved with the true status, no reload", async () => {
+  it("canceled / no run: unresolved with the true status, no reload", async () => {
     const reload = jest.fn();
     const r = await resolveEndedClean({
       transport, docId: DOC, requestId: "r", reload, follow: follower("cancelled"),

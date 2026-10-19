@@ -57,7 +57,7 @@ export function createCatalogListConfig(options: {
     /**
      * D6's belt-and-suspenders half: while the sync banner (`sync.listed`,
      * `LibraryMetricsHeader`) is reporting rows for THIS library, the honest
-     * empty state can never be "Nothing catalogued yet" — that sentence is a
+     * empty state can never be "Nothing cataloged yet" — that sentence is a
      * flat lie one banner-height above a stat block saying otherwise. Passed
      * by `LibraryPage` from the live sync state; omitted (or `false`) uses the
      * ordinary empty state.
@@ -238,7 +238,7 @@ export function createCatalogListConfig(options: {
         prefsDefaults: { sort: "published_at", direction: "desc" },
         // D6: never the "nothing here" sentence while the sync banner is
         // reporting rows for this exact Library — that combination is not an
-        // edge case here, it is what a person sees on every fresh catalogue
+        // edge case here, it is what a person sees on every fresh catalog
         // for the beat between the banner landing and this list's own re-read
         // catching up. `refreshToken` above is the real fix (the list now
         // actually re-asks); this is the guard for the read still in flight.
@@ -246,10 +246,10 @@ export function createCatalogListConfig(options: {
             ? {
                   title: `Bringing your ${vocabulary.item.many.toLowerCase()} into view`,
                   description:
-                      "The catalogue just finished listing this Library's rows. Finishing the read for this table now — they will appear in a moment.",
+                      "The catalog just finished listing this Library's rows. Finishing the read for this table now — they will appear in a moment.",
               }
             : {
-                  title: "Nothing catalogued yet",
+                  title: "Nothing cataloged yet",
                   description: `Bring this Library up to date and every ${vocabulary.item.one} on the channel lists here in seconds.`,
               },
     };

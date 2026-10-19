@@ -1,7 +1,7 @@
 /**
  * A menu row that opens a dialog must not pull the caret back to the document while the dialog is
  * open (Escape / its X must close it); once it closes, the caret returns to the document.
- * Forcing test: plant the old behaviour (restore regardless of dialogs) and the first expectation fails.
+ * Forcing test: plant the old behavior (restore regardless of dialogs) and the first expectation fails.
  */
 import { rememberEditorFocus, restoreEditorFocus } from "../EditorMenuBar";
 

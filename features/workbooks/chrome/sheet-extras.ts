@@ -113,7 +113,7 @@ export interface SheetTheme {
   band: string | null;
 }
 
-/** Google Sheets' theme gallery, as fonts + colours applied to every sheet's data. */
+/** Google Sheets' theme gallery, as fonts + colors applied to every sheet's data. */
 export const SHEET_THEMES: SheetTheme[] = [
   { id: "simple", label: "Simple", font: "Arial", headerFill: "#ffffff", headerText: "#000000", bodyText: "#000000", band: null },
   { id: "classic", label: "Classic", font: "Times New Roman", headerFill: "#d9d9d9", headerText: "#000000", bodyText: "#000000", band: null },

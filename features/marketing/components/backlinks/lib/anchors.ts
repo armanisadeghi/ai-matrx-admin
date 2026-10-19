@@ -215,7 +215,7 @@ export function analyzeAnchorProfile(
     } else if (topical && topical.share >= TOPICAL_SHARE_WARN) {
       warnings.push({
         severity: "warning",
-        message: `${Math.round(topical.share * 100)}% of your links use keyword wording — higher than most sites get naturally. Favour your own name in the links you build next.`,
+        message: `${Math.round(topical.share * 100)}% of your links use keyword wording — higher than most sites get naturally. Favor your own name in the links you build next.`,
       });
     }
     for (const item of concentrated.slice(0, 3)) {

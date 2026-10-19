@@ -11,7 +11,7 @@
 // transport is `features/google-workspace/service.ts::sendReviewedGmail`.
 //
 // These shapes are what a SURFACE holds: what a compose window was opened with,
-// who drafted it, and the constants a READER recognises a sent row by. The audit
+// who drafted it, and the constants a READER recognizes a sent row by. The audit
 // trail is on the row's own six columns AND mirrored in `metadata.audit_trail`
 // (the server writes both from the same values, in the same statement), read
 // through `./sent-record-facts.ts` — the ONE accessor.
@@ -33,7 +33,7 @@ export const GMAIL_INTERACTION_PROVIDER = "gmail" as const;
 /**
  * Everything about a Gmail send that is not a column rides `metadata`, marked
  * with this `__kind` (THE KIND-MARKER LAW — the marker travels with the data).
- * It lives here, not beside the writer, so a pure READER can recognise the row
+ * It lives here, not beside the writer, so a pure READER can recognize the row
  * without importing the Supabase client.
  */
 export const GMAIL_SEND_METADATA_KIND = "crm_gmail_send_record";
@@ -124,7 +124,7 @@ export function narrowGmailDraftedBy(value: unknown): GmailDraftedBy | null {
     label: text("label"),
     assistId: text("assistId"),
   };
-  // Nothing recognisable means nothing to record.
+  // Nothing recognizable means nothing to record.
   return drafted.agentId || drafted.runId || drafted.label || drafted.assistId
     ? drafted
     : null;

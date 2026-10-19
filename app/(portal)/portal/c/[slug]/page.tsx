@@ -97,7 +97,7 @@ export default async function ClientPortalPage({
   }
 
   // S6: WHOSE PORTAL THIS IS, before she types anything — the business's own name, logo and
-  // colour, resolved by the store (the organization's brand when the portal set none).
+  // color, resolved by the store (the organization's brand when the portal set none).
   const look = portalLook(portal.style, portal.organization);
 
   const viewer = await portalViewer();

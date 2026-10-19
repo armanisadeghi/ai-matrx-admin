@@ -52,7 +52,7 @@ export interface UseActionRunner {
     /**
      * Run one declared Action on these rows through the SAME estimate-and-confirm
      * dialog the selection bar uses (the per-row Transcribe of §8.6). Resolves with
-     * the started job's message, or `null` when the person cancelled or nothing
+     * the started job's message, or `null` when the person canceled or nothing
      * started — the dialog already said why.
      */
     runOn: (action: ActionDeclaration, rows: VideoRow[]) => Promise<string | null>;

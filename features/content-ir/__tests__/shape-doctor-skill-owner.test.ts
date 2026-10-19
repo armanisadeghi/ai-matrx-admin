@@ -192,7 +192,7 @@ describe("the decision evidence", () => {
     expect(owner).toBeNull();
   });
 
-  it("skillNamedForKind honours the R9 convention including hyphens", () => {
+  it("skillNamedForKind honors the R9 convention including hyphens", () => {
     expect(skillNamedForKind("kind_card_detail", "card_detail")).toBe(true);
     expect(skillNamedForKind("kind-card-detail", "card_detail")).toBe(true);
     expect(skillNamedForKind("kind_card_enrichment", "card_detail")).toBe(false);

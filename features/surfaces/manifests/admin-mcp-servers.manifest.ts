@@ -269,7 +269,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *    endpoint. An agent may fill the form; the admin presses Provision.
  *  - `slug` — identity. It becomes the row's primary key, the executor name
  *    `mcp.<slug>` and the auto-bundle name, and agent definitions reference
- *    it. The campaign brief rules the slug out and this manifest honours that
+ *    it. The campaign brief rules the slug out and this manifest honors that
  *    (note that `cms`'s `new_site_draft` does stage a new site's slug, so
  *    this is a deliberate difference, not an oversight — an unborn slug is
  *    referenced by nothing, and adding the key later is one validated block).

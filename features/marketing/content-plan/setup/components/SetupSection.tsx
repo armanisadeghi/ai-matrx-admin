@@ -43,7 +43,7 @@ export function SetupSection({
   );
 }
 
-/** A labelled number, used for the work-order totals. Fixed footprint. */
+/** A labeled number, used for the work-order totals. Fixed footprint. */
 export function Stat({
   value,
   label,

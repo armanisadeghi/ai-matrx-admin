@@ -506,7 +506,7 @@ function linkItem(kind: "post" | "profile", link: SocialLink) {
 
 /**
  * The link box a picker and an empty tile (a template's) share. In a tile it is compact: one clear label and
- * one row (the field and its button), vertically centred in a tile sized to it; in the Add menu's picker it
+ * one row (the field and its button), vertically centered in a tile sized to it; in the Add menu's picker it
  * stacks with Cancel.
  */
 function LinkForm({ kind, onLink, onCancel }: { kind: "post" | "profile"; onLink: (link: SocialLink) => void; onCancel?: () => void }) {
@@ -1025,7 +1025,7 @@ function PostFace({ source }: { source: NodeSource }) {
   const detail = usePostDetail(idOf(source, SOCIAL_POST_KEY));
   const post = detail.data?.post;
   if (!post) {
-    // A link that has not become a stored post (still reading, or the platform would not give it up): the face shows the link, never a blank grey card.
+    // A link that has not become a stored post (still reading, or the platform would not give it up): the face shows the link, never a blank gray card.
     const meta = metaOf(source);
     if (!meta.url) {
       if (idOf(source, SOCIAL_POST_KEY)) return null; // a stored post still reading

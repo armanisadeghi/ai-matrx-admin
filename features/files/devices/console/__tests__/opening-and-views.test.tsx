@@ -26,7 +26,7 @@ describe("a tapped device row says it is opening", () => {
   });
 });
 
-describe("the console's first connection honours the view in the address", () => {
+describe("the console's first connection honors the view in the address", () => {
   const src = readFileSync(join(__dirname, "../TerminalPanel.tsx"), "utf8");
   it("the terminal opens or attaches a shell only once its view is on screen", () => {
     expect(src).toMatch(/if \(!visible \|\| !live \|\| !ready \|\| !pageVisible/);

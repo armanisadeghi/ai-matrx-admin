@@ -54,7 +54,7 @@ export function formatSecondsEstimate(seconds: number | null | undefined): strin
     return formatElapsed(seconds * 1000);
 }
 
-/** "2011 – 2026" or a single year; the span a catalogue covers, at a glance. */
+/** "2011 – 2026" or a single year; the span a catalog covers, at a glance. */
 export function formatDateRange(
     earliest: string | null,
     latest: string | null,

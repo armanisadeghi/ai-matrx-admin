@@ -103,8 +103,8 @@ const RESIDUE_TOKENS: ReadonlySet<string> = new Set(["access_request", "wbx_guid
  * security never runs for it. Measured live 2026-09-12: three non-admin identities each read
  * exactly 1 card whose agent.definition row their own policy refuses. That is not an RLS lane
  * `iam.apply_rls` can regenerate — it is either a view that should carry `security_invoker`, or a
- * catalogue projection that should not be registered as a component at all. It is a product
- * decision about the public agent catalogue, so it is NAMED here rather than changed in a security
+ * catalog projection that should not be registered as a component at all. It is a product
+ * decision about the public agent catalog, so it is NAMED here rather than changed in a security
  * fix, and it belongs with DD-164 (the definer-view class).
  */
 const COMPONENT_RESIDUE: ReadonlyMap<string, string> = new Map([

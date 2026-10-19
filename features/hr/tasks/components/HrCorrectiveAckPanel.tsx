@@ -139,7 +139,7 @@ export function HrCorrectiveAckPanel({
         >
           Sign it
         </Button>
-        {/* EQUAL WEIGHT. Same row, same size, no warning colour, no confirmation
+        {/* EQUAL WEIGHT. Same row, same size, no warning color, no confirmation
             theatre — a person is allowed to decline and the UI must not editorialise. */}
         <Button
           variant="outline"

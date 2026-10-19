@@ -42,7 +42,7 @@ describe("refresh on open", () => {
     expect(secondsSinceRefresh(null, NOW)).toBeNull();
   });
 
-  it("honours an organization that raised the floor", () => {
+  it("honors an organization that raised the floor", () => {
     expect(isStaleForOpen(iso(600), 3600, NOW)).toBe(false);
     expect(isStaleForOpen(iso(3601), 3600, NOW)).toBe(true);
   });

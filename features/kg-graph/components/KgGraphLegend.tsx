@@ -1,6 +1,6 @@
 // features/kg-graph/components/KgGraphLegend.tsx
 //
-// Compact overlay key for the active colour encoding. By kind: a swatch per kind
+// Compact overlay key for the active color encoding. By kind: a swatch per kind
 // present in the view. By community: how many groups the Markov clustering found.
 // pointer-events-none so it never blocks canvas interaction.
 
@@ -56,7 +56,7 @@ export function KgGraphLegend({
       ) : (
         <span className="text-muted-foreground">
           {communityCount > 0
-            ? `${communityCount} ${communityCount === 1 ? "community" : "communities"} detected · unclustered nodes in grey`
+            ? `${communityCount} ${communityCount === 1 ? "community" : "communities"} detected · unclustered nodes in gray`
             : "No multi-node communities detected"}
         </span>
       )}

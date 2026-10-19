@@ -124,7 +124,7 @@ export const OUTLET_KIND_LABELS: Record<string, string> = {
 
 /**
  * The recommended action is the single most decision-bearing field on an angle,
- * so it carries its own verb and its own tone. `tone` drives colour ONLY — the
+ * so it carries its own verb and its own tone. `tone` drives color ONLY — the
  * machine value drives everything else, so a wording change can never move a
  * row into a different bucket.
  *
@@ -504,7 +504,7 @@ export function readRequirements(column: Json): ParsedList<RequirementItem> {
  * Persistence needs this. Writing a hold back to `seo.story_angle` must edit
  * the STORED jsonb in place (drop the closed gap, flip the declared
  * requirement) rather than serialising the parsed view models back over the
- * column: the readers normalise key spellings and discard what they cannot
+ * column: the readers normalize key spellings and discard what they cannot
  * read, so a round-trip through them would quietly delete the analyst's own
  * fields and every malformed entry we promised to keep verbatim.
  *

@@ -6,7 +6,7 @@
  * Live progress, not a spinner: an ACTIVE loop polls its state every few
  * seconds and its event ledger on a gap-free `after_seq` cursor, so a stage
  * that moves while the user is watching moves on screen. A loop that is
- * paused, completed or cancelled stops polling entirely — a settled run costs
+ * paused, completed or canceled stops polling entirely — a settled run costs
  * nothing to look at.
  */
 

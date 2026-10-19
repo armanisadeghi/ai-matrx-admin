@@ -21,7 +21,7 @@
 // `users.integration_connections.capability_health`). An adapter folds that
 // record into `activity`, keyed by product; this file derives from it and
 // never from the ACCOUNT's `last_verified_at` / `last_error`, which stay on the
-// account line labelled as account-level.
+// account line labeled as account-level.
 //
 // Absent still means ABSENT: a product with no recorded call carries null in
 // both fields and the row says "No calls recorded yet" in its own words — never
@@ -42,7 +42,7 @@
 //
 // A REFUSAL STANDS UNTIL SOMETHING ANSWERS THE CALL IT REFUSED — and when a
 // product covers several provider capabilities, only the adapter can tell:
-// `activity.refusalStands` is its answer, and this file honours it rather than
+// `activity.refusalStands` is its answer, and this file honors it rather than
 // comparing the product's newest refusal with the product's newest success. A
 // `docs` refusal followed five minutes later by a `drive_files` success rendered
 // "Connected" with no control and "Reconnect it and approve Docs." two lines

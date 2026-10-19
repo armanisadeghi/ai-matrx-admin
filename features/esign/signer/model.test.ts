@@ -68,7 +68,7 @@ function envelope() {
 }
 
 describe("readMap", () => {
-  it("reads a v1 map as v2: every field required, labelled from its kind", () => {
+  it("reads a v1 map as v2: every field required, labeled from its kind", () => {
     const { fields } = readMap({
       fields: [
         { id: "a", signer_id: "s", kind: "signature", page: 1, x: 0.1, y: 0.1, w: 0.2, h: 0.05 },

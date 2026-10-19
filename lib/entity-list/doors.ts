@@ -45,7 +45,7 @@ function tokenForRow<TRow>(
 /**
  * The canonical route for one row, or `undefined` when this record has no door.
  *
- * `hrefFor` is honoured EXACTLY when present — a config that deliberately
+ * `hrefFor` is honored EXACTLY when present — a config that deliberately
  * returns `undefined` for a row must not fall through to the registry and send
  * the user somewhere the surface ruled out.
  *

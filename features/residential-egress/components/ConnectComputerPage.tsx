@@ -430,7 +430,7 @@ export function ConnectComputerPage() {
         </h1>
       </header>
       <p className="mt-1 text-sm text-muted-foreground">
-        Some websites block requests that come from a data centre. If you let
+        Some websites block requests that come from a data center. If you let
         AI Matrx use one of your own computers, it can open those pages the way
         you would — through your own internet connection at home or at the
         office.

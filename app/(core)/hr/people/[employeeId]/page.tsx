@@ -2,7 +2,7 @@
 // SPEC-EMPLOYEES §2.2 routes 13/14).
 //
 // 🚨 A REDIRECT, NOT A PAGE. It sends the viewer to THE FIRST TAB THEY CAN SEE,
-// which is `profile.tabs[0]` (honouring `hr.employees.profile_default_tab` only
+// which is `profile.tabs[0]` (honoring `hr.employees.profile_default_tab` only
 // when that tab is in their set). A viewer with no access to Personal must never
 // land on a blank page.
 //

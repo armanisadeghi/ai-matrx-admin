@@ -45,7 +45,7 @@ import { TryMasterworkBox } from "./TryMasterworkBox";
   .IS_REACT_ACT_ENVIRONMENT = true;
 
 // The served input controls measure themselves; jsdom has no ResizeObserver.
-// Layout machinery, not the behaviour under test.
+// Layout machinery, not the behavior under test.
 (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
   observe() {}
   unobserve() {}

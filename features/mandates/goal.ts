@@ -6,7 +6,7 @@
 // 🚨 WHY THIS FILE EXISTS (FIX-Q9, 2026-09-11). The goal had TWO readers and
 // they disagreed. The workspace read the STORED row (`agent.mandate.goal`,
 // promoted post-cutover and written by `PATCH /mandates/{key}/goal`), while the
-// admin goal pane read the CODE CATALOGUE only (`GET /mandates`). So a Mandate
+// admin goal pane read the CODE CATALOG only (`GET /mandates`). So a Mandate
 // created in the UI — stored goal present, no code declaration — printed its
 // goal on one screen and *"No goal declared for <key>."* on another, and a goal
 // edited in-session stayed stale in the catalogue's page-lifetime cache until a
@@ -38,7 +38,7 @@ export interface ResolvedMandateGoal {
 }
 
 /**
- * THE precedence, in one place: stored goal first, code catalogue as fallback.
+ * THE precedence, in one place: stored goal first, code catalog as fallback.
  * Call this instead of reaching for either reader on its own.
  */
 export function resolveMandateGoal(input: {

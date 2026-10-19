@@ -155,7 +155,7 @@ async function mountStoreProvider(): Promise<AppStore> {
   const store = holder.store;
   if (!store) throw new Error("StoreProvider did not provide a store");
   // The sync boot has restored the saved choice (none here): "system" may now
-  // reconcile against the device colour.
+  // reconcile against the device color.
   await act(async () => markThemeChoiceKnown());
   return store;
 }
@@ -169,7 +169,7 @@ function rehydrateTheme(mode: ThemeMode): RehydrateAction {
 }
 
 describe("StoreProvider theme-cookie subscription", () => {
-  it("mounts on the real initial system preference and mirrors the device colour once", async () => {
+  it("mounts on the real initial system preference and mirrors the device color once", async () => {
     const fetchMock = stubFetch();
 
     const store = await mountStoreProvider();
@@ -178,7 +178,7 @@ describe("StoreProvider theme-cookie subscription", () => {
     expect(themeCookieWrites(fetchMock)).toEqual([{ theme: "light" }]);
   });
 
-  it("does not write on mount when the cookie already holds the device colour", async () => {
+  it("does not write on mount when the cookie already holds the device color", async () => {
     document.cookie = "theme=light; path=/";
     try {
       const fetchMock = stubFetch();

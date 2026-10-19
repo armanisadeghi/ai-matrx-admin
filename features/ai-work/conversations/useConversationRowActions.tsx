@@ -2,7 +2,7 @@
 
 // features/ai-work/conversations/useConversationRowActions.tsx
 //
-// The behaviour half of /work/conversations, bridged to the entity-list shell.
+// The behavior half of /work/conversations, bridged to the entity-list shell.
 //
 // There is exactly ONE conversation action list in this repo
 // (`buildConversationMenu`), consumed identically by the chat sidebar, /code

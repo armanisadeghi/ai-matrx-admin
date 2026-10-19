@@ -204,7 +204,7 @@ describe("parallel writes to one target from one turn", () => {
           // The person rewrote that line themselves while the card was open.
           note.state.content = NOTE.replace(
             EDIT_300.old_str,
-            "- 3:00 — cancelled",
+            "- 3:00 — canceled",
           );
           return { kind: "approved" };
         },

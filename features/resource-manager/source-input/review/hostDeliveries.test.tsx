@@ -5,7 +5,7 @@
  * — false. A host declares the deliveries it can use; the review offers only
  * those and never returns a Source set to one the host cannot use.
  *
- * V2-F #5 (shot 23): the review labelled a YouTube video and pasted text
+ * V2-F #5 (shot 23): the review labeled a YouTube video and pasted text
  * "Document", and named a PDF by its document title — the host's own kind and
  * display name win when it passes them.
  */

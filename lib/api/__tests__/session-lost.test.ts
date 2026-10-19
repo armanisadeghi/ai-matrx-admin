@@ -28,7 +28,7 @@ beforeEach(() => {
   window.history.pushState({}, "", "/agents/new/studio?x=1");
 });
 
-it("recognises only a 401 auth_required", () => {
+it("recognizes only a 401 auth_required", () => {
   expect(isServerSessionRefusal(refusal)).toBe(true);
   expect(isServerSessionRefusal({ status: 401, code: "oauth_expired", message: "Google token expired" })).toBe(false);
   expect(isServerSessionRefusal({ status: 403, code: "auth_required" })).toBe(false);

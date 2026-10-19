@@ -32,7 +32,7 @@ describe("Column stats headers and money", () => {
 });
 
 describe("Theme", () => {
-  it("styles the whole sheet, bands alternate rows and the header row is bold on the theme colour", () => {
+  it("styles the whole sheet, bands alternate rows and the header row is bold on the theme color", () => {
     const calls: string[] = [];
     const range = (r: number, c: number, nr: number, nc: number) => {
       const tag = `${r},${c},${nr},${nc}`;

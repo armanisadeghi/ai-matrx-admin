@@ -23,7 +23,7 @@ is a column and a filter at once, on every object); Salesforce list views.
    `copy.export = standardWholeResultExport({ columns, hidden, order, read })` — the table's one
    export menu, over the whole result.
 
-Consumers: `/crm` (`party`), `/crm/deals` (`crm_deal`). Guard (behaviour, renders the real page):
+Consumers: `/crm` (`party`), `/crm/deals` (`crm_deal`). Guard (behavior, renders the real page):
 `features/crm/components/__tests__/crm-list-offers-custom-fields.test.tsx`, red on a planted copy
 with the source given no organizations.
 
@@ -69,6 +69,6 @@ with the source given no organizations.
   scope tabs count with the list's predicates; one fields read across organizations
   (`entity_fields_across`); SQL reads the options id from the Field's own key first.
 - 2026-10-02 — fix round 1: keys not spellings; grouping on raw cells (yes/no counted `true`);
-  failed counts said; column choices persisted; options from the Field's own column; behaviour
+  failed counts said; column choices persisted; options from the Field's own column; behavior
   guard.
 - 2026-10-02 — created (lane 7 W2): source, server group counts, CRM people + deals wired.

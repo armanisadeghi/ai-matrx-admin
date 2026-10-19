@@ -21,7 +21,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * A `case_disclosure` value, recognised by ITS OWN MARKER — never by the node
+ * A `case_disclosure` value, recognized by ITS OWN MARKER — never by the node
  * it came from. `__kind` is part of the data (the kind-marker law), so it is
  * also the only honest way to answer "is this a disclosure".
  */
@@ -89,7 +89,7 @@ function ledgerSteps(disclosure: Record<string, unknown>): number | null {
  * box drew an earlier ledger, hiding steps the case had already released. The
  * ledger's `steps` is the oracle's own monotonic counter, so the highest wins;
  * ties (and rows with no ledger at all) fall back to the later position, which
- * is the previous behaviour for a run that carries only one source.
+ * is the previous behavior for a run that carries only one source.
  */
 export function latestCaseDisclosure(
   disclosures: readonly Record<string, unknown>[],

@@ -6,7 +6,7 @@
 //
 // The whole screen is one job: get the file somebody already downloaded from a
 // service into a place where they can see what is in it. So the drop zone is
-// the page, the catalogue of what we accept sits under it as the answer to the
+// the page, the catalog of what we accept sits under it as the answer to the
 // only question a first-time visitor has, and there is nothing else.
 
 import PageHeader from "@/features/shell/components/header/PageHeader";

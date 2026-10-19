@@ -59,7 +59,7 @@ system, never from a config line and never from a UUID in this repo.
 | Identity injection        | [`lib/useMessagingIntelligences.ts`](./lib/useMessagingIntelligences.ts) — `useMandateSet` over the four keys, plus the org/user knob. Injects the resolved Holder **and** its `config_overrides`; passing the agent id alone would drop the settings half of the winning binding.                                   |
 | The mount                 | [`providers/MessagingHost.tsx`](../../providers/MessagingHost.tsx) — transport, `agents`, `maxTranscriptMessages`, and the registered producer slugs `matrx-frontend` / `messages`.                                                                                                                                  |
 | Disclosure                | [`features/surfaces/manifests/messages.manifest.ts`](../surfaces/manifests/messages.manifest.ts) — four `agentRoles`, each carrying a `mandateKey` and a NULL `defaultAgentId`. They appear in the shell's top Agents menu and add **nothing** to the page. Guarded by `manifests/messages-agent-roles.test.ts`.     |
-| The one knob              | `platform.feature_knob` → `messaging.conversation_ai.transcript_message_cap` (default 200, org- and user-overridable). The package's hardcoded 200 was a behavioural opinion; it is now a row.                                                                                                                       |
+| The one knob              | `platform.feature_knob` → `messaging.conversation_ai.transcript_message_cap` (default 200, org- and user-overridable). The package's hardcoded 200 was a behavioral opinion; it is now a row.                                                                                                                       |
 
 Server side: the four mandates and their shared Provision (`messaging.conversation`) are declared
 in aidream `services/mandates/client_mandates.py`. Rebind them per organization or per user at
@@ -86,7 +86,7 @@ specifications to build are in the cross-repo handoff.
 is the Chrome extension's transport, it is the one hand-rolled Supabase channel left in this
 area, and its own header says why it is not on `@ai-matrx/data/realtime` yet.
 
-## macOS presentation and review catalogue (2026-09-30)
+## macOS presentation and review catalog (2026-09-30)
 
 `messages-native.css` is the shared app presentation used by both panes, including
 floating windows and the Messages canvas tab. It sets compact desktop typography, a
@@ -95,11 +95,11 @@ touch inputs retain 16px text and 44px action targets. Package data and renderin
 ownership are unchanged.
 
 `/messages-showcase` renders the package's real `MessageBubble` against the
-synthetic catalogue in `demo/examples.ts`, including all registered host action
+synthetic catalog in `demo/examples.ts`, including all registered host action
 kinds and meet invitations. It provides light/dark, incoming/outgoing and two
 contact-header previews. Bubble action clicks are intercepted before handlers
 run; the explicit real-conversation/window links are outside that boundary.
-Attachment payloads render through the host `MessagingAttachment` port; the catalogue uses synthetic local media. Quoted replies resolve their loaded parent or show an explicit earlier-message label.
+Attachment payloads render through the host `MessagingAttachment` port; the catalog uses synthetic local media. Quoted replies resolve their loaded parent or show an explicit earlier-message label.
 
 `useMessagePins` stores `dm_conversation` pins through the platform favorites service. The package places the three most recently active pins in circular tiles, further pins above ordinary rows, and loads older inbox pages to find pinned conversations. Right-click and the thread header both toggle the same pins.
 

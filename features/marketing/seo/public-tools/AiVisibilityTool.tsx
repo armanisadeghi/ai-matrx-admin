@@ -264,7 +264,7 @@ export function AiVisibilityTool() {
           signal: abortController.signal,
         }),
       );
-      // Cancelled by teardown or a newer run — settle silently.
+      // Canceled by teardown or a newer run — settle silently.
       if (abortController.signal.aborted) return;
       if (response.error) throw new Error(response.error.message);
       if (!finalResult)

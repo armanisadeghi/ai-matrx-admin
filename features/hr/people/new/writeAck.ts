@@ -3,7 +3,7 @@
 // Normalizes every way an HR write can say no into ONE shape for this form.
 //
 // 🚨 THIS FILE USED TO CARRY A TRANSPORT DEFECT, AND NO LONGER DOES — the note is kept because
-// the bug is worth recognising if it ever comes back. `features/hr/service.ts`'s `callHr` tested
+// the bug is worth recognizing if it ever comes back. `features/hr/service.ts`'s `callHr` tested
 // a payload for `granted: false` only. That is the READ doors' dialect; the WRITE doors answer
 // `{ ok: false, reason, field?, door? }`, so `callHr` fell through to its SUCCESS branch and
 // handed callers `{ok: true, data: {ok: false, …}}`. A call site checking `result.ok` therefore

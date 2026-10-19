@@ -944,7 +944,7 @@ export function useDurableRun<TResult>(
   const reconnectingRef = useRef(false);
   /** Set below; `handleEvent` reaches the loop through this. */
   const startReconnectRef = useRef<((runId: string) => void) | null>(null);
-  /** Same, for stopping it: a cancelled run must not keep being asked about. */
+  /** Same, for stopping it: a canceled run must not keep being asked about. */
   const stopReconnectRef = useRef<(() => void) | null>(null);
   useEffect(() => {
     statusRef.current = state.status;
@@ -1203,7 +1203,7 @@ export function useDurableRun<TResult>(
             durableRunErrorMessage(data.error) ??
             (status && FAILED_STATUSES.has(status)
               ? (wire.unfinishedMessage ?? "This run did not finish.")
-              : // An unrecognized status is not a licence to claim nothing was
+              : // An unrecognized status is not a license to claim nothing was
                 // saved — say exactly what the server said.
                 `This run ended without a recorded result (the server reported "${status ?? "unknown"}").`),
         }));
@@ -1351,7 +1351,7 @@ export function useDurableRun<TResult>(
               // A STOP MUST STICK.
               //
               // `stopReconnect` aborts this controller, but the rejoin request
-              // already in flight is not cancelled by that — its response was
+              // already in flight is not canceled by that — its response was
               // read from the row BEFORE the cancel landed, so it arrives
               // afterwards still saying `processing`, and the snapshot branch
               // calls `startReconnect` again. The user saw "Stopping…" flicker
@@ -1591,7 +1591,7 @@ export function useDurableRun<TResult>(
       onUnreachable: (message, error) => {
         // 🚨 AN UNREACHABLE REJOIN IS NEVER A FINISHED RUN (cold walk 6,
         // finding 3, 2026-09-17). This used to keep asking only when
-        // `isStreamTransportLost` recognised the failure, and threw the
+        // `isStreamTransportLost` recognized the failure, and threw the
         // RECEIPT AWAY otherwise — so one dropped rejoin request after a
         // reload deleted the pointer to a live, paid run, reset the surface to
         // empty, and left the Bad Example probe offering "Write the first one"

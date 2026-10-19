@@ -1,5 +1,5 @@
 /**
- * The pen's style while the Draw tool is active (FigJam / tldraw): the colour and weight the NEXT
+ * The pen's style while the Draw tool is active (FigJam / tldraw): the color and weight the NEXT
  * strokes get. Per tab; a stroke already drawn keeps the style it was made with (the selection
  * toolbar restyles it).
  */

@@ -287,7 +287,7 @@ const surfaceSpecific: SurfaceValue[] = [
  *
  * `finding-mutations.ts` draws the line these targets sit on: the analyzer
  * owns detection (open / refresh / resolve / reopen) and never touches
- * suppression; the user owns judgement, and their judgement is exactly two
+ * suppression; the user owns judgment, and their judgment is exactly two
  * verbs — "I've seen this" and "this is intentional, stop telling me". Those
  * two are declared here and nothing else is: the evidence trail
  * (`analysis_result`) is immutable, and severity/category are the catalogue's.

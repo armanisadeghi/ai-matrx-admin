@@ -2,7 +2,7 @@
 
 // features/agents/browse/useAgentRowActions.tsx
 //
-// Binds the action registry to real behaviour, and owns the modals those
+// Binds the action registry to real behavior, and owns the modals those
 // actions open. One instance per page — the modals are singletons keyed by the
 // agent currently acted on, never one modal per row (that was 372 mounted
 // ShareModals on /agents/all).

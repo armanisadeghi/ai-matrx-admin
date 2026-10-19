@@ -141,7 +141,7 @@ describe("buildGameQueue (per-player SRS bias)", () => {
     expect(buildGameQueue([], {}, { seed: 1, now })).toEqual([]);
   });
 
-  it("prioritises struggling and weak items over well-known ones", () => {
+  it("prioritizes struggling and weak items over well-known ones", () => {
     const masteryById: Record<string, ItemMasteryRow | undefined> = {
       a: mastery("a", { struggle_flag: true }),
       b: mastery("b", {

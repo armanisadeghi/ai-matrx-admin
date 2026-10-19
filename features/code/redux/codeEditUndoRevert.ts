@@ -12,7 +12,7 @@
  *   • `revertMessageThunk({messageId, conversationId})` — for every
  *     file the message touched, restore to its `beforeContent`.
  *     Surfaces a confirmation when later messages also touched the
- *     same files; the dialog summarises which messages will lose
+ *     same files; the dialog summarizes which messages will lose
  *     their accepted edits as a side effect.
  *
  *   • `revertConversationThunk({conversationId})` — same as message

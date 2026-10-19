@@ -2,7 +2,7 @@
 
 /**
  * A file's name, live: a collaborator's rename (or an agent's) shows in every
- * open editor of that record without a reload — Google's title behaviour.
+ * open editor of that record without a reload — Google's title behavior.
  * Row UPDATEs on the record's own table (both are in the realtime
  * publication); the payload's name column is the only thing read.
  */

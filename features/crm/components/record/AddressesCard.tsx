@@ -159,7 +159,7 @@ export function AddressesCard({
     >
       {adding && (
         // An inline form on the card's own surface — no box inside the box.
-        // Labelled fields in a grid: Type + Street, then City / State / ZIP /
+        // Labeled fields in a grid: Type + Street, then City / State / ZIP /
         // Country, then the action on its own row edge.
         <div
           className={cn(

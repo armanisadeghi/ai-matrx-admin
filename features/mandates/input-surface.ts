@@ -137,7 +137,7 @@ export function isUserTextOnly(surface: MandateInputSurface): boolean {
  * code declaration at all.
  *
  * The served input surface's `accepts_user_input` is the mandate's own answer
- * and the only one the run door honours, so it is the only one either screen
+ * and the only one the run door honors, so it is the only one either screen
  * is allowed to say. Rendered through `<MandateUserTextLine>`, never re-derived.
  */
 export function userTextSentence(surface: MandateInputSurface): string {

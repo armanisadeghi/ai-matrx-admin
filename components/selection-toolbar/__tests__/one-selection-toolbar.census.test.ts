@@ -16,7 +16,7 @@
  *      AnnotationToolbar, HighlightToolbar) declared outside the canonical files;
  *   4. a new document-level `selectionchange` listener outside the root and
  *      the context menu's selection tracking;
- *   5. BY BEHAVIOUR, whatever it is named, across a FEATURE (a file plus every helper and
+ *   5. BY BEHAVIOR, whatever it is named, across a FEATURE (a file plus every helper and
  *      hook it reaches, transitively and cycle-safe, and one level of the component it renders —
  *      helper → hook → bar is one popup): it
  *      reads the document selection (`getSelection()`), listens for the gesture that ends one
@@ -27,7 +27,7 @@
  *      Six realistic shapes are planted below (one reads the selection two imports from its bar);
  *      the pre-2026-09-28 census caught 1 of them, the one-level version 5.
  *
- * Selection-driven behaviours that are NOT popups, and so are not toolbars
+ * Selection-driven behaviors that are NOT popups, and so are not toolbars
  * (they render nothing positioned — rule 5 does not match them — and the
  * reason is recorded here so the next reader does not "migrate" them):
  *   • masterwork RedPenDialog — the drag IS the command: marking a passage in
@@ -60,7 +60,7 @@ const ALLOW: Record<string, string> = {
   // A bulk bar for picked ITEMS (images, rows): "3 selected · Delete" — no text selection.
   "components/shared/FloatingSelectionToolbar.tsx": "multi-item bulk bar, not a text selection toolbar",
   "components/shared/FloatingSelectionToolbar.test.tsx": "its test",
-  // The board's action bar for picked board OBJECTS (notes, shapes, frames): colour, arrange, delete. It is anchored to the picked objects on the canvas, never to selected text.
+  // The board's action bar for picked board OBJECTS (notes, shapes, frames): color, arrange, delete. It is anchored to the picked objects on the canvas, never to selected text.
   "features/board/components/SelectionToolbar.tsx": "action bar for picked board objects, not a text selection toolbar",
   // The context menu tracks the selection for what its right-click menu acts on; it draws no popup.
   "@ai-matrx/context-menu (src/engine/ContextMenuV3.tsx)": "selection tracking for the right-click menu; no popup",
@@ -93,7 +93,7 @@ const RULES: { id: string; pattern: RegExp; allowCanonical: boolean; alsoNeeds?:
 ];
 
 /**
- * Rule 5: selection-driven floating UI, by behaviour. A FEATURE is a file plus the local
+ * Rule 5: selection-driven floating UI, by behavior. A FEATURE is a file plus the local
  * modules it imports directly (one level): a `useQuoteSelection` hook that reads and measures
  * the selection and the component that renders its bar are one popup (verify round 2 prep).
  */

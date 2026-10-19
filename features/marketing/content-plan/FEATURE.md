@@ -619,9 +619,9 @@ DISTINCT`, resolved parent-first down the tree (`setup/service.ts#identityKey`,
   verbatim from aidream, which owns it) and the runnable guard
   **`pnpm check:archetype-expansion`** (62 cases + a checksum against aidream's
   copy; aidream runs the same cases in
-  `tests/test_archetype_expansion_fixture.py`). Behaviour changes go: fixture in
+  `tests/test_archetype_expansion_fixture.py`). Behavior changes go: fixture in
   aidream → copy here → fix the twin. **Never edit the fixture to make the twin
-  pass.** Two canonical behaviours it pins that are easy to get wrong: an
+  pass.** Two canonical behaviors it pins that are easy to get wrong: an
   unrecognized `node_type` COERCES to `article` loudly (it does not refuse —
   refusing would preview nothing for a tree the chat tool happily writes), and
   unknown config keys are REJECTED (the canonical models are `extra="forbid"`).
@@ -1671,7 +1671,7 @@ z-[10000]` `aria-hidden` overlay covers the header "Agents for this page"
   find+refute workflow over both repos' diffs; 14 confirmed). Setup now seeds
   from the FRESH site row (`fetchFreshSite`), never the 60s-stale siteOptions
   cache; the debounced autosave FLUSHES on unmount and before commit
-  (pendingRef + committingRef — a cancelled debounce was the lost-typing bug
+  (pendingRef + committingRef — a canceled debounce was the lost-typing bug
   reborn); `lastSavedRef` marks saved only AFTER the write lands (failed
   saves retry via pending); draft/link writes invalidate
   `marketingKeys.siteOptions()`; SetupView keyed by siteId;

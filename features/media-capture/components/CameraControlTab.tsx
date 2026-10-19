@@ -318,7 +318,7 @@ function statusLine(entry: CaptureUploadFeedEntry): string {
       // A "success" with no file id is NOT a saved capture — say so.
       return entry.fileId ? "Saved" : "Uploaded, but no file id was returned";
     case "cancelled":
-      return "Cancelled";
+      return "Canceled";
     case "error":
       return entry.error ?? "Upload failed";
   }

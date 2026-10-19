@@ -36,7 +36,7 @@ export type LeaveViewerRung = "self" | "delegated";
 
 /**
  * Which §5 figure the server says a `usage`/`reversal` entry belongs to. `null` on every
- * other entry kind — and on a `usage` entry whose request is denied, cancelled or still
+ * other entry kind — and on a `usage` entry whose request is denied, canceled or still
  * submitted.
  *
  * It is the server's mark and the client never re-derives it. Since `hr_l5_12` the mark and

@@ -60,7 +60,7 @@ export function revokedClientFunctions(sql: string): RevokedFunction[] {
       const s = sig.trim();
       // Only a real, literal signature. `%s` from a format() string inside a function body is
       // dynamic SQL this file does not run by itself, and handing it to to_regprocedure would
-      // be asking the catalogue about a placeholder.
+      // be asking the catalog about a placeholder.
       if (SIGNATURE.test(s)) out.push({ signature: s, roles });
     }
   }

@@ -13,7 +13,7 @@
  * `content_ir.edit_kind_instance_value`; ~50 `hr.*` keys are consumed ONLY
  * this way) is a fully connected setting that the hand audit would happily
  * call dead. A screen that tells a person their working setting does nothing
- * is the same lie as a screen that accepts a value nothing honours — law 4,
+ * is the same lie as a screen that accepts a value nothing honors — law 4,
  * from the other side.
  *
  * The truth is already measured: `check:settings-orphans` has an IN-DB tier
@@ -105,7 +105,7 @@ export function databaseConsumersOf(fullKey: string): readonly string[] | null {
 // \`overridable_by\` says which rungs the PICKER offers. This says which rungs a
 // reader NAMES in \`p_scopes\` — the only way a rung other than \`organization\`
 // or \`user\` can change an answer. A key offered at a rung nobody names is a
-// control that saves a value nothing honours (law 4 from the other side), which
+// control that saves a value nothing honors (law 4 from the other side), which
 // is what \`records.confirmation.agent_write_born_confirmed\`'s \`agent\` rung was
 // until DD-211.
 //

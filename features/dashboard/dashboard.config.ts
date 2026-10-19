@@ -15,7 +15,7 @@ import { PLATFORM_IDENTITIES as P, PRIMITIVE_IDENTITIES as I, type Identity } fr
 // START SOMETHING  —  the fixed "create / launch" row at the top of the page.
 //
 // To change it: add / remove / reorder entries below. `identity` is the
-// place's ONE colour + icon from `@ai-matrx/icons/domain` (never a local colour).
+// place's ONE color + icon from `@ai-matrx/icons/domain` (never a local color).
 // ─────────────────────────────────────────────────────────────────────────────
 export interface QuickAction {
   id: string; // stable id (use the href)

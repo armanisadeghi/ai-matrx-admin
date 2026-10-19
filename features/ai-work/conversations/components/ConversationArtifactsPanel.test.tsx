@@ -194,7 +194,7 @@ describe("ConversationArtifactsPanel", () => {
 });
 
 /**
- * XT-FIX-5 / FE2 — EVERY TOOL'S ARTIFACTS ARE REACHABLE, AND LABELLED.
+ * XT-FIX-5 / FE2 — EVERY TOOL'S ARTIFACTS ARE REACHABLE, AND LABELED.
  *
  * The break: artifact rows are keyed by ONE `metadata.cli_session_id`, and the
  * transcript kept a single provider session id — so on a handed-off

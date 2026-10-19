@@ -5,7 +5,7 @@ import { ProInput } from "@/components/official/ProInput";
 // features/data-tables/pick-lists/components/PickListChoicesEditor.tsx — THE CHOICES OF A PICK LIST, one row
 // each (lane PICK-LISTS, 2026-10-10). Add, rename and archive write straight to the list's own Records
 // through the pick-list service; an archived choice is soft and records that hold it keep it. A choice's
-// colour is kept on the column that uses it, and its place by the column's editor.
+// color is kept on the column that uses it, and its place by the column's editor.
 
 import { useCallback, useEffect, useState } from "react";
 import { Plus, Archive, ListChecks } from "lucide-react";

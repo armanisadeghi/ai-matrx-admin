@@ -1,7 +1,7 @@
 ---
 type: Reference
 title: "teach-the-system — lessons from past trials"
-description: "Every dated lesson appended by past expertise trials (Conductor behaviour, headless and cloud driving, draft review, CI, access, concurrent trials); the skill sends you here once before choosing a subject, again before judging a run, calling it a success, or trusting a verdict, and whenever a run hits a stop, drives headless, faces a draft pile, or appends a lesson at §7. Companion to the teach-the-system skill."
+description: "Every dated lesson appended by past expertise trials (Conductor behavior, headless and cloud driving, draft review, CI, access, concurrent trials); the skill sends you here once before choosing a subject, again before judging a run, calling it a success, or trusting a verdict, and whenever a run hits a stop, drives headless, faces a draft pile, or appends a lesson at §7. Companion to the teach-the-system skill."
 tags: [teach-the-system, skills, lessons]
 timestamp: 2026-09-14T00:00:00Z
 ---
@@ -142,7 +142,7 @@ with the date (SKILL.md §7); if a lesson changes a rule, edit the rule in SKILL
   make the driver re-login when it sees that page. The guided start's approach cards are buttons whose
   names begin "Start now…", so match Start exactly.
 - 2026-09-12 — (trial 7) A training workbook or a guideline PDF distils its PACKAGING as craft — course
-  attendance, exam pass marks, licence boilerplate, publisher disclaimers (W59). Reject by class with
+  attendance, exam pass marks, license boilerplate, publisher disclaimers (W59). Reject by class with
   one reason each; the platform fix is a source-frame on every rule (method vs packaging).
 - 2026-09-12 — (trial 7) Budget the paste lane: about one rule per fifty words from a checklist-style
   source and about $6 per ten thousand words on the Opus distiller (189 rules from 9,900 words).
@@ -167,11 +167,11 @@ with the date (SKILL.md §7); if a lesson changes a rule, edit the rule in SKILL
 - 2026-09-12 — (trial 12) A Rulebook's free-text DESCRIPTION is a smuggling channel. The desk built from
   88 approved dispositions still opened with one question and refused to advise — because the run quoted
   the description back to itself as "the doctrine" and derived its deliverables from it. Before you credit
-  a Rulebook for a behaviour, read the run's own report and see which text it is actually obeying.
+  a Rulebook for a behavior, read the run's own report and see which text it is actually obeying.
 - 2026-09-12 — (trial 12) The Understudy could not rebuild, for any Rulebook, because an automated write
   declared `actor_tier=code` without naming a system and the provenance CHECK refused it — and the browser
   caught the 500 and wrote it to the console. Two lessons: a fire-and-forget "poke" is a silent-failure
-  machine unless the surface shows the staleness it causes; and when a stand-in's behaviour disagrees with
+  machine unless the surface shows the staleness it causes; and when a stand-in's behavior disagrees with
   the page's counters, read the built definition's own metadata before believing either.
 - 2026-09-12 — (trial 12) Approve/reject every draft one at a time through the wizard and the loop is
   cheap to script, but check the counts in the database afterwards — the wizard's last card can be left

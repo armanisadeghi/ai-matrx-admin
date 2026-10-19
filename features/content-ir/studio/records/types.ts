@@ -38,7 +38,7 @@ export interface KindRecordRow {
   confirmedBy: string | null;
   createdAt: string;
   createdBy: string | null;
-  /** NULL from the DB is normalised to `human` — see the provenance SoR. */
+  /** NULL from the DB is normalized to `human` — see the provenance SoR. */
   createdByTier: RecordWriterTier;
   createdBySystem: string | null;
   organizationId: string;

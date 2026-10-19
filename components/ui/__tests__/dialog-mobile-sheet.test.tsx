@@ -79,7 +79,7 @@ it("renders the canonical mobile bottom sheet with the no-zoom marker", () => {
    * C26 motion-layer extraction (2026-08-30) moved every keyframe into
    * @ai-matrx/design-system/styles.css and put `slide-in-from` on that
    * package's FORBIDDEN_HOST_MOTION_UTILITIES list. Asserting the exported
-   * constant AND the keyframes behind it guards the actual behaviour — a sheet
+   * constant AND the keyframes behind it guards the actual behavior — a sheet
    * that enters from off the bottom edge — instead of a utility name.
    */
   expect(content?.className).toContain(MOTION_BOTTOM_SHEET);

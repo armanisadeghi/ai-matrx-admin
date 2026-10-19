@@ -19,7 +19,7 @@
 // `hooks.ts` — both coordinator-owned (CONTRACTS §9), so this lane files the
 // gap rather than growing a second read path beside them. The control says
 // exactly that, in one sentence, in the place the person clicks. It is not
-// hidden, not greyed out, and not quietly wired to something that does
+// hidden, not grayed out, and not quietly wired to something that does
 // something else.
 
 import { useState } from "react";

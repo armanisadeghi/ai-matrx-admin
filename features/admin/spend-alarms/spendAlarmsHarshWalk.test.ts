@@ -134,7 +134,7 @@ describe("sentences are words", () => {
     expect(text).toContain("admin@admin.com");
   });
 
-  it("a failed check has no terminal colours or ORM banner", () => {
+  it("a failed check has no terminal colors or ORM banner", () => {
     const text = alarmSentence(
       rec({
         kind: "guardrail.check_failed",

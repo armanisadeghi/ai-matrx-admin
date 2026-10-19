@@ -16,7 +16,7 @@
  * re-asks for the SAME peek instead of stacking a second one; and unmounting (or changing `id`) closes
  * the peek it opened, so a caller that drops its target never leaves a peek out of sync with it. It
  * closes only a peek it still owns: one replaced by another opener of the same record is left alone.
- * The imperative `openResourcePeek` path keeps the floating behaviour (a popover that closes because
+ * The imperative `openResourcePeek` path keeps the floating behavior (a popover that closes because
  * the person clicked into the peek does not take the peek with it).
  *
  * With no host on the page (the `(link)` group renders no `Providers`), the request falls back to

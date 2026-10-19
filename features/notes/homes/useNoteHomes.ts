@@ -62,7 +62,7 @@ export function useNoteHomes(): UseNoteHomesReturn {
     );
     if (missing.length === 0) return;
     for (const id of missing) homeLabelsInFlight.add(id);
-    // Not cancelled on cleanup: the answer fills the module cache for every mounted hook, and a re-run of
+    // Not canceled on cleanup: the answer fills the module cache for every mounted hook, and a re-run of
     // this effect (the note list growing) must not drop a read already on the wire and then ask again.
     void supabase
       .schema("platform")
@@ -170,7 +170,7 @@ function flushHomeNames(): void {
   queuedHomeIds.clear();
   queuedGeneralOrgs.clear();
   if (ids.length === 0 && generals.length === 0) return;
-  // Not cancelled on cleanup: the answer fills the module cache for every mounted hook.
+  // Not canceled on cleanup: the answer fills the module cache for every mounted hook.
   void supabase
     .schema("platform")
     .rpc("home_names" as never, { p_scope_ids: ids, p_general_orgs: generals } as never)

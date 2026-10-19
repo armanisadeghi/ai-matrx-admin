@@ -177,7 +177,7 @@ export function topLevelDisjuncts(qual: string): string[] {
  * arms: the prefix, and one opaque blob that mentions every lane's functions at once. A first cut
  * of this guard did exactly that and silently classified the blob by whichever substring it hit
  * first — which made the numbers move by hundreds when the substring order changed, the tell that
- * the reading was never a reading. Descending is not an optimisation; without it the comparison is
+ * the reading was never a reading. Descending is not an optimization; without it the comparison is
  * meaningless.
  */
 export function allDisjuncts(qual: string): string[] {
@@ -200,7 +200,7 @@ export function classifyDisjunct(arm: string): Lane | null {
   // The `id IN (… UNION …)` arm unions permissions, memberships, reachability and grants, so it
   // contains `iam.my_orgs()` and `iam.organization_member` inside subqueries that key on
   // `granted_to_organization_id`, not on the row's own organization. Classifying it by a bare
-  // substring is how a first cut reported 93 phantom `org_member` findings. It is recognised
+  // substring is how a first cut reported 93 phantom `org_member` findings. It is recognized
   // FIRST, and it is deliberately left unclassified rather than aligned by guesswork.
   // `iam.has_access(` is the emitter's own closing conjunct on a candidate set; `accessible_entity_ids`
   // is its opening one. Either marker means this disjunct is a set of IDS, not a lane predicate.
@@ -292,7 +292,7 @@ export function resolverLanes(f: LaneFacts): Set<Lane> {
   if (f.owner_lane && f.owner_col) lanes.add("owner");
   // `v_pub and v_vis = 'public'` — v_vis is the column when there is one; when there is not, the
   // probe hands back 'personal' (branches three and four) or the registry's declared visibility
-  // (branches five and six), so the arm can only ever fire on a declared-public catalogue.
+  // (branches five and six), so the arm can only ever fire on a declared-public catalog.
   if (f.has_visibility_col || (!f.owner_col && f.default_visibility === "public")) lanes.add("public_visibility");
   // ── The org and staff arms. Three conditions, all of them the resolver's own:
   //    v_org must be non-null (organization_id must exist), the CLASS must carry the lane, and the

@@ -117,7 +117,7 @@ export type DeckPanel = "find" | "background" | "motion" | "special" | "comments
 
 const TEXT_COLORS = [
   ["Black", "#000000"],
-  ["Dark grey", "#4B5563"],
+  ["Dark gray", "#4B5563"],
   ["White", "#FFFFFF"],
   ["Red", "#DC2626"],
   ["Orange", "#EA580C"],
@@ -151,7 +151,7 @@ function formatItems(h: DeckChromeHost): EditorMenuEntry[] {
         {
           kind: "submenu",
           id: "format.color",
-          label: "Text colour",
+          label: "Text color",
           icon: PaintBucket,
           items: TEXT_COLORS.map(([name, hex]) => ({
             kind: "action" as const,

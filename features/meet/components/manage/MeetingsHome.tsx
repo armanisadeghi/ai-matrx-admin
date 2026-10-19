@@ -5,12 +5,12 @@
 // /meetings — Google Calendar's agenda + Zoom's Meetings page, in one list.
 //
 //   Upcoming   every occurrence (a series expanded by the database, moved and
-//              cancelled ones marked), grouped by the day it falls on in the
+//              canceled ones marked), grouped by the day it falls on in the
 //              VIEWER's zone, with the zone named; instant meetings happening
 //              now at the top.
 //   Past       meetings that ended, or one-offs whose time went by — each opens
 //              its record.
-//   Cancelled  cancelled meetings (the link still says so).
+//   Canceled  canceled meetings (the link still says so).
 //   Archived   archived meetings, restorable.
 //
 // Tabs live in the shell header (RouteModeNav, `?tab=`); search and "whose
@@ -147,7 +147,7 @@ const TABS: { tab: Tab; name: string; icon: typeof CalendarDays }[] = [
   { tab: "upcoming", name: "Upcoming", icon: CalendarDays },
   { tab: "past", name: "Past", icon: History },
   { tab: "recordings", name: "Recordings", icon: Film },
-  { tab: "cancelled", name: "Cancelled", icon: XCircle },
+  { tab: "cancelled", name: "Canceled", icon: XCircle },
   { tab: "archived", name: "Archived", icon: Archive },
 ];
 
@@ -328,7 +328,7 @@ export function MeetingsHome() {
             />
           </>
         ) : (
-          // The two buttons' room, held until the viewer is known: the tab strip in the centre is
+          // The two buttons' room, held until the viewer is known: the tab strip in the center is
           // measured against the header's right flank, and the buttons arriving narrowed the slot
           // and collapsed the strip from 341px to 208px (CLS at 1440px). Invisible, inert, unread.
           <div aria-hidden="true" inert className="invisible flex items-center gap-1.5">
@@ -785,7 +785,7 @@ function UpcomingList({
               if (cancelledOne)
                 metaParts.push(
                   <span key="c" className="text-destructive">
-                    Cancelled
+                    Canceled
                   </span>,
                 );
               const role = roleWord(item.myRole);
@@ -869,7 +869,7 @@ function MeetingList({
       upcoming: "",
       recordings: "",
       past: "No past meetings yet. After a meeting ends, its summary, decisions and transcript live here.",
-      cancelled: "No cancelled meetings.",
+      cancelled: "No canceled meetings.",
       archived:
         "Nothing archived. Archiving a meeting takes it off your lists without losing its record.",
     };

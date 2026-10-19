@@ -9,7 +9,7 @@
  *   applied           → the tree was WRITTEN (active or proposed by the knob).
  *   !applied, topics  → the tree was proposed back and nothing was written.
  *   !applied, 0 topics→ the author found nothing it could support: render its
- *                       own `coverage_notes` — the one behaviour we want, never
+ *                       own `coverage_notes` — the one behavior we want, never
  *                       punished with a red box (see `AuthorTopicalMapResult`).
  *
  * THE TREE RENDERS THROUGH THE ONE KIND COMPONENT — `MapTopicProposalView`

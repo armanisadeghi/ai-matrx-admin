@@ -101,13 +101,54 @@ def die(msg):
     sys.exit(1)
 
 
+INDEX_LOCK_WAIT_S = 900  # a `git commit` holds index.lock for its WHOLE pre-commit hook; in this
+# checkout that hook (node guards + matrx-ship lint-guard) was measured holding it 4.5+ min
+# (2026-10-18 17:58). 10 s of retries lost that race twice the same evening ("git add -A failed:
+# index.lock: File exists", nothing pushed). Wait out a LIVE holder as long as the single-flight
+# wait (15 min); stop early only when the lock is stale (no git process alive, lock untouched 30 s).
+INDEX_LOCK_STALE_S = 30
+
+
+def _index_lock_is_stale(err):
+    m = re.search(r"Unable to create '([^']+index\.lock)'", err)
+    if not m:
+        return False
+    try:
+        age = time.time() - os.path.getmtime(m.group(1))
+    except OSError:
+        return False  # gone already: the next try will take it
+    if age < INDEX_LOCK_STALE_S:
+        return False
+    # Alive = a git process whose cwd is inside THIS repository (git machine-wide is always busy).
+    root = os.path.realpath(os.path.dirname(os.path.dirname(m.group(1))))
+    pids = subprocess.run(["pgrep", "-x", "git"], capture_output=True, text=True).stdout.split()
+    for pid in pids:
+        cwd = subprocess.run(["lsof", "-a", "-p", pid, "-d", "cwd", "-Fn"], capture_output=True, text=True).stdout
+        for line in cwd.splitlines():
+            if line.startswith("n") and (os.path.realpath(line[1:]) + "/").startswith(root + "/"):
+                return False
+    return True
+
+
 def git(*args, check=True, raw=False, stdin=None):
-    """Run git. Retries briefly when another process holds index.lock."""
-    for i in range(40):
+    """Run git. Waits (up to INDEX_LOCK_WAIT_S) while another git process holds index.lock."""
+    start = time.time()
+    announced = False
+    while True:
         r = subprocess.run(["git", *args], capture_output=True, input=stdin)
         err = r.stderr.decode("utf-8", "replace")
-        if r.returncode != 0 and "index.lock" in err and i < 39:
-            time.sleep(0.25)
+        waited = time.time() - start
+        if r.returncode != 0 and "index.lock" in err and waited < INDEX_LOCK_WAIT_S:
+            if waited >= 10 and _index_lock_is_stale(err):
+                err += ("\nsync: index.lock is STALE (no git process alive, untouched %ds) -- a git "
+                        "process died holding it. Remove .git/index.lock and run again.\n" % INDEX_LOCK_STALE_S)
+                break
+            if not announced and waited >= 10:
+                announced = True
+                print("sync: another git process holds index.lock (a commit's pre-commit hook can take "
+                      "minutes); waiting up to %ds (git %s)" % (INDEX_LOCK_WAIT_S, args[0] if args else ""),
+                      file=sys.stderr, flush=True)
+            time.sleep(0.25 if waited < 10 else 2.0)
             continue
         break
     out = r.stdout if raw else r.stdout.decode("utf-8", "replace")

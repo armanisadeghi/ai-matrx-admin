@@ -59,7 +59,7 @@ describe('"Almost there" is earned, never a function of queue size', () => {
 });
 
 describe("the inbox says the instruction once", () => {
-  it("recognises a server sentence that already asks", () => {
+  it("recognizes a server sentence that already asks", () => {
     expect(
       alreadyAsksForVoice(
         "we can't tell which of these is you — we read 3 messages in it, from " +

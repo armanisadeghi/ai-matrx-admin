@@ -112,7 +112,7 @@ export function makeBlockMenu(actions: BlockMenuActions) {
         }, 0);
       };
     }, [blockId, editor]);
-    // A colour picked in the Color sub-menu closes the whole menu (Notion).
+    // A color picked in the Color sub-menu closes the whole menu (Notion).
     useEffect(() => {
       if (!blockId) return;
       const onClick = (e: MouseEvent) => {

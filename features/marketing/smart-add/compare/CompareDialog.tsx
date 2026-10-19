@@ -9,7 +9,7 @@
  * the same session answers as the page rows. Once every card in a comparison has an answer it moves on;
  * after the last one a short "done" state shows, then it closes.
  *
- * Modelled on Apple's account pickers and Linear's modals: one question as the title, a quiet count and
+ * Modeled on Apple's account pickers and Linear's modals: one question as the title, a quiet count and
  * arrows beside it, no rules between header and body, generous cards.
  */
 
@@ -226,7 +226,7 @@ const SOURCE_LABEL: Record<string, string> = {
 };
 const sentenceCase = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-/** Where a candidate came from, as labelled rows (shown on hover, like the page rows). */
+/** Where a candidate came from, as labeled rows (shown on hover, like the page rows). */
 /** Where a candidate came from, as THE peek's record — or null when there is nothing to say. */
 function candidatePeek(c: Candidate, title: string, sub: string): PeekRecord | null {
   const src = c.anchor.source;

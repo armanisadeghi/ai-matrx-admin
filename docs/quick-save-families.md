@@ -32,7 +32,7 @@ Curated guides that already exist. Prefer **skills** for step-by-step; use **FEA
 |----------|------|----------|
 | **Overlay system skill** | [`.claude/skills/overlay-system/SKILL.md`](../.claude/skills/overlay-system/SKILL.md) | Register overlay ID, write opener, wire `OverlayWorldHost`, debug render. **Start here.** |
 | **RichDocument actions skill** | [`.claude/skills/rich-document-actions/SKILL.md`](../.claude/skills/rich-document-actions/SKILL.md) | Add a “Save to X” menu action via `registerAction` + `openOverlay` (or stage Redux bridge like tasks). |
-| **Overlays FEATURE** | [`features/overlays/FEATURE.md`](../features/overlays/FEATURE.md) | Deep reference for overlay slice, catalogue, callback groups. |
+| **Overlays FEATURE** | [`features/overlays/FEATURE.md`](../features/overlays/FEATURE.md) | Deep reference for overlay slice, catalog, callback groups. |
 | **The one action registry** (ALC-15; `ContentActionBar` and `contentActionRegistry` were deleted) | `@ai-matrx/chat` `agents/components/messages-display/rich-document/actions/` (`register-w2a.ts`, `register-w3c.ts`, `register-w3d.ts`, `bodies/`); web entry `ensureWebRichDocumentRegistrations` in [`rich-document-registrations.ts`](../features/rich-content-host/rich-document-registrations.ts) | Copy an existing descriptor + body (`save-to-notes`, `save-to-code`, `save-to-task`) in the package; every host inherits it. |
 | **Code-splitting skill** | [`.claude/skills/code-splitting/SKILL.md`](../.claude/skills/code-splitting/SKILL.md) | Lazy-load Core/Shell in `OverlayWorldHost` via `lazyOverlay` — never stack `dynamic()` boundaries. |
 

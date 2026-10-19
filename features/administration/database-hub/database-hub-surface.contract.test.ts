@@ -113,7 +113,7 @@ describe("database admin surface contract", () => {
     );
   });
 
-  it("keeps every tool promised by the surface intro in the hub catalogue", () => {
+  it("keeps every tool promised by the surface intro in the hub catalog", () => {
     const tools = source(
       "features/administration/database-hub/database-tools.ts",
     );

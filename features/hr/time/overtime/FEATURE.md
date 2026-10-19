@@ -2,7 +2,7 @@
 
 **Status:** `scaffolded` — the surfaces are built; **no SQL RPC in this lane exists yet**
 **Tier:** `2` · **Lane:** L3 / register item **HRB-015** (D24a) · **Last updated:** `2026-08-26`
-**Behaviour spec:** `../../../../../common-docs/systems/human-resources/projects/hr-domain/specs/SPEC-TIME.md` §4.4–§4.6
+**Behavior spec:** `../../../../../common-docs/systems/human-resources/projects/hr-domain/specs/SPEC-TIME.md` §4.4–§4.6
 
 ## What this is
 
@@ -56,7 +56,7 @@ What that means in the code:
    not a permission problem and must not be worded as one.
 6. **THE WRITE-UP DOOR IS OFFERED, NEVER AUTOMATIC**, and four rules bind it (`WriteUpDoor.tsx`):
    no pattern or count ever creates a corrective action; **without employee-relations authority the
-   door is ABSENT, not disabled** (a greyed button is itself a disclosure about the person on
+   door is ABSENT, not disabled** (a grayed button is itself a disclosure about the person on
    screen); the link is one-way evidence; and where the employee has an open disagreement covering
    those hours the door shows it and requires acknowledgement first.
 7. **EVERY ALERT CARRIES THE PRE-APPROVAL DOOR** — *an alert that only informs is half a feature*.
@@ -64,7 +64,7 @@ What that means in the code:
 9. **DAILY THRESHOLDS ARE NOT OPTIONAL.** In California an 8-hour day triggers overtime regardless
    of the weekly total; a watchlist showing only the weekly number is silently wrong for the
    jurisdiction that matters most. Every threshold comes from E-55, never from a constant.
-10. **E-55 IS ALWAYS A PROJECTION AND IS LABELLED ONE.** The authoritative answer is the closed
+10. **E-55 IS ALWAYS A PROJECTION AND IS LABELED ONE.** The authoritative answer is the closed
     workweek. A projection stored as evidence is how a wage claim gets an answer we cannot defend.
 11. **`viewer` IS DERIVED FROM THE CALLER'S RELATIONSHIP TO THE SUBJECT, NEVER FROM THE URL.** A
     query parameter would let anyone open the manager's view of someone else's overtime; the server

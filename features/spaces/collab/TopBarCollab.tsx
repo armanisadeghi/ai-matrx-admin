@@ -30,7 +30,7 @@ export function PresenceAvatars({ viewers, me }: { viewers: SpaceViewer[]; me: s
   return (
     <div className="spaces-presence" aria-label="People viewing this page">
       {shown.map((v) => (
-        // The ring is the person's colour — the same colour as their cursor in the page (personColor).
+        // The ring is the person's color — the same color as their cursor in the page (personColor).
         <span
           key={v.userId}
           className="spaces-presence-avatar"

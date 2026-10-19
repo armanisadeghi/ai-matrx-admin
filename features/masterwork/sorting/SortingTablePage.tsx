@@ -983,7 +983,7 @@ export function SortingTablePage({
         {/* 🚨 THE PROGRESS BAR IS A PROGRESS BAR (jobs-bar-2026-09-16, item 16).
             `role="presentation"` hid it from every assistive technology, and on
             the first case it renders zero width — so what a sighted person saw
-            was a flat grey rule they read as a divider, and what a screen-reader
+            was a flat gray rule they read as a divider, and what a screen-reader
             user got was nothing at all. */}
         <div
           className="mt-2 h-1.5 w-full shrink-0 overflow-hidden rounded-full bg-muted"

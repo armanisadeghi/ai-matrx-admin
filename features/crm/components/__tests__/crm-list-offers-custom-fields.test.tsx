@@ -1,5 +1,5 @@
 /**
- * THE CRM PEOPLE LIST OFFERS ITS ORGANIZATION'S CUSTOM FIELDS AS COLUMNS — behaviour, not wiring
+ * THE CRM PEOPLE LIST OFFERS ITS ORGANIZATION'S CUSTOM FIELDS AS COLUMNS — behavior, not wiring
  * text (lane 7 W2, feeds guard G1).
  *
  * Renders the REAL `CrmListPage` with its service, its organizations and the store's field door

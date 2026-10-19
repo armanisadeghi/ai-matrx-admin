@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * check:settings-env-toggles — a BEHAVIOURAL env var read at feature level.
+ * check:settings-env-toggles — a BEHAVIORAL env var read at feature level.
  *
  * 🚨 THE RULING. Arman, 2026-09-10, verbatim:
  *
@@ -14,10 +14,10 @@
  *      running things locally and we're getting different results than the
  *      server's getting, than the container's getting."
  *
- * THE LENIENCY IS NOT THE PROBLEM — THE ENVIRONMENT IS. A behavioural choice
+ * THE LENIENCY IS NOT THE PROBLEM — THE ENVIRONMENT IS. A behavioral choice
  * in code is uniform, reviewable, and changes everywhere at once on the next
  * push. The same choice in the environment lets every machine disagree about
- * identical code, invisibly. A behavioural choice in `platform.feature_knob`
+ * identical code, invisibly. A behavioral choice in `platform.feature_knob`
  * is better still: an organization can see it and set it, which is law 6.
  *
  * 🚨 THE DISTINCTION THIS GUARD MUST GET RIGHT. Env vars are not banned —
@@ -31,7 +31,7 @@
  *             describes WHERE this copy runs.
  *   IDENTITY  NODE_ENV, VERCEL_ENV, instance id, build id, CI. Legitimate —
  *             it genuinely describes WHAT this copy is.
- *   BEHAVIOUR everything else, read in a boolean shape: a feature switched on
+ *   BEHAVIOR everything else, read in a boolean shape: a feature switched on
  *             or off, a validation skipped, a mock lane armed. ILLEGAL. This
  *             is a setting, and it belongs in the registry.
  *
@@ -42,15 +42,15 @@
  * 🚨 THE ALLOWLIST IS EMPTY, AND THAT IS THE POINT.
  * `scripts/settings-env-toggles-allowlist.json` was seeded 2026-09-11 with 15
  * names / 20 sites; LANE D of the Unified Settings Platform drained it the same
- * day and it now holds ZERO entries. So every BEHAVIOUR finding from here on is
+ * day and it now holds ZERO entries. So every BEHAVIOR finding from here on is
  * NEW and exits 1 — there is no "known bad" tier left to hide in. `--write`
  * shrinks the allowlist to what is still present and can never add an entry, so
  * a new toggle cannot be baselined away.
  *
- * How the 19+3 were drained, because the split is the judgement that matters:
+ * How the 19+3 were drained, because the split is the judgment that matters:
  *   1 became a feature knob   — MATRX_PARITY_SHADOW → `platform.debug.config_parity_shadow`
  *                               (aidream migration 0638), the only one that was
- *                               product runtime behaviour.
+ *                               product runtime behavior.
  *   14 became real CLI flags  — APPLY → --apply, UNWIRED_DEBUG → --debug,
  *                               MATRX_ALLOW_ARCHIVED_REGENERATOR → --allow-archived,
  *                               PODCAST_E2E_FULL → --full, P6_* → --benchmark /
@@ -75,12 +75,12 @@
  * settings-platform half — it grades against the registry's own vocabulary.
  *
  *   pnpm check:settings-env-toggles
- *   pnpm check:settings-env-toggles --all     # list every class, not just BEHAVIOUR
+ *   pnpm check:settings-env-toggles --all     # list every class, not just BEHAVIOR
  *   pnpm check:settings-env-toggles --json
  *   pnpm check:settings-env-toggles --write   # SHRINK the allowlist
  *   pnpm check:settings-env-toggles --self-test
  *
- * Exit: 0 clean · 1 NEW behavioural toggle(s) · 2 UNMEASURED (scanned nothing).
+ * Exit: 0 clean · 1 NEW behavioral toggle(s) · 2 UNMEASURED (scanned nothing).
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -107,7 +107,7 @@ const SECRET_RE =
 const ENDPOINT_RE =
   /(_URL$|_URL_|_URI|ENDPOINT|_HOST$|_HOST_|HOSTNAME|_PORT$|DOMAIN|ORIGIN|BASE_URL|REGION|BUCKET|_DSN$|PROJECT_REF|_ADDR|_EMAIL$)/;
 // Host identity includes what the RUNNER stamps on a process: CI, the test
-// harness (PYTEST_CURRENT_TEST), and the terminal's own colour convention
+// harness (PYTEST_CURRENT_TEST), and the terminal's own color convention
 // (NO_COLOR / FORCE_COLOR / TERM are the terminal describing itself).
 // MATRX_SEO_LOCAL_DEV is here by a STANDING WRITTEN RULING, not by convenience
 // (common-docs/policies/env-vars-are-values-not-toggles.md, 2026-08-25, § "ruled
@@ -256,10 +256,10 @@ function main(): void {
             'controlling behavior."',
           _rule:
             "THIS LIST ONLY SHRINKS, AND IT IS NOW EMPTY. It was seeded 2026-09-11 with the 15 " +
-            "behavioural env toggles that existed that day; LANE D of the Unified Settings " +
+            "behavioral env toggles that existed that day; LANE D of the Unified Settings " +
             "Platform drained all 15 the same day (register USP-035 / USP-085) — one became a " +
             "platform.feature_knob row, most became real CLI flags, the rest were deleted with " +
-            "the dead code or the unsafe bypass that carried them. Every BEHAVIOUR finding from " +
+            "the dead code or the unsafe bypass that carried them. Every BEHAVIOR finding from " +
             "here on is therefore NEW and fails the guard. Adding an entry here is the defect " +
             "this guard exists to catch: convert it or delete it instead.",
           _how:
@@ -286,25 +286,25 @@ function main(): void {
   const counts = { SECRET: 0, ENDPOINT: 0, IDENTITY: 0, BEHAVIOUR: 0 };
   for (const s of sites) counts[s.klass]++;
 
-  console.log(`\n${C.bold}${C.white}BEHAVIOURAL ENV TOGGLES${C.reset} ${C.dim}(${GUARD})${C.reset}`);
+  console.log(`\n${C.bold}${C.white}BEHAVIORAL ENV TOGGLES${C.reset} ${C.dim}(${GUARD})${C.reset}`);
   console.log(
-    `${C.dim}${sites.length} boolean-shaped env read(s) across ${files.length} files — ${counts.BEHAVIOUR} BEHAVIOUR (illegal), ${counts.SECRET} SECRET, ${counts.ENDPOINT} ENDPOINT, ${counts.IDENTITY} IDENTITY (all three legitimate)${C.reset}\n`,
+    `${C.dim}${sites.length} boolean-shaped env read(s) across ${files.length} files — ${counts.BEHAVIOUR} BEHAVIOR (illegal), ${counts.SECRET} SECRET, ${counts.ENDPOINT} ENDPOINT, ${counts.IDENTITY} IDENTITY (all three legitimate)${C.reset}\n`,
   );
 
   if (fresh.length === 0 && known.length === 0) {
-    console.log(`${C.green}✓ No behavioural env toggles anywhere.${C.reset}`);
+    console.log(`${C.green}✓ No behavioral env toggles anywhere.${C.reset}`);
   }
 
   if (fresh.length > 0) {
     console.log(
-      `${C.red}${C.bold}[LOUD] ${fresh.length} NEW behavioural env toggle(s) — not in the allowlist${C.reset}`,
+      `${C.red}${C.bold}[LOUD] ${fresh.length} NEW behavioral env toggle(s) — not in the allowlist${C.reset}`,
     );
     console.log(
-      `${C.dim}Identical code, different behaviour per machine, invisible to the organization.${C.reset}\n`,
+      `${C.dim}Identical code, different behavior per machine, invisible to the organization.${C.reset}\n`,
     );
     for (const s of fresh) {
       console.log(
-        `  ${C.cyan}${s.file}:${s.line}${C.reset}  ${C.bold}${s.name}${C.reset} ${C.dim}(${s.shape}) → classified BEHAVIOUR${C.reset}`,
+        `  ${C.cyan}${s.file}:${s.line}${C.reset}  ${C.bold}${s.name}${C.reset} ${C.dim}(${s.shape}) → classified BEHAVIOR${C.reset}`,
       );
     }
     console.log(
@@ -320,7 +320,7 @@ function main(): void {
 
   if (known.length > 0) {
     console.log(
-      `${C.yellow}${C.bold}[BASELINED] ${known.length} KNOWN behavioural env toggle(s) still in the tree${C.reset} ${C.dim}— allowlisted 2026-09-11, LANE D is removing them; the list only shrinks. Not a pass: each one is a machine-local opinion.${C.reset}`,
+      `${C.yellow}${C.bold}[BASELINED] ${known.length} KNOWN behavioral env toggle(s) still in the tree${C.reset} ${C.dim}— allowlisted 2026-09-11, LANE D is removing them; the list only shrinks. Not a pass: each one is a machine-local opinion.${C.reset}`,
     );
     for (const s of known) {
       console.log(

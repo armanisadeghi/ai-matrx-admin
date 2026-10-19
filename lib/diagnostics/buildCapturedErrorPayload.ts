@@ -92,9 +92,9 @@ const SOURCE_LABELS: Record<CapturedErrorSource, string> = {
   media: "Media terminal failure (@ai-matrx/media diagnostics port)",
   "media-healed": "Media render HEALED after its primary lane died (root cause named)",
   "agent-catalog":
-    "Agent catalogue failure (@ai-matrx/agents/catalog errorSink)",
-  "model-catalog": "Model catalogue failure (@ai-matrx/agents/models errorSink)",
-  "skill-catalog": "Skill catalogue failure (@ai-matrx/agents/skills errorSink)",
+    "Agent catalog failure (@ai-matrx/agents/catalog errorSink)",
+  "model-catalog": "Model catalog failure (@ai-matrx/agents/models errorSink)",
+  "skill-catalog": "Skill catalog failure (@ai-matrx/agents/skills errorSink)",
   "reasoning-leak": "Reasoning leaked into answer text",
   "data-shape": "Data-shape contract violation",
   "url-panel-unopened": "Deep-linked window never opened",

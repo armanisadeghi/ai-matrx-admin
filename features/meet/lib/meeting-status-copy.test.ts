@@ -7,13 +7,13 @@ const series = {
 };
 
 describe("meeting status copy", () => {
-  it("a cancelled meeting promises no next time and no way in (verifier, 2026-09-29)", () => {
+  it("a canceled meeting promises no next time and no way in (verifier, 2026-09-29)", () => {
     const cancelled = { ...series, cancelledAt: "2026-09-29T20:00:00.000Z" };
     expect(scheduleLabel(cancelled, false)).toBe("Was scheduled for: ");
     expect(scheduleLabel(cancelled, true)).toBe("Was scheduled for: ");
     const sentence = linkSentence(cancelled);
     expect(sentence).not.toMatch(/can ask to join|can join\.|every occurrence/);
-    expect(sentence).toContain("nobody can join a cancelled meeting");
+    expect(sentence).toContain("nobody can join a canceled meeting");
   });
 
   it("a live series keeps Next and the lobby sentence", () => {

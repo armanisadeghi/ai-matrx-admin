@@ -15,7 +15,7 @@
 // seam to hang it on — see docs/handoffs/inventory-law-sweep.md (Wave 3).
 // This comment used to claim right-click parity; it never shipped.
 //
-// Modelled on features/agents/components/conversation-actions/
+// Modeled on features/agents/components/conversation-actions/
 // conversationActionRegistry.tsx — pure menu wiring; every mutating entry
 // delegates to a handler the caller owns (optimistic update + revert live there).
 

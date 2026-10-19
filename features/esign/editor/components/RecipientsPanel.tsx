@@ -3,7 +3,7 @@
 // features/esign/editor/components/RecipientsPanel.tsx — who gets this and what each does (D2, D3).
 // A colleague is PICKED from the organization (they sign with their account); anyone else is typed
 // (name + email, a link in their inbox). Each recipient: role, routing step, private message,
-// company, title, verification (Email link / Email code / Access code), colour for life.
+// company, title, verification (Email link / Email code / Access code), color for life.
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { useState } from "react";

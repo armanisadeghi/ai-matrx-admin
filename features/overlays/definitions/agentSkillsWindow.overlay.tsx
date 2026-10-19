@@ -4,7 +4,7 @@
  * Opener for the `agentSkillsWindow` overlay.
  *
  * `useOpenAgentSkillsWindow()` — imperative hook. Call with an agent id to
- * open the non-blocking skills catalogue window; returns a handle with a
+ * open the non-blocking skills catalog window; returns a handle with a
  * `close()` method.
  */
 

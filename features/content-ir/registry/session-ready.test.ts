@@ -67,7 +67,7 @@ describe("the content-ir seam is the platform barrier", () => {
     expect(calls).toEqual(["fired"]);
   });
 
-  it("honours the unsubscribe returned for the not-yet case", () => {
+  it("honors the unsubscribe returned for the not-yet case", () => {
     const calls: string[] = [];
     const unsubscribe = whenSessionReady(() => calls.push("fired"));
     unsubscribe();

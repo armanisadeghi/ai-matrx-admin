@@ -1,5 +1,5 @@
 // app/(public)/templates/workspaces/[category]/page.tsx — the Space templates of one Space category.
-// Categories come from the catalogue itself, so a category the template library adds later gets its page.
+// Categories come from the catalog itself, so a category the template library adds later gets its page.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";

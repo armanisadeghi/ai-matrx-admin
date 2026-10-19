@@ -3,7 +3,7 @@
 // Reads and writes for `interview.decision_question` — the answer path.
 //
 // 🚨 THE ANSWER IS SACRED. `answer_text` is written EXACTLY as it was given:
-// no trim, no collapse, no "helpful" normalisation. A leading space, a trailing
+// no trim, no collapse, no "helpful" normalization. A leading space, a trailing
 // newline and a run of blank lines are part of what he said. The DB backs this
 // up (`decision_question_answer_words_ck` refuses an own-words or overturn
 // answer with no non-whitespace character — `qd_005`), and this module never
@@ -113,7 +113,7 @@ export interface SaveAnswerArgs {
  */
 export async function saveAnswer(args: SaveAnswerArgs): Promise<SaveOutcome> {
   const { question, verdict, answerText, source, answeredBy, audioFileId } = args;
-  // ONE PREDICATE, and this is its last line of defence: whatever box the
+  // ONE PREDICATE, and this is its last line of defense: whatever box the
   // words came from, an own-words or overturn answer that carries no
   // non-whitespace character never reaches Postgres (which refuses it too
   // since `qd_005` — the CHECK and this guard say the same thing).

@@ -18,7 +18,7 @@ const row = (over: Partial<DetailLike> & Pick<DetailLike, "kind" | "text">) =>
   ({ position: 0, deleted_at: null, metadata: {}, ...over }) as DetailLike;
 
 describe("selectCardDetailLayers", () => {
-  it("returns every learner-readable text layer, labelled", () => {
+  it("returns every learner-readable text layer, labeled", () => {
     const layers = selectCardDetailLayers([
       row({ id: "a", kind: "helper", text: "Think of it as a solar panel." }),
       row({ id: "b", kind: "example", text: "A spinach leaf bubbles." }),

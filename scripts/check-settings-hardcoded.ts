@@ -3,7 +3,7 @@
  * check:settings-hardcoded — a NEW knob-shaped CAPS constant appearing outside
  * the registry.
  *
- * 🚨 THE LAW (CLAUDE.md law 6, "opinions become knobs"): a behavioural choice
+ * 🚨 THE LAW (CLAUDE.md law 6, "opinions become knobs"): a behavioral choice
  * is an org-configurable setting with a sensible default. Organizations decide,
  * never agents, and never hardcoded taste. `MAX_HOSTS = 10` in a constants file
  * is one engineer's opinion frozen into a deploy — nobody can see it, nobody
@@ -187,7 +187,7 @@ function main(): void {
   // ── THE CLASSIFICATION ──────────────────────────────────────────────────
   // Read BEFORE anything is graded, and graded itself: an entry with an unknown
   // kind or a reason too short to be an argument is a baseline wearing a
-  // sentence, so the guard fails on the FILE rather than quietly honouring it.
+  // sentence, so the guard fails on the FILE rather than quietly honoring it.
   const classification: ClassEntry[] = existsSync(CLASSIFICATION_FILE)
     ? (JSON.parse(readFileSync(CLASSIFICATION_FILE, "utf8")).entries as ClassEntry[])
     : [];

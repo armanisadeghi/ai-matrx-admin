@@ -173,7 +173,7 @@ export function EntityScopeTagger(props: EntityScopeTaggerProps) {
   // When an org admin turns OFF "Scopeable" for this kind (org_module_settings),
   // block tagging it. Only applies to the uncontrolled (write) mode — controlled
   // mode is a filter, never a write. Defaults to allowed (no settings row, or a
-  // kind not in the catalogue, e.g. agent_surface_binding).
+  // kind not in the catalog, e.g. agent_surface_binding).
   const uncontrolledEntityType = isControlled
     ? null
     : ((props as UncontrolledProps).entityType ?? null);

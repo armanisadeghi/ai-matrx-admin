@@ -81,7 +81,7 @@ export function timeNowInZone(timeZone: string, now: Date = new Date()): string 
   }).formatToParts(now);
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((part) => part.type === type)?.value ?? "00";
-  // `en-GB` can render midnight as "24"; normalise so the input is always valid.
+  // `en-GB` can render midnight as "24"; normalize so the input is always valid.
   const hour = get("hour") === "24" ? "00" : get("hour");
   return `${hour}:${get("minute")}`;
 }

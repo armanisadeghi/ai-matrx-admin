@@ -102,7 +102,7 @@ export function NeedsYouRow({ handoff }: { handoff: CaptureHandoff }) {
                 text={
                   handoff.handoff_kind
                     ? HANDOFF_KIND_EXPLANATION[handoff.handoff_kind]
-                    : "We do not recognise this kind of item; your extension does and can still read it."
+                    : "We do not recognize this kind of item; your extension does and can still read it."
                 }
                 label={`About ${noun}`}
               />
@@ -136,7 +136,7 @@ export function NeedsYouRow({ handoff }: { handoff: CaptureHandoff }) {
         {yours ? "Needs you" : "Your browser"}
       </span>
 
-      {/* Secondary, and labelled as secondary: the button above does the real
+      {/* Secondary, and labeled as secondary: the button above does the real
           work. This is here for the person who simply wants to look. */}
       <OutboundLink
         href={handoff.url}

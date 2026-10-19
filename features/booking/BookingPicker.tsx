@@ -84,7 +84,7 @@ export function BookingPicker({ page, preview }: { page: PublicBooking; preview?
   const [textPhone, setTextPhone] = useState("");
   const [textRefused, setTextRefused] = useState<string | null>(null);
   // A REFUSAL BELONGS BESIDE ITS QUESTION. Until 2026-09-21 an answer of the
-  // wrong shape travelled all the way to the store, which said "Vehicle Year
+  // wrong shape traveled all the way to the store, which said "Vehicle Year
   // takes a number, and it was given a string" — true, and printed above a
   // fresh list of times with the person's typing gone.
   const [wrongShape, setWrongShape] = useState<Record<string, string>>({});

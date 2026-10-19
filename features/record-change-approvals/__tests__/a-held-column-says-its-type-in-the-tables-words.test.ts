@@ -2,7 +2,7 @@
  * THE USE CASE (lane HANDOVER, 2026-09-27). In Cedar Ridge Physical Therapy's chat, admin asked the
  * assistant to add a "Hydrotherapy Pool" room that holds 4 patients. The assistant proposed a
  * Patient Capacity column, a number, and the approval card read "HOLDS Range" — the store's
- * behaviour word, not the type a person picks on the table ("Number"). The card now says the
+ * behavior word, not the type a person picks on the table ("Number"). The card now says the
  * column's type in the same word the table's field panel uses.
  *
  * RED before the lane: APPROVAL_READER_UNDER_TEST points at the HEAD copy.
@@ -21,7 +21,7 @@ const held = (declaration: Record<string, unknown>) => ({
   declaration,
 });
 
-it("a number column is said the way the table says it, never as the store's behaviour word", () => {
+it("a number column is said the way the table says it, never as the store's behavior word", () => {
   const capacity = { key: "patient_capacity", label: "Patient Capacity", type: "range" };
   const said = fieldTypeSentence(held(capacity));
   expect(said).not.toBe("Range");

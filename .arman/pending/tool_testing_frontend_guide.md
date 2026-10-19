@@ -766,7 +766,7 @@ Pass an `AbortController` signal to `fetch`. When aborted:
 
 1. The browser tears down the connection
 2. The server detects the disconnect via `GeneratorExit`
-3. The background execution task is cancelled
+3. The background execution task is canceled
 4. No `end` event is sent (the stream is already closed)
 
 ```typescript

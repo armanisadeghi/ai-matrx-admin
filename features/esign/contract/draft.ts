@@ -40,7 +40,7 @@ export interface DraftSettings {
 export interface EnvelopeDraftV1 {
   schema_version: 1;
   title: string;                  // ≤ 300
-  email_subject: string;          // ≤ 200; UI prefills "Please sign: <title>", labelled as the subject
+  email_subject: string;          // ≤ 200; UI prefills "Please sign: <title>", labeled as the subject
   message: string;                // ≤ 4000
   documents: Array<{ key: string; file_id: string; name: string; page_count: number | null }>; // ≤ 10
   recipients: DraftRecipient[];   // ≤ 20

@@ -30,7 +30,7 @@
  * WHAT IT RUNS
  * ------------
  *   1. THE CORPUS — `migrations/judgment-corpus/*.sql`, every file × both targets, through
- *      both runners' `--judge-only`. No connection is opened by either: the judgement is a
+ *      both runners' `--judge-only`. No connection is opened by either: the judgment is a
  *      pure function of the bytes and the target.
  *   2. THE FLAG CASES — the rules that are about the COMMAND rather than the file, which a
  *      corpus of files cannot express. Each is an actual invocation of both runners that
@@ -106,7 +106,7 @@ interface Verdict {
 }
 
 /**
- * THE STATEMENT DETECTORS ARE PART OF THE JUDGEMENT.
+ * THE STATEMENT DETECTORS ARE PART OF THE JUDGMENT.
  *
  * `NEEDS_AUTOCOMMIT_RE` was read off comment-only-stripped text, so the words
  * `CREATE INDEX CONCURRENTLY` inside a function's HINT string made `pnpm db:apply`
@@ -261,7 +261,7 @@ function main(): number {
   if (!existsSync(resolve(aidream, "db", "apply_migrations.py"))) {
     console.error(
       `${FAIL}UNMEASURED — the aidream checkout is not at ${aidream}, so the two runners' ` +
-        `judgement CANNOT be compared.\n` +
+        `judgment CANNOT be compared.\n` +
         `  This is a failure, not a warning: "both runners agree" is the claim this check ` +
         `exists to prove, and an unrun check has proven nothing.\n` +
         `  Remedy: check out aidream beside this repo, or set AIDREAM_DIR=<path>.`,
@@ -327,7 +327,7 @@ function main(): number {
           `${FAIL}${name} @ ${target}: THE TWO RUNNERS DISAGREE.\n` +
             `         matrx-frontend: ${sa}${a.detail ? `\n           ${C.dim}${a.detail}${C.reset}` : ""}\n` +
             `         aidream:        ${sb}${b.detail ? `\n           ${C.dim}${b.detail}${C.reset}` : ""}\n` +
-            `         One judgement, or the campaign has two. migrations/JUDGMENT.md says which it is.`,
+            `         One judgment, or the campaign has two. migrations/JUDGMENT.md says which it is.`,
         );
         failures += 1;
         continue;
@@ -382,7 +382,7 @@ function main(): number {
   if (failures) {
     console.error(
       `\n${FAIL}${C.bold}migration judgment FAILED${C.reset} — ${failures} disagreement(s) over ` +
-        `${files.length} fixtures. The campaign has ONE judgement or it has none; fix the runner or ` +
+        `${files.length} fixtures. The campaign has ONE judgment or it has none; fix the runner or ` +
         `the rule, never the expectation alone.`,
     );
     return 1;

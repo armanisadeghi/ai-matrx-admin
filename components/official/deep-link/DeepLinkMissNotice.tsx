@@ -71,7 +71,7 @@ export interface DeepLinkMissNoticeProps {
    */
   containerLabel?: string;
   /**
-   * Override the registry route. Honoured exactly by `resolveEntityDoors`, so
+   * Override the registry route. Honored exactly by `resolveEntityDoors`, so
    * `null` means "this record genuinely has no door" and must not fall through.
    * Pass it when the entity has a real page but no registry token yet — `user`
    * is the live example (`accountHrefFor`), and it is exactly the case where the

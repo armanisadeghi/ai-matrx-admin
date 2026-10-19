@@ -105,7 +105,7 @@ function bundle(
 const m = () => parseManifest(rawManifest(), TOPIC);
 
 describe("deliveryFor", () => {
-  it("honours a context binding on a row-backed kind", () => {
+  it("honors a context binding on a row-backed kind", () => {
     const b = bundle(
       [{ kind: "page.content", mode: "all" }],
       [{ variable: "scraped_pages", kinds: ["page.content"], delivery: "context" }],

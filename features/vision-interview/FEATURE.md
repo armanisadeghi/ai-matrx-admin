@@ -50,7 +50,7 @@ doc, the deferred tail and every naming caveat all live in that STATE.md. The ba
 5. **Stage movement is human-controlled and rides the resume payload** —
    `advance_stage` (the header's Advance control), `done` (the header's
    Finish control — the only path to finalize), and v2's `goto_stage`
-   (v3: the centre panel's "Move the interview here" bar, shown when you are
+   (v3: the center panel's "Move the interview here" bar, shown when you are
    reading an expert whose stage is not the current one — ANY stage, forward
    or back). Both arm
    only while the run waits on the human (`waiting_human`); disabled states
@@ -130,7 +130,7 @@ doc, the deferred tail and every naming caveat all live in that STATE.md. The ba
     `interview.session.role_bindings` already holds, per role,
     `{agent_id, is_version, definition_agent_id, conversation_id}` — and that
     conversation id is stable per role, per session, across runs. So the
-    centre panel mounts the canonical `ChatRoomClient` (`agentId` +
+    center panel mounts the canonical `ChatRoomClient` (`agentId` +
     `conversationId`, read through `roleBinding()` in `types.ts`) and there is
     NO bespoke transcript, composer, or stream renderer in this feature any
     more (`TranscriptPane`, `Composer`, `StageRail`, `RoleStrip`,
@@ -173,7 +173,7 @@ doc, the deferred tail and every naming caveat all live in that STATE.md. The ba
     continuation-turn delivery was confirmed live.
 15. **THE DUPLICATE-STREAM RULE (v3).** The right-hand feed streams every
     role EXCEPT the one whose tab is live (`selectActiveRoleTab`) — that one
-    is already streaming in the centre. Completed messages always land in the
+    is already streaming in the center. Completed messages always land in the
     feed regardless.
 16. **THE LEFT PANEL IS CARDS, AND IT OWNS THE HOLES LEDGER (v3).**
     `QuestionsPanel` renders ONE `QuestionCard` per question — question as the
@@ -292,7 +292,7 @@ Realtime moved onto `@ai-matrx/data/realtime` (2026-09-07). `useInterviewRoom` l
   prove the dialog presses the button it was handed).
 
 - **2026-09-16** — **The room is usable on a phone (jobs-bar-2026-09-16, item
-  19).** At 390px the centre panel opened with six expert tabs wrapped over
+  19).** At 390px the center panel opened with six expert tabs wrapped over
   three rows — a third of the screen before one word of the conversation — the
   document controls beside them were unlabelled glyphs (`hidden sm:inline` on
   their only words), Advance and Finish were two blank boxes next to a
@@ -303,7 +303,7 @@ Realtime moved onto `@ai-matrx/data/realtime` (2026-09-07). `useInterviewRoom` l
   questions and expert feed are bottom drawers off one header control that
   carries the open-question count (`badge` — added to the shared primitive, so
   every route gets it). `RoomChatPane` gains a one-row phone bar: the live
-  expert, and the documents, each behind one labelled control and one
+  expert, and the documents, each behind one labeled control and one
   `BottomSheet`; the header's Advance moved into the expert sheet, spelled
   out, and Finish always carries its word. Desktop is byte-identical — proven
   by `components/__tests__/room-on-a-phone.test.tsx`, whose fourth case fails
@@ -375,7 +375,7 @@ Realtime moved onto `@ai-matrx/data/realtime` (2026-09-07). `useInterviewRoom` l
   person-facing sentence, and a stream that ends having said nothing terminal
   fails loudly with `SILENT_START_MESSAGE` instead of spinning. Forcing test:
   `hooks/__tests__/inlineStartVerdict.test.ts` (red against the old
-  drop-everything behaviour, green now).
+  drop-everything behavior, green now).
 
 - **2026-09-09** — Role rooms hide programmatic variable collection and render
   pristine `user_content`; internal role templates no longer appear as Expert

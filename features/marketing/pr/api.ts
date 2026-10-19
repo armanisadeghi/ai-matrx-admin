@@ -76,7 +76,7 @@ function streamData(event: TypedStreamEvent): Record<string, unknown> | null {
 }
 
 /**
- * Analyse a site and persist whatever survives the gates.
+ * Analyze a site and persist whatever survives the gates.
  */
 export async function generateStoryAngles(
   dispatch: AppDispatch,
@@ -229,7 +229,7 @@ export interface EvaluateRequestResult {
 
 /**
  * Score (or re-score) one existing request — the recovery door for rows that
- * landed unscored (`new`) or need a fresh judgement (`matched`). One responder
+ * landed unscored (`new`) or need a fresh judgment (`matched`). One responder
  * pass is ~30-90s of paid model work, so it rides the same durable stream.
  */
 export async function evaluateSourceRequest(

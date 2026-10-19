@@ -18,7 +18,7 @@
  * the promotion module may not write `mandate.definition` itself, may not
  * decide the home, and may not swallow the door's words.
  *
- * The runtime behaviour of the door itself is proven against PRODUCTION, not
+ * The runtime behavior of the door itself is proven against PRODUCTION, not
  * here — `aidream/tests/test_mandate_promotion_live.py`, RED then GREEN.
  */
 import { readFileSync } from "node:fs";

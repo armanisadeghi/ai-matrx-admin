@@ -325,7 +325,7 @@ export function deriveStreamVerdicts(
 /**
  * 🚨 A STREAM VERDICT IS PENDING UNTIL THE STREAM ENDS (2026-10-15 review B1).
  * The Stream tab showed a red "Did not complete as this kind" from the first
- * chunk until the stream finished ~55s later, then flipped green: a judgement
+ * chunk until the stream finished ~55s later, then flipped green: a judgment
  * about the END painted before the end existed. Each row now reads through
  * this one rule:
  *  - a "good thing happened" verdict (detected, completed, grew) is `pass` the

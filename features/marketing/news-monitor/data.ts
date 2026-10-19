@@ -10,7 +10,7 @@
  *   display evidence; no story screen reads `web.news_item` (spec §5.3).
  * - Surface anyway / undo and dismiss-with-reason / undo: `guardedUpdate`
  *   writes to `seo.tracker_story` under its existing RLS (spec §12 Lane G).
- *   The engine honours both on its next commit (aidream
+ *   The engine honors both on its next commit (aidream
  *   `services/news/store.py::commit_stories`: a dismissed story stays
  *   dismissed; a story surfaced anyway is never withheld again).
  */

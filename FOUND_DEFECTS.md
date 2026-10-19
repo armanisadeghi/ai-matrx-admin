@@ -44,7 +44,7 @@ full, completed answer — the server ran the turn to the end after the person a
 `scratchpad/review/08-after-stop.png` vs `10-existing-conv.png` of that session (not kept). The Stop control's
 JSX and `handleStop` (`InputActionButtons.tsx` → `cancelExecution(executingConversationId ?? conversationId)`)
 were unchanged by that work, so the gap is between `cancelExecution` and the server's run (client abort only,
-or a server that does not honour the cancel). Owner: whoever owns execution-runtime cancel
+or a server that does not honor the cancel). Owner: whoever owns execution-runtime cancel
 (`common-docs/systems/architecture/execution-runtime/`). A Stop that does not stop is a screen that lies (law 4).
 
 ### D355 — FIXED 2026-09-27 — Any signed-in person could grant themselves Premium: `billing.user_plan` was client-writable
@@ -219,7 +219,7 @@ back on refresh") covers this half too; the URL fix does not close it.
 
 **Why it is filed, not fixed:** each row needs a considered `preservation` data contract (what of
 the body is safe to persist, what must be re-read) plus an `overlayInstanceId` for multi-instance
-windows — 180 judgement calls, not a sweep. The `ephemeral` flag on the agent shells is a separate
+windows — 180 judgment calls, not a sweep. The `ephemeral` flag on the agent shells is a separate
 ruling: it is what makes a restored agent panel's geometry impossible today.
 
 ### D339 — A `research` run's first user message carries 129k characters / 972 lines of assembled markdown as the human's typed text (2026-09-19)
@@ -1280,7 +1280,7 @@ against HEAD:
 
 No *declared* notification deep link points at any of the 64 today (the only catalog link in
 that space is `/administration/agents/hindsight/…`), so nothing has reached a phone yet — the
-exposure is structural, not yet realised. `scripts/check_deep_link_liveness.py` still answers
+exposure is structural, not yet realized. `scripts/check_deep_link_liveness.py` still answers
 165 — 64 live / 29 placeholder / 72 unbuilt and ratchet 32 from **both** sources, so the
 existing ratchet cannot see this: it prints the two route counts (1081 vs 1029) on its own
 summary line and compares nothing.
@@ -1391,7 +1391,7 @@ census of `aidream` alone finds `agent '<id>' not found`
 (`services/mandates/bindings.py`), `workflow <id> is archived` (`services/mandates/service.py`).
 
 **The fix per site is one line** — wrap the printed string in `<TextWithDoors text={…} />`
-(add `defaultToken` only when the surface knows what its sentences are about). No behaviour
+(add `defaultToken` only when the surface knows what its sentences are about). No behavior
 changes when the sentence carries no resolvable id.
 
 **Where to sweep** (highest signal first, from the grep that found this): `features/agents/**`
@@ -1870,7 +1870,7 @@ had it, and `assoc_list(..., NULL, NULL)` returned 0. Passing `'both'` returns i
 
 Fix: `IF p_direction IS NULL OR p_direction NOT IN ('out','in','both') THEN RAISE` — or default the
 parameter's NULL to `'out'` explicitly. One line, in the `assoc_*` RPC family. Not HRB-010's to
-change: the association RPCs are platform-wide and a behaviour change there needs its own sweep of
+change: the association RPCs are platform-wide and a behavior change there needs its own sweep of
 callers that may be relying on the silent-empty result.
 
 ### D268 — `platform.trg_reachability_on_rules` runs a FULL reachability rebuild per statement, including for NON-conveying rules (2026-08-26)
@@ -2367,7 +2367,7 @@ std_select USING (created_by = (select auth.uid()) OR iam.has_access('<token>', 
 
 **Why it matters more than a slow query:** `files.files` is the user's file list. A first-party user cannot enumerate their own files inside a normal request timeout. Under db-rules §6a that is as serious as a leak — _"a legitimate user blocked from their own data is as serious a bug as a stranger let in"_.
 
-**Found in passing** while re-locking `storage_uri` on the same table (D231). Confirmed pre-existing and NOT caused by that work: the policy text is byte-identical to what `apply_rls` emits, the table already carried exactly the generator's six policies before it ran, and `runtime.global_request` — untouched — shows the same behaviour at the same shape.
+**Found in passing** while re-locking `storage_uri` on the same table (D231). Confirmed pre-existing and NOT caused by that work: the policy text is byte-identical to what `apply_rls` emits, the table already carried exactly the generator's six policies before it ran, and `runtime.global_request` — untouched — shows the same behavior at the same shape.
 
 **RESOLVED 2026-08-23.** Measured live as the same real non-admin, same queries:
 
@@ -2559,7 +2559,7 @@ Split out of D232 §D. For both columns, states 1 and 2 of the §8a-1 sequence a
 the `/maps` feature (`features/canvas/maps/{service,types,columns}`) — commits `181f56eae` and
 `43f806b3c`, both on `origin/main`. The blocker is purely that the maps list SELECTS the column by
 name, so a drop ahead of the deploy 42703s that page. **It was not dropped in the D232 pass because
-no production deploy could be proven live** — Vercel was cancelling every production build behind a
+no production deploy could be proven live** — Vercel was canceling every production build behind a
 rapid push storm from parallel sessions, so `latestDeployment.readyState` never left `CANCELED`.
 The drop is one line once a READY production deployment contains `181f56eae`:
 `alter table canvas.canvas_items drop column is_public;` then `pnpm db-types`.
@@ -3455,7 +3455,7 @@ Found by the guard rail Arman required before folding GRANTs into `iam.apply_rls
 
 **STILL OPEN — three ops sinks** (`public.system_error`, `public.system_write_failure`, `runtime.global_origin`). They are currently closed (no policy = no rows for `authenticated`) but grant-wide, so **the first policy anyone adds opens them fully**.
 
-**`batch.cost_event` is closed (2026-08-21) and its answer is the template for the other three.** The openness call this entry says is Arman's was _made_ by Arman for batch — _"Absolutely users need to be able to see their batch jobs. Fix it please."_ — and the resolution needed no new judgement once the table was classified: it is an append-only org-scoped cost log, so it is a **`ledger`**, and the `ledger` variant already encodes exactly "users read their own org, the server writes." The whole fix was `update platform.entity_types set rls_variant='ledger'` + `iam.apply_rls(...)`; the generator then issued `SELECT`-only grants and the pre-existing `SIUD` disappeared as a side effect of being done properly. **The `anon` grant was the part the generator could NOT fix** (§6d-2: `anon` is deliberately untouched), and it was worse than this entry recorded — `anon` held the same four privileges as `authenticated`, not none. Check `anon` explicitly on the remaining three. Sibling migrations: aidream `0438`/`0439`/`0440`; live proof `aidream/scripts/_verify_batch_access_model.py`.
+**`batch.cost_event` is closed (2026-08-21) and its answer is the template for the other three.** The openness call this entry says is Arman's was _made_ by Arman for batch — _"Absolutely users need to be able to see their batch jobs. Fix it please."_ — and the resolution needed no new judgment once the table was classified: it is an append-only org-scoped cost log, so it is a **`ledger`**, and the `ledger` variant already encodes exactly "users read their own org, the server writes." The whole fix was `update platform.entity_types set rls_variant='ledger'` + `iam.apply_rls(...)`; the generator then issued `SELECT`-only grants and the pre-existing `SIUD` disappeared as a side effect of being done properly. **The `anon` grant was the part the generator could NOT fix** (§6d-2: `anon` is deliberately untouched), and it was worse than this entry recorded — `anon` held the same four privileges as `authenticated`, not none. Check `anon` explicitly on the remaining three. Sibling migrations: aidream `0438`/`0439`/`0440`; live proof `aidream/scripts/_verify_batch_access_model.py`.
 
 **Deliberately NOT auto-swept.** `iam.apply_table_grants` refuses to grant on any of them, so the v3 backfill skipped them safely. Fixing each means choosing its level under the access-ladder law (`common-docs/policies/access-ladder.md`: every table starts at Organization; only Arman approves Confidential or Private). **Do not "fix" these by granting; give them real policies.**
 
@@ -3553,7 +3553,7 @@ against the DB) wrote the 17 `BUILTIN_TEMPLATES` into
 `plan.profile.template_map.templates` on the system-org `platform-archetypes` row, beside
 `archetypes` / `concepts` — machine-derived, pure data, no `Literal`, no CHECK, no registry.
 **Templates remain an OPTION and are NEVER required: no flag, gate, setting, or default-on
-behaviour was added.** Proved end to end on the throwaway site `d194-template-proof`:
+behavior was added.** Proved end to end on the throwaway site `d194-template-proof`:
 realize stored `data-matrx-scaffold` / `data-matrx-section` bodies (matched by `page_type`
 and by `attributes.template`, each reporting `matched_by`), a real fill returned authored
 HTML with every marker stripped, and a realize with an EMPTY library created an empty body
@@ -3900,7 +3900,7 @@ Pre-existing `security_definer_view` errors + RLS-disabled exposed tables (`publ
 
 ### D81 (remainder) — two inline mic level-meter copies left (2026-07-22)
 
-Canonical: `features/audio/streamLevelMeter.ts`. Remaining: `useSimpleRecorder.ts`, `voice-agent/audio/audioCapture.ts` — analyser lifecycle entangled with recording teardown; port one per change, verify the meter moves.
+Canonical: `features/audio/streamLevelMeter.ts`. Remaining: `useSimpleRecorder.ts`, `voice-agent/audio/audioCapture.ts` — analyzer lifecycle entangled with recording teardown; port one per change, verify the meter moves.
 
 ### D80 — stale agent records report full `_loadedFields` with EMPTY `variableDefinitions` (2026-07-22)
 
@@ -3985,13 +3985,13 @@ _One line each: `- D## — <short reason> — <date> — delete when: <condition
 
 - **D346** — the two shell Jest failures reported 2026-09-21 were stale; both focused suites passed 2026-09-23 (7 tests, commit `c3edf550f1`).
 
-- **D343** — `GET /media/libraries` published `visibility`, `adapter` and `q` in API-CONTRACT.md §3 and DECLARED none of them, so FastAPI dropped all three and answered 200 with the whole unfiltered list: `/libraries`' search box did not narrow, its four lane tabs served identical rows, D10's per-lane counts were four identical totals, and the Acquisition Console's Library rows linked bare because no parameter could be honoured. FIXED 2026-09-20 in both halves — aidream `d7093434f6` (all three declared through one `apply_library_filter`, unknown values refused 400, `total` counts the filtered set, contract 0.6.0; the `…/metrics` and `…/videos` siblings swept with it) and this repo's `urlState: true` on `createLibraryListConfig`, `adapter` on the wire, lane counts under the same narrowing, and `librariesHref` on every console Library row. Guard: `features/source-library/__tests__/the-libraries-link-is-a-query-the-list-runs.test.ts` (11 cases, 8 red against the pre-fix behaviour).
+- **D343** — `GET /media/libraries` published `visibility`, `adapter` and `q` in API-CONTRACT.md §3 and DECLARED none of them, so FastAPI dropped all three and answered 200 with the whole unfiltered list: `/libraries`' search box did not narrow, its four lane tabs served identical rows, D10's per-lane counts were four identical totals, and the Acquisition Console's Library rows linked bare because no parameter could be honored. FIXED 2026-09-20 in both halves — aidream `d7093434f6` (all three declared through one `apply_library_filter`, unknown values refused 400, `total` counts the filtered set, contract 0.6.0; the `…/metrics` and `…/videos` siblings swept with it) and this repo's `urlState: true` on `createLibraryListConfig`, `adapter` on the wire, lane counts under the same narrowing, and `librariesHref` on every console Library row. Guard: `features/source-library/__tests__/the-libraries-link-is-a-query-the-list-runs.test.ts` (11 cases, 8 red against the pre-fix behavior).
 - **D330** — an expression index on an RLS table is unusable by every client read (`->>` is not LEAKPROOF, so the qual can never be an index condition). FIXED 2026-09-17 by CS-30: the identity moved into real columns `files.files.artifact_kind` / `provider_session_id` (`migrations/20260917_files_artifact_identity_columns.sql` + `…_backfill_and_index.sql` + `…_column_grants.sql`, all ledgered), the server's upload door stamps them (`aidream packages/matrx-files/matrx_files/artifact_identity.py`), the panel's read filters them, and the useless index was dropped through the chair step `migrations/inverse/files_coding_session_artifact_index_drop.sql`. `pnpm check:artifact-read-latency` now refuses a returning `metadata->>` FILTER on that read by name. The two genuine siblings (`idx_cld_files_derived_from`, `idx_cld_files_variant_key`) stay: server-side readers bypass RLS. Remainder is D331, a different cause.
 - **D328 — frontend release blocked by additive entity vocabulary and duplicate lockfile mappings.** Fixed in `eae8f85f09`, `17272e64a6`, and `7e35664b69`; package `@ai-matrx/associations@0.9.22` adopted, frozen install and live gate passed, and production `ed6c73ae5fc8` served the independently verified podcast repair on 2026-09-17.
 
 - **D327 — the server read the merged payload where it meant the Expert's words, and the orchestrator's own notices were indistinguishable from her turns.** Both halves closed in aidream `23fa31d6b`. Reader: `masterwork_corpus/corpus.py` now selects `role` + `user_content` and projects through the platform's ONE rule (`matrx_ai.config.human_authored_text`), so the Scout's seeded cue is neither quoted nor counted, and a row with nothing human in it is not a turn. Writer: the four orchestrator gates build their injected turns through the new `host_authored_user_turn()` (empty `user_content` + `authored_by: host`), never NULL; `dynamic_drain` stamps both of its halves. Siblings moved onto the same projection: the chat-import distiller, the coding-session title, `vision_interview.transcript_message_text`. Guards proven failing then passing: `packages/matrx-ai/tests/test_host_authored_user_turns.py` (5) and `aidream/services/masterwork_corpus/tests/test_corpus_reads_the_humans_words.py` (4). Backfill after a read-only census — 89 provable historical gate notices stamped, 8 ambiguous rows deliberately untouched (`db/migrations/ai_085_host_authored_user_turns_are_stamped.sql`, applied and verified live). **Open remainder, filed not fixed:** matrx-rag's `sources.py` indexes `content` for every role, so RAG-retrieved text can still carry an agent-seeded template as the human's turn — matrx-rag sits below matrx-ai and cannot import the projection, so closing it needs its own injected seam. 2026-09-16.
 
-- **D325 — `live-ingest-lane.test.tsx`'s 7 red rejoin cases: every assertion was RIGHT, the FAKE was lying.** The suite's `useMasterworkRun` mock returned a hand-written subset of `MasterworkRunHandle` with no `runId` — a state the real hook cannot produce on a rejoin (`rejoinDurableRun` writes `runId: pointer.runId` in the same `setState` that sets `status: "rejoining"`). When `6d424b231d` made the close honest, the reopen latch started asking `shouldReopenForRun(run.runId, dismissed)`, which correctly refuses to reopen a run it cannot identify — so the seven cases failed against the fake's impossible state, not the product. **No product code was wrong and no assertion was rewritten.** The fake is now typed `MasterworkRunHandle<IngestSummary>`, so a forgotten field is a type error instead of a twelve-hour read (it immediately caught a second lie: the settled result was missing `alreadyDistilled`). Three guards added for the behaviour nothing asserted, each proven failing-then-passing against a mutation: a close during a live rejoined run really closes and survives a reconnect flicker; Stop is drawn only over a run in flight and reaches the real handle; and `useDurableRun.cancel.test.tsx` proves a stopped run clears its pointer so a reload rejoins nothing. Live on the preview as admin@admin.com: started a source ingest on a disposable Rulebook, reloaded mid-run, the dialog reopened itself on the right lane showing "Source split into 1 chunk(s). Distilling rules from each…" / "Picking this back up — it kept working while you were away." with a live Stop. 2026-09-15.
+- **D325 — `live-ingest-lane.test.tsx`'s 7 red rejoin cases: every assertion was RIGHT, the FAKE was lying.** The suite's `useMasterworkRun` mock returned a hand-written subset of `MasterworkRunHandle` with no `runId` — a state the real hook cannot produce on a rejoin (`rejoinDurableRun` writes `runId: pointer.runId` in the same `setState` that sets `status: "rejoining"`). When `6d424b231d` made the close honest, the reopen latch started asking `shouldReopenForRun(run.runId, dismissed)`, which correctly refuses to reopen a run it cannot identify — so the seven cases failed against the fake's impossible state, not the product. **No product code was wrong and no assertion was rewritten.** The fake is now typed `MasterworkRunHandle<IngestSummary>`, so a forgotten field is a type error instead of a twelve-hour read (it immediately caught a second lie: the settled result was missing `alreadyDistilled`). Three guards added for the behavior nothing asserted, each proven failing-then-passing against a mutation: a close during a live rejoined run really closes and survives a reconnect flicker; Stop is drawn only over a run in flight and reaches the real handle; and `useDurableRun.cancel.test.tsx` proves a stopped run clears its pointer so a reload rejoins nothing. Live on the preview as admin@admin.com: started a source ingest on a disposable Rulebook, reloaded mid-run, the dialog reopened itself on the right lane showing "Source split into 1 chunk(s). Distilling rules from each…" / "Picking this back up — it kept working while you were away." with a live Stop. 2026-09-15.
 
 - **D311 — the associations boot probe INVOKED 26 RPCs (14 of them writes) on every page load; 25 answered 400.** `AssociationsProvider`'s default `probeSchema` runs the package's `assertDemandedSchema`, which asks whether each demanded function exists by CALLING it with sentinel args. Its "dev only" gate was `process.env.NODE_ENV`, which esbuild bakes to `true` under `platform:"browser"`, so it ran in production too. Switched off at the host, then closed at the class: **@ai-matrx/associations 0.9.0 deletes the probe and the `probeSchema` knob** — a write RPC is never invoked to ask whether it exists, and PGRST202 at real call sites already screams `demanded_schema_violation` with the same remedy. Guard `features/scopes/host/__tests__/noBootRpcProbe.test.tsx` plus the package's own pair; live 25→0 on `/administration/billing/spend`, 0 on `/administration`. 2026-09-12.
 
@@ -4007,7 +4007,7 @@ _One line each: `- D## — <short reason> — <date> — delete when: <condition
 
 - **D291** (filed 2026-08-30 as "D289", renumbered — that id was already used by the resolved shortcuts-panel jest defect below) — the six SECURITY DEFINER `agx_*_m` mandate RPC mirrors (the Phase 6.6 flip's serving path, named in `lib/supabase/shortcutStorage.ts` `MANDATE_RPCS`) had EXECUTE stripped by the `definer_client_grant_revoked` guard because no `platform.client_callable_door` row existed; with `SHORTCUT_STORAGE_CUTOVER=true` every client call would have died with permission denied. **FIXED 2026-08-30** by migration `d289_agx_m_mirror_doors_and_grants`: seven door rows declared (the six + the INVOKER menu builder, reasons mirroring each original's posture) and EXECUTE re-granted to `authenticated` — the guard revoked the migration's own grants because they ran before the door inserts, so they were re-applied after; lesson: door row FIRST, grant second. **Proven through PostgREST with a real Supabase-signed admin JWT (generate_link+verify), not a service-role session**: `agx_get_user_shortcuts_m`/`agx_get_shortcuts_for_context_m`/`agx_list_non_global_shortcuts_for_admin_m`/`agx_build_shortcut_menu_m` → 200 with data; `agx_duplicate_shortcut_m` on a nonexistent id → P0001 "Shortcut not found" (execution entered the function body — the wall is gone). anon posture matches the originals (menu builder anon-callable like its original; the rest denied). The flip is no longer blocked by this. 2026-08-30.
 
-- **D289** — the `shortcuts-panel-doors` jest suite failed 5/5 because `AgentShortcutsPanel` mounts `LinkAgentToShortcutModal`, whose own state selectors the suite never mocked (`shortcuts.filter` on undefined). **FIXED 2026-08-29** in `features/agents/components/shortcuts/__tests__/shortcuts-panel-doors.test.tsx`: the modal is stubbed (its behaviour is its own concern, and the panel's door law is what this suite asserts), and the suite's `next/link` mock now drops `prefetch` instead of forwarding it to a bare `<a>`. 5/5 green. **Still true and NOT fixed:** the file runs in no CI jest job (jest jobs are scoped to content-ir/workflow-runtime/hr), so it can rot silently again. 2026-08-29.
+- **D289** — the `shortcuts-panel-doors` jest suite failed 5/5 because `AgentShortcutsPanel` mounts `LinkAgentToShortcutModal`, whose own state selectors the suite never mocked (`shortcuts.filter` on undefined). **FIXED 2026-08-29** in `features/agents/components/shortcuts/__tests__/shortcuts-panel-doors.test.tsx`: the modal is stubbed (its behavior is its own concern, and the panel's door law is what this suite asserts), and the suite's `next/link` mock now drops `prefetch` instead of forwarding it to a bare `<a>`. 5/5 green. **Still true and NOT fixed:** the file runs in no CI jest job (jest jobs are scoped to content-ir/workflow-runtime/hr), so it can rot silently again. 2026-08-29.
 
 - **D286** — `esign._notify` composed a notice-less deep link for INTERNAL (user) signers (`/sign/e/<envelope>`), the third notice-less producer after `hr._wf_notify`/`hr.wf_pending`/`hr.wf_inbox` — following it stamped no `read_at` (§5.2). **FIXED 2026-08-28 by `hr_c4_51`** (the esign twin of the DEFECT-1 fix): `esign._notify` is the single shared inserter and the link is built before the row id exists, so for `user` rows only it folds `?notice=<own id>` into `deep_link` AFTER insert, keyed by `mark_notification_read`'s `recipient_user_id=auth.uid()` gate so cross-viewer stamping can't happen. **Outsider (`actor_token`) rows are left untouched** — two guards (`v_kind='user'` + `position('#')=0`) — because their secret rides the URL fragment (`/x/sign#t=…`, §5.4) and they read via the `esign.envelope_event` ledger, not spine `read_at`. Proven 7/0 (`scripts/hr/hrb001_esign_notify_read_ref_proof.py`): the internal signer's link stamps read_at when followed; the outsider fragment link is byte-identical. 2026-08-28.
 
@@ -4015,7 +4015,7 @@ _One line each: `- D## — <short reason> — <date> — delete when: <condition
 
 - **D283** — `hr.wf_for_target` had no authorization gate at all and returned another organization's workflow history to an unrelated non-admin. **RULED and FIXED 2026-08-28 by `hr_c4_36`:** it now gates through **the same visibility predicate the instance read path applies** — the five-way standing test (filed it, subject of it, routed it, decided it, or holds `workflow.view_queue` in its org) was **extracted** from `hr.wf_instance` into `hr._wf_instance_visible`, and both doors now ASK it rather than each carrying a copy, because two implementations of one visibility rule drift on the first change. An unentitled caller gets the **absence shape** — `{granted:true, open:[], history:[]}`, byte-identical to an id that was never real — rather than a named refusal that would confirm the target exists. Proven live 12/0 (`scripts/hr/hrb008_for_target_visibility_proof.py`), with the pre-gate baseline committed as a fixture because it can never be recaptured: **75 entitled answers byte-identical, 132 narrowed, 0 widened.** `public.hr_wf_for_target` converted to SECURITY DEFINER with it, so every `public.hr_wf_*` door is now DEFINER. 2026-08-28.
 
-- **D282** — `pay_change` shows the salary to whoever was routed the step: it carries its proposal FLAT under `hr_position_assignment`, which is behind no door, so `hr_c4_33`'s routing-time entitlement gate does not arm on it. **RULED 2026-08-28 as the SPEC-ACCESS §1.4 approval carve-out — option (b), not an engine change:** holding the step's approval authority entitles the decider to THAT REQUEST'S change summary, both sides of the one number, only while assigned, and never `comp.read`. Option (a) was rejected because granting `comp.read` to `pay_change_approve` holders would breach the derived manager row's *"nothing else"* and hand out the subject's whole compensation history to approve one raise. The existing behaviour is therefore correct **by rule**. `hr_c4_34` pins the carve-out's precondition — assigned ⟹ holds the authority — in `hr._wf_pay_change_digest`'s contract row (one number, both sides, `array_agg` banned) and in five `hrb008_proof.py` assertions that re-resolve every live `pay_change` step and check `hr.can_approve`'s RULE 2b still carries the `auto_record` mode guard that keeps a bare manager off a pay change. 2026-08-28.
+- **D282** — `pay_change` shows the salary to whoever was routed the step: it carries its proposal FLAT under `hr_position_assignment`, which is behind no door, so `hr_c4_33`'s routing-time entitlement gate does not arm on it. **RULED 2026-08-28 as the SPEC-ACCESS §1.4 approval carve-out — option (b), not an engine change:** holding the step's approval authority entitles the decider to THAT REQUEST'S change summary, both sides of the one number, only while assigned, and never `comp.read`. Option (a) was rejected because granting `comp.read` to `pay_change_approve` holders would breach the derived manager row's *"nothing else"* and hand out the subject's whole compensation history to approve one raise. The existing behavior is therefore correct **by rule**. `hr_c4_34` pins the carve-out's precondition — assigned ⟹ holds the authority — in `hr._wf_pay_change_digest`'s contract row (one number, both sides, `array_agg` banned) and in five `hrb008_proof.py` assertions that re-resolve every live `pay_change` step and check `hr.can_approve`'s RULE 2b still carries the `auto_record` mode guard that keeps a bare manager off a pay change. 2026-08-28.
 
 - **D280** — `hrb022_proof.py` never enrolled anybody, so the leave lane's new `hr.leave_wf_validate` closed every request `rejected_at_intake` with `not_enrolled` and the whole inbox chain collapsed (10 RED, suite ending at 59 instead of 69). Fixed in the FIXTURE, with no assertion weakened: the people the suite creates are now enrolled in the policy it creates, which is what a policy plus an eligible employment actually means. Back to 69/69. `scripts/hr/hrb022_proof.py`. 2026-08-28.
 
@@ -4025,7 +4025,7 @@ _One line each: `- D## — <short reason> — <date> — delete when: <condition
 
 - **D275** — `hr.wf_request` inserted the instance before the binding and returned `WF_BINDING_OPEN` from inside the catch, so every duplicate submit stranded a `validating` instance with no binding, steps or event — on a table §1.3 forbids deleting from, so it could never be cleaned up. Fixed at the source, not tidied up after: the binding is pre-checked before anything is written, AND both inserts now share ONE exception block so losing the concurrent race rolls the instance back too. `migrations/hr_c4_10_binding_refusal_leaves_no_instance.sql`; `scripts/hr/hrb008_proof.py` 91 assertions 0 RED, incl. the previously untested idempotent-replay lane the fix restructured. 2026-08-26.
 
-- **D276** — `hrb022_proof.py` asserted the C3 write-guard clobber as current behaviour after `hr_c3_11` closed it. Flipped to the shipped semantics and made two-sided: a callee leaves its caller's arm intact AND an unarmed `hr.*` write is still refused `42501` — a proof that stops watching a closed defect is how it comes back unnoticed. `scripts/hr/hrb022_proof.py`, 59 assertions 0 RED. 2026-08-26.
+- **D276** — `hrb022_proof.py` asserted the C3 write-guard clobber as current behavior after `hr_c3_11` closed it. Flipped to the shipped semantics and made two-sided: a callee leaves its caller's arm intact AND an unarmed `hr.*` write is still refused `42501` — a proof that stops watching a closed defect is how it comes back unnoticed. `scripts/hr/hrb022_proof.py`, 59 assertions 0 RED. 2026-08-26.
 
 - **D247** — `get_dm_conversations_with_details` now keyset-paginates (`p_limit` default 50, cursor on last-message time + `conversation_id`); the messaging panel loads page 1 and "Show more" continues from the last row (`features/messaging/data/conversationsWithDetails.ts`, `features/messaging/redux/messagingSlice.ts`, `features/messaging/components/ConversationList.tsx`, `app/api/messages/conversations/route.ts`); `migrations/dm_conversations_with_details_pagination.sql`. 2026-08-24.
 - **SEO topic demand contract** — `gsc_topic_stats` no longer scans all historical site observations before reducing to linked topics; all five topic reads/ledger refreshes now use one winning GSC `query` run per date, and stale queue rows reconcile on refresh (`migrations/seo_topic_demand_accuracy_and_timeout.sql`, `seo_topic_demand_membership_index.sql`). 2026-08-24.
@@ -4257,7 +4257,7 @@ Whoever resumes the knowledge/RAG consolidation should add the alias in `normali
 
 Found while registering the Lulu print kinds. In the compiled parser mirror's validator
 (`validateFinalFieldValue`, `node_modules/@ai-matrx/content-ir/dist/index.js`), `nullable: true` is
-honoured for scalars and `json[]` but **NOT** for `object` / `inline_object` / `record`: those three
+honored for scalars and `json[]` but **NOT** for `object` / `inline_object` / `record`: those three
 branches test `value === null` as part of the "must be an object" type check and return an error
 before `nullable` is ever consulted. So a field a kind legitimately declares nullable, whose value is
 genuinely `null`, degrades the ENTIRE instance to `kindState: "raw"` and it renders through
@@ -4304,7 +4304,7 @@ including the unpriced job that produced the live `generic_structured` render.
 (`@ai-matrx/agents/generated/source-attribution`, sourced from the Python
 server's provenance list), so every agent run launched from the capture studio
 — including from every caller that simply omits the prop — is stamped with a
-source_feature the server does not recognise.
+source_feature the server does not recognize.
 
 **tsc cannot catch this**: `CaptureStudio` declares `sourceFeature?: string`
 (lines 120/223), not `SourceFeature`. Found by `pnpm check:context-menu
@@ -4346,7 +4346,7 @@ Also unwired, same wave: `features/files/components/core/FileList/`
 `hr.job_title lost=0 gained=5`, read as a leak in the deployed `std_select`.
 
 **Diagnosed 2026-08-31.** The deployed policy is correct. `iam._apply_rls_unchecked`
-honours `platform.entity_types.suppress_platform_admin_lane` (SPEC-ACCESS §3.5, the HR
+honors `platform.entity_types.suppress_platform_admin_lane` (SPEC-ACCESS §3.5, the HR
 privacy wall) and emits NO platform-staff read arm for a walled token. The two functions
 that RECONSTRUCT a read lane for the prover — `iam.entity_read_equivalence` and
 `iam.component_original_lane` — hardcoded `'(select public.is_platform_admin()) or '`
@@ -4506,7 +4506,7 @@ allowlist that only shrinks.
   GA4 pause for non-super-admins that commit `62e10d8fd3` (2026-08-26) deliberately ended by
   flipping `GOOGLE_ANALYTICS_CAMPAIGN_PHASE` to `"approved"`; that commit updated the two sibling
   campaign suites and missed this one. Rewritten to guard the phase-INDEPENDENT wiring — the gate
-  is consulted before anything is dispatched — plus the live phase's real behaviour. No
+  is consulted before anything is dispatched — plus the live phase's real behavior. No
   production change: `dispatch(callApi(...))` never resolves `undefined`, so `response?.error`
   would only have converted a broken result into a silent success.
 - `features/window-panels/windows/seo/KeywordWindow.test.tsx` — the window was rendered with no
@@ -4567,7 +4567,7 @@ came out guarding MORE than they did before. The repair splits three ways:
 - `utils/permissions/__tests__/registry.routes.test.ts` — see D below.
 
 **B. The assertion was stale because a ruling moved the truth (13 suites).** Each rewritten to
-guard the NEW true behaviour with the commit that changed it named in the file: the C9/C26
+guard the NEW true behavior with the commit that changed it named in the file: the C9/C26
 design-system extraction (`animate-pulse` → the package-owned `MOTION_PULSE`, `slide-in-from-bottom`
 → `MOTION_BOTTOM_SHEET` — 3 suites; two of them now assert the exported constant and the package
 keyframes rather than a literal utility name), the knowledge/RAG surface consolidation, the
@@ -4637,7 +4637,7 @@ Final run on this checkout: **1,257 suites passed / 1,257 total; 9,311 tests pas
 failed; 220.6s**. Before: 32 suites / 56 tests red. `pnpm type-check` clean.
 
 ### D310 — Four fixed-interval aidream pollers have no jitter, backoff, or Retry-After handling (2026-09-12)
-Same alignment class as the 2026-09-12 change-feed pool storms (43 sandbox pollers in one second exhausted aidream's 10-slot pool; server now sheds with 503 + Retry-After, sandbox SDK honours it). These client pollers still poll in lockstep: `features/cloud-browser/hooks/useScreenshotSession.ts:117` (2s/15s), `features/workflow-runtime/redux/adopt-workflow-run.thunk.ts:578` (3s, SSE-fallback only), `features/cms/hooks/useCmsAdminActivity.ts:41` (8s) (a fourth poller, `GoogleBackgroundAgentCard.tsx`, was removed 2026-09-26 along with the old direct Google research card). Fix: one shared poll helper (jitter ±20%, exponential backoff on 5xx, honour `Retry-After`) and adopt it in the remaining three; per-tab fleets are small today, so this is preventive. Decides: nobody — do it.
+Same alignment class as the 2026-09-12 change-feed pool storms (43 sandbox pollers in one second exhausted aidream's 10-slot pool; server now sheds with 503 + Retry-After, sandbox SDK honors it). These client pollers still poll in lockstep: `features/cloud-browser/hooks/useScreenshotSession.ts:117` (2s/15s), `features/workflow-runtime/redux/adopt-workflow-run.thunk.ts:578` (3s, SSE-fallback only), `features/cms/hooks/useCmsAdminActivity.ts:41` (8s) (a fourth poller, `GoogleBackgroundAgentCard.tsx`, was removed 2026-09-26 along with the old direct Google research card). Fix: one shared poll helper (jitter ±20%, exponential backoff on 5xx, honor `Retry-After`) and adopt it in the remaining three; per-tab fleets are small today, so this is preventive. Decides: nobody — do it.
 
 ### UNVERIFIED — the org-less screens were proven by test, never by a live browser (2026-09-12)
 The organization-refusal class fix (8 surfaces + the shared Vault wrapper + 4 message-template
@@ -4757,7 +4757,7 @@ merges read through `readField`, which sees the staged value. The local `instanc
 
 Guard:
 `../aidream/apps/shared/chat/src/agents/redux/execution-system/instance-ui-state/__tests__/no-write-is-dropped-before-the-instance-lands.test.ts`
-— behaviour (write → create → still there; creation's own value wins; toggles and merges; no
+— behavior (write → create → still there; creation's own value wins; toggles and merges; no
 replay after destroy) plus a source census that fails if any setter returns to `if (entry)`.
 Proven failing against the pre-fix slice (4 of 6 failed), passing after.
 
@@ -4841,7 +4841,7 @@ as ON.
 
 Guards (proven failing-then-passing):
 `../aidream/apps/shared/chat/src/agents/redux/execution-system/instance-user-input/__tests__/an-unsent-draft-survives-a-reload.test.ts`
-— ten cases over the real middleware, slice, storage and thunk, with a reload modelled as
+— ten cases over the real middleware, slice, storage and thunk, with a reload modeled as
 "discard the store and every in-memory generation, keep sessionStorage". Removing the write from
 the middleware and the generation check from the thunk fails 4 of 8; removing the surface alias
 fails the Conductor case.
@@ -4942,7 +4942,7 @@ delete in the product goes through this op (`features/data-tables/bulk-row-actio
 row menu, `replaceTable`'s delete-all, and now an accepted `remove` proposal), so a deleted row is
 unrecoverable and `udt_dataset_row_versions` keeps only the versions, not the row.
 
-**Not fixed here** because flipping the op to a soft delete changes behaviour for every existing
+**Not fixed here** because flipping the op to a soft delete changes behavior for every existing
 caller at once — the readers (`get_user_table_complete`, `get_full_table`, `udt_column_facets`,
 the realtime subscription) would each need a `deleted_at is null` filter in the same change, and
 `udt_datasets`' own delete path has the same shape. That is a data-tables repair with its own
@@ -5012,7 +5012,7 @@ every call while reading as though it were scoped. Proven live, not assumed.
 Nothing in the system could see it: the call site names an organization, so the org-blind census
 does not report it; it is not a type error and no test executes it; and it is inert while the
 knob is locked. It goes live silently on the unrelated day somebody delegates that knob, at which
-point `hr.wf_inbox` honours the employer and `hr.wf_pending` does not — two halves of one inbox
+point `hr.wf_inbox` honors the employer and `hr.wf_pending` does not — two halves of one inbox
 paginating differently with nothing to explain it.
 
 Census: `platform.knob_read_before_its_org_exists`, 1 row → 0. **The first version of this view

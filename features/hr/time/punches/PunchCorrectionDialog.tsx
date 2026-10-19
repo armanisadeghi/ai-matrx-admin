@@ -283,7 +283,7 @@ export function PunchCorrectionDialog({
             <p className="flex items-start gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-2 text-xs">
               <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
               The employee will be told what changed, who changed it and why. That is not something
-              this organisation can switch off.
+              this organization can switch off.
             </p>
           </div>
         )}

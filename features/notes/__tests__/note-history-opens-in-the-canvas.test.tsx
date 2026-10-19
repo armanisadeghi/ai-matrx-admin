@@ -163,7 +163,7 @@ it("every Versions and Outline tap button shows pressed through the system's pre
   for (const file of ["features/notes/components/NotesView.tsx", "features/notes/components/NoteRecordTools.tsx"]) {
     const source = readFileSync(join(repo, file), "utf8");
     // A className tint on a group tap button is not a pressed state (no
-    // aria-pressed, overridden by the group's glyph colour) — RED before.
+    // aria-pressed, overridden by the group's glyph color) — RED before.
     expect(source).not.toContain('className={history.isVisible ? "text-primary" : undefined}');
     expect(source).not.toContain('className={outlineOpen ? "text-primary" : undefined}');
   }

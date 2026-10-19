@@ -870,7 +870,7 @@ UI-complete here but only take effect once P1's service layer reads them.
   `agent_write_policy` itself. Two stale read-value descriptions were
   corrected in the same pass — `site_theme_config` and `site_contact_info`
   still claimed to be "read-only under Settings → Advanced", which WF-6 ended.
-  **Known pre-existing behaviour the targets make easy to hit:** each section
+  **Known pre-existing behavior the targets make easy to hit:** each section
   saves then calls `refreshSite()`, and `SiteAdvancedSettings` remounts its
   sections on the new `site.updated_at` "so drafts re-seed from truth" — so
   staging three targets and saving the cards one after another persisted only

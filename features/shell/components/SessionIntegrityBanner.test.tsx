@@ -60,7 +60,7 @@ describe("sessionIntegrityNotice", () => {
       ambiguousAuthCookies: false,
       clientHasSession: true,
     });
-    expect(notice?.description).toMatch(/did not recognise the session/i);
+    expect(notice?.description).toMatch(/did not recognize the session/i);
   });
 
   /**

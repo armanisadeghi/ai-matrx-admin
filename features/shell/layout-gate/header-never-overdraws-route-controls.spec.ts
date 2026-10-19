@@ -118,7 +118,7 @@ async function mount(
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(null))));
 }
 
-/** Who receives a click at the centre, left edge and right edge of a control. */
+/** Who receives a click at the center, left edge and right edge of a control. */
 async function hitTest(page: Page, testId: string) {
   return page.evaluate((id) => {
     const el = document.querySelector(`[data-testid="${id}"]`) as HTMLElement;

@@ -121,7 +121,7 @@ export async function clearStashedRetraction(exclusionId: string): Promise<void>
 /**
  * Bring back exactly what an apply took (`web.decision_retraction_restore`): the rows carrying the apply's
  * shared timestamp, the decision's earlier answer, and the NO LIST entry the apply added is lifted.
- * Weakened facts keep their trimmed evidence; cancelled jobs stay cancelled (the next ingest re-runs them).
+ * Weakened facts keep their trimmed evidence; canceled jobs stay canceled (the next ingest re-runs them).
  */
 export async function restoreRetraction(summary: RetractionSummary): Promise<Record<string, unknown>> {
   if (!summary.applied || !summary.at) throw new Error("Only an applied undo can be restored");

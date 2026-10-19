@@ -34,7 +34,7 @@ export function carriesArchived(row: Record<string, unknown> | null | undefined)
  * organizations census v6 CENSUS-CLEANUP.md table B lists for archiving that carry no mark
  * (`TABLE_B_DEBRIS`, ids resolved read-only 2026-10-02). The chair is adding `is_test` on
  * iam.organizations; when it lands, this function reads `org.is_test` alone and the list goes —
- * the switch is this one function. It already honours `is_test` when a row carries it.
+ * the switch is this one function. It already honors `is_test` when a row carries it.
  */
 export function isTestOrganization(org: { id?: string; settings?: unknown; is_test?: boolean | null }): boolean {
   if (typeof org.is_test === "boolean") return org.is_test;

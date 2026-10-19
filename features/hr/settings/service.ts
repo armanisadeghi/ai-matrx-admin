@@ -198,7 +198,7 @@ function mapEmployerProfileRow(raw: unknown): HrEmployerProfileRead | null {
  * 🚨 WHY A LIST CALL FOR A SINGLE ROW — CORRECTED 2026-08-26. The reason this comment
  * used to give is now FALSE and was deleted: it claimed `hr_my_context` and
  * `hr_structure_list` return no `employer_profile_id`. **Both return it today** — read
- * out of both function bodies, where the server lane labelled the addition "RECORDED
+ * out of both function bodies, where the server lane labeled the addition "RECORDED
  * DECISION 28: route 68 had to make an audited confidential call just to learn the id of
  * the profile it was editing." `hr_my_context` sends it at `.active.employer_profile_id`;
  * `hr_structure_list` sends it at the top level.

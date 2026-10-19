@@ -7,7 +7,7 @@
 // 🚨 Two reuses, no new mechanics:
 //   · the INLINE editor is `InlineBindingEditor`, imported from the shortcut
 //     batch grid's own cell and given this domain's words — same four sources,
-//     same behaviour, named rather than drawn (P3);
+//     same behavior, named rather than drawn (P3);
 //   · ADVANCED opens `BindingMiddleRow` — the FULL card map mode renders, with
 //     the example, the absence answer, the per-row problems, the many-to-one
 //     strip and "also feed this input…". P17 asks for "an Advanced popover that

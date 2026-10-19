@@ -8,7 +8,7 @@
  *   - skip later steps after one fails                → the drop is never attempted;
  *   - report success without actually deleting        → case "no-op delete" reads clean.
  *
- * The door is a double of the DATABASE (an external dependency), modelled as an in-memory registry
+ * The door is a double of the DATABASE (an external dependency), modeled as an in-memory registry
  * and namespace set so a GREEN is reachable only if the plan really deletes and really probes.
  *
  * matrx-real-data:allow — every `zz_` name below quotes the REAL scratch schema/token this suite's

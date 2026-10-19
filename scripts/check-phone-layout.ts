@@ -21,7 +21,7 @@
  *   G  inside a file that renders a `DialogContent` / `SheetContent` /
  *      `DrawerContent`, a className whose base `grid-cols-N` is 3 or more
  *      with no responsive `grid-cols-` variant beside it. Three 390/3px
- *      columns hold about eight characters each. A grid of icons or colour
+ *      columns hold about eight characters each. A grid of icons or color
  *      swatches that is right at N-up on a phone says so with `phone-ok`
  *      (a comment on the line or within the three lines above it).
  *
@@ -223,7 +223,7 @@ function selfTest(): number {
     ],
     [
       "dialog grid marked phone-ok passes",
-      `<DialogContent>{/* phone-ok: 24px colour swatches */}\n<div className="grid grid-cols-6 gap-1" /></DialogContent>`,
+      `<DialogContent>{/* phone-ok: 24px color swatches */}\n<div className="grid grid-cols-6 gap-1" /></DialogContent>`,
       null,
     ],
     [

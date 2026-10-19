@@ -20,7 +20,7 @@ export interface HomeKind {
   pluralNoun: string;
   href: (id: string) => string;
   Icon: ComponentType<{ className?: string }>;
-  /** The kind icon's colour (Sheets green, Docs blue, Slides amber). */
+  /** The kind icon's color (Sheets green, Docs blue, Slides amber). */
   iconTone: string;
   GoogleMark: ComponentType<{ className?: string }>;
   googleApp: string;

@@ -207,21 +207,21 @@ describe("every message reaches the file (the one Alchemy engine, real print)", 
   }, 60_000);
 });
 
-describe("one catalogue, one engine", () => {
+describe("one catalog, one engine", () => {
   const root = process.cwd();
 
   it("the old app-side conversation engine is gone", () => {
     expect(existsSync(join(root, "features/agents/conversation-export/export-conversation.ts"))).toBe(false);
   });
 
-  it("the header menu and the answer menu both render THE catalogue", () => {
+  it("the header menu and the answer menu both render THE catalog", () => {
     const header = readFileSync(join(root, `${CHAT_SRC_REL}/agents/components/chat/ConversationPageMenu.tsx`), "utf8");
     // The answer menu's Conversation section is the package's own since message-actions W1b.
     const answer = readFileSync(join(root, `${CHAT_SRC_REL}/agents/components/messages-display/rich-document/actions/descriptors/conversation.ts`), "utf8");
     for (const src of [header, answer]) expect(src).toContain("CONVERSATION_TRANSFER_ROWS");
   });
 
-  it("the catalogue is the full set: copy ×3, Copy for AI, seven downloads, five destinations", () => {
+  it("the catalog is the full set: copy ×3, Copy for AI, seven downloads, five destinations", () => {
     const by = (g: string) => CONVERSATION_TRANSFER_ROWS.filter((r) => r.group === g);
     expect(by("copy").map((r) => (r as { format: string }).format)).toEqual(["plain", "markdown", "rich-html"]);
     expect(by("prepare")).toHaveLength(1);

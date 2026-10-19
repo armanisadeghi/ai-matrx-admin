@@ -53,6 +53,8 @@ export function packBoardDocument(board: PackBoardPage, tables: Record<string, R
   const inner = PAGE_COLUMN_W - PAGE_FRAME_PAD * 2;
   let y = 0;
   for (const chapter of board.chapters) {
+    // Each tile is FILED in its chapter (`chapter`): it stays there whatever its height turns out to be.
+    const groupId = newId();
     let x = PAGE_FRAME_PAD;
     let rowY = y + PAGE_FRAME_TOP;
     let rowH = 0;
@@ -62,16 +64,16 @@ export function packBoardDocument(board: PackBoardPage, tables: Record<string, R
         rowY += rowH + PAGE_TILE_GAP;
         rowH = 0;
       }
-      nodes.push({ id: newId(), rect: { x, y: rowY, w: tile.size.w, h: tile.size.h }, title: tile.title, source: tileSource(tile, tables) });
+      nodes.push({ id: newId(), rect: { x, y: rowY, w: tile.size.w, h: tile.size.h }, title: tile.title, source: tileSource(tile, tables), chapter: groupId });
       x += tile.size.w + PAGE_TILE_GAP;
       rowH = Math.max(rowH, tile.size.h);
     }
     const height = chapter.tiles.length ? rowY + rowH - (y + PAGE_FRAME_TOP) : 0;
     const h = Math.max(PAGE_MIN_FRAME_H, PAGE_FRAME_TOP + height + PAGE_FRAME_PAD);
-    groups.push({ id: newId(), rect: { x: 0, y, w: PAGE_COLUMN_W, h }, title: chapter.title, ...(chapter.note ? { note: chapter.note } : {}) });
+    groups.push({ id: groupId, rect: { x: 0, y, w: PAGE_COLUMN_W, h }, title: chapter.title, ...(chapter.note ? { note: chapter.note } : {}) });
     y += h + PAGE_SECTION_GAP;
   }
-  // Then exactly page layout's own arrangement (labels, a chapter's one tile at full width), so it opens settled.
+  // Then exactly page layout's own arrangement (labels, every tile stacked at the chapter's width), so it opens settled.
   const plan = planPageLayout({ tiles: nodes, frames: groups });
   const at = new Map(plan.moves.map((m) => [m.id, m]));
   const place = <R extends { id: string; rect: { x: number; y: number; w: number; h: number } }>(r: R): R => {

@@ -7,7 +7,7 @@
  * this request." On a cold page load the FIRST read always trips it and the
  * second read succeeds, so for years that refusal was swallowed and nobody
  * noticed. When this screen stopped swallowing metrics errors (so a Library
- * whose catalogue had failed would stop pulsing forever), it started RECORDING
+ * whose catalog had failed would stop pulsing forever), it started RECORDING
  * that refusal instead — and an independent re-test on 2026-09-18 watched the
  * sentence sit on a healthy Library page for an entire visit, because the
  * successful read behind it had no way to overrule a failure already written.
@@ -219,7 +219,7 @@ describe("K · a Library opens with no organization selected, and a not-yet is n
         expect(getLibraryMetrics).toHaveBeenCalled();
         expect(store.getState().appContext.organization_id).toBeNull();
         expect(node.textContent).not.toContain(SENTENCE);
-        expect(node.textContent).toContain("Catalogued in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
     });
 
     it("the transport's own not-yet never becomes a sentence", async () => {
@@ -276,7 +276,7 @@ describe("L · three consecutive reads in one session, and the newest one wins",
         });
 
         expect(getLibraryMetrics).toHaveBeenCalledTimes(3);
-        expect(node.textContent).toContain("Catalogued in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
         expect(node.textContent).not.toContain("arriving late");
         expect(node.textContent).not.toContain("the first read failed");
     });

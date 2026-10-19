@@ -1,7 +1,7 @@
-// features/spaces/templates/use-pack.ts — the Spaces template library in the browser: list the catalogue,
+// features/spaces/templates/use-pack.ts — the Spaces template library in the browser: list the catalog,
 // read one template, and "Use template".
 //
-// ONE CATALOGUE: a Space template is a platform `custom.template` row (published by
+// ONE CATALOG: a Space template is a platform `custom.template` row (published by
 // spaces:templates:publish) whose card carries `space` and whose spec carries the page pack. The read is
 // `custom.space_templates` (signed-in; platform rows for everyone, an organization's to its members).
 //
@@ -71,7 +71,7 @@ const door = () => createClient().schema("custom") as unknown as Door;
 /**
  * Every Space template the person can use; `installedIn` marks the ones that organization already has.
  * `makes` picks the gallery: "pages" (the Spaces gallery: packs with pages) or "board" (the Board gallery:
- * packs that carry a board, `card.space.board`). One catalogue, two doors.
+ * packs that carry a board, `card.space.board`). One catalog, two doors.
  */
 export async function listSpaceTemplates(installedIn: string | null, makes: "pages" | "board" = "pages"): Promise<SpaceTemplateCard[]> {
   const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });

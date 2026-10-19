@@ -455,7 +455,7 @@ markdownToHtml(markdown, { includeThinking });   // was markdownToWordPressHTML
 getMarkdownStylesheet();                          // was getWordPressCSS / loadWordPressCSS (now sync)
 ```
 
-Brand colours are host-owned tokens:
+Brand colors are host-owned tokens:
 `getMarkdownStylesheet({ tokens: ":root{--matrx-print-accent:#0f766e}" })`.
 Fix conversion or styling IN THE PACKAGE (THE SAME-SESSION LAW) — never by
 re-adding a local converter here. `css/matrx-wordpress-styles-example.css` is a

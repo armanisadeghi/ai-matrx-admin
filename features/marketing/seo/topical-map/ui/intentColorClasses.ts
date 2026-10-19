@@ -1,12 +1,12 @@
 // features/marketing/seo/topical-map/ui/intentColorClasses.ts
 //
-// The `intent_colors` knob speaks in COLOUR NAMES (`green`, `amber`, …). This
+// The `intent_colors` knob speaks in COLOR NAMES (`green`, `amber`, …). This
 // file is the only place a name becomes classes, and every class is a semantic
 // token so light and dark both work without a second palette.
 //
 // 🚨 AN UNKNOWN NAME IS NEVER A BLANK DOT. The knob is a row in
 // `platform.feature_knob`; an admin can put anything in it and a future
-// migration can add a colour this build has never heard of. A `??` to
+// migration can add a color this build has never heard of. A `??` to
 // `undefined` there renders an invisible mark on a page whose whole job is to
 // say where a page is going — so an unknown name renders the `missing`
 // treatment (which is honest: we do not know) AND reaches the Error Inspector
@@ -14,7 +14,7 @@
 
 import { captureError } from "@/lib/diagnostics/errorCaptureStore";
 
-/** The colour vocabulary `seo.topical_map.intent_colors` is allowed to hold. */
+/** The color vocabulary `seo.topical_map.intent_colors` is allowed to hold. */
 export type MapIntentColorName =
   | "green"
   | "amber"
@@ -53,7 +53,7 @@ const CLASSES: Record<MapIntentColorName, IntentColorClasses> = {
   },
 };
 
-/** The treatment for a colour we could not resolve — deliberately the same as `gray_dashed`. */
+/** The treatment for a color we could not resolve — deliberately the same as `gray_dashed`. */
 export const MISSING_INTENT_COLOR_CLASSES: IntentColorClasses = CLASSES.gray_dashed;
 
 export function isMapIntentColorName(value: string): value is MapIntentColorName {
@@ -61,7 +61,7 @@ export function isMapIntentColorName(value: string): value is MapIntentColorName
 }
 
 /**
- * Resolves one colour name. An unrecognised name captures once per signature
+ * Resolves one color name. An unrecognised name captures once per signature
  * (the store dedupes) and falls back to the `missing` treatment.
  */
 export function intentColorClasses(name: string): IntentColorClasses {
@@ -71,10 +71,10 @@ export function intentColorClasses(name: string): IntentColorClasses {
       source: "topical-map-rpc",
       relation: "seo.topical_map.intent_colors",
       operation: "unknown",
-      message: `Unknown intent colour "${name}" in the intent_colors knob.`,
+      message: `Unknown intent color "${name}" in the intent_colors knob.`,
       userMessage:
-        "A topic colour setting names a colour this app does not know, so those pages are drawn as unknown.",
-      hint: "Fix the seo.topical_map.intent_colors knob, or add the colour to intentColorClasses.ts.",
+        "A topic color setting names a color this app does not know, so those pages are drawn as unknown.",
+      hint: "Fix the seo.topical_map.intent_colors knob, or add the color to intentColorClasses.ts.",
       callSite: "features/marketing/seo/topical-map/ui/intentColorClasses.ts",
     });
   } catch {

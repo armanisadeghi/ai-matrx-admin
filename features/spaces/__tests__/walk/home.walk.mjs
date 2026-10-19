@@ -1,6 +1,6 @@
 // E4 — Spaces Home (round 41): on a new page titled "Vet follow-ups", "@today" at a time ~3 hours out with
 // Remind "At time of event"; then the sidebar's Home shows the page under Recently visited and the reminder under
-// Upcoming, and Your pages lists it. Trashes the page (its reminder is cancelled with it).
+// Upcoming, and Your pages lists it. Trashes the page (its reminder is canceled with it).
 //   MEMBER=1 SPACES_WALK_ORG="Ashford Labs" node features/spaces/__tests__/walk/home.walk.mjs
 import { open, newPage, act, shot, trashPage, originOf } from "./lib.mjs";
 

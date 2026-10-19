@@ -272,7 +272,7 @@ structured object that any client can use directly. Without it:
 
 - React falls back to client-side `JSON.parse` + field access — same as before the pipeline
 - Swift, React Native, and other clients **have no `data` to use** and must implement their own parsers
-- The pipeline provides zero value for these blocks beyond labelling the `type`
+- The pipeline provides zero value for these blocks beyond labeling the `type`
 
 **What Python must send on the `status: "complete"` event:**
 

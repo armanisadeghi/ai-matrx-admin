@@ -360,7 +360,7 @@ function PermissionRow({
 /**
  * Live input-level meter. Acquires the shared mic stream (NOT a new
  * getUserMedia); the level itself comes from the canonical
- * `useStreamAudioLevel` hook (shared AudioContext, analyser teardown on every
+ * `useStreamAudioLevel` hook (shared AudioContext, analyzer teardown on every
  * exit path). Releases the mic hold on stop / unmount; never stops the
  * singleton's tracks.
  */

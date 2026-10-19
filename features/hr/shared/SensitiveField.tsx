@@ -254,7 +254,7 @@ export function SensitiveSection<T extends object>({
  *
  *     "This person has an approved leave. Details are held by HR."
  *
- * Never a masked field, never a greyed row, never a lock icon. WHICH records get
+ * Never a masked field, never a grayed row, never a lock icon. WHICH records get
  * this treatment is a configuration key (`hr.disclosure.existence_statements`), not
  * a code decision — so this component takes the sentence rather than deciding it,
  * and renders nothing when the config gave none.

@@ -3,7 +3,7 @@
 /**
  * The GENERIC associations section (vision §2.3): every kind the function
  * returned that has no section of its own, grouped by the kind string,
- * labelled by the entity registry when it knows the token and by the token
+ * labeled by the entity registry when it knows the token and by the token
  * when it does not — so a kind registered tomorrow renders today, grouped and
  * openable, with no code change here. There is no switch over kinds.
  *

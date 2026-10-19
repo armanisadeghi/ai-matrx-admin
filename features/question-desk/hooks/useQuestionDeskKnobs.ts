@@ -8,7 +8,7 @@
 //
 // 🚨 NO CODE FALLBACK. A knob's default lives in `platform.feature_knob`, not
 // here — that is what makes it a knob and not taste. So this hook has exactly
-// three states and the screen must honour all three:
+// three states and the screen must honor all three:
 //   loading  — nothing decided yet; the surface waits (it does NOT guess)
 //   ready    — the resolved values
 //   failed   — the read failed; the surface SAYS so with the reason and the

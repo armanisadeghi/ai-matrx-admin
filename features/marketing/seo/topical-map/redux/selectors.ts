@@ -253,7 +253,7 @@ function sortedSiblings(
 
 /**
  * The flattened rows an outline, a table or a text view draws, in tree order,
- * honouring expansion.
+ * honoring expansion.
  *
  * FILTERS KEEP ANCESTORS. A filtered-out parent whose descendant matches is
  * still emitted — dropping it would orphan the match and make the hierarchy a
@@ -555,7 +555,7 @@ export function selectPagesOnNoTopic(mapId: string) {
 
 /**
  * Where ONE page stands in the map's topic structure — the state the plain
- * page list and the bulk screen colour by. See {@link PageTopicState} for what
+ * page list and the bulk screen color by. See {@link PageTopicState} for what
  * each value means and why the last two have no `intent_colors` entry.
  *
  * PRECEDENCE, and the reason for it:

@@ -52,7 +52,7 @@ function workspaceData(
       goal: "Decide three narrow things about one feedback item.",
       description: null,
       output_kind: "json",
-      metadata: { output_constraints: "Three short labelled findings." },
+      metadata: { output_constraints: "Three short labeled findings." },
       accepts_user_input: false,
       organization_id: "org-1",
       ...overrides,

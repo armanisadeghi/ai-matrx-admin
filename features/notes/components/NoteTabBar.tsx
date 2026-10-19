@@ -237,7 +237,7 @@ export function NoteTabBar({ instanceId, syncUrl = true }: NoteTabBarProps) {
   }
 
   // Per-tab wrapper (drag handlers + drop-target styling). Shared between the
-  // pinned active tab and the scrolling tabs so behaviour stays identical.
+  // pinned active tab and the scrolling tabs so behavior stays identical.
   const renderTab = (tabId: string) => (
     <div
       key={tabId}

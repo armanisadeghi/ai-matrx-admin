@@ -70,7 +70,7 @@ Everything else is naming. These are real:
 
 Each phase stands alone, changes no data, and is reversible. Nothing here needs downtime.
 
-- **Phase 1 — the constant.** ✅ done (above). Zero consumers, zero behaviour change.
+- **Phase 1 — the constant.** ✅ done (above). Zero consumers, zero behavior change.
 - **Phase 2 — widen the canonical reader/writer (additive).** Add `placement_type` to `cat_list`'s
   return and to `cat_create` / `cat_update`. Precedent and exact shape: `migrations/cat_list_metadata.sql`,
   which widened the same function for `deal_pipeline` on 2026-08-20 for identical reasons — a

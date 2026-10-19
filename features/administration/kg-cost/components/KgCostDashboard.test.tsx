@@ -36,7 +36,7 @@ jest.mock("../service/kgCostService", () => ({
   listPendingBatches: jest.fn(() => new Promise(() => {})),
 }));
 
-// The explorer is a stand-in here: its own behaviour is the drill explorer's; this suite proves the
+// The explorer is a stand-in here: its own behavior is the drill explorer's; this suite proves the
 // dashboard mounts it as the unit-economics section.
 jest.mock("./KgCostExplorer", () => ({
   KgCostExplorer: () => <div data-kg-cost-explorer-stand-in="" />,

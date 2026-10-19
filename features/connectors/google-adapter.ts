@@ -426,7 +426,7 @@ export const MULTI_PRODUCT_CONSENT_UNSUPPORTED_MESSAGE =
  * additions carry existing scopes; the focused YouTube request uses its own
  * canonical connection so existing grants and picked files remain untouched.
  *
- * A cancelled window is control flow, not a failure.
+ * A canceled window is control flow, not a failure.
  */
 export function useGoogleConsentRunner() {
   const googleAuth = useGoogleAuthorizationWindow();

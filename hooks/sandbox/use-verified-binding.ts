@@ -18,7 +18,7 @@
  *   is gone reports `unavailable`, so the user can simply attach a fresh one.
  *
  * Resolution mirrors `lib/sandbox/active-binding.ts#resolveAgentSandboxRef`
- * (conversation override wins over the per-surface default) and honours the
+ * (conversation override wins over the per-surface default) and honors the
  * same incognito / ephemeral gates, so the UI and the turn-time binding never
  * disagree about WHICH box is bound — only this hook adds the liveness layer.
  */

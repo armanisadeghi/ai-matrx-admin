@@ -19,7 +19,7 @@
  *   - The open/close transition was `animate-accordion-down/-up`, Tailwind
  *     utility names defined only in this app's `globals.css`. The package owns
  *     the keyframes in its `styles.css` (`.matrx-accordion-content`, keyed off
- *     `--radix-accordion-content-height`, honouring `prefers-reduced-motion`),
+ *     `--radix-accordion-content-height`, honoring `prefers-reduced-motion`),
  *     so the host keyframes were deleted with the fork.
  *
  * The one visible change: `md` content is `px-4 pb-4`, so a panel's body now

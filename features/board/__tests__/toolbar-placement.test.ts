@@ -24,7 +24,7 @@ describe("the selection toolbar never covers board chrome", () => {
     expect(p.top).toBeGreaterThanOrEqual(insets.top);
   });
 
-  it("with no chrome in the way it sits centred above the selection", () => {
+  it("with no chrome in the way it sits centered above the selection", () => {
     const sel: Box = { l: 400, t: 300, r: 600, b: 400 };
     const p = placeToolbar({ selection: sel, toolbar, area, insets, avoid: [] });
     expect(p.top).toBe(300 - 12 - 40);

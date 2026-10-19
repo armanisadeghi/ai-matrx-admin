@@ -1,5 +1,5 @@
 /**
- * Org Resource Catalogue  [DEPRECATED for display/association]
+ * Org Resource Catalog  [DEPRECATED for display/association]
  * ============================================================
  *
  * ⚠️  DO NOT ADD NEW ENTRIES HERE FOR DISPLAY OR ASSOCIATION.
@@ -11,7 +11,7 @@
  *     import { getEntityInfo } from "@/features/scopes/registry/entityRegistry";
  *     const info = getEntityInfo("file");   // schema/table/title/icon/owner/org
  *
- * That registry is the single source of truth. This catalogue hand-re-lists the
+ * That registry is the single source of truth. This catalog hand-re-lists the
  * same facts and HAS DRIFTED (e.g. `workflow` → bare `public.workflow` instead
  * of `workflow.definition`; `agent_app` instead of the canonical `app` token;
  * `canvas_items`/`rs_topic` tables with no registered token) —
@@ -33,13 +33,13 @@
  * org-grants UI, which is a DIFFERENT domain from content associations and has
  * not yet migrated. When that UI moves to a registry-resolved access-control
  * model, delete this file. Until then: read display/query metadata from
- * `getEntityInfo`, and touch this catalogue only for sharing.
+ * `getEntityInfo`, and touch this catalog only for sharing.
  *
  * ── (original note, retained) ──
  * This is the FE expression of the knowledge-system "content role" concept
  * (common-docs/projects/knowledge-system/vision/scopeable_entities.md → Source / Destination / Utility /
  * Container). The DB `shareable_resource_registry` does not yet carry a
- * `content_role` / `is_scopeable` column; when it does, this catalogue should
+ * `content_role` / `is_scopeable` column; when it does, this catalog should
  * be generated from it.
  */
 
@@ -74,7 +74,7 @@ import type { EntityTypeToken } from "@ai-matrx/associations";
  * `structured_list` left the entity registry (@ai-matrx/associations 0.13.135:
  * its table `workbench.udt_structured_lists` is gone — lists live in the record
  * store as pick lists). A module-level `getEntityInfo("structured_list")` threw
- * on import and took down every page that loads this catalogue (/notes,
+ * on import and took down every page that loads this catalog (/notes,
  * 2026-10-02). The row's words are fixed here until the lists entry moves onto
  * the pick-list home; "Pick list" is the vocabulary word (Arman, 2026-10-02).
  */
@@ -228,7 +228,7 @@ export interface OrgResourceEntry {
    * of this kind. Drives the shared-with-org count and the "contribute" share
    * action. Deliberately a plain string, not
    * the sharing `ResourceType` union: the DB shareable registry is broader than
-   * the TS mirror, so the catalogue keys on the canonical name and stays
+   * the TS mirror, so the catalog keys on the canonical name and stays
    * independent of which subset has been mirrored. Null = not shareable.
    */
   shareKey: string | null;
@@ -254,7 +254,7 @@ export interface OrgResourceEntry {
 }
 
 /**
- * The curated catalogue. Keep entries grouped by role for readability; display
+ * The curated catalog. Keep entries grouped by role for readability; display
  * order within a role follows array order.
  */
 export const ORG_RESOURCE_CATALOGUE: OrgResourceEntry[] = [
@@ -591,7 +591,7 @@ export const ORG_RESOURCE_CATALOGUE: OrgResourceEntry[] = [
     schemaName: "research",
     deletedAtColumn: "deleted_at",
     // rs_topic DOES carry organization_id (verified live 2026-06-27); the prior
-    // `false` was stale catalogue drift.
+    // `false` was stale catalog drift.
     hasOrgColumn: true,
     shareKey: null,
     titleColumn: "name",
@@ -602,7 +602,7 @@ export const ORG_RESOURCE_CATALOGUE: OrgResourceEntry[] = [
   // ─── People (HR) ─────────────────────────────────────────────────────────
   //
   // D6 / SPEC-UI-IA §6. Registered here — the one purpose this file is retained
-  // for (its own header: "touch this catalogue only for sharing") — so
+  // for (its own header: "touch this catalog only for sharing") — so
   // `OrgModuleSettings` renders an HR row like every other module. The display
   // and query metadata still resolves canonically: `token: "hr_employee"` IS a
   // registered `platform.entity_types` token, so `getEntityInfo("hr_employee")`
@@ -697,7 +697,7 @@ export const SOURCE_CONTENT_ROLES = ["source", "hybrid"] as const satisfies read
 /**
  * THE kinds a Source can be picked from — exactly the entries the organization
  * page's Resources grid shows under "Sources" and "Sources & Outputs", in the
- * grid's order (`CONTENT_ROLES` order, then catalogue order). The Source
+ * grid's order (`CONTENT_ROLES` order, then catalog order). The Source
  * input's "Use existing" reads this; the grid renders `entriesByRole` per role
  * — the same entries, so the two can never disagree.
  */

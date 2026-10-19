@@ -9,7 +9,7 @@ const REASON: Record<string, string> = {
   not_a_signer: "You are not a signer on this document.",
   not_authenticated: "Sign in to open this document.",
   waiting_on_earlier_position: "Someone else signs before you. We will email you when it is your turn.",
-  envelope_voided: "The sender cancelled this request.",
+  envelope_voided: "The sender canceled this request.",
   envelope_declined: "This document was declined, so it can no longer be signed.",
   envelope_expired: "This signing request expired. Ask the sender for a new one.",
   envelope_draft: "This document has not been sent yet.",

@@ -148,7 +148,7 @@ export function CaptureItemActions({
           canTranscribe ? (
             <DropdownMenuItem
               onSelect={(e) => {
-                // Keep the menu's close from cancelling the request.
+                // Keep the menu's close from canceling the request.
                 e.preventDefault();
                 void handleTranscribe();
               }}

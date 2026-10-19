@@ -100,7 +100,7 @@ function textPartsOf(content: unknown): string[] {
  * "items":[…]}` followed by two paragraphs of prose). The gate is the ONE decoder
  * (`tryDecodeDirective`), so a JSON object that is not a directive is skipped
  * rather than shipped to the server as a question — anything it does not
- * recognise is simply not a proposal, the same fail-safe contract the rest of
+ * recognize is simply not a proposal, the same fail-safe contract the rest of
  * this feature holds to.
  */
 export function extractShells(text: string): StoredShell[] {

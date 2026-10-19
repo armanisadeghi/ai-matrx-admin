@@ -77,7 +77,7 @@ from chat.tool_call
 where created_at > now() - interval '1 day';
 ```
 
-Any non-zero number is a platform defect, not agent behaviour (see LESSONS.md, the coordinator
+Any non-zero number is a platform defect, not agent behavior (see LESSONS.md, the coordinator
 late-write fix).
 
 ## §5 Polling a run to its real end

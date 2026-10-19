@@ -20,7 +20,7 @@
  * `custom.read_record` instead of being a FACT of the record that every door asks for.
  * `custom.read_mask` is that fact now, and all six ask it.
  *
- * WHAT THIS GUARD IS. The rule is a QUERY over the live catalogue —
+ * WHAT THIS GUARD IS. The rule is a QUERY over the live catalog —
  * `custom.doors_not_masking_fields()` — exactly like `custom.doors_not_on_one_ladder()`
  * before it: a client-executable function in schema `custom` that reaches a RAW value
  * source and never reaches the mask. `--` comments are stripped before the body is read,

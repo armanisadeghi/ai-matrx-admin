@@ -50,7 +50,7 @@ function RulebookHandoffNotice() {
                     {/* D6b (jobs-bar cold-walk-12): this notice shows for any
                         kind of Library, not only YouTube — naming videos here
                         over a podcast or blog paste was the same bug. */}
-                    Paste the channel, feed, or address here first: we catalogue
+                    Paste the channel, feed, or address here first: we catalog
                     every Source in a Library, and from there you can send the
                     ones you want to{" "}
                     {backHref
@@ -84,11 +84,11 @@ export function LibrariesFrontDoor() {
                 <div className="flex min-w-0 items-center gap-2">
                     <h1 className="truncate text-sm font-medium">Libraries</h1>
                     <span className="hidden truncate text-xs text-muted-foreground md:inline">
-                        A whole channel, catalogued
+                        A whole channel, cataloged
                     </span>
                 </div>
                 {/* THE DOOR to the Block Ledger. A Library that stopped mid-sync,
-                    an export we recognise but cannot read, a book we are not
+                    an export we recognize but cannot read, a book we are not
                     allowed to open — each is already a row over there. */}
                 <Link
                     href="/acquisition/blocks"

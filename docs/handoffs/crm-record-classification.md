@@ -84,7 +84,7 @@ never a type — which is why it must not become a peer of `media outlet`. Both 
 5. **The same axis on other CRM tables.** `crm.interaction` and `crm.outreach_list_member` have no
    `record_class` **and no `source` column at all**.
 6. **Settle the 374 `possible_person` parties.** `aidream/services/crm/kind_resolution.py` (621
-   lines, tested) exists to do this and can flip org→person and re-key `name_key` while honouring
+   lines, tested) exists to do this and can flip org→person and re-key `name_key` while honoring
    `locked_fields`. Confirm it is scheduled; never create a second party.
 7. **Surface the 941 platform-curated parties** in the Matrx System org that no surface renders.
    Likely the same build as item 4.

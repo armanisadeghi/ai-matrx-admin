@@ -214,17 +214,17 @@ matched the same person by email, reused the affiliation, and added zero contact
 
 ### G2b — Open-registry acquisition at volume. ✅ **DONE 2026-08-19 (server)**
 G2 answers "who at THIS domain?" one domain at a time. This is the other half: where the domains
-come from in the first place, at volume and under a licence we can defend.
+come from in the first place, at volume and under a license we can defend.
 `aidream/services/registry_ingestion/` turns the CC0/public-domain registries (Wikidata, DOAJ,
 Crossref, OpenAlex, ORCID) into a durable graph of outlets, journals and identified authors.
 
 **`crm.registry_source` is the source/licence ledger** outreach-data FEATURE.md asked for: all 17
 evaluated sources, declared in CODE and refused at two independent layers — the service, and a
 database CHECK that an allowlisted source must actually have persistence + customer-use rights and
-a CC0/public-domain/permissive licence class. The ledger is a record; `do_not_crawl.py` remains the
+a CC0/public-domain/permissive license class. The ledger is a record; `do_not_crawl.py` remains the
 enforcement, and a guard proves the two agree.
 
-**G2's suggestion-gate rule is not merely honoured here, it is structural.** An organization
+**G2's suggestion-gate rule is not merely honored here, it is structural.** An organization
 resolves automatically as `record_class='discovered'`; a PERSON needs a stable external identifier
 proven twice (the source must permit it AND the record must carry one), so a bare byline is counted
 as skipped and dropped; and every address is a `crm.contact_candidate` in **the same ranked list

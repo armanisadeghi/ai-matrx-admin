@@ -67,7 +67,7 @@ function useStoreRecord(
   // revision counter and peeked the map beside it (`void revision`) — under
   // the React Compiler the peek was memoized on [subjectType, subjectId]
   // (the unused revision carries no data dependency), so bars NEVER
-  // re-rendered on store changes: verdicts saved but thumbs stayed grey.
+  // re-rendered on store changes: verdicts saved but thumbs stayed gray.
   // `peekOutputFeedback` returns a reference-stable value between emits,
   // which is exactly what `getSnapshot` requires.
   return useSyncExternalStore(

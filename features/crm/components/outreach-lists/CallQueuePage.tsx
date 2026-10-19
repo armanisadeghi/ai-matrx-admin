@@ -5,7 +5,7 @@
 // /crm/outreach-lists/[listId]/dial — the power dialer. One member at a time:
 // claim (the conditional-update lock keeps two reps off the same person),
 // show the record, dial, log, disposition, next. Suppression is enforced
-// BEFORE a number is offered — a blocked number renders greyed WITH its
+// BEFORE a number is offered — a blocked number renders grayed WITH its
 // reason, and a member with no legal number is auto-marked `suppressed`,
 // visibly tallied, never dialed.
 

@@ -350,7 +350,7 @@ export function useIllustrateSetRun() {
     setRun((prev) => ({
       ...prev,
       phase: stopped ? "stopped" : "done",
-      // The card in hand when Stop landed was cancelled with the stream.
+      // The card in hand when Stop landed was canceled with the stream.
       cards: stopped
         ? prev.cards.map((c) =>
             c.status === "running" ? { ...c, status: "waiting" as const } : c,

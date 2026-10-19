@@ -287,7 +287,7 @@ describe("table", () => {
     </MarkdownStreamingProvider>
   );
 
-  it("reads as labelled cards in a narrow pane, and as the grid outside the canvas", async () => {
+  it("reads as labeled cards in a narrow pane, and as the grid outside the canvas", async () => {
     await show(render(), null);
     await untilRendered("table");
     expect(container.querySelector("table")?.getAttribute("data-canvas-fit")).toBeNull();

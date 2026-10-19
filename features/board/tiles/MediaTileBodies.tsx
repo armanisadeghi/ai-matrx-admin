@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Non-stream tile bodies: agent-generated HTML, images, video. Each honours
+ * Non-stream tile bodies: agent-generated HTML, images, video. Each honors
  * the pace tier in the way that fits its medium.
  *
  * HTML — a sandboxed iframe (`allow-scripts`, NO `allow-same-origin`: the

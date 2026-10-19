@@ -87,7 +87,7 @@ export const QUIZ_FALLBACK: Record<string, unknown> = {
       question: "Why do most new home batteries use LFP cells?",
       options: ["Highest energy density", "Long cycle life and thermal stability", "Lowest weight", "No inverter needed"],
       correct_answer: "Long cycle life and thermal stability",
-      explanation: "LFP gives up some density for 6,000+ cycles and better thermal behaviour.",
+      explanation: "LFP gives up some density for 6,000+ cycles and better thermal behavior.",
     },
     {
       question: "On a time-of-use tariff, a battery's value mostly comes from…",

@@ -127,7 +127,7 @@ describe("the control the sentence names is on the screen", () => {
   it("never promises a control on a surface that cannot draw one", async () => {
     // RED before the fix: the SERVER's sentence ended "Choose “Distil again
     // and replace” …", so this panel printed the promise whether or not it
-    // could honour it. A sentence cannot know its surface, so it states facts
+    // could honor it. A sentence cannot know its surface, so it states facts
     // and the surface draws the offer.
     const parsed = parseDumpSummary(SUMMARY)!;
     await act(async () => {

@@ -10,7 +10,7 @@
  *   - Contribute — members share their own items with the team
  *   - Member contributions — admins review / reject what's been shared
  *
- * Counts and the resource grid are driven by the org resource catalogue, not a
+ * Counts and the resource grid are driven by the org resource catalog, not a
  * hardcoded list, so adding a scopeable entity surfaces here automatically.
  *
  * Rendered by both `/organizations/[orgId]` (primary) and the legacy

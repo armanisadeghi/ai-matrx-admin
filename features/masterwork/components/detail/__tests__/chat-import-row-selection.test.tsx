@@ -16,7 +16,7 @@
  *
  * Delete `onCheckedChange` from the row Checkbox (the defect as reported) and
  * the first two tests fail; the third fails the moment the Distill button
- * stops honouring a partial selection.
+ * stops honoring a partial selection.
  */
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -215,7 +215,7 @@ describe("ChatImportDialog — picking your own conversations", () => {
     ]);
   });
 
-  it("still honours the bulk controls", () => {
+  it("still honors the bulk controls", () => {
     click(buttonByText("Select all"));
     expect(counterText()).toBe("3 of 3 selected");
     click(buttonByText("None"));

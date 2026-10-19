@@ -5,7 +5,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 //
 // A rule class ships a JSON Schema, and the shipped schemas range from four scalar
 // keys (`pto-carryover-legality`) to nested objects with `$defs` and `$ref`
-// (`final-pay-deadline`). Two honest behaviours follow, and this file draws the line
+// (`final-pay-deadline`). Two honest behaviors follow, and this file draws the line
 // between them:
 //
 //   • FLAT — every property is a scalar or an enum. A real form can be built, so it is.

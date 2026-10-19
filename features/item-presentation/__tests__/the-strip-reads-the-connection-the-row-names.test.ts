@@ -79,7 +79,7 @@ const NAMED = connection(
   NAMED_ACCOUNT_LAST_CALL,
 );
 
-/** Holds Calendar too, plus four more products — the ranking's favourite. */
+/** Holds Calendar too, plus four more products — the ranking's favorite. */
 const BIGGER = connection(
   "22222222-aaaa-bbbb-cccc-000000000002",
   "everything@aimatrx.com",

@@ -166,29 +166,18 @@ describe("select-all never ticks a row applied_unconfirmed keeps live", () => {
     expect(container.textContent).toContain("an ordinary waiting row");
     expect(container.textContent).toContain("reached Google and lost the answer");
 
-    const selectAll = container.querySelector<HTMLInputElement>(
-      '[aria-label="Select every proposal shown"]',
+    // The shared table's page select-all (2026-10-18: the queue's list moved onto
+    // MatrxDataTable). An unselectable row gets NO checkbox at all, so the only
+    // row control is the pending row's.
+    const rowBoxes = container.querySelectorAll('[aria-label="Select this proposal"]');
+    expect(rowBoxes).toHaveLength(1);
+    const selectAll = container.querySelector<HTMLButtonElement>(
+      '[aria-label="Select every row on this page"]',
     );
     expect(selectAll).not.toBeNull();
     act(() => selectAll?.click());
     await flush();
-
-    // "Select all N shown" must count only the actionable row — the
-    // unconfirmed row is never part of a batch, so N is 1, not 2.
-    expect(container.textContent).toContain("1 of 2 shown selected");
-
-    const pendingCheckbox = container.querySelector<HTMLInputElement>(
-      '[aria-label="Select: an ordinary waiting row"]',
-    );
-    const unconfirmedCheckbox = container.querySelector<HTMLInputElement>(
-      '[aria-label="Select: a row whose write reached Google and lost the answer"]',
-    );
-    expect(pendingCheckbox?.getAttribute("data-state")).toBe("checked");
-    // The unconfirmed row's own checkbox is disabled and was never selected —
-    // this is `noLiveAction` refusing the row's OWN control, not the bug this
-    // test is for; the bug was select-all ticking it anyway.
-    expect(unconfirmedCheckbox?.getAttribute("data-state")).not.toBe("checked");
-    expect(unconfirmedCheckbox?.hasAttribute("disabled")).toBe(true);
+    expect(rowBoxes[0]?.getAttribute("data-state")).toBe("checked");
 
     const approveButton = [...container.querySelectorAll("button")].find(
       (button) => (button.textContent ?? "").startsWith("Approve "),

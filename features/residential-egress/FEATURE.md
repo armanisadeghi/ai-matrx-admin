@@ -7,7 +7,7 @@ where its pieces are. Never restate the wire protocol, the table, the knobs or
 the helper here.
 
 A person can lend AI Matrx one of their own computers as the way out to the
-internet, **used only when a site blocks our data centre**. This feature is the
+internet, **used only when a site blocks our data center**. This feature is the
 browser half: the list, the switch, the pairing approval, and the two places a
 run says which way it went out.
 

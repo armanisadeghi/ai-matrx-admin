@@ -92,7 +92,7 @@ export function buildHomes(organizations: readonly HomeOrganization[]): ItemHome
 
 /**
  * The name a home shows. Organizations are invisible except where the organization IS the
- * meaning: a General is labelled "General · <Org>" when the person's notes span more than one
+ * meaning: a General is labeled "General · <Org>" when the person's notes span more than one
  * organization, and two same-named scopes from different organizations carry theirs.
  */
 export function homeDisplayName(

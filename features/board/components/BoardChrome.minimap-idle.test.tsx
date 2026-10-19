@@ -1,8 +1,8 @@
 /**
  * An idle board does no style work. The minimap used to read its theme
- * colours with getComputedStyle on a 1 s timer — a forced style flush every
+ * colors with getComputedStyle on a 1 s timer — a forced style flush every
  * second on a board where nothing moved — and repainted its canvas each time.
- * Colours are read when the theme changes; the picture redraws only when it
+ * Colors are read when the theme changes; the picture redraws only when it
  * changed.
  */
 import { act } from "react";
@@ -82,7 +82,7 @@ it("reads no computed style and repaints nothing while the board is idle", () =>
   expect(fills).toBe(paintedOnce);
 });
 
-it("re-reads colours and repaints when the theme flips", async () => {
+it("re-reads colors and repaints when the theme flips", async () => {
   const store = new BoardCameraStore({ x: 0, y: 0, z: 1 });
   store.setSize({ w: 1200, h: 800 });
   store.registerItem("note:a", { x: 0, y: 0, w: 400, h: 300 });

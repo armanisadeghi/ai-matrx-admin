@@ -2,7 +2,7 @@
  * Builder panel — the Decisions view: for every workflow run (a Smart Add round), the path the run chose
  * (aidream `brand.identify.path_decision`, its `path_decision` output as stored), every signal against its
  * threshold, the entry checks, any escalation, the steps the run skipped with their reasons (the run story's
- * greyed rows), and the run's hard cost; plus the cost per path across runs.
+ * grayed rows), and the run's hard cost; plus the cost per path across runs.
  * Design: common-docs/.../smart-add-brand/PATHS.md. Pure; reads stored records only, never reshapes them.
  */
 import type { RunTruth } from "./data";

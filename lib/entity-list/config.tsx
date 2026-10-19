@@ -128,7 +128,7 @@ export interface EntityListController<TRow> {
 }
 
 /**
- * The behaviour half a feature wires onto rows. `menuFor` is the ONE action
+ * The behavior half a feature wires onto rows. `menuFor` is the ONE action
  * list (kebab + right-click + cards + rows all consume it); `onOpenRow` is the
  * whole-row click; `onToggleFavorite` backs the interactive star.
  */
@@ -354,7 +354,7 @@ export interface EntityListConfig<TRow> {
   /**
    * A search typed over the UNTOUCHED `defaultFilters` runs over the whole
    * corpus, and the surface reads the lifted bag back (a bucket control shows
-   * "All"). A filter the person set themselves is honoured exactly. Full rule
+   * "All"). A filter the person set themselves is honored exactly. Full rule
    * and the why: `useEntityList` → `searchSpansDefaultFilters`. Off by default.
    */
   searchSpansDefaultFilters?: boolean;

@@ -12,7 +12,7 @@
  *      profile is a key person);
  *   3. folds every finding that is the same real thing into ONE card (`twins` = the folded keys, answered
  *      together; `folded` = the copies, shown in the grounding hover);
- *   4. gathers multi-value fields (services, categories, locations, licences) into one SET card whose values
+ *   4. gathers multi-value fields (services, categories, locations, licenses) into one SET card whose values
  *      are answered at once, each one switchable;
  *   5. orders the stage: accounts and websites, names, what you do, offerings, audience, locations, people,
  *      contact, the web, logos, everything else — the "Ask me later" pile last.
@@ -308,7 +308,7 @@ const SETS: [string, string, readonly string[]][] = [
   ["set:offerings", "Services", ["primary_products_services", "product", "service", "products", "services"]],
   ["set:locations", "Locations", ["address", "street_address", "additional_location"]],
   ["set:areas", "Service area", ["service_area"]],
-  ["set:licences", "Licences", ["license_number", "registration_number"]],
+  ["set:licences", "Licenses", ["license_number", "registration_number"]],
   ["set:metrics", "On your profiles", ["social_follower_count", "review_rating", "stated_metric", "employee_count_range", "ownership_type"]],
 ];
 const SET_OF = new Map(SETS.flatMap(([key, label, fields]) => fields.map((f) => [f, { key, label }] as const)));

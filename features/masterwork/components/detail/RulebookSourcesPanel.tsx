@@ -1270,7 +1270,7 @@ export function RulebookSourcesPanel({
                     {/* A DOOR, NOT A THIRD CAPTURE FLOW. One link at a time is
                         the wrong shape for someone whose method lives in a
                         YouTube channel; the Media Source Catalog already
-                        catalogues a whole channel into a Library of Sources.
+                        catalogs a whole channel into a Library of Sources.
                         So this sibling navigates there carrying where it came
                         from — no `aria-expanded`/`aria-pressed`, because
                         nothing opens below the row and a toggle that never
@@ -1283,7 +1283,7 @@ export function RulebookSourcesPanel({
                       <Link
                         href={`${LIBRARIES_PATH}?from=rulebook&rulebook_id=${encodeURIComponent(rulebook.id)}`}
                         data-tap-target
-                        title="Catalogue a whole YouTube channel in Libraries"
+                        title="Catalog a whole YouTube channel in Libraries"
                       >
                         <Library className="size-3.5" />
                         Bring a whole channel
@@ -1386,7 +1386,7 @@ export function RulebookSourcesPanel({
               {/* 🚨 THE LANE THE 2026-09-17 VERIFICATION WATCHED FREEZE. It
                   now shows a row per attached source with its own state, the
                   counts the server sent, a clock that moves every second, and
-                  the server's labouring sentence when its heartbeat cannot
+                  the server's laboring sentence when its heartbeat cannot
                   land — never a motionless spinner. */}
               {/* 🚨 THE SETTLED ACCOUNT WINS, AND IT IS THE ONLY ONE ON SCREEN
                   (twelfth cold walk, 2026-09-20, D3). While a run is in

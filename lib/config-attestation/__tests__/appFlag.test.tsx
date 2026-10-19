@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  *
  * useAppFlag is a counted door: the hook records a `flags.<name>` read through the real
- * @ai-matrx/data recorder, an absent flag stays `undefined` (the caller keeps current behaviour),
+ * @ai-matrx/data recorder, an absent flag stays `undefined` (the caller keeps current behavior),
  * the manifest generator declares the flag from a literal call site, and a version check that
  * cannot run is a counted error.
  */

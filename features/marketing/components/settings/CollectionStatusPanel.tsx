@@ -4,7 +4,7 @@
  * "Where this site's data comes from" — the connection + freshness table for
  * every collection provider bound to one site.
  *
- * WHAT IT REPLACED (2026-08-11) and why, because the old panel is a catalogue
+ * WHAT IT REPLACED (2026-08-11) and why, because the old panel is a catalog
  * of the mistakes this one must not repeat:
  *
  *  - It printed the server's `next_due_reason` into a "Next due" column, so a

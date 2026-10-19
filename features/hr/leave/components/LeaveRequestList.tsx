@@ -29,15 +29,15 @@
 
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { MatrxDataTable, type MatrxColumnDef } from "@ai-matrx/design-system/data-table";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { isHrDenied, isHrFailed } from "@/features/hr/types";
 import { toast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
 
 import { cancelLeaveRequest, discardLeaveRequest } from "../api/service";
 import type { LeaveRequestState, MyLeaveRequest } from "../api/types";
@@ -50,7 +50,7 @@ const STATE_WORDS: Record<LeaveRequestState, string> = {
   submitted: "Waiting for a decision",
   approved: "Approved",
   denied: "Denied",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
   taken: "Taken",
   partially_taken: "Partly taken",
 };
@@ -101,7 +101,7 @@ function requestAction(state: LeaveRequestState | null): RequestAction | null {
       door: "cancel",
       label: "Ask to cancel",
       title: "Ask to cancel this approved time off?",
-      body: "These hours are already held against your balance, so cancelling has to be approved like the original request was. Your approver will see the request.",
+      body: "These hours are already held against your balance, so canceling has to be approved like the original request was. Your approver will see the request.",
       done: "Sent. Your approver will decide on the cancellation.",
     };
   }
@@ -115,7 +115,15 @@ export interface LeaveRequestListProps {
 }
 
 export function LeaveRequestList({ requests, onChanged }: LeaveRequestListProps) {
-  const [openId, setOpenId] = useState<string | null>(null);
+  // A `#request-<id>` link (the leave ledger) opens that request.
+  const [hashRequestId, setHashRequestId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const id = window.location.hash.match(/^#request-(.+)$/)?.[1] ?? null;
+    if (!id) return;
+    setHashRequestId(id);
+    setExpandedIds((prev) => new Set(prev).add(id));
+  }, []);
   const [pending, setPending] = useState<MyLeaveRequest | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -149,6 +157,67 @@ export function LeaveRequestList({ requests, onChanged }: LeaveRequestListProps)
     onChanged();
   }
 
+  const columns: MatrxColumnDef<MyLeaveRequest>[] = [
+    {
+      id: "policy",
+      header: "Type",
+      accessorFn: (req) => req.policyName ?? "Time off",
+      width: 180,
+    },
+    {
+      id: "startsOn",
+      header: "Dates",
+      accessorFn: (req) => req.startsOn ?? "",
+      format: { id: "date" },
+      width: 200,
+      cell: (req) => (
+        <span className="whitespace-nowrap">
+          {req.startsOn ?? "—"}
+          {req.endsOn && req.endsOn !== req.startsOn ? ` → ${req.endsOn}` : ""}
+        </span>
+      ),
+    },
+    {
+      id: "hours",
+      header: "Hours",
+      accessorFn: (req) => req.requestedHours ?? null,
+      format: { id: "number" },
+      width: 110,
+      cell: (req) => formatHours(req.requestedHours) ?? "Hours not provided",
+    },
+    {
+      id: "state",
+      header: "State",
+      accessorFn: (req) => (req.state ? STATE_WORDS[req.state] : "State not recorded"),
+      format: { id: "choice" },
+      width: 190,
+      cell: (req) => (
+        <Badge variant={stateTone(req.state)}>
+          {req.state ? STATE_WORDS[req.state] : "State not recorded"}
+        </Badge>
+      ),
+    },
+    {
+      id: "act",
+      header: "Action",
+      accessorFn: (req) => requestAction(req.state)?.label ?? "",
+      sortable: false,
+      // table-filter-off: the State column filters on what decides this control
+      filter: false,
+      width: 140,
+      cell: (req) => {
+        const act = requestAction(req.state);
+        return act ? (
+          <span onClick={(event) => event.stopPropagation()}>
+            <Button type="button" variant="outline" onClick={() => setPending(req)}>
+              {act.label}
+            </Button>
+          </span>
+        ) : null;
+      },
+    },
+  ];
+
   if (requests.length === 0) {
     return (
       <section className="rounded-lg border border-border bg-card p-4">
@@ -162,158 +231,21 @@ export function LeaveRequestList({ requests, onChanged }: LeaveRequestListProps)
 
   return (
     <section className="flex min-w-0 flex-col gap-2">
-      <h2 className="text-sm font-semibold text-foreground">Your requests</h2>
-
-      <ul className="flex flex-col gap-2">
-        {requests.map((req) => {
-          const open = openId === req.id;
-          const act = requestAction(req.state);
-          const advisories = req.conflictCheck?.advisory ?? [];
-          const hard = req.conflictCheck?.hard ?? [];
-
-          return (
-            <li
-              key={req.id}
-              id={`request-${req.id}`}
-              className="rounded-lg border border-border bg-card"
-            >
-              <div className="flex flex-wrap items-center gap-2 p-3">
-                <button
-                  type="button"
-                  onClick={() => setOpenId(open ? null : req.id)}
-                  aria-expanded={open}
-                  className="flex min-h-11 min-w-0 flex-1 items-center gap-2 py-2 text-left md:min-h-0 md:py-0"
-                >
-                  {open ? (
-                    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-                  )}
-                  <span className="min-w-0 truncate text-sm font-medium text-foreground">
-                    {req.policyName ?? "Time off"}
-                  </span>
-                  <span className="whitespace-nowrap text-sm text-muted-foreground">
-                    {req.startsOn ?? "—"}
-                    {req.endsOn && req.endsOn !== req.startsOn ? ` → ${req.endsOn}` : ""}
-                  </span>
-                  <span className="whitespace-nowrap text-sm tabular-nums text-muted-foreground">
-                    {formatHours(req.requestedHours) ?? "Hours not provided"}
-                  </span>
-                </button>
-
-                <Badge variant={stateTone(req.state)}>
-                  {req.state ? STATE_WORDS[req.state] : "State not recorded"}
-                </Badge>
-
-                {act ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setPending(req)}
-                  >
-                    {act.label}
-                  </Button>
-                ) : null}
-              </div>
-
-              {open ? (
-                <div className="flex flex-col gap-2 border-t border-border p-3 text-sm">
-                  <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-                    <dt className="text-muted-foreground">Asked for</dt>
-                    <dd className="tabular-nums text-foreground">
-                      {formatHours(req.requestedHours) ?? "Not provided"}
-                    </dd>
-                    {req.approvedHours !== null ? (
-                      <>
-                        <dt className="text-muted-foreground">Approved</dt>
-                        <dd className="tabular-nums text-foreground">
-                          {formatHours(req.approvedHours)}
-                        </dd>
-                      </>
-                    ) : null}
-                    {req.decidedAt ? (
-                      <>
-                        <dt className="text-muted-foreground">Decided</dt>
-                        <dd className="text-foreground">{req.decidedAt}</dd>
-                      </>
-                    ) : null}
-                    {req.denialReason ? (
-                      <>
-                        <dt className="text-muted-foreground">Reason given</dt>
-                        <dd className="text-foreground">{req.denialReason}</dd>
-                      </>
-                    ) : null}
-                    {req.leaveCaseLinked ? (
-                      <>
-                        <dt className="text-muted-foreground">Leave case</dt>
-                        {/* The server says only THAT a case is linked, never which (§9.6). */}
-                        <dd className="text-foreground">
-                          This request is part of a leave case HR is handling with you.
-                        </dd>
-                      </>
-                    ) : null}
-                  </dl>
-
-                  {req.dayParts.length > 0 ? (
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Hours you asked for, day by day
-                      </p>
-                      <ul className="mt-1 flex flex-wrap gap-2">
-                        {req.dayParts.map((p) => (
-                          <li
-                            key={p.date}
-                            className="rounded border border-border px-2 py-0.5 text-xs tabular-nums"
-                          >
-                            {p.date} · {formatHours(p.hours)}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {hard.length > 0 ? (
-                    <div className="rounded-md border border-destructive/60 bg-destructive/5 p-2">
-                      <p className="text-xs font-medium text-destructive">
-                        What stopped this
-                      </p>
-                      <ul className="mt-1 flex flex-col gap-1">
-                        {hard.map((f, i) => (
-                          <li key={f.code ?? i} className="text-sm text-destructive/90">
-                            {f.message ?? "No detail was recorded for this finding."}
-                            <ErrorAlchemyMenu error={f.message} />
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {advisories.length > 0 ? (
-                    <div className="rounded-md border border-border p-2">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        What your approver was told
-                      </p>
-                      <ul className="mt-1 flex flex-col gap-1">
-                        {advisories.map((f, i) => (
-                          <li key={f.code ?? i} className="text-sm text-muted-foreground">
-                            {f.message ?? "No detail was recorded for this note."}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {req.conflictCheck === null ? (
-                    <p className={cn("text-xs", "text-muted-foreground")}>
-                      No checks were recorded against this request.
-                    </p>
-                  ) : null}
-                </div>
-              ) : null}
-            </li>
-          );
-        })}
-      </ul>
+      <MatrxDataTable<MyLeaveRequest>
+        tableId="hr.leave.my-requests"
+        data={requests}
+        columns={columns}
+        getRowId={(req) => req.id}
+        defaultSort={{ id: "startsOn", direction: "desc" }}
+        toolbar={{ title: "Your requests" }}
+        focusRowId={hashRequestId}
+        expandedDetail={{
+          expandedIds,
+          onExpandedIdsChange: setExpandedIds,
+          render: (req) => <LeaveRequestDetail req={req} />,
+        }}
+        emptyState={{ title: "No requests match" }}
+      />
 
       <ConfirmDialog
         open={pending !== null && action !== null}
@@ -332,5 +264,101 @@ export function LeaveRequestList({ requests, onChanged }: LeaveRequestListProps)
         </span>
       ) : null}
     </section>
+  );
+}
+
+/** Everything the server knows about one request, opened in place. */
+function LeaveRequestDetail({ req }: { req: MyLeaveRequest }) {
+  const advisories = req.conflictCheck?.advisory ?? [];
+  const hard = req.conflictCheck?.hard ?? [];
+  return (
+    <div className="flex flex-col gap-2 p-3 text-sm">
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+        <dt className="text-muted-foreground">Asked for</dt>
+        <dd className="tabular-nums text-foreground">
+          {formatHours(req.requestedHours) ?? "Not provided"}
+        </dd>
+        {req.approvedHours !== null ? (
+          <>
+            <dt className="text-muted-foreground">Approved</dt>
+            <dd className="tabular-nums text-foreground">{formatHours(req.approvedHours)}</dd>
+          </>
+        ) : null}
+        {req.decidedAt ? (
+          <>
+            <dt className="text-muted-foreground">Decided</dt>
+            <dd className="text-foreground">{req.decidedAt}</dd>
+          </>
+        ) : null}
+        {req.denialReason ? (
+          <>
+            <dt className="text-muted-foreground">Reason given</dt>
+            <dd className="text-foreground">{req.denialReason}</dd>
+          </>
+        ) : null}
+        {req.leaveCaseLinked ? (
+          <>
+            <dt className="text-muted-foreground">Leave case</dt>
+            {/* The server says only THAT a case is linked, never which (§9.6). */}
+            <dd className="text-foreground">
+              This request is part of a leave case HR is handling with you.
+            </dd>
+          </>
+        ) : null}
+      </dl>
+
+      {req.dayParts.length > 0 ? (
+        <div>
+          <p className="text-xs font-medium text-muted-foreground">
+            Hours you asked for, day by day
+          </p>
+          <ul className="mt-1 flex flex-wrap gap-2">
+            {req.dayParts.map((p) => (
+              <li
+                key={p.date}
+                className="rounded border border-border px-2 py-0.5 text-xs tabular-nums"
+              >
+                {p.date} · {formatHours(p.hours)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {hard.length > 0 ? (
+        <div className="rounded-md border border-destructive/60 bg-destructive/5 p-2">
+          <p className="text-xs font-medium text-destructive">What stopped this</p>
+          <ul className="mt-1 flex flex-col gap-1">
+            {hard.map((f, i) => (
+              <li key={f.code ?? i} className="text-sm text-destructive/90">
+                {f.message ?? "No detail was recorded for this finding."}
+                <ErrorAlchemyMenu error={f.message} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {advisories.length > 0 ? (
+        <div className="rounded-md border border-border p-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            What your approver was told
+          </p>
+          <ul className="mt-1 flex flex-col gap-1">
+            {advisories.map((f, i) => (
+              <li key={f.code ?? i} className="text-sm text-muted-foreground">
+                {f.message ?? "No detail was recorded for this note."}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {req.conflictCheck === null ? (
+        <p className="text-xs text-muted-foreground">
+          No checks were recorded against this request.
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -17,7 +17,7 @@ import {
  * redirected rather than dropped: old links, bookmarks, and agent-held URLs
  * must still land somewhere correct.
  *
- * `?tab=` is read as the same legacy alias `useMarketingSubView` honours.
+ * `?tab=` is read as the same legacy alias `useMarketingSubView` honors.
  */
 export default async function MarketingSiteMediaPage({
   params,

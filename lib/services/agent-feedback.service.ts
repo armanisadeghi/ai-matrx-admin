@@ -425,7 +425,7 @@ export async function getTriageBatch(
     const supabase = createAdminClient();
 
     // `public.get_triage_batch` is a read (VOLATILE for its ordering, but it
-    // writes nothing — verified against the main database), so a cancelled
+    // writes nothing — verified against the main database), so a canceled
     // batch can simply be asked for again.
     const { data, error } = await withTransientRetry(
       `public.get_triage_batch(${batchSize})`,

@@ -71,7 +71,7 @@ export function CrawlReportsIndex({ crawlId }: { crawlId: string }) {
 
   const indexCopy = webCopy({
     kind: "web-crawl-report-catalogue",
-    label: "Crawl report catalogue",
+    label: "Crawl report catalog",
     description:
       "The dedicated bulk reports available for this crawl session and the evidence each one presents.",
     surface: `Crawl reports — session ${crawlId}`,
@@ -126,7 +126,7 @@ export function CrawlReportsIndex({ crawlId }: { crawlId: string }) {
                       kind: "web-crawl-report-definition",
                       label: report.label,
                       description: report.description,
-                      surface: `Crawl report catalogue — ${report.label}`,
+                      surface: `Crawl report catalog — ${report.label}`,
                       data: report,
                       lines: [
                         ["Report", report.label],

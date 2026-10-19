@@ -59,7 +59,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       console.error("[huggingface-oauth:callback]", { status: response.status });
       return done(request, oauth.returnUrl, "Could not finish connecting Hugging Face. Try again.");
     }
-    if (completed.status === "cancelled") return done(request, oauth.returnUrl, "Hugging Face sign-in was cancelled.");
+    if (completed.status === "cancelled") return done(request, oauth.returnUrl, "Hugging Face sign-in was canceled.");
     if (completed.status !== "connected") {
       return done(request, oauth.returnUrl, "Could not finish connecting Hugging Face. Try again.");
     }

@@ -202,7 +202,7 @@ export function icsContent(
   return `${lines.map(fold).join("\r\n")}\r\n`;
 }
 
-/** A file name a person recognises: "weekly-client-check-in.ics". */
+/** A file name a person recognizes: "weekly-client-check-in.ics". */
 export function icsFileName(title: string): string {
   const base = title
     .toLowerCase()

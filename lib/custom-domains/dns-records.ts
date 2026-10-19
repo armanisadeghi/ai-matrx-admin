@@ -23,7 +23,7 @@ export type DomainStatus = "pending" | "verifying" | "live" | "failed" | "remove
 const DEFAULT_A = "76.76.21.21";
 const DEFAULT_CNAME = "cname.vercel-dns.com";
 
-/** Two-label hosts (yourbusiness.com) are apex; a few common two-part suffixes are honoured. */
+/** Two-label hosts (yourbusiness.com) are apex; a few common two-part suffixes are honored. */
 const TWO_PART_SUFFIXES = new Set(["co.uk", "org.uk", "com.au", "co.nz", "com.br", "co.za", "co.jp", "com.mx"]);
 
 export function apexOf(host: string): string {

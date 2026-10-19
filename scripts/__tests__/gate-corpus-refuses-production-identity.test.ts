@@ -17,9 +17,9 @@
  * only `run.ts`, never `branch-api.ts`.
  *
  * So this file asserts two different things, because a text check and a
- * behavioural check each catch what the other cannot:
+ * behavioral check each catch what the other cannot:
  *
- *   A. BEHAVIOUR — the real `assertServerMatchesTarget`, handed PRODUCTION's own
+ *   A. BEHAVIOR — the real `assertServerMatchesTarget`, handed PRODUCTION's own
  *      system_identifier (read from `plan/BRANCH-REF`, not invented here) while
  *      the caller asked for `--target branch`, must throw and must name
  *      production. The only thing stubbed is the socket — the fake `query` hands
@@ -27,7 +27,7 @@
  *      under test is the real one.
  *
  *   B. SHAPE — BOTH files that open a connection in `scripts/gate-corpus/` route
- *      through that function. A behavioural proof of a function nobody calls is
+ *      through that function. A behavioral proof of a function nobody calls is
  *      worth nothing.
  *
  * NO CREDENTIAL, NO CONNECTION, so this runs in CI on every commit.
@@ -142,7 +142,7 @@ describe("A. the refusal bites when the connection IS production", () => {
     expect(err.message).toContain("gate-corpus/branch-api.ts");
   });
 
-  it("refuses an UNKNOWN cluster too — an identity it recognises is not the test", async () => {
+  it("refuses an UNKNOWN cluster too — an identity it recognizes is not the test", async () => {
     await expect(
       assertServerMatchesTarget(serverSaying("1"), "branch", ref, "run.ts"),
     ).rejects.toThrow(/UNKNOWN cluster/);

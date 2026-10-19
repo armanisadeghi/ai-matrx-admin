@@ -5,7 +5,7 @@
  * THE GENERIC RULE (vision §2.3): the panel renders ANY kind, including kinds
  * that did not exist when it was built. Four kinds have a section of their own
  * because the vision names them (pages, planned pages, keywords, facets); every
- * other kind is grouped by whatever string the function returned, labelled by
+ * other kind is grouped by whatever string the function returned, labeled by
  * the entity registry when it knows the token and by the token itself when it
  * does not. There is no switch over kinds anywhere in this folder.
  *

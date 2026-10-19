@@ -9,7 +9,7 @@
 // reminder to the saved row (step two). The save is held, so the run pauses
 // exactly as a Pause & Ask does. Before this lane the run STOPPED instead: the
 // page said the step "hit a problem", the activity line was in the error
-// colour, and approving landed the row while step two never ran.
+// color, and approving landed the row while step two never ran.
 //
 // Every clause fails against the HEAD copies of InterruptQuestion.tsx,
 // recordChangeApproval.ts, workflow-runs.slice.ts and activity-copy.ts.
@@ -165,7 +165,7 @@ describe("a run paused on a held change", () => {
     expect(answerInterrupt).toHaveBeenCalledWith(RUN, CHECKPOINT, {});
   });
 
-  test("the activity line is held, in the held colour — never 'ran into a problem'", () => {
+  test("the activity line is held, in the held color — never 'ran into a problem'", () => {
     const run = pausedState(HELD_PAYLOAD).byRunId[RUN]!;
     const entries = (run as unknown as { activity: { kind: string }[] }).activity ?? [];
     const held = entries.find((entry) => entry.kind === "held");

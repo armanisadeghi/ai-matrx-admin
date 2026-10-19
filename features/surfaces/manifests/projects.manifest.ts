@@ -232,7 +232,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "resource_counts",
     label: "Resource counts",
     description:
-      "Per-kind counts of catalogue resources attached to the active project (notes, files, conversations, …) as a `{ kind: count }` map, excluding tasks/projects (they have their own values). Empty while the inventory is loading or none is selected.",
+      "Per-kind counts of catalog resources attached to the active project (notes, files, conversations, …) as a `{ kind: count }` map, excluding tasks/projects (they have their own values). Empty while the inventory is loading or none is selected.",
     valueType: "object",
     alwaysAvailable: false,
     typicalCharCount: 300,
@@ -243,7 +243,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "total_resource_count",
     label: "Total resources",
     description:
-      "Total number of catalogue resources attached to the active project (sum of resource_counts). Zero when nothing is attached; empty while loading or none is selected.",
+      "Total number of catalog resources attached to the active project (sum of resource_counts). Zero when nothing is attached; empty while loading or none is selected.",
     valueType: "number",
     alwaysAvailable: false,
     typicalCharCount: 4,
@@ -352,7 +352,7 @@ const surfaceSpecific: SurfaceValue[] = [
  * straight through the SAME canonical path the user's own edit takes
  * (`updateProject` in `features/projects/service.ts`, which validates the name
  * and is the only writer of the project row) and the hero re-renders with the
- * new value. There is no staging state to honour, and pretending otherwise
+ * new value. There is no staging state to honor, and pretending otherwise
  * would be a lie to the agent.
  *
  * All targets are `applyPolicy: "ask"` — a project is a shared record with

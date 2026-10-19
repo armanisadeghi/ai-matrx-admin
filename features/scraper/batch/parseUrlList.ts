@@ -10,7 +10,7 @@
 // many it had to leave behind at the cap.
 //
 // Nothing here guesses silently: every number the parser drops is returned so
-// the surface can say it in words. Normalisation goes through `normalizeUrl`,
+// the surface can say it in words. Normalization goes through `normalizeUrl`,
 // the ONE scrape-target URL rule the rest of the feature already uses, so a
 // link this parser accepts is a link the scrape buttons accept.
 
@@ -26,7 +26,7 @@ import { normalizeUrl } from "@/features/scraper/utils/scraper-floating-helpers"
 export const BATCH_URL_CAP = 200;
 
 export interface ParsedUrlList {
-  /** Normalised, de-duplicated, capped — exactly what will be scraped. */
+  /** Normalized, de-duplicated, capped — exactly what will be scraped. */
   urls: string[];
   /** How many valid links the paste contained, before dedupe and the cap. */
   found: number;

@@ -203,7 +203,7 @@ async function selfTest(env: { url: string; key: string }): Promise<number> {
     if (Number((red[0] as { n?: number })?.n ?? 0) !== 1) {
       console.log(`  ${C.r}✗${C.x} RED  — the live query did not see the definer function it just built`); bad++;
     } else {
-      console.log(`  ${C.g}✓${C.x} RED  — the live query sees a definer ${"`*_list_scoped`"} in the catalogue`);
+      console.log(`  ${C.g}✓${C.x} RED  — the live query sees a definer ${"`*_list_scoped`"} in the catalog`);
     }
     await door(env, `create or replace function ${schema}.zz_probe_list_scoped() returns int
                      language sql security invoker as $f$ select 1 $f$`);

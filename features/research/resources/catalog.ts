@@ -331,9 +331,9 @@ function deriveTagMap(manifest: ResourceManifest, ctx: RenderContext): string {
  * same `crm.party` rows `/crm` shows.
  */
 /**
- * What each analysed, curation-kept page NAMED — the leaves of a topic tree,
+ * What each analyzed, curation-kept page NAMED — the leaves of a topic tree,
  * each traceable to the page that evidenced it. Products/services first
- * (what a tree is made of), organisations and places after (structure and
+ * (what a tree is made of), organizations and places after (structure and
  * facet evidence). Ordered by importance, then the post-read score, so the
  * pages that carried the research lead. Nothing is invented: a page that
  * named nothing prints nothing. Mirrored line for line by the server
@@ -358,7 +358,7 @@ function derivePageEntities(manifest: ResourceManifest): string {
         `- ${e.url} [${e.pageType ?? "unknown"}]`,
         ...(e.products.length ? [`  offerings named: ${e.products.join("; ")}`] : []),
         ...(e.organizations.length
-          ? [`  organisations named: ${e.organizations.join("; ")}`]
+          ? [`  organizations named: ${e.organizations.join("; ")}`]
           : []),
         ...(e.locations.length ? [`  places named: ${e.locations.join("; ")}`] : []),
       ].join("\n"),
@@ -366,7 +366,7 @@ function derivePageEntities(manifest: ResourceManifest): string {
     .sort((a, b) => b.importance - a.importance || b.final - a.final);
   if (rows.length === 0) return "";
   return block(
-    "Named offerings, organisations and places — per analysed page",
+    "Named offerings, organizations and places — per analyzed page",
     [
       ["Pages", rows.length],
       [
@@ -434,7 +434,7 @@ export const CATALOG: ResourceKindDef[] = [
     key: "search.result",
     label: "Sources",
     description:
-      "Every search result in the tightest useful form: URL, age, title, description and all snippets. The highest value per token in the whole catalogue — a page the reader could not fetch still contributes its snippets here, and many of the best sites never allow a read at all.",
+      "Every search result in the tightest useful form: URL, age, title, description and all snippets. The highest value per token in the whole catalog — a page the reader could not fetch still contributes its snippets here, and many of the best sites never allow a read at all.",
     icon: Globe,
     group: "search",
     granularity: "source",
@@ -624,7 +624,7 @@ export const CATALOG: ResourceKindDef[] = [
     key: "page.scoring",
     label: "Page scoring",
     description:
-      "The pre-read / post-read / final scores and recommended use shown on a source's detail page — the pipeline's own judgement of what a page is good for.",
+      "The pre-read / post-read / final scores and recommended use shown on a source's detail page — the pipeline's own judgment of what a page is good for.",
     icon: Gauge,
     group: "pages",
     granularity: "source",
@@ -872,9 +872,9 @@ export const CATALOG: ResourceKindDef[] = [
     // reads first (bundle `research-topical-map`). Derived from
     // `rs_source.page_analysis`, read beside the manifest like the experts.
     key: "page.entities",
-    label: "Named offerings, organisations and places",
+    label: "Named offerings, organizations and places",
     description:
-      "What every analysed, kept page NAMED — its products and services, the organisations and places it mentions — one line per page with the URL. The cheapest structural evidence research holds.",
+      "What every analyzed, kept page NAMED — its products and services, the organizations and places it mentions — one line per page with the URL. The cheapest structural evidence research holds.",
     icon: Boxes,
     group: "pages",
     granularity: "topic",

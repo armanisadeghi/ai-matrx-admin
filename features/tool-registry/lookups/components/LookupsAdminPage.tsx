@@ -353,6 +353,7 @@ function UiClientCrud() {
     <>
       {/* The read's failure is said once, by the table (read=). */}
       <MatrxDataTable<UiClientRow>
+        look="mac"
         data={rows}
         columns={[...(clientColumns(onToggleActive)), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) => (
           <PencilTapButton

@@ -181,7 +181,7 @@ function notesRowsByIntent(initial: Record<string, unknown>) {
       update: (values: Record<string, unknown>) => { writes = { ...values }; return builder; },
       single: answer,
       maybeSingle: answer,
-      // A list read is not modelled — say so rather than hand back one row
+      // A list read is not modeled — say so rather than hand back one row
       // dressed as a result set.
       order: () => { throw new Error("This stub models single-row reads of workbench.notes only; a list read reached it."); },
     };

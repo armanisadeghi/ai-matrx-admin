@@ -3,7 +3,7 @@
 // Graph-analysis helpers that run against a live cytoscape instance. These turn
 // a raw node/edge set into a *meaningful* visualization:
 //   - importance via PageRank (link-analysis, not just raw degree) → node size
-//   - communities via Markov clustering → node colour
+//   - communities via Markov clustering → node color
 // Both are computed once after elements are added, cached into element `data`,
 // then surfaced by `applyEncoding` so the colour/size toggles are instant (no
 // recompute). All algorithms ship in cytoscape core 3.x.
@@ -22,8 +22,8 @@ export type KgColorBy = "tier" | "kind" | "community";
 export type KgSizeBy = "connections" | "importance";
 
 // Distinct hues for detected communities — mid-saturation so they read on both
-// the light and dark canvas. Singleton "communities" fall back to neutral grey
-// so the palette stays meaningful (only real groups get a colour).
+// the light and dark canvas. Singleton "communities" fall back to neutral gray
+// so the palette stays meaningful (only real groups get a color).
 const KG_COMMUNITY_PALETTE = [
   "#6366f1", "#0ea5e9", "#14b8a6", "#f59e0b", "#ec4899", "#8b5cf6",
   "#84cc16", "#10b981", "#ef4444", "#06b6d4", "#a855f7", "#eab308",
@@ -46,7 +46,7 @@ function importanceSize(importance: number): number {
 }
 
 /** Build cytoscape elements. Each node carries both encodings precomputed where
- *  possible (kind colour + connections size); importance/community are filled in
+ *  possible (kind color + connections size); importance/community are filled in
  *  by `annotateGraph` once the graph exists. `color`/`size` seed the first paint. */
 export function buildElements(
   nodes: GraphNode[],
@@ -170,7 +170,7 @@ function ensureImportance(cy: cytoscape.Core): void {
 }
 
 /** Markov community detection → node data. The heavier pass (~300ms at 5.6k
- *  edges), so it only runs when the colour encoding needs it. Returns the
+ *  edges), so it only runs when the color encoding needs it. Returns the
  *  multi-node community count. Computed at most once per element set. */
 function ensureCommunity(cy: cytoscape.Core): number {
   const s = stateFor(cy);
@@ -192,7 +192,7 @@ function ensureCommunity(cy: cytoscape.Core): number {
   }
   let communityCount = 0;
   cy.batch(() => {
-    // only groups of 2+ get a distinct colour
+    // only groups of 2+ get a distinct color
     clusters.forEach((cluster) => {
       if (cluster.length >= 2) {
         const color =
@@ -215,7 +215,7 @@ function ensureCommunity(cy: cytoscape.Core): number {
  *  peaks — a node no neighbour outranks (so the top of a chain/cluster); every
  *  disconnected component therefore has at least one. A multi-source BFS from all
  *  roots then assigns each node its distance to the nearest top. Reads as "levels"
- *  when coloured by `tierColor`. Computed at most once per element set; needs
+ *  when colored by `tierColor`. Computed at most once per element set; needs
  *  importance first (for the root test). */
 function ensureTier(cy: cytoscape.Core): void {
   const s = stateFor(cy);

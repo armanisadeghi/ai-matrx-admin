@@ -328,7 +328,7 @@ export const ENTRY_POINTS: readonly CampaignEntryPoint[] = [
     kind: "runtime",
     why:
       "Lane MAKE-HOME wave 4 — the one template gallery on /make and its preview page: cards read " +
-      "through the catalogue door custom.templates, install/remove through runTemplateDoor " +
+      "through the catalog door custom.templates, install/remove through runTemplateDoor " +
       "(@ai-matrx/records/templates), each install or removal asking UNIFIED_DATA_CAMPAIGN.check for " +
       "the organization first and stopping with the store's words when the switch is off.",
   },
@@ -577,7 +577,7 @@ export const ENTRY_POINTS: readonly CampaignEntryPoint[] = [
         id: "db-based-on",
         file: "scripts/db-based-on.ts",
         kind: "tooling",
-        why: "`pnpm db:based-on` — prints the `-- based-on:` line for a function from the LIVE catalogue. It imports migration-target only to resolve `--based-on-target branch`, which picks WHICH database it measures; a hash taken from one database and checked against the other refuses when the bodies differ. Read-only, run by hand, never part of a served request.",
+        why: "`pnpm db:based-on` — prints the `-- based-on:` line for a function from the LIVE catalog. It imports migration-target only to resolve `--based-on-target branch`, which picks WHICH database it measures; a hash taken from one database and checked against the other refuses when the bodies differ. Read-only, run by hand, never part of a served request.",
     },
     {
         id: "rehearse-migration",
@@ -667,7 +667,7 @@ export const ENTRY_POINTS: readonly CampaignEntryPoint[] = [
         id: "gate-corpus-merge-plan",
         file: "scripts/gate-corpus/merge-plan.ts",
         kind: "tooling",
-        why: "BUILD-BOOK §13's row disposition for THE REFRESH — the marker, the guarded upsert, the guarded delete and the replace path they are contrasted with. Pure SQL construction plus catalogue reads; both restore-graph.ts --merge and refresh-merge-proof.ts call it, so the proof exercises the shipped statements. No credential, never part of a served request.",
+        why: "BUILD-BOOK §13's row disposition for THE REFRESH — the marker, the guarded upsert, the guarded delete and the replace path they are contrasted with. Pure SQL construction plus catalog reads; both restore-graph.ts --merge and refresh-merge-proof.ts call it, so the proof exercises the shipped statements. No credential, never part of a served request.",
     },
     {
         id: "gate-corpus-door-surface",
@@ -827,7 +827,7 @@ export const ENTRY_POINTS: readonly CampaignEntryPoint[] = [
         id: "migration-revoke-order",
         file: "scripts/migration-revoke-order.ts",
         kind: "tooling",
-        why: "The close-the-row-first REVOKE judgement the migration runner calls before it executes a file. Part of the runner, which must never be gated on the campaign it applies.",
+        why: "The close-the-row-first REVOKE judgment the migration runner calls before it executes a file. Part of the runner, which must never be gated on the campaign it applies.",
     },
 ];
 

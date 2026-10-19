@@ -74,14 +74,14 @@ describe("GitHub connection action lifecycle", () => {
     expect(mockDisconnect).not.toHaveBeenCalled();
     expect(container.textContent).toBe("pending");
     await act(async () => {
-      finish({ ok: false, cancelled: true, error: "Cancelled" });
+      finish({ ok: false, cancelled: true, error: "Canceled" });
       await pending;
     });
     expect(container.textContent).toBe("idle");
     mockStart.mockResolvedValue({
       ok: false,
       cancelled: true,
-      error: "Cancelled",
+      error: "Canceled",
     });
     await act(async () => {
       await github.install("/user-settings/integrations");
@@ -103,7 +103,7 @@ describe("GitHub connection action lifecycle", () => {
     mockStart.mockResolvedValue({
       ok: false,
       cancelled: true,
-      error: "Cancelled",
+      error: "Canceled",
     });
     await act(async () => {
       await github.connect();

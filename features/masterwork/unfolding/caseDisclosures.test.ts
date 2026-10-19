@@ -4,7 +4,7 @@
  * `readCaseDisclosures` concatenates live emissions first and stored node
  * outputs last. That order is arrival-by-SOURCE, not recency: a run holding a
  * fresh emission for turn 5 and a stored output for turn 2 handed the old
- * behaviour the OLDER row last, and the run box drew an earlier cumulative
+ * behavior the OLDER row last, and the run box drew an earlier cumulative
  * ledger — hiding steps the case had already released to the desk.
  *
  * ONE-LINE BUG EACH TEST CATCHES:
@@ -47,7 +47,7 @@ it("takes the later row when two disclosures report the same step", () => {
   const first = disclosure(3, "first copy");
   const second = disclosure(3, "second copy");
   expect(latestCaseDisclosure([first, second])).toBe(second);
-  // And a run with no ledgers at all keeps the old last-wins behaviour.
+  // And a run with no ledgers at all keeps the old last-wins behavior.
   const bare = { __kind: CASE_DISCLOSURE_KIND, disclosed: [], available: true };
   const bare2 = { __kind: CASE_DISCLOSURE_KIND, disclosed: ["x"], available: true };
   expect(latestCaseDisclosure([bare, bare2])).toBe(bare2);

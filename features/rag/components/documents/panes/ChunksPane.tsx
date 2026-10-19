@@ -2,7 +2,7 @@
 
 /**
  * Chunk list for one document. Filters by parent/child role and by
- * section_kind. Each chunk lights up with a coloured edge when its
+ * section_kind. Each chunk lights up with a colored edge when its
  * page_numbers includes the currently-active page in the viewer, so
  * scrolling through the PDF visually walks the chunks pane.
  *

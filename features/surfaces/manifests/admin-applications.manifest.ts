@@ -10,7 +10,7 @@
  * Six route-tabbed pages share one shell (`ApplicationsAdminLayoutClient.tsx`):
  *
  *   - Overview       `page.tsx` → `ApplicationsOverview.tsx` — per-application
- *     cards summarising config / catalogs / fleet, with a loud banner when any
+ *     cards summarizing config / catalogs / fleet, with a loud banner when any
  *     instance is below the published minimum version.
  *   - Configuration  `configuration/page.tsx` → `AppConfigClient.tsx` — list of
  *     `app_config` rows → per-application editor (own client state: "list" /

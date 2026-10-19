@@ -1843,7 +1843,7 @@ export function SeoChangeTrackingWorkspace({
   // The tracked/untracked split is this section's second level; the SITE HEADER
   // renders it and owns navigation. It is a real route now (`/changes` and
   // `/changes/untracked`), so the route may fix it with the `view` prop; this
-  // file only reads, and still honours `?view=` when nothing fixes it.
+  // file only reads, and still honors `?view=` when nothing fixes it.
   const queryView = useMarketingSubView("changes");
   const view = fixedView ?? queryView;
   const selectedId = searchParams.get("change");

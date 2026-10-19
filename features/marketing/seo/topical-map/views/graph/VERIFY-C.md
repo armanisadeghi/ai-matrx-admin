@@ -9,7 +9,7 @@ or `views/graph/**`. Judge against PLAN §6 "C — Graph" and the vision §2.2 /
 (`common-docs/inbox/topical-map-app-requirements.md`), never against the builder's summary.
 
 Champion bar: Miro/FigJam (zoom bands, readable cards, drag) + Semrush/Surfer topical maps
-(function: cluster by facet, colour by state). Parity is the floor.
+(function: cluster by facet, color by state). Parity is the floor.
 
 ## Data
 

@@ -31,7 +31,7 @@
 //
 // So this file is the reducer: events in, a rendered shape out — a row per
 // resource with a state, a chunk count, a running rule total, and the
-// labouring sentence while it applies. It is pure and has no React in it, so
+// laboring sentence while it applies. It is pure and has no React in it, so
 // the guard can drive it with a real event transcript.
 //
 // It deliberately renders NO fraction of its own invention. `chunksDone /
@@ -50,7 +50,7 @@ export interface ResourceProgress extends ProgressStep {
   /**
    * 🚨 WHICH SOURCE THIS ROW IS ABOUT — the same identity the server uses
    * (`aidream/services/distillation/source_identity.py`), so two slots that
-   * are the same material can be RECOGNISED as the same material.
+   * are the same material can be RECOGNIZED as the same material.
    *
    * Null when the event carried nothing to identify it by (a placeholder for
    * a resource that has not reported yet, a `kept_source` row whose identity
@@ -141,7 +141,7 @@ function labelFor(data: Record<string, unknown>, index: number, count: number | 
  * (`aidream/services/distillation/source_identity.py`): an uploaded file is
  * `file:<id>` whether it arrives as `{token: "file", id}` or as a file lane's
  * own `file_id`, any other entity is `entity:<token>:<id>`, and a URL is
- * itself with only the never-meaningful differences normalised.
+ * itself with only the never-meaningful differences normalized.
  *
  * Null when the event carries nothing to identify by — a `kept_source` row is
  * identified by its `source_key`, which `MasterworkDumpProgressData` does not

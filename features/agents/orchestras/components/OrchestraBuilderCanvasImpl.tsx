@@ -240,7 +240,7 @@ const nodeTypes: NodeTypes = {
   nested: NestedNode,
 };
 
-/** A stacked team's link: straight down the parent's centre line, then across
+/** A stacked team's link: straight down the parent's center line, then across
  *  to the card — one shared spine, exactly like the Org chart view draws it. */
 function TrunkEdge({ sourceX, sourceY, targetX, targetY, style }: EdgeProps) {
   return (
@@ -310,7 +310,7 @@ function buildNestedGraph(
     const team = layout.nodes.slice(1);
     out.widths[memberId] = layout.width;
     out.heights[memberId] = layout.height - NEST_H;
-    // Centre on the member card (MEM_W wide, MEM_H tall on this canvas).
+    // Center on the member card (MEM_W wide, MEM_H tall on this canvas).
     const offsetX = MEM_W / 2 - (self.x + NEST_W / 2);
     const offsetY = MEM_H - (self.y + NEST_H);
     const idOf = (key: string) => `nested:${key}`;
@@ -686,7 +686,7 @@ function CanvasInner({ conductorId, accent, members, config, onEditMember, onOpe
                 <svg width="26" height="8" aria-hidden>
                   <line x1="1" y1="4" x2="25" y2="4" stroke={a.stroke} strokeWidth={2.5} strokeLinecap="round" />
                 </svg>
-                <span className="text-foreground">Solid — automatic (Orchestra, in its colour)</span>
+                <span className="text-foreground">Solid — automatic (Orchestra, in its color)</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg width="26" height="8" aria-hidden>

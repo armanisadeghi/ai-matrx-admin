@@ -499,7 +499,7 @@ function jsonArray(value: Json): Json[] {
  * for the row, computed once so the two can never disagree.
  *
  * It edits the STORED jsonb in place rather than serialising the parsed view
- * models back over the columns: the readers normalise key spellings and drop
+ * models back over the columns: the readers normalize key spellings and drop
  * what they cannot parse, so a round-trip through them would delete the
  * analyst's own fields and every malformed entry the surface promised to print
  * verbatim. Only three things change — the closed gap leaves

@@ -35,7 +35,7 @@ const BRENNAN = "13764fab-7475-4174-8cf8-978e3e93cbb6"; // Brennan & Vogel Famil
 const catalogueModule = process.env.MAKE_GALLERY_CATALOGUE ?? resolve(import.meta.dirname, "../../features/make/gallery/catalogue.ts");
 const { orgRowFilter, orgRowCards } = (await import(pathToFileURL(catalogueModule).href)) as typeof import("../../features/make/gallery/catalogue");
 
-// One real spec from lane 8's catalogue, declared twice under organization-scoped catalogue ids.
+// One real spec from lane 8's catalog, declared twice under organization-scoped catalog ids.
 const TEMPLATES = resolve(import.meta.dirname, "../../../aidream/apps/shared/records/templates/healthcare");
 const specFile = readdirSync(TEMPLATES).find((f) => f.includes("physical-therapy")) ?? readdirSync(TEMPLATES)[0];
 const spec = JSON.parse(readFileSync(join(TEMPLATES, specFile!), "utf8"));

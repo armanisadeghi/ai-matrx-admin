@@ -2,7 +2,7 @@
 
 // features/esign/editor/components/EsignEditor.tsx — the sender's editor (CONTRACT §15).
 //
-// Left rail: Documents · People · Message · Fields. Centre: the real PDF with the field layer.
+// Left rail: Documents · People · Message · Fields. Center: the real PDF with the field layer.
 // Right: the selected field's properties. The draft is saved on the server as the sender works
 // (useDraftSync); undo/redo hold 50 steps. On a phone the rails become sheets and a field is
 // placed by tapping a kind, then the page.

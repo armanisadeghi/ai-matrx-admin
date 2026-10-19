@@ -10,7 +10,7 @@ import { authorityTier, type AuthorityTier as Tier } from "../../constants";
 
 /** Restrained, professional treatment — the SCORE is the hero (clean tabular
  *  number in foreground), the tier is a quiet uppercase qualifier with at most a
- *  small muted dot. No bright green/amber/rose pills: quality is never coloured
+ *  small muted dot. No bright green/amber/rose pills: quality is never colored
  *  with alarm hues, so `high` gets a muted emerald accent and `medium`/`low`
  *  stay monochrome (neutral, then dimmer). Legible in light + dark via tokens. */
 const TIER_CONFIG: Record<

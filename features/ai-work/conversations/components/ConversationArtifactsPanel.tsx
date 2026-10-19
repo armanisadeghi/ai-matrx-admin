@@ -15,7 +15,7 @@
 // more than one claimed provider session, and artifact rows are keyed by ONE
 // session id — so a panel over a single id presented one tool's files as the
 // conversation's whole set while the originating tool's were unreachable
-// (verifier V-XT-5 § A7). Every claimed tool now gets its own labelled section
+// (verifier V-XT-5 § A7). Every claimed tool now gets its own labeled section
 // with its own tree, count and read outcome. One tool is still one section, and
 // the tool is named there too: "whose files are these" is never implied.
 

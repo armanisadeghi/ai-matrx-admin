@@ -243,7 +243,7 @@ export async function invokeRemoteFetch(opts: InvokeRemoteFetchOptions): Promise
  *   - `bootSync` calls this after initial rehydration lands, so the first
  *     refresh is timed relative to boot (not to last write).
  *   - On each successful `invokeRemoteFetch`, the caller should reset the
- *     timer by cancelling + re-arming.
+ *     timer by canceling + re-arming.
  */
 export interface StaleRefreshRegistration {
     resetFor(sliceName: string): void;

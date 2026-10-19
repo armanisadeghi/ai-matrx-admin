@@ -156,7 +156,7 @@ export const knowledgeRepositoriesManifest: SurfaceManifest = {
   intro: `<surface_intro>
 This is the repository list for Knowledge indexing. The table is populated by a
 caller-scoped repository source, so repositories is the visible inventory for
-this person rather than a platform-wide catalogue. source_scoped_repository_count
+this person rather than a platform-wide catalog. source_scoped_repository_count
 states how many rows that source returned, and unattached_file_count identifies
 code files that have not been assigned to any repository.
 

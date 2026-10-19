@@ -6,7 +6,7 @@
  * ordinary CRUD with a domain idempotency key, so they go **client → Supabase**, never through the
  * Python server (routing ordinary CRUD through aidream is a defect, not a safety measure). The
  * engine half — recompute, the exception scan, the OT evaluator, the calc endpoints — is
- * `lib/api/hr-contract-client.ts` and is not modelled here.
+ * `lib/api/hr-contract-client.ts` and is not modeled here.
  *
  * 🚨 WHY THESE TYPES ARE HAND-WRITTEN, AND WHAT REPLACES THEM
  * -----------------------------------------------------------
@@ -35,9 +35,9 @@
  * is invited to subtract — `hours` is always present beside them, because subtracting
  * `ended_at − started_at` in a browser returns 8 for a spring-forward night shift that was 7
  * (fixture `OT-DST-01`), and it is a defect wherever it appears. The one permitted client-side
- * figure is a **preview** total from a `prospective` calc call, visibly labelled as a preview.
+ * figure is a **preview** total from a `prospective` calc call, visibly labeled as a preview.
  *
- * The native HR mobile app (D1) consumes this identical contract. A behaviour that could only be
+ * The native HR mobile app (D1) consumes this identical contract. A behavior that could only be
  * described by naming a React component is a defect in the build, exactly as it is in the spec.
  */
 
@@ -323,7 +323,7 @@ export interface AttestationResponse {
     required: boolean;
     provided: boolean;
     taken: boolean;
-    /** Offered **only** where the resolved rule permits a waiver for that shift length — absent, not greyed. */
+    /** Offered **only** where the resolved rule permits a waiver for that shift length — absent, not grayed. */
     waived: boolean;
     interrupted: boolean;
   };
@@ -706,7 +706,7 @@ export interface MyTimesheetContext {
   /**
    * `current` — a period contains today · `most_recent` — the last one they were in ·
    * `punch` — the period covering `focusLocalWorkDate`, chosen because `p_punch_id` was asked for
-   * and honoured, NOT because it covers today · `none`.
+   * and honored, NOT because it covers today · `none`.
    */
   basis: "current" | "most_recent" | "punch" | "none" | null;
   /** Set on `most_recent` only. Rendered verbatim above the hours. */

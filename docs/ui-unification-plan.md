@@ -35,7 +35,7 @@ This plan generalises that system to every control rather than inventing a new o
 **How much can be enforced mechanically:**
 - **About 70–75% of the counted drift** can be made impossible, or detectable before it lands:
   - primitive overrides
-  - arbitrary type and colour values
+  - arbitrary type and color values
   - icon sizing
   - raw elements where a primitive exists
   - re-declared primitives
@@ -52,7 +52,7 @@ This plan generalises that system to every control rather than inventing a new o
 
 1. **Make the wrong thing impossible, not discouraged.** Where impossible is too expensive, make it detectable. Instructions come last.
 2. **Variants before walls.** A primitive is closed only after the variants its overrides were standing in for have shipped and the codemod has run. Otherwise a closed `className` turns into a raw `<button>`.
-3. **The primitive owns every visual dimension.** Height, padding, type, icon size, gap, colour, radius, shadow. A call site owns *placement* only: margin, width-in-layout, flex and grid participation, positioning, visibility.
+3. **The primitive owns every visual dimension.** Height, padding, type, icon size, gap, color, radius, shadow. A call site owns *placement* only: margin, width-in-layout, flex and grid participation, positioning, visibility.
 4. **One table defines "visual" vs "placement".** The census, the `findings` check and the dev guard all import the same token-category table, so the three can never disagree.
 5. **Nothing fails silently.** When locked geometry ignores a class, the dev guard says so in the browser, naming the class, the component and the fix.
 6. **Mobile is built in, not added later.**
@@ -117,10 +117,10 @@ Visible effect: every toolbar and form row in the app becomes 28px and evenly sp
 
 **Combined answers are allowed.** Several winners take the best of two options. These are on the board as "Combine":
 - **Empty state:** the icon + title + action structure, with EmptyStateCard's tinted icon disc, at dense sizes.
-- **Status colour:** the raw-palette tint the owner likes, expressed as token variants.
+- **Status color:** the raw-palette tint the owner likes, expressed as token variants.
 - **Tabs:** underline for page sections, capsule for filters.
 
-**Found live: the status colour ramp is missing.** `--warning-foreground` is near-white in light mode (it is meant for text on a solid fill), so amber text on a light tint is unreadable. Every status role needs four tokens: text, subtle background, border and solid. This is the token gap the audit predicted; it is now confirmed on a real screen.
+**Found live: the status color ramp is missing.** `--warning-foreground` is near-white in light mode (it is meant for text on a solid fill), so amber text on a light tint is unreadable. Every status role needs four tokens: text, subtle background, border and solid. This is the token gap the audit predicted; it is now confirmed on a real screen.
 
 **Page kinds: inviting vs functional (owner, 2026-10-04).** Every page is one of two kinds, and the density rules in this plan (the 28px one control, hairline rows, prose-to-tooltip, tight padding) apply ONLY to **functional** pages — tables, settings, builders, tools someone drives all day. An **inviting** page (a study kit, a landing, a learner's home) keeps its large hero, open spacing, elevated cards and big type; unification there fixes the header, makes its buttons one consistent style, and removes stray text — it never shrinks or packs anything. The owner, on the study kit sample that was packed into a strip: *"this is where you don't understand the difference between a page with large open things that is inviting and a FUNCTIONAL page that needs things to be densely packed. This page should not be packed!!!"* Before touching any page, name its kind; if it is inviting, the reference is the real `/education/kits/<id>` page, not the 28px system.
 
@@ -229,7 +229,7 @@ Each rung also gets a square icon twin (`icon-2xs` … `icon-lg`). Today 350+ si
 
 - Add `size: sm | md`, gap and icon sizing.
 - Raw palette status classes (154) become the existing `success`/`warning`/`info`/`error` variants.
-- `data-dense-rules.md`'s hand-rolled `rounded-full` pill is retired in favour of Badge (D5 decides `rounded-md` vs `rounded-full` for the one Badge).
+- `data-dense-rules.md`'s hand-rolled `rounded-full` pill is retired in favor of Badge (D5 decides `rounded-md` vs `rounded-full` for the one Badge).
 - After the codemod, Badge is **closed**: placement only.
 
 ### 2.4 Dialog / Sheet — B + C (partial A)
@@ -278,15 +278,15 @@ Each rung also gets a square icon twin (`icon-2xs` … `icon-lg`). Today 350+ si
    - Every declaration is `!important` and reads tokens.
    - An important declaration in the earliest layer beats every later layer and all unlayered CSS, Tailwind `!` utilities included. So `className="h-7 text-xs"` on a locked Button simply does nothing.
    - **This is "impossible", with no JavaScript and no runtime cost.** It is switched on per primitive only after the codemod has removed that primitive's overrides, so nothing visibly changes when it flips.
-   - Colour is not locked this way; colour overrides are caught by the check in §2.12.
-2. **A dev-time guard per primitive**, modelled on `enableTapTargetGuard()` / `findTapViolation`.
+   - Color is not locked this way; color overrides are caught by the check in §2.12.
+2. **A dev-time guard per primitive**, modeled on `enableTapTargetGuard()` / `findTapViolation`.
    - In development builds, a mounted control whose measured geometry is off its rung, whose `className` carries a visual class, or whose wrapper adds gap or padding is flagged in two ways:
      - a visible red outline;
      - one console error naming the component, the class and the variant to use.
    - The agent sees it in the browser the moment it renders the page.
 3. **A typed escape hatch for the rare legitimate one-off:** `unsafeClassName` plus a `// ui-drift-ok: <reason>` comment. Counted, listed in the status doc, and reviewed.
 
-### 2.10 Colour, z-index, shadow, radius — C
+### 2.10 Color, z-index, shadow, radius — C
 
 - Widen `check:theme-color-literals` from `features/masterwork` to the whole repo, ratcheted (1,608 today).
 - Ban arbitrary `z-[…]` and route layering through the package's `floatingLayerZIndex` / `MODAL_LAYER_Z`. Delete the unused `--z-*` scale or adopt it; one system, not three.
@@ -299,10 +299,10 @@ These run on day one, because they are cheap and they stop new drift that copies
 - **Fix the skills that model the defect:**
   - `ios-mobile-first:120` (the arbitrary-value DialogContent example)
   - `ui-sharp/project-conventions.md:71-73, 216-218` (`text-[clamp()]` for all type)
-  - `data-dense-rules.md` §1 and §6 (palette status colours, the hand-rolled badge, the tab bar)
+  - `data-dense-rules.md` §1 and §6 (palette status colors, the hand-rolled badge, the tab bar)
   - `page-pass:383` (a class on every DialogContent)
 - **Add one hard rule to the root `CLAUDE.md` UI section**, with the real violations as examples: *"A primitive's `className` carries placement only. A visual class on a primitive is a defect: add the variant to the package. ✗ `<Button size="sm" className="h-7 text-xs">` (1,440 sites) ✗ `<Badge className="text-[10px] h-4">` (965) ✗ `<DialogContent className="max-w-[95vw] lg:max-w-[1400px]">`"*. It points at the status doc for what is locked.
-- **Amend `champions.md` and the ui-* postures:** *"The champion governs a surface's composition and behaviour. Control size, density rungs, radius, type scale and colour are the design system's and never vary per page."* This closes the "bones not skin" loophole without dropping the champion discipline.
+- **Amend `champions.md` and the ui-* postures:** *"The champion governs a surface's composition and behavior. Control size, density rungs, radius, type scale and color are the design system's and never vary per page."* This closes the "bones not skin" loophole without dropping the champion discipline.
 - These skill files are synced from `common-docs`, so the edits land at the canonical source and run through the sync script.
 
 ### 2.12 Detection: warn the agent who wrote it, report it where others will see it
@@ -321,7 +321,7 @@ These run on day one, because they are cheap and they stop new drift that copies
 - What it flags:
   - a visual class on a primitive (with the variant that replaces it);
   - an off-scale `text-[Npx]`;
-  - a raw palette or hex colour;
+  - a raw palette or hex color;
   - `animate-spin` outside Spinner;
   - a styled raw `<button>`;
   - a hand-written scrim, dialog or tablist;
@@ -436,7 +436,7 @@ Each step lists its scope, files, regression risk, effort, and the exit criteria
 - **Exit per feature:** its row in the status doc reads green on raw-button, spinner, tabs and arbitrary-value counts.
 
 ### Step 7b — Packages that ship their own UI system (high visibility, medium risk, 1–2 sessions each)
-- **Scope.** In order: meet, messaging, chat, then capture, media, print and detail. Each one's raw controls move to design-system primitives, and its stylesheet shrinks to what is truly its own (the meet video stage, the chat transcript layout). Its private `--mx-*` colour tokens map onto the design-system roles.
+- **Scope.** In order: meet, messaging, chat, then capture, media, print and detail. Each one's raw controls move to design-system primitives, and its stylesheet shrinks to what is truly its own (the meet video stage, the chat transcript layout). Its private `--mx-*` color tokens map onto the design-system roles.
 - **Started 2026-10-02:** the meet pre-join lobby (`@ai-matrx/meet` 0.7.76).
 - **Rules** (the Same-Session Law):
   - each change is made in the package, released, and adopted in matrx-frontend in the same session;
@@ -445,7 +445,7 @@ Each step lists its scope, files, regression risk, effort, and the exit criteria
 - **Runtime sweep.** The rendered-page measurement used on 2026-10-02 (overflow, collapsed columns, nested surfaces, mismatched row heights, native controls; at 375px and desktop) becomes a script the in-app check runner runs on a schedule against live as `admin@admin.com`. That's the only way to see cross-file nesting and layout collapse.
 - **Exit per package:** zero native `<select>`/`<input type=checkbox>`/styled `<button>` in its TSX, and its CSS has no rule that restates a design-system primitive.
 
-### Step 8 — Colour, layering, elevation (low visibility, low risk, 1–2 sessions)
+### Step 8 — Color, layering, elevation (low visibility, low risk, 1–2 sessions)
 - **Scope:** §2.10.
 
 ---
@@ -479,12 +479,12 @@ Each step lists its scope, files, regression risk, effort, and the exit criteria
 | # | Question | Recommendation |
 |---|---|---|
 | D1 | Toolbar height | 28px (the tap capsule) for dense toolbars. |
-| D1b | Touch behaviour | An invisible 44px hit area; layout never grows (the tap system). |
+| D1b | Touch behavior | An invisible 44px hit area; layout never grows (the tap system). |
 | D1c | Rung count | Three: 28 · 32 · 36. |
 | D2 | Form-row height | 36px: Input matches Button and Select. |
 | D3 | Icon size in small buttons | 14px at `xs`/`sm`, 16px at `md`/`lg`. |
 | D4 | Micro text sizes | Add 11px (`text-2xs`) and 10px (`text-3xs`); nothing smaller. |
-| D5 | Badge shape and status colour | One Badge, variants for status, no palette classes. Owner picks the shape. |
+| D5 | Badge shape and status color | One Badge, variants for status, no palette classes. Owner picks the shape. |
 | D6 | Quiet and destructive ghost styles | `tone="muted"`, `tone="destructive"` on ghost/outline. |
 | D7 | Icon-only button family | Square rungs on Button. `official/IconButton` becomes a tooltip wrapper only. |
 | D8 | Tabs style | Pill and line, both as variants; owner picks the default. |

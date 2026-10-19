@@ -348,7 +348,7 @@ export function KgSuggestionRowItem({
             </div>
           ) : null}
 
-          {/* ── Source — clearly labelled as where the suggestion came from ── */}
+          {/* ── Source — clearly labeled as where the suggestion came from ── */}
           <div className="space-y-1 border-t border-border/60 pt-2.5">
             <div className="pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Where this suggestion came from

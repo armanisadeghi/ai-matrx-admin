@@ -42,7 +42,7 @@ empty/error/loading, side panel) · `KgGraphCytoscape` (presentational render su
   empty canvas. `useKgCytoscape` does that init.
 - **Extensions register exactly once** via `register.ts` (globalThis-guarded, so Turbopack HMR and
   StrictMode do not double-register and throw).
-- **cytoscape cannot read Tailwind classes** — every colour is a literal. Per-kind hues are raw hex
+- **cytoscape cannot read Tailwind classes** — every color is a literal. Per-kind hues are raw hex
   in `constants.ts`; theme-dependent chrome is per-`ThemeMode` in `KG_CHROME` and swapped live with
   `cy.style().fromJson(...).update()` (no re-layout, positions preserved).
 - **`cytoscape-navigator` overwrites the minimap container's className** → style it via

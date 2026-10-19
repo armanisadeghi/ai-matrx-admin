@@ -6,7 +6,7 @@
  *
  * What an operator comes here to answer: did this submission land, how long
  * did the provider take, how many polls did it cost us, was it escalated or
- * cancelled, and what did the grouping actually save.
+ * canceled, and what did the grouping actually save.
  */
 import { useAdminCost } from "@/components/cost/useAdminCost";
 import { adminCostColumns } from "@/components/cost/adminCostColumns";

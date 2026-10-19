@@ -23,7 +23,7 @@
 
 import type { RulebookRule } from "./types";
 
-/** Whitespace collapsed, case folded, curly quotes and dashes normalised. */
+/** Whitespace collapsed, case folded, curly quotes and dashes normalized. */
 export function normalizeRuleText(value: string | undefined | null): string {
   return (value ?? "")
     .replace(/[‘’ʼ]/g, "'")

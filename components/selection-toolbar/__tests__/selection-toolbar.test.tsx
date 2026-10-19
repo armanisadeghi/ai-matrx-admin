@@ -1,15 +1,15 @@
 /**
  * @jest-environment jsdom
  *
- * THE ONE SELECTION TOOLBAR — behaviour a person relies on, through the real
+ * THE ONE SELECTION TOOLBAR — behavior a person relies on, through the real
  * root, the real Alchemy registry + package selection layout, and the real
  * annotation sidecar (only the network edge is replaced):
  *
  *   • reading: a student selects "statistical" in her study guide and sees the
- *     reading set (five highlight colours, comment, suggest); a highlight
+ *     reading set (five highlight colors, comment, suggest); a highlight
  *     saves through the sidecar exactly as before (createHighlight, quote kept);
  *   • editing: the same text inside an editable zone shows no highlight
- *     colours (the knob's default) but keeps Comment;
+ *     colors (the knob's default) but keeps Comment;
  *   • phone width: the toolbar docks at the bottom edge (never beside the
  *     selection, so it never fights the native selection menu);
  *   • keyboard: Ctrl+Alt+M focuses the first control, arrows move, Esc closes
@@ -200,7 +200,7 @@ it("reading: the reading set shows, and a highlight saves through the sidecar ex
   console.log("TBDBG", [...document.querySelectorAll("[role=toolbar]")].map(e=>e.outerHTML.slice(0,400)).join("\n---\n"));
   expect(document.querySelectorAll("[role=toolbar]").length).toBe(1);
 
-  // Highlight opens the colours; a colour saves.
+  // Highlight opens the colors; a color saves.
   const highlight = toolbar()!.querySelector<HTMLButtonElement>("button[aria-label='Highlight']")!;
   await act(async () => { highlight.click(); });
   await flush();

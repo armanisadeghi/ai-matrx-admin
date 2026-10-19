@@ -106,7 +106,7 @@ function resolve(statement: Statement): { data: unknown; error: null } {
     if (op === "select") return { data: row ?? null, error: null };
     updates.push(statement);
     if (!row) return { data: null, error: null };
-    // The real compare-and-swap must still be honoured, or a conflict retry
+    // The real compare-and-swap must still be honored, or a conflict retry
     // would silently look like a success.
     if (filterValue(statement, "version") !== row.version) {
       return { data: null, error: null };
@@ -171,7 +171,7 @@ export class QueryBuilder implements PromiseLike<{ data: unknown; error: null }>
 }
 
 /**
- * THE RULEBOOK DOORS, faked with the behaviour the LIVE ones have.
+ * THE RULEBOOK DOORS, faked with the behavior the LIVE ones have.
  *
  * `platform` is not a client-writable schema (chair ruling, VERIFIER-8 HIGH-3), so the real
  * services no longer send an UPDATE to `platform.rulebook` at all — they call
@@ -179,7 +179,7 @@ export class QueryBuilder implements PromiseLike<{ data: unknown; error: null }>
  * `rulebook_tension_settle` and `rulebook_create`. A wire that still served the table would
  * be serving a path the app cannot take.
  *
- * Two behaviours are modelled deliberately, because the guards that use this wire are about
+ * Two behaviors are modeled deliberately, because the guards that use this wire are about
  * exactly them:
  *
  *   the CAS  — `p_expected_version` is checked here, and a miss answers NULL, not an error,

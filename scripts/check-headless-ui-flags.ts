@@ -155,7 +155,7 @@ function scan(): Violation[] {
 
       // `callerExecutes: true` is the one lawful deferral, and it excuses
       // ONLY the autoRun shape — it is a claim about who sends the run, not a
-      // licence to paint an interface on a mode that paints nothing.
+      // license to paint an interface on a mode that paints nothing.
       if (autoRunFalseRe.test(body) && !callerExecutesRe.test(siblingWindow)) {
         violations.push({ file: rel, line: lineNo, snippet, flag: "autoRun" });
       }

@@ -164,7 +164,7 @@ export async function setBlockColor(page, block, section, color) {
   await page.waitForTimeout(400);
   const items = page.locator(".bn-menu-dropdown").last().locator(".bn-menu-item, [role=menuitem], [role=menuitemcheckbox]").filter({ hasText: new RegExp(`^\\s*A\\s*${color}\\s*$`) });
   await items.nth(section === "Text" ? 0 : 1).click();
-  // Picking a colour closes the menu and puts the caret back in the block (round 26); Escape only if not.
+  // Picking a color closes the menu and puts the caret back in the block (round 26); Escape only if not.
   await page.waitForTimeout(150);
   if (await page.locator(".bn-menu-dropdown").first().isVisible().catch(() => false)) await page.keyboard.press("Escape");
   await page.waitForTimeout(250);

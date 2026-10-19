@@ -367,7 +367,7 @@ function mentions(node: t.Node, name: string): boolean {
 
 /**
  * EVERY FIELD SHE ASKED FOR HAS ITS OWN INPUT. A form keeps `requirements` in state and saves it, but no
- * input ever calls `setRequirements` — the box labelled "Brand Requirements & Guidance" wrote `guidance`, so
+ * input ever calls `setRequirements` — the box labeled "Brand Requirements & Guidance" wrote `guidance`, so
  * what she typed there landed in the wrong field and Requirements stayed empty (social planner,
  * 2026-10-08). Named only when the never-set value is WRITTEN TO THE STORE (a property of the values a
  * `create` / `update` / save call sends); a never-set state used anywhere else (`{ s: filter }` handed to a
@@ -621,7 +621,7 @@ const DELETE_WORDS = /\b(?:delete|deleted|deleting|deletes|permanently|forever)\
 const FUNCTIONS: ReadonlySet<string> = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression", "ObjectMethod", "ClassMethod"]);
 
 /**
- * AN ARCHIVE IS NEVER CALLED A DELETE. A button labelled "Archive" asked "Delete this post? This will remove the
+ * AN ARCHIVE IS NEVER CALLED A DELETE. A button labeled "Archive" asked "Delete this post? This will remove the
  * post and associated metrics." — but the store's archive can be restored (social planner, live v0.4.3031,
  * 2026-10-08). Named only when a `confirmAction({ … })` whose title, description or confirmLabel says delete /
  * permanently sits in the same function as an `archive(…)` / `x.archive(…)` call.

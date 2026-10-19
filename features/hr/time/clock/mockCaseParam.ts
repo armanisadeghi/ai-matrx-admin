@@ -34,9 +34,9 @@ export function mockCaseFromParam(value: string | string[] | undefined): HrFixtu
  * `hr_my_context`'s `active.employment_id`.
  *
  * Why it is needed at all: the platform's own test administrator is not an *employee* of any
- * organisation — `active.employment_id` is legitimately `null` for them, and route 6 correctly
+ * organization — `active.employment_id` is legitimately `null` for them, and route 6 correctly
  * renders "you do not have an active job here today" instead of a clock. That is the right product
- * behaviour and the wrong verification behaviour: without a subject the widget never mounts, and the
+ * behavior and the wrong verification behavior: without a subject the widget never mounts, and the
  * `blocked` / `offline` / replay states nobody wants to discover in production stay unlooked-at.
  * D15's independent verifier has the same problem, and this is what lets them do the pass.
  */

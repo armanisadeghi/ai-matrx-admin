@@ -27,7 +27,7 @@
  *      idx`, `idx[key] === undefined`, `idx[key] ?? …`).
  *
  *      Shape 2 is why this guard did not name `lib/knobs/featureKnobs.ts`
- *      before `95b3f864`: the knob catalogue read ~870 `platform.feature_knob`
+ *      before `95b3f864`: the knob catalog read ~870 `platform.feature_knob`
  *      rows with a bare `.select()`, poured them into a `Map`, returned that
  *      map from `loadAll()`, and every `knobInt` / `knobBool` / `knobStringList`
  *      call decided a knob was MISSING — and raised — on `map.get(addr) ===
@@ -907,7 +907,7 @@ function selfTest(): number {
   // 🚨 THE REAL BUG, red then green.
   const pre = shapes(FIXTURE_PRE_FIX);
   checks.push([
-    "pre-95b3f864 knob catalogue (bare .select() → Map → .get() === undefined) is FLAGGED",
+    "pre-95b3f864 knob catalog (bare .select() → Map → .get() === undefined) is FLAGGED",
     pre.length === 1 && pre[0]?.shape === "index" && pre[0]?.via === "next",
   ]);
   checks.push([

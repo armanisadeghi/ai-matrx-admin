@@ -234,7 +234,7 @@ export function useCompetitorAutopsy(
           signal: abortController.signal,
         }),
       );
-      // Cancelled by teardown or a newer run — settle silently; the autopsy
+      // Canceled by teardown or a newer run — settle silently; the autopsy
       // keeps executing server-side.
       if (abortController.signal.aborted) return;
       if (result.error || streamError) {

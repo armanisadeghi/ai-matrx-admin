@@ -16,7 +16,7 @@
 // SAME thunks the list page does — `saveAgentField("isArchived")` and `deleteAgent` — and
 // read the SAME confirm copy (`buildAgentDeleteConfirm`), so the honest "this is a soft
 // delete an admin can restore" sentence cannot drift between screens and neither can the
-// behaviour.
+// behavior.
 //
 // ARCHIVE COMES FIRST AND IS NOT DESTRUCTIVE. The platform's archived-items law is archive
 // rather than hard delete, and `agent.definition.is_archived` is exactly that door;

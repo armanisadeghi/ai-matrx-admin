@@ -38,7 +38,7 @@ export interface IngestProgressDialogProps {
    *  a terminal state. */
   onClose: () => void;
   /** Open straight into the floating widget instead of the full overlay.
-   *  See ProcessingProgressDialog for behaviour. */
+   *  See ProcessingProgressDialog for behavior. */
   defaultMinimized?: boolean;
 }
 

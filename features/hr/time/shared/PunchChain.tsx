@@ -54,7 +54,7 @@ export function PunchChain({
   return (
     <section
       className={cn(
-        // Visually distinct on purpose: dashed, muted, and labelled as evidence.
+        // Visually distinct on purpose: dashed, muted, and labeled as evidence.
         "rounded-lg border border-dashed border-border bg-muted/30 p-3",
         className,
       )}
@@ -114,7 +114,7 @@ function PunchChainRow({
       className={cn(
         "rounded-md border border-border bg-card px-2.5 py-1.5 text-xs",
         voided && "border-dashed opacity-90",
-        // Tokens, not literals — this has to read in both themes. Never colour ALONE: the
+        // Tokens, not literals — this has to read in both themes. Never color ALONE: the
         // screen-reader sentence below carries the same fact for a reader who cannot see a ring.
         highlighted && "bg-primary/5 ring-2 ring-inset ring-primary/60",
       )}

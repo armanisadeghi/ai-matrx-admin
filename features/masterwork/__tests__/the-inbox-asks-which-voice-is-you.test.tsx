@@ -6,7 +6,7 @@
  * dana@millerorchards.com" — whose second half was visibly the person's own
  * answer, and the ONE control it offered was a free-text "Which address is
  * yours?", which cannot help at all when a mail client copies your own reply
- * labelled "me" with no address on it anywhere. The server now returns the
+ * labeled "me" with no address on it anywhere. The server now returns the
  * VOICES of a thread it could not resolve (`needs_voice_pick`), and this dialog
  * asks with the Meeting Scavenger's own picker — then READS THE THREAD AGAIN
  * with the answer, because a control that moves and changes nothing on screen

@@ -243,7 +243,7 @@ describe("publish", () => {
     expect(published()).toBe(false);
   });
 
-  it("a 401 is labelled as a sign-in failure and the person is told the check didn't run", async () => {
+  it("a 401 is labeled as a sign-in failure and the person is told the check didn't run", async () => {
     severity = "block";
     serverAnswers({ detail: "expired" }, 401);
     const loud = jest.spyOn(console, "error").mockImplementation(() => undefined);

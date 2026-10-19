@@ -144,7 +144,7 @@ type LogSource = (typeof LOG_SOURCES)[number];
 /**
  * Which sections of the diagnostics panel render.
  *
- * - `"all"` (default) — original behaviour: status header + every internal
+ * - `"all"` (default) — original behavior: status header + every internal
  *   tab (filesystem / agent-env / passthrough / logs / raw).
  * - `"status"` — status header only (readiness checks, container, env count).
  *   Used when the bottom panel decomposes diagnostics into separate tabs and

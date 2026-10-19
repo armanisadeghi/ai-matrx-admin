@@ -30,7 +30,7 @@ Every one of these has a component that owns it, so a new surface cannot forget 
    grid's hours cell opens raw punches in a `DataRowWindow` beside it.
 5. **A void is rendered, struck through, with the voiding punch as a door — never hidden.**
    `PunchChain` has no prop that hides one, and the door is unconditional.
-6. **Two state machines, labelled distinctly** (§14 D8). `RowStateChip` is
+6. **Two state machines, labeled distinctly** (§14 D8). `RowStateChip` is
    `pay_period_employment.state` (no `submitted`, no `reopened`); `PeriodStateChip` is
    `pay_period.state` and is prefixed with the words "Pay period". They are deliberately different
    shapes.
@@ -47,7 +47,7 @@ Every one of these has a component that owns it, so a new surface cannot forget 
 | `shared/RuleSnapshot.tsx` | Rule 3. ONE window per surface via `RuleSnapshotProvider`; `useRuleSnapshot()` throws outside it rather than silently making a figure look like a door. |
 | `shared/badges.tsx` | Rules 6 and the §5.2 badge law: label from `earningCodeName`, `isOvertime` in distinct visual weight, the paid-leave tooltip. |
 | `shared/timing.tsx` | §9 and §10 — the DST sentence printed verbatim, both midnight-crossing markers, dual workday attribution, and L3-50's inline rounding sentence. |
-| `shared/DisagreementBlock.tsx` | §5.5 — both values side by side, the employee's words verbatim, the manager's response separately labelled, surviving approval. |
+| `shared/DisagreementBlock.tsx` | §5.5 — both values side by side, the employee's words verbatim, the manager's response separately labeled, surviving approval. |
 | `shared/ExceptionsStrip.tsx` | §5.4 strip **and** `ExceptionResolveControls`, the one renderer of `allowedResolutions`. |
 | `shared/workflowApi.ts` | `hr_wf_decide` / `_bulk_decide` / `_for_target` through the mock-aware door. |
 | `timesheet/WeekBlocks.tsx` | The timesheet itself: workweek columns, the stamped week header, three grains, multi-rate. |

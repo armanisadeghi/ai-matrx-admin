@@ -311,7 +311,7 @@ export function DrillExplorer({
   const grainWasChosen = [...asked.by, ...(asked.across ? [asked.across] : [])].some((ref) => timeKeys.has(ref));
 
 
-  // ONE mapping with the siblings (lane DRILL-WIRE): words, record kind (`entity`), choice colours,
+  // ONE mapping with the siblings (lane DRILL-WIRE): words, record kind (`entity`), choice colors,
   // and moments — so the answer, the chart and a sibling's findings read a Dimension the same way.
   const dimensions: MatrxDrillDimension[] = def ? drillSiblingDimensions(def, names, resolvers, words) : [];
   const measures: MatrxDrillMeasure[] = def ? drillSiblingMeasures(def, unit, rate) : [];

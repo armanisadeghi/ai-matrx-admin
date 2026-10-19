@@ -92,7 +92,7 @@ interface VisionInterviewState {
   awaitingTurnAudio: { fileIds: string[]; sentAtMs: number } | null;
 
   /**
-   * Which stage tab is live in the centre panel — ONE role, ONE ordinary
+   * Which stage tab is live in the center panel — ONE role, ONE ordinary
    * agent conversation. Only this tab's chat is mounted (Redux holds one
    * conversation focus per surface), and the right-hand expert feed reads it
    * to know which role it must NOT duplicate.
@@ -352,7 +352,7 @@ const visionInterviewSlice = createSlice({
 
     /** `run_resumed` on the events feed — the interrupt was answered
      *  (possibly by an earlier client). Also converges the SSE backlog
-     *  replay: a stale `run_interrupted` replayed from history is cancelled
+     *  replay: a stale `run_interrupted` replayed from history is canceled
      *  by the `run_resumed` that follows it in seq order. */
     runResumed(state) {
       state.runPhase = "running";

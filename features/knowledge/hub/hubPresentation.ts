@@ -197,12 +197,12 @@ export function cleanSnippet(value: string | null | undefined): string {
     .trim();
 }
 
-// ─── Kind colour ────────────────────────────────────────────────────────────
+// ─── Kind color ────────────────────────────────────────────────────────────
 
 /**
- * A kind's colour: the tile behind its glyph and the glyph's own tint. One
+ * A kind's color: the tile behind its glyph and the glyph's own tint. One
  * source per kind, never a second palette — a file wears the Files system's own
- * type colour (PDF red, sheet green…), a transcript and a YouTube capture their
+ * type color (PDF red, sheet green…), a transcript and a YouTube capture their
  * own, and everything else the registry's content-role accent (source / output /
  * workspace / utility) that the resource surfaces already use. Tint only: the
  * surfaces around a tile stay semantic tokens.
@@ -210,7 +210,7 @@ export function cleanSnippet(value: string | null | undefined): string {
 export interface HubKindTone {
   /** The tile's fill (a wash of the hue, readable on a white card and on the dark one). */
   tile: string;
-  /** The glyph's colour, light and dark. */
+  /** The glyph's color, light and dark. */
   icon: string;
 }
 

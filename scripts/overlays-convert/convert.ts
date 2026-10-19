@@ -194,7 +194,7 @@ function referencedNames(code: string, tsx: boolean): Set<string> {
   return names;
 }
 
-// ── 1. catalogue ─────────────────────────────────────────────────────────────────────────────
+// ── 1. catalog ─────────────────────────────────────────────────────────────────────────────
 
 interface CatalogueEntry {
   id: string;
@@ -263,7 +263,7 @@ const metaById = new Map<string, MetaRow>();
 for (const r of metaRows) {
   if (metaById.has(r.overlayId)) flag(r.overlayId, "metadata", `two window metadata rows for one overlay id (slugs ${metaById.get(r.overlayId)!.slug}, ${r.slug}); the first is used`);
   else metaById.set(r.overlayId, r);
-  if (!catalogue.has(r.overlayId)) flag(r.overlayId, "metadata", "metadata row names an overlay id that is not in the catalogue");
+  if (!catalogue.has(r.overlayId)) flag(r.overlayId, "metadata", "metadata row names an overlay id that is not in the catalog");
 }
 const metaPool = importPool(metaSf);
 const KNOWN_META_FIELDS = new Set(["slug", "overlayId", "kind", "label", "defaultData", "ephemeral", "mobilePresentation", "mobileSidebarAs", "instanceMode", "urlSync", "preservation", "deprecated"]);
@@ -897,7 +897,7 @@ for (const id of IDS) {
   if (row) {
     for (const k of row.props.keys()) if (!KNOWN_META_FIELDS.has(k)) flag(id, "metadata", `metadata field "${k}" has no package home and is dropped`);
     const rowMulti = row.props.has("instanceMode") ? literalValue(row.props.get("instanceMode")!) === "multi" : undefined;
-    if (rowMulti !== undefined && rowMulti !== cat.multi) flag(id, "metadata", `metadata instanceMode (${rowMulti ? "multi" : "singleton"}) disagrees with the catalogue (${cat.multi ? "multi" : "singleton"}); the catalogue wins`);
+    if (rowMulti !== undefined && rowMulti !== cat.multi) flag(id, "metadata", `metadata instanceMode (${rowMulti ? "multi" : "singleton"}) disagrees with the catalog (${cat.multi ? "multi" : "singleton"}); the catalog wins`);
     if (cat.isWindow) {
       const w: string[] = [`    windowId: ${JSON.stringify(row.slug)},`];
       const copy = (from: string, to: string) => {
@@ -921,7 +921,7 @@ for (const id of IDS) {
       fields.push(`  window: {\n${w.join("\n")}\n  },`);
     } else {
       const dropped = ["mobilePresentation", "mobileSidebarAs", "ephemeral", "preservation", "deprecated"].filter((k) => row.props.has(k));
-      if (dropped.length) flag(id, "metadata", `kind "${row.kind}" is not a window (catalogue isWindow false); window fields ${dropped.join(", ")} not emitted`);
+      if (dropped.length) flag(id, "metadata", `kind "${row.kind}" is not a window (catalog isWindow false); window fields ${dropped.join(", ")} not emitted`);
     }
   } else if (cat.isWindow) {
     fields.push(`  window: {},`);
@@ -1218,7 +1218,7 @@ const log = (s: string) => {
 };
 log("== overlays-convert equivalence checks ==");
 const emittedIds = IDS.filter((id) => fs.existsSync(path.join(OUT, `${id}.overlay.ts`)) && fs.existsSync(path.join(OUT, `${id}.render.tsx`)));
-log(`ids emitted: ${emittedIds.length}/${IDS.length} (catalogue)`);
+log(`ids emitted: ${emittedIds.length}/${IDS.length} (catalog)`);
 log(`controller: ${lazy.size} lazy components, ${blocks.length} gated blocks (${blocks.filter((b) => b.form === "iife").length} IIFE, ${blocks.filter((b) => b.form === "map").length} map, ${blocks.filter((b) => b.form === "expr").length} &&/ternary)`);
 {
   // Independent re-derivation: regex substitutions on the original block text.

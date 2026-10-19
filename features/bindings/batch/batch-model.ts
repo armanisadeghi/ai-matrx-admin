@@ -225,7 +225,7 @@ export function placeHealth({
   });
   // A source chosen with no value picked is RED whether or not the input is
   // required, because it is an UNFINISHED CHOICE and the server refuses the
-  // whole map over it — which is exactly what map mode's Save says too. Colour
+  // whole map over it — which is exactly what map mode's Save says too. Color
   // and gate must agree, or the dot is decoration.
   const tone: PlaceHealth["tone"] =
     unmapped > 0 ||

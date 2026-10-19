@@ -27,7 +27,7 @@ re-read every 2 s while anything is queued or running), `components/` (`ToolBatt
 ## Rules this feature carries
 
 - **Every call is live and says so.** `BypassStrip` sits on the setup and results screens: saved answers, replay and
-  test modes are off and the calls bill the Tool Battle cost centre. A cell whose attempts show a replay, a caller's key
+  test modes are off and the calls bill the Tool Battle cost center. A cell whose attempts show a replay, a caller's key
   or a non-bypass cache policy is **Void** (shown with the reason, counted as failed).
 - **Numbers are the server's.** `battle.summary` (lane rollups, ranking, field coverage) is derived once in
   `analysis.py` and rewritten after every cell; this feature only formats it and ranks lanes per metric.

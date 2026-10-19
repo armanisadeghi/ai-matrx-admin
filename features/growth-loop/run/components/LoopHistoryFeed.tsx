@@ -39,7 +39,7 @@ const EVENT_COPY: Record<string, string> = {
   loop_paused: "Paused",
   loop_resumed: "Resumed",
   loop_completed: "Loop completed",
-  loop_cancelled: "Loop cancelled",
+  loop_cancelled: "Loop canceled",
   wf_run_attached: "Automation attached",
   wf_run_detached: "Automation detached",
 };

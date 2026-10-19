@@ -6,7 +6,7 @@
 // path, which deleted the orchestrated round the Scribe used to ride on. So
 // the room tells the server when an exchange finished, and the server does
 // everything the round used to do: mirror the conversation's new messages
-// into `interview.turn`, honour the `answered_questions` context stamp, run
+// into `interview.turn`, honor the `answered_questions` context stamp, run
 // the Scribe over the living document, run the answer tracker over the open
 // questions (aidream `services/vision_interview/live_turns.py`).
 //

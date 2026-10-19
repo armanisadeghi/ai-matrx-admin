@@ -94,7 +94,7 @@ export async function packageIds() {
     if (ext === undefined) continue;
     const descriptor = readFileSync(base + ext, "utf8");
     ids.push(...[...descriptor.matchAll(/\bid:\s*"([^"]+)"/g)].map((x) => x[1]));
-    // A descriptor module that maps a catalogue (the conversation transfer rows) registers its ids.
+    // A descriptor module that maps a catalog (the conversation transfer rows) registers its ids.
     for (const c of descriptor.matchAll(/from\s+"((?:\.\.?\/)+[^"]*conversation-transfer-rows(?:\.js)?)"/g)) {
       const cat = join(dirname(base), c[1]);
       const cext = [".js", ".ts", ""].find((e) => {

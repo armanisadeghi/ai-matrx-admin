@@ -13,7 +13,7 @@
 //   - ONE requestAnimationFrame loop, set up once, drives everything. It reads
 //     live values from refs, so it never restarts and never goes stale.
 //   - A fixed-timestep accumulator runs the simulation in deterministic 1/60s
-//     steps, so behaviour is identical regardless of display refresh rate.
+//     steps, so behavior is identical regardless of display refresh rate.
 //   - React state holds ONLY what the surrounding DOM needs (status + a
 //     throttled score), so the component re-renders a handful of times per
 //     game instead of 60 times per second.

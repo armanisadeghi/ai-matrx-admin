@@ -585,7 +585,7 @@ export interface SavedListView {
 export type ListViewsPreferences = Record<string, ListViewPrefs>;
 
 /**
- * Cross-surface list behaviour — the QUERY half, not the per-surface STYLE
+ * Cross-surface list behavior — the QUERY half, not the per-surface STYLE
  * half that `listViews` holds.
  *
  * `archivedDefault` is THE ARCHIVED-ITEMS LAW's knob

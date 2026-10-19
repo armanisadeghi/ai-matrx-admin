@@ -30,7 +30,7 @@ export const LIST_VIEW_PAGE_SIZES = [25, 50, 100, 200] as const;
  * defaults.
  *
  * A stored blob whose `version` is older than the surface's declared version
- * is treated as stale SHAPE and dropped in favour of the defaults — that is
+ * is treated as stale SHAPE and dropped in favor of the defaults — that is
  * the backfill. Without it, adding a column to a surface means every existing
  * user gets it switched on, because their stored `hiddenColumns: []` predates
  * the column existing and still wins the merge.

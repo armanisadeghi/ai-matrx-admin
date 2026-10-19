@@ -74,8 +74,8 @@ describe("theme tokens the host sends the frame", () => {
 
         // What an organization theme applier does: one inline custom property
         // on <html>. If the collector missed this, every themed organization
-        // would get platform-default colours inside the frame and matching
-        // colours outside it — the exact parity failure S3 exists to prevent.
+        // would get platform-default colors inside the frame and matching
+        // colors outside it — the exact parity failure S3 exists to prevent.
         document.documentElement.style.setProperty("--org-accent", "12 90% 50%");
         invalidateThemeTokenNames();
 

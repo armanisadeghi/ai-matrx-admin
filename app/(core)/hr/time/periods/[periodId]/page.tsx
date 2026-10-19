@@ -13,7 +13,7 @@ import { isFullUuid } from "@/utils/supabase-search";
  * One period: approval progress across two distinct state machines, the boundary-weeks panel, the
  * payroll-export runs with their delivery states, and the post-lock adjustment lane.
  *
- * The period id is not in the tab title on purpose: a uuid is not a word anyone recognises, and the
+ * The period id is not in the tab title on purpose: a uuid is not a word anyone recognizes, and the
  * period's own dates are not known until the client read resolves. "Pay period | Time" is honest and
  * findable; `createDynamicRouteMetadata` would only add a uuid.
  */

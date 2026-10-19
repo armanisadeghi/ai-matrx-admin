@@ -3,7 +3,7 @@
 /**
  * Google-Sheets / Google-Docs menu bar: File · Edit · View · Insert · Format ·
  * Data · Tools · Help as plain text triggers under the title. Once one menu is
- * open, hovering another opens it (Google's behaviour). Rows come from the
+ * open, hovering another opens it (Google's behavior). Rows come from the
  * editor's `EditorMenu[]` model; the File menu is the ONE shared file menu,
  * mounted by the host through `renderFileMenu`.
  */

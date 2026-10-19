@@ -313,7 +313,7 @@ export function CapturePlanPage({
    * else's job (jobs-bar-2026-09-16, item 1). The field used to open empty
    * behind a placeholder that read like a finished answer — "How I decide what a
    * commercial teardown is worth…" — on a Masterwork about e-waste pallets. A
-   * first-timer reads a grey sentence in a box as something already filled in,
+   * first-timer reads a gray sentence in a box as something already filled in,
    * presses the only button on the screen, and nothing happens, because the
    * button is dead until the box has real text and the placeholder is not text.
    * The Masterwork's own description is the sentence the Expert already wrote

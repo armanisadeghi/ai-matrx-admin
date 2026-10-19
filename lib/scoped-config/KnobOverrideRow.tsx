@@ -619,7 +619,7 @@ export function KnobOverrideRow(props: {
   const lockedForMe = scopeKind === "user" && knob.user_override_locked;
 
   // The ladder is what names the control. Without one (the flat HR callers)
-  // there is no `control` to honour, so the by-type editor below still runs.
+  // there is no `control` to honor, so the by-type editor below still runs.
   const fieldLadder =
     ladder && hasFieldControl(ladder.control)
       ? system

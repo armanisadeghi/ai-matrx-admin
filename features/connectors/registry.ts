@@ -1,6 +1,6 @@
 // features/connectors/registry.ts
 //
-// THE catalogue of connectors. Adding a provider is ONE entry here — the strip,
+// THE catalog of connectors. Adding a provider is ONE entry here — the strip,
 // and any future directory surface, read from this array and nothing else.
 //
 // Two rules for an entry:
@@ -57,7 +57,7 @@ export const CONNECTORS: ConnectorDefinition[] = [
   },
 ];
 
-/** Every connector allowed on one surface, in catalogue order. */
+/** Every connector allowed on one surface, in catalog order. */
 export function connectorsFor(
   surface: ConnectorSurface,
 ): ConnectorDefinition[] {

@@ -221,7 +221,7 @@ async function readAgentFacts(agentIds: string[]): Promise<{ names: Map<string, 
   if (!agentIds.length) return { names, heldKey };
   const [agents, held] = await Promise.all([
     // archived-items-law-exempt: approval rows already name these exact agent
-    // ids; this is a fact hydration for those rows, never an agent catalogue.
+    // ids; this is a fact hydration for those rows, never an agent catalog.
     supabase.schema("agent").from("definition").select("id, name").in("id", agentIds),
     supabase
       .schema("mandate")
@@ -372,7 +372,7 @@ export async function fetchExpiringApprovals(days = 7): Promise<ExpiringApproval
   }));
 }
 
-// ── Board colours: opinions, so knobs (platform.feature_knob billing.run_approval/*) ──
+// ── Board colors: opinions, so knobs (platform.feature_knob billing.run_approval/*) ──
 
 export interface ApprovalColorKnobs {
   avgRedUsd: number;
@@ -402,7 +402,7 @@ export function useApprovalColorKnobs(): ApprovalColorKnobs | null {
       })
       .catch((e: unknown) => {
         // A missing knob is loud, never a silent constant (lib/knobs/featureKnobs.ts contract).
-        console.error("[spend-approvals] colour knobs unavailable", e);
+        console.error("[spend-approvals] color knobs unavailable", e);
       });
     return () => {
       live = false;

@@ -35,7 +35,7 @@ import { launch, type Rect } from "./parity/cdp";
 import { readPng, bestAlignedDiff } from "./parity/png";
 
 // `--debug` prints settle timings and captured state per case. A CLI flag, never
-// an env var: an env var may not control behaviour (Arman, 2026-09-10), and
+// an env var: an env var may not control behavior (Arman, 2026-09-10), and
 // `pnpm check:settings-env-toggles` refuses one.
 const DEBUG = process.argv.includes("--debug");
 
@@ -61,7 +61,7 @@ const BATCH_SIZE = 4;
 
 /**
  * The S3 noise floor. Subpixel antialiasing along a rounded edge lands under
- * it (measured 0.337 % on `wine_tasting_card`); a different colour, a different
+ * it (measured 0.337 % on `wine_tasting_card`); a different color, a different
  * layout or a different font size does not.
  */
 export const PARITY_NOISE_FLOOR_PCT = 0.5;

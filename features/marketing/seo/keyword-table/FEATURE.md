@@ -136,7 +136,7 @@ Guard: `pnpm check:one-table-law`.
   offering"), so its definition moved out of `buildKeywordColumns` into an
   exported `buildKeywordOfferingColumn` that both tables call. P26 with a
   second consumer: one column, one set of filter options, one word for an
-  unplaced keyword, one placement write. Behaviour here is unchanged except
+  unplaced keyword, one placement write. Behavior here is unchanged except
   for two additions both surfaces now get — an EMPTY offering catalog renders
   the sentence plus the door to the topic tree instead of a dropdown with
   nothing in it, and the cell stops click propagation so picking an offering

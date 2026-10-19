@@ -17,7 +17,7 @@
 //   2. ENVELOPE. `hr.pay_period_list` answers through `hr._time_ok`, which nests the payload under
 //      `data`. This file read `envelope.rows` — `undefined` on every response — so even a payroll
 //      admin walking the route resolved nothing.
-//   3. FILTERS. It passed `{employment_id, contains}`. That door honours `pay_group_id`,
+//   3. FILTERS. It passed `{employment_id, contains}`. That door honors `pay_group_id`,
 //      `organization_id`, `state`, `from`, `to` and ignores the rest, so "the current period for
 //      this employment" was never the question being asked.
 //
@@ -45,7 +45,7 @@
 // have shown anyway and says nothing about the correction, which is the whole defect.
 //
 // 🚨 EVERY SENTENCE ON THIS PAGE IS THE SERVER'S, PRINTED. `periodNote` and `focusNote` are both
-// carried down untouched. Nothing here composes, summarises or re-derives a sentence from `basis`,
+// carried down untouched. Nothing here composes, summarizes or re-derives a sentence from `basis`,
 // a date or a uuid — a client-written explanation of a server decision is a lie waiting to drift.
 
 "use client";
@@ -154,7 +154,7 @@ export function MyTimesheetContext({
             state: "ready",
             employmentId: employment,
             payPeriodId: period,
-            // Only `most_recent` carries one, and it is the server's sentence, printed not summarised.
+            // Only `most_recent` carries one, and it is the server's sentence, printed not summarized.
             periodNote: periodParam ? null : ctx.periodNote,
             focusNote: focusApplies ? ctx.focusNote : null,
             focusPunchId: focusApplies ? ctx.focusPunchId : null,
@@ -210,7 +210,7 @@ export function MyTimesheetContext({
               : "We cannot show you this timesheet"}
           </h1>
           {/*
-            🚨 THE SERVER'S SENTENCE, PRINTED — NOT SUMMARISED, AND NEVER "not wired up yet".
+            🚨 THE SERVER'S SENTENCE, PRINTED — NOT SUMMARIZED, AND NEVER "not wired up yet".
             §2.2's `no-timesheet` law is that a person who opens this route reads WHY there is
             nothing here. A product that tells someone it is unfinished, when the true answer is a
             fact about their own record, teaches them the whole module is broken.

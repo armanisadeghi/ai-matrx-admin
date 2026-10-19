@@ -2,7 +2,7 @@
 
 // features/settings/universal/UniversalSettingsPane.tsx
 //
-// The centre pane for ONE taxonomy section (`config.<domain>.<feature>`):
+// The center pane for ONE taxonomy section (`config.<domain>.<feature>`):
 // the registry rows filed under that node, grouped and ordered by their `ui`
 // hints, each rendered by the ONE editor (`KnobOverrideRow`, settings-ladder
 // rule 2) at the rung this person edits:

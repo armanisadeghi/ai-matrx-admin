@@ -1,6 +1,6 @@
 /**
  * Profile sites: the developer / creator "social" sites a person has an account on (GitHub, Hugging Face,
- * Substack, Bluesky, Ko-fi...). Recognised everywhere a social account is, but with no provider lookup: the
+ * Substack, Bluesky, Ko-fi...). Recognized everywhere a social account is, but with no provider lookup: the
  * address itself is the evidence. Pure.
  *
  * The ONE rule shared with aidream `packages/matrx-social/matrx_social/profile_sites.py`; both sides are pinned

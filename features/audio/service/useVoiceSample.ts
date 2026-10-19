@@ -68,7 +68,7 @@ export function useVoiceSample() {
     setActive({ key, itemId: id });
   };
 
-  /** Any catalogue voice (ai.voices) — the server renders a one-line sample for that model. */
+  /** Any catalog voice (ai.voices) — the server renders a one-line sample for that model. */
   const playCatalogVoice = (model: string, voice: string, voiceName: string) => {
     const key = `catalog:${model}:${voice}`;
     if (playingKey === key) {

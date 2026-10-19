@@ -197,7 +197,7 @@ describe("the build's conversation on a reload (host chunk still loading)", () =
       hydrateMessages({
         conversationId: "conv-reload",
         messages: [
-          { id: "m-user", conversationId: "conv-reload", agentId: null, role: "user", content: [{ type: "text", text: "A list of my favourite movies" }], contentHistory: null, userContent: null, position: 0, source: "user", status: "active", isVisibleToModel: true, isVisibleToUser: true, metadata: {}, createdAt: "2026-10-07T21:15:30.000Z", deletedAt: null } as MessageRecord,
+          { id: "m-user", conversationId: "conv-reload", agentId: null, role: "user", content: [{ type: "text", text: "A list of my favorite movies" }], contentHistory: null, userContent: null, position: 0, source: "user", status: "active", isVisibleToModel: true, isVisibleToUser: true, metadata: {}, createdAt: "2026-10-07T21:15:30.000Z", deletedAt: null } as MessageRecord,
           { id: "m-asst", conversationId: "conv-reload", agentId: null, role: "assistant", content: [{ type: "thinking", text: "" }, { type: "text", text: ANSWER }], contentHistory: null, userContent: null, position: 1, source: "assistant", status: "active", isVisibleToModel: true, isVisibleToUser: true, metadata: {}, createdAt: "2026-10-07T21:15:35.000Z", deletedAt: null } as MessageRecord,
         ],
       }),
@@ -232,7 +232,7 @@ describe("the build's conversation on a reload (host chunk still loading)", () =
     expect(bad).toEqual([]);
     expect(seen.problems).toBe(false);
     expect(seen.card).toBe(true);
-    expect(seen.text).toContain("Favourite Movies");
+    expect(seen.text).toContain("Favorite Movies");
     expect(seen.text).not.toContain("import React");
   });
 });

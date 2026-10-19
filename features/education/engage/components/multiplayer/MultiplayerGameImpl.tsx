@@ -227,7 +227,7 @@ export function MultiplayerGameImpl({
       throw new Error(res.error);
     }
     channel.broadcastEnd();
-    toast.success("Room cancelled");
+    toast.success("Room canceled");
     router.replace("/education/game");
     return { id: roomId, status: "ended" };
   };
@@ -396,7 +396,7 @@ function GameRoomSurface({
         }
         const cancelled = await cancelLobby();
         return {
-          summary: `Cancelled waiting room ${roomId}. Its join code no longer works.`,
+          summary: `Canceled waiting room ${roomId}. Its join code no longer works.`,
           data: cancelled,
         };
       },
@@ -531,7 +531,7 @@ function Lobby({
                   onClick={() => void onCancel()}
                   disabled={cancelling}
                 >
-                  {cancelling ? "Cancelling…" : "Cancel room"}
+                  {cancelling ? "Canceling…" : "Cancel room"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

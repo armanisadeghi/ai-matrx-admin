@@ -28,7 +28,7 @@ import type { BrandAsset } from "@/features/marketing/types";
  * The brand's confirmed assets, sized by what they really are — the same
  * concept as research's media gallery (`@/lib/media/categorization`): photos
  * split by aspect with a large featured band, graphics (logos, banners) at
- * their real size, icons and favicons as small tiles, colours as swatches.
+ * their real size, icons and favicons as small tiles, colors as swatches.
  *
  * Brand assets carry no stored pixel size, so each preview is measured once
  * in the browser; the section holds a skeleton until every size is known so
@@ -37,7 +37,7 @@ import type { BrandAsset } from "@/features/marketing/types";
 
 export interface BrandAssetGalleryItem {
   asset: BrandAsset;
-  /** Public image URL for a URL-backed asset; null for files, colours and non-images. */
+  /** Public image URL for a URL-backed asset; null for files, colors and non-images. */
   preview: string | null;
   color: string | null;
   label: string;
@@ -421,7 +421,7 @@ export function BrandAssetGallery({
       ) : null}
       {swatches.length > 0 ? (
         <section className="space-y-2">
-          <SectionHeader icon={Palette} title="Colours" count={swatches.length} />
+          <SectionHeader icon={Palette} title="Colors" count={swatches.length} />
           <ul className="flex flex-wrap items-start gap-2">
             {swatches.map((p) => (
               <TileChrome key={p.item.asset.id} item={p.item} actions={renderActions(p.item.asset)} size={null} className="w-28">

@@ -212,7 +212,7 @@ async def main():
             # Sorting by a withheld column is that column, said as an ordering.
             page, _, err = await directory(tokens[label], p_sort="hire_date", p_direction="asc")
             by_name, _, _ = await directory(tokens[label], p_sort="display_name", p_direction="asc")
-            rec(f"{label}: the hire-date sort is clamped, not honoured",
+            rec(f"{label}: the hire-date sort is clamped, not honored",
                 [r["display_name"] for r in (by_name or {}).get("rows", [])],
                 [r["display_name"] for r in (page or {}).get("rows", [])], err)
 

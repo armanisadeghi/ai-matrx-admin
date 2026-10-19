@@ -117,7 +117,7 @@ export type SettingView =
 /**
  * What the Settings form shows for one key — derived from the same stored
  * fields as the document, so the form and the JSON views cannot disagree.
- * `default` is the model catalog's default: shown to the person LABELLED as the
+ * `default` is the model catalog's default: shown to the person LABELED as the
  * model default, never as if it were set.
  */
 export function describeSetting(

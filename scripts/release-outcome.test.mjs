@@ -1,6 +1,6 @@
 // release-outcome.test.mjs — THE RELEASE-BANNER TRUTH LAW, at the wiring seam.
 //
-// The behavioural guard is scripts/release-outcome.sh --self-test: it executes
+// The behavioral guard is scripts/release-outcome.sh --self-test: it executes
 // the real old banner from release.sh@e30f034c9f over an ERRORed deployment
 // record (RED — green printed), then drives the new release_outcome_report
 // through READY / ERROR / CANCELED / ignored / timeout / not-promoted /
@@ -76,7 +76,7 @@ test("the wait announces itself and states its wall", () => {
   assert.match(outcomeScript, /up to \$\(\(wall \/ 60\)\) min, polling every \$\{poll\}s/);
 });
 
-test("the behavioural self-test passes (RED baseline reproduced, then gated)", () => {
+test("the behavioral self-test passes (RED baseline reproduced, then gated)", () => {
   const out = execFileSync("bash", [new URL("./release-outcome.sh", import.meta.url).pathname, "--self-test"], {
     encoding: "utf8",
   });

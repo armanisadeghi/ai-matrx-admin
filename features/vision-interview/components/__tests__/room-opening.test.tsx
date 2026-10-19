@@ -19,7 +19,7 @@
  *    values, so a single hardcoded string cannot satisfy them.
  *
  * 2. THE DROPPED OPENING. Remove the `<OpeningVisionSend>` mount (the
- *    pre-fix behaviour: `createSession` wrote `vision_statement` and nothing
+ *    pre-fix behavior: `createSession` wrote `vision_statement` and nothing
  *    in `features/` or `app/` ever read it back into a conversation) and the
  *    canonical send thunk is never dispatched — the lead expert opens on an
  *    empty room and greets a context-free interview. Re-send it on a

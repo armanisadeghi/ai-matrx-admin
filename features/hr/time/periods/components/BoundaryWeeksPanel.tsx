@@ -40,7 +40,7 @@ export interface BoundaryWeeksPanelProps {
    * `hr.recompute_apply`, so on a period with no computed intervals an empty array means "nobody
    * has looked" — and saying "no workweek straddles this period" from that is asserting a
    * world-fact this panel does not have. Optional so the list read, which does not carry it,
-   * keeps its existing behaviour.
+   * keeps its existing behavior.
    */
   boundaryComputed?: boolean;
 }

@@ -11,7 +11,7 @@ interface OriginBadgeProps {
 
 /**
  * Origin is provenance metadata, not a status — so it gets the quietest
- * treatment of all: a thin-bordered, monochrome micro-label, no semantic colour.
+ * treatment of all: a thin-bordered, monochrome micro-label, no semantic color.
  * Reads as a subtle qualifier next to the row, never competing for attention.
  */
 export function OriginBadge({ origin, className }: OriginBadgeProps) {

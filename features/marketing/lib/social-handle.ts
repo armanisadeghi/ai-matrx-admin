@@ -9,7 +9,7 @@ import { classifyRedditHandle, classifyRedditUrl } from "./reddit-links";
 
 /**
  * A LinkedIn person's slug ends in a generated id (`arman-sadeghi-8b176627`); the id is an address, never part of a name.
- * A company/school slug keeps its path (`company/acme`). Returns the address people recognise, without the id.
+ * A company/school slug keeps its path (`company/acme`). Returns the address people recognize, without the id.
  */
 export function linkedInAddress(handle: string | null | undefined): string {
   const slug = (handle ?? "").trim().replace(/^@/, "").replace(/^\/+|\/+$/g, "");

@@ -112,7 +112,7 @@ export type FrontendAcceptInfo = AcceptInfo;
 
 export interface CheckFindingsConsoleProps {
   frontendAccept: Record<string, FrontendAcceptInfo>;
-  /** Defaults to the live store. A dev demo passes a labelled fixture. */
+  /** Defaults to the live store. A dev demo passes a labeled fixture. */
   source?: CheckFindingsSource;
   /** Shown above everything when set — a fixture must say so on screen. */
   banner?: string;

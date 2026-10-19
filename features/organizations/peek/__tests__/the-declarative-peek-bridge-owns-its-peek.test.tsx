@@ -66,7 +66,7 @@ describe("ResourcePeekHost bridge", () => {
     unregister();
   });
 
-  it("honours the caller's key, and an id change closes the old peek", () => {
+  it("honors the caller's key, and an id change closes the old peek", () => {
     const unregister = registerResourcePeekHost();
     const view = mount(<ResourcePeekHost kind="user" id="u1" peekKey="person-peek" onClose={() => {}} />);
     expect(keys()).toEqual(["person-peek"]);

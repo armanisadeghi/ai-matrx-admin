@@ -26,7 +26,7 @@
  * bug to notice — so add new observation fields HERE and in `outbox.ts`
  * together, never to the online path alone.
  *
- * Behaviour:
+ * Behavior:
  *   • Online, RPC succeeds → the real result, unchanged. `queued` is false.
  *   • Offline, or the RPC fails for a NETWORK reason → the observation is
  *     queued (IC-8) and `queued` is true with the caller's optimistic view.

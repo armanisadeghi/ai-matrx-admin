@@ -107,7 +107,7 @@ export default function CompressDemo() {
           minimum compression tier to apply.{" "}
           <strong>Max size (MB)</strong> is an optional absolute cap; when
           set, the server escalates the level one tier at a time until the
-          output fits (or tier 5 is reached). Leave max size blank to honour
+          output fits (or tier 5 is reached). Leave max size blank to honor
           the level exactly.
         </p>
       </header>

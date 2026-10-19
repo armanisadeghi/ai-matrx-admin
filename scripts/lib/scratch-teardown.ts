@@ -30,7 +30,7 @@
  *   - SIGINT/SIGTERM do not run `finally`. `armScratchSignals` runs the same teardown on those, then
  *     exits non-zero through the drain helper.
  *
- * Scratch names stay recognisable: `zz_<guard>_selftest_<run>`. `pnpm check:entity-types` and the
+ * Scratch names stay recognizable: `zz_<guard>_selftest_<run>`. `pnpm check:entity-types` and the
  * aidream vocabulary generator both refuse any `zz_` registration, so a leftover cannot ship
  * silently even if this report is ignored.
  */
@@ -138,7 +138,7 @@ export function registeredScratchPlan(opts: {
   const { owner, run, schema, tokens = [], extraRows = [] } = opts;
   for (const name of [schema, ...tokens]) {
     if (!name.startsWith("zz_") || !/^[a-z0-9_]+$/.test(name)) {
-      throw new Error(`scratch name "${name}" must be lower-case and start with "zz_" so a leftover is recognisable and guarded`);
+      throw new Error(`scratch name "${name}" must be lower-case and start with "zz_" so a leftover is recognizable and guarded`);
     }
   }
   const tokenList = tokens.map(lit).join(", ");

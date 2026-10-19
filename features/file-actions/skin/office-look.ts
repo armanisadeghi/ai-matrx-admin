@@ -23,7 +23,7 @@ export function resolveOfficeLook(value: unknown): OfficeLook {
 }
 
 /**
- * Microsoft-like product accents (no logos — generic glyphs in these colours): Excel green,
+ * Microsoft-like product accents (no logos — generic glyphs in these colors): Excel green,
  * Word blue, PowerPoint orange. Exposed as `--office-accent` on a skinned surface.
  */
 export const OFFICE_ACCENT: Record<"workbook" | "document" | "presentation", { light: string; dark: string }> = {

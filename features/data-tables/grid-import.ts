@@ -13,7 +13,7 @@
  * once, for all three:
  *   1. Is there anything in it at all? (the only real refusal)
  *   2. Is the first row column names or data? — a GUESS, shown as a guess, and
- *      the person can flip it (the Google Sheets / Airtable import behaviour).
+ *      the person can flip it (the Google Sheets / Airtable import behavior).
  */
 import { inferDataType } from "@ai-matrx/records/core";
 

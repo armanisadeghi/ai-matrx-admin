@@ -42,7 +42,7 @@
 // refuses. Now the wait watches ONLY the explicit selection, and settling with
 // nothing returns `unavailable` with the remedy. The exported names still say
 // "effective" because two consumers outside this feature import them by that
-// name; the rename is a follow-up, not a behaviour change.
+// name; the rename is a follow-up, not a behavior change.
 
 import {
   waitForOrganizationAdmission,

@@ -7,7 +7,7 @@
  *
  * Arman, 2026-10-14: "this large horizontal scrollbar … has ruined a lot of uis." The
  * global universal rule sat in the utilities layer, outranked the shell's auto-hiding bar
- * and painted a grey track under every horizontal scroller.
+ * and painted a gray track under every horizontal scroller.
  *
  * Now there is ONE default — @ai-matrx/design-system web-base.css (imported by
  * app/globals.css), base layer, thin and auto-hiding — used by pages, dialogs and

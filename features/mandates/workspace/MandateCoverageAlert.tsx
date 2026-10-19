@@ -8,7 +8,7 @@
 // "Holder missing" tile, a red strip naming every such Mandate, a per-row badge
 // and a one-click narrowing. Open one of those Mandates and the scream stopped
 // — the admin page of `shortcut.full_prompt_optimizer` landed on the
-// Definition tab, whose only trace of the fact was the grey line "Declared by:
+// Definition tab, whose only trace of the fact was the gray line "Declared by:
 // Holder name unavailable" and an amber box titled with an INPUT problem. The
 // truth (the door's full rung walk) was real and correct, but it sat on another
 // tab, framed as a declaration issue. An admin who arrives by link, by search,

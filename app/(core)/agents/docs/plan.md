@@ -455,7 +455,7 @@ Three vertical panels that **scroll in sync** (synchronized `scrollTop` via a sh
 - **Change summary bar**: fixed-height horizontal strip at top. Lists changed fields by name with counts.
 - **Three panels**: equal-width columns, synchronized vertical scroll.
 - **Row alignment**: each logical "field row" spans all three columns at the same height. Variable-height rows (messages, settings) expand uniformly across all three columns.
-- **Messages**: standard diff view — added lines green, removed lines red, context grey. Aligned by message index.
+- **Messages**: standard diff view — added lines green, removed lines red, context gray. Aligned by message index.
 - **Settings / variable definitions / other structured data**: key-value comparison UI — each key is a row, changed values highlighted, added/removed keys marked.
 - **Unchanged fields**: shown in muted styling so changed fields stand out.
 - **No raw text diff** — all comparisons are structured per field type.

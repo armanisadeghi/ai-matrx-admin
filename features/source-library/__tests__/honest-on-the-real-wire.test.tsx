@@ -4,8 +4,8 @@
  *
  * An independent first-person walk of /libraries as `admin@admin.com` hit a
  * wall at every door: new intake refused with an organization error, the one
- * catalogued Library (Veritasium, 533 Sources) crashed the whole route, and the
- * Library whose catalogue had failed (TED, 5,810 Sources) sat in a loading
+ * cataloged Library (Veritasium, 533 Sources) crashed the whole route, and the
+ * Library whose catalog had failed (TED, 5,810 Sources) sat in a loading
  * skeleton with no message, no timeout and no retry. All three were the
  * client's, not the server's. These blocks hold each fix down with the SHAPE
  * THE PRODUCTION SERVER ACTUALLY SENDS, not a shape this repo finds convenient.
@@ -20,10 +20,10 @@
  *         was never probed" fails with the production crash verbatim:
  *         TypeError: Cannot read properties of null (reading 'length').
  *
- *   E · a failed catalogue is readable from the row — in
+ *   E · a failed catalog is readable from the row — in
  *       `components/LibraryMetricsHeader.tsx`, delete the
  *       `library?.sync_status === "failed"` branch of `SyncStrip`.
- *       → "a Library whose last catalogue failed says so on its own page"
+ *       → "a Library whose last catalog failed says so on its own page"
  *         fails: the strip falls through to "This Library has never been
  *         brought up to date", which is a different and untrue sentence, and no
  *         retry control exists.
@@ -277,7 +277,7 @@ describe("I · the metrics blob stored on a Library row is not a type", () => {
                 onBringUpToDate={() => {}}
             />,
         );
-        expect(node.textContent).toContain("Catalogued in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
         expect(node.textContent).not.toContain("Something went wrong");
         // and it never signs a timestamp it does not have
         expect(node.textContent).not.toContain("Invalid Date");
@@ -324,8 +324,8 @@ describe("D · a Source the server describes with nulls still renders", () => {
 
 // ── E ────────────────────────────────────────────────────────────────────────
 
-describe("E · a catalogue that failed is readable from the row, not only from a stream", () => {
-    it("a Library whose last catalogue failed says so on its own page", () => {
+describe("E · a catalog that failed is readable from the row, not only from a stream", () => {
+    it("a Library whose last catalog failed says so on its own page", () => {
         const node = mount(
             <LibraryMetricsHeader
                 library={failedLibrary()}
@@ -344,7 +344,7 @@ describe("E · a catalogue that failed is readable from the row, not only from a
         expect(retry).toBeTruthy();
     });
 
-    it("the retry control actually asks for the catalogue again", () => {
+    it("the retry control actually asks for the catalog again", () => {
         const onBringUpToDate = jest.fn();
         const node = mount(
             <LibraryMetricsHeader
@@ -464,7 +464,7 @@ describe("F · numbers that cannot be read stop pretending to load", () => {
 // ── G ────────────────────────────────────────────────────────────────────────
 
 describe("G · the one instruction on the screen is true", () => {
-    it("pressing Enter in the paste box starts the catalogue", async () => {
+    it("pressing Enter in the paste box starts the catalog", async () => {
         resolveMediaInput.mockImplementation(
             () => new Promise(() => {}), // never settles; the call is the proof
         );
@@ -495,7 +495,7 @@ describe("G · the one instruction on the screen is true", () => {
         );
     });
 
-    it("a keyboard Enter on the input starts the catalogue, with no click anywhere", async () => {
+    it("a keyboard Enter on the input starts the catalog, with no click anywhere", async () => {
         // jsdom does not implement a form's IMPLICIT submission, so this
         // exercises the component's own keydown path — the one that has to
         // work when a synthesised or composed key event never reaches the
@@ -540,7 +540,7 @@ describe("G · the one instruction on the screen is true", () => {
     it("the button is the form's submit button, not a second door", () => {
         const node = mount(<CatalogPasteBox autoFocus={false} />);
         const button = [...node.querySelectorAll("button")].find((b) =>
-            (b.textContent ?? "").includes("Catalogue"),
+            (b.textContent ?? "").includes("Catalog"),
         )!;
         expect(button.getAttribute("type")).toBe("submit");
     });

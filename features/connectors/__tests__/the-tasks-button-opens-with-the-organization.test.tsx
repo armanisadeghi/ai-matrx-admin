@@ -145,7 +145,7 @@ const ACTIVITY = googleActivityByProduct(
         action: "tasks.list",
         code: "grant_expired_or_revoked",
         sentence:
-          "Google is no longer honouring this account's permission for Tasks.",
+          "Google is no longer honoring this account's permission for Tasks.",
         http_status: 401,
       },
     },

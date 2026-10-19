@@ -311,7 +311,7 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
   hostAtLastRender.current = collab.isHost;
   /** The room is joined: its host (this member or another) writes the page. */
   hostKnown.current = collab.session !== null;
-  // Built from the stored snapshot: the body the editor will hold (BlockNote's normalisation of the stored
+  // Built from the stored snapshot: the body the editor will hold (BlockNote's normalization of the stored
   // blocks) IS the stored version, so it is the save baseline — opening a page never writes a version.
   useEffect(() => {
     const s = collab.session;
@@ -410,7 +410,7 @@ function SpacePageScreen({ spaceId, initialDoc }: { spaceId: string; initialDoc?
     apply: (copy) => {
       const editor = editorRef.current;
       if (!editor) return;
-      // A copy that is what the page already shows (the stored body as this editor normalises it, kept
+      // A copy that is what the page already shows (the stored body as this editor normalizes it, kept
       // by a host on open) changes nothing: cleared, never re-drawn. Only a body that differs is put
       // back — replacing every block re-draws the whole page (a late layout shift, D2).
       const shown = { ...(docRef.current ?? copy.doc), blocks: fromEngine(editor.document as unknown as EngineBlock[]) };

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The head of a Library: what this catalogue IS, in numbers, while it is still
+ * The head of a Library: what this catalog IS, in numbers, while it is still
  * being enumerated.
  *
  * 🚨 IT FILLS IN, IT DOES NOT POP IN. Every tile, the cadence chart and the
@@ -169,7 +169,7 @@ function buildTilesFromMetrics(
             hint:
                 metrics && typeof metrics.total !== "number"
                     ? "The server did not send a count for this Library"
-                    : "Catalogued in this Library",
+                    : "Cataloged in this Library",
         },
         {
             key: "long",
@@ -408,7 +408,7 @@ function CadenceChart({
                     <div className="flex h-full w-full items-center justify-center rounded-md border border-dashed border-border px-4 text-center text-xs text-muted-foreground">
                         {unreadable
                             ? "The numbers behind this chart could not be read, so there is nothing honest to draw."
-                            : "Nothing has been catalogued yet, so there is no cadence to chart."}
+                            : "Nothing has been cataloged yet, so there is no cadence to chart."}
                       <ErrorAlchemyMenu />
                     </div>
                 ) : (
@@ -746,7 +746,7 @@ function SyncStrip({
                         {`Up to date — ${formatCount(sync.listed)} Sources listed in ${formatElapsed(
                             sync.finishedElapsedMs,
                         )}.`}
-                        {/* 🚨 A CATALOGUE SAYS WHAT IT LEFT OUT. The blog crawl reaches
+                        {/* 🚨 A CATALOG SAYS WHAT IT LEFT OUT. The blog crawl reaches
                             taxonomy pages, pagination, nav widgets and assets, and
                             discards them — waitbutwhy.com went from 346 "Posts" to its
                             own sitemap's 202 that way. A number that quietly drops 23
@@ -797,7 +797,7 @@ function SyncStrip({
                         <span>
                             This Library kept every Source it had — the provider
                             listing looked incomplete, so nothing was retired. Run
-                            the catalogue again later to try the retirement once
+                            the catalog again later to try the retirement once
                             more.
                         </span>
                     </p>
@@ -807,11 +807,11 @@ function SyncStrip({
     }
 
     // 🚨 THE ROW REMEMBERS WHAT THE STREAM SAID, AND SO DOES THIS STRIP.
-    // `sync.phase` is only ever about a run THIS tab watched. A catalogue that
+    // `sync.phase` is only ever about a run THIS tab watched. A catalog that
     // failed an hour ago, in another tab, or before a reload lives in the
     // Library row — `sync_status: "failed"` with the `sync_error` sentence the
     // server wrote (aidream `media_catalog/libraries.py`, both failure paths).
-    // The list page already prints "Last catalogue failed" from that field; a
+    // The list page already prints "Last catalog failed" from that field; a
     // detail page that ignores it leaves a person in front of a screen that
     // will never finish and never explain itself, which is exactly what TED
     // (5,810 Sources) did on 2026-09-17. So the row's own terminal state is
@@ -826,13 +826,13 @@ function SyncStrip({
                     />
                     <p className="text-sm text-foreground">
                         {library.sync_error ??
-                            "The last attempt to catalogue this Library failed, and the server did not say why."}
+                            "The last attempt to catalog this Library failed, and the server did not say why."}
                     </p>
                 </div>
                 <p className="pl-6 text-xs tabular-nums text-muted-foreground">
                     {library.item_count != null
                         ? `This Library still holds ${formatCount(library.item_count)} Sources from before that run.`
-                        : "Nothing was catalogued before that run stopped."}
+                        : "Nothing was cataloged before that run stopped."}
                 </p>
                 <div className="flex h-8 items-center pl-6">
                     <Button icon={<RefreshCw aria-hidden="true" />} variant="outline" onClick={onBringUpToDate}>
@@ -858,7 +858,7 @@ function SyncStrip({
         // server touches this row, including the write that flips it INTO
         // "syncing" — so its age is an honest, if approximate, clock on how
         // long this run has claimed to be going. Past a generous ceiling (no
-        // real catalogue run takes 30 minutes; the largest one measured on this
+        // real catalog run takes 30 minutes; the largest one measured on this
         // feature, a 316,969-item mailbox, was well under a minute) the claim
         // is more likely a stalled write than an enormous Library, and a person
         // is told that plainly instead of being asked to keep reloading a page
@@ -884,7 +884,7 @@ function SyncStrip({
                     <p className="pl-6 text-xs tabular-nums text-muted-foreground">
                         {library.item_count != null
                             ? `This Library still holds ${formatCount(library.item_count)} Sources from before that run.`
-                            : "Nothing was catalogued before that run stalled."}
+                            : "Nothing was cataloged before that run stalled."}
                     </p>
                     <div className="flex h-8 items-center pl-6">
                         <Button icon={<RefreshCw aria-hidden="true" />} variant="outline" onClick={onBringUpToDate}>
@@ -902,7 +902,7 @@ function SyncStrip({
                     aria-hidden="true"
                 />
                 <p className="text-sm text-foreground">
-                    This Library is being catalogued right now, started somewhere other
+                    This Library is being cataloged right now, started somewhere other
                     than this tab. Reload to see what the server has listed so far.
                 </p>
             </div>
@@ -1044,7 +1044,7 @@ export function LibraryMetricsHeader(props: {
                                 ? "A sync is running right now; this Library is already being brought up to date."
                                 : props.bringUpToDateDisabled === true
                                   ? "This Library cannot be brought up to date from here right now."
-                                  : "Ask the provider for the current list and catalogue what changed."
+                                  : "Ask the provider for the current list and catalog what changed."
                         }
                     >
                         {running ? (

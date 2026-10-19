@@ -35,7 +35,7 @@ const DISPOSITIONS: readonly PageIntentDisposition[] = [
 ];
 const STATES: readonly PageIntentState[] = ["proposed", "accepted", "done"];
 
-/** What a link-in put in the URL, and what could not be honoured. */
+/** What a link-in put in the URL, and what could not be honored. */
 export interface PageFilterParams {
   /** Only the keys the URL actually carried — merged over the live filters. */
   filters: Partial<MapPageFilters>;

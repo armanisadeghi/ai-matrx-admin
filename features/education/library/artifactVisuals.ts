@@ -2,7 +2,7 @@
 //
 // The library's ADAPTER onto the canonical education presentation table.
 //
-// `convert/targetPresentation.ts` already owns the icon, colour, name, unit and
+// `convert/targetPresentation.ts` already owns the icon, color, name, unit and
 // verb for every study format, and its header explicitly reserves this seat:
 // "every surface that lists study-kit targets (the ingest hero, the convert
 // dialog, a future library filter) reads it here — the icon map used to be
@@ -15,7 +15,7 @@
 //   converter `TargetKind` (how it was PRODUCED:     deck,       quiz, …)
 //
 // Add a format → add it to `TARGET_PRESENTATION` and to `SUBTYPE_TO_TARGET`
-// below. Never add a colour here.
+// below. Never add a color here.
 
 import { formatDurationSeconds } from "@ai-matrx/kit/format";
 import { BookOpen } from "lucide-react";

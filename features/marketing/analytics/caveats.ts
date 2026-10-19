@@ -22,7 +22,7 @@
  * THE WINDOW IS THE SUBJECT, NOT ONE ROW (round-2 verdict NEW-B5, 2026-09-17).
  * These flags used to be read from the single freshest row of the window, so a
  * 28-day total whose newest day was clean printed no caveat even when an earlier
- * day in the same total was thresholded or sampled. Every judgement below runs
+ * day in the same total was thresholded or sampled. Every judgment below runs
  * over EVERY collected day in the window and names how many days carry it.
  */
 

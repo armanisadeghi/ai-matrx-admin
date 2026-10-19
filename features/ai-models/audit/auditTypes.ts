@@ -156,9 +156,9 @@ export interface ModelAuditResult {
   pass: boolean;
 }
 
-// ── Normalised capabilities record ────────────────────────────────────────
+// ── Normalized capabilities record ────────────────────────────────────────
 
-/** Capabilities stored in DB can be array, object, or null — we normalise to this */
+/** Capabilities stored in DB can be array, object, or null — we normalize to this */
 export type CapabilitiesRecord = Partial<Record<CapabilityKey, boolean>>;
 
 /**

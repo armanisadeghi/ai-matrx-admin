@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Colours and fonts read from the brand's own site (BRAND-GUIDE.md § Visual identity, deterministic core; aidream
+ * Colors and fonts read from the brand's own site (BRAND-GUIDE.md § Visual identity, deterministic core; aidream
  * services/brand_guide/visual.py). Suggestions are `web.brand_asset` rows (kind color / font, source discovered,
  * no `confirmed_at`).
  *
@@ -38,7 +38,7 @@ function Swatch({ asset }: { asset: BrandAsset }) {
   const hex = field(asset, "hex") ?? asset.title ?? "";
   return (
     <span className="flex min-w-0 items-center gap-2">
-      {/* ui-exception: a colour swatch renders the brand's own colour value */}
+      {/* ui-exception: a color swatch renders the brand's own color value */}
       <span className="size-5 shrink-0 rounded border border-border" style={{ backgroundColor: hex }} aria-hidden />
       <span className="font-mono type-meta text-foreground">{hex}</span>
     </span>
@@ -151,9 +151,9 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
   const ROW = "flex min-h-[52px] flex-wrap items-center gap-3 px-3 py-2";
   return (
     <SectionCard
-      title="Colours and fonts"
+      title="Colors and fonts"
       className="mb-3"
-      about="Colours and fonts read from the brand's own site, one at a time with the evidence beside it. Yes keeps it, No is remembered and never asked again, Skip moves it to the back. Read from site looks again at no cost."
+      about="Colors and fonts read from the brand's own site, one at a time with the evidence beside it. Yes keeps it, No is remembered and never asked again, Skip moves it to the back. Read from site looks again at no cost."
       headerExtra={
         <>
           {open.length > 0 ? <span className="type-meta text-muted-foreground">{open.length} to check</span> : null}
@@ -172,7 +172,7 @@ export function BrandVisualSuggestions({ brandId, organizationId }: { brandId: s
         ) : current ? (
           <div key="question" className={ROW} data-testid={`brand-visual-${current.kind}`}>
             <div className="w-40 shrink-0">
-              <div className="type-label">{current.kind === "color" ? "Is this your colour?" : "Is this your font?"}</div>
+              <div className="type-label">{current.kind === "color" ? "Is this your color?" : "Is this your font?"}</div>
               <Kept asset={current} />
             </div>
             <div className="min-w-0 flex-1">

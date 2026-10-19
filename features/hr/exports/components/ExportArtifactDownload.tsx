@@ -18,14 +18,14 @@
  *
  * There are two honest options and no third:
  *   (a) stream the bytes through the file service and save from a same-origin `blob:` URL, where
- *       `a.download` IS honoured and the server's `Content-Disposition` filename survives; or
+ *       `a.download` IS honored and the server's `Content-Disposition` filename survives; or
  *   (b) hand the user the signed URL and let the browser do whatever it does with the name.
  *
  * WE TOOK (a), for the reason above, and it is the same primitive `useFileActions.download()`
  * uses — `features/files/api/files.ts` `downloadFile(file_id)` — rather than a second byte path
  * beside it. The envelope's `file_id` is exactly the handle it needs.
  *
- * (b) is still offered, deliberately and labelled: the byte stream needs the file service to be
+ * (b) is still offered, deliberately and labeled: the byte stream needs the file service to be
  * reachable, and when it is not — including `NEXT_PUBLIC_HR_MOCK=1`, where the HR transport is
  * swapped but the file service is not — a payroll administrator must still be able to get their
  * file. The link is presented as "open in a new tab", not as a download, because that is the
@@ -60,7 +60,7 @@ export function ExportArtifactDownload({
       const { blob, filename } = await downloadBlob(
         `/files/${encodeURIComponent(envelope.file_id)}/download`,
       );
-      // A blob: URL is same-origin, so `a.download` is honoured and the file lands with the
+      // A blob: URL is same-origin, so `a.download` is honored and the file lands with the
       // right name and extension — the whole reason we stream the bytes instead of linking.
       downloadFile(filename ?? filenameHint ?? "payroll-export", blob, blob.type);
     } catch (err: unknown) {

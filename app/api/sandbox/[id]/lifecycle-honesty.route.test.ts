@@ -35,7 +35,7 @@ const from = jest.fn(() => query);
 // The route resolves its caller with `getClaimsUser(client)` →
 // `client.auth.getClaims()`, so a fake that stubs only `getUser` answers
 // "signed out" and every one of these routes 500s on admin verification
-// instead of exercising the behaviour under test. `withClaims` derives the
+// instead of exercising the behavior under test. `withClaims` derives the
 // claims door from THIS SAME `getUser`, so one fake admin answers at both.
 const auth = withClaims({
   getUser: jest.fn(async () => ({

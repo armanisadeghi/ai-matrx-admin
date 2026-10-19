@@ -27,7 +27,7 @@ import { defaultListFilter, type ListScopeWord } from "@/lib/list-scope";
  * unconditionally, which quietly filed a project created while working in a
  * team into the person's private workspace, where their team could not see it.
  * With no selection this REFUSES: `requireSelectedOrgId()` throws the one
- * `OrganizationContextError` every surface recognises
+ * `OrganizationContextError` every surface recognizes
  * (`isOrganizationRequiredError` → `OrganizationRequiredNotice`), and that
  * throw is re-raised rather than flattened into a null, so the screen can say
  * what is missing instead of failing namelessly.

@@ -48,7 +48,7 @@ export default function CodeWorkspaceTab() {
     useSetting<boolean>("userPreferences.coding.monacoEnvironmentsEnabled");
 
   const agentRows = useAgentCatalogRows();
-  // The catalogue read behind the tag/category options (RC-B12): "No tags on
+  // The catalog read behind the tag/category options (RC-B12): "No tags on
   // your agents yet" is only true after it succeeded.
   const catalog = useAgentCatalog();
   const catalogStatus = useAgentCatalogState((s) => s.status);

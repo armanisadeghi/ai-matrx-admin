@@ -176,11 +176,11 @@ export function ErrorAlchemyMenu({
       data-placement={placement.target ? "moved" : placement.truncated ? "truncated" : "inline"}
       className={cn(
         // The menu rides the error's own line: one line tall AND one line
-        // wide (its 32px tap target overflows it, centred), so it never grows
+        // wide (its 32px tap target overflows it, centered), so it never grows
         // the line or the box — nor wraps a line the sentence just fits
         // (the organization picker grew 32→48px at 1400px, RC-B12 layout).
         // 🚨 The breathing room from the sentence is part of the SLOT's width
-        // (1lh + 0.25rem, glyph centred), never a margin or padding around
+        // (1lh + 0.25rem, glyph centered), never a margin or padding around
         // the tap button: `ml-1` here painted the dev tap guard's "TAP BUTTON
         // MISUSE — adds 4px around a tap button" box beside every inline
         // error (reviewer, 2026-10-02, the directive builder's result line).
@@ -188,7 +188,7 @@ export function ErrorAlchemyMenu({
         // 🚨 WIDTH = the tap box + its two 3px half-gaps (2026-10-05): a
         // narrower slot let the 38px box overhang onto the words beside it
         // (the sign-in error card's copy menu covered "Try again"). Height
-        // stays one line; the box still overhangs vertically, centred.
+        // stays one line; the box still overhangs vertically, centered.
         "inline-flex h-[1lh] w-[calc(var(--matrx-tap-box,2.375rem)+var(--matrx-tap-gap,0.375rem))] shrink-0 items-center justify-center overflow-visible align-top",
         // A truncating line hides anything in its text flow behind the "…",
         // so there the menu leaves the flow and holds the line's right end.

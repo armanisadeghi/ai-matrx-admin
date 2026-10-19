@@ -65,7 +65,7 @@ function control() {
   );
 }
 
-/** The switch carries no text of its own — it is found by the id it is labelled by. */
+/** The switch carries no text of its own — it is found by the id it is labeled by. */
 async function turnOnRetirement(screen: Screen): Promise<void> {
   const toggle = screen.find("#map-regions-retire");
   expect(toggle).not.toBeNull();
@@ -122,7 +122,7 @@ describe("retiring geography branches", () => {
     const text = screen.text();
     expect(text).toContain("Retiring 1 branch(es) moves 557 pages");
     expect(text).toContain("38 would end on NO topic");
-    // The server's own sentence for what it recognised.
+    // The server's own sentence for what it recognized.
     expect(text).toContain(
       "Every page under this topic names a city or a county and nothing else.",
     );

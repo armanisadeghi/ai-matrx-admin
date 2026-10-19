@@ -33,7 +33,7 @@ export interface CodeWorkspaceContextValue {
   setProcess: (adapter: ProcessAdapter) => void;
   /** Library source id (e.g. `"aga_apps"`) the host wants the Library
    *  panel to auto-expand on first mount. `null` keeps the canonical
-   *  /code behaviour (everything collapsed lazily). */
+   *  /code behavior (everything collapsed lazily). */
   focusedLibrarySourceId: string | null;
   /** One row of the focused source the host is editing (e.g. the open
    *  Applet). When set, the Library shows ONLY that row — no other sources,

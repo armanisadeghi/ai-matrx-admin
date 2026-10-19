@@ -254,7 +254,7 @@ try {
       await page.waitForTimeout(800);
       const f = await tableFacts(page);
       const others = f.orgs.filter((o) => o !== PICK);
-      pass(`lane ${lane} honours ${PICK}`, others.length === 0, `${f.orgs.length} rows, ${others.length} from another organization`);
+      pass(`lane ${lane} honors ${PICK}`, others.length === 0, `${f.orgs.length} rows, ${others.length} from another organization`);
       if (lane === "mine") await shot(page, "after-picked-mine");
     }
     pass("everything was more than one organization", new Set(everything.orgs).size > 1, `${new Set(everything.orgs).size} organizations under All Orgs`);

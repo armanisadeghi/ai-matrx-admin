@@ -205,7 +205,7 @@ function inOrder(data: ChartData): AggregateRow[] {
 
 const RECORDS_KIND = { bar: "column", hbar: "bar", line: "line", donut: "donut" } as const;
 
-/** Each group's colour keyed by its stored value as text ("" = no value), for ChartBlock's `groupColors`. */
+/** Each group's color keyed by its stored value as text ("" = no value), for ChartBlock's `groupColors`. */
 function colorsOf(data: ChartData): Record<string, string> {
   const out: Record<string, string> = {};
   for (const p of data.points) out[p.key.startsWith("none-") ? "" : p.key] = p.color;

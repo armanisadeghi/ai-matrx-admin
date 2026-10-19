@@ -367,7 +367,7 @@ function emitDefinitions(): void {
     const ext = openerExt.get(base)!;
     const t = fixOpenerSpecifiers(fs.readFileSync(path.join(tmp, "openers", `${base}${ext}`), "utf8"), "def");
     write(`${DEFS}/${base}${ext}`, t);
-    resolve(`opener ${base} opens no catalogued overlay id: kept as ${DEFS}/${base}${ext}`);
+    resolve(`opener ${base} opens no cataloged overlay id: kept as ${DEFS}/${base}${ext}`);
   }
   // FullScreenEditorMode lived in the app's overlaySlice (the package slice has no editor types)
   const slice = "lib/redux/slices/overlaySlice.ts";
@@ -553,7 +553,7 @@ function emitOverlayMetaIndex(): void {
  * Package-owned windows the app hosts with no app component of its own: the window id is declared
  * by @ai-matrx/chat's CHAT_WINDOWS (ChatHostAdapter's chatWindowOverlay() check requires every id
  * to be an app overlay) and the component ships in the chat package. Written whole every run, so a
- * pre-switch catalogue row for the same id (if one landed) converges on this definition.
+ * pre-switch catalog row for the same id (if one landed) converges on this definition.
  */
 const PACKAGE_WINDOWS: ReadonlyArray<{ id: string; label: string; windowId: string; mobile: string; component: string; spec: string; after: string }> = [
   {
@@ -1153,7 +1153,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
 `
     );
   });
-  resolve("features/admin/utils/lookupOverlay.ts: catalogue + window metadata lookups → OVERLAY_META_INDEX (server-safe plain data; kind now window|overlay; deprecated uses replacement/reason)");
+  resolve("features/admin/utils/lookupOverlay.ts: catalog + window metadata lookups → OVERLAY_META_INDEX (server-safe plain data; kind now window|overlay; deprecated uses replacement/reason)");
   // the one in-app lazyOverlay use outside the controller
   patch("features/agent-shortcuts/components/LinkAgentToShortcutModal.tsx", (t) => {
     t = t.replace(/^import \{ lazyOverlay \} from "@\/features\/overlays\/boundary\/lazyOverlay";\n/m, 'import dynamic from "next/dynamic";\n');
@@ -1187,7 +1187,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   // the dev-only eager-load guard of the deleted engine (the package's assertLazyLoaded is opt-in)
   patch("app/DeferredSingletonWrapper.tsx", (t) => t.replace(/^import "@\/features\/window-panels\/utils\/lazy-bundle-guard";\n/m, ""));
   resolve("app/DeferredSingletonWrapper.tsx: side-effect import of the engine's lazy-bundle-guard removed (it would now load the whole window section eagerly)");
-  // tests that read the catalogue / window metadata as objects → a view built from APP_OVERLAYS
+  // tests that read the catalog / window metadata as objects → a view built from APP_OVERLAYS
   for (const rel of [
     "components/agent-copy/copy-subset/overlay-registration.test.ts",
     "features/connectors/__tests__/every-connected-product-offers-its-first-action.test.ts",
@@ -1273,7 +1273,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   );
   patch("scripts/check-hidden-primary-actions.ts", (t) => t.replace('import { WindowPanel } from "@/features/window-panels/WindowPanel";', `import { WindowPanel } from "${WIN}";`));
   resolve("source-text references to old paths (a code sample, a boundary test's expected import, a guard fixture) → new paths");
-  // the catalogue as an object → APP_OVERLAYS
+  // the catalog as an object → APP_OVERLAYS
   patch("scripts/check-surface-overlays.ts", (t) =>
     swap(
       "check-surface-overlays.ts",
@@ -1285,7 +1285,7 @@ export function findWindowPanelsBySlugPrefix(prefix: string): ResolvedWindowPane
   resolve("scripts/check-surface-overlays.ts reads APP_OVERLAYS ids");
 }
 
-/** Replace a test's catalogue / window-metadata imports with local views over APP_OVERLAYS. */
+/** Replace a test's catalog / window-metadata imports with local views over APP_OVERLAYS. */
 function catalogueViewForTest(rel: string, t: string): string {
   if (t.includes(`from "${DEFS_SPEC}/registry"`)) return t;
   const sf = parse(rel, t);
@@ -1306,7 +1306,7 @@ function catalogueViewForTest(rel: string, t: string): string {
   if (wanted.has("OverlayId")) decl.push(`import type { OverlayId } from "@ai-matrx/summon";`);
   decl.push(
     "",
-    "/** The old catalogue's shape, read from the definitions (the catalogue file is gone). */",
+    "/** The old catalogue's shape, read from the definitions (the catalog file is gone). */",
     'const OVERLAY_CATALOGUE: Record<string, { label: string; isWindow: boolean; instanceMode: "singleton" | "multi"; closesOnNavigation: boolean }> = Object.fromEntries(',
     '  APP_OVERLAYS.map((d) => [d.id, { label: d.label, isWindow: !!d.window, instanceMode: d.instance === "multi" ? "multi" : "singleton", closesOnNavigation: !!d.closesOnNavigation }]),',
     ");",
@@ -1500,7 +1500,7 @@ function rewriteImporters(): void {
 
 /** WindowPanel props the package removed (minimize always keeps the body; persistence is the store's). */
 /**
- * Package subpaths the published packages retired in favour of summon: @ai-matrx/chat 0.8.138
+ * Package subpaths the published packages retired in favor of summon: @ai-matrx/chat 0.8.138
  * dropped "./utils/callbackManager" (its handles now come from @ai-matrx/summon/handles), so any app
  * file still naming it (imports, jest.mock, import()) is repointed to the summon module.
  */

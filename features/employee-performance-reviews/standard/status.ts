@@ -16,7 +16,7 @@ const LABELS: Record<ReviewStatus, string> = {
   shared: "Shared",
   acknowledged: "Acknowledged",
   reopened: "Reopened",
-  cancelled: "Cancelled",
+  cancelled: "Canceled",
 };
 
 const TONES: Record<ReviewStatus, BadgeTone> = {
@@ -48,7 +48,7 @@ export function ratingLabel(points: RatingPoint[], key: string | null): string {
 
 /** The one thing this person does next on this review, in the viewer's own terms. */
 export function nextStep(r: ReviewSummary): string {
-  if (r.status === "cancelled") return "Cancelled";
+  if (r.status === "cancelled") return "Canceled";
   if (r.cycleStatus !== "open") return "Cycle closed";
   if (r.can.acknowledge) return "Read and acknowledge";
   if (r.can.share) return "Share with the employee";

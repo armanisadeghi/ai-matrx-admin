@@ -604,7 +604,7 @@ export function resolveBaseUrl(
  * The question belongs where a person actually did something — the upload path
  * (`bindUploadOrganization`) and the AI execution path
  * (`ensureExecutionOrganization`), both of which ask explicitly. Here the
- * behaviour is exactly what it always was: fail closed. This call exists only
+ * behavior is exactly what it always was: fail closed. This call exists only
  * so a request whose organization one of those seams JUST resolved uses it.
  */
 /** GET and HEAD are reads by HTTP contract; every other method is a write. */
@@ -848,7 +848,7 @@ export function callApi<
       // This turns that dead end into a question. If no organization is
       // selected, the gate opens one dialog, the person picks, the choice
       // becomes their active workspace, and this very request continues with
-      // it. Cancelling throws `OrganizationSelectionCancelled`, which callers
+      // it. Canceling throws `OrganizationSelectionCancelled`, which callers
       // treat as "nothing happened".
       //
       // It resolves the value BEFORE the assert rather than softening it, so

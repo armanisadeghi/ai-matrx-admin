@@ -316,7 +316,7 @@ window.__READY__ = true;
 async function main() {
     // Usage: tsx diagnose-frame-height.ts <key,key,…> [--keep]   (--keep leaves the
     // diagnostic file on disk — a CLI flag, never an env var: an env var may not
-    // control behaviour, and check:settings-env-toggles refuses one.)
+    // control behavior, and check:settings-env-toggles refuses one.)
     const keys = (process.argv[2] ?? "").split(",").map((s) => s.trim()).filter((s) => Boolean(s) && !s.startsWith("--"));
     if (!keys.length) throw new Error("usage: diagnose-frame-height.ts key1,key2");
     const cases = await buildCases(keys);

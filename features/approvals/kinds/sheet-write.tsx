@@ -218,7 +218,7 @@ function useSource(scope: ApprovalScope): ApprovalSource {
         rejectEffect: "Records it as rejected so it stops waiting on you.",
         blocked: {
           reason:
-            "This proposed change was written in a shape this queue does not recognise, so it cannot be reviewed or applied.",
+            "This proposed change was written in a shape this queue does not recognize, so it cannot be reviewed or applied.",
           whoCan:
             "Reject it and ask for it again; the agent that wrote it needs fixing.",
         },

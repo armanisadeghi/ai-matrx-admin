@@ -144,7 +144,7 @@ export const PRINT_CATALOG: PrintCatalogEntry[] = [
     {
         id: "branded-qr",
         label: "Branded QR codes",
-        blurb: "The same symbol in your colours, with a logo in the middle and the scan margin still honest.",
+        blurb: "The same symbol in your colors, with a logo in the middle and the scan margin still honest.",
         href: "/print/branded-qr",
         icon: Palette,
         group: "codes",

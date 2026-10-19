@@ -10,7 +10,7 @@
 |---|---|---|
 | 0 — SW fix (blob-cache narrowed scope) | ✅ shipped | (deployed earlier) |
 | 1 — New `OverlayController.tsx` behind a flag | ✅ shipped | `25c160c6f` |
-| 2 — Typed openers (`useOpenX` + `<XController />`) + catalogue | ✅ shipped | `57635640e` |
+| 2 — Typed openers (`useOpenX` + `<XController />`) + catalog | ✅ shipped | `57635640e` |
 | 3a — Callback-aware openers re-export hand-written sources | ✅ shipped | `cd0e24407` |
 | 3b — Tighten the `as never` casts (35 of 41 done, 6 documented) | ✅ shipped | `ec67ca9c6` |
 | 3c — ESLint rule: no JSX spread in controller (warn) | ✅ shipped | `cd0e24407` |
@@ -142,7 +142,7 @@ For multi-instance overlays, swap `selectIsOverlayOpen` + `selectOverlayData` fo
 
 ### Singletons vs multi-instance
 
-Already supported by the slice (`DEFAULT_INSTANCE_ID` for singletons, custom `instanceId` for multi-instance). The catalogue declares `instanceMode: "singleton" | "multi"` for each entry — the **opener** uses this to default behavior so callers don't have to think about it.
+Already supported by the slice (`DEFAULT_INSTANCE_ID` for singletons, custom `instanceId` for multi-instance). The catalog declares `instanceMode: "singleton" | "multi"` for each entry — the **opener** uses this to default behavior so callers don't have to think about it.
 
 | Mode | What `useOpenX()` does | What the controller renders |
 |---|---|---|
@@ -245,9 +245,9 @@ The typed `ref` proxy is generated per overlay from a method-list declaration in
 
 If `lib/refs/` ends up insufficient (it's centered on component-ID lookup, not necessarily per-overlay scoping), we extend it. We do not build a parallel system.
 
-### Catalogue (`features/overlays/catalogue.ts`)
+### Catalog (`features/overlays/catalogue.ts`)
 
-Thin metadata for **every** overlay — singleton or multi, window or sheet or dialog. You were right that having a uniform place to look up every overlay is cleaner than asymmetric "windows get a catalogue, sheets don't." So:
+Thin metadata for **every** overlay — singleton or multi, window or sheet or dialog. You were right that having a uniform place to look up every overlay is cleaner than asymmetric "windows get a catalog, sheets don't." So:
 
 ```ts
 export const OVERLAY_CATALOGUE = {
@@ -274,14 +274,14 @@ No `componentImport`. No `defaultData`. No `kind`. Just metadata. Used by:
 - Admin tooling (e.g. the existing window-panels-smoketest)
 - Documentation
 
-The controller does NOT iterate the catalogue. It has its own explicit JSX list.
+The controller does NOT iterate the catalog. It has its own explicit JSX list.
 
 ### Hard rules (enforced by ESLint)
 
 1. **No `JSXSpreadAttribute` inside `OverlayController.tsx`.** Every prop wired by name.
 2. **No `dispatch(openOverlay(...))` outside `features/overlays/openers/`.** Every caller uses the typed opener for that overlay.
 3. **No imports from `lib/redux/slices/overlaySlice` outside `features/overlays/` and the opener files.** The slice is the controller's private state.
-4. **`WindowPanel` may not import from any catalogue, controller, or overlay slice.** Leaf component only.
+4. **`WindowPanel` may not import from any catalog, controller, or overlay slice.** Leaf component only.
 
 ---
 
@@ -304,7 +304,7 @@ Whether opened via the controller or rendered inline on a page, this is what mak
 
 ---
 
-## System 3 — Window Manager (runtime registry, NOT a static catalogue)
+## System 3 — Window Manager (runtime registry, NOT a static catalog)
 
 The critical clarification: **windows enter this system by mounting, not by being declared**. Any `<WindowPanel id="...">` anywhere — controller-driven or page-local — is a first-class window manager participant.
 
@@ -352,7 +352,7 @@ Which dispatches `windowManager/register` on mount and `windowManager/unregister
 
 ### Centralized controls work uniformly
 
-The window-controls UI iterates the **runtime** registry, not any static catalogue:
+The window-controls UI iterates the **runtime** registry, not any static catalog:
 
 ```ts
 const allWindows = useAppSelector(selectAllRegisteredWindows);
@@ -361,7 +361,7 @@ const allWindows = useAppSelector(selectAllRegisteredWindows);
 
 So a page-local window with `<WindowPanel id="weird-thing">` on `/some-random-page` participates in "minimize all" automatically. **This is the property you said was lost; it's restored by making registration a mount-time effect, not a static declaration.**
 
-### Catalogue (optional, for stable-identity windows only)
+### Catalog (optional, for stable-identity windows only)
 
 `features/windows/catalogue.ts` is a thin static list of windows that:
 
@@ -371,7 +371,7 @@ So a page-local window with `<WindowPanel id="weird-thing">` on `/some-random-pa
 
 Page-local ad-hoc windows do **not** need an entry. They live entirely in the runtime registry and disappear on unmount.
 
-Each catalogue entry:
+Each catalog entry:
 
 ```ts
 {
@@ -416,7 +416,7 @@ features/windows/persistence/db/
   └── useWindowCollectData.ts      # NEW — for full-mode windows to provide their ephemeral state
 ```
 
-Per-window persistence modes (declared in the System-3 catalogue):
+Per-window persistence modes (declared in the System-3 catalog):
 
 | Mode | Saved to DB | Restored by |
 |---|---|---|
@@ -461,7 +461,7 @@ Already-existing `WindowPersistenceManager` reads/writes `window_sessions` — j
 - `features/window-panels/registry/windowRegistryMetadata.ts` (replaced by `features/windows/catalogue.ts` slimmed)
 - `features/window-panels/diagnostics/` (the OverlayErrorBoundary + OverlayRenderProbe) — no longer needed; controller has explicit boundaries
 - the hand-kept id list → move to `features/overlays/ids.ts` (superseded 2026-09-10: deleted; `OverlayId` now derives from the `features/overlays/catalogue.ts` keys)
-- `scripts/check-overlay-key-alignment.ts` (collapses to a 30-line "every id in catalogue is rendered" check)
+- `scripts/check-overlay-key-alignment.ts` (collapses to a 30-line "every id in catalog is rendered" check)
 
 ### Kept unchanged
 - `lib/redux/slices/overlaySlice.ts` reducers + actions + selectors. Type-narrowed `OverlayId` union remains.
@@ -502,8 +502,8 @@ The blob-cache service worker is currently intercepting *all* fetches and breaki
 ### Stage 3 — Delete the old system (Day 4)
 
 1. Remove `UnifiedOverlayController*`, `OverlaySurface`, `windowRegistry*`.
-2. Strip `componentImport`/`defaultData`/`kind` from the catalogue.
-3. Rename `features/window-panels/registry/` → `features/windows/`. Move the id list out (superseded 2026-09-10: folded into the catalogue keys).
+2. Strip `componentImport`/`defaultData`/`kind` from the catalog.
+3. Rename `features/window-panels/registry/` → `features/windows/`. Move the id list out (superseded 2026-09-10: folded into the catalog keys).
 4. ESLint rules enabled.
 5. Audit script collapses to the 30-line check.
 
@@ -511,12 +511,12 @@ The blob-cache service worker is currently intercepting *all* fetches and breaki
 
 1. Move `windowManagerSlice` → `features/windows/manager.ts`. Add `register`/`unregister` actions.
 2. Update `WindowPanel` to call `useWindowRegistration` from its mount effect.
-3. Migrate window-controls UI to iterate runtime registry, not catalogue.
-4. Verify a page-local `<WindowPanel id="...">` participates in "minimize all" without any catalogue entry.
+3. Migrate window-controls UI to iterate runtime registry, not catalog.
+4. Verify a page-local `<WindowPanel id="...">` participates in "minimize all" without any catalog entry.
 
 ### Stage 5 — Land System 4 (Days 6–8)
 
-1. Add `persistenceMode` to catalogue entries.
+1. Add `persistenceMode` to catalog entries.
 2. Write `urlWriteMiddleware` for the URL channel.
 3. Add `useWindowCollectData` and finish `WindowPersistenceManager`'s `full` mode.
 4. Verify: open a window, refresh, window comes back. Open another, sign out, sign in elsewhere, window restored.

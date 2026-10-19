@@ -97,7 +97,7 @@ import { createClient as createBrowserSupabase } from "@/utils/supabase/client";
 import { associationsErrorSink } from "@/features/scopes/host/errorSink";
 import { openPath } from "@/lib/deep-link/openPath";
 
-// Conventions + token normalisation come straight from the package.
+// Conventions + token normalization come straight from the package.
 export {
   resolveEntityToken,
   isContentRole,

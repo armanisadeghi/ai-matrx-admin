@@ -6,7 +6,7 @@
  * `safeRatio` and `isKnownNumber` moved WITH the code and now live in the
  * package's own suite, widened there to cover `sumKnown` and the
  * all-zero-versus-nothing-measured distinction. Re-asserting them here would
- * test a re-export, not a behaviour.
+ * test a re-export, not a behavior.
  *
  * `clampedBarWidth` stayed host-local on purpose — it CLAMPS, which is the
  * opposite of the contract the moved functions carry, and is defensible only

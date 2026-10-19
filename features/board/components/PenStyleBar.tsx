@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * The Draw tool's style bar: colour and weight for the next strokes, shown while the pen is the
+ * The Draw tool's style bar: color and weight for the next strokes, shown while the pen is the
  * active tool (the selection toolbar is hidden then, so this is where the pen is styled).
  */
 

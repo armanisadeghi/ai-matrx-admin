@@ -9,7 +9,7 @@
  * System lane: 1,421). This reader:
  *
  *  1. asks for the first page WITH the total (`count: "exact"`); a complete page
- *     is returned as the server ordered it — one request, unchanged behaviour;
+ *     is returned as the server ordered it — one request, unchanged behavior;
  *  2. past the cap, re-reads EVERY page under a stable caller-named order (an
  *     unordered set-returning function can repeat and skip rows between pages);
  *  3. when the rows provably cannot be collected in full, answers with an

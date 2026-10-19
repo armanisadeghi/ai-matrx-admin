@@ -174,7 +174,7 @@ export function useFileActions(fileId: string): FileActionHandlers {
     // S3 signed URLs are cross-origin and browsers silently ignore the
     // `a.download` attribute on cross-origin URLs — the file saves with
     // whatever name S3 puts in the URL path (usually a UUID, no extension).
-    // A blob: URL is always same-origin, so `a.download` is honoured and
+    // A blob: URL is always same-origin, so `a.download` is honored and
     // the browser saves with the correct filename and extension.
     const { blob, filename } = await Files.downloadFile(fileId);
     // Prefer the filename from Content-Disposition (set by the Python backend).

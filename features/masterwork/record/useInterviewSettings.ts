@@ -9,7 +9,7 @@
 //
 // 🚨 NO CODE FALLBACK. Every default lives in `platform.feature_knob` — that is
 // what makes these settings and not taste (law 6). So the hook has exactly three
-// states and the start screen honours all three:
+// states and the start screen honors all three:
 //   loading — nothing decided yet; the screen waits, it does not guess
 //   ready   — the resolved values
 //   failed  — the read failed; the screen SAYS so with the reason, because a

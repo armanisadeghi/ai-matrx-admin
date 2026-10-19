@@ -5,7 +5,7 @@
  * Arman, 2026-08-24, reviewing the gallery: "they have no life to them … we
  * need to make sure that everything has a little touch of color so things feel
  * and look alive. Not overdoing it, but having just a touch of it is really
- * important." A loader that renders in pure greyscale is the defect this
+ * important." A loader that renders in pure grayscale is the defect this
  * catches; a loader that ignores the live `count` key is the second one.
  */
 

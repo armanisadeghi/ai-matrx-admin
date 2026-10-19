@@ -97,7 +97,7 @@ const LIVE: ConnectorCapabilityRollout[] = [
 }));
 
 const REFUSAL_SENTENCE =
-  "Google is no longer honouring this account's permission for Gmail. Reconnect it to send email again.";
+  "Google is no longer honoring this account's permission for Gmail. Reconnect it to send email again.";
 
 const ACTIVITY = googleActivityByProduct(
   provider,

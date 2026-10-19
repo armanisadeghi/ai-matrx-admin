@@ -189,7 +189,7 @@ reading the raw field.
 
 ## Assist deep links
 
-Hindsight assists point here, and the page honours them:
+Hindsight assists point here, and the page honors them:
 `?enrollment=<id>&finding=<id>` selects that enrollment;
 `?enroll_tool=<name>` opens the enroll dialog pre-set to that tool. Written by
 `aidream/services/hindsight/review.py` and `detector.py` — change both sides
@@ -282,7 +282,7 @@ findings list refreshed itself, and the original finding was deprioritized to
 
 - **2026-08-16** — **Lenses + orchestra subjects.** The enroll form gained the
   two lens knobs (`window_mode` + `window_n`, `lens_visibility`) and an
-  `orchestra` kind; both lens defaults are the pre-lens behaviour, so an
+  `orchestra` kind; both lens defaults are the pre-lens behavior, so an
   enrollment created without touching them is unchanged.
   - **Written for a Creator, not an engineer.** The options read "Everything new
     since the last review" / "The most recent runs, every time" and "The full

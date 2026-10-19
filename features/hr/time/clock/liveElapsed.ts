@@ -29,7 +29,7 @@
  *
  * If you are here to add "just a small calculation" — a projected total, an overtime estimate, an
  * amount — the answer is no. Those come from `POST /hr/calc/overtime` in `prospective` mode and are
- * labelled as a preview (§1.4), and that endpoint is not this lane's.
+ * labeled as a preview (§1.4), and that endpoint is not this lane's.
  */
 
 "use client";

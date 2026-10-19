@@ -17,7 +17,7 @@
 // `AND (NOT v_f ? '__dimension' OR j.id = ANY(coalesce((SELECT platform.list_dimension_ids(v_f, '<token>')), '{}')))`,
 // so the linked ids are read ONCE per call (migrations/campaign/integration_w15_*.sql and _w15b_*.sql; a
 // per-row EXISTS took the filtered /agents/all past the 8 s statement timeout). A list declares that its
-// RPC honours it with `config.dimensionFilter: true`; the shell shows the control only then, so a list
+// RPC honors it with `config.dimensionFilter: true`; the shell shows the control only then, so a list
 // whose server would ignore the key never wears a control that does nothing.
 //
 // It is independent of the active organization (law: active-org-is-never-a-list-filter): the Values come

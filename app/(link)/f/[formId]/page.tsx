@@ -103,8 +103,8 @@ export default async function PublicFormPage({
   }
 
   // THE ORGANIZATION'S LOOK (MAKE-HOME W5, W5b): the store resolved it (`presentation.look`), and the
-  // ONE frame draws it — cover, logo, name, title, colour, footer — the same component the builder's
-  // preview uses, so an owner sees exactly what a stranger will. Its colour becomes the primary of
+  // ONE frame draws it — cover, logo, name, title, color, footer — the same component the builder's
+  // preview uses, so an owner sees exactly what a stranger will. Its color becomes the primary of
   // everything inside it: the buttons, the progress line, the focus ring and the choice rows.
   // EMBED MODE (`?embed=1`): the same form inside somebody else's page — an inline iframe or the
   // popup / slider of /embed/form.js — without the page's own outer spacing.

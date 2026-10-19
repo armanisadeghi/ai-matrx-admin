@@ -59,7 +59,7 @@ describe("AdminSandboxManagementPage deletion ownership", () => {
   });
   afterEach(async () => { await act(async () => root.unmount()); container.remove(); jest.clearAllMocks(); });
 
-  it("lets B's real confirmation be cancelled while A's request remains unresolved", async () => {
+  it("lets B's real confirmation be canceled while A's request remains unresolved", async () => {
     await act(async () => { root.render(page()); await Promise.resolve(); });
     await act(async () => { for (let i = 0; i < 4; i += 1) await Promise.resolve(); });
     const deletes = [...container.querySelectorAll<HTMLButtonElement>('button[title="Delete sandbox"]')];

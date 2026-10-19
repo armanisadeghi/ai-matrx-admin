@@ -12,7 +12,7 @@
  * 2. A DEAD DELETE CONTROL. `AgentCard` and `AgentListItem` rendered Delete
  *    unconditionally while guarding `if (onDelete)`, so a host that omitted the
  *    prop got a button that swallowed the click. The guards below prove the
- *    absent-not-dead behaviour at the component that renders the control
+ *    absent-not-dead behavior at the component that renders the control
  *    (`AgentActionModal`, rendered for real), and prove the two hosts derive
  *    their handler conditionally so `undefined` actually reaches it.
  */

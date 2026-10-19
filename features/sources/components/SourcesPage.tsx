@@ -785,7 +785,7 @@ export function SourcesPage() {
         );
       },
       filter: "text",
-      width: 300,
+      width: 260,
     },
     {
       id: "kind",
@@ -807,7 +807,7 @@ export function SourcesPage() {
         );
       },
       filter: "select",
-      width: 130,
+      width: 110,
     },
     {
       id: "captured",
@@ -815,7 +815,7 @@ export function SourcesPage() {
       accessorFn: (r) => captureWords(r),
       filterValue: (r) => captureClientLabel(r),
       filter: "select",
-      width: 200,
+      width: 170,
     },
     {
       id: "created_at",
@@ -830,7 +830,7 @@ export function SourcesPage() {
         </span>
       ),
       filter: "date",
-      width: 110,
+      width: 90,
     },
     {
       id: "saved",
@@ -851,7 +851,7 @@ export function SourcesPage() {
           </Badge>
         ),
       filter: "select",
-      width: 100,
+      width: 90,
     },
     {
       id: "stage",
@@ -869,7 +869,7 @@ export function SourcesPage() {
         />
       ),
       filter: "select",
-      width: 170,
+      width: 140,
     },
     {
       id: "attached",
@@ -884,7 +884,7 @@ export function SourcesPage() {
         />
       ),
       filter: false,
-      width: 120,
+      width: 110,
     },
     {
       id: "organization",
@@ -900,7 +900,7 @@ export function SourcesPage() {
         );
       },
       filter: "select",
-      width: 150,
+      width: 110,
     },
     {
       id: "actions",

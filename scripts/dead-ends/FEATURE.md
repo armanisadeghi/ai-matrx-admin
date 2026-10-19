@@ -19,7 +19,7 @@ the campaign has a checker AND a standing scoreboard, not a paragraph.
 | **Scoreboard** | `/administration/reporting/dead-ends` (`features/admin/dead-ends/`) | Renders the committed snapshot: totals, trend, worst features/files, every finding openable, one-click repair briefs. |
 | **ESLint rule** | `matrx/no-bare-id-text` (`eslint.config.mjs`, `warn`) | The narrow slice: a **named** id (`agentId`, `task_id`) rendered as JSX text with no door above it. |
 
-**The division of labour is deliberate.** ESLint sees one file at a time with
+**The division of labor is deliberate.** ESLint sees one file at a time with
 no cross-file context, so it only claims the shape it can be certain about. The
 checker carries the fuzzy cases (a name whose id is in scope, a count with no
 list behind it, a surface that imports no door primitive at all) because those
@@ -282,7 +282,7 @@ Additional gates, each traceable to a real false positive:
      door it can prove ABSENT, never one it cannot see — `toast.success(msg, door)`
      must pass, and the shipped fix has exactly that shape.
   9. **The handler already opened it** — `router.replace(…)` / `open…(…)` after the
-     toast is the Door Law honoured in the strongest way: the user is standing on
+     toast is the Door Law honored in the strongest way: the user is standing on
      the record.
   10. **The mutation's own result landed on this screen** — `const res = await …`
       then `setResults(res.files)` (one alias hop followed, and `add…`/`push…`
@@ -520,7 +520,7 @@ new one.
   of being silenced. The committed snapshot moves **36 → 59 findings (24 high, 35
   medium) across 44 files, 8,520 scanned** — 6 of the 23 are this rule; the other
   17 are the existing rules over code other lanes added since the last snapshot
-  was taken (8,121 → 8,520 files scanned), not a change in their behaviour. Also added `--self-test` (there was none): the pre-fix
+  was taken (8,121 → 8,520 files scanned), not a change in their behavior. Also added `--self-test` (there was none): the pre-fix
   `AgendaPanel` bytes must report at line 247 and the live file must stay clean,
   proven failing-then-passing by blunting the rule. `pnpm check:record-toasts`
   keeps its own, different rule (does the toast CARRY the record so it can be

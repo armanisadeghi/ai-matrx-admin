@@ -32,7 +32,7 @@ const CEDAR = "0a54df90-eab8-4d07-ab29-81a45fb41e04"; // Cedar Ridge Physical Th
 const BRENNAN = "13764fab-7475-4174-8cf8-978e3e93cbb6"; // Brennan & Vogel Family Law (admin reaches it; test@test.com does not)
 const catalogueModule = (_a = process.env.MAKE_GALLERY_CATALOGUE) !== null && _a !== void 0 ? _a : resolve(import.meta.dirname, "../../features/make/gallery/catalogue.ts");
 const { orgRowFilter, orgRowCards } = (await import(pathToFileURL(catalogueModule).href));
-// One real spec from lane 8's catalogue, declared twice under organization-scoped catalogue ids.
+// One real spec from lane 8's catalog, declared twice under organization-scoped catalog ids.
 const TEMPLATES = resolve(import.meta.dirname, "../../../aidream/apps/shared/records/templates/healthcare");
 const specFile = (_b = readdirSync(TEMPLATES).find((f) => f.includes("physical-therapy"))) !== null && _b !== void 0 ? _b : readdirSync(TEMPLATES)[0];
 const spec = JSON.parse(readFileSync(join(TEMPLATES, specFile), "utf8"));

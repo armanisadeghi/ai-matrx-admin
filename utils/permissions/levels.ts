@@ -19,7 +19,7 @@
  *
  * That gap is the whole point and it is safe in one direction only:
  *
- * - READING / COMPARING / LABELLING a level: always use the code ladder. It
+ * - READING / COMPARING / LABELING a level: always use the code ladder. It
  *   tolerates `commenter` the moment the database gains it, with no code change
  *   and no silent refusal in between. Nothing breaks while the value never
  *   arrives — the extra rank and label simply go unused.

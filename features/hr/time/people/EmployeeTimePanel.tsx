@@ -15,7 +15,7 @@
  * kiosk design refuses. SPEC-UI-IA §4.1 gives the profile a `time` tab visible to HR admin, and
  * `SimpleTabs` already reserves it as a hosted slot for this lane. That is the spec's answer.
  *
- * 🚨 **THE HOST CONTRACT, HONOURED.** The profile hands this panel an `employmentId` already
+ * 🚨 **THE HOST CONTRACT, HONORED.** The profile hands this panel an `employmentId` already
  * resolved as of today and the viewer's capabilities. It never re-resolves identity and never draws
  * a second identity header — the profile above it already has one.
  */

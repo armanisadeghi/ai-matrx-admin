@@ -217,7 +217,7 @@ export default function SitesListPage() {
   const handleCreate = async () => {
     if (!newName || !newSlug) return;
     // Hold the create, open the picker if we must, and carry on with the
-    // organization the person names. Cancelling means "not now": nothing is
+    // organization the person names. Canceling means "not now": nothing is
     // created, nothing is cleared, and the dialog is exactly as they left it.
     let organizationId: string;
     try {

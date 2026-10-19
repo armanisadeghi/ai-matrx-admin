@@ -10,7 +10,7 @@
 // changes only the body. Host-agnostic on purpose (props in; design-system,
 // lucide and cn only) so the move into @ai-matrx/shell is a copy.
 import "./frame.css";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { Menu, Webhook } from "lucide-react";
 import { PortalContainerProvider } from "@ai-matrx/design-system";
@@ -35,6 +35,13 @@ import type {
 
 /** Below this frame width the frame takes its phone form. */
 export const FRAME_PHONE_BELOW_PX = 640;
+/**
+ * Below this frame width the frame takes its medium form: the sidebar becomes a
+ * drawer and the companion replaces the properties panel while open, so the body never drops under
+ * `--matrx-frame-body-min-w` (at 1280 with sidebar + companion + properties open
+ * the record column is still 372px).
+ */
+export const FRAME_MEDIUM_BELOW_PX = 1280;
 
 export interface AppFrameProps {
   // ── the product ──
@@ -69,7 +76,7 @@ export interface AppFrameProps {
   children: ReactNode;
   // ── the footer ──
   status?: ReactNode;
-  /** The companion's content; the frame shows a labelled stand-in without it. */
+  /** The companion's content; the frame shows a labeled stand-in without it. */
   companion?: ReactNode;
   companionOpen?: boolean;
   onCompanionOpenChange?: (open: boolean) => void;
@@ -83,14 +90,19 @@ export interface AppFrameProps {
   className?: string;
 }
 
+function formFor(width: number): FrameForm {
+  if (width < FRAME_PHONE_BELOW_PX) return "phone";
+  if (width < FRAME_MEDIUM_BELOW_PX) return "medium";
+  return "desktop";
+}
+
 function useMeasuredForm(forced: FrameForm | undefined) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const [measured, setMeasured] = useState<FrameForm>("desktop");
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el || forced) return;
-    const read = () =>
-      setMeasured(el.getBoundingClientRect().width < FRAME_PHONE_BELOW_PX ? "phone" : "desktop");
+    const read = () => setMeasured(formFor(el.getBoundingClientRect().width));
     read();
     const observer = new ResizeObserver(read);
     observer.observe(el);
@@ -108,6 +120,8 @@ function useControllable(value: boolean | undefined, onChange: ((v: boolean) => 
   };
   return [current, set] as const;
 }
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function AppFrame(props: AppFrameProps) {
   const {
@@ -143,23 +157,63 @@ export function AppFrame(props: AppFrameProps) {
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const phone = form === "phone";
-  const showSidebar = !phone && sidebarOpen;
+  const medium = form === "medium";
+  // Desktop keeps the sidebar inline; medium and phone show it as a drawer.
+  const inlineSidebar = form === "desktop";
+  const showSidebar = inlineSidebar && sidebarOpen;
+  const drawerShown = !inlineSidebar && drawerOpen;
 
   const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
 
   function openDrawer() {
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setDrawerOpen(true);
-    requestAnimationFrame(() =>
-      drawerRef.current?.querySelector<HTMLElement>("button, a, [tabindex]")?.focus(),
-    );
   }
 
-  function onDrawerKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      setDrawerOpen(false);
+  // Focus moves into the drawer once it is shown (not before: an inert subtree refuses focus).
+  useEffect(() => {
+    if (drawerShown) drawerRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+  }, [drawerShown]);
+
+  function closeDrawer() {
+    setDrawerOpen(false);
+    const opener = openerRef.current;
+    requestAnimationFrame(() => {
+      // The opener may have been a menu item that no longer exists: fall back to the header's first control.
+      if (opener?.isConnected) opener.focus();
+      else root?.querySelector<HTMLElement>("header button")?.focus();
+    });
+  }
+
+  // Esc closes the drawer from anywhere — unless a popover (the app grid) is open and takes it first.
+  useEffect(() => {
+    if (!drawerShown) return;
+    function onKey(e: globalThis.KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      if (root?.querySelector("[data-radix-popper-content-wrapper]")) return;
+      closeDrawer();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  });
+
+  // Tab stays inside the drawer while it is open.
+  function trapFocus(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "Tab" || !drawerRef.current) return;
+    if (!drawerRef.current.contains(e.target as Node)) return; // a portalled popover handles its own Tab
+    const items = Array.from(drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   }
 
@@ -188,13 +242,13 @@ export function AppFrame(props: AppFrameProps) {
     >
       <PortalContainerProvider container={root}>
         {/* Desktop sidebar: the outer box slides its width; the content keeps its width. */}
-        {!phone ? (
+        {inlineSidebar ? (
           <div
             className="mf-slide h-full shrink-0 overflow-hidden"
-            style={{ width: showSidebar ? "var(--frame-sidebar-w)" : 0 }}
+            style={{ width: showSidebar ? "var(--matrx-frame-sidebar-w)" : 0 }}
             inert={!showSidebar}
           >
-            <div className="h-full w-[var(--frame-sidebar-w)]">
+            <div className="h-full w-[var(--matrx-frame-sidebar-w)]">
               <FrameSidebar
                 product={product}
                 grid={grid}
@@ -207,12 +261,13 @@ export function AppFrame(props: AppFrameProps) {
           </div>
         ) : null}
 
-        {/* The sheet. */}
+        {/* The sheet — inert while the drawer is open. */}
         <div
           className={cn(
-            "mf-slide flex h-full min-w-0 flex-1 flex-col p-[var(--frame-inset)]",
+            "mf-slide flex h-full min-w-0 flex-1 flex-col p-[var(--matrx-frame-inset)]",
             showSidebar && "pl-0",
           )}
+          inert={drawerShown}
         >
           <section className="mf-sheet flex h-full min-h-0 flex-col overflow-hidden">
             <SheetHeader
@@ -223,9 +278,9 @@ export function AppFrame(props: AppFrameProps) {
               phoneActions={phoneActions}
               end={headerEnd}
               start={
-                !phone && !sidebarOpen ? (
+                !phone && !showSidebar ? (
                   <SidebarRestore
-                    onShow={() => setSidebarOpen(true)}
+                    onShow={() => (inlineSidebar ? setSidebarOpen(true) : openDrawer())}
                     grid={<AppGrid {...grid} currentProductId={product.id} />}
                   />
                 ) : undefined
@@ -234,7 +289,7 @@ export function AppFrame(props: AppFrameProps) {
               onBack={onBack}
             />
             {tabs ? (
-              <div className="mf-rule-b mf-noscrollbar flex h-[var(--frame-tabs-h)] shrink-0 items-center overflow-x-auto px-[calc(var(--frame-gutter)-8px)]">
+              <div className="mf-rule-b mf-noscrollbar mf-tabs-row flex h-[var(--matrx-frame-tabs-h)] shrink-0 items-center overflow-x-auto">
                 <Tabs
                   variant="capsule"
                   aria-label={tabs.label}
@@ -245,26 +300,27 @@ export function AppFrame(props: AppFrameProps) {
               </div>
             ) : null}
 
-            <div className="relative flex min-h-0 flex-1">
-              <FrameBody variant={variant} phone={phone} properties={properties}>
+            <div className="relative flex min-h-0 flex-1 overflow-hidden">
+              {/* Medium: the companion and the properties panel take turns, so the body keeps its width. */}
+              <FrameBody variant={variant} phone={phone} properties={medium && companionOpen ? undefined : properties}>
                 {children}
               </FrameBody>
               {phone ? (
                 companionOpen ? (
-                  <div className="absolute inset-0 z-10 bg-[hsl(var(--frame-sheet))]">{companionBody}</div>
+                  <div className="mf-surface-sheet absolute inset-0 z-10">{companionBody}</div>
                 ) : null
               ) : (
                 <div
                   className="mf-slide mf-rule-l h-full shrink-0 overflow-hidden"
                   style={{
-                    width: companionOpen ? "var(--frame-companion-w)" : 0,
+                    width: companionOpen ? "var(--matrx-frame-companion-w)" : 0,
                     borderLeftWidth: companionOpen ? 1 : 0,
                   }}
                   inert={!companionOpen}
                   aria-label="Agent"
                   role="complementary"
                 >
-                  <div className="h-full w-[var(--frame-companion-w)]">{companionBody}</div>
+                  <div className="h-full w-[var(--matrx-frame-companion-w)]">{companionBody}</div>
                 </div>
               )}
             </div>
@@ -281,31 +337,29 @@ export function AppFrame(props: AppFrameProps) {
           </section>
         </div>
 
-        {/* Phone drawer: inside the frame (not the window), so it follows the frame's box. */}
-        {phone ? (
+        {/* The drawer (medium + phone): inside the frame, not the window, so it follows the frame's box. */}
+        {!inlineSidebar ? (
           <div
-            className={cn("absolute inset-0 z-20", !drawerOpen && "pointer-events-none")}
-            inert={!drawerOpen}
-            onKeyDown={onDrawerKeyDown}
+            className={cn("mf-drawer-layer absolute inset-0 z-20", !drawerShown && "invisible")}
+            data-open={drawerShown ? "" : undefined}
+            inert={!drawerShown}
           >
             <button
               type="button"
               aria-label="Close menu"
               tabIndex={-1}
-              className={cn(
-                "mf-slide absolute inset-0 bg-black/30",
-                drawerOpen ? "opacity-100" : "opacity-0",
-              )}
-              onClick={() => setDrawerOpen(false)}
+              className={cn("mf-slide mf-scrim absolute inset-0", drawerShown ? "opacity-100" : "opacity-0")}
+              onClick={closeDrawer}
             />
             <div
               ref={drawerRef}
               role="dialog"
               aria-modal="true"
               aria-label={`${product.name} menu`}
+              onKeyDown={trapFocus}
               className={cn(
-                "mf-slide absolute inset-y-0 left-0 w-[min(85%,var(--frame-sidebar-w))] bg-[hsl(var(--frame-bg))]",
-                drawerOpen ? "translate-x-0" : "-translate-x-full",
+                "mf-slide mf-surface-canvas mf-drawer-w absolute inset-y-0 left-0",
+                drawerShown ? "translate-x-0" : "-translate-x-full",
               )}
             >
               <FrameSidebar
@@ -314,9 +368,9 @@ export function AppFrame(props: AppFrameProps) {
                 activeItemId={activeMenuItemId}
                 onSelectItem={(item) => {
                   onSelectMenuItem?.(item);
-                  setDrawerOpen(false);
+                  closeDrawer();
                 }}
-                onHide={() => setDrawerOpen(false)}
+                onHide={closeDrawer}
                 hideLabel="Close menu"
               />
             </div>
@@ -347,15 +401,20 @@ function FrameBody({
   if (variant === "light") {
     return (
       <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[760px] px-[var(--frame-gutter)] py-6">{children}</div>
+        <div className="mx-auto w-full max-w-3xl px-[var(--matrx-frame-gutter)] py-6">{children}</div>
       </div>
     );
   }
-  // record: a centered content column + optional right properties panel.
+  // record: a centered content column (never under the body min width) + optional properties panel.
   return (
     <>
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto w-full max-w-[720px] px-[var(--frame-gutter)] py-8">
+      <div
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto",
+          phone ? "min-w-0" : "min-w-[var(--matrx-frame-body-min-w)]",
+        )}
+      >
+        <div className="mx-auto w-full max-w-3xl px-[var(--matrx-frame-gutter)] py-8">
           {children}
           {phone && properties ? <div className="mf-rule-t mt-8 pt-4">{properties}</div> : null}
         </div>
@@ -363,7 +422,7 @@ function FrameBody({
       {!phone && properties ? (
         <aside
           aria-label="Properties"
-          className="mf-rule-l w-[var(--frame-properties-w)] shrink-0 overflow-y-auto px-4 py-4"
+          className="mf-rule-l w-[var(--matrx-frame-properties-w)] shrink-0 overflow-y-auto px-4 py-4"
         >
           {properties}
         </aside>

@@ -250,7 +250,7 @@ export function cellStatusLabel(cells: MatrixCell[]): string {
   if (cells.some((c) => c.status === "queued" && !c.stalled)) return "Queued";
   if (cells.some((c) => c.stalled)) return "Stalled";
   if (cells.some((c) => c.status === "failed")) return "Failed";
-  if (cells.some((c) => c.status === "cancelled")) return "Cancelled";
+  if (cells.some((c) => c.status === "cancelled")) return "Canceled";
   return "Done";
 }
 
@@ -342,7 +342,7 @@ export interface Metrics {
   total: number;
   cost: number;
   toolCalls: number;
-  /** Counted results that were not a completed run (failed, cancelled, stalled). */
+  /** Counted results that were not a completed run (failed, canceled, stalled). */
   unfinished: number;
 }
 
@@ -374,7 +374,7 @@ export function cellMetrics(cell: MatrixCell): Metrics | null {
 }
 
 /**
- * Real spend: the current attempt whatever its status (a failed or cancelled run
+ * Real spend: the current attempt whatever its status (a failed or canceled run
  * that cost money still counts) and, when asked, every earlier attempt.
  */
 export function cellSpend(cell: MatrixCell, withHistory: boolean): Metrics[] {
@@ -392,7 +392,7 @@ export function spendOf(cells: MatrixCell[], withHistory: boolean): Metrics {
   return sumMetrics(cells.flatMap((c) => cellSpend(c, withHistory)));
 }
 
-/** Cells whose current attempt failed, was cancelled, or stalled. */
+/** Cells whose current attempt failed, was canceled, or stalled. */
 export function failedCellCount(cells: MatrixCell[]): number {
   return cells.filter((c) => c.status === "failed" || c.status === "cancelled" || c.stalled).length;
 }
@@ -401,7 +401,7 @@ export function failedCellCount(cells: MatrixCell[]): number {
 export function unfinishedLabel(cells: MatrixCell[]): string {
   const failed = cells.filter((c) => c.status === "failed" || c.stalled).length;
   const cancelled = cells.filter((c) => c.status === "cancelled" && !c.stalled).length;
-  return [failed ? `${failed} failed` : "", cancelled ? `${cancelled} cancelled` : ""]
+  return [failed ? `${failed} failed` : "", cancelled ? `${cancelled} canceled` : ""]
     .filter(Boolean)
     .join(" · ");
 }

@@ -1,7 +1,7 @@
 /**
  * THE VERIFICATION RULE, proven: the code pipe never emits a draft that the
  * audit check would fail on the next run, and it declines (null) rather than
- * guess whenever the fix is a judgement call.
+ * guess whenever the fix is a judgment call.
  */
 
 import {

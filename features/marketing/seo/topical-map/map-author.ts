@@ -211,7 +211,7 @@ export interface MapTopicProposal {
  * support, so a source with nothing in it MUST come back with zero topics —
  * and the server returns that as a normal result carrying the author's own
  * `coverage_notes`, rather than raising. A screen that renders it as an error
- * punishes the one behaviour we want.
+ * punishes the one behavior we want.
  *
  * 🚨 `new_research` DOES NOT AUTHOR A MAP. It commissions a
  * `content_topic_map` research run and answers with `research_started: true`

@@ -322,7 +322,7 @@ export function RulebookKpiStrip({
       <div>
         {/* ONE line, not three. Arman, 2026-08-18: "We don't need to write a
             goddamn novel about everything. Pick your favorite one, and that's
-            all we write." The favourite is the next step — a "Review progress"
+            all we write." The favorite is the next step — a "Review progress"
             label restates the bar, and a second sentence about the system
             being live restates the Understudy card below. */}
         <div className="flex items-center justify-between gap-3 text-xs">

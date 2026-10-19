@@ -5,7 +5,7 @@
  * A guest is an anonymous Supabase session: a verified JWT whose claims carry
  * `is_anonymous: true`. It must REACH /sign-up and /login (that is how a guest
  * becomes a member), and on an account-only route it is sent through the login
- * primitive exactly like a visitor. A member keeps today's behaviour: bounced
+ * primitive exactly like a visitor. A member keeps today's behavior: bounced
  * off the account-entry pages to the landing.
  *
  * Drives the real `updateSession` with a real JWT-claims envelope

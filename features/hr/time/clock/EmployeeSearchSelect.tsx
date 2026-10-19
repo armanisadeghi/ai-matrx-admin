@@ -64,7 +64,7 @@ export interface EmployeeSearchSelectProps {
    * conflating them hides people from a surface that should show them.
    *
    * · `"punch"` (the default, route 34) — who may be PUNCHED FOR. `contractor` is excluded
-   *   unconditionally and the worker-class knob applies. Unchanged from the original behaviour.
+   *   unconditionally and the worker-class knob applies. Unchanged from the original behavior.
    * · `"evidence"` (route 30) — whose punches may be READ. 🚨 The punch gate is the WRONG gate
    *   here: it answers "may this person clock in", and the register answers "what did this
    *   person's clock record". A contractor has no punches, so excluding them does not protect

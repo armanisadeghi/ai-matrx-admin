@@ -30,7 +30,7 @@ procedure — open it only when you are doing that job or the check fails.
    views force the dark class, so a theme control reading "Light" there is the
    tool, not the page. For a
    longer interaction, write a throwaway Playwright script in your own TMPDIR
-   modelled on `scripts/page-look.mjs` — never a dev server. Use it the way a person would: click every
+   modeled on `scripts/page-look.mjs` — never a dev server. Use it the way a person would: click every
    control, open every menu, dialog and tab. **Before you read any rule, write
    down everything that looks wrong or wasteful.** This list is yours; the rules
    must end up covering every line of it.
@@ -291,7 +291,7 @@ surface). Say which parts you judged as authored content.
 - **The screen shows what was saved.** After a save the view re-reads (or
   applies the returned row) — never the pre-save copy. **Saving an untouched
   form changes nothing:** a save writes only the fields the person changed, and
-  every field round-trips exactly (a toggle labelled
+  every field round-trips exactly (a toggle labeled
   "Private" never writes another visibility; a blank type is never saved as a
   default).
 - **A count on a button equals what it opens** ("Review 81 due" opens 81, not 29).
@@ -302,7 +302,7 @@ surface). Say which parts you judged as authored content.
   list, a 0 shown beside content that exists are defects).
   A count or total built from a plain list read stops silently at 1000 rows —
   read it with `readAllRows` or count on the server (an admin "in DB" count read
-  1 where the database held 31). Colour carries meaning only when it varies:
+  1 where the database held 31). Color carries meaning only when it varies:
   a green badge on nearly every row is noise.
 - **Any change that loosens a gate is reviewed before it ships** — dropping an
   organization requirement, a new grant or door, a row-security or auth

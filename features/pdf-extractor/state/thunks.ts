@@ -62,7 +62,7 @@ export function fetchChunksForPage(
           // signals that ambiguity with errcode P0002 — match the CODE, never
           // the message text (this branch used to string-match "document not
           // found", which the honest-error migration rewrote out from under it).
-          // Behaviour is unchanged from the old 404 branch: an empty,
+          // Behavior is unchanged from the old 404 branch: an empty,
           // non-error result, because this viewer renders per-page on demand
           // and an unreachable doc simply has nothing to show here.
           if (rpcError.code === "P0002") {

@@ -18,7 +18,7 @@
 // A reveal is also not idempotent by nature — the second one is a second act that
 // must produce a second audit row, because "how many times was this looked at" is
 // the question the audit log exists to answer. If a request is lost in flight the
-// correct behaviour is that nothing was revealed and nothing was logged.
+// correct behavior is that nothing was revealed and nothing was logged.
 //
 // 🚨 THE VALUE IS NEVER PERSISTED CLIENT-SIDE. It is returned here, held in React
 // state by the one component that asked for it, and dropped when that component

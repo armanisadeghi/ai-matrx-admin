@@ -4,7 +4,7 @@
  *
  * The whole point of the cascade is that layers appear one at a time as they
  * are written, so these pin the mid-stream rules: a layer with no text yet is
- * not shown (an empty labelled box is noise), and a layer whose `kind` hasn't
+ * not shown (an empty labeled box is noise), and a layer whose `kind` hasn't
  * arrived is shown WITHOUT a kind rather than guessed into the wrong bucket.
  */
 

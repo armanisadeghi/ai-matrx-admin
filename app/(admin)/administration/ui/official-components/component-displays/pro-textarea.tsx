@@ -226,7 +226,7 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
       description="Tier-2 canonical textarea. Streaming voice, a hover-revealed '…' menu (Copy + AI Clean up, on by default), submit, auto-grow, floating label, and protection modal. Top-right controls float over the text and auto-hide while typing (mirrors the OS cursor)."
     >
       <div className="w-full max-w-3xl space-y-8">
-        {/* Behaviour callouts the docstring guarantees — surfaced at the top so
+        {/* Behavior callouts the docstring guarantees — surfaced at the top so
             admins remember they exist without scrolling through every demo. */}
         <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
           <p>
@@ -235,7 +235,7 @@ import { copyToClipboard } from "@/lib/clipboard/copy";
             </span>{" "}
             The mic + &ldquo;…&rdquo; menu reserve no gutter — they overlay the
             text and reappear on mouse motion (never from focus), matching the
-            OS cursor behaviour. Recording/transcribing always keeps the mic
+            OS cursor behavior. Recording/transcribing always keeps the mic
             visible.
           </p>
           <p>

@@ -6,10 +6,10 @@
  * without app code. This script keeps the two honest:
  *
  *     pnpm tsx features/change-policy/generate-seed.ts          # print idempotent seed SQL
- *     pnpm tsx features/change-policy/generate-seed.ts --check  # diff catalogue vs live DB (exit 1 on drift)
+ *     pnpm tsx features/change-policy/generate-seed.ts --check  # diff catalog vs live DB (exit 1 on drift)
  *
  * Apply the printed SQL via the Supabase MCP (project brsgrqvjdzwihsvnfqkf)
- * in the same session you edit the catalogue — a seed that only exists as
+ * in the same session you edit the catalog — a seed that only exists as
  * output has changed nothing.
  */
 
@@ -44,7 +44,7 @@ function rowValues(row: ChangeTypeDef): string {
 export function buildSeedSql(): string {
     const values = CHANGE_TYPE_CATALOGUE.map((row) => `  (${rowValues(row)})`).join(",\n");
     return `-- GENERATED from features/change-policy/catalogue.ts — do not hand-edit rows.
--- Idempotent: upserts every catalogue row, then reports (never deletes) strays.
+-- Idempotent: upserts every catalog row, then reports (never deletes) strays.
 insert into platform.change_type_default
   (change_type_key, row_num, tier, label, description, default_mode,
    default_timeout_minutes, default_timeout_expiry, floor_human_only, note)
@@ -70,7 +70,7 @@ begin
   from platform.change_type_default
   where change_type_key not in (${CHANGE_TYPE_CATALOGUE.map((r) => sqlLiteral(r.key)).join(", ")});
   if v_strays is not null then
-    raise warning '[change-policy seed] rows in platform.change_type_default but NOT in the catalogue: % — the catalogue is the source of truth; reconcile it (rows are never auto-deleted).', v_strays;
+    raise warning '[change-policy seed] rows in platform.change_type_default but NOT in the catalog: % — the catalog is the source of truth; reconcile it (rows are never auto-deleted).', v_strays;
   end if;
 end
 $seed_check$;
@@ -140,7 +140,7 @@ async function checkDrift(): Promise<void> {
         }
         live.delete(row.key);
     }
-    for (const key of live.keys()) problems.push(`STRAY in DB (not in catalogue): ${key}`);
+    for (const key of live.keys()) problems.push(`STRAY in DB (not in catalog): ${key}`);
 
     if (problems.length > 0) {
         console.error(`[change-policy --check] ${problems.length} problem(s):`);

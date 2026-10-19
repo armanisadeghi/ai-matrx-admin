@@ -23,7 +23,7 @@ interface WelcomeOption {
   label: string;
   description: string;
   href: string;
-  /** The place's ONE identity (colour + icon), from `@ai-matrx/icons/domain`. */
+  /** The place's ONE identity (color + icon), from `@ai-matrx/icons/domain`. */
   identity: Identity;
 }
 

@@ -193,7 +193,7 @@ describe("an applet_build_result answer under the database schema", () => {
     const requestId = "req_applet_build";
     const store = makeStore();
     store.dispatch(createInstance({ conversationId: CONVERSATION, agentId: "applets-build", agentType: "user", origin: "manual", status: "running" } as never));
-    store.dispatch(addOptimisticUserMessage({ conversationId: CONVERSATION, clientTempId: "u1", content: [{ type: "text", text: "A list of my favourite movies" }] as never, position: 0 }));
+    store.dispatch(addOptimisticUserMessage({ conversationId: CONVERSATION, clientTempId: "u1", content: [{ type: "text", text: "A list of my favorite movies" }] as never, position: 0 }));
     store.dispatch(createRequest({ requestId, conversationId: CONVERSATION }));
     const host = document.createElement("div");
     document.body.append(host);
@@ -226,7 +226,7 @@ describe("an applet_build_result answer under the database schema", () => {
 
     expect(seen.problems).toBe(false);
     expect(seen.card).toBe(true);
-    expect(seen.text).toContain("Favourite Movies");
+    expect(seen.text).toContain("Favorite Movies");
     expect(seen.text).not.toContain("import React");
   });
 
@@ -276,6 +276,6 @@ describe("an applet_build_result answer under the database schema", () => {
 
     expect(seen.problems).toBe(false);
     expect(seen.card).toBe(true);
-    expect(seen.text).toContain("Favourite Movies");
+    expect(seen.text).toContain("Favorite Movies");
   });
 });

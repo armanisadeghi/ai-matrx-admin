@@ -81,7 +81,7 @@ export function storeKioskIdentity(identity: KioskDeviceIdentity): boolean {
 /**
  * Forget this device. Used when the server says the identity is no longer valid — a re-paired or
  * deleted device authenticating with a stale secret gets a refusal, and holding onto a secret the
- * server has stopped recognising only produces a tablet stuck in a refusal loop.
+ * server has stopped recognizing only produces a tablet stuck in a refusal loop.
  *
  * 🚨 **Never called on `suspended` or `revoked`.** Those are trust states of a device the server
  * still knows, and the correct response is the brick screen (§3.3) — an administrator can restore
@@ -111,7 +111,7 @@ export function kioskDeviceFingerprint(): string {
     window.localStorage.setItem(FINGERPRINT_KEY, minted);
     return minted;
   } catch {
-    // A tablet in a private window still gets to pair; it just cannot be recognised across reloads.
+    // A tablet in a private window still gets to pair; it just cannot be recognized across reloads.
     return `kiosk-${crypto.randomUUID()}`;
   }
 }

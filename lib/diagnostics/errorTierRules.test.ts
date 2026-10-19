@@ -27,7 +27,7 @@ function captured(over: Partial<CapturedError>): CapturedError {
 }
 
 describe("classifyTier", () => {
-  it("keeps Next's cancelled superseded navigation transition out of the durable queue", () => {
+  it("keeps Next's canceled superseded navigation transition out of the durable queue", () => {
     const c = classifyTier(
       captured({
         source: "unhandled-rejection",

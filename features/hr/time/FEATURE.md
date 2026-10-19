@@ -1,7 +1,7 @@
 # features/hr/time — Time & Attendance
 
 **Single source of truth for this feature's client half.** Register item
-[HRB-015](../../../../common-docs/systems/human-resources/projects/hr-domain/PLAN.md) (lane L3). Behaviour spec:
+[HRB-015](../../../../common-docs/systems/human-resources/projects/hr-domain/PLAN.md) (lane L3). Behavior spec:
 `../../../../common-docs/systems/human-resources/projects/hr-domain/specs/SPEC-TIME.md` — **that document is the authority
 on what these surfaces do; this file is the authority on how the code is arranged and what a change
 here must not break.**
@@ -35,11 +35,11 @@ the overtime pre-approval surfaces.
    directory computes hours.** Subtracting `ended_at − started_at` in a browser returns 8 for a
    spring-forward night shift that was 7 (fixture `OT-DST-01`) — it is a defect wherever it appears,
    and `pnpm check:hr-time-arithmetic` is how it stays one. The one permitted client-side figure in
-   the whole feature is a **preview** total from a `prospective` calc call, visibly labelled as a
+   the whole feature is a **preview** total from a `prospective` calc call, visibly labeled as a
    preview.
 
 **The consequence of law 6 that is easy to miss:** a committed native HR mobile app (D1) will call
-the *identical* contracts. So a behaviour that could only be described by naming a React component
+the *identical* contracts. So a behavior that could only be described by naming a React component
 is a defect in the build, exactly as it is in the spec. `api/service.ts` is that boundary — it holds
 typed calls and nothing else.
 
@@ -76,7 +76,7 @@ platform-wide PGRST002 outage. It is a fleet-wide config change and **not a buil
 |---|---|
 | `api/types.ts` | The RPC-lane domain types. **Temporary by construction** — when the wrappers land and `pnpm db-types` regenerates, the generated types become the source of truth and the diff against this file is the drift detector. Narrowing a generated type to match this file destroys that signal; fix this file instead. |
 | `api/rpc.ts` | THE ONE DOOR. Also the RPC lane's four-case mock, the envelope unwrapping, and the snake→camel seam. Carries one narrow, loudly-commented cast whose **removal** is the drift detector. |
-| `api/service.ts` | Typed calls, no behaviour. The mobile-app boundary. |
+| `api/service.ts` | Typed calls, no behavior. The mobile-app boundary. |
 | `api/idempotencyKey.ts` | The ONE punch-key mint, shared by web, kiosk, manager entry and mobile. |
 | `api/mock/registry.ts` | The direct lane's fixtures (see below). |
 | `clock/`, `kiosk/`, `devices/` | The punch widget, the kiosk surfaces, the device-management panels. |
@@ -145,11 +145,11 @@ acceptance targets against the live UI with real data entered by real non-admin 
   Paid 8:00–4:00. +1 minute."* An employee attesting to hours they cannot see the derivation of is
   attesting to nothing. **Rounding never applies to a premium line** — a meal premium is 1.0 hours by
   statute, not a measured interval.
-- **Two state machines, labelled distinctly:** the grid's *row* state is
+- **Two state machines, labeled distinctly:** the grid's *row* state is
   `pay_period_employment.state` (`submitted` is never a row state; there is no `reopened` member),
   the *header* state is `pay_period.state`. Approving one person never moves the period.
 - **A disagreement renders as both values side by side**, the employee's note verbatim and
-  attributed, the manager's resolution in a separate labelled field. Never the manager's value with
+  attributed, the manager's resolution in a separate labeled field. Never the manager's value with
   a footnote; never a "disputed" chip an approval clears. It survives approval, export and lock.
 - **Variance with no schedule reads *"Not scheduled"*, never `0`** — a zero reads as perfect
   adherence.
@@ -242,9 +242,9 @@ punch is the *idempotent replay that must render as a success*, while `edge` on 
 unreachable — which is how it stays unlooked-at until a real employee double-taps.
 
 `?employmentId=` exists because the platform's own test administrator is **not an employee of any
-organisation**: `hr_my_context` returns `active.employment_id = null`, and route 6 correctly renders
-*"you do not have an active job here today"* instead of a clock. Right product behaviour, useless
-verification behaviour — without a subject the widget never mounts. D15's independent verifier hits
+organization**: `hr_my_context` returns `active.employment_id = null`, and route 6 correctly renders
+*"you do not have an active job here today"* instead of a clock. Right product behavior, useless
+verification behavior — without a subject the widget never mounts. D15's independent verifier hits
 the same wall.
 
 Worked example: `/hr/me/clock?employmentId=<id>&punchCase=edge` → clock out → answer the attestation

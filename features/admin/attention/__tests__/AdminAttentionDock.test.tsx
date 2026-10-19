@@ -19,7 +19,7 @@
  *  6. A failed SCHEDULE read is SAID (silence reads as healthy); a failed
  *     OUTAGE poll is silent (already captured once by lib/python-client).
  *  7. A mute that has run out is not a mute: an expired local mute stored
- *     before mount is never honoured.
+ *     before mount is never honored.
  *
  * Rendered with `createRoot` + `act`, the repo's component-test convention.
  */
@@ -43,7 +43,7 @@ jest.mock("next/navigation", () => ({
 }));
 
 // The triage read (platform.attention_card). Default: pass every item through to the card with
-// a budget no test reaches, so the dock's own behaviour is what the older tests prove; the
+// a budget no test reaches, so the dock's own behavior is what the older tests prove; the
 // anti-noise tests below set a real triage.
 const passThroughTriage = () => ({
   budget: 1_000,
@@ -388,7 +388,7 @@ function buttonByLabel(label: string): HTMLButtonElement {
   const found = [...container.querySelectorAll("button")].find(
     (b) => b.getAttribute("aria-label") === label,
   );
-  if (!found) throw new Error(`no button labelled "${label}"`);
+  if (!found) throw new Error(`no button labeled "${label}"`);
   return found;
 }
 
@@ -672,7 +672,7 @@ describe("AdminAttentionDock", () => {
     expect(container.querySelector("[aria-label^='Mute gemini-3.8-flash']")).toBeNull();
   });
 
-  it("an expired local mute stored before mount is never honoured", async () => {
+  it("an expired local mute stored before mount is never honored", async () => {
     muteItem("provider-outages:o-anthropic", 1000, Date.now() - 5000);
     fetchSystemScheduleAlarms.mockResolvedValue([]);
     fetchOpenOutages.mockResolvedValue([outage({ id: "o-anthropic", provider: "anthropic" })]);

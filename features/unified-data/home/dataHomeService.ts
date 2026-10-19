@@ -285,7 +285,7 @@ export function createDataHomeService(opts: DataHomeServiceOptions): EntityListS
           return ay - ax;
         }
         // LANE 10 FD: FOUNDATION TABLES FIRST — the business's day-one data, pinned under the
-        // person's favourites by the same "pin to top" preference (Notion's pinned teamspaces).
+        // person's favorites by the same "pin to top" preference (Notion's pinned teamspaces).
         if (sort.favoritesFirst && x.row.foundation !== y.row.foundation) return x.row.foundation ? -1 : 1;
         return byColumn(x.row, y.row);
       });

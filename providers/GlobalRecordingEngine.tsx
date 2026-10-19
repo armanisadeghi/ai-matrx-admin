@@ -250,7 +250,7 @@ export function GlobalRecordingEngine() {
       });
       // Hand the surface's origin (if any) to the recorder so the transcript
       // row it auto-persists knows what it belongs to. Undefined for every
-      // surface that declares none — the pre-existing behaviour.
+      // surface that declares none — the pre-existing behavior.
       await recorder.startRecording({ origin: args.context.origin });
       const safetyId = recorder.getSafetyId();
       if (safetyId) getSharedDirtyRecordingMarker().set(safetyId);

@@ -8,7 +8,7 @@
  *  - a registration module statically imports a renderer / drawer-body component again (the
  *    graph half: read from the files' own import statements);
  *  - a lazily registered renderer stops drawing ITS component after the chunk loads, or shows a
- *    blank while loading (the behaviour half: the real registration modules, the impl modules
+ *    blank while loading (the behavior half: the real registration modules, the impl modules
  *    stood in by named stubs so the test sees which one drew).
  */
 import { describe, expect, it, jest } from "@jest/globals";

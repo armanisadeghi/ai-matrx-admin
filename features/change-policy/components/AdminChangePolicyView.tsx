@@ -2,7 +2,7 @@
 
 /**
  * Admin twin of the change-policy surface (C-18): a READ view of the platform
- * defaults (the code catalogue, which the DB mirrors) plus per-org divergence
+ * defaults (the code catalog, which the DB mirrors) plus per-org divergence
  * counts — each org row a door to that org's own change-policy page.
  *
  * Platform defaults are edited in CODE (features/change-policy/catalogue.ts →
@@ -212,10 +212,10 @@ export function AdminChangePolicyView() {
             <div>
                 <SettingsSubHeader
                     icon={ShieldCheck}
-                    title="Platform defaults — the change-type catalogue"
-                    description={`All ${CHANGE_TYPE_CATALOGUE.length} change types with their default handling. The catalogue is CODE (features/change-policy/catalogue.ts); edit it there and apply the generated seed — never by hand in the DB. Row 38 is floored structurally in the resolver.`}
+                    title="Platform defaults — the change-type catalog"
+                    description={`All ${CHANGE_TYPE_CATALOGUE.length} change types with their default handling. The catalog is CODE (features/change-policy/catalogue.ts); edit it there and apply the generated seed — never by hand in the DB. Row 38 is floored structurally in the resolver.`}
                 />
-                {/* No entity here: a catalogue row is a CODE constant
+                {/* No entity here: a catalog row is a CODE constant
                     (features/change-policy/catalogue.ts), not a DB record —
                     there is no EntityTypeToken for it, so Copy/AI act on the
                     raw content only. No surfaceName either: no surface

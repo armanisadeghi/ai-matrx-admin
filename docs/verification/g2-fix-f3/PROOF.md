@@ -18,7 +18,7 @@ locations and job titles, and its own empty state promised the opposite.
 
 | Entity | Name | Row id |
 |---|---|---|
-| Department | `G2F3 Field Services` (cost centre `CC-9100`) | `d1c21852-5302-430a-8b76-60f97ca99250` |
+| Department | `G2F3 Field Services` (cost center `CC-9100`) | `d1c21852-5302-430a-8b76-60f97ca99250` |
 | Location | `G2F3 Riverside Depot` — tz `America/Denver`, jurisdiction **Colorado (state)** | `89a80ace-d2d3-4ecd-9fbe-2d6ac3911b3f` |
 | Job title | `G2F3 Depot Coordinator` — EEO-1 **Operatives** | `5f8c48b9-d64e-4b77-b400-b3dc10892022` |
 | Pay group | `G2F3 Depot Biweekly` — biweekly, workweek Sunday 00:00, first period 2026-08-26 | `541ca2d0-1c2b-468c-a067-f03401dbd714` |

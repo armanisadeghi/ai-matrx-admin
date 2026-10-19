@@ -237,7 +237,7 @@ export function userDoors(userId: string, options: { withoutActions?: boolean } 
 //
 // THE rules for every menu that lists USER_ACTIONS for a person (the record page's header and
 // Actions menu, the roster's Manage menu, the peek's action doors). A blocked action stays in the
-// menu, disabled, with its reason (`userActionBlocked`) beside it — never a silent grey item.
+// menu, disabled, with its reason (`userActionBlocked`) beside it — never a silent gray item.
 
 export interface UserActionState {
   id: string;

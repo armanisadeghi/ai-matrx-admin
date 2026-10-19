@@ -166,7 +166,7 @@ function ProgressLine() {
   if (p.queued) parts.push(`${p.queued} queued`);
   if (p.failed) parts.push(`${p.failed} failed`);
   if (p.stalled) parts.push(`${p.stalled} stalled`);
-  if (p.cancelled) parts.push(`${p.cancelled} cancelled`);
+  if (p.cancelled) parts.push(`${p.cancelled} canceled`);
   return (
     <div className="flex items-center gap-3 type-secondary text-muted-foreground tabular-nums">
       {setId && dirty && <span className="text-warning">Unsaved changes</span>}

@@ -438,7 +438,7 @@ import { emailErrorMessage } from "@/lib/email/error-message";
 // calls therefore go through `fetchWithOrganization`, which carries the person's
 // selected organization in `X-Organization-Id` and — when the server answers the
 // standard organization_required envelope — opens the picker, waits for their
-// answer and replays the call once. Cancelling leaves nothing written.
+// answer and replays the call once. Canceling leaves nothing written.
 import { fetchWithOrganization } from "@/lib/organizations/fetchWithOrganization";
 
 /** The class join-code page URL a teacher pastes anywhere. */

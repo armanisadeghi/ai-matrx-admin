@@ -4,7 +4,7 @@
  * PLAN §5.3 promises, per connected account and per product: "the last
  * successful call, the last refusal (what and why)". Until the recording seam
  * shipped, the server kept ONE account-level `last_verified_at` and ONE
- * account-level `last_error`, so the rows modelled both fields and carried
+ * account-level `last_error`, so the rows modeled both fields and carried
  * null. It now records, per capability, the last call Google answered and the
  * last call Google refused — with a classified code, a person-facing sentence
  * and the HTTP status — in

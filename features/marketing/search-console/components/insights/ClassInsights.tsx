@@ -745,7 +745,7 @@ export function QualityView({
         ) : null}
       </div>
       {/* BY LEVEL — the decomposition beside the class one, same shape, same
-          click-to-filter behaviour. Class and Level answer different questions
+          click-to-filter behavior. Class and Level answer different questions
           and are never merged into one table. */}
       {/* No `overflow-hidden` here: this block sizes to its content, and a
           clipping wrapper around an auto-height table hides the last row

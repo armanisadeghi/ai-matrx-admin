@@ -8,7 +8,7 @@
  *
  * Gestures (Figma / tldraw / Miro):
  *   - the title strip and the border DRAG the frame, carrying every tile whose
- *     centre it holds (and frames inside it) — ONE undo step (`BoardMover`);
+ *     center it holds (and frames inside it) — ONE undo step (`BoardMover`);
  *     shift / ⌘-click adds it to the selection; a click that never moves flies
  *     there and selects it;
  *   - a selected frame shows the eight resize handles; resizing moves no tile;
@@ -47,7 +47,7 @@ interface BoardFrameViewProps {
   title: string;
   /** One-line note beside the title — what this region is for. */
   note?: string;
-  /** The frame's colour; absent = neutral. */
+  /** The frame's color; absent = neutral. */
   color?: ShapeColor;
   /** Resizes the frame (tiles stay where they are); absent = its size is the host's. */
   onResize?: (id: string, rect: Rect) => void;

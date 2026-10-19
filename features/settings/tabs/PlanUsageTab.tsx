@@ -5,7 +5,7 @@
 // AI points are per user first (USAGE-GATE.md), so the PRIMARY card is the
 // person's own state — `billing.user_usage_state` via the usage gate's Redux
 // answer — never an organization's numbers. The organization's spend budget
-// and plan follow as a separate, labelled section, scoped to the EXPLICIT
+// and plan follow as a separate, labeled section, scoped to the EXPLICIT
 // active organization (a write-side choice, never a stand-in): with none
 // selected those cards say "Pick an organization" and offer the picker.
 

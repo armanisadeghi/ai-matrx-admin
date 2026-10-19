@@ -12,7 +12,7 @@
  *
  * Champion: Claude.ai's artifacts gallery. The selected artifact lives in the
  * URL there, so reload, Back, Forward and a pasted link all restore the same
- * open artifact. This hook is that behaviour as a platform primitive: ANY list
+ * open artifact. This hook is that behavior as a platform primitive: ANY list
  * surface that opens saved canvas items can mount it and inherit the address.
  *
  * It is a MIRROR, not a second store. Nothing new is persisted, nothing is

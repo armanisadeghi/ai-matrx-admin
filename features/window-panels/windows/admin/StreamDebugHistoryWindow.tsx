@@ -39,7 +39,7 @@ import { RecordId, displayId } from "@ai-matrx/design-system";
 // Attach To / Share / the canonical Open door all work — without guessing at
 // state this file cannot see.
 
-// ─── Status badge colours (mirrors StreamDebugPanel) ─────────────────────────
+// ─── Status badge colors (mirrors StreamDebugPanel) ─────────────────────────
 
 const INSTANCE_STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-500/20 text-gray-400",

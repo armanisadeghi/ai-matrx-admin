@@ -4,7 +4,7 @@
  * useContainerInventory
  * ---------------------
  * Generic resource counts for any "container" — an organization, a project, or a
- * task — driven by the org resource catalogue. The container is identified by a
+ * task — driven by the org resource catalog. The container is identified by a
  * FK column + value:
  *   - organization_id  → org workspace (also counts permission-shared items)
  *   - project_id       → project workspace (FK-owned only)
@@ -48,7 +48,7 @@ interface ContainerCountRow {
 export type ContainerColumn = "organization_id" | "project_id" | "task_id";
 
 export interface ContainerInventory {
-  /** catalogue key → count for this container, or null when uncountable. */
+  /** catalog key → count for this container, or null when uncountable. */
   counts: Record<string, number | null>;
   loading: boolean;
   /**

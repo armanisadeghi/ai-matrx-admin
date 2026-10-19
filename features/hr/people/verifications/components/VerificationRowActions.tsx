@@ -231,7 +231,7 @@ export function VerificationRowActions({
                 🚨 THERE WAS A "Note for the record" FIELD HERE AND NOTHING KEPT IT.
                 `hr_verification_deny(p_id, p_basis)` takes no note — the text was posted
                 under an argument the door does not have, and the whole call was PGRST202.
-                A field labelled "for the record" that records nothing is worse than no
+                A field labeled "for the record" that records nothing is worse than no
                 field, so it is gone. The basis IS the record.
               */}
             </div>

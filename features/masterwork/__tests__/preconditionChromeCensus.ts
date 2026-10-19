@@ -48,7 +48,7 @@ const PRECONDITION_GRAMMAR: ReadonlyArray<RegExp> = [
 /**
  * Words that mean SOMETHING WENT WRONG. A sentence carrying one of these is
  * reporting a failure and telling the reader how to recover from it — red is
- * the honest colour, whatever its opening verb ("Add the link again.").
+ * the honest color, whatever its opening verb ("Add the link again.").
  */
 const FAILURE_VOCABULARY =
   /\b(could ?n[o']t|cannot|can't|couldn|failed|failure|error|again|no longer|already|logged as|defect|deleted|denied|unavailable|went wrong|lost)\b/i;

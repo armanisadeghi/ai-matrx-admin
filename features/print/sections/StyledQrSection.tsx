@@ -91,7 +91,7 @@ export function StyledQrSection() {
         <SectionShell
             title="Styled QR"
             entry="@ai-matrx/print/qr-styled"
-            blurb="Brand mark in the middle, coloured modules. Browser-only; the plain lane stays the one for warehouse stock."
+            blurb="Brand mark in the middle, colored modules. Browser-only; the plain lane stays the one for warehouse stock."
         >
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
                 <div className="flex flex-col gap-3">
@@ -117,7 +117,7 @@ export function StyledQrSection() {
                                 options={CORNER_STYLES.map((style) => ({ value: style, label: style }))}
                             />
                         </Field>
-                        <Field label="Module colour">
+                        <Field label="Module color">
                             <input
                                 type="color"
                                 className={`${controlClass} p-1`}
@@ -147,7 +147,7 @@ export function StyledQrSection() {
                                 }))}
                             />
                         </Field>
-                        <Field label="Centre logo" hint={logoName ?? "PNG or SVG, read as a data URL in the browser"}>
+                        <Field label="Center logo" hint={logoName ?? "PNG or SVG, read as a data URL in the browser"}>
                             <div className="flex items-center gap-2">
                                 <input
                                     ref={fileRef}
@@ -175,7 +175,7 @@ export function StyledQrSection() {
                         </Field>
                     </div>
                     <StatusChip tone="info">
-                        A centre logo occludes modules, so error correction is restricted to Q or H and defaults to H;
+                        A center logo occludes modules, so error correction is restricted to Q or H and defaults to H;
                         L/M are clamped up rather than refused. The logo must be a <code className="font-mono">data:</code>{" "}
                         URL — a print window is unauthenticated and a remote image taints the canvas. Logo size is capped
                         at {Math.round(MAX_STYLED_QR_LOGO_RATIO * 100)}% of the symbol.

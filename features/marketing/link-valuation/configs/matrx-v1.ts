@@ -11,7 +11,7 @@
  *    arrived, so a fifth source raises CONFIDENCE, not score. Four dials became
  *    one dial and a member list.
  *
- * 2. **Every signal is normalised to 0–100 before it is weighted.** That is what
+ * 2. **Every signal is normalized to 0–100 before it is weighted.** That is what
  *    makes a source swappable: an AI estimate, a different vendor, or a human
  *    typing a number are interchangeable as long as they answer the same
  *    question on the same scale. It also removes the index-size trap — global
@@ -26,7 +26,7 @@
  *    authority fact and supplied another 43% of that same number.
  *
  * 5. **AI carries the signals nobody could buy in 2018.** Topical fit, editorial
- *    quality, outbound-link hygiene and author credibility are judgements a
+ *    quality, outbound-link hygiene and author credibility are judgments a
  *    capable model plus a crawl makes better than any 2018 metric, and they are
  *    the signals that actually separate a real publication from a link farm.
  *
@@ -158,7 +158,7 @@ const signals: SignalDef[] = [
     entity: "page",
     valueKind: "number",
     semantic:
-      "0–100 judgement of how reachable the placement page is inside the site — clicks from the home page, presence in main navigation, internal links pointing at it.",
+      "0–100 judgment of how reachable the placement page is inside the site — clicks from the home page, presence in main navigation, internal links pointing at it.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.page_prominence",
@@ -192,7 +192,7 @@ const signals: SignalDef[] = [
     entity: "domain",
     valueKind: "number",
     semantic:
-      "0–100 judgement of whether the inbound link profile looks earned or bought — anchor-text distribution, linking-site diversity, velocity, and neighbourhood.",
+      "0–100 judgment of whether the inbound link profile looks earned or bought — anchor-text distribution, linking-site diversity, velocity, and neighbourhood.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.link_profile_health",
@@ -221,7 +221,7 @@ const signals: SignalDef[] = [
     entity: "domain",
     valueKind: "number",
     semantic:
-      "0–100 confidence that this site sells placements to anyone — a 'write for us' page with pricing, sponsored-post density, unrelated commercial outbound links. HIGHER IS WORSE. This is a judgement no 2018 metric could make and a model reading the site makes easily.",
+      "0–100 confidence that this site sells placements to anyone — a 'write for us' page with pricing, sponsored-post density, unrelated commercial outbound links. HIGHER IS WORSE. This is a judgment no 2018 metric could make and a model reading the site makes easily.",
     scale: { min: 0, max: 100, direction: "lower-better", unit: "0–100" },
     sources: AI(
       "marketing.link_valuation.link_selling_risk",
@@ -256,7 +256,7 @@ const signals: SignalDef[] = [
     entity: "domain",
     valueKind: "number",
     semantic:
-      "0–100 judgement of whether this reads as a real publication: original reporting or expertise, consistent editorial voice, evidence of standards, not thin aggregation.",
+      "0–100 judgment of whether this reads as a real publication: original reporting or expertise, consistent editorial voice, evidence of standards, not thin aggregation.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.editorial_quality",
@@ -270,7 +270,7 @@ const signals: SignalDef[] = [
     entity: "domain",
     valueKind: "number",
     semantic:
-      "0–100 judgement of the bylines: real, identifiable authors with traceable expertise, versus anonymous or fabricated ones.",
+      "0–100 judgment of the bylines: real, identifiable authors with traceable expertise, versus anonymous or fabricated ones.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.author_credibility",
@@ -284,7 +284,7 @@ const signals: SignalDef[] = [
     entity: "domain",
     valueKind: "number",
     semantic:
-      "0–100 judgement of how much of the site is original rather than syndicated, spun, or machine-generated filler.",
+      "0–100 judgment of how much of the site is original rather than syndicated, spun, or machine-generated filler.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.content_originality",
@@ -300,7 +300,7 @@ const signals: SignalDef[] = [
     entity: "target",
     valueKind: "number",
     semantic:
-      "0–100 judgement of how closely this site and page relate to OUR target keyword and service. Replaces two coarse human dropdowns with a continuous, explainable read of the actual content — the single largest quality gain available over the 2018 model.",
+      "0–100 judgment of how closely this site and page relate to OUR target keyword and service. Replaces two coarse human dropdowns with a continuous, explainable read of the actual content — the single largest quality gain available over the 2018 model.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.topical_match",
@@ -314,7 +314,7 @@ const signals: SignalDef[] = [
     entity: "target",
     valueKind: "number",
     semantic:
-      "0–100 judgement of authority WITHIN our topic specifically, as opposed to overall. A giant general-news domain can be strong overall and weak here.",
+      "0–100 judgment of authority WITHIN our topic specifically, as opposed to overall. A giant general-news domain can be strong overall and weak here.",
     scale: zeroToHundred,
     sources: AI(
       "marketing.link_valuation.topical_authority",
@@ -337,7 +337,7 @@ const signals: SignalDef[] = [
       "High Relevance",
     ],
     sources: [
-      { kind: "manual", label: "Operator judgement", priority: 1, trust: 1 },
+      { kind: "manual", label: "Operator judgment", priority: 1, trust: 1 },
     ],
     enabled: true,
   },
@@ -441,7 +441,7 @@ export const MATRX_V1_CONFIG: LinkValuationConfig = {
   name: "Matrx v1 (redesigned)",
   version: "1.0.0",
   description:
-    "Source-agnostic rebuild: correlated metrics collapsed into composites, every signal normalised 0–100, placement promises and page authority moved out of relevance, AI carrying the editorial and topical judgements no 2018 vendor sold, and real reject gates. Every number is a starting point to be tuned against real rulings.",
+    "Source-agnostic rebuild: correlated metrics collapsed into composites, every signal normalized 0–100, placement promises and page authority moved out of relevance, AI carrying the editorial and topical judgments no 2018 vendor sold, and real reject gates. Every number is a starting point to be tuned against real rulings.",
   scoreDecimals: 1,
   signals,
 
@@ -534,7 +534,7 @@ export const MATRX_V1_CONFIG: LinkValuationConfig = {
       key: "editorial",
       label: "Editorial Quality",
       description:
-        "Is this a real publication? Entirely AI-and-crawl sourced — the class of judgement that did not exist when the original was built.",
+        "Is this a real publication? Entirely AI-and-crawl sourced — the class of judgment that did not exist when the original was built.",
       members: [
         {
           signalKey: "editorial_quality",

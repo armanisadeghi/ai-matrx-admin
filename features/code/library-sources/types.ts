@@ -14,7 +14,7 @@ import type { Database } from "@/types/database.types";
  * the save router in `useSaveActiveTab` can dispatch to the right adapter
  * purely from the tab id.
  *
- * Multi-code-column rows (e.g. `tool_ui_components`) are modelled as
+ * Multi-code-column rows (e.g. `tool_ui_components`) are modeled as
  * folders with one leaf per non-null code field. The `SourceEntry.fields`
  * array tells the tree how to render children.
  */

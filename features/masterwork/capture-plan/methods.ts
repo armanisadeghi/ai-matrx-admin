@@ -37,7 +37,7 @@ export interface PlannableMethod {
   /**
    * True when the Expert has to bring material of their own. The session card
    * says so up front, because discovering it after opening the door is how a
-   * ten-minute slot becomes a cancelled one.
+   * ten-minute slot becomes a canceled one.
    */
   bringsMaterial: boolean;
   /**
@@ -180,7 +180,7 @@ export const METHOD_POSTURE: Record<string, MethodPosture> = {
     "This IS the plan. A plan that scheduled itself would be a loop.",
   ),
   daily_drip: excluded(
-    "It is a scheduled programme of its own — one question a day, on its own " +
+    "It is a scheduled program of its own — one question a day, on its own " +
       "cadence, with its own reminders. Running it inside a plan would mean two " +
       "things deciding when to interrupt you. Use whichever you prefer; they " +
       "both feed the same Rulebook.",

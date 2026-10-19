@@ -104,7 +104,7 @@ export function FilePreview({ client, entry, onOpenChange }: { client: DesktopCl
             </pre>
           ) : null}
           {loaded.kind === "image" ? (
-            // A data blob from the device: next/image cannot optimise it.
+            // A data blob from the device: next/image cannot optimize it.
             // eslint-disable-next-line @next/next/no-img-element
             <img src={loaded.src} alt={entry?.name ?? ""} className="mx-auto max-h-[60dvh] object-contain p-2" />
           ) : null}

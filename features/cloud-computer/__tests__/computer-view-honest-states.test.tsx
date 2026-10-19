@@ -2,7 +2,7 @@
  * HONEST STATES (adversarial review 2026-10-18, D1/D4/D8): the Computer tab
  * said "Watching" + "Loading screen…" for up to 79 s while the run on the
  * machine was still starting; a second window left the first on
- * "Reconnecting…" for 90+ s; Take control and Stop greyed out for 8-12 s with
+ * "Reconnecting…" for 90+ s; Take control and Stop grayed out for 8-12 s with
  * no word. Each case below failed on the code before this change.
  */
 import * as React from "react";

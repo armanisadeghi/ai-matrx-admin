@@ -29,7 +29,7 @@ existing diagram renderer running in authoring mode.
 | The data shape                               | `DiagramData` (`components/mardown-display/blocks/diagram/parseDiagramJSON.ts`)                                                                                                                                                                                                                                |
 | The AI-emittable form of that shape          | `diagram_spec` content-IR kind (`features/content-ir/kinds/diagram-spec.ts`) — an agent already emits maps in chat                                                                                                                                                                                             |
 | The renderer                                 | `InteractiveDiagramBlock` — XYFlow 12, resizable boxes and visual sections, six shapes, canonical Lucide/custom icons, chosen colors/borders, four directional layouts plus grid/radial/org/pedigree, configurable arrows, snapping/background/minimap controls, PNG + JSON export, print/PDF, canvas hand-off |
-| Persistence, versioning, favourites, sharing | `canvas.canvas_items` + `canvasItemsService` (+ `canvas_save_user_version`, `canvas_publish`, `canvas_get_version_history` RPCs)                                                                                                                                                                               |
+| Persistence, versioning, favorites, sharing | `canvas.canvas_items` + `canvasItemsService` (+ `canvas_save_user_version`, `canvas_publish`, `canvas_get_version_history` RPCs)                                                                                                                                                                               |
 | The list shell                               | `lib/entity-list` (`/agents/all`, `/transcripts`)                                                                                                                                                                                                                                                              |
 
 Four of the five pieces of "let users make maps" were already built. The only
@@ -68,7 +68,7 @@ for no gain.
 
 **Extend artifacts/canvas — chosen.** Canvas is literally "the database for
 interactive renderable blocks", it already stores type `diagram`, and it already
-carries version history, favourites, archive and share tokens.
+carries version history, favorites, archive and share tokens.
 
 ### The consequence that matters
 
@@ -186,7 +186,7 @@ AI drafts, the person refines. Neither half needed a new system.
     browser; boxes render `IconResolver`. Any valid Lucide, registered custom,
     or `svg:…` id persists unchanged. Historical diagram-only ids normalize to
     their canonical names during `materializeDiagramDefaults`; no second icon
-    catalogue or renderer is allowed here.
+    catalog or renderer is allowed here.
 16. **Prose has a useful default measure.** An ordinary box without a manually
     chosen width caps at 280px and wraps long words. A width set with the XYFlow
     resize handles remains authoritative and is never capped by the default.

@@ -152,7 +152,7 @@ describe("THE DOOR LAW: a Person is never reached by a hand-built URL", () => {
     );
     expect(findHandBuiltPartyUrls(source)).toEqual([]);
     // Not merely "no string": it opens IN PLACE through the registered opener,
-    // which is the behaviour F-40 filed (the reviewer had to leave the queue).
+    // which is the behavior F-40 filed (the reviewer had to leave the queue).
     expect(source).toMatch(/useOpenItemPresentation/);
     // And the copy-link value comes from the one URL resolver.
     expect(source).toMatch(/resolveEntityDoors\(\s*"party"/);

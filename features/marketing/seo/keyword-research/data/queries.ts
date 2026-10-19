@@ -58,9 +58,9 @@ async function seoDb() {
 
 /**
  * Keywords THIS organization has archived from its library (AD248 / aidream
- * migration 0840). `seo.keyword` is a shared catalogue — 229,200 of its rows
+ * migration 0840). `seo.keyword` is a shared catalog — 229,200 of its rows
  * belong to the platform and every signed-in account can read them — so
- * "Archive from library" on a catalogue row no longer soft-deletes the row for
+ * "Archive from library" on a catalog row no longer soft-deletes the row for
  * everybody. It writes one `(organization)-[archived]->(seo_keyword)` edge on
  * `platform.associations`, which RLS already scopes to the caller's own
  * organizations. A keyword the caller holds editor on (their own row) is still

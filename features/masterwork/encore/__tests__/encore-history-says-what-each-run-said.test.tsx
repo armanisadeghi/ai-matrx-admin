@@ -110,7 +110,7 @@ const HISTORY = [
 // ── The network, and only the network ──────────────────────────────────────
 // The organization's points-per-dollar knob, answered (1b340562d5 made every
 // cost read the billing.points_per_usd knob; "—" until it loads). The knob
-// snapshot is transport, not the behaviour under test.
+// snapshot is transport, not the behavior under test.
 jest.mock("@/components/cost/pointsRate.client", () => ({
   usePointsRate: () => 20000,
 }));

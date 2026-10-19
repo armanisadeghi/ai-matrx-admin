@@ -186,7 +186,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "context_item_tags",
     label: "Field tags",
     description:
-      "Set the FULL tag set on one context item. Value: { item_id: string, tags: string[] } — REPLACES every tag on the item (read context_item_authoring and include the existing tags you want kept); an empty array clears them all. Each tag is normalised the way the tag input normalises what the user types: trimmed, lowercased, inner whitespace turned into underscores; duplicates and blanks are dropped. Saved immediately through updateContextItem. Refused when the item is not loaded on this page or the viewer cannot manage its organization.",
+      "Set the FULL tag set on one context item. Value: { item_id: string, tags: string[] } — REPLACES every tag on the item (read context_item_authoring and include the existing tags you want kept); an empty array clears them all. Each tag is normalized the way the tag input normalizes what the user types: trimmed, lowercased, inner whitespace turned into underscores; duplicates and blanks are dropped. Saved immediately through updateContextItem. Refused when the item is not loaded on this page or the viewer cannot manage its organization.",
     valueType: "object",
     updatesValue: "context_item_authoring",
     mode: "entity",

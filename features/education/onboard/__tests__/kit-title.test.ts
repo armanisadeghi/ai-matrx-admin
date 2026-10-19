@@ -74,7 +74,7 @@ describe("humanizeSourceTitle — edge cases the camelCase split can break", () 
     expect(humanizeSourceTitle("mRNA_vaccines.pdf")).toBe("mRNA Vaccines");
   });
 
-  it("honours the never-empty contract even for a bare extension", () => {
+  it("honors the never-empty contract even for a bare extension", () => {
     expect(humanizeSourceTitle(".pdf")).toBe("Study material");
     expect(humanizeSourceTitle("")).toBe("Study material");
     expect(humanizeSourceTitle("final_v2_copy.pdf")).not.toBe("");

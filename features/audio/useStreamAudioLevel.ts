@@ -22,7 +22,7 @@
 //   a recording silently fails to start.
 // - Analysis only. `MediaRecorder` records straight off the MediaStream, so
 //   this graph is cosmetic and can never affect the never-lose-audio path.
-// - Teardown disconnects the analyser + source node on every exit (stream
+// - Teardown disconnects the analyzer + source node on every exit (stream
 //   change, unmount). The shared context is never closed.
 
 "use client";
