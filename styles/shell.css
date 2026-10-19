@@ -2420,8 +2420,10 @@ body[style*="pointer-events: none"] {
 .ambient-assistant-dock {
   background: transparent;
   pointer-events: none;
+  /* Rests ABOVE the page's own bottom bar (--matrx-page-foot-h, measured by
+     FloatingClearanceSync from [data-matrx-page-foot]) — never on it. */
   bottom: calc(
-    1.25rem + var(--keyboard-inset-height, 0px) +
+    1.25rem + var(--matrx-page-foot-h, 0px) + var(--keyboard-inset-height, 0px) +
       env(safe-area-inset-bottom, 0px)
   );
 }

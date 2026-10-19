@@ -1,4 +1,5 @@
-// record-view: ApprovalRecordView — each approval opens at /administration/billing/approvals/<kind>/<subjectId>
+// record-view: none — a list of approvals; each opens its own record page
+// ApprovalRecordView — each approval opens at /administration/billing/approvals/<kind>/<subjectId>
 // Billing › Spend approvals: every agent, mandate and automation whose single run cost more
 // than the approval threshold, waiting first, with Approve / Reject (features/admin/spend-approvals).
 // billing.run_approval_list(null) refuses anyone who is not a platform admin.

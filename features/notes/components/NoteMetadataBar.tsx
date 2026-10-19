@@ -131,6 +131,8 @@ export function NoteMetadataBar({
       )}
 
       <div
+        // The page's own bottom bar: floating chrome rests above it (lib/layout/floating-chrome.ts).
+        data-matrx-page-foot=""
         className={cn(
           "@container/notemeta relative z-10 flex h-7 min-h-0 shrink-0 items-center gap-1.5 overflow-hidden px-2",
           variant === "chrome" && "border-t border-border/20 bg-background",

@@ -34,5 +34,5 @@ it("no host reaches into the rich editor's scrollers by child combinator", () =>
 it("the notes editor insets the column through the named hook", () => {
   const source = readFileSync(join(__dirname, "../components/NoteEditorCore.tsx"), "utf8");
   expect(source).toContain("[&_.rich-editor-column]:px-[max(1.5rem,calc((100%-48rem)/2))]!");
-  expect(source).toContain("[&_.rich-editor-column]:pb-[85dvh]!");
+  expect(source).toContain("[&_.rich-editor-column]:pb-[var(--matrx-page-runway)]!");
 });

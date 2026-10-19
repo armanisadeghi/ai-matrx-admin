@@ -100,6 +100,8 @@ export interface Census {
 }
 
 const MARKER = /^\s*\/\/\s*record-view:\s*(.+?)\s*$/m;
+/** The only shape a token marker may take: registry-token words separated by commas. */
+const MARKER_TOKENS = /^[a-z0-9_]+(?:\s*,\s*[a-z0-9_]+)*$/;
 const ROW_TOKEN_MARKER = /\/\/\s*row-token:\s*none\s*[—-]+\s*(\S.*)$/m;
 // A standard row's ONE form (`<StandardRecordForm token="entity:party">`) carries the same section inside it.
 const LITERAL = /<(?:EntityCustomFields\b[^>]*?entityToken|StandardRecordForm\b[^>]*?\btoken)=["'](?:entity:)?([a-z0-9_]+)["']/gs;
@@ -210,7 +212,15 @@ export function buildCensus(opts: CensusOptions): Census {
           problems.push(`${key}: declares "host" but renders no Detail host (${rel}).`);
         return { kind: "host" };
       }
-      const tokens = marker.split(/[,\s]+/).filter(Boolean);
+      // STRICT GRAMMAR: past host / any / none, a marker is a comma list of registry-token words and nothing
+      // else. A sentence here ("SomeView — what it shows") is prose; it is refused, never read as tokens.
+      if (!MARKER_TOKENS.test(marker)) {
+        problems.push(
+          `${key}: the "record-view:" marker is prose, not a token (${rel}). Write "record-view: <token>[, <token>]", "host", "any", or "none — <reason>"; put the description on the next line.`,
+        );
+        return { kind: "none", reason: "prose marker" };
+      }
+      const tokens = marker.split(/\s*,\s*/).filter(Boolean);
       for (const token of tokens) {
         judgeToken(key, token);
         // A marker is prose until proven a token: its words go into the patterns as LITERALS (a stray "+" crashed the guard).

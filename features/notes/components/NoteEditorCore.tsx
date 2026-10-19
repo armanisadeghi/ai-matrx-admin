@@ -205,7 +205,7 @@ export interface NoteEditorCoreProps {
   /**
    * Embedded surfaces (War Room tiles, inline previews) where the editor lives
    * in a small, height-bounded box rather than a full page. Drops the
-   * `pb-[85dvh]` scroll-to-middle padding (which is only desirable full-page and
+   * page-runway (`--matrx-page-runway`) scroll-to-middle padding (which is only desirable full-page and
    * otherwise balloons the content far past its container, bleeding over
    * neighbors). Default false preserves the full-page behavior.
    */
@@ -284,10 +284,14 @@ export function NoteEditorCore({
   // canonical rendered view, never its raw source (round 6, R6).
   const editorMode: EditorMode =
     readOnly && requestedEditorMode === "plain" ? "preview" : requestedEditorMode;
-  // Full-page surfaces pad the bottom by 85dvh so the last line can scroll to
-  // the middle; embedded/tile surfaces must NOT (it balloons content past the
-  // box and bleeds over neighbors).
-  const bottomPad = embedded ? "pb-6" : "pb-[85dvh]";
+  // Full-page surfaces end with THE PAGE RUNWAY (styles/shell.css
+  // --matrx-page-runway: the last line scrolls to about half the screen, never
+  // under what floats); embedded/tile surfaces must NOT (it balloons content
+  // past the box and bleeds over neighbors). The variable also tells
+  // ProTextarea that this end space outranks its control-row reserve.
+  const bottomPad = embedded
+    ? "pb-6"
+    : "pb-[var(--matrx-page-runway)] [--matrx-textarea-end:var(--matrx-page-runway)]";
   // Read draws only once the rich-content host has landed: until then the engine
   // would paint the note's raw markdown as plain text. The host is requested the
   // moment a note is on screen, so by the time Read is pressed it is ready.
@@ -396,7 +400,12 @@ export function NoteEditorCore({
     !((editorMode === "plain" || editorMode === "split") && Boolean(surfaceName));
 
   return (
-    <div ref={rootRef} className={cn("relative w-full h-full", className)}>
+    <div
+      ref={rootRef}
+      // A full-page editor is a page: every pane in it owes the page runway (dev guard [page-runway]).
+      data-matrx-page-runway={embedded ? undefined : ""}
+      className={cn("relative w-full h-full", className)}
+    >
       {/* Voice button overlay */}
       {showVoiceOverlay && (
         <div className="absolute top-2 right-2 z-10">
@@ -608,7 +617,7 @@ export function NoteEditorCore({
             // Padding the frame instead would lift the host's metadata/footer.
             // Embedded hosts keep the rich editor's existing compact runway.
             !embedded &&
-              "[&_.rich-editor-column]:pb-[85dvh]!",
+              "[&_.rich-editor-column]:pb-[var(--matrx-page-runway)]!",
           )}
         >
           <RichEditor

@@ -1,6 +1,7 @@
 "use client";
 
-// record-view: HeldRunView — one run a spend gate stopped (billing.held_run): what it was going to
+// record-view: none — billing_held_run takes no custom fields (no registry type)
+// HeldRunView — one run a spend gate stopped (billing.held_run): what it was going to
 // do (mandate, agent + version, model, inputs, context, the system prompt and messages, tools) and
 // "Replay and watch" — the same mandate with the frozen inputs, as the person who clicks, streamed
 // in the chat window. Every replay is kept on the held run (billing.held_run_note_replay).

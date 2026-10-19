@@ -21,8 +21,23 @@
  */
 
 import { useEffect } from "react";
-import { FLOATING_REQUIRED_GAP_PX, findContentUnderFloatingChrome, floatingBottomBoxes } from "./floating-chrome";
-import { isDoublePadded, measurePageEnd, pageRhythmFor } from "./page-rhythm";
+import { FLOATING_MEASURED_VAR, FLOATING_REQUIRED_GAP_PX, findContentUnderFloatingChrome, floatingBottomBoxes } from "./floating-chrome";
+import { isDoublePadded, measurePageEnd, pageRhythmFor, pageRunwayPx, runwayVerdict } from "./page-rhythm";
+
+/** A pane inside an app viewport (the notes editor) that is a page and owes the page runway. */
+const PAGE_RUNWAY_PANE = "[data-matrx-page-runway]";
+/** A pane this short is a widget, not a page (an inline editor under a form). */
+const MIN_PAGE_PANE_FRACTION = 0.4;
+
+function isRunwayPane(element: Element): boolean {
+  if (!element.closest(PAGE_RUNWAY_PANE)) return false;
+  if (element.closest("[data-window-panel], [role=dialog]")) return false;
+  return element.getBoundingClientRect().height >= window.innerHeight * MIN_PAGE_PANE_FRACTION;
+}
+
+function floatingMeasuredPx(): number {
+  return Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(FLOATING_MEASURED_VAR)) || 0;
+}
 
 const CHECK_THROTTLE_MS = 400;
 /** A scroller counts as "at its end" within this many px. */
@@ -63,7 +78,7 @@ export function useFloatingClearanceGuard(enabled: boolean = process.env.NODE_EN
       if (!scroller || !scroller.isConnected) return;
       if (scroller.scrollHeight <= scroller.clientHeight + END_SLACK_PX) return;
       if (!scrolledToEnd(scroller)) return;
-      if (isPageScroller(scroller)) checkRhythm(scroller);
+      if (isPageScroller(scroller) || isRunwayPane(scroller)) checkRhythm(scroller);
       const covered = findContentUnderFloatingChrome(scroller, floatingBottomBoxes());
       if (!covered || flagged.has(covered.content)) return;
       flagged.add(covered.content);
@@ -78,11 +93,73 @@ export function useFloatingClearanceGuard(enabled: boolean = process.env.NODE_EN
     };
 
     const rhythmFlagged = new WeakSet<Element>();
+    const runwayFlagged = new WeakSet<Element>();
+    // THE PAGE RUNWAY (2026-10-19): a scrolling page at its end must let its last line reach about
+    // half the screen. A <textarea> has no child elements to measure: its text ends at its own
+    // bottom padding when scrolled to the end.
+    const checkRunway = (scroller: Element) => {
+      const runway = pageRunwayPx(window.innerHeight, window.innerWidth, floatingMeasuredPx());
+      let endPx: number;
+      let last = "";
+      if (scroller.tagName === "TEXTAREA") {
+        endPx = Math.round(Number.parseFloat(getComputedStyle(scroller).paddingBottom) || 0);
+        last = "(the textarea's last line)";
+      } else {
+        const end = measurePageEnd(scroller, []);
+        if (!end.last) return null;
+        endPx = end.endSpacePx;
+        last = describe(end.last);
+      }
+      const verdict = runwayVerdict(endPx, runway, window.innerWidth);
+      if (verdict !== "short") {
+        if (runwayFlagged.has(scroller)) {
+          runwayFlagged.delete(scroller);
+          (scroller as HTMLElement).style.outline = "";
+        }
+        return null;
+      }
+      const finding = { scroller: describe(scroller), last, endSpacePx: endPx, allowedPx: runway };
+      if (runwayFlagged.has(scroller)) return finding;
+      runwayFlagged.add(scroller);
+      (scroller as HTMLElement).style.outline = RHYTHM_OUTLINE;
+      console.error(
+        `[page-runway] The page ends ${endPx}px under its last line at its scroll end; it must be ${runway}px (half the screen, never less than what floats).\n` +
+          `  last:     ${last}\n` +
+          `  scroller: ${finding.scroller}\n` +
+          `Fix: let the scroller take the shell's runway (styles/shell.css --matrx-page-runway) — a <main> / [data-matrx-page-scroll] owner, or a pane under [data-matrx-page-runway] padded by var(--matrx-page-runway). lib/layout/page-rhythm.ts`,
+      );
+      return finding;
+    };
+
     const checkRhythm = (scroller: Element) => {
-      const end = measurePageEnd(scroller, floatingBottomBoxes().map((b) => b.rect));
       // A scroller at its end is full by definition; a non-scrolling surface whose content is
       // shorter than its frame (rows still loading, a short list) has free space, not padding.
       const scrolls = scroller.scrollHeight > scroller.clientHeight + END_SLACK_PX;
+      if (scrolls && !scroller.hasAttribute("data-matrx-page-end")) {
+        const short = checkRunway(scroller);
+        if (short) return short;
+        if (scroller.tagName === "TEXTAREA") return null;
+        const end = measurePageEnd(scroller, []);
+        if (!end.last || runwayVerdict(end.endSpacePx, pageRunwayPx(window.innerHeight, window.innerWidth, floatingMeasuredPx()), window.innerWidth) !== "double") {
+          if (rhythmFlagged.has(scroller)) {
+            rhythmFlagged.delete(scroller);
+            (scroller as HTMLElement).style.outline = "";
+          }
+          return null;
+        }
+        const finding = { scroller: describe(scroller), last: describe(end.last), endSpacePx: end.endSpacePx, allowedPx: pageRunwayPx(window.innerHeight, window.innerWidth, floatingMeasuredPx()) };
+        if (rhythmFlagged.has(scroller)) return finding;
+        rhythmFlagged.add(scroller);
+        (scroller as HTMLElement).style.outline = RHYTHM_OUTLINE;
+        console.error(
+          `[page-rhythm] The page ends with ${end.endSpacePx}px under its last element; the page runway is ${finding.allowedPx}px — its own padding is stacked on the runway.\n` +
+            `  last:     ${finding.last}\n` +
+            `  scroller: ${finding.scroller}\n` +
+            `Fix: drop the page's own bottom padding — the runway is the page end, once. lib/layout/page-rhythm.ts`,
+        );
+        return finding;
+      }
+      const end = measurePageEnd(scroller, floatingBottomBoxes().map((b) => b.rect));
       if (!end.last || !(scrolls || end.contentFills) || !isDoublePadded(end.endSpacePx, window.innerWidth, window.innerHeight - end.viewBottom)) {
         // A surface flagged while it was settling is cleared once it reads right.
         if (rhythmFlagged.has(scroller)) {
@@ -150,7 +227,7 @@ export function useFloatingClearanceGuard(enabled: boolean = process.env.NODE_EN
       const targets = [
         ...document.querySelectorAll("[data-matrx-page-end]"),
         ...[...document.querySelectorAll(".shell-main, .shell-main *")].filter(
-          (el) => isPageScroller(el) && el.scrollHeight > el.clientHeight + END_SLACK_PX && /(auto|scroll)/.test(getComputedStyle(el).overflowY) && scrolledToEnd(el),
+          (el) => (isPageScroller(el) || isRunwayPane(el)) && el.scrollHeight > el.clientHeight + END_SLACK_PX && /(auto|scroll)/.test(getComputedStyle(el).overflowY) && scrolledToEnd(el),
         ),
       ];
       return [...new Set(targets)].map((el) => checkRhythm(el)).filter((f) => f !== null);

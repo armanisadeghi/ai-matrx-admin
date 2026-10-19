@@ -20,6 +20,9 @@ import {
   FLOATING_MEASURED_VAR,
   floatingBottomBoxes,
   measureFloatingClearance,
+  measurePageFoot,
+  PAGE_FOOT_ATTR,
+  PAGE_FOOT_VAR,
   syncWindowScrollerRunways,
 } from "@/lib/layout/floating-chrome";
 import { useFloatingClearanceGuard } from "@/lib/layout/useFloatingClearanceGuard";
@@ -39,11 +42,18 @@ export default function FloatingClearanceSync() {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let lastPublished = -1;
     let lastFixed = -1;
+    let lastFoot = -1;
     const observed = new Set<Element>();
     const resizeObserver = new ResizeObserver(() => schedule());
 
     function publish() {
       timer = null;
+      // The page's own bottom bar first: the ambient dock rests above it, so it moves the dock.
+      const foot = measurePageFoot(document, window.innerHeight);
+      if (foot !== lastFoot) {
+        lastFoot = foot;
+        root.style.setProperty(PAGE_FOOT_VAR, `${foot}px`);
+      }
       const boxes = floatingBottomBoxes();
       const value = measureFloatingClearance(boxes, window.innerHeight);
       if (value !== lastPublished) {
@@ -88,6 +98,7 @@ export default function FloatingClearanceSync() {
       for (const node of nodes) {
         if (!(node instanceof Element)) continue;
         if (node.matches(FLOATING_BOTTOM_SELECTOR) || node.querySelector(FLOATING_BOTTOM_SELECTOR)) return true;
+        if (node.matches(`[${PAGE_FOOT_ATTR}]`) || node.querySelector(`[${PAGE_FOOT_ATTR}]`)) return true;
       }
       return false;
     };
@@ -123,6 +134,7 @@ export default function FloatingClearanceSync() {
       window.visualViewport?.removeEventListener("resize", schedule);
       root.style.removeProperty(FLOATING_MEASURED_VAR);
       root.style.removeProperty(FLOATING_FIXED_MEASURED_VAR);
+      root.style.removeProperty(PAGE_FOOT_VAR);
     };
   }, []);
 

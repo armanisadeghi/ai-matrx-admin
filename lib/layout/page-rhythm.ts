@@ -29,8 +29,14 @@
 //
 // The CSS custom properties below are the source the pages read (styles/shell.css :root); this
 // module carries the same numbers for code and tests (lib/layout/page-rhythm.test.ts pins both).
-// The dev guard (usePageRhythmGuard) screams `[page-rhythm]` when a page ends with more than
-// `end` + PAGE_RHYTHM_TOLERANCE_PX of empty space — the double-padding class.
+// The dev guard (usePageRhythmGuard) screams `[page-rhythm]` when a NON-scrolling page surface ends
+// with more than `end` + PAGE_RHYTHM_TOLERANCE_PX of empty space — the double-padding class.
+//
+// THE PAGE RUNWAY (owner, 2026-10-19) — supersedes "end = gutter" for every page that SCROLLS:
+// at its scroll end the page's last line sits about HALF the screen up (PAGE_RUNWAY_VIEWPORT_FRACTION),
+// never less than what floats + `end`. One value, styles/shell.css `--matrx-page-runway`; a
+// scrolling page ending short of it screams `[page-runway]`, and one ending far past it (its own
+// padding stacked on the runway) is still `[page-rhythm]` double padding.
 
 /** The page-structure scale, in px, per breakpoint (`wide` applies at ≥ PAGE_RHYTHM_WIDE_MIN_PX). */
 export const PAGE_RHYTHM = {
@@ -203,4 +209,30 @@ export function isDoublePadded(endSpacePx: number, viewportWidth: number, footGa
   // The shell's runway is measured from the viewport's floor. A scroller that itself ends `footGapPx` above
   // the floor (a side rail inside the page's frame) is that much further from the floating chrome already.
   return endSpacePx > pageRhythmFor(viewportWidth).end + PAGE_RHYTHM_TOLERANCE_PX + Math.max(0, footGapPx);
+}
+
+/** At its scroll end a page's last line sits this fraction of the screen up (styles/shell.css 50dvh). */
+export const PAGE_RUNWAY_VIEWPORT_FRACTION = 0.5;
+/** Rounding, sub-pixel and dvh-vs-innerHeight slack around the runway. */
+export const PAGE_RUNWAY_TOLERANCE_PX = 8;
+
+/** The runway a scrolling page ends with: half the screen, never less than what floats + the page end. */
+export function pageRunwayPx(viewportHeight: number, viewportWidth: number, floatingMeasuredPx = 0): number {
+  return Math.max(
+    Math.round(viewportHeight * PAGE_RUNWAY_VIEWPORT_FRACTION),
+    Math.round(floatingMeasuredPx) + pageRhythmFor(viewportWidth).end,
+  );
+}
+
+/**
+ * A scrolling page at its end: is the space under its last line the runway? `endPx` is measured
+ * from the scroller's visible bottom edge. "short" = content can't scroll up to half the screen
+ * (the defect the owner hit on /notes); "double" = a page's own padding stacked on the runway.
+ */
+export function runwayVerdict(endPx: number, runwayPx: number, viewportWidth: number): "short" | "ok" | "double" {
+  if (endPx < runwayPx - PAGE_RUNWAY_TOLERANCE_PX) return "short";
+  // A content block's own trailing margin (a paragraph, the editor's last block) is not a second
+  // runway; only something block-gap sized or more stacked on it is.
+  if (endPx > runwayPx + pageRhythmFor(viewportWidth).blockGap + PAGE_RUNWAY_TOLERANCE_PX) return "double";
+  return "ok";
 }

@@ -27,6 +27,30 @@
 // New floating chrome joins by carrying `data-matrx-floating-bottom` — nothing
 // else to wire.
 
+/**
+ * A PAGE'S OWN BOTTOM BAR (2026-10-19): a status bar, composer row or footer that the page lays
+ * out flush with the viewport floor (the notes metadata/stats bar). Floating chrome rests ABOVE
+ * it, never on it — the page assistant sat on the notes status bar and the bar read through the
+ * input like a second one. FloatingClearanceSync publishes its height as PAGE_FOOT_VAR; the
+ * ambient dock adds it to its `bottom` (styles/shell.css).
+ */
+export const PAGE_FOOT_ATTR = "data-matrx-page-foot";
+export const PAGE_FOOT_VAR = "--matrx-page-foot-h";
+
+/** How far the tallest visible page bottom bar reaches up from the viewport floor (0 when none). */
+export function measurePageFoot(doc: Document = document, viewportHeight: number = window.innerHeight): number {
+  let foot = 0;
+  for (const element of doc.querySelectorAll(`[${PAGE_FOOT_ATTR}]`)) {
+    if (element.closest("[data-window-panel], [role=dialog]")) continue;
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) continue;
+    // Only a bar that sits ON the floor lifts the dock; one mid-page is just content.
+    if (rect.bottom < viewportHeight - 2 || rect.top >= viewportHeight) continue;
+    foot = Math.max(foot, Math.round(viewportHeight - rect.top));
+  }
+  return foot;
+}
+
 /** Every element that floats over the bottom of the viewport. */
 export const FLOATING_BOTTOM_SELECTOR = [
   "[data-matrx-floating-bottom]",

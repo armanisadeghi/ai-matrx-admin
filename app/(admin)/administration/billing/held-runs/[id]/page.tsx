@@ -1,4 +1,5 @@
-// record-view: HeldRunView — one run a spend gate stopped (billing.held_run), with Replay and watch.
+// record-view: none — billing_held_run takes no custom fields (no registry type)
+// HeldRunView — one run a spend gate stopped (billing.held_run), with Replay and watch.
 // `id` is the held run, or an alarm whose newest held run opens (the attention dock's door).
 import { HeldRunView } from "@/features/admin/held-runs/HeldRunView";
 

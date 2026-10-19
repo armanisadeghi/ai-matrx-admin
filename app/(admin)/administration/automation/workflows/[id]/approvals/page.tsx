@@ -1,4 +1,5 @@
-// record-view: SubjectApprovalsPanel — one workflow's spend approval: status, decision history,
+// record-view: none — a spend approval (billing.run_approval) takes no custom fields
+// SubjectApprovalsPanel — one workflow's spend approval: status, decision history,
 // held runs, spend (Arman 2026-10-16).
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";

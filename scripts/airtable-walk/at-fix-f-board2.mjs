@@ -1,0 +1,23 @@
+// AT-FIX-F item 2 live: the board's table tile -> Show as card -> click a row -> the row's detail opens inside the card.
+import { start, out, ORIGIN } from "./lib.mjs";
+const B = process.argv[2];
+const { browser, page, who } = await start();
+out("who", who);
+await page.goto(`${ORIGIN}/board/${B}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+await page.waitForTimeout(15000);
+await page.mouse.click(1000, 500); await page.waitForTimeout(1500);
+await page.mouse.click(1450, 241); await page.waitForTimeout(1500);
+out("menu", JSON.stringify(await page.evaluate(() => [...document.querySelectorAll("[role=menuitem]")].map((b) => b.innerText.trim()))));
+await page.locator("[role=menuitem]", { hasText: "Show as card" }).first().click();
+await page.waitForTimeout(6000);
+await page.screenshot({ path: "/tmp/atff/c2.png" });
+out("card", await page.locator("[data-records-table-card],section,article").count());
+await page.getByText("Alpha", { exact: true }).first().click();
+await page.waitForTimeout(5000);
+out("detail inside card", await page.locator("[data-records-card-detail]").count());
+out("back", await page.locator("[data-records-card-back]").innerText().catch(() => "none"));
+await page.screenshot({ path: "/tmp/atff/c3.png" });
+await page.locator("[data-records-card-back]").click().catch(() => {});
+await page.waitForTimeout(2500);
+out("after back, detail", await page.locator("[data-records-card-detail]").count());
+await browser.close();

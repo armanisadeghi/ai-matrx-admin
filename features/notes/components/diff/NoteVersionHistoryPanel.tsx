@@ -570,7 +570,7 @@ function NoteHistoryTimeline({
           confirm: (v) => restoreWords(v.number),
         }}
       />
-      {compact ? null : <div className="h-[50dvh]" />}
+      {compact ? null : <div className="h-[var(--matrx-page-runway)]" />}
     </div>
   );
 }

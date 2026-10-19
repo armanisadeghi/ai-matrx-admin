@@ -1,4 +1,5 @@
-// record-view: SpendAlarmRecordPage — the ONE page for one spend alarm (billing.spend_alarm).
+// record-view: none — billing_spend_alarm takes no custom fields (no registry type)
+// SpendAlarmRecordPage — the ONE page for one spend alarm (billing.spend_alarm).
 // Every alarm surface (the sign-in panel, the list, the writer's delivered link) opens here.
 import { SpendAlarmRecordPage } from "@/features/admin/spend-alarms/SpendAlarmRecordPage";
 

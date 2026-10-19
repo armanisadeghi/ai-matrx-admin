@@ -1466,13 +1466,16 @@ export const ProTextarea = React.forwardRef<
       // (page-pass 2026-09-27, Feedback window). The reserve always wins.
       // A one-line hosted editor keeps its single line: the cluster takes a
       // right gutter beside it instead of a reserved row below.
+      // The reserve is a FLOOR, never a ceiling: a host that needs MORE end
+      // space (a full-page editor's page runway) sets `--matrx-textarea-end`
+      // and keeps it — the notes Plain mode lost its runway to this 44px.
       !inlineControls &&
         (hasCoarseControls || onSubmit) &&
         (editor?.singleLine && !onSubmit
           ? "pr-24 pointer-coarse:pr-32"
           : hero
-            ? "pb-14"
-            : "pb-11"),
+            ? "pb-[max(3.5rem,var(--matrx-textarea-end,0px))]"
+            : "pb-[max(2.75rem,var(--matrx-textarea-end,0px))]"),
     );
     // The reserved control row exists (the leading slot shares it with the cluster).
     const reservesRow = !inlineControls && (hasCoarseControls || !!onSubmit) && !editor?.singleLine;

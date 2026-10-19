@@ -50,4 +50,30 @@ describe("the assists control never covers content", () => {
     applyAssistClearance();
     expect(scroller.style.paddingBottom).toBe("");
   });
+
+  it("never shrinks a scroller that already ends further clear than the overlap", () => {
+    // /notes Read pane, 2026-10-19: its half-screen page runway was replaced by the 78px overlap.
+    const scroller = document.createElement("div");
+    scroller.style.overflowY = "auto";
+    scroller.style.paddingBottom = "400px";
+    const row = document.createElement("div");
+    scroller.appendChild(row);
+    document.body.appendChild(scroller);
+    const dock = document.createElement("button");
+    dock.setAttribute("data-assists-dock", "");
+    document.body.appendChild(dock);
+
+    Object.defineProperty(scroller, "scrollHeight", { value: 2000 });
+    Object.defineProperty(scroller, "clientHeight", { value: 640 });
+    scroller.getBoundingClientRect = () => rect(100, 740, 0, 1280);
+    dock.getBoundingClientRect = () => rect(700, 732, 1120, 1268);
+    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+    (document as unknown as { elementsFromPoint: (x: number, y: number) => Element[] }).elementsFromPoint = () => [dock, row, scroller];
+
+    applyAssistClearance();
+    expect(scroller.style.paddingBottom).toBe("400px");
+    expect(scroller.hasAttribute("data-assist-clearance")).toBe(false);
+    dock.remove();
+    scroller.remove();
+  });
 });

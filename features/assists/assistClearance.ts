@@ -145,6 +145,11 @@ function visibleDockRect(): DOMRect | null {
   return null;
 }
 
+/** The bottom padding a scroller carries on its own (classes + inline), before any inset. */
+function ownBottomPaddingPx(el: HTMLElement): number {
+  return Number.parseFloat(getComputedStyle(el).paddingBottom) || 0;
+}
+
 function clear(el: HTMLElement) {
   el.style.paddingBottom = el.dataset.assistClearancePrev ?? "";
   delete el.dataset.assistClearancePrev;
@@ -170,6 +175,10 @@ export function applyAssistClearance(opts: { resting?: boolean } = {}): void {
     else if (!targets.has(el)) clear(el);
   }
   for (const [el, need] of targets) {
+    // ONLY EVER ADDS (2026-10-19): an inset REPLACES the scroller's own bottom padding, so a
+    // scroller that already ends further clear than the overlap (the notes Read pane's page
+    // runway, half the screen) is left alone — it once shrank that runway to the 78px overlap.
+    if (!el.hasAttribute(CLEARED_ATTR) && ownBottomPaddingPx(el) >= need) continue;
     if (!el.hasAttribute(CLEARED_ATTR)) {
       el.dataset.assistClearancePrev = el.style.paddingBottom;
       el.setAttribute(CLEARED_ATTR, "");
