@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 5,
+  "version": 6,
   "title": "Product Roadmap",
   "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -9,7 +9,7 @@
     "emoji": "🗺️"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:planning-winding-road-aerial",
     "offsetY": 50
   },
   "category": "planning",
@@ -1262,7 +1262,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1273,7 +1273,7 @@
         "emoji": "🗺️"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:planning-winding-road-aerial",
         "offsetY": 50
       },
       "settings": {

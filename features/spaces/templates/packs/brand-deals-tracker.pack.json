@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0310",
-  "version": 6,
+  "version": 7,
   "title": "Brand Deals Tracker",
   "description": "Influencers and UGC creators: manage sponsored deals from pitch to payment.",
   "forWho": "Influencers and UGC creators",
@@ -9,7 +9,7 @@
     "emoji": "🤝"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:sales-product-packaging-minimal",
     "offsetY": 50
   },
   "category": "sales",
@@ -1436,7 +1436,7 @@
         "Sandpiper Terrace"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1447,7 +1447,7 @@
         "emoji": "🤝"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:sales-product-packaging-minimal",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 4,
+  "version": 5,
   "title": "Food Truck Operations",
   "description": "Service stops and sales, permits, commissary prep and private bookings for a food truck.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -9,7 +9,7 @@
     "emoji": "🚚"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:hospitality-food-truck-street",
     "offsetY": 50
   },
   "category": "hospitality",
@@ -1944,7 +1944,7 @@
         "Depot Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1955,7 +1955,7 @@
         "emoji": "🚚"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:hospitality-food-truck-street",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 4,
+  "version": 5,
   "title": "Coffee Shop Operations",
   "description": "Menu margins, supplies and par levels, waste log, equipment service and orders for a cafe.",
   "forWho": "Independent coffee shops and cafes",
@@ -9,7 +9,7 @@
     "emoji": "☕"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:hospitality-coffee-shop-counter-espresso",
     "offsetY": 50
   },
   "category": "hospitality",
@@ -2035,7 +2035,7 @@
         "Almond Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2046,7 +2046,7 @@
         "emoji": "☕"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:hospitality-coffee-shop-counter-espresso",
         "offsetY": 50
       },
       "settings": {

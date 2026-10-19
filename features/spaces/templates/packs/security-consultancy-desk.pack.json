@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 1,
+  "version": 2,
   "title": "Security Consultancy Engagement Desk",
   "description": "Clients, security assessments, findings, fixes and retests for a consultancy.",
   "forWho": "Cybersecurity consultancies and assessment firms",
@@ -9,7 +9,7 @@
     "emoji": "🛡️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:tech-cyber-security-padlock",
     "offsetY": 50
   },
   "category": "tech",
@@ -2471,7 +2471,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2482,7 +2482,7 @@
         "emoji": "🛡️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:tech-cyber-security-padlock",
         "offsetY": 50
       },
       "settings": {

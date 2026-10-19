@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 4,
+  "version": 5,
   "title": "Brewery Taproom Desk",
   "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -9,7 +9,7 @@
     "emoji": "🍺"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:hospitality-beer-taps-brewery",
     "offsetY": 50
   },
   "category": "hospitality",
@@ -2153,7 +2153,7 @@
         "Foundry Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2164,7 +2164,7 @@
         "emoji": "🍺"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:hospitality-beer-taps-brewery",
         "offsetY": 50
       },
       "settings": {

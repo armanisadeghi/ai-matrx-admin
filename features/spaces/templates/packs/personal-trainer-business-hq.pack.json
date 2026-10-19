@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 3,
+  "version": 4,
   "title": "Personal Trainer Business HQ",
   "description": "Track clients, session packages, training sessions and payments for a small trainer.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -9,7 +9,7 @@
     "emoji": "💪"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:wellness-kettlebells-floor",
     "offsetY": 50
   },
   "category": "wellness",
@@ -2139,7 +2139,7 @@
         "Granary Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2150,7 +2150,7 @@
         "emoji": "💪"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:wellness-kettlebells-floor",
         "offsetY": 50
       },
       "settings": {

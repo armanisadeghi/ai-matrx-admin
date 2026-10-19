@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 4,
+  "version": 5,
   "title": "Meal Planner",
   "description": "Home cooks and families: plan the week's meals from your recipes, with a shopping list.",
   "forWho": "Home cooks and families",
@@ -9,7 +9,7 @@
     "emoji": "🍽️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:personal-fresh-vegetables-kitchen-table",
     "offsetY": 50
   },
   "category": "personal",
@@ -1539,7 +1539,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1550,7 +1550,7 @@
         "emoji": "🍽️"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:personal-fresh-vegetables-kitchen-table",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 3,
+  "version": 4,
   "title": "Boutique Clothing Store HQ",
   "description": "Track inventory by season, sales, customers and vendors for a clothing boutique.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -9,7 +9,7 @@
     "emoji": "👗"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:retail-clothing-rack-boutique",
     "offsetY": 50
   },
   "category": "retail",
@@ -1944,7 +1944,7 @@
         "Willow Passage"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1955,7 +1955,7 @@
         "emoji": "👗"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:retail-clothing-rack-boutique",
         "offsetY": 50
       },
       "settings": {

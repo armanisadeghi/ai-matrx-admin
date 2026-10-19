@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 1,
+  "version": 2,
   "title": "Driving School Desk",
   "description": "Learners, instructors, cars, lessons and road tests for a driving school.",
   "forWho": "Driving schools and driver-education programs",
@@ -9,7 +9,7 @@
     "emoji": "🚗"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:education-empty-road-dashed-lines",
     "offsetY": 50
   },
   "category": "education",
@@ -2313,7 +2313,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2324,7 +2324,7 @@
         "emoji": "🚗"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:education-empty-road-dashed-lines",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 4,
+  "version": 5,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -9,7 +9,7 @@
     "emoji": "🏋️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:wellness-gym-interior-equipment",
     "offsetY": 50
   },
   "category": "wellness",
@@ -3610,7 +3610,7 @@
         "Mercer Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -4238,6 +4238,10 @@
       ],
       "settings": {
         "fullWidth": true
+      },
+      "cover": {
+        "url": "gallery:wellness-gym-interior-equipment",
+        "offsetY": 50
       }
     },
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0565",
-  "version": 1,
+  "version": 2,
   "title": "Local Newsroom Editorial Desk",
   "description": "Story budget, sources, events to cover and corrections for a local newsroom.",
   "forWho": "Local newsrooms and community news outlets",
@@ -9,7 +9,7 @@
     "emoji": "📰"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:media-newsroom-printing-press",
     "offsetY": 50
   },
   "category": "media",
@@ -2323,7 +2323,7 @@
         "Granary Road"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2334,7 +2334,7 @@
         "emoji": "📰"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:media-newsroom-printing-press",
         "offsetY": 50
       },
       "settings": {

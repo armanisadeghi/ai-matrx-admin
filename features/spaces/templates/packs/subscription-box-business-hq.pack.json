@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 3,
+  "version": 4,
   "title": "Subscription Box Business HQ",
   "description": "Plan each box cycle, track subscribers and churn, stock and shipments in one place.",
   "forWho": "Subscription box and curated gift businesses",
@@ -9,7 +9,7 @@
     "emoji": "🎁"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:retail-gift-box-packaging",
     "offsetY": 50
   },
   "category": "retail",
@@ -1953,7 +1953,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1964,7 +1964,7 @@
         "emoji": "🎁"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:retail-gift-box-packaging",
         "offsetY": 50
       },
       "settings": {

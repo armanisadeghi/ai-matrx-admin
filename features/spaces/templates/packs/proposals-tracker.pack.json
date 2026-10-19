@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 6,
+  "version": 7,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -9,7 +9,7 @@
     "emoji": "📄"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:sales-fountain-pen-document",
     "offsetY": 50
   },
   "category": "sales",
@@ -1168,7 +1168,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1416,7 +1416,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:sales-fountain-pen-document",
         "offsetY": 50
       }
     },

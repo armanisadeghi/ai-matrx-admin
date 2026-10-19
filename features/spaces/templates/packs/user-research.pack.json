@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 6,
+  "version": 7,
   "title": "User Research Repository",
   "description": "Researchers: studies, sessions, participants and insights linked to their evidence.",
   "forWho": "Product and research teams",
@@ -9,7 +9,7 @@
     "emoji": "🔬"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:projects-research-notes-wall",
     "offsetY": 50
   },
   "category": "projects",
@@ -1666,7 +1666,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1677,7 +1677,7 @@
         "emoji": "🔬"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:projects-research-notes-wall",
         "offsetY": 50
       },
       "settings": {

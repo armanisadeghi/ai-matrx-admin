@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 4,
+  "version": 5,
   "title": "Therapy & Counseling Practice",
   "description": "For therapists and counselors: inquiries, intakes, sessions, notes and statements.",
   "forWho": "Therapists, counselors and group mental health practices",
@@ -9,7 +9,7 @@
     "emoji": "🛋️"
   },
   "cover": {
-    "url": "gallery:gradient-dusk",
+    "url": "gallery:healthcare-armchair-plant-calm-room",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2258,7 +2258,7 @@
         "Fremont Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2269,7 +2269,7 @@
         "emoji": "🛋️"
       },
       "cover": {
-        "url": "gallery:gradient-dusk",
+        "url": "gallery:healthcare-armchair-plant-calm-room",
         "offsetY": 50
       },
       "settings": {

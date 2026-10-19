@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0255",
-  "version": 4,
+  "version": 5,
   "title": "Employee Directory",
   "description": "Teams of any size: find anyone by team, manager, skills and time zone.",
   "forWho": "Teams of every size",
@@ -9,7 +9,7 @@
     "emoji": "📇"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:team-office-building-atrium",
     "offsetY": 50
   },
   "category": "team",
@@ -1056,7 +1056,7 @@
         "Emberglass Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1067,7 +1067,7 @@
         "emoji": "📇"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:team-office-building-atrium",
         "offsetY": 50
       },
       "settings": {

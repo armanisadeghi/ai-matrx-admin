@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 5,
+  "version": 6,
   "title": "Short-Term Rental Host",
   "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
   "forWho": "Vacation rental hosts and co-hosts with a few homes",
@@ -9,7 +9,7 @@
     "emoji": "🏖️"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:realestate-vacation-rental-cabin",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2332,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2343,7 +2343,7 @@
         "emoji": "🏖️"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:realestate-vacation-rental-cabin",
         "offsetY": 50
       },
       "settings": {

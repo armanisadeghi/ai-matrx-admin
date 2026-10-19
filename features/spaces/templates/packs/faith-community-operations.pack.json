@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 1,
+  "version": 2,
   "title": "Faith Community Operations Hub",
   "description": "Members, services, rooms, care requests and volunteers for a congregation.",
   "forWho": "Churches, temples, mosques and other faith communities",
@@ -9,7 +9,7 @@
     "emoji": "🕊️"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:nonprofit-church-interior-light",
     "offsetY": 50
   },
   "category": "nonprofit",
@@ -2466,7 +2466,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2477,7 +2477,7 @@
         "emoji": "🕊️"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:nonprofit-church-interior-light",
         "offsetY": 50
       },
       "settings": {

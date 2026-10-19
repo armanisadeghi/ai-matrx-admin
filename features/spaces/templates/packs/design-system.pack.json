@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0360",
-  "version": 4,
+  "version": 5,
   "title": "Design System Docs",
   "description": "Design and front-end teams: document components, usage rules, owners and status.",
   "forWho": "Design and front-end teams",
@@ -9,7 +9,7 @@
     "emoji": "🎨"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:docs-geometric-shapes-colorful",
     "offsetY": 50
   },
   "category": "docs",
@@ -1418,7 +1418,7 @@
         "Sallow Fen Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1429,7 +1429,7 @@
         "emoji": "🎨"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:docs-geometric-shapes-colorful",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 4,
+  "version": 5,
   "title": "Dental Practice",
   "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
   "forWho": "Dentists, office managers and dental front desks",
@@ -9,7 +9,7 @@
     "emoji": "🦷"
   },
   "cover": {
-    "url": "gallery:gradient-sky",
+    "url": "gallery:healthcare-dental-clinic-chair",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -2877,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2888,7 +2888,7 @@
         "emoji": "🦷"
       },
       "cover": {
-        "url": "gallery:gradient-sky",
+        "url": "gallery:healthcare-dental-clinic-chair",
         "offsetY": 50
       },
       "settings": {

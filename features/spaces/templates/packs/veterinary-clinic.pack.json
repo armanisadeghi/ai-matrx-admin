@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0404",
-  "version": 4,
+  "version": 5,
   "title": "Veterinary Clinic",
   "description": "For vets and clinic staff: appointments, pets, owners, vaccine reminders and phone triage.",
   "forWho": "Veterinarians, vet techs and animal hospital front desks",
@@ -9,7 +9,7 @@
     "emoji": "🐾"
   },
   "cover": {
-    "url": "gallery:solid-green",
+    "url": "gallery:healthcare-golden-retriever-resting",
     "offsetY": 50
   },
   "category": "healthcare",
@@ -1967,7 +1967,7 @@
         "Tamarack Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1978,7 +1978,7 @@
         "emoji": "🐾"
       },
       "cover": {
-        "url": "gallery:solid-green",
+        "url": "gallery:healthcare-golden-retriever-resting",
         "offsetY": 50
       },
       "settings": {

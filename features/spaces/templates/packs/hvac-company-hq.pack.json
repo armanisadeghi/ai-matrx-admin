@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 4,
+  "version": 5,
   "title": "HVAC Company HQ",
   "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -9,7 +9,7 @@
     "emoji": "❄️"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:trades-air-conditioning-units-rooftop",
     "offsetY": 50
   },
   "category": "trades",
@@ -3089,7 +3089,7 @@
       ],
       "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3100,7 +3100,7 @@
         "emoji": "❄️"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:trades-air-conditioning-units-rooftop",
         "offsetY": 50
       },
       "settings": {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0205",
-  "version": 5,
+  "version": 6,
   "title": "Weekly Time-Block Planner",
   "description": "Students and professionals: block out each day by the hour, with weekly goals.",
   "forWho": "Students and professionals who plan by the hour",
@@ -9,7 +9,7 @@
     "emoji": "🗓️"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:planning-weekly-planner-desk",
     "offsetY": 50
   },
   "category": "planning",
@@ -1134,7 +1134,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1145,7 +1145,7 @@
         "emoji": "🗓️"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:planning-weekly-planner-desk",
         "offsetY": 50
       },
       "settings": {

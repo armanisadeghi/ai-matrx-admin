@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 4,
+  "version": 5,
   "title": "Home Inspection Business",
   "description": "For home inspectors: bookings, agreements, reports, agent referrals and license renewals.",
   "forWho": "Home inspectors and multi-inspector firms",
@@ -9,7 +9,7 @@
     "emoji": "🔍"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:realestate-house-attic-roof-beams",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2246,7 +2246,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2257,7 +2257,7 @@
         "emoji": "🔍"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:realestate-house-attic-roof-beams",
         "offsetY": 50
       },
       "settings": {

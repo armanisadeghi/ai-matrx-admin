@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 5,
+  "version": 6,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -9,7 +9,7 @@
     "emoji": "🤝"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:clients-modern-glass-office-lobby",
     "offsetY": 50
   },
   "category": "clients",
@@ -1479,7 +1479,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1884,7 +1884,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:clients-modern-glass-office-lobby",
         "offsetY": 50
       }
     },

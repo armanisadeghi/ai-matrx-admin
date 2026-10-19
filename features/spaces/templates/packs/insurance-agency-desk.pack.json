@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 5,
+  "version": 6,
   "title": "Insurance Agency Desk",
   "description": "For insurance agents: policies, carriers, renewals, claims and commission statements.",
   "forWho": "Independent insurance agencies and brokers",
@@ -9,7 +9,7 @@
     "emoji": "🛡️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:services-umbrella-rain-city",
     "offsetY": 50
   },
   "category": "services",
@@ -2475,7 +2475,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2486,7 +2486,7 @@
         "emoji": "🛡️"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:services-umbrella-rain-city",
         "offsetY": 50
       },
       "settings": {

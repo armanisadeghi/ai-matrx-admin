@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 6,
+  "version": 7,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -9,7 +9,7 @@
     "emoji": "🎬"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:marketing-ring-light-studio-setup",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1928,7 +1928,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1939,7 +1939,7 @@
         "emoji": "🎬"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:marketing-ring-light-studio-setup",
         "offsetY": 50
       },
       "settings": {

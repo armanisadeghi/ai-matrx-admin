@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 6,
+  "version": 7,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -9,7 +9,7 @@
     "emoji": "🔎"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:marketing-magnifying-glass-map",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1410,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1767,7 +1767,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:marketing-magnifying-glass-map",
         "offsetY": 50
       }
     },

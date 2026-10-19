@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 4,
+  "version": 5,
   "title": "Barbershop HQ",
   "description": "For barbershops: walk-in queue, bookings, chair rent and commission, memberships.",
   "forWho": "Barbershops and grooming studios",
@@ -9,7 +9,7 @@
     "emoji": "💈"
   },
   "cover": {
-    "url": "gallery:photo-desert-dunes",
+    "url": "gallery:wellness-barbershop-chair",
     "offsetY": 50
   },
   "category": "wellness",
@@ -2437,7 +2437,7 @@
         "Tannery Square"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2448,7 +2448,7 @@
         "emoji": "💈"
       },
       "cover": {
-        "url": "gallery:photo-desert-dunes",
+        "url": "gallery:wellness-barbershop-chair",
         "offsetY": 50
       },
       "settings": {

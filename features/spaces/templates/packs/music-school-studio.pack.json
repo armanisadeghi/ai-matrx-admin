@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 1,
+  "version": 2,
   "title": "Music School Studio Desk",
   "description": "Students, teachers, lessons, recitals and rented instruments for a music school.",
   "forWho": "Music schools, studios and lesson programs",
@@ -9,7 +9,7 @@
     "emoji": "🎻"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:education-piano-keys",
     "offsetY": 50
   },
   "category": "education",
@@ -2283,7 +2283,7 @@
         "Cantor Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2294,7 +2294,7 @@
         "emoji": "🎻"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:education-piano-keys",
         "offsetY": 50
       },
       "settings": {

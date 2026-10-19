@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "version": 6,
+  "version": 7,
   "title": "Content Calendar",
   "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
   "forWho": "Marketers, creators and small content teams",
@@ -9,7 +9,7 @@
     "emoji": "🗓️"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:marketing-calendar-planner-flat-lay",
     "offsetY": 50
   },
   "category": "marketing",
@@ -1259,7 +1259,7 @@
         "Larkin Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1536,7 +1536,7 @@
         }
       ],
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:marketing-calendar-planner-flat-lay",
         "offsetY": 50
       }
     },

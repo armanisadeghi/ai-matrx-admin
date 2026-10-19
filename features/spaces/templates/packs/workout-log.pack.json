@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 8,
+  "version": 9,
   "title": "Workout Log",
   "description": "Lifters and runners: log sessions, exercises and sets, with totals and personal bests.",
   "forWho": "Lifters and runners",
@@ -9,7 +9,7 @@
     "emoji": "💪"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:personal-dumbbells-gym-floor",
     "offsetY": 50
   },
   "category": "personal",
@@ -1695,7 +1695,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1706,7 +1706,7 @@
         "emoji": "💪"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:personal-dumbbells-gym-floor",
         "offsetY": 50
       },
       "settings": {

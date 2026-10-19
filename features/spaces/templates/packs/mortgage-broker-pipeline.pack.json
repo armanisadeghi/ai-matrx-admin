@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0419",
-  "version": 4,
+  "version": 5,
   "title": "Mortgage Broker Pipeline",
   "description": "For mortgage brokers: loan files by stage, rate locks, conditions, closings and partners.",
   "forWho": "Mortgage brokers, loan officers and processors",
@@ -9,7 +9,7 @@
     "emoji": "🏦"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:realestate-keys-house-model",
     "offsetY": 50
   },
   "category": "realestate",
@@ -2394,7 +2394,7 @@
         "Fenmore Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2405,7 +2405,7 @@
         "emoji": "🏦"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:realestate-keys-house-model",
         "offsetY": 50
       },
       "settings": {
