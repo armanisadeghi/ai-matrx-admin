@@ -41,6 +41,11 @@ description: "iOS-native mobile web UX rules. Use when building any UI component
 15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
     toolbar, buttons are mostly icons with short text, a button can carry status and action
     together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
 <!-- rules:stamp-end -->
 
 > **Official guide:** `~/.arman/rules/nextjs-best-practices/nextjs-guide.md` — See the official guide for core architecture. The old §13 (Mobile-First) was removed; mobile-first patterns in this file will move to a dedicated *Mobile & Responsive UX* guide.

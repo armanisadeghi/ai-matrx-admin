@@ -41,6 +41,11 @@ description: "The universal v3 right-click menu (EditableContextMenu / NonEditab
 15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
     toolbar, buttons are mostly icons with short text, a button can carry status and action
     together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
 <!-- rules:stamp-end -->
 
 The deep contract is **[`features/context-menu-host/FEATURE.md`](../../../features/context-menu-host/FEATURE.md)** — read it once. This skill is the rollout recipe; editing the v3 internals is that FEATURE.md's job, and a worker assigned a shard from `pnpm check:context-menu` follows the `context-menu-rollout` skill on top of this one. The proven reference is **`/demos/context-menu/canonical`** (every panel is a real v3 wiring; copy the one that matches your surface). The v2 menu (`UnifiedAgentContextMenu`) was deleted 2026-07-19 — every surface renders v3.

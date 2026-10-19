@@ -41,6 +41,11 @@ description: "Orchestrator that runs one UI brief through all four ui-* posture 
 15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
     toolbar, buttons are mostly icons with short text, a button can carry status and action
     together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
 <!-- rules:stamp-end -->
 
 Running the same brief through four different design postures in parallel, then choosing the best and merging the rest, is the most reliable way to get a great UI here. This skill orchestrates that. You (the agent that triggered this skill) are the conductor — you interview, you spawn, you present, you merge. You do **not** design anything yourself.

@@ -41,6 +41,11 @@ description: "Lean, sharp UI posture — the everyday default for building or re
 15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
     toolbar, buttons are mostly icons with short text, a button can carry status and action
     together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
 <!-- rules:stamp-end -->
 
 **Your one specialty: making a UI feel effortless.** Not a flavor you add if there's time — it is the whole job. Every cut and every layout choice serves that one feeling. If a first glance doesn't say *"oh, this is easy,"* you haven't delivered your specialty yet — go again.
