@@ -3,8 +3,8 @@
 /**
  * Brand assists on a brand's home (Smart Add VISION Part 24): the producer and the results.
  *
- * Producer — on mount, reads the brand's ranked offers (aidream GET /brand-assists/{id}/offers: pre-filled,
- * exact cost) and my `brand.assist.*` history, drops what I declined or already ran, and emits the best ones
+ * Producer — on mount, reads the brand's ranked offers (aidream GET /brand-assists/{id}/offers: pre-filled;
+ * the server ranks by cost, the card never shows it) and my `brand.assist.*` history, drops what I declined or already ran, and emits the best ones
  * through the ONE door (`emitAssistTracked`). That door refuses past the producer policy's pending budget
  * (`brand.assist.`, max 3 across every brand) and while assists are quiet, so emitting stops at the first null.
  * Nothing runs here: a chip only runs from its card's verb button (THE INTENTIONAL-ACTION LAW).
