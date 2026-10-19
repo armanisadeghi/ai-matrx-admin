@@ -8,6 +8,15 @@ export const BLOCK_LANE_LABEL: Record<BlockLane, string> = {
   system: "System",
 };
 
+/** The URL param the library's lane lives in (`/agents/prompt-blocks?lane=system`). */
+export const BLOCK_LANE_PARAM = "lane";
+export const DEFAULT_BLOCK_LANE: BlockLane = "organization";
+
+/** A lane the address names, when it is one of ours; otherwise the default lane. */
+export function blockLaneFromParam(value: string | null): BlockLane {
+  return value && (BLOCK_LANES as readonly string[]).includes(value) ? (value as BlockLane) : DEFAULT_BLOCK_LANE;
+}
+
 /** The Matrx System organization: system blocks live here. */
 export const SYSTEM_ORG_ID = "39c38960-d30c-4840-b0c1-c9960de95582";
 
