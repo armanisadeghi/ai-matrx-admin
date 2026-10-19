@@ -524,10 +524,16 @@ export default function WorkbookEditor({
     try {
       const { workbookUsesOrderedRoom } = await import("@ai-matrx/office/univer/collab");
       const knob = await readCollabOtRooms();
-      ordered = await workbookUsesOrderedRoom(workbookId, knob, async () => {
-        const res = await getLatestSnapshot(workbookId);
-        return !isServiceFailure(res) && res.data === null;
-      });
+      const who = (await getClaimsUser(supabase)).data?.user?.id;
+      ordered = await workbookUsesOrderedRoom(
+        workbookId,
+        knob,
+        async () => {
+          const res = await getLatestSnapshot(workbookId);
+          return !isServiceFailure(res) && res.data === null;
+        },
+        who ? `${workbookId}:${who}` : undefined,
+      );
     } catch (err) {
       console.warn("[workbook] could not choose the co-editing room; joining the relay room", err);
     }
