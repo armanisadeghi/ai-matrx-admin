@@ -2049,10 +2049,6 @@ export const CATALOG_NOUN_DISPLAY: Record<string, CatalogNounDisplay> = {
   "label": "Deal Stage Event",
   "family": "CRM"
  },
- "crm_enrichment_call": {
-  "label": "Enrichment Call",
-  "family": "CRM"
- },
  "crm_interaction": {
   "label": "Interaction",
   "family": "CRM"

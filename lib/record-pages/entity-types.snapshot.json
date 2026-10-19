@@ -1785,13 +1785,6 @@
   "has_organization": true
  },
  {
-  "token": "crm_enrichment_call",
-  "type": "entity",
-  "custom_fields_enabled": true,
-  "is_active": true,
-  "has_organization": true
- },
- {
   "token": "crm_interaction",
   "type": "detail",
   "custom_fields_enabled": true,

@@ -1846,17 +1846,6 @@ export const SHAREABLE_RESOURCE_REGISTRY = {
     urlPathTemplate: "",
     rlsUsesHasPermission: true,
   },
-  crm_enrichment_call: {
-    resourceType: "crm_enrichment_call",
-    tableName: "enrichment_call",
-    schemaName: "crm",
-    idColumn: "id",
-    ownerColumn: "created_by",
-    isPublicColumn: null,
-    displayLabel: "Crm Enrichment Call",
-    urlPathTemplate: "",
-    rlsUsesHasPermission: true,
-  },
   crm_registry_ingest_run: {
     resourceType: "crm_registry_ingest_run",
     tableName: "registry_ingest_run",

@@ -561,17 +561,6 @@
     "is_active": true
   },
   {
-    "resource_type": "crm_enrichment_call",
-    "table_name": "enrichment_call",
-    "id_column": "id",
-    "owner_column": "created_by",
-    "is_public_column": null,
-    "display_label": "Crm Enrichment Call",
-    "url_path_template": "",
-    "rls_uses_has_permission": true,
-    "is_active": true
-  },
-  {
     "resource_type": "crm_outreach_list",
     "table_name": "outreach_list",
     "id_column": "id",
