@@ -35,6 +35,8 @@ interface Row {
   detail: string | null;
   withData?: boolean;
   consoleErrors: string[];
+  /** Every response >= 400 while the id was open: the evidence behind a console error ("Failed to load resource" names no URL). */
+  failedRequests?: string[];
   errorCard?: string;
   ms: number;
 }
@@ -75,9 +77,32 @@ async function signIn(page: Page, base: string): Promise<void> {
   await page.waitForURL((u) => !u.pathname.startsWith("/login"), { timeout: 60_000 });
 }
 
+/**
+ * The debug indicators (promptDebugIndicator, resourceDebugIndicator, executionStateDebug) exist only
+ * while admin debug mode is on (components/debug/DebugModeGate closes them otherwise). Turn it ON
+ * deterministically: open the admin chip, read its toggle's aria-pressed, click only when it is off.
+ */
+async function ensureDebugMode(page: Page): Promise<boolean> {
+  await page.evaluate(() => (window as unknown as HookWindow).__overlaysTest.open("adminIndicator", {}));
+  const toggle = page.locator('button[title="Toggle Debug Mode"]').first();
+  try {
+    await toggle.waitFor({ timeout: 30_000 });
+    if ((await toggle.getAttribute("aria-pressed")) !== "true") await toggle.click();
+    await page.waitForFunction(() => document.querySelector('button[title="Toggle Debug Mode"]')?.getAttribute("aria-pressed") === "true", null, { timeout: 10_000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Open each id, wait, look for on-screen proof, classify, close. Shared by the gate and the self-test. */
 async function sweepIds(page: Page, ids: readonly string[], opts: { settle: number; data: Record<string, Record<string, unknown>> }): Promise<Row[]> {
   let current: string[] = [];
+  let failed: string[] = [];
+  const onResponse = (r: { status(): number; url(): string; request(): { method(): string } }) => {
+    if (r.status() >= 400) failed.push(`${r.status()} ${r.request().method()} ${r.url().slice(0, 300)}`);
+  };
+  page.on("response", onResponse);
   const onConsole = (m: ConsoleMessage) => {
     if (m.type() === "error") current.push(m.text().slice(0, 500));
   };
@@ -86,6 +111,7 @@ async function sweepIds(page: Page, ids: readonly string[], opts: { settle: numb
   const rows: Row[] = [];
   for (const id of ids) {
     current = [];
+    failed = [];
     const t0 = Date.now();
     const before = (await page.evaluate(`(${SNAPSHOT_SOURCE})()`)) as string;
     const instanceId = await page.evaluate(([x, d]) => (window as unknown as HookWindow).__overlaysTest.open(x, d), [id, opts.data[id] ?? {}] as const);
@@ -105,12 +131,13 @@ async function sweepIds(page: Page, ids: readonly string[], opts: { settle: numb
       .textContent({ timeout: 200 })
       .catch(() => null);
     const status = classifyOverlay({ open, errorCard, consoleErrors: current, probe });
-    rows.push({ id, status, proof: probe.proof, detail: probe.detail, ...(opts.data[id] ? { withData: true } : {}), consoleErrors: current, ...(errorCard ? { errorCard: errorCard.slice(0, 300) } : {}), ms: Date.now() - t0 });
+    rows.push({ id, status, proof: probe.proof, detail: probe.detail, ...(opts.data[id] ? { withData: true } : {}), consoleErrors: current, ...(failed.length ? { failedRequests: failed } : {}), ...(errorCard ? { errorCard: errorCard.slice(0, 300) } : {}), ms: Date.now() - t0 });
     console.log(`${status.padEnd(13)} ${id}${probe.detail ? `  ${probe.detail}` : ""}${current.length ? `  (${current.length} console errors)` : ""}`);
     await page.evaluate((x) => (window as unknown as HookWindow).__overlaysTest.close(x), id);
     await page.waitForTimeout(200);
   }
   page.off("console", onConsole);
+  page.off("response", onResponse);
   return rows;
 }
 
@@ -154,7 +181,7 @@ async function main(): Promise<void> {
   if (argv.includes("--self-test")) return selfTest();
   const base = arg("--url");
   if (!base) {
-    console.error("usage: sweep.ts --url <origin> [--min n] [--route /path] [--only a,b] [--out file] [--settle ms] [--data file] [--headed] | --self-test");
+    console.error("usage: sweep.ts --url <origin> [--min n] [--route /path] [--only a,b] [--out file] [--settle ms] [--data file] [--no-debug-mode] [--headed] | --self-test");
     process.exit(2);
   }
   const route = arg("--route") ?? "/notes";
@@ -172,6 +199,7 @@ async function main(): Promise<void> {
   // The hook arrives with the deferred singleton core (post-idle); wait for it.
   await page.waitForFunction(() => { const h = (window as unknown as Partial<HookWindow>).__overlaysTest; return !!h && h.ids().length > 0; }, null, { timeout: 120_000 });
   const ids: string[] = only ?? (await page.evaluate(() => (window as unknown as HookWindow).__overlaysTest.ids()));
+  if (!argv.includes("--no-debug-mode")) console.log(`admin debug mode on: ${await ensureDebugMode(page)}`);
   console.log(`sweeping ${ids.length} overlays on ${route}`);
   const rows = await sweepIds(page, ids, { settle, data });
   await browser.close();

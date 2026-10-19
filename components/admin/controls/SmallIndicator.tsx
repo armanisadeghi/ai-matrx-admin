@@ -108,6 +108,7 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({
         }}
         className={`p-0 rounded transition-colors ${isDebugMode ? "text-green-400" : "hover:bg-slate-700"}`}
         title="Toggle Debug Mode"
+        aria-pressed={isDebugMode}
       >
         <Bug size={12} />
       </button>

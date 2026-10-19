@@ -221,6 +221,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
             onClick={handleToggleDebugMode}
             className={`p-1 rounded transition-colors ${isDebugMode ? "bg-green-700 text-green-300" : "text-slate-400 hover:bg-slate-700"}`}
             title="Toggle Debug Mode"
+            aria-pressed={isDebugMode}
           >
             <Bug size={14} />
           </button>
