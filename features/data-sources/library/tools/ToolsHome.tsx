@@ -19,8 +19,9 @@ import { cn } from "@/lib/utils";
 import { LookupSuggestion } from "./people/LookupSuggestion";
 import { lookupHelp, planLookup, type LookupPlan } from "./people/lookupPlan";
 import { ToolRow } from "./ToolRow";
-import { ToolsAdminSlot } from "./ToolsAdminSlot";
-import { verdictLine } from "./toolFacts";
+import { ToolsAdminSlot, useToolsAdminView } from "./ToolsAdminSlot";
+import { readEntity, type EntityOffer } from "./people/entityOffers";
+import { dedupeByJob, verdictLine } from "./toolFacts";
 import { TOOL_TASKS } from "./toolTasks";
 
 export type ToolsSearch = CatalogSearchState & { loadMore: () => void; retry: () => void };
@@ -34,6 +35,7 @@ export function ToolsHome({
   onOpenTool,
   onGive,
   onLookup,
+  onOffer,
   dataSection,
 }: {
   search: ToolsSearch;
@@ -45,11 +47,15 @@ export function ToolsHome({
   onGive: (hit: CatalogToolHit) => void;
   /** The one box recognized a website, email, phone or person: open that lookup with the box filled. */
   onLookup: (plan: LookupPlan) => void;
-  /** The data sources that answer the same words, under the Tools. */
+  /** One offer from the box (a thing was typed): open that job with the box filled. */
+  onOffer: (offer: EntityOffer) => void;
+  /** The full data-source catalog door: shown to an admin only, never to a member. */
   dataSection: ReactNode;
 }) {
   const sentinel = useRef<HTMLDivElement | null>(null);
-  const { status, tools, verdict, nextCursor, loadMore } = search;
+  const { status, verdict, nextCursor, loadMore } = search;
+  const tools = dedupeByJob(search.tools);
+  const admin = useToolsAdminView();
   const searching = query.trim().length > 0 || family !== null;
 
   // Page on scroll: the sentinel under the last row asks for the next page as it comes into view.
@@ -65,7 +71,15 @@ export function ToolsHome({
 
   const firstLoad = (status === "idle" || status === "loading") && tools.length === 0;
   const line = verdictLine(verdict, query);
-  const lookup = planLookup(query);
+  const entity = family === null ? readEntity(query) : null;
+  // A bare dotted handle ("name.surname") reads as a website to the lookup planner; the handle wins.
+  const lookup = entity?.kind === "handle" || entity?.kind === "social_link" ? null : planLookup(query);
+  const settled = status === "succeeded" || status === "failed";
+  const strong = tools.length > 0 && verdict === "strong";
+  // A thing typed (a handle, a link, a website) is answered by its offers alone. A business name is answered by
+  // its offers unless the Tool search found a strong match for those very words.
+  const offers = entity && entity.offers.length > 0 && (entity.kind !== "business" || (settled && !strong)) ? entity.offers : [];
+  const showTools = offers.length === 0 || (entity?.kind === "business" && tools.length > 0 && verdict === "strong");
   // A recognized lookup is the answer to the box; the list of Tools waits one press away (and returns on a new query).
   const [listOpenFor, setListOpenFor] = useState<string | null>(null);
   const hideList = lookup !== null && listOpenFor !== query;
@@ -114,6 +128,23 @@ export function ToolsHome({
       ) : null}
 
       {lookup ? <LookupSuggestion plan={lookup} onLookup={onLookup} /> : null}
+      {offers.length > 0 ? (
+        <section className="flex flex-wrap gap-2" aria-label="What you can do" data-entity-offers={entity?.kind}>
+          {offers.map((offer) =>
+            offer.href ? (
+              <Button key={offer.id} variant="outline" asChild data-entity-offer={offer.id}>
+                <a href={offer.href} target="_blank" rel="noopener noreferrer">
+                  {offer.label}
+                </a>
+              </Button>
+            ) : (
+              <Button key={offer.id} variant="outline" onClick={() => onOffer(offer)} data-entity-offer={offer.id}>
+                {offer.label}
+              </Button>
+            ),
+          )}
+        </section>
+      ) : null}
       {help ? (
         <p className="text-sm text-muted-foreground" data-lookup-help="">
           {help}
@@ -141,6 +172,8 @@ export function ToolsHome({
               All jobs
             </Button>
           </div>
+          {showTools ? (
+            <>
           {line ? <p className="text-sm text-muted-foreground">{line}</p> : null}
 
           {firstLoad ? (
@@ -160,7 +193,10 @@ export function ToolsHome({
               }
             />
           ) : tools.length === 0 ? (
-            <EmptyState icon={<SearchX className="h-5 w-5" />} title="Nothing does that yet" line="Try other words." />
+            <NearestJobs onPick={(task) => {
+              onQuery(task.query);
+              onFamily(task.family);
+            }} />
           ) : (
             <div className={cn("flex flex-col gap-2", status === "loading" && "opacity-60 transition-opacity")}>
               {tools.map((hit) => (
@@ -177,11 +213,36 @@ export function ToolsHome({
               </Button>
             </div>
           ) : null}
+            </>
+          ) : null}
         </section>
       ) : null}
 
       {/* A job picked from the grid is answered by Tools alone; data sources join only words the person typed. */}
-      {hideList || family !== null ? null : dataSection}
+      {admin && !hideList && family === null ? dataSection : null}
+    </div>
+  );
+}
+
+/** No Tool matched the words and they are not a thing we know: the closest plain jobs, never a dead end. */
+function NearestJobs({ onPick }: { onPick: (task: (typeof TOOL_TASKS)[number]) => void }) {
+  return (
+    <div className="flex flex-col gap-3" data-nearest-jobs="">
+      <p className="text-sm text-muted-foreground">Pick a job</p>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {TOOL_TASKS.map((task) => (
+          <Button
+            key={task.id}
+            variant="outline"
+            data-tool-task={task.id}
+            onClick={() => onPick(task)}
+            icon={createElement(task.icon, { className: "h-4 w-4" })}
+            className="justify-start"
+          >
+            {task.title}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }

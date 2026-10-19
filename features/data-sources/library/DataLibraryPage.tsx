@@ -47,6 +47,7 @@ import { useLibrary, useLibraryOrganizationId, usePriceText } from "./hooks";
 import { GiveToAgentDialog } from "./tools/GiveToAgentDialog";
 import { ToolPage } from "./tools/ToolPage";
 import { ToolsHome } from "./tools/ToolsHome";
+import { foldForSearch } from "./tools/people/entityOffers";
 
 type View = { kind: "home" } | { kind: "browse" } | { kind: "task"; id: string };
 
@@ -69,7 +70,7 @@ export function DataLibraryPage() {
   const [family, setFamily] = useState<string | null>(null);
   const [opened, setOpened] = useState<CatalogToolHit | null>(null);
   const [giving, setGiving] = useState<CatalogToolHit | null>(null);
-  const search = useOwnToolSearch(query, family, !toolId && !dataMode);
+  const search = useOwnToolSearch(foldForSearch(query), family, !toolId && !dataMode);
   const toolsRequested = params.get("view") === "tools";
   const toolsOpen = search.status !== "unavailable";
 
@@ -104,7 +105,8 @@ export function DataLibraryPage() {
               }}
               onGive={setGiving}
               onLookup={(plan) => go({ tool: plan.jobKey, with: JSON.stringify(plan.inputs), run: "1", call: null })}
-              dataSection={<DataSourcesDoor query={query} onOpen={() => go({ view: null })} />}
+              onOffer={(offer) => go({ tool: offer.jobKey, with: JSON.stringify(offer.inputs), run: offer.complete ? "1" : null, call: null })}
+              dataSection={<DataSourcesDoor onOpen={() => go({ view: null })} />}
             />
           ) : (
             <>
@@ -148,29 +150,13 @@ function DataSourcesBody() {
   );
 }
 
-/**
- * Under the Tools: the data sources that answer the same words (a search), or one door into them.
- * The library is read only when a search needs it or the person asks for it.
- */
-function DataSourcesDoor({ query, onOpen }: { query: string; onOpen: () => void }) {
-  const searching = query.trim().length > 0;
-  const organizationId = useLibraryOrganizationId();
-  const library = useLibrary(searching ? organizationId : null);
-  const openSource = useOpenDataSourceWindow();
-  const matches = searching && library.data ? searchSources(library.data.sources, query).slice(0, 8) : [];
+/** The full data-source catalog door. Admin only (ToolsHome renders it for an admin): members never see the shop. */
+function DataSourcesDoor({ onOpen }: { onOpen: () => void }) {
   return (
-    <section className="flex flex-col gap-3" aria-label="Data sources">
-      {matches.length > 0 ? (
-        <>
-          <SectionTitle title="Data sources" count={matches.length} />
-          <CardGrid sources={matches} onOpen={openSource} />
-        </>
-      ) : null}
-      <div className="flex items-center justify-center">
-        <Button variant="outline" onClick={onOpen} icon={<Database className="h-4 w-4" />}>
-          Browse data sources
-        </Button>
-      </div>
+    <section className="flex items-center justify-center" aria-label="Data sources">
+      <Button variant="outline" onClick={onOpen} icon={<Database className="h-4 w-4" />}>
+        Browse data sources
+      </Button>
     </section>
   );
 }

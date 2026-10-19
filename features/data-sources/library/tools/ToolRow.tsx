@@ -14,10 +14,13 @@ import type { CatalogToolHit } from "@ai-matrx/agents/tools";
 
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 
-import { jobFamilyOf } from "./toolFacts";
+import { jobFamilyOf, memberSummary } from "./toolFacts";
+import { useToolsAdminView } from "./ToolsAdminSlot";
 
 export function ToolRow({ hit, onOpen, onGive }: { hit: CatalogToolHit; onOpen: () => void; onGive: () => void }) {
   const family = jobFamilyOf(hit.job_family);
+  const admin = useToolsAdminView();
+  const note = memberSummary(hit.summary, admin);
   return (
     <div
       data-tool-card={hit.tool_id}
@@ -32,15 +35,15 @@ export function ToolRow({ hit, onOpen, onGive }: { hit: CatalogToolHit; onOpen: 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="truncate text-sm font-semibold text-foreground">{hit.display_name}</h3>
-          {hit.state !== "live" ? <Badge tone="warning">Paused</Badge> : null}
+          {hit.state !== "live" ? <Badge tone="warning">Paused</Badge> : note.flagged ? <Badge tone="warning">May not work right now</Badge> : null}
         </div>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{hit.summary}</p>
+        {note.text ? <p className="line-clamp-2 text-sm text-muted-foreground">{note.text}</p> : null}
       </div>
       <Button
         variant="quiet"
         aria-label="Give to an agent"
         title="Give to an agent"
-        className="shrink-0 opacity-70 group-hover:opacity-100"
+        className="shrink-0"
         onClick={(e) => {
           e.stopPropagation();
           onGive();
