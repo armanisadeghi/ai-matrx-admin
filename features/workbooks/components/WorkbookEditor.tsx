@@ -148,6 +148,9 @@ type SaveStatus = "idle" | "dirty" | "saving" | "saved" | "error";
  * `workbook_sheet_names` surface write target so a bad name is refused with a
  * readable reason instead of failing silently inside Univer.
  */
+/** The longest an unbroken run of edits waits before the autosave runs anyway (see the debounce below). */
+const WORKBOOK_SAVE_MAX_WAIT_MS = 20_000;
+
 const SHEET_NAME_FORBIDDEN_CHARS = /[:\\/?*[\]]/;
 
 type Props = {
@@ -196,6 +199,7 @@ export default function WorkbookEditor({
   const apiRef = useRef<FUniver | null>(null);
   const univerRef = useRef<Univer | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveBurstStartRef = useRef<number | null>(null);
   const lastSaveByUserRef = useRef<string | null>(null);
   /** The snapshot row the canvas shows (loaded, saved, or replaced to). */
   const shownSnapshotIdRef = useRef<string | null>(null);
@@ -446,12 +450,19 @@ export default function WorkbookEditor({
               saveAllowedRef.current = true;
             }
             if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            // Debounce from the last edit, but never past WORKBOOK_SAVE_MAX_WAIT_MS from the first of an unbroken run:
+            // in a live room every peer's cell resets this timer, so the checkpoint (what thumbnails and previews read)
+            // otherwise waits for the first pause in everyone's typing (measured 76 s for 198 cells, fold2 2026-10-19).
+            const now = Date.now();
+            if (saveBurstStartRef.current == null) saveBurstStartRef.current = now;
+            const wait = Math.max(0, Math.min(2500, saveBurstStartRef.current + WORKBOOK_SAVE_MAX_WAIT_MS - now));
             saveTimerRef.current = setTimeout(() => {
+              saveBurstStartRef.current = null;
               if (!editableRef.current) return;
               if (!saveAllowedRef.current) return;
               saveAllowedRef.current = false;
               void performSave();
-            }, 2500);
+            }, wait);
           },
         );
 
