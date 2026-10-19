@@ -44,6 +44,7 @@ import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { Button } from "@ai-matrx/design-system/controls";
 import { entityRecordHome } from "@/features/unified-data/hub/doors";
 import { cn } from "@/lib/utils";
+import { NEEDS_EDIT_ACCESS, recordMayBeEdited } from "@/features/unified-data/needsEditAccess";
 import { EntityBackLinks } from "@/features/unified-data/components/EntityBackLinks";
 import { useCustomFieldsHost } from "@/features/unified-data/components/useCustomFieldsHost";
 import { useCollapsedCustomFieldsDoor } from "@/features/unified-data/components/useCollapsedCustomFieldsDoor";
@@ -342,6 +343,7 @@ function EntityCustomFieldsSection({
       </SectionLine>
     );
   }
+  const mayEdit = recordMayBeEdited(record);
   if (collapsed && !opened) {
     return (
       <SectionLine state="collapsed" title={title} className={className}>
@@ -365,7 +367,10 @@ function EntityCustomFieldsSection({
       {/* THE AGENT TWIN OF "ADD FIELD": the section hands its door to the
           platform write target \`custom_fields_add\`, so every page that embeds
           this line offers it to its agents (surfaces/runtime/custom-field-targets.ts). */}
-      <div data-section="custom-fields" data-state="ready" className="min-w-0">
+      <div data-section="custom-fields" data-state="ready" data-read-only={mayEdit ? undefined : "true"} className="min-w-0">
+      {/* A RECORD THE ACCESS LADDER DOES NOT LET HER EDIT shows its values read-only with the shared reason: a
+          disabled fieldset turns every control in the section off, so nothing is enabled and then refused. */}
+      <fieldset disabled={!mayEdit} className="m-0 min-w-0 border-0 p-0">
       <CustomFieldsSection
         entityToken={entityToken}
         recordId={recordId}
@@ -373,6 +378,12 @@ function EntityCustomFieldsSection({
         className={className}
         {...hostCustom}
       />
+      </fieldset>
+      {mayEdit ? null : (
+        <p className="mt-1 text-xs text-muted-foreground" data-custom-fields-reason="needs-edit-access">
+          {NEEDS_EDIT_ACCESS}
+        </p>
+      )}
       </div>
       {dialog}
     </RecordsMount>
