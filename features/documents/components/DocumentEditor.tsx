@@ -81,11 +81,8 @@ import "@univerjs/preset-docs-hyper-link/lib/index.css";
 import { UniverDocsDrawingPreset } from "@univerjs/preset-docs-drawing";
 import docsDrawingEnUS from "@univerjs/preset-docs-drawing/locales/en-US";
 import "@univerjs/preset-docs-drawing/lib/index.css";
-// Free Apache-2.0 docs add-ons: comments (thread state lives in the snapshot's
-// resources) and find & replace. The File menu opens both.
-import { UniverDocsThreadCommentPreset } from "@univerjs/preset-docs-thread-comment";
-import docsCommentEnUS from "@univerjs/preset-docs-thread-comment/locales/en-US";
-import "@univerjs/preset-docs-thread-comment/lib/index.css";
+// Free Apache-2.0 docs add-ons: find & replace. Comments are ours (useDocComments: the anchor is a custom
+// range in the body, the thread lives in platform.comments), never Univer's thread-comment decorations.
 import { UniverDocsTocPlugin } from "@univerjs/docs-toc";
 import { UniverDocsTocUIPlugin } from "@univerjs/docs-toc-ui";
 import docsTocEnUS from "@univerjs/docs-toc-ui/locale/en-US";
@@ -106,6 +103,7 @@ import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { selectDisplayName } from "@/lib/redux/selectors/userSelectors";
 import { RemoteDocCarets } from "@/features/documents/components/RemoteDocCarets";
+import { useDocComments } from "@/features/documents/components/useDocComments";
 import { Button } from "@ai-matrx/design-system";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -286,6 +284,15 @@ export default function DocumentEditor({
   // The body port — published while a document is mounted, withdrawn on
   // teardown. Resolved per call so it never holds a disposed instance.
   const bodyReady = bootState === "ready" && unitId !== null;
+  const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  const docComments = useDocComments({
+    univer: univerRef.current,
+    unitId,
+    documentId,
+    ready: bodyReady,
+    editable,
+    wrapperRef: canvasWrapperRef,
+  });
   useEffect(() => {
     if (!onBodyPort || !bodyReady) return undefined;
     const liveDocument = () => {
@@ -453,7 +460,7 @@ export default function DocumentEditor({
         container.appendChild(host);
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
-          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, docsCommentEnUS, findReplaceEnUS, docsTocEnUS) },
+          locales: { [LocaleType.EN_US]: merge({}, docsCoreEnUS, docsLinkEnUS, docsDrawingEnUS, findReplaceEnUS, docsTocEnUS) },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
           presets: [
@@ -465,7 +472,6 @@ export default function DocumentEditor({
             }),
             UniverDocsHyperLinkPreset(),
             UniverDocsDrawingPreset(),
-            UniverDocsThreadCommentPreset(),
           ],
           plugins: [UniverFindReplacePlugin, UniverDocsFindReplacePlugin, UniverDocsTocPlugin, UniverDocsTocUIPlugin],
         });
@@ -876,9 +882,10 @@ export default function DocumentEditor({
               icon={<MessageSquare />}
               aria-label="Comments"
               title="Comments"
-              className="hidden sm:inline-flex"
+              className="hidden aria-pressed:bg-accent sm:inline-flex"
               disabled={bootState !== "ready"}
-              onClick={() => void apiRef.current?.executeCommand("docs.operation.toggle-comment-panel")}
+              aria-pressed={docComments.open}
+              onClick={docComments.toggle}
             />
             {chrome.actions}
           </>
@@ -931,11 +938,13 @@ export default function DocumentEditor({
                   readStyle={() => (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle as never}
                 />
               ) : null}
-              <div className="relative min-h-0 min-w-0 flex-1">
+              <div ref={canvasWrapperRef} className="relative min-h-0 min-w-0 flex-1">
                 <div ref={containerRef} className="absolute inset-0" />
                 <RemoteDocCarets univer={univerRef.current} unitId={unitId} carets={awareness?.carets ?? NO_CARETS} />
+                {docComments.layer}
               </div>
             </div>
+            {docComments.rail}
           </div>
         </div>
       </EditorDocumentHeader>
