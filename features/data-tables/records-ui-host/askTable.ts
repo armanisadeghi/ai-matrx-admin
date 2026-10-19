@@ -19,7 +19,8 @@ import type { TableAskAgentAnswer, TableAskOutcome, TableAskRequest } from "@ai-
 import type { useAgentLauncher } from "@ai-matrx/chat/agents/hooks/useAgentLauncher";
 
 export const TABLE_ASK_MANDATE_KEY = MANDATE_KEYS.table__ask;
-export const TABLE_ASK_MAX_WORDS = "120";
+// A number: table.ask declares `max_words` an integer and its binding checks the kind.
+export const TABLE_ASK_MAX_WORDS = 120;
 
 type LaunchMandate = ReturnType<typeof useAgentLauncher>["launchMandate"];
 

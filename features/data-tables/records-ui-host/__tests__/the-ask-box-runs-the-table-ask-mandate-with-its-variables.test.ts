@@ -20,7 +20,7 @@ describe("askTableByMandate", () => {
     const [key, options] = launchMandate.mock.calls[0] as unknown as [string, Record<string, any>];
     expect(key).toBe("table.ask");
     expect(options.config.displayMode).toBe("direct");
-    expect(options.runtime.variables).toEqual({ table_id: TABLE, question: "past due?", view_id: "", max_words: "120", today: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \(.+\)$/) });
+    expect(options.runtime.variables).toEqual({ table_id: TABLE, question: "past due?", view_id: "", max_words: 120, today: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \(.+\)$/) });
     expect(options.runtime.userInput).toBeUndefined();
     expect(got).toEqual({
       ok: true,
