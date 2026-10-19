@@ -67,3 +67,16 @@ export interface FrameTab {
   label: string;
   count?: number;
 }
+
+/**
+ * One right-side header tool (search, notifications, account …). The header is the same in
+ * every form: on a phone, `phone: "show"` tools stay in the header and the rest move into "…".
+ */
+export interface FrameHeaderTool {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  onSelect?: () => void;
+  /** Default `"menu"`: on a phone the tool is an item in the "…" menu. */
+  phone?: "show" | "menu";
+}

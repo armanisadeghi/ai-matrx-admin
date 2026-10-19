@@ -8,8 +8,8 @@ import { Check } from "lucide-react";
 import { SegmentedControl } from "@ai-matrx/design-system/controls";
 import { AppFrame } from "@/features/shell/frame/AppFrame";
 import { PRODUCTS, PRODUCT_FAMILIES, productById } from "@/features/shell/frame/products";
-import { HeaderEndPlaceholders, defaultPageActions } from "@/features/shell/frame/SheetHeader";
-import type { FrameCrumb, FrameVariant } from "@/features/shell/frame/types";
+import { defaultPageActions, placeholderHeaderTools } from "@/features/shell/frame/SheetHeader";
+import type { FrameCrumb, FrameProduct, FrameVariant } from "@/features/shell/frame/types";
 import {
   CONTACTS,
   ChatThread,
@@ -21,21 +21,44 @@ import {
   WorkspaceSample,
 } from "./samples";
 
-type ProductId = "crm" | "docs" | "chat";
+type SampleId = "crm" | "docs" | "chat";
 type Width = "1440" | "1280" | "1024" | "375";
 type Theme = "light" | "dark";
 
-const DEFAULT_VARIANT: Record<ProductId, FrameVariant> = { crm: "list", docs: "record", chat: "light" };
+const SAMPLE_IDS: readonly SampleId[] = ["chat", "crm", "docs"];
+const DEFAULT_VARIANT: Record<SampleId, FrameVariant> = { crm: "list", docs: "record", chat: "light" };
+const DEFAULT_ITEM: Record<SampleId, string> = { crm: "people", docs: "documents", chat: "c-1" };
 
-export function ShellPlayground() {
-  const [productId, setProductId] = useState<ProductId>("crm");
-  const [variant, setVariant] = useState<FrameVariant>("list");
+function isSample(id: string): id is SampleId {
+  return (SAMPLE_IDS as readonly string[]).includes(id);
+}
+
+/** Every link in the playground stays on this page: `?product=<id>&item=<id>`. */
+function labHref(product: string, item?: string) {
+  return `/lab/shell?product=${encodeURIComponent(product)}${item ? `&item=${encodeURIComponent(item)}` : ""}`;
+}
+
+/** The real product list with every home and menu link pointed back at the playground. */
+const LAB_PRODUCTS: readonly FrameProduct[] = PRODUCTS.map((p) => ({
+  ...p,
+  homeHref: labHref(p.id),
+  menu: p.menu.map((section) => ({
+    ...section,
+    items: section.items.map((item) => ({ ...item, href: labHref(p.id, item.id) })),
+  })),
+}));
+
+export function ShellPlayground({ initialProduct, initialItem }: { initialProduct?: string; initialItem?: string }) {
+  const startProduct = initialProduct && productById(initialProduct) ? initialProduct : "crm";
+  const [productId, setProductId] = useState<string>(startProduct);
+  const [variant, setVariant] = useState<FrameVariant>(isSample(startProduct) ? DEFAULT_VARIANT[startProduct] : "workspace");
+  const [itemId, setItemId] = useState<string | null>(initialItem ?? null);
   const [theme, setTheme] = useState<Theme>("light");
   const [width, setWidth] = useState<Width>("1440");
   const [favorites, setFavorites] = useState<string[]>(["chat", "crm", "docs"]);
   const [contactId, setContactId] = useState<string | null>(null);
   const [view, setView] = useState("all");
-  const [starred, setStarred] = useState(false);
+  const [starred, setStarred] = useState<string[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
   // The playground's theme switch drives the page's own dark class (portals included).
@@ -48,12 +71,13 @@ export function ShellPlayground() {
     };
   }, [theme]);
 
-  const product = productById(productId) ?? PRODUCTS[0];
+  const product = LAB_PRODUCTS.find((p) => p.id === productId) ?? LAB_PRODUCTS[0];
   const phone = width === "375";
   const contact = CONTACTS.find((c) => c.id === contactId) ?? null;
 
-  function pickProduct(id: ProductId) {
+  function pickProduct(id: SampleId) {
     setProductId(id);
+    setItemId(null);
     setVariant(DEFAULT_VARIANT[id]);
     setContactId(null);
     setStatus(null);
@@ -72,12 +96,11 @@ export function ShellPlayground() {
   let properties: React.ReactNode = undefined;
   let tabs: React.ComponentProps<typeof AppFrame>["tabs"] = undefined;
   let activeMenuItemId: string;
-  let favoritable = false;
   let onBack: (() => void) | undefined;
   let statusText: string;
 
   if (productId === "crm") {
-    activeMenuItemId = "people";
+    activeMenuItemId = itemId ?? DEFAULT_ITEM.crm;
     const rows = CONTACTS.filter((c) =>
       view === "all" ? true : view === "customers" ? c.stage === "Customer" : c.stage !== "Customer",
     );
@@ -85,18 +108,17 @@ export function ShellPlayground() {
     const record = contact ?? CONTACTS[0];
     if (showRecord) {
       crumbs = [
-        { id: "crm", label: "CRM", href: "/crm", onSelect: () => setContactId(null) },
-        { id: "people", label: "People & Companies", href: "/crm/people", onSelect: () => { setContactId(null); setVariant("list"); } },
+        { id: "crm", label: "CRM", href: labHref("crm"), onSelect: () => setContactId(null) },
+        { id: "people", label: "People & Companies", href: labHref("crm", "people"), onSelect: () => { setContactId(null); setVariant("list"); } },
         { id: record.id, label: record.name },
       ];
       body = <ContactRecord contact={record} />;
       properties = <ContactProperties contact={record} />;
-      favoritable = true;
       onBack = () => { setContactId(null); setVariant("list"); };
       statusText = "Saved";
     } else {
       crumbs = [
-        { id: "crm", label: "CRM", href: "/crm" },
+        { id: "crm", label: "CRM", href: labHref("crm") },
         { id: "people", label: "People & Companies" },
       ];
       tabs = {
@@ -125,10 +147,10 @@ export function ShellPlayground() {
       statusText = `${rows.length} contacts`;
     }
   } else if (productId === "docs") {
-    activeMenuItemId = "documents";
+    activeMenuItemId = itemId ?? DEFAULT_ITEM.docs;
     if (variant === "list") {
       crumbs = [
-        { id: "docs", label: "Docs", href: "/docs" },
+        { id: "docs", label: "Docs", href: labHref("docs") },
         { id: "documents", label: "Documents" },
       ];
       tabs = {
@@ -145,25 +167,42 @@ export function ShellPlayground() {
       statusText = "4 documents";
     } else {
       crumbs = [
-        { id: "docs", label: "Docs", href: "/docs", onSelect: () => setVariant("list") },
-        { id: "handbook", label: "Company handbook", href: "/docs/f-handbook", onSelect: () => setVariant("list") },
+        { id: "docs", label: "Docs", href: labHref("docs"), onSelect: () => setVariant("list") },
+        { id: "handbook", label: "Company handbook", href: labHref("docs", "f-handbook"), onSelect: () => setVariant("list") },
         { id: "doc", label: "Onboarding checklist for new clinics" },
       ];
       body = variant === "workspace" ? <WorkspaceSample label="Slides canvas" /> : <DocPage />;
-      favoritable = true;
       onBack = () => setVariant("list");
       statusText = "Saved · edited 10 min ago";
     }
-  } else {
-    activeMenuItemId = "c-1";
+  } else if (productId === "chat") {
+    activeMenuItemId = itemId ?? DEFAULT_ITEM.chat;
     crumbs = [
-      { id: "chat", label: "Chat", href: "/chat" },
+      { id: "chat", label: "Chat", href: labHref("chat") },
       { id: "c-1", label: "Quarterly plan outline" },
     ];
     body = variant === "workspace" ? <WorkspaceSample label="Chat canvas" /> : <ChatThread />;
-    favoritable = true;
     statusText = "Synced";
+  } else {
+    // Any other product: its own sidebar and a labelled sample body.
+    const items = product.menu.flatMap((section) => section.items);
+    const item = items.find((i) => i.id === itemId) ?? items[0];
+    activeMenuItemId = item.id;
+    crumbs = [
+      { id: product.id, label: product.name, href: labHref(product.id) },
+      { id: item.id, label: item.label },
+    ];
+    body = <WorkspaceSample label={`${product.name} · ${item.label}`} />;
+    statusText = "Sample product";
   }
+
+  // Favoriting is a property of the page, never of the variant: every sample page can be starred.
+  const pageKey = `${productId}:${crumbs[crumbs.length - 1].id}`;
+  const favorite = {
+    starred: starred.includes(pageKey),
+    onToggle: () =>
+      setStarred((keys) => (keys.includes(pageKey) ? keys.filter((k) => k !== pageKey) : [...keys, pageKey])),
+  };
 
   const stageWidth = Number(width);
 
@@ -172,9 +211,9 @@ export function ShellPlayground() {
       {/* The playground toolbar — outside the frame. */}
       <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-border bg-card px-4 py-2">
         <span className="type-title">App frame playground</span>
-        <SegmentedControl<ProductId>
+        <SegmentedControl<SampleId>
           aria-label="Product"
-          value={productId}
+          value={isSample(productId) ? productId : null}
           onValueChange={pickProduct}
           data={[
             { value: "chat", label: "Chat" },
@@ -224,17 +263,20 @@ export function ShellPlayground() {
           style={{ width: stageWidth, height: phone ? 760 : "100%", minHeight: 560 }}
         >
           <AppFrame
-            products={PRODUCTS}
+            products={LAB_PRODUCTS}
             families={PRODUCT_FAMILIES}
             product={product}
             favorites={favorites}
             onFavoritesChange={setFavorites}
             activeMenuItemId={activeMenuItemId}
-            onSelectMenuItem={(item) => setStatus(`${item.label} pressed (sample)`)}
+            onSelectMenuItem={(item) => {
+              setItemId(item.id);
+              setStatus(`${item.label} opened (sample)`);
+            }}
             crumbs={crumbs}
-            favorite={favoritable ? { starred, onToggle: () => setStarred((s) => !s) } : undefined}
+            favorite={favorite}
             actions={actions}
-            headerEnd={<HeaderEndPlaceholders />}
+            headerTools={placeholderHeaderTools((id) => setStatus(`${id} pressed (sample)`))}
             onBack={onBack}
             tabs={tabs}
             variant={variant}

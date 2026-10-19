@@ -3,7 +3,7 @@
 // The sheet's footer bar — desktop only, thin, identical in every variant.
 // Left: the save/sync status slot. Right: the Agent companion toggle, history, help.
 import type { ReactNode } from "react";
-import { CircleHelp, History, Webhook, X } from "lucide-react";
+import { CircleHelp, History, PanelRight, Webhook, X } from "lucide-react";
 import { Button, EmptyState } from "@ai-matrx/design-system/controls";
 
 export interface SheetFooterProps {
@@ -12,9 +12,12 @@ export interface SheetFooterProps {
   onCompanionToggle: () => void;
   onHistory?: () => void;
   onHelp?: () => void;
+  /** Medium form: the properties panel and the companion take turns; this brings properties back. */
+  propertiesToggle?: { shown: boolean; onToggle: () => void };
 }
 
 export function SheetFooter({
+  propertiesToggle,
   status,
   companionOpen,
   onCompanionToggle,
@@ -26,6 +29,16 @@ export function SheetFooter({
       <div className="type-meta flex min-w-0 flex-1 items-center gap-1.5 truncate text-muted-foreground">
         {status}
       </div>
+      {propertiesToggle ? (
+        <Button
+          variant={propertiesToggle.shown ? "outline" : "quiet"}
+          icon={<PanelRight />}
+          aria-pressed={propertiesToggle.shown}
+          onClick={propertiesToggle.onToggle}
+        >
+          Properties
+        </Button>
+      ) : null}
       <Button
         variant={companionOpen ? "outline" : "quiet"}
         icon={<Webhook />}

@@ -10,8 +10,8 @@
 // changes only the body. Host-agnostic on purpose (props in; design-system,
 // lucide and cn only) so the move into @ai-matrx/shell is a copy.
 import "./frame.css";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { KeyboardEvent, ReactNode } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { Menu, Webhook } from "lucide-react";
 import { PortalContainerProvider } from "@ai-matrx/design-system";
 import { Tabs } from "@ai-matrx/design-system/controls";
@@ -22,10 +22,12 @@ import { FrameSidebar } from "./FrameSidebar";
 import { CompanionPlaceholder, SheetFooter } from "./SheetFooter";
 import { SheetHeader, SidebarRestore } from "./SheetHeader";
 import type { FrameFavorite } from "./SheetHeader";
+import { useModalPanel } from "./useModalPanel";
 import type {
   FrameAction,
   FrameCrumb,
   FrameForm,
+  FrameHeaderTool,
   FrameMenuItem,
   FrameProduct,
   FrameTab,
@@ -58,8 +60,8 @@ export interface AppFrameProps {
   favorite?: FrameFavorite;
   /** The "…" items — always shown. See `defaultPageActions`. */
   actions: readonly FrameAction[];
-  /** The right-side header slot (search, notifications, account). */
-  headerEnd?: ReactNode;
+  /** The right-side header tools (search, notifications, account); see `placeholderHeaderTools`. */
+  headerTools?: readonly FrameHeaderTool[];
   /** Phone: where back goes. Without it, a nested page shows the menu button. */
   onBack?: () => void;
   // ── the tabs row (only when given) ──
@@ -121,8 +123,6 @@ function useControllable(value: boolean | undefined, onChange: ((v: boolean) => 
   return [current, set] as const;
 }
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 export function AppFrame(props: AppFrameProps) {
   const {
     products,
@@ -135,7 +135,7 @@ export function AppFrame(props: AppFrameProps) {
     crumbs,
     favorite,
     actions,
-    headerEnd,
+    headerTools,
     onBack,
     tabs,
     variant,
@@ -156,8 +156,9 @@ export function AppFrame(props: AppFrameProps) {
     false,
   );
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [propertiesOpen, setPropertiesOpen] = useState(true);
   const drawerRef = useRef<HTMLDivElement>(null);
-  const openerRef = useRef<HTMLElement | null>(null);
+  const companionRef = useRef<HTMLDivElement>(null);
 
   const phone = form === "phone";
   const medium = form === "medium";
@@ -165,65 +166,64 @@ export function AppFrame(props: AppFrameProps) {
   const inlineSidebar = form === "desktop";
   const showSidebar = inlineSidebar && sidebarOpen;
   const drawerShown = !inlineSidebar && drawerOpen;
+  const phoneCompanion = phone && companionOpen;
+  // Medium: the properties panel and the companion take turns; the footer toggle brings properties back.
+  const propertiesShown = Boolean(properties) && (!medium || (propertiesOpen && !companionOpen));
 
   const grid: AppGridProps = { products, families, favorites, onFavoritesChange };
 
-  function openDrawer() {
-    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setDrawerOpen(true);
-  }
-
-  // Focus moves into the drawer once it is shown (not before: an inert subtree refuses focus).
-  useEffect(() => {
-    if (drawerShown) drawerRef.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
-  }, [drawerShown]);
-
-  function closeDrawer() {
-    setDrawerOpen(false);
-    const opener = openerRef.current;
-    requestAnimationFrame(() => {
-      // The opener may have been a menu item that no longer exists: fall back to the header's first control.
-      if (opener?.isConnected) opener.focus();
-      else root?.querySelector<HTMLElement>("header button")?.focus();
-    });
-  }
-
-  // Esc closes the drawer from anywhere — unless a popover (the app grid) is open and takes it first.
-  useEffect(() => {
-    if (!drawerShown) return;
-    function onKey(e: globalThis.KeyboardEvent) {
-      if (e.key !== "Escape") return;
-      if (root?.querySelector("[data-radix-popper-content-wrapper]")) return;
-      closeDrawer();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+  const drawer = useModalPanel({
+    open: drawerShown,
+    panelRef: drawerRef,
+    onClose: () => setDrawerOpen(false),
+    root,
+  });
+  const phoneCompanionPanel = useModalPanel({
+    open: phoneCompanion,
+    panelRef: companionRef,
+    onClose: () => setCompanionOpen(false),
+    root,
   });
 
-  // Tab stays inside the drawer while it is open.
-  function trapFocus(e: KeyboardEvent<HTMLDivElement>) {
-    if (e.key !== "Tab" || !drawerRef.current) return;
-    if (!drawerRef.current.contains(e.target as Node)) return; // a portalled popover handles its own Tab
-    const items = Array.from(drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-    if (items.length === 0) return;
-    const first = items[0];
-    const last = items[items.length - 1];
-    if (e.shiftKey && document.activeElement === first) {
-      e.preventDefault();
-      last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
-      e.preventDefault();
-      first.focus();
+  function openDrawer() {
+    drawer.rememberOpener();
+    setDrawerOpen(true);
+  }
+  function closeDrawer() {
+    setDrawerOpen(false);
+  }
+  function toggleCompanion() {
+    if (!companionOpen && phone) phoneCompanionPanel.rememberOpener();
+    setCompanionOpen(!companionOpen);
+  }
+  function toggleProperties() {
+    if (propertiesShown) setPropertiesOpen(false);
+    else {
+      setPropertiesOpen(true);
+      setCompanionOpen(false);
     }
   }
 
+  // Chosen from the "…" menu, whose item is gone once it closes: focus returns to the menu's trigger.
+  const menuTrigger = () => root?.querySelector<HTMLElement>('header [aria-haspopup="menu"]') ?? null;
   const phoneActions: FrameAction[] = [
-    { id: "open-menu", label: `${product.name} menu`, icon: Menu, onSelect: openDrawer },
+    {
+      id: "open-menu",
+      label: `${product.name} menu`,
+      icon: Menu,
+      onSelect: () => {
+        drawer.rememberOpener(menuTrigger());
+        setDrawerOpen(true);
+      },
+    },
     {
       id: "agent",
       label: companionOpen ? "Close agent" : "Agent",
       icon: Webhook,
-      onSelect: () => setCompanionOpen(!companionOpen),
+      onSelect: () => {
+        if (!companionOpen) phoneCompanionPanel.rememberOpener(menuTrigger());
+        setCompanionOpen(!companionOpen);
+      },
     },
   ];
 
@@ -276,7 +276,7 @@ export function AppFrame(props: AppFrameProps) {
               favorite={favorite}
               actions={actions}
               phoneActions={phoneActions}
-              end={headerEnd}
+              tools={headerTools}
               start={
                 !phone && !showSidebar ? (
                   <SidebarRestore
@@ -301,13 +301,24 @@ export function AppFrame(props: AppFrameProps) {
             ) : null}
 
             <div className="relative flex min-h-0 flex-1 overflow-hidden">
-              {/* Medium: the companion and the properties panel take turns, so the body keeps its width. */}
-              <FrameBody variant={variant} phone={phone} properties={medium && companionOpen ? undefined : properties}>
-                {children}
-              </FrameBody>
+              {/* The body is inert while the phone companion covers it. */}
+              <div className="flex min-h-0 min-w-0 flex-1" inert={phoneCompanion}>
+                <FrameBody variant={variant} phone={phone} properties={propertiesShown ? properties : undefined}>
+                  {children}
+                </FrameBody>
+              </div>
               {phone ? (
-                companionOpen ? (
-                  <div className="mf-surface-sheet absolute inset-0 z-10">{companionBody}</div>
+                phoneCompanion ? (
+                  <div
+                    ref={companionRef}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Agent"
+                    onKeyDown={phoneCompanionPanel.onKeyDown}
+                    className="mf-surface-sheet matrx-touch-targets absolute inset-0 z-10"
+                  >
+                    {companionBody}
+                  </div>
                 ) : null
               ) : (
                 <div
@@ -329,7 +340,10 @@ export function AppFrame(props: AppFrameProps) {
               <SheetFooter
                 status={status}
                 companionOpen={companionOpen}
-                onCompanionToggle={() => setCompanionOpen(!companionOpen)}
+                onCompanionToggle={toggleCompanion}
+                propertiesToggle={
+                  medium && properties ? { shown: propertiesShown, onToggle: toggleProperties } : undefined
+                }
                 onHistory={onHistory}
                 onHelp={onHelp}
               />
@@ -340,7 +354,8 @@ export function AppFrame(props: AppFrameProps) {
         {/* The drawer (medium + phone): inside the frame, not the window, so it follows the frame's box. */}
         {!inlineSidebar ? (
           <div
-            className={cn("mf-drawer-layer absolute inset-0 z-20", !drawerShown && "invisible")}
+            // matrx-touch-targets: drawer rows and buttons get the platform's 44px touch floor.
+            className={cn("mf-drawer-layer matrx-touch-targets absolute inset-0 z-20", !drawerShown && "invisible")}
             data-open={drawerShown ? "" : undefined}
             inert={!drawerShown}
           >
@@ -356,7 +371,7 @@ export function AppFrame(props: AppFrameProps) {
               role="dialog"
               aria-modal="true"
               aria-label={`${product.name} menu`}
-              onKeyDown={trapFocus}
+              onKeyDown={drawer.onKeyDown}
               className={cn(
                 "mf-slide mf-surface-canvas mf-drawer-w absolute inset-y-0 left-0",
                 drawerShown ? "translate-x-0" : "-translate-x-full",
