@@ -241,6 +241,10 @@ jobs:
         run: pnpm check:notice-new-tab
       - name: The notification new-tab guard can still fail
         run: pnpm check:notice-new-tab:self-test
+      - name: Points show only where someone is deciding or investigating (law 14)
+        run: pnpm check:cost-display
+      - name: The points-placement guard can still fail
+        run: pnpm check:cost-display:self-test
       - name: Emails, phones and social profiles render through the canonical contact values
         run: pnpm check:contact-values
       - name: The contact-values guard can still fail
