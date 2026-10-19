@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 2,
+  "version": 3,
   "title": "Auto Repair Shop HQ",
   "description": "Track repair orders from estimate to pickup, manage parts stock and unpaid invoices.",
   "forWho": "Independent auto repair shops and garages",
@@ -2241,7 +2241,7 @@
         "Foundry Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

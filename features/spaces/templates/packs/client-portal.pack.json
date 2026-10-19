@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "formerSlugs": [
-    "spaces-sp0155"
-  ],
-  "version": 4,
+  "version": 5,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -1482,7 +1479,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2448,5 +2445,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0155"
+  ]
 }

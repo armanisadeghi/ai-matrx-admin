@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 2,
+  "version": 3,
   "title": "Pest Control Business HQ",
   "description": "Run recurring treatment routes, keep service records, track supplies and unpaid invoices.",
   "forWho": "Pest control and extermination companies",
@@ -2237,7 +2237,7 @@
         "Plover Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

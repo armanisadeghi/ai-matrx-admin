@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 3,
+  "version": 4,
   "title": "Architecture Firm Studio",
   "description": "Clients, design phases, drawing sets, RFIs and submittals for an architecture firm.",
   "forWho": "Small and mid-sized architecture practices",
@@ -2657,7 +2657,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

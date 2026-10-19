@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 2,
+  "version": 3,
   "title": "Dental Practice",
   "description": "Patients, appointments, treatment plans, claims and supplies for a small dental office.",
   "forWho": "Dental offices and solo dentists",
@@ -2611,7 +2611,7 @@
         "Meridian Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

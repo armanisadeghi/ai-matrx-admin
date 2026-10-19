@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 2,
+  "version": 3,
   "title": "Boutique Clothing Store HQ",
   "description": "Track inventory by season, sales, customers and vendors for a clothing boutique.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -1944,7 +1944,7 @@
         "Willow Passage"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 5,
+  "version": 6,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -1928,7 +1928,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

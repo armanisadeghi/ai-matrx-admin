@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0467",
-  "version": 3,
+  "version": 4,
   "title": "Coffee Shop Operations",
   "description": "Menu margins, supplies and par levels, waste log, equipment service and orders for a cafe.",
   "forWho": "Independent coffee shops and cafes",
@@ -2035,7 +2035,7 @@
         "Almond Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

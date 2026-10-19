@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 5,
+  "version": 6,
   "title": "Newsletter Growth & Sponsors",
   "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
@@ -1666,7 +1666,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

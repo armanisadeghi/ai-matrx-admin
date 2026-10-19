@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0408",
-  "version": 2,
+  "version": 3,
   "title": "Law Firm Case Management",
   "description": "Clients, matters, deadlines and time entries for a small law firm.",
   "forWho": "Small law firms and solo attorneys",
@@ -1824,7 +1824,7 @@
         "Cannery Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

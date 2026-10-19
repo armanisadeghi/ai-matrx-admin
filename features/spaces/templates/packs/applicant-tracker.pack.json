@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0252",
-  "version": 5,
+  "version": 6,
   "title": "Applicant Tracker",
   "description": "Recruiters and hiring managers: roles, candidates and interviews on a hiring board.",
   "forWho": "Recruiters and hiring managers",
@@ -1616,7 +1616,7 @@
         "Larkmoor Terrace"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

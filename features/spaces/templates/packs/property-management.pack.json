@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 2,
+  "version": 3,
   "title": "Property Management",
   "description": "Properties, units, leases, rent payments and maintenance requests in one place.",
   "forWho": "Property managers and landlords",
@@ -2405,7 +2405,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

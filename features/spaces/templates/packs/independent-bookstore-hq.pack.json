@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 2,
+  "version": 3,
   "title": "Independent Bookstore HQ",
   "description": "Manage titles, special orders, publishers, events and readers for a bookstore.",
   "forWho": "Independent bookstores and book sellers",
@@ -1940,7 +1940,7 @@
         "Chapter Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

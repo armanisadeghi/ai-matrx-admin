@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 2,
+  "version": 3,
   "title": "Physical Therapy Clinic",
   "description": "Referrals, plans of care, visits and visit counts for a small therapy clinic.",
   "forWho": "Physical therapy and rehab clinics",
@@ -2111,7 +2111,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

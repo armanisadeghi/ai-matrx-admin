@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 2,
+  "version": 3,
   "title": "Med Spa",
   "description": "Clients, appointments, memberships with credits and inventory for a med spa.",
   "forWho": "Medical spas and aesthetic clinics",
@@ -1820,7 +1820,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
