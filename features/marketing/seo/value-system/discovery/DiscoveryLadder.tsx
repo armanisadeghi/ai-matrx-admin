@@ -65,6 +65,7 @@ import {
   type DiscoveryStepStatus,
 } from "./data";
 import { usePublishRunningStep } from "./knowledge-live";
+import { OWNER_FACTS_EDIT_TARGET, OwnerFacts } from "./OwnerFacts";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
@@ -241,6 +242,7 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
 
   return (
     <div className="flex flex-col gap-3">
+      <OwnerFacts siteId={siteId} />
       <SectionCard
         title="Discovery steps"
         about="AI reads this site cold — its own crawled pages, nothing else — and proposes each answer in order. Read a step's result, then run the next. Re-run any step to redo it; later steps use the newest result."
@@ -348,6 +350,12 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
             {open && completed && row?.artifact ? (
               <div className="border-t border-border p-3">
                 <StepArtifact step={step} artifact={row.artifact} />
+                <CorrectThis
+                  lowConfidence={
+                    typeof row.artifact.confidence === "number" &&
+                    row.artifact.confidence < LOW_CONFIDENCE
+                  }
+                />
               </div>
             ) : null}
           </li>
@@ -356,6 +364,35 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
       </ol>
       </SectionCard>
       <SetupDoors siteId={siteId} brandId={brandId ?? null} />
+    </div>
+  );
+}
+
+/** Below this the agent itself says it is guessing. */
+const LOW_CONFIDENCE = 50;
+
+/** The way out of a wrong or thin result: tell us, then re-run. */
+function CorrectThis({ lowConfidence }: { lowConfidence: boolean }) {
+  const focusFacts = () => {
+    const box = document.querySelector<HTMLElement>(
+      `[data-edit-target="${OWNER_FACTS_EDIT_TARGET}"]`,
+    );
+    box?.scrollIntoView({ behavior: "smooth", block: "center" });
+    box?.focus();
+  };
+  return (
+    <div
+      className={cn(
+        "mt-3 flex flex-wrap items-center gap-2 rounded-md border px-3 py-2 type-secondary",
+        lowConfidence ? "border-warning/40 bg-warning/10" : "border-border",
+      )}
+    >
+      <span className="min-w-0 flex-1 text-foreground">
+        {lowConfidence ? "The agent was guessing here." : "Something wrong or missing?"}
+      </span>
+      <Button variant="outline" onClick={focusFacts}>
+        Tell us, then re-run
+      </Button>
     </div>
   );
 }
