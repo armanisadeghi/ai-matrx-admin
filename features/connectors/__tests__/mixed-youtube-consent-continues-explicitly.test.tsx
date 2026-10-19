@@ -243,17 +243,26 @@ it("does not advance to YouTube when the first step is only partially granted", 
 
 it("keeps the continuation bound until the returned account can be confirmed", async () => {
   function MissingAccountFixture() {
+    const [accounts, setAccounts] = useState<ConnectorAccount[]>([]);
+    const [refreshes, setRefreshes] = useState(0);
     return (
       <ConnectorConsentBody
         provider={provider}
-        accounts={[]}
+        accounts={accounts}
         rollout={rollout}
         isLoading={false}
         rolloutUnavailable={false}
         errorMessage={null}
         initialProductKeys={["workspace_files", "youtube"]}
         onDone={jest.fn()}
-        refetch={async () => {}}
+        refetch={async () => {
+          if (refreshes === 0) {
+            setRefreshes(1);
+            return [];
+          }
+          setAccounts([broadAccount]);
+          return [broadAccount];
+        }}
       />
     );
   }
@@ -272,6 +281,7 @@ it("keeps the continuation bound until the returned account can be confirmed", a
     await Promise.resolve();
   });
   expect(run).toHaveBeenCalledTimes(1);
+  expect(container.textContent).toContain("Continue with YouTube");
 });
 
 it("keeps YouTube pending when the second approval is canceled", async () => {

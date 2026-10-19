@@ -735,6 +735,48 @@ export function ConnectorConsentBody({
     setSelected(heldSelection);
   };
 
+  const continuationAfterVerifiedStep = (
+    completedPlan: ConsentPlan,
+    refreshedAccount: ConnectorAccount | null,
+  ): string[] | null | undefined => {
+    if (!refreshedAccount || !completedPlan.request) return undefined;
+    const refreshedOutcomes = consentOutcomes({
+      provider,
+      plan: completedPlan,
+      account: refreshedAccount,
+      rollout,
+      exchange: { completed: true },
+    });
+    const complete =
+      completedPlan.request.products.length > 0 &&
+      completedPlan.request.products.every((product) =>
+        refreshedOutcomes.some(
+          (row) =>
+            row.product.key === product.key &&
+            (row.state === "granted" || row.state === "already_granted"),
+        ),
+      );
+    if (!complete) return undefined;
+    return completedPlan.deferred.length > 0
+      ? completedPlan.deferred.map((product) => product.key)
+      : null;
+  };
+
+  const refreshAttempt = async () => {
+    const refreshed = await refetch();
+    if (!attemptPlan || !attemptAccountId || !Array.isArray(refreshed)) return;
+    const refreshedAccount = (refreshed as ConnectorAccount[]).find(
+      (row) => row.id === attemptAccountId,
+    ) ?? null;
+    const nextContinuation = continuationAfterVerifiedStep(
+      attemptPlan,
+      refreshedAccount,
+    );
+    if (nextContinuation !== undefined) {
+      setContinuationProductKeys(nextContinuation);
+    }
+  };
+
   const connect = async (inThisTab = false) => {
     if (initialAccountId && accountId === initialAccountId && !account) {
       const sentence = "The selected Google account is no longer available. Choose another account or reopen this connection.";
@@ -815,30 +857,12 @@ export function ConnectorConsentBody({
             (row) => row.id === result.connectionId,
           ) ?? null
         : null;
-      if (refreshedAccount) {
-        const refreshedOutcomes = consentOutcomes({
-          provider,
-          plan,
-          account: refreshedAccount,
-          rollout,
-          exchange: { completed: true },
-        });
-        const refreshedStepComplete =
-          plan.request.products.length > 0 &&
-          plan.request.products.every((product) =>
-            refreshedOutcomes.some(
-              (row) =>
-                row.product.key === product.key &&
-                (row.state === "granted" || row.state === "already_granted"),
-            ),
-          );
-        if (refreshedStepComplete) {
-          setContinuationProductKeys(
-            plan.deferred.length > 0
-              ? plan.deferred.map((product) => product.key)
-              : null,
-          );
-        }
+      const nextContinuation = continuationAfterVerifiedStep(
+        plan,
+        refreshedAccount,
+      );
+      if (nextContinuation !== undefined) {
+        setContinuationProductKeys(nextContinuation);
       }
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
@@ -1232,7 +1256,7 @@ export function ConnectorConsentBody({
             }}
             action={{
               label: "Refresh connections",
-              onPress: () => void refetch(),
+              onPress: () => void refreshAttempt(),
             }}
           />
         ) : null}
