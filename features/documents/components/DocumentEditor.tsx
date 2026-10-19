@@ -136,6 +136,7 @@ import { disposeUniverInstance } from "@ai-matrx/office/univer";
 import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
+import { chooseRoom } from "@/lib/collab/choose-room";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
@@ -242,7 +243,7 @@ export default function DocumentEditor({
   }, [realtimeManager]);
   const [awareness, setAwareness] = useState<DocumentAwareness | null>(null);
   /** C10: the ordered room's offline state (unsent edits kept on this device, syncing); null on the relay. */
-  const [collabOffline, setCollabOffline] = useState<OpOfflineState | null>(null);
+  const [collabOffline, setCollabOffline] = useState<OpOfflineState | "reconnecting" | null>(null);
 
   const [bootState, setBootState] = useState<
     "booting" | "ready" | "load_error"
@@ -445,7 +446,7 @@ export default function DocumentEditor({
         booted = kept;
         setUnitId(kept.unitId);
         setBootState("ready");
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline);
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled);
       } catch (err) {
         kept.host.remove();
         disposeUniverInstance(kept.univer);
@@ -555,7 +556,7 @@ export default function DocumentEditor({
         booted = kept;
         setBootState("ready");
 
-        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline);
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()), setCollabOffline, () => cancelled);
       } catch (err) {
         if (cancelled) return;
         setLoadError(err instanceof Error ? err.message : String(err));
@@ -1136,28 +1137,40 @@ function showCollabNotice(n: DocsOtNotice): void {
 /**
  * Join the document's co-editing room: the ordered log (C3) when the document's room exists or
  * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A document already on the ordered log never falls back
- * to the relay (a relay seat's saves would never reach the room); a failed start says so.
+ * to the relay (a relay seat's saves would never reach the room); a failed start says so. When the room check
+ * itself cannot be answered (no network at open), it is retried with backoff under a "Reconnecting…" status
+ * (`chooseRoom`) — an unknown answer is never read as "no room".
  */
 async function startDocumentRoom(
   model: DocumentModel,
   documentId: string,
   displayName: string | null,
-  onOffline: (state: OpOfflineState) => void,
+  onOffline: (state: OpOfflineState | "reconnecting" | null) => void,
+  cancelled: () => boolean,
 ): Promise<void> {
   let ordered = false;
   try {
     const { documentUsesOrderedRoom, documentOtFactory } = await import("@ai-matrx/office/univer/collab");
+    const { collabRoomExists } = await import("@ai-matrx/data/realtime/collab");
     const knob = await readCollabOtRooms();
     const who = (await getClaimsUser(supabase)).data?.user?.id;
-    ordered = await documentUsesOrderedRoom(
-      documentId,
-      knob,
-      async () => {
-        const res = await getLatestDocumentSnapshot(documentId);
-        return res.success && res.data === null;
-      },
-      who ? `${documentId}:${who}` : undefined,
-    );
+    const chosen = await chooseRoom({
+      roomExists: () => collabRoomExists(supabase as unknown as Parameters<typeof collabRoomExists>[0], documentId),
+      usesOrderedRoom: () =>
+        documentUsesOrderedRoom(
+          documentId,
+          knob,
+          async () => {
+            const res = await getLatestDocumentSnapshot(documentId);
+            return res.success && res.data === null;
+          },
+          who ? `${documentId}:${who}` : undefined,
+        ),
+      onReconnecting: (on) => onOffline(on ? "reconnecting" : null),
+      cancelled,
+    });
+    if (chosen === null) return;
+    ordered = chosen;
     if (!ordered) {
       await model.startCollab(collabFactoryFor(documentId));
       return;

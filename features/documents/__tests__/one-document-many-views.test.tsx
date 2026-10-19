@@ -35,6 +35,10 @@ class FakeInstance {
       this.executed.add(listener);
       return { dispose: () => this.executed.delete(listener) };
     },
+    // The comment commands DocumentEditor registers on mount.
+    hasCommand: () => false,
+    getUnit: () => null,
+    registerCommand: () => ({ dispose: () => {} }),
     syncExecuteCommand: (id: string, params: Info["params"], options?: Record<string, unknown>) => {
       if (!this.data) throw new Error("no document unit");
       if (params?.text) this.data.body.dataStream = this.data.body.dataStream.replace(/\r\n$/, `${params.text}\r\n`);
@@ -90,6 +94,9 @@ jest.mock("@univerjs/presets", () => ({
 jest.mock("@univerjs/core", () => ({
   CommandType: { COMMAND: 0, OPERATION: 1, MUTATION: 2 },
   NamedStyleType: {}, // read at import by the Docs snapshot sanitizer inside @ai-matrx/office/docs
+  CustomRangeType: { COMMENT: 4 }, // read at import by the Docs comment anchors (office/docs/comment-anchors)
+  BuildTextUtils: {},
+  JSONX: {},
   ICommandService: Symbol("ICommandService"),
   createParagraphId: () => "p1",
   createSectionId: () => "s1",
@@ -104,8 +111,6 @@ jest.mock("@univerjs/preset-docs-hyper-link/locales/en-US", () => ({}));
 jest.mock("@univerjs/preset-docs-drawing", () => ({ UniverDocsDrawingPreset: () => ({}) }));
 jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => ({}));
 // The free docs add-ons (comments, find & replace) DocumentEditor registers.
-jest.mock("@univerjs/preset-docs-thread-comment", () => ({ UniverDocsThreadCommentPreset: () => ({}) }));
-jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => ({}));
 jest.mock("@univerjs/find-replace", () => ({ UniverFindReplacePlugin: class {} }));
 // The Univer glue (`@ai-matrx/office/univer`): the real module with the pieces that boot Univer or touch the host stubbed.
 jest.mock("@ai-matrx/office/univer", () => ({
@@ -120,6 +125,11 @@ jest.mock("@ai-matrx/office/univer", () => ({
   disposeUniverInstance: (u: { dispose: () => void } | null) => u?.dispose(),
 }));
 jest.mock("@/lib/univer-host", () => ({}));
+// The comment and caret layers read Univer's docs/render engine, which cannot load against the mocked core; their
+// services are only names here (the hooks that use them are not under test).
+jest.mock("@univerjs/docs", () => ({ DocSkeletonManagerService: class {}, DocSelectionManagerService: class {} }));
+jest.mock("@univerjs/docs-ui", () => ({ calcDocRangePositions: () => null }));
+jest.mock("@univerjs/engine-render", () => ({ IRenderManagerService: Symbol("IRenderManagerService") }));
 jest.mock("@univerjs/docs-find-replace", () => ({ UniverDocsFindReplacePlugin: class {} }));
 jest.mock("@univerjs/docs-toc", () => ({ UniverDocsTocPlugin: class {} }));
 jest.mock("@univerjs/docs-toc-ui", () => ({ UniverDocsTocUIPlugin: class {} }));
