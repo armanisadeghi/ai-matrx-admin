@@ -20,6 +20,8 @@ export const TABLE_LAYOUT_SECTION = "section";
  * with `source: { kind: "entity", token, filter }`.
  */
 export const TABLE_META_TOKEN = "token";
+/** The template pack's table token on a custom-Table tile ("color", "type_style"…), stamped at install. */
+export const TABLE_META_PACK_TOKEN = "table_token";
 export const TABLE_META_FILTER = "filter";
 
 /** A parent constraint: every key equals its value. */
@@ -44,7 +46,9 @@ function readFilter(raw: string | undefined): EntityTileFilter | undefined {
 
 /** The entity token (and parent filter) a table tile shows, or null when it shows a custom Table. */
 export function entityTableOf(source: NodeSource): { token: string; filter?: EntityTileFilter } | null {
-  if (source.kind !== "entity" || source.entity !== TABLE_ENTITY) return null;
+  // A tile with a custom Table id is never a schema table, whatever its meta says (a template stamps its
+  // pack table token as `meta.table_token`; boards made 2026-10-19 carry it as `meta.token` beside the id).
+  if (source.kind !== "entity" || source.entity !== TABLE_ENTITY || source.id) return null;
   const token = source.meta?.[TABLE_META_TOKEN];
   if (!token) return null;
   const filter = readFilter(source.meta?.[TABLE_META_FILTER]);

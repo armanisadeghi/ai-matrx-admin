@@ -33,7 +33,7 @@ describe("planPackBoards", () => {
     for (const t of tables) expect(t.source.kind === "entity" && t.source.meta?.layout).toBe(TABLE_LAYOUT_SECTION);
     // The pack token rides on every table tile from install, so the server reader and the board's tokens
     // know Colors before anyone opens the board.
-    expect(tables.map((t) => (t.source.kind === "entity" ? t.source.meta?.token : null))).toEqual(["color", "type_style", "spacing", "radius", "shadow", "opacity", "motion", "component"]);
+    expect(tables.map((t) => (t.source.kind === "entity" ? t.source.meta?.table_token : null))).toEqual(["color", "type_style", "spacing", "radius", "shadow", "opacity", "motion", "component"]);
   });
 
   it("refuses, by name, a tile whose table was not made", () => {

@@ -14,7 +14,7 @@ import { packBoards, type PackBoard, type PackBoardPage, type PackBoardTile, typ
 
 import type { BoardDocument, BoardGroup, BoardNode, NodeSource } from "../board/document";
 import { PAGE_COLUMN_W, PAGE_FRAME_PAD, PAGE_FRAME_TOP, PAGE_MIN_FRAME_H, PAGE_SECTION_GAP, PAGE_TILE_GAP, planPageLayout } from "../engine/page-layout";
-import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableSource } from "../items/table-tile";
+import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableSource, TABLE_META_PACK_TOKEN } from "../items/table-tile";
 // The cover's entity word (kept with its item, cover-items.tsx); a literal import would pull the tile body here.
 const COVER_ENTITY = "cover";
 
@@ -34,9 +34,9 @@ function tileSource(tile: PackBoardTile, tables: Record<string, ResolvedTable>):
       const made = tile.table ? tables[tile.table] : undefined;
       // A token with no made table is the checker's finding; at use time it is a bug, said by name.
       if (!made) throw new Error(`The template's "${tile.table ?? "?"}" table was not made, so the "${tile.title}" tile has nothing to show.`);
-      // The pack TOKEN rides on the tile from the start (`meta.token`): the server's board reader and the
-      // board's design tokens know which table is Colors before anyone has opened the board.
-      const meta = { ...(tile.table ? { token: tile.table } : {}), ...(tile.layout === "section" ? { layout: TABLE_LAYOUT_SECTION } : {}) };
+      // The pack TOKEN rides on the tile from the start (`meta.table_token`; never `meta.token`, which names a
+      // schema table): the server's board reader and the board's design tokens know Colors before it is opened.
+      const meta = { ...(tile.table ? { [TABLE_META_PACK_TOKEN]: tile.table } : {}), ...(tile.layout === "section" ? { layout: TABLE_LAYOUT_SECTION } : {}) };
       return { kind: "entity", entity: TABLE_ENTITY, id: made.tableId, ...(Object.keys(meta).length ? { meta } : {}) };
     }
     case "note":
