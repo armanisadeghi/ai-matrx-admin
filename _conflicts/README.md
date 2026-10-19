@@ -31,9 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-111501/migrations/LEDGER.json.held — LOCAL latest 2026-10-19 11:11; GITHUB latest 2026-10-19 11:08; LOCAL lacks 1 of GITHUB's 11 new lines; GITHUB lacks 5 of LOCAL's 16 new lines; recover: git show b5a582e68f:'migrations/LEDGER.json' / 133a160cea:'migrations/LEDGER.json'
 
 ## Resolution log
+
+- 2026-10-19 11:29 PDT — Codex resolved `_conflicts/2026-10-19-111501/migrations/LEDGER.json.held` by refreshing the production ledger snapshot. It now has 1932 files and contains every entry from LOCAL b5a582e68f and GITHUB 133a160cea with identical metadata, including readspeed_d missing from the prior snapshot; `pnpm refresh:ledger-snapshot --check` confirms it matches production. Owner: none found; current sweep owner notified urgently.
 
 - 2026-10-19 PDT — Resolved `pnpm-lock.yaml.held`: kept live (== origin/main). The sides differed only in @ai-matrx/chat 0.8.217→0.8.218 and @ai-matrx/records 0.99.77→0.99.78 version bumps; live carries the newer install and `check:matrx-packages` reports the graph at npm latest, exactly once; owner: none found.
 - 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).
