@@ -42,7 +42,7 @@ const FOUR_SECTIONS = Array.from(
   (_, i) => `## Section ${i + 1}\n${"diffusion across a membrane ".repeat(3)}END${i + 1}`,
 ).join("\n\n");
 
-const sectionOf = (vars: Record<string, string>) => /END(\d)/.exec(vars.text ?? "")?.[1] ?? "?";
+const sectionOf = (vars: Record<string, string | number>) => /END(\d)/.exec(String(vars.text ?? ""))?.[1] ?? "?";
 
 const cards = (n: string) => ({
   value: [{ q: `section ${n} question about osmosis gradient ${n}` }],

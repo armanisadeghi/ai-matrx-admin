@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T10:13:09.892Z",
+  "generated_at": "2026-10-19T16:49:41.656Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -79,6 +79,12 @@
       "filename": "20261019051500_adv3_owner_bound_app_doors_dig_markers_formula_rounds.sql",
       "checksum": "2d64758d53fc756a5e259925fe78618e60853a04136107d93ccf645b1b6c2705",
       "applied_at": "2026-10-19 05:28:08.614326+00"
+    },
+    "migrations/campaign/20261019174500_s3_the_connected_app_doors_keep_only_the_owner_bound_form.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019174500_s3_the_connected_app_doors_keep_only_the_owner_bound_form.sql",
+      "checksum": "1e1a7086b40893a0ed3f12388e60769509c29fcffaffd13f3c26761a816c1506",
+      "applied_at": "2026-10-19 16:49:39.970306+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -9661,6 +9667,30 @@
       "filename": "template_fresh2_c_new_sample_rows_resolve_and_dropped_formulas_go_together.sql",
       "checksum": "79818c42cb7a9b09f33f4379ea54232a5ef5f9a548c458dbc180ac5be9d5e4d4",
       "applied_at": "2026-10-19 09:25:52.686535+00"
+    },
+    "migrations/campaign/template_fresh3_a_installs_record_the_mandate_they_present.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_a_installs_record_the_mandate_they_present.sql",
+      "checksum": "23676c8d39d02459b7c538ce766ce546eefa8e960173818e0a616f1496d0855c",
+      "applied_at": "2026-10-19 16:44:33.40735+00"
+    },
+    "migrations/campaign/template_fresh3_b_each_copy_says_when_an_upgrade_is_waiting.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_b_each_copy_says_when_an_upgrade_is_waiting.sql",
+      "checksum": "ccd40d554a0e8d59539c90c33bf95a0e36126367268705f099b71a909194159c",
+      "applied_at": "2026-10-19 16:43:46.226644+00"
+    },
+    "migrations/campaign/template_fresh3_c_uninstall_chunks_fit_the_statement_timeout.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_c_uninstall_chunks_fit_the_statement_timeout.sql",
+      "checksum": "c023c40c988d7a6c6ba792f9372d9a2b95133c9e3048e7c43e2b85f6991fb7be",
+      "applied_at": "2026-10-19 16:48:13.981676+00"
+    },
+    "migrations/campaign/template_fresh3_d_row_refresh_uses_the_rows_version_now.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh3_d_row_refresh_uses_the_rows_version_now.sql",
+      "checksum": "5a6bf21f25327994decf844c3c34198e898359f0a4f3d61a61c75e2e91dc9b7b",
+      "applied_at": "2026-10-19 16:43:56.786987+00"
     },
     "migrations/campaign/template_fresh_a_every_use_makes_a_new_install.sql": {
       "source": "matrx-frontend",

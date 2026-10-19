@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1617 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1619 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "ac61aeb286f6";
+export const KIND_REGISTRY_FINGERPRINT = "26abbaa95b2a";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -8560,6 +8560,21 @@ export interface ReadSpec {
 }
 
 /**
+ * One spoken (or typed) turn in a realtime session's transcript.
+ *  *
+ *  * From kind `realtime_session_result`.
+ */
+export interface RealtimeTranscriptTurn {
+  text: string;
+  at_ms?: number | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  speaker: "person" | "holder";
+}
+
+/**
  * A node the geography rule refused: its name is a place, not a topic.
  *  *
  *  * From kind `topical_map_result`.
@@ -10834,6 +10849,23 @@ export interface Split {
    * The registered kind this payload is an instance of, when it is one.
    */
   __kind?: string;
+}
+
+/**
+ * Who held one authored step: ``holder_identity`` in ``hold_step``.
+ *  *
+ *  * From kind `workflow_step_holding`.
+ */
+export interface StepHolder {
+  name?: string | null;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  agent_id: string;
+  is_version?: boolean;
+  holder_type: string;
+  mandate_key: string;
 }
 
 /**
@@ -45773,6 +45805,38 @@ export interface RealEstateListingCopy {
 }
 
 /**
+ * The final result of a realtime voice or music session.
+ *
+ * Every field but ``status`` defaults, so the minimum honest instance is
+ * "it ended" — a session that kept no recording and no transcript still has a
+ * valid result, and a richer recorder only fills more of it.
+ *  *
+ *  * Kind `realtime_session_result` (registry v1).
+ */
+export interface RealtimeSessionResult {
+  error?: string | null;
+  model?: string | null;
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "realtime_session_result";
+  status?: "ended" | "error" | "cancelled";
+  ended_at?: string | null;
+  metadata?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  provider?: string | null;
+  recording?: MediaAsset | null;
+  session_id?: string | null;
+  started_at?: string | null;
+  transcript?: RealtimeTranscriptTurn[];
+  duration_ms?: number | null;
+}
+
+/**
  * Kind `recipe_ingredient` (registry v6).
  */
 export interface RecipeIngredient {
@@ -63226,6 +63290,32 @@ export interface WorkflowRunStatus {
   steps_executed?: number | null;
 }
 
+/**
+ * What ``hold_step`` returns: the authored step with its Holder resolved.
+ *  *
+ *  * Kind `workflow_step_holding` (registry v1).
+ */
+export interface WorkflowStepHolding {
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "workflow_step_holding";
+  config?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  };
+  holder?: StepHolder | null;
+  unheld?: {
+    /**
+     * The registered kind this payload is an instance of, when it is one.
+     */
+    __kind?: string;
+  } | null;
+  filled_by_holder?: string[];
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 // The registry as a type-level index.
 // ─────────────────────────────────────────────────────────────────────────
@@ -64262,6 +64352,7 @@ export type GeneratedKindSlug =
   | "rating"
   | "reading_list_book"
   | "real_estate_listing_copy"
+  | "realtime_session_result"
   | "recipe_ingredient"
   | "recipe_step"
   | "recipient_shortlist_result"
@@ -64848,7 +64939,8 @@ export type GeneratedKindSlug =
   | "workflow_node_result"
   | "workflow_plan_result"
   | "workflow_run_result"
-  | "workflow_run_status";
+  | "workflow_run_status"
+  | "workflow_step_holding";
 
 /** Slug → the complete-instance payload type for that kind. */
 export interface KindPayloadBySlug {
@@ -65882,6 +65974,7 @@ export interface KindPayloadBySlug {
   "rating": Rating;
   "reading_list_book": ReadingListBook;
   "real_estate_listing_copy": RealEstateListingCopy;
+  "realtime_session_result": RealtimeSessionResult;
   "recipe_ingredient": RecipeIngredient;
   "recipe_step": RecipeStep;
   "recipient_shortlist_result": RecipientShortlistResult;
@@ -66469,6 +66562,7 @@ export interface KindPayloadBySlug {
   "workflow_plan_result": WorkflowPlanResult;
   "workflow_run_result": WorkflowRunResult;
   "workflow_run_status": WorkflowRunStatus;
+  "workflow_step_holding": WorkflowStepHolding;
 }
 
 /** `KindPayload<"web_result">` → `WebResult`. */
@@ -67506,6 +67600,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "rating",
   "reading_list_book",
   "real_estate_listing_copy",
+  "realtime_session_result",
   "recipe_ingredient",
   "recipe_step",
   "recipient_shortlist_result",
@@ -68093,6 +68188,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "workflow_plan_result",
   "workflow_run_result",
   "workflow_run_status",
+  "workflow_step_holding",
 ];
 
 const GENERATED_KIND_SLUG_SET: ReadonlySet<string> = new Set(GENERATED_KIND_SLUGS);

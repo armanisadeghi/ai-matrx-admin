@@ -66,6 +66,7 @@ import {
 import { offeredValuesToSurfaceValues } from "./offered-adapter";
 import { sourceLabelsFor } from "./words";
 import { hasHolderDefault } from "./consumption-writer";
+import { SourceFraming } from "./SourceFraming";
 
 /** The one source kind that can be absent, and so the one that answers for it. */
 type OfferedSource = Extract<ConsumptionEntry, { mapType: "offered_value" }>;
@@ -276,6 +277,8 @@ export function BindingMiddleRow({
               })()
             : null}
 
+          {sources[0] ? <SourceFraming entry={sources[0]} /> : null}
+
           {fedByName ? (
             <p className="text-[11.5px] text-muted-foreground">
               By name · not in the saved map yet
@@ -465,6 +468,7 @@ function ExtraSources({
                 />
               </div>
             </div>
+            {index > 0 ? <SourceFraming entry={entry} /> : null}
             {/* P9 — a source that is not guaranteed declares its absence answer.
                 Only an OFFERED value can be absent: a literal is always there,
                 and an unanswered question is the run form's business. */}

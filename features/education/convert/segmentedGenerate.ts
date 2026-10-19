@@ -66,7 +66,7 @@ export interface SegmentedGenerateArgs<T> {
    * chunk-marked for grounding and `segment.items` is that section's share of
    * the total, so a caller normally just names the variables its agent declares.
    */
-  variables: (segment: SourceSegment, plan: CoveragePlan) => Record<string, string>;
+  variables: (segment: SourceSegment, plan: CoveragePlan) => Record<string, string | number>;
   /** Pull this section's items out of its extracted JSON. Never throws. */
   extract: (value: unknown, segment: SourceSegment) => T[];
   /**

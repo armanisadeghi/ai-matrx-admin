@@ -20,8 +20,8 @@ export interface RunAgentExtractionOpts {
   surfaceKey: string;
   /** Feature tag (e.g. "education-ingest"). */
   sourceFeature: SourceFeature;
-  /** The agent's declared variable values (all stringified). */
-  variables: Record<string, string>;
+  /** The agent's declared variable values (strings, or numbers for integer-declared ones). */
+  variables: Record<string, string | number>;
   /**
    * The organization this run belongs to — REQUIRED, never optional.
    *

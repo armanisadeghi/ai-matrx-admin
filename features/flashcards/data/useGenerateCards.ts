@@ -174,7 +174,7 @@ export function useGenerateCards(): GenerateCardsResult {
             // every from-source caller sends this same superset.
             source_content: vars.source_content,
             document_id: vars.document_id ?? "",
-            count: String(vars.count),
+            count: vars.count,
             difficulty: vars.difficulty,
             title: vars.title ?? "",
             // Gap 8 — the tier rides this agent's declared `focus` channel.
@@ -182,7 +182,7 @@ export function useGenerateCards(): GenerateCardsResult {
           }
         : {
             topic: vars.topic,
-            count: String(vars.count),
+            count: vars.count,
             difficulty: vars.difficulty,
             grade_level: vars.grade_level ?? "",
             // Gap 8 — the tier leads; the learner's own request follows.

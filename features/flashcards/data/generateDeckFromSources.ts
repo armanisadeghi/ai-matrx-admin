@@ -459,7 +459,7 @@ export async function generateCardsFromSources({
           plan.segments.length > 1
             ? sectionRunTitle(title, segment)
             : title,
-        count: String(segment.items),
+        count: segment.items,
         difficulty,
         focus: foldDepthIntoRequest(depth, focusText) ?? "",
       };
