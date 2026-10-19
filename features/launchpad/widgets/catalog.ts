@@ -10,6 +10,7 @@
 import { AppWindow, CalendarDays, Clock, Gauge, LayoutDashboard, ListChecks, Rocket, Star, Table2, Blocks } from "lucide-react";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
 import { METRIC_CARDS } from "@/features/dashboard/constants/metricCards";
+import { USER_LAUNCHPAD_DESTINATIONS } from "../catalog";
 import { configText, type LaunchpadWidgetSpec } from "./types";
 
 /**
@@ -166,10 +167,25 @@ export const LAUNCHPAD_WIDGET_CATALOG: readonly LaunchpadWidgetSpec[] = [
     sizes: { defaultW: 6, defaultH: 20, minW: 3, minH: 8 },
     defaultConfig: {},
     fields: [{ key: "path", label: "Page address", picker: "appPage" }],
-    describe: (c) => (configText(c, "path") ? `Page ${configText(c, "path")}` : "App page (none chosen)"),
+    describe: (c) => (configText(c, "path") ? appPageLabel(configText(c, "path")) : "App page (none chosen)"),
     href: (c) => configText(c, "path") || null,
   },
 ];
+
+/** A page's friendly name: the app's own label for that address (an area before a shortcut), else its last
+ *  path word — never the raw path. */
+export function appPageLabel(path: string): string {
+  const bare = path.split(/[?#]/)[0]!.replace(/\/+$/, "") || "/";
+  const same = USER_LAUNCHPAD_DESTINATIONS.filter((d) => d.href.split(/[?#]/)[0] === bare);
+  return (same.find((d) => d.kind === "area") ?? same.find((d) => d.kind === "destination"))?.label ?? lastWord(bare);
+}
+
+function lastWord(path: string): string {
+  const last = path.split("/").filter(Boolean).pop();
+  if (!last || /^[0-9a-f-]{20,}$/i.test(last)) return "App page";
+  const words = decodeURIComponent(last).replace(/[-_]+/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 export function getLaunchpadWidgetSpec(type: string): LaunchpadWidgetSpec | undefined {
   return LAUNCHPAD_WIDGET_CATALOG.find((w) => w.type === type);
