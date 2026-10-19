@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 4,
+  "version": 5,
   "title": "IT Managed Services Desk",
-  "description": "Clients, devices, support tickets, contract renewals and scheduled maintenance for an MSP.",
+  "description": "For MSP owners and techs: clients, devices, patching, tickets on SLA and agreements.",
   "forWho": "Managed IT service providers and IT consultancies",
   "icon": {
     "emoji": "🖧"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "it",
-    "msp",
-    "tickets",
-    "assets"
+    "msp owner",
+    "it technician",
+    "help desk",
+    "patch management",
+    "sla",
+    "managed services"
   ],
   "spec": {
     "specVersion": 1,
@@ -115,6 +117,23 @@
             }
           },
           {
+            "key": "agreement",
+            "label": "Agreement",
+            "parityType": "select",
+            "choices": [
+              "Fully managed",
+              "Co-managed",
+              "Block hours"
+            ],
+            "choiceColors": {
+              "Fully managed": "blue",
+              "Co-managed": "purple",
+              "Block hours": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "seats",
             "label": "Seats",
             "parityType": "number",
@@ -149,6 +168,23 @@
                 "value": 100000
               }
             ]
+          },
+          {
+            "key": "included_hours",
+            "label": "Project hours included a month",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "contract_start",
@@ -192,7 +228,7 @@
           },
           {
             "key": "tickets_waiting",
-            "label": "Tickets in progress",
+            "label": "Open tickets",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -229,6 +265,35 @@
             "filter": {
               "status": "Needs attention"
             }
+          },
+          {
+            "key": "behind_on_patches",
+            "label": "Devices behind on patches",
+            "parityType": "rollup",
+            "via": "assets",
+            "pick": "asset_name",
+            "agg": "count",
+            "filter": {
+              "patch_status": [
+                "Missing patches",
+                "Unsupported OS"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billable_hours",
+            "label": "Billable hours, open and closed",
+            "parityType": "rollup",
+            "via": "tickets",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "billing": "Billable"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "owner_me",
@@ -378,10 +443,12 @@
               "seats": 18,
               "fee": 3150,
               "contract_start": "@today-700d",
-              "renews_on": "@today+28d",
+              "renews_on": "@today+3d",
               "contact_email": "office@larkinboydlaw.net",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "agreement": "Fully managed",
+              "included_hours": 4
             }
           },
           {
@@ -395,7 +462,9 @@
               "contract_start": "@today-400d",
               "renews_on": "@today+160d",
               "contact_email": "admin@cobaltprint.net",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "agreement": "Fully managed",
+              "included_hours": 2
             }
           },
           {
@@ -407,10 +476,12 @@
               "seats": 9,
               "fee": 1260,
               "contract_start": "@today-900d",
-              "renews_on": "@today+12d",
+              "renews_on": "@mon+4d",
               "contact_email": "desk@hawthornevet.net",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "agreement": "Co-managed",
+              "included_hours": 0
             }
           },
           {
@@ -424,7 +495,9 @@
               "contract_start": "@today-200d",
               "renews_on": "@today+165d",
               "contact_email": "studio@eastsidearch.net",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "agreement": "Fully managed",
+              "included_hours": 6
             }
           },
           {
@@ -439,7 +512,9 @@
               "renews_on": "@today+357d",
               "contact_email": "office@pelicanbayrealty.net",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "agreement": "Fully managed",
+              "included_hours": 2
             }
           },
           {
@@ -453,7 +528,9 @@
               "contract_start": "@today-500d",
               "renews_on": "@today-6d",
               "contact_email": "frontdesk@grangerdental.net",
-              "owner": "tm-5"
+              "owner": "tm-5",
+              "agreement": "Block hours",
+              "included_hours": 0
             }
           },
           {
@@ -468,7 +545,9 @@
               "renews_on": "@today-120d",
               "contact_email": "info@oldmillbooks.net",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "agreement": "Block hours",
+              "included_hours": 0
             }
           }
         ]
@@ -548,6 +627,66 @@
             "key": "serial",
             "label": "Serial number",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "os",
+            "label": "Operating system",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "patch_status",
+            "label": "Patch status",
+            "parityType": "select",
+            "choices": [
+              "Current",
+              "Pending reboot",
+              "Missing patches",
+              "Unsupported OS"
+            ],
+            "choiceColors": {
+              "Current": "green",
+              "Pending reboot": "yellow",
+              "Missing patches": "orange",
+              "Unsupported OS": "red"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_patched",
+            "label": "Last patched",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "backup",
+            "label": "Backup",
+            "parityType": "select",
+            "choices": [
+              "Healthy",
+              "Warning",
+              "Failed",
+              "Not covered"
+            ],
+            "choiceColors": {
+              "Healthy": "green",
+              "Warning": "yellow",
+              "Failed": "red",
+              "Not covered": "slate"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "endpoint_protection",
+            "label": "Endpoint protection installed",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -693,8 +832,13 @@
               "serial": "LB-4821-KR",
               "user": "Front desk",
               "purchased_on": "@today-700d",
-              "warranty_ends": "@today+60d",
-              "client": "client-1"
+              "warranty_ends": "@today+5d",
+              "client": "client-1",
+              "os": "Windows 11 Pro 24H2",
+              "patch_status": "Current",
+              "last_patched": "@today-6d",
+              "backup": "Healthy",
+              "endpoint_protection": true
             }
           },
           {
@@ -707,7 +851,12 @@
               "user": "Associate attorney",
               "purchased_on": "@today-1100d",
               "warranty_ends": "@today-40d",
-              "client": "client-1"
+              "client": "client-1",
+              "os": "Windows 10 Pro 22H2",
+              "patch_status": "Unsupported OS",
+              "last_patched": "@today-41d",
+              "backup": "Warning",
+              "endpoint_protection": true
             }
           },
           {
@@ -720,7 +869,12 @@
               "user": "Shared",
               "purchased_on": "@today-1300d",
               "warranty_ends": "@today+200d",
-              "client": "client-1"
+              "client": "client-1",
+              "os": "Windows Server 2022",
+              "patch_status": "Pending reboot",
+              "last_patched": "@today-2d",
+              "backup": "Failed",
+              "endpoint_protection": true
             }
           },
           {
@@ -733,7 +887,12 @@
               "user": "Production",
               "purchased_on": "@today-1500d",
               "warranty_ends": "@today-200d",
-              "client": "client-2"
+              "client": "client-2",
+              "os": "Windows 10 Pro 22H2",
+              "patch_status": "Missing patches",
+              "last_patched": "@today-63d",
+              "backup": "Not covered",
+              "endpoint_protection": true
             }
           },
           {
@@ -746,7 +905,12 @@
               "user": "Shared",
               "purchased_on": "@today-500d",
               "warranty_ends": "@today+700d",
-              "client": "client-2"
+              "client": "client-2",
+              "os": "Firmware 7.4.3",
+              "patch_status": "Current",
+              "last_patched": "@today-10d",
+              "backup": "Not covered",
+              "endpoint_protection": false
             }
           },
           {
@@ -758,8 +922,13 @@
               "serial": "HV-2204-DX",
               "user": "Clinical",
               "purchased_on": "@today-800d",
-              "warranty_ends": "@today+20d",
-              "client": "client-3"
+              "warranty_ends": "@mon+3d",
+              "client": "client-3",
+              "os": "Windows 11 Pro 23H2",
+              "patch_status": "Current",
+              "last_patched": "@today-6d",
+              "backup": "Healthy",
+              "endpoint_protection": true
             }
           },
           {
@@ -772,7 +941,12 @@
               "user": "Clinical",
               "purchased_on": "@today-1400d",
               "warranty_ends": "@today-70d",
-              "client": "client-3"
+              "client": "client-3",
+              "os": "Windows 10 Pro 21H2",
+              "patch_status": "Unsupported OS",
+              "last_patched": "@today-120d",
+              "backup": "Healthy",
+              "endpoint_protection": true
             }
           },
           {
@@ -785,7 +959,12 @@
               "user": "Shared",
               "purchased_on": "@today-600d",
               "warranty_ends": "@today+400d",
-              "client": "client-4"
+              "client": "client-4",
+              "os": "Ubuntu Server 24.04",
+              "patch_status": "Current",
+              "last_patched": "@today-4d",
+              "backup": "Healthy",
+              "endpoint_protection": true
             }
           },
           {
@@ -798,7 +977,12 @@
               "user": "Shared",
               "purchased_on": "@today-900d",
               "warranty_ends": "@today+300d",
-              "client": "client-4"
+              "client": "client-4",
+              "os": "Firmware 17.9.4",
+              "patch_status": "Missing patches",
+              "last_patched": "@today-95d",
+              "backup": "Not covered",
+              "endpoint_protection": false
             }
           },
           {
@@ -811,7 +995,12 @@
               "user": "Agent",
               "purchased_on": "@today-5d",
               "warranty_ends": "@today+1090d",
-              "client": "client-5"
+              "client": "client-5",
+              "os": "macOS 15.6",
+              "patch_status": "Current",
+              "last_patched": "@today-3d",
+              "backup": "Healthy",
+              "endpoint_protection": true
             }
           },
           {
@@ -825,7 +1014,12 @@
               "purchased_on": "@today-2000d",
               "warranty_ends": "@today-900d",
               "client": "client-6",
-              "retired_on": "@today-900d"
+              "retired_on": "@today-900d",
+              "os": "Embedded",
+              "patch_status": "Unsupported OS",
+              "last_patched": "@today-900d",
+              "backup": "Not covered",
+              "endpoint_protection": false
             }
           }
         ]
@@ -899,12 +1093,54 @@
             }
           },
           {
+            "key": "kind",
+            "label": "Type",
+            "parityType": "select",
+            "choices": [
+              "Incident",
+              "Service request",
+              "Alert",
+              "Project"
+            ],
+            "choiceColors": {
+              "Incident": "red",
+              "Service request": "blue",
+              "Alert": "orange",
+              "Project": "purple"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "response_target",
+            "label": "Response target (hours)",
+            "parityType": "formula",
+            "formula": "IF({Priority} = \"Urgent\", 1, IF({Priority} = \"High\", 2, IF({Priority} = \"Normal\", 4, 8)))",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "opened_on",
             "label": "Opened",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "datetime"
+          },
+          {
+            "key": "first_response",
+            "label": "First response",
+            "parityType": "datetime",
+            "format": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "response_met",
+            "label": "Response target met",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -938,6 +1174,21 @@
                 "value": 100
               }
             ]
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "choices": [
+              "Covered",
+              "Billable"
+            ],
+            "choiceColors": {
+              "Covered": "green",
+              "Billable": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -1027,6 +1278,10 @@
           [
             "opened_on",
             "resolved_on"
+          ],
+          [
+            "opened_on",
+            "first_response"
           ]
         ],
         "rowTemplates": [
@@ -1114,7 +1369,11 @@
               "client": "client-3",
               "asset": "asset-6",
               "tech": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kind": "Incident",
+              "billing": "Covered",
+              "first_response": "@today-2d 09:25",
+              "response_met": true
             }
           },
           {
@@ -1127,7 +1386,11 @@
               "due_on": "@today+0d 17:00",
               "client": "client-3",
               "asset": "asset-7",
-              "tech": "tm-3"
+              "tech": "tm-3",
+              "kind": "Incident",
+              "billing": "Covered",
+              "first_response": "@today-1d 14:50",
+              "response_met": true
             }
           },
           {
@@ -1142,7 +1405,11 @@
               "client": "client-5",
               "asset": "asset-10",
               "tech": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kind": "Service request",
+              "billing": "Covered",
+              "first_response": "@today-3d 11:30",
+              "response_met": true
             }
           },
           {
@@ -1156,7 +1423,11 @@
               "hours": 2.5,
               "client": "client-1",
               "asset": "asset-3",
-              "tech": "tm-3"
+              "tech": "tm-3",
+              "kind": "Alert",
+              "billing": "Covered",
+              "first_response": "@today-1d 09:30",
+              "response_met": false
             }
           },
           {
@@ -1171,7 +1442,11 @@
               "client": "client-4",
               "asset": "asset-8",
               "tech": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kind": "Incident",
+              "billing": "Covered",
+              "first_response": "@today-4d 16:10",
+              "response_met": true
             }
           },
           {
@@ -1183,7 +1458,9 @@
               "opened_on": "@today-0d 08:30",
               "due_on": "@today+4d 12:00",
               "client": "client-2",
-              "tech": "tm-4"
+              "tech": "tm-4",
+              "kind": "Service request",
+              "billing": "Covered"
             }
           },
           {
@@ -1197,7 +1474,11 @@
               "client": "client-1",
               "asset": "asset-2",
               "tech": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kind": "Incident",
+              "billing": "Covered",
+              "first_response": "@today-0d 09:20",
+              "response_met": true
             }
           },
           {
@@ -1212,7 +1493,11 @@
               "hours": 0.5,
               "client": "client-2",
               "asset": "asset-4",
-              "tech": "tm-4"
+              "tech": "tm-4",
+              "kind": "Service request",
+              "billing": "Covered",
+              "first_response": "@today-5d 11:05",
+              "response_met": true
             }
           },
           {
@@ -1224,11 +1509,15 @@
               "opened_on": "@today-8d 10:15",
               "due_on": "@today-6d 12:00",
               "resolved_on": "@today-7d 16:00",
-              "hours": 1.5,
+              "hours": 3.5,
               "client": "client-2",
               "asset": "asset-5",
               "tech": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kind": "Project",
+              "billing": "Billable",
+              "first_response": "@today-8d 13:00",
+              "response_met": true
             }
           },
           {
@@ -1243,7 +1532,11 @@
               "hours": 2,
               "client": "client-4",
               "asset": "asset-9",
-              "tech": "tm-3"
+              "tech": "tm-3",
+              "kind": "Incident",
+              "billing": "Covered",
+              "first_response": "@today-10d 13:40",
+              "response_met": true
             }
           }
         ]
@@ -1311,6 +1604,23 @@
               "Hardware swap": "violet",
               "Migration": "teal"
             }
+          },
+          {
+            "key": "devices",
+            "label": "Devices covered",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1450,7 +1760,8 @@
               "due_on": "@mon+5d",
               "client": "client-1",
               "tech": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "devices": 1
             }
           },
           {
@@ -1461,7 +1772,8 @@
               "kind": "Backup test",
               "due_on": "@today+9d",
               "client": "client-1",
-              "tech": "tm-3"
+              "tech": "tm-3",
+              "devices": 1
             }
           },
           {
@@ -1473,7 +1785,8 @@
               "due_on": "@today+3d",
               "client": "client-3",
               "tech": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "devices": 6
             }
           },
           {
@@ -1507,7 +1820,8 @@
               "kind": "Migration",
               "due_on": "@today+6d",
               "client": "client-5",
-              "tech": "tm-3"
+              "tech": "tm-3",
+              "devices": 9
             }
           },
           {
@@ -1544,7 +1858,8 @@
               "due_on": "@today-3d",
               "client": "client-2",
               "tech": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "devices": 14
             }
           }
         ],
@@ -2205,7 +2520,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2227,7 +2542,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Everything the service team needs: clients on plans, the device inventory with warranty dates, support tickets with response targets, and scheduled maintenance. Start on the Dashboard, clear the tickets that are past their response time, then check Devices with warranty ending in 90 days."
+              "text": "The service desk of a small managed services provider: every client and its agreement, every device with patch and backup status, tickets against response targets, and the scheduled maintenance that keeps networks healthy. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2248,6 +2570,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -3199,6 +3527,87 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Devices behind on patches"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "all_asset"
+            },
+            "inline": true,
+            "title": "Devices behind on patches",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vpa",
+                "name": "Behind on patches",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "patch_status": [
+                    "Missing patches",
+                    "Unsupported OS",
+                    "Pending reboot"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vpa"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Backups not healthy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "asset",
+              "view": "all_asset"
+            },
+            "inline": true,
+            "title": "Backups not healthy",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vbk",
+                "name": "Backups not healthy",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "backup": [
+                    "Warning",
+                    "Failed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vbk"
+          }
         }
       ]
     },
@@ -3207,14 +3616,14 @@
       "parent": "it-managed-services-desk",
       "title": "Client onboarding",
       "icon": {
-        "emoji": "🚀"
+        "emoji": "🤝"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Onboarding is where trust is won. Be thorough, predictable and visible."
+              "text": "The first 30 days decide whether a new client trusts you. Onboarding finds everything you will be responsible for and fixes the dangerous things first."
             }
           ],
           "background": "blue",
@@ -3226,7 +3635,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week one"
+              "text": "Week one: discover"
             }
           ],
           "props": {
@@ -3237,7 +3646,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Contract and plan on the client row, renewal date set"
+              "text": "Walk the office: network closet, printers, server, internet connection, labels"
             }
           ],
           "props": {
@@ -3248,7 +3657,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Contacts and after-hours numbers collected"
+              "text": "Collect admin credentials into your password vault; change shared ones"
             }
           ],
           "props": {
@@ -3259,7 +3668,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Admin credentials moved into the password vault"
+              "text": "Install the monitoring agent and endpoint protection on every computer"
             }
           ],
           "props": {
@@ -3270,7 +3679,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Devices inventoried and added to Devices"
+              "text": "Add each device here with serial, user, operating system and warranty date"
             }
           ],
           "props": {
@@ -3281,7 +3690,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Backups checked and a restore test scheduled"
+              "text": "Record the internet provider, domain registrar, email platform and line-of-business software with their support numbers"
             }
           ],
           "props": {
@@ -3292,7 +3701,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week two"
+              "text": "Week two: stabilize"
             }
           ],
           "props": {
@@ -3300,26 +3709,34 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Install monitoring and patch agents on every device."
+              "text": "Patch every device to Current; anything on an unsupported system becomes a replacement on the renewal plan."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Review security basics: multi-factor sign-in, backups, admin accounts."
+              "text": "Confirm backups run for servers and cloud mail; run the first restore test."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Agree how people ask for help and what the response times are."
+              "text": "Remove old accounts of people who left."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Turn on multi-factor sign-in for email and remote access."
             }
           ]
         },
@@ -3327,7 +3744,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week four"
+              "text": "Week three and four: agree the routine"
             }
           ],
           "props": {
@@ -3335,49 +3752,28 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Review the first month's tickets with the client contact."
+              "text": "Set the patch window with the client (for example Wednesday after 8 pm)."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "List risks found: old hardware, missing backups, shared passwords."
+              "text": "Agree who may request changes and who approves purchases."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Agree a twelve-month improvement plan."
+              "text": "Explain how to raise a ticket and the response targets."
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "ticket-triage",
-      "parent": "it-managed-services-desk",
-      "title": "Ticket triage and response targets",
-      "icon": {
-        "emoji": "🎫"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Priority guide"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
         },
         {
           "type": "table",
@@ -3394,7 +3790,7 @@
                   ],
                   [
                     {
-                      "text": "Meaning"
+                      "text": "Example"
                     }
                   ],
                   [
@@ -3413,12 +3809,12 @@
                   ],
                   [
                     {
-                      "text": "Business cannot work or data is at risk"
+                      "text": "Whole office down, suspected breach"
                     }
                   ],
                   [
                     {
-                      "text": "30 minutes"
+                      "text": "1 hour"
                     }
                   ]
                 ]
@@ -3432,7 +3828,7 @@
                   ],
                   [
                     {
-                      "text": "One person or key system is down"
+                      "text": "One person cannot work"
                     }
                   ],
                   [
@@ -3451,12 +3847,12 @@
                   ],
                   [
                     {
-                      "text": "Something is broken but there is a workaround"
+                      "text": "Something is slow or broken with a workaround"
                     }
                   ],
                   [
                     {
-                      "text": "4 working hours"
+                      "text": "4 hours"
                     }
                   ]
                 ]
@@ -3470,12 +3866,12 @@
                   ],
                   [
                     {
-                      "text": "A request or improvement"
+                      "text": "Requests and questions"
                     }
                   ],
                   [
                     {
-                      "text": "2 working days"
+                      "text": "8 hours"
                     }
                   ]
                 ]
@@ -3487,50 +3883,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Triage steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Read the ticket and set the priority honestly."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Attach the device if there is one."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Assign a technician and set Respond by."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Reply to the client with who has it and when to expect news."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Closing"
+              "text": "Close onboarding"
             }
           ],
           "props": {
@@ -3541,7 +3894,381 @@
           "type": "text",
           "text": [
             {
-              "text": "Press Fix confirmed once the client agrees, and record hours spent."
+              "text": "Move the client from Onboarding to Healthy when devices are patched, backups are tested and the client has signed off the device list. Book a 30-day check-in, and ask the client then what still annoys them. The answers often point to one small fix, such as a printer that drops off the network, that wins more goodwill than any report."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Pelican Bay Realty started eight days ago. The new sales laptop is set up, the mail migration cutover is scheduled this week, and their old shared printer account is on the list to remove."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ticket-triage",
+      "parent": "it-managed-services-desk",
+      "title": "Ticket triage and response targets",
+      "icon": {
+        "emoji": "🎫"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients judge you on how fast someone answers and how often the same thing breaks. Triage sets the priority honestly and makes sure the clock is visible."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a ticket arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Type",
+              "bold": true
+            },
+            {
+              "text": ": Incident (something broke), Service request (something asked for), Alert (raised by monitoring) or Project (planned work, often billable)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Priority",
+              "bold": true
+            },
+            {
+              "text": " by impact and urgency, not by who shouted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link the client and, when known, the device."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the first reply and fill "
+            },
+            {
+              "text": "First response",
+              "bold": true
+            },
+            {
+              "text": " with the time. Tick "
+            },
+            {
+              "text": "Response target met",
+              "bold": true
+            },
+            {
+              "text": " if it was inside the target."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Billing",
+              "bold": true
+            },
+            {
+              "text": ": Covered by the agreement or Billable."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing priority"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Impact"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Urgency high"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Urgency low"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Many people or a whole site"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Urgent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "High"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "One person, no workaround"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "High"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "One person, workaround exists"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Low"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep tickets honest"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A ticket waiting on the client moves to "
+            },
+            {
+              "text": "Waiting on client",
+              "bold": true
+            },
+            {
+              "text": ". Remind them twice over a week, then resolve with a note."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A ticket with no update in two working days gets a note and an update to the client, even if there is no news."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hours go in when work happens, not at the end of the month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Escalation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Urgent with no first response after 30 minutes: the service manager takes it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any suspected security incident: stop, isolate the device, call the owner. Do not delete evidence."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The same problem three times in a month on one device: open a Project ticket to fix the cause."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Response targets met this week, by priority"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tickets reopened after resolving"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients with the most tickets and what they have in common"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Billable hours not yet invoiced"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Larkin & Boyd's backup alert was answered after the target, so Response target met is unticked. In the weekly review the team finds the alert arrives by email at night, and changes it to page the on-call tech."
             }
           ]
         }
@@ -3550,16 +4277,28 @@
     {
       "key": "asset-lifecycle",
       "parent": "it-managed-services-desk",
-      "title": "Device lifecycle and replacement planning",
+      "title": "Devices, patching and replacement",
       "icon": {
-        "emoji": "♻️"
+        "emoji": "💻"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most outages and breaches start on a device that was not patched, not backed up or too old. A clear device list with patch and backup status lets you see risk before it bites."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Lifecycle"
+              "text": "Patch status, in plain words"
             }
           ],
           "props": {
@@ -3567,26 +4306,114 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Laptops and desktops: plan a refresh at about four years."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Servers and network gear: review at five years or when warranty ends."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Current"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "All approved updates installed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nothing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pending reboot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Installed, waiting for a restart"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reboot in the next window"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missing patches"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Updates failed or were deferred"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Investigate within a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Unsupported OS"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The vendor no longer ships fixes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan a replacement or upgrade"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Every quarter"
+              "text": "The weekly patch routine"
             }
           ],
           "props": {
@@ -3597,7 +4424,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Warranty ending in 90 days and group by client."
+              "text": "Approve updates after a few days' delay, so bad updates are caught by others first."
             }
           ]
         },
@@ -3605,7 +4432,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check condition and open tickets for each device."
+              "text": "Patch in the client's agreed window; servers one at a time."
             }
           ]
         },
@@ -3613,7 +4440,29 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send each client a short replacement plan with rough costs."
+              "text": "Next morning, update "
+            },
+            {
+              "text": "Patch status",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Last patched",
+              "bold": true
+            },
+            {
+              "text": " from the report."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anything still Missing patches after two windows becomes a ticket."
             }
           ]
         },
@@ -3621,7 +4470,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When retiring a device"
+              "text": "Backups"
             }
           ],
           "props": {
@@ -3632,7 +4481,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Wipe the storage and keep the certificate."
+              "text": "Check the backup report every morning. Warning or Failed gets an Alert ticket."
             }
           ]
         },
@@ -3640,7 +4489,139 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Press Retire device and note where it went."
+              "text": "Test a restore once a quarter for each client, and record it as a Maintenance job. A backup is not real until you have restored from it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Devices marked Not covered should hold no company data."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Planning replacements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Laptops and desktops: plan for four to five years."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Servers, firewalls and switches: five to seven years, or when support ends."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Watch "
+            },
+            {
+              "text": "Warranty ends",
+              "bold": true
+            },
+            {
+              "text": "; the dashboard shows what ends in the next 90 days."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Put each replacement in the client's renewal conversation with a price, so it is budgeted rather than a surprise."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retiring a device"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Data backed up or moved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Removed from monitoring, endpoint protection and the directory"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Drive wiped or destroyed, with a note of how"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status set to Retired with the date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Hawthorne Veterinary renews this week and is At risk. Their imaging workstation runs an unsupported system and the imaging software crashes on it. Replacing it is already scheduled; until then it is kept off email and web browsing."
             }
           ]
         }
@@ -3649,43 +4630,28 @@
     {
       "key": "renewal-conversations",
       "parent": "it-managed-services-desk",
-      "title": "Contract renewal conversations",
+      "title": "Agreement renewal conversations",
       "icon": {
-        "emoji": "📆"
+        "emoji": "📄"
       },
       "blocks": [
         {
-          "type": "heading",
+          "type": "callout",
           "text": [
             {
-              "text": "Ninety days before"
+              "text": "A renewal is the one meeting a year where the client looks at everything you did. Bring evidence, a plan for next year and an honest price."
             }
           ],
+          "background": "blue",
           "props": {
-            "level": 2
+            "icon": "Lightbulb"
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Open the client row and read Tickets in progress, Devices needing attention and Days to renewal."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Prepare a one-page summary of the year: tickets solved, improvements made, risks outstanding."
-            }
-          ]
-        },
-        {
           "type": "heading",
           "text": [
             {
-              "text": "Sixty days before"
+              "text": "Ninety days before renewal"
             }
           ],
           "props": {
@@ -3696,7 +4662,35 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Hold the review call with the decision maker."
+              "text": "Open the client and look at "
+            },
+            {
+              "text": "Open tickets",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Devices behind on patches",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Needs attention",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Billable hours",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3704,7 +4698,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Share the summary and proposed changes to the plan."
+              "text": "Count tickets over the year by type. Many incidents on one device or one app point to a project."
             }
           ]
         },
@@ -3712,7 +4706,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Agree the new fee and term in writing."
+              "text": "List devices whose warranty ends in the coming year and any on an unsupported system."
             }
           ]
         },
@@ -3720,7 +4714,132 @@
           "type": "heading",
           "text": [
             {
-              "text": "After signing"
+              "text": "What to bring"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Topic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Show"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tickets handled, response targets met, longest outage"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Security"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Patching level, endpoint protection on every device, multi-factor sign-in, backup tests"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Next year"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Replacements due, projects suggested, rough cost"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Agreement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Seats, plan, included hours, any price change and why"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Price per seat or per device, plus servers and network gear."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If billable hours were high every month, offer included project hours instead."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Explain any increase with the change in seats, tools or labor, never as a surprise."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients at risk"
             }
           ],
           "props": {
@@ -3731,21 +4850,408 @@
           "type": "text",
           "text": [
             {
-              "text": "Update the plan, fee and renewal date on the client row the same day."
+              "text": "Mark a client "
+            },
+            {
+              "text": "At risk",
+              "bold": true
+            },
+            {
+              "text": " when they complain about the same thing twice, miss invoices, or go quiet. The account owner calls them within a week, and the problem gets a named fix with a date."
             }
           ]
         },
         {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New renewal date, fee and seats entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agreed projects added as Maintenance jobs or Project tickets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status set to Healthy or At risk, honestly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thank-you note with the agreed plan in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ending a client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hand over admin access, documentation and the device list. Set the status to Ended and keep the history. Leave on good terms: a clean handover is often the reason a client comes back, or recommends you to someone else."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Granger Family Dental's renewal date passed six days ago without a signed agreement. The owner calls this week with a summary of the year and a quote to replace two front-desk computers."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "it-managed-services-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
           "type": "callout",
           "text": [
             {
-              "text": "Clients renew when they feel looked after, not when the contract says so."
+              "text": "This workspace sits beside your remote monitoring and ticketing tools. Those tools raise alerts and run scripts; this is where the owner and the techs see each client as a whole: what they pay for, what state their devices are in, what is waiting, and what is coming up."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan, agreement type, seats, monthly fee, project hours included, renewal date, open tickets, devices behind on patches, billable hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Devices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every laptop, server, firewall and switch with serial, user, operating system, patch status, last patched, backup state, endpoint protection and warranty"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tickets"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Type, priority, response target, first response, whether the target was met, due date, hours and whether the work is covered or billable"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Maintenance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Patch windows, backup restore tests, hardware swaps, migrations and security reviews, with the number of devices covered"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open tickets",
+              "bold": true
+            },
+            {
+              "text": " counts New, In progress and Waiting on client."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Devices behind on patches",
+              "bold": true
+            },
+            {
+              "text": " counts Missing patches and Unsupported OS. Pending reboot is shown on the dashboard but not counted, because it usually clears overnight."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Response target",
+              "bold": true
+            },
+            {
+              "text": " comes from the priority: Urgent 1 hour, High 2, Normal 4, Low 8. Change the numbers to match your own agreements."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Billable hours",
+              "bold": true
+            },
+            {
+              "text": " adds hours on tickets marked Billable, so project work outside the agreement is not forgotten on the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter each client with plan, agreement type, seats, fee and renewal date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Import devices from your monitoring tool: name, serial, user, operating system and warranty date. Then set patch and backup status from the latest reports."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move open tickets in with their original opened time, so response targets are honest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put the next month of patch windows and restore tests under Maintenance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "First thing:",
+              "bold": true
+            },
+            {
+              "text": " Tickets, Overdue and Due this week. Anything Urgent with no first response is handled before anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mid-morning:",
+              "bold": true
+            },
+            {
+              "text": " dashboard lists Devices behind on patches and Backups not healthy. Failed backups become an Alert ticket."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "End of day:",
+              "bold": true
+            },
+            {
+              "text": " every ticket worked has hours entered and billing set."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ticket buttons resolve or reassign; maintenance buttons tick a job done and date it; client buttons open a new ticket or device already linked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Larkin & Boyd's office server shows Pending reboot and a failed backup. The backup alert is ticketed, the reboot goes into the patch window this week, and the restore test is booked for next week."
+            }
+          ]
         }
       ]
     }
