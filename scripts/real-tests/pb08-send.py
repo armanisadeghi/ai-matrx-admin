@@ -35,6 +35,8 @@ Usage:
   pb08-send.py --read <conversation>    write final.json for an existing conversation; sends nothing
   pb08-send.py --dry-run                no model call: turn 1 goes with dry_run true, every later turn is
                                         written to turn-N.planned.json and not sent
+  pb08-send.py --self-check-only        draw the count, check it against every earlier turn text, exit
+                                        (no sign-in, no network); --force-count WORD tests a chosen value
   pb08-send.py --lead-tools all         store the lead's start tools, print what is stored; sends no turn
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
@@ -44,6 +46,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import secrets
 import sys
 import tempfile
@@ -75,7 +78,7 @@ TOOL_IDS = {
 TURNS = [
     "Use a fresh copy of yourself (the agent tool, no subagent type, in the foreground) to ask: what is "
     "17 × 23? Tell me its answer.",
-    "File today's work under the batch label Juniper-0714. Start two background agents and don't wait for "
+    "File today's work under the batch label Juniper-0714. Start these background agents and don't wait for "
     "them: Tidewell Verse Desk writing a haiku about rain, and Ares Card Desk listing three facts about Mars.",
     "Ask the Mars agent for {count} more facts.",
     "Start Ledgerline Ideas Desk in the background on a brainstorm of 15 startup ideas.",
@@ -90,7 +93,12 @@ TURNS = [
 ]
 
 TURN_LABELS = ["1", "2", "3", "4", "4b", "5", "6", "7"]
-COUNTS = ["two", "three"]
+# N must never appear (word or digit) in any earlier turn the sender sends. Turn 2 asks for "three" facts, so
+# three/3 are out; the six-card Mars file leaves only A-34, A-41, A-46 after the first three. Turn 2 no longer
+# says "two", so the clean values the file supports are one (A-34) and two (A-34, A-41).
+COUNTS = ["one", "two"]
+NUMBER_WORDS = {"zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
+                "nine": 9, "ten": 10, "eleven": 11, "twelve": 12}
 SECTORS = ["fintech and payments", "health", "education", "climate", "retail", "logistics"]
 DRAWS_DIR = Path.home() / ".matrx" / "real-tests-grader"  # outside every runner's output directory
 
@@ -285,6 +293,26 @@ def record_draws(cid: str, draws: dict) -> None:
     (DRAWS_DIR / f"pb08-draws-{cid}.json").write_text(json.dumps({"conversation_id": cid, **draws}, indent=1))
 
 
+def count_collisions(count: str, earlier: list) -> list:
+    """Indexes of earlier turn texts holding the drawn count as its word or digit (case-insensitive, word-boundary)."""
+    forms = [count]
+    if count.lower() in NUMBER_WORDS:
+        forms.append(str(NUMBER_WORDS[count.lower()]))
+    elif count.isdigit():
+        forms += [w for w, v in NUMBER_WORDS.items() if v == int(count)]
+    pat = re.compile(r"(?<!\w)(?:" + "|".join(re.escape(f) for f in forms) + r")(?!\w)", re.IGNORECASE)
+    return [i for i, e in enumerate(earlier) if pat.search(e)]
+
+
+def check_count(count: str, earlier: list, labels: list) -> None:
+    """Refuse (exit 2) when the drawn count appears in any turn text sent before the follow-up."""
+    hit = count_collisions(count, earlier)
+    if hit:
+        print(f"REFUSED: the drawn count {count!r} appears in earlier turn(s) {[labels[i] for i in hit]}; "
+              "B4 could not tell whether the follow-up carried it. Nothing was sent.", file=sys.stderr)
+        sys.exit(2)
+
+
 def draw(choices: list) -> tuple:
     return secrets.choice(choices), now()
 
@@ -339,9 +367,17 @@ def main() -> None:
     ap.add_argument("--final-poll", type=int, default=240, help="seconds to poll after turn 7 (default 240)")
     ap.add_argument("--read", metavar="CONVERSATION", help="write final.json for an existing conversation; send nothing")
     ap.add_argument("--lead-tools", choices=["all"], help="store the lead's start tools and print them; send nothing")
+    ap.add_argument("--self-check-only", action="store_true", help="draw the count and check it against the earlier turns; send nothing")
+    ap.add_argument("--force-count", metavar="WORD", help="with --self-check-only: use this count instead of the draw")
     ap.add_argument("--dry-run", action="store_true", help="no model call (see the header)")
     add_accept_drift_arg(ap)
     args = ap.parse_args()
+    if args.self_check_only:
+        i3 = TURN_LABELS.index("3")
+        count = args.force_count or secrets.choice(COUNTS)
+        check_count(count, TURNS[:i3], TURN_LABELS[:i3])
+        print(f"self-check OK: count {count!r} appears in none of the earlier turns {TURN_LABELS[:i3]}")
+        return
     fixtures = {"organization": ORG, "lead_agent": LEAD, **{f"tool_{k}": v for k, v in TOOL_IDS.items()}}
 
     if args.lead_tools:
@@ -363,15 +399,20 @@ def main() -> None:
     cid = str(uuid.uuid4())
     print(f"[{now()}] PB-08 run, output {out}")
     draws: dict = {"dry_run": args.dry_run}
+    sent_texts: list = []
+    sent_labels: list = []
     for n, template in zip(TURN_LABELS, TURNS):
         text = template
         if n == "3":
             draws["count"], draws["count_drawn_at"] = draw(COUNTS)
+            check_count(draws["count"], sent_texts, sent_labels)  # before turn 3 is sent
             text = template.format(count=draws["count"])
         elif n == "4b":
             draws["sector"], draws["sector_drawn_at"] = draw(SECTORS)
             text = template.format(sector=draws["sector"])
         cid = send_turn(s, out, n, cid, text, args.dry_run)
+        sent_texts.append(text)
+        sent_labels.append(n)
         if n in ("3", "4b"):
             draws[f"turn_{n}_sent_after"] = draws["count_drawn_at" if n == "3" else "sector_drawn_at"]
             record_draws(cid, draws)
