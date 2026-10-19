@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0555",
-  "version": 2,
+  "version": 3,
   "title": "Animal Rescue Operations Desk",
-  "description": "Animals, fosters, adoption applications and vet care from intake to home.",
+  "description": "For foster-based rescues: animals, fosters, shelter pulls, vet care and adoptions.",
   "forWho": "Animal rescues, humane societies and foster networks",
   "icon": {
     "emoji": "🐾"
@@ -14,10 +14,12 @@
   },
   "category": "nonprofit",
   "tags": [
+    "rescue director",
+    "foster coordinator",
+    "adoption counselor",
     "animal rescue",
     "fosters",
-    "adoptions",
-    "vet care"
+    "adoptions"
   ],
   "spec": {
     "specVersion": 1,
@@ -105,6 +107,42 @@
             "contextPolicy": "include"
           },
           {
+            "key": "sex",
+            "label": "Sex",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Male",
+              "Female"
+            ],
+            "choiceColors": {
+              "Male": "blue",
+              "Female": "pink"
+            }
+          },
+          {
+            "key": "source",
+            "label": "Came from",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Owner surrender",
+              "Stray",
+              "Shelter pull",
+              "Born in care",
+              "Transfer from another rescue"
+            ],
+            "choiceColors": {
+              "Owner surrender": "amber",
+              "Stray": "slate",
+              "Shelter pull": "red",
+              "Born in care": "green",
+              "Transfer from another rescue": "violet"
+            }
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -176,6 +214,89 @@
                 "value": 300
               }
             ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lb)",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 250
+              }
+            ]
+          },
+          {
+            "key": "altered",
+            "label": "Spayed or neutered",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "vaccinated",
+            "label": "Vaccines up to date",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "chip",
+            "label": "Microchip number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "good_with",
+            "label": "Good with",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Dogs",
+              "Cats",
+              "Children",
+              "Not yet known"
+            ],
+            "choiceColors": {
+              "Dogs": "blue",
+              "Cats": "violet",
+              "Children": "green",
+              "Not yet known": "slate"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Adoption fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "notes",
+            "label": "Behavior and medical notes",
+            "parityType": "long_text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -431,7 +552,19 @@
               "next_checkup": "@today+2d",
               "foster": "foster-1",
               "age_months": 18,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Male",
+              "source": "Owner surrender",
+              "weight": 22,
+              "altered": false,
+              "vaccinated": true,
+              "good_with": [
+                "Dogs",
+                "Children"
+              ],
+              "fee": 250,
+              "notes": "Shy for a day, then a lap dog. Neuter booked.",
+              "chip": "985141000234101"
             }
           },
           {
@@ -444,7 +577,18 @@
               "intake_on": "@today-60d",
               "next_checkup": "@today+6d",
               "foster": "foster-3",
-              "age_months": 36
+              "age_months": 36,
+              "sex": "Female",
+              "source": "Stray",
+              "weight": 9.5,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Cats"
+              ],
+              "fee": 125,
+              "notes": "Calm indoor cat, prefers a quiet home.",
+              "chip": "985141000234102"
             }
           },
           {
@@ -457,7 +601,17 @@
               "intake_on": "@today-1d",
               "next_checkup": "@today",
               "age_months": 8,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Male",
+              "source": "Shelter pull",
+              "weight": 14,
+              "altered": false,
+              "vaccinated": false,
+              "good_with": [
+                "Not yet known"
+              ],
+              "fee": 300,
+              "notes": "Pulled from county shelter; needs intake exam and vaccines."
             }
           },
           {
@@ -470,7 +624,18 @@
               "intake_on": "@today-14d",
               "next_checkup": "@today-1d",
               "foster": "foster-2",
-              "age_months": 5
+              "age_months": 5,
+              "sex": "Female",
+              "source": "Born in care",
+              "weight": 2.1,
+              "altered": false,
+              "vaccinated": true,
+              "good_with": [
+                "Cats",
+                "Dogs"
+              ],
+              "fee": 175,
+              "notes": "Bottle-raised kitten, eye infection clearing."
             }
           },
           {
@@ -484,7 +649,18 @@
               "next_checkup": "@today+4d",
               "foster": "foster-4",
               "age_months": 48,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Male",
+              "source": "Owner surrender",
+              "weight": 68,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Children"
+              ],
+              "fee": 200,
+              "notes": "Needs a fenced yard; best as the only dog.",
+              "chip": "985141000234105"
             }
           },
           {
@@ -497,7 +673,17 @@
               "intake_on": "@today-20d",
               "next_checkup": "@today+3d",
               "foster": "foster-2",
-              "age_months": 12
+              "age_months": 12,
+              "sex": "Female",
+              "source": "Owner surrender",
+              "weight": 4.4,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Not yet known"
+              ],
+              "fee": 60,
+              "notes": "Litter trained, needs a large pen."
             }
           },
           {
@@ -510,7 +696,19 @@
               "intake_on": "@today-45d",
               "foster": "foster-7",
               "age_months": 60,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Female",
+              "source": "Transfer from another rescue",
+              "weight": 26,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Dogs",
+                "Children"
+              ],
+              "fee": 225,
+              "notes": "Loves walks, howls when alone.",
+              "chip": "985141000234107"
             }
           },
           {
@@ -523,7 +721,17 @@
               "intake_on": "@today-10d",
               "next_checkup": "@today",
               "foster": "foster-1",
-              "age_months": 3
+              "age_months": 3,
+              "sex": "Male",
+              "source": "Born in care",
+              "weight": 1.6,
+              "altered": false,
+              "vaccinated": false,
+              "good_with": [
+                "Cats"
+              ],
+              "fee": 175,
+              "notes": "Six weeks old, second vaccine due."
             }
           },
           {
@@ -537,7 +745,18 @@
               "next_checkup": "@today+5d",
               "foster": "foster-7",
               "age_months": 84,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Male",
+              "source": "Shelter pull",
+              "weight": 118,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Children"
+              ],
+              "fee": 150,
+              "notes": "Gentle giant, slow on stairs.",
+              "chip": "985141000234109"
             }
           },
           {
@@ -549,7 +768,19 @@
               "status": "Adopted",
               "intake_on": "@today-150d",
               "foster": "foster-3",
-              "age_months": 24
+              "age_months": 24,
+              "sex": "Female",
+              "source": "Stray",
+              "weight": 10,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Cats",
+                "Children"
+              ],
+              "fee": 125,
+              "notes": "Adopted with a sibling.",
+              "chip": "985141000234110"
             }
           },
           {
@@ -561,7 +792,18 @@
               "status": "Transferred",
               "intake_on": "@today-80d",
               "age_months": 30,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sex": "Male",
+              "source": "Shelter pull",
+              "weight": 28,
+              "altered": true,
+              "vaccinated": true,
+              "good_with": [
+                "Dogs"
+              ],
+              "fee": 0,
+              "notes": "Transferred to a herding breed rescue.",
+              "chip": "985141000234111"
             }
           }
         ]
@@ -655,6 +897,20 @@
             "contextPolicy": "include"
           },
           {
+            "key": "home_check",
+            "label": "Home check done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "at_home",
+            "label": "Pets and children at home",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "email",
             "label": "Email",
             "parityType": "email",
@@ -679,6 +935,36 @@
             "contextPolicy": "include",
             "filter": {
               "status": "In foster"
+            }
+          },
+          {
+            "key": "in_home",
+            "label": "Animals living with them",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "animals",
+            "pick": "animal_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "In foster",
+                "Ready for adoption",
+                "Adoption pending"
+              ]
+            }
+          },
+          {
+            "key": "placed",
+            "label": "Adopted from this home",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "animals",
+            "pick": "animal_name",
+            "agg": "count",
+            "filter": {
+              "status": "Adopted"
             }
           },
           {
@@ -789,7 +1075,9 @@
               "capacity": 3,
               "email": "calloway@mailbox.net",
               "phone": "(720) 555-0161",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_check": true,
+              "at_home": "One dog, two teenagers"
             }
           },
           {
@@ -800,7 +1088,9 @@
               "takes": "Puppies and kittens",
               "capacity": 4,
               "email": "nwosu.bennett@mailbox.net",
-              "phone": "(720) 555-0162"
+              "phone": "(720) 555-0162",
+              "home_check": true,
+              "at_home": "Two young children, one cat"
             }
           },
           {
@@ -812,7 +1102,9 @@
               "capacity": 2,
               "email": "mirabel.q@mailbox.net",
               "phone": "(720) 555-0163",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_check": true,
+              "at_home": "No other pets"
             }
           },
           {
@@ -823,7 +1115,9 @@
               "takes": "Dogs",
               "capacity": 2,
               "email": "aldana@mailbox.net",
-              "phone": "(720) 555-0164"
+              "phone": "(720) 555-0164",
+              "home_check": true,
+              "at_home": "One senior dog"
             }
           },
           {
@@ -835,7 +1129,9 @@
               "capacity": 1,
               "email": "soren.e@mailbox.net",
               "phone": "(720) 555-0165",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_check": true,
+              "at_home": "Retired vet tech, no pets"
             }
           },
           {
@@ -846,7 +1142,9 @@
               "takes": "Dogs and cats",
               "capacity": 2,
               "email": "priyanka.d@mailbox.net",
-              "phone": "(720) 555-0166"
+              "phone": "(720) 555-0166",
+              "home_check": false,
+              "at_home": "One cat, no children"
             }
           },
           {
@@ -858,7 +1156,9 @@
               "capacity": 5,
               "email": "hollingsworth@mailbox.net",
               "phone": "(720) 555-0167",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_check": true,
+              "at_home": "Working farm, three resident dogs"
             }
           }
         ]
@@ -1324,6 +1624,46 @@
             "contextPolicy": "include"
           },
           {
+            "key": "home_visit",
+            "label": "Home visit done",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "landlord_ok",
+            "label": "Landlord approval",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not needed (owns home)",
+              "Requested",
+              "Approved",
+              "Refused"
+            ],
+            "choiceColors": {
+              "Not needed (owns home)": "slate",
+              "Requested": "amber",
+              "Approved": "green",
+              "Refused": "red"
+            }
+          },
+          {
+            "key": "contract",
+            "label": "Adoption contract signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_paid",
+            "label": "Fee paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "btn_approve",
             "label": "Mark approved",
             "parityType": "button",
@@ -1494,7 +1834,11 @@
               "phone": "(720) 555-0171",
               "home": "House with yard",
               "reference_checked": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_visit": false,
+              "landlord_ok": "Not needed (owns home)",
+              "contract": false,
+              "fee_paid": false
             }
           },
           {
@@ -1507,7 +1851,11 @@
               "email": "hartigan@mailbox.net",
               "phone": "(720) 555-0172",
               "home": "Apartment",
-              "reference_checked": false
+              "reference_checked": false,
+              "home_visit": false,
+              "landlord_ok": "Requested",
+              "contract": false,
+              "fee_paid": false
             }
           },
           {
@@ -1521,7 +1869,11 @@
               "phone": "(720) 555-0173",
               "home": "Farm or acreage",
               "reference_checked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_visit": true,
+              "landlord_ok": "Not needed (owns home)",
+              "contract": false,
+              "fee_paid": false
             }
           },
           {
@@ -1534,7 +1886,11 @@
               "email": "cecilia.vi@mailbox.net",
               "phone": "(720) 555-0174",
               "home": "House with yard",
-              "reference_checked": true
+              "reference_checked": true,
+              "home_visit": true,
+              "landlord_ok": "Not needed (owns home)",
+              "contract": true,
+              "fee_paid": true
             }
           },
           {
@@ -1548,7 +1904,11 @@
               "phone": "(720) 555-0175",
               "home": "Apartment",
               "reference_checked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_visit": false,
+              "landlord_ok": "Refused",
+              "contract": false,
+              "fee_paid": false
             }
           },
           {
@@ -1561,7 +1921,11 @@
               "email": "helga.o@mailbox.net",
               "phone": "(720) 555-0176",
               "home": "House, no yard",
-              "reference_checked": false
+              "reference_checked": false,
+              "home_visit": false,
+              "landlord_ok": "Approved",
+              "contract": false,
+              "fee_paid": false
             }
           },
           {
@@ -1575,7 +1939,11 @@
               "phone": "(720) 555-0177",
               "home": "House with yard",
               "reference_checked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "home_visit": true,
+              "landlord_ok": "Not needed (owns home)",
+              "contract": true,
+              "fee_paid": true
             }
           },
           {
@@ -1588,7 +1956,360 @@
               "email": "juno.c@mailbox.net",
               "phone": "(720) 555-0178",
               "home": "House with yard",
-              "reference_checked": false
+              "reference_checked": false,
+              "home_visit": false,
+              "landlord_ok": "Not needed (owns home)",
+              "contract": false,
+              "fee_paid": false
+            }
+          }
+        ]
+      },
+      {
+        "token": "pull",
+        "name": "Shelter pulls",
+        "labelSingular": "Shelter pull",
+        "labelPlural": "Shelter pulls",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "truck",
+        "titleField": "pull_name",
+        "describes": "Animals you have agreed to take from shelters, with the deadline and whether a foster is ready.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Picked up"
+            ],
+            "filled": [
+              "picked_up_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New pull",
+            "values": {
+              "pull_name": "New pull",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before we say yes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "A foster home with room for each animal"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Shelter's medical notes and vaccine history requested"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Driver and crates arranged"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pickup day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Paperwork signed and copies kept"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Each animal added to Animals as Intake, with Came from set to Shelter pull"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "pull_by",
+            "picked_up_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "pull_name",
+            "label": "Pull",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "shelter",
+            "label": "Shelter",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Approved",
+              "Picked up",
+              "Fell through"
+            ],
+            "choiceColors": {
+              "Requested": "amber",
+              "Approved": "blue",
+              "Picked up": "green",
+              "Fell through": "slate"
+            },
+            "required": true,
+            "statusGroups": {
+              "Requested": "todo",
+              "Approved": "in_progress",
+              "Picked up": "done",
+              "Fell through": "done"
+            }
+          },
+          {
+            "key": "pull_by",
+            "label": "Pull by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "picked_up_on",
+            "label": "Picked up on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "dogs",
+            "label": "Dogs",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "cats",
+            "label": "Cats",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ]
+          },
+          {
+            "key": "foster_lined_up",
+            "label": "Foster lined up",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_picked",
+            "label": "Mark picked up",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pull_picked"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pull_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pull-1",
+            "values": {
+              "pull_name": "County shelter, two hounds",
+              "shelter": "Marion County Animal Services",
+              "status": "Approved",
+              "pull_by": "@today+1d",
+              "dogs": 2,
+              "cats": 0,
+              "foster_lined_up": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pull-2",
+            "values": {
+              "pull_name": "City shelter kitten litter",
+              "shelter": "Eastport City Shelter",
+              "status": "Requested",
+              "pull_by": "@today",
+              "dogs": 0,
+              "cats": 5,
+              "foster_lined_up": true
+            }
+          },
+          {
+            "key": "pull-3",
+            "values": {
+              "pull_name": "Senior beagle from the county",
+              "shelter": "Marion County Animal Services",
+              "status": "Requested",
+              "pull_by": "@today-2d",
+              "dogs": 1,
+              "cats": 0,
+              "foster_lined_up": false,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pull-4",
+            "values": {
+              "pull_name": "Rural shelter transport, three dogs",
+              "shelter": "Lane Valley Humane Society",
+              "status": "Approved",
+              "pull_by": "@today+4d",
+              "dogs": 3,
+              "cats": 0,
+              "foster_lined_up": true
+            }
+          },
+          {
+            "key": "pull-5",
+            "values": {
+              "pull_name": "Mother cat and kittens",
+              "shelter": "Eastport City Shelter",
+              "status": "Requested",
+              "pull_by": "@today+6d",
+              "dogs": 0,
+              "cats": 4,
+              "foster_lined_up": false
+            }
+          },
+          {
+            "key": "pull-6",
+            "values": {
+              "pull_name": "Waffles and littermate",
+              "shelter": "Marion County Animal Services",
+              "status": "Picked up",
+              "pull_by": "@today-3d",
+              "picked_up_on": "@today-3d",
+              "dogs": 2,
+              "cats": 0,
+              "foster_lined_up": true,
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pull-7",
+            "values": {
+              "pull_name": "Overflow at the county",
+              "shelter": "Marion County Animal Services",
+              "status": "Fell through",
+              "pull_by": "@today-12d",
+              "dogs": 4,
+              "cats": 0,
+              "foster_lined_up": false
             }
           }
         ]
@@ -1855,6 +2576,39 @@
             "value": "@me"
           }
         ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pull_picked",
+        "table": "pull",
+        "name": "Mark picked up",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Picked up"
+          },
+          {
+            "field": "picked_up_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pull_claim",
+        "table": "pull",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
       }
     ],
     "views": [
@@ -2063,6 +2817,89 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_pull",
+        "name": "All pulls",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "pull"
+      },
+      {
+        "token": "pull_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "pull"
+      },
+      {
+        "token": "pull_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "pull_by",
+        "allDay": true,
+        "table": "pull"
+      },
+      {
+        "token": "pull_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "pull_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "pull"
+      },
+      {
+        "token": "pull_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "pull_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "pull"
+      },
+      {
+        "token": "pull_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "pull_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "pull"
+      },
+      {
+        "token": "pull_mine",
+        "name": "My pulls",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "pull"
       }
     ],
     "agent": {
@@ -2135,6 +2972,18 @@
           "surface": "vet_visits_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open shelter pulls.",
+        "action": {
+          "kind": "open",
+          "surface": "pull_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pull_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2151,7 +3000,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2173,12 +3022,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every animal's journey from intake to a home, plus the fosters, vet care and adopters who make it possible. Start with the Dashboard each morning. Update an animal's status the moment it changes, and book the next vet visit before the foster leaves the clinic."
+              "text": "The rescue in one place. Shelter pulls is where commitments start; every animal then moves through Animals from intake to adopted; Foster homes shows who has room; Vet visits keeps care and cost on track; Adoption applications holds every family's checks. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2590,6 +3445,371 @@
             ],
             "activeViewId": "app-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Shelter pulls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Animals you have agreed to take from shelters, with deadlines."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pull",
+              "view": "pull_board"
+            },
+            "inline": true,
+            "title": "Shelter pulls",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pu-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pu-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "pull_by"
+              },
+              {
+                "id": "pu-t",
+                "name": "All pulls",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pu-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "pull_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "pu-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "pull_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "pu-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "pull_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "pu-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pu-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "animal-rescue-operations",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the rescue in this workspace. Share it with the rescue coordinator, the foster manager, the adoption counselors and the medical volunteers."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shelter pulls",
+              "bold": true
+            },
+            {
+              "text": ": animals you have agreed to take from shelters, the pull-by date, and whether a foster is ready."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Animals",
+              "bold": true
+            },
+            {
+              "text": ": every animal from intake to adoption, with where it came from, sex, weight, altered and vaccine status, microchip, who it is good with, the fee and notes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Foster homes",
+              "bold": true
+            },
+            {
+              "text": ": every foster, what they take, how many at once, who lives there, and how many animals are with them now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vet visits",
+              "bold": true
+            },
+            {
+              "text": ": exams, vaccines, surgery and treatment, with cost and who is driving."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Adoption applications",
+              "bold": true
+            },
+            {
+              "text": ": every family, with the reference, landlord, home visit, contract and fee."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: pulls for the week confirmed against foster room."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Through the week: intake exams within a day of arrival; vet visits driven."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: the adoption team reviews new applications and checks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Saturday: meet-and-greets and adoption events."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: pulls due, vet visits today, new applications"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: animals not yet altered, fosters with room"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: vet spending, adoptions, average weeks in care"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: foster thank-yous and recruiting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The rescue coordinator says yes to pulls. The foster manager places animals and supports fosters. Adoption counselors run applications. Medical volunteers book and drive vet visits, and the board treasurer reads vet spending each month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Applicants' and fosters' phone numbers and emails are private. Share this workspace with your team, not with every volunteer. Microchip numbers move to the adopter's name on adoption day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename species, sources and shelters to match your rescue and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns; every count updates on its own."
+            }
+          ]
         }
       ]
     },
@@ -2993,6 +4213,136 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Medical readiness"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "animals",
+              "view": "all_animals"
+            },
+            "inline": true,
+            "title": "Not yet altered",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dm-1",
+                "name": "Not spayed or neutered",
+                "layout": "list",
+                "icon": "Stethoscope",
+                "filters": {
+                  "altered": false
+                },
+                "anyOf": {
+                  "status": [
+                    "Intake",
+                    "In foster",
+                    "Ready for adoption"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dm-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where animals come from"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "animals",
+              "view": "all_animals"
+            },
+            "inline": true,
+            "title": "Animals by source",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dm-2",
+                "name": "By source",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "source",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dm-2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pulls this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pull",
+              "view": "pull_week"
+            },
+            "inline": true,
+            "title": "Pulls this week",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dm-3",
+                "name": "Pulls due",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "pull_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dm-3"
+          }
         }
       ]
     },
@@ -3011,13 +4361,83 @@
           "type": "callout",
           "text": [
             {
-              "text": "The first 48 hours decide a lot for an animal. Do the same steps for every animal, in the same order."
+              "text": "The first 72 hours decide how fast an animal is adopted. A complete intake means no surprises later: no missing vaccine, no unknown health problem, no foster who was told the wrong thing."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the animal arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For a shelter pull, confirm a foster has room on "
+            },
+            {
+              "text": "Foster homes",
+              "bold": true
+            },
+            {
+              "text": ": "
+            },
+            {
+              "text": "Animals at once",
+              "bold": true
+            },
+            {
+              "text": " against "
+            },
+            {
+              "text": "Animals living with them",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the shelter or owner for every record they have: vaccines, tests, behavior notes, bite history."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the commitment in "
+            },
+            {
+              "text": "Shelter pulls",
+              "bold": true
+            },
+            {
+              "text": " with the pull-by date and tick "
+            },
+            {
+              "text": "Foster lined up",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3034,7 +4454,28 @@
           "type": "todo",
           "text": [
             {
-              "text": "Scan for a microchip and note the result"
+              "text": "Add the animal to "
+            },
+            {
+              "text": "Animals",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Intake",
+              "bold": true
+            },
+            {
+              "text": " with "
+            },
+            {
+              "text": "Came from",
+              "bold": true
+            },
+            {
+              "text": ", sex, estimated age and weight"
             }
           ],
           "props": {
@@ -3045,7 +4486,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Take clear photos from the front and side"
+              "text": "Scan for a microchip; if there is none, book one with the first vet visit"
             }
           ],
           "props": {
@@ -3056,7 +4497,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Add the animal on the Animals table with its intake date"
+              "text": "Photograph the animal the same day; the adoption listing needs it later"
             }
           ],
           "props": {
@@ -3067,7 +4508,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Book the intake vet exam"
+              "text": "Separate from resident pets for at least a week (two for cats)"
             }
           ],
           "props": {
@@ -3078,7 +4519,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Place with a foster that has room and the right setup"
+              "text": "Book the "
+            },
+            {
+              "text": "Intake exam",
+              "bold": true
+            },
+            {
+              "text": " in Vet visits"
             }
           ],
           "props": {
@@ -3089,7 +4537,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Within a week"
+              "text": "The intake exam"
             }
           ],
           "props": {
@@ -3100,7 +4548,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Write a short, honest behavior note after the first days in foster."
+              "text": "Vaccines: dogs get distemper-parvo and rabies when old enough; cats get the combination vaccine and rabies."
             }
           ]
         },
@@ -3108,7 +4556,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Update the weight and any medicine given."
+              "text": "Tests: heartworm for dogs over six months; FIV and FeLV for cats."
             }
           ]
         },
@@ -3116,7 +4564,114 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Move to Ready for adoption only after vet clearance and a photo update."
+              "text": "Deworming and flea treatment for everyone."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Spay or neuter scheduled before adoption. Tick "
+            },
+            {
+              "text": "Spayed or neutered",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Vaccines up to date",
+              "bold": true
+            },
+            {
+              "text": " as they happen."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Behavior notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fosters write what they see in "
+            },
+            {
+              "text": "Behavior and medical notes",
+              "bold": true
+            },
+            {
+              "text": ": with other dogs, cats, children, strangers, handling, being alone. Set "
+            },
+            {
+              "text": "Good with",
+              "bold": true
+            },
+            {
+              "text": " only after you have seen it, not guessed it. \"Not yet known\" is an honest answer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ready for adoption"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An animal is ready when it is altered, vaccinated, microchipped, healthy and has a few weeks of foster notes. Set the "
+            },
+            {
+              "text": "Adoption fee",
+              "bold": true
+            },
+            {
+              "text": ", write a short warm listing, and move it to "
+            },
+            {
+              "text": "Ready for adoption",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Waffles arrives from the county shelter with no records. The coordinator logs him as a shelter pull, the medical volunteer drives him to the intake exam the same day, and he goes to the Calloway house. Two weeks later he is neutered, chipped and vaccinated, and his foster's notes say he loves children."
             }
           ]
         }
@@ -3137,7 +4692,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A good adoption is a good match, not a fast one. The process is there to protect the animal and the adopter."
+              "text": "A good adoption matches the animal's real needs to the family's real life. Be warm, be quick, and never skip the checks: returns are hard on everyone, most of all the animal."
             }
           ],
           "background": "blue",
@@ -3149,7 +4704,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When an application arrives"
             }
           ],
           "props": {
@@ -3160,7 +4715,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Read the application and call two references."
+              "text": "It lands in "
+            },
+            {
+              "text": "Adoption applications",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": ", linked to the animal."
             }
           ]
         },
@@ -3168,7 +4737,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the home type and any rental permission."
+              "text": "The adoption counselor replies within one day, even if only to say it is being read."
             }
           ]
         },
@@ -3176,23 +4745,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set up a meet-and-greet, including other dogs in the home when relevant."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Move it to "
+            },
             {
-              "text": "Press Mark approved, then complete the contract and fee."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "In review",
+              "bold": true
+            },
             {
-              "text": "Press Mark adopted on the animal and call the adopter after one week."
+              "text": " and start the checks."
             }
           ]
         },
@@ -3200,7 +4760,74 @@
           "type": "heading",
           "text": [
             {
-              "text": "If the answer is no"
+              "text": "The checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reference",
+              "bold": true
+            },
+            {
+              "text": " called: the family's vet if they have had pets, or a personal reference"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Landlord approval",
+              "bold": true
+            },
+            {
+              "text": " in writing for renters, or \"Not needed\" for owners"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Home visit",
+              "bold": true
+            },
+            {
+              "text": " done, in person or by video: fences, other pets, where the animal will sleep"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A conversation with the foster, who knows the animal best"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matching"
             }
           ],
           "props": {
@@ -3211,7 +4838,163 @@
           "type": "text",
           "text": [
             {
-              "text": "Explain kindly and offer another animal that fits better. Never say it is because of who they are; say what the animal needs."
+              "text": "Talk about the family's day: who is home, how active they are, children's ages, other pets. Read the foster's notes together. If the match is poor, say so kindly and suggest a better fit; many families adopt a different animal they had not considered."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the application to "
+            },
+            {
+              "text": "Approved",
+              "bold": true
+            },
+            {
+              "text": ", and the animal to "
+            },
+            {
+              "text": "Adoption pending",
+              "bold": true
+            },
+            {
+              "text": ". Other applicants for the same animal get a personal note and an invitation to meet others."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Adoption day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Adoption contract",
+              "bold": true
+            },
+            {
+              "text": " signed: return to the rescue if it does not work out, never to a shelter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee paid",
+              "bold": true
+            },
+            {
+              "text": ", and the animal's fee confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Microchip registration moved to the new family"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Medical records, food for a few days and the foster's notes handed over"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Animal marked "
+            },
+            {
+              "text": "Adopted",
+              "bold": true
+            },
+            {
+              "text": ", application marked "
+            },
+            {
+              "text": "Adopted",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call at three days, three weeks and three months. Most problems show up early and are easy to solve with advice. A family who asks to return an animal is helped, never shamed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Moose, a big shepherd mix, has two applications. One family lives in an apartment with no yard; the other has a fenced yard and older children. After checks and a home visit, the second family is approved, the first is invited to meet a smaller dog, and Moose goes home the following Saturday."
             }
           ]
         }
@@ -3232,7 +5015,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Fosters are the rescue. Make their work easier and they will stay for years."
+              "text": "Fosters are the rescue. Without a building, every animal you save lives in someone's home. Look after fosters and they will foster for years."
             }
           ],
           "background": "blue",
@@ -3244,7 +5027,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Welcome basics"
+              "text": "Becoming a foster"
             }
           ],
           "props": {
@@ -3252,26 +5035,69 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Give every foster a one-page guide: feeding, medicine, who to call and what counts as an emergency."
+              "text": "The applicant fills in the foster form and is added to "
+            },
+            {
+              "text": "Foster homes",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Applicant",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Ask them to send a photo and note each week."
+              "text": "A home check, in person or by video. Tick "
+            },
+            {
+              "text": "Home check done",
+              "bold": true
+            },
+            {
+              "text": " and write who else lives there in "
+            },
+            {
+              "text": "Pets and children at home",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Call within a day of every new placement."
+              "text": "Agree what they can take (dogs, cats, puppies and kittens, medical cases) and how many at once."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move them to "
+            },
+            {
+              "text": "Available",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3279,7 +5105,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Support"
+              "text": "What the rescue provides"
             }
           ],
           "props": {
@@ -3287,83 +5113,198 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Food, litter, crates, beds, toys and any medicine."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "All vet care, booked and paid by the rescue. Fosters never pay out of pocket."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A named contact who answers within a day, and an emergency number for nights and weekends."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What we ask of fosters"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Need"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What we provide"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Food and supplies"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Pick-up on Saturdays from the supply shelf"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Vet care"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Visits booked and paid by the rescue"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "A break"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Respite from another foster for up to a week"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "A hard day"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A call to the foster manager any hour for emergencies"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Keep new animals apart from resident pets for the first week or two"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write notes each week: eating, toilet habits, energy, how they are with people and pets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bring the animal to vet visits, or let the driver collect them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bring the animal to adoption events once a month if you can"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tell us at once about vomiting, diarrhea for more than a day, not eating, or any bite"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matching animals to homes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use "
+            },
+            {
+              "text": "Animals at once",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Animals living with them",
+              "bold": true
+            },
+            {
+              "text": " to see who has room. A home with young children is not the place for a dog that has not been tested with children. Medical cases go only to experienced fosters."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Breaks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fosters burn out. Offer a break after every two or three animals, and move a home to "
+            },
+            {
+              "text": "On pause",
+              "bold": true
+            },
+            {
+              "text": " without any guilt. A rested foster comes back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Saying thank you"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send every foster the adoption photo and a note from the family. Count each home's "
+            },
+            {
+              "text": "Adopted from this home",
+              "bold": true
+            },
+            {
+              "text": " and celebrate milestones: the fifth, the tenth, the fiftieth animal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Nwosu-Bennett family fosters a litter of four kittens. The rescue drops off food, litter and a pen, the medical volunteer collects the kittens for their vaccines, and the family writes notes every Sunday. Eight weeks later all four are adopted, and the family asks for a break before the next litter."
+            }
+          ]
         }
       ]
     }
