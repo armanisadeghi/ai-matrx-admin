@@ -252,7 +252,7 @@ export function useDocComments({
   const shown = new Set<string>([...threadsByAnchor.keys(), ...(draft ? [draft.anchorId] : [])]);
 
   const layer = (
-    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" data-comment-highlights="">
+    <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" data-comment-highlights="">
       {[...layout.boxes].flatMap(([anchorId, boxes]) =>
         shown.has(anchorId)
           ? boxes.map((b, i) => (
