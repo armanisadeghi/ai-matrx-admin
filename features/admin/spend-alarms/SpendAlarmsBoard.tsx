@@ -3,7 +3,7 @@
 // Billing › Alarms: every spend alarm record, ringing ones first, on the canonical MatrxDataTable
 // (views, KPIs, tones). Each row opens its record page; ?id=<alarm> highlights that row.
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,13 +13,15 @@ import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { readOf } from "@ai-matrx/design-system";
 import { useListViewPrefs } from "@/lib/list-views/useListViewPrefs";
+import { useAttentionTriage } from "@/features/admin/attention/sources/useAttentionTriage";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { formatAdminUsd } from "@/components/cost/formatAdminCost";
 import {
   ALARM_AUDIENCES,
   AUDIENCE_LABEL,
   LEVEL_LABEL,
-  audienceOf,
+  audienceAsTheCardRoutes,
+  type CardRoute,
   workItemHref,
   type AlarmAudience,
   SPEND_ALARMS_PATH,
@@ -44,6 +46,13 @@ export function SpendAlarmsBoard() {
   // Under the dock's query prefix: a mute anywhere (dock, record page) refreshes this list at once.
   const query = useQuery({ queryKey: ["admin-attention", "spend-alarm-list"], queryFn: fetchSpendAlarms, refetchOnWindowFocus: true });
   const rows: SpendAlarmRecord[] = query.data ?? [];
+  // One answer to "what is mine" (review 4, F5): the dock's own routing decides each row's audience.
+  const triage = useAttentionTriage(true).triage;
+  const routes = useMemo(
+    () => (triage ? new Map<string, CardRoute>([...triage.verdicts].map(([key, v]) => [key, v.routedTo])) : null),
+    [triage],
+  );
+  const audienceOf = (r: SpendAlarmRecord) => audienceAsTheCardRoutes(r, routes);
   const loading = query.isFetching && !query.data;
   const error = query.error ? (query.error instanceof Error ? query.error.message : String(query.error)) : null;
   const { prefs: viewPrefs, setPrefs: setViewPrefs } = useListViewPrefs("spend-alarms-admin");
