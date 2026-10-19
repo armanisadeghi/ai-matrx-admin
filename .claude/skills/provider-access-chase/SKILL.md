@@ -1,6 +1,7 @@
 ---
 name: provider-access-chase
 subject: integrations/provider-access
+rules: [activation, custody]
 description: "Follow-up sweep for pending third-party provider access campaigns. Use when the recurring 30-minute Provider Access Launch dispatcher wakes, or for a manual status check of due email threads, developer portals, support cases, or review deadlines."
 ---
 
@@ -22,6 +23,78 @@ description: "Follow-up sweep for pending third-party provider access campaigns.
    ("crazy", Arman, 2026-09-12). The Verification Desk trial proved it: one such API unlocked a whole
    step of a real method for ten minutes of enabling.
 2. **An activation ends with a platform tool registered** for users and agents, not just a key.
+
+**Business authorization and runner approval are separate.** Reuse recorded authority
+for routine login, SSO, accessible mailbox verification, requested setup and Vault
+custody; never ask for the same permission again. An unattended worker must not ask
+questions, request a manual click, or wait for a reply. If a tool enforces an
+action-time approval or human-only step, preserve the precise action, destination,
+requirement, attempted recovery and resumption condition on the owning task. Park
+only that work and continue other requests. Do not bypass the gate, claim the user
+refused, or call it a provider review wait. Notify once for a new actionable gate;
+unchanged gates do not generate repeated approval prompts.
+
+**Account custody is part of completion.** For every identity used or created,
+record its exact provider account/workspace IDs, login method and entry URL, role
+(production, developer, reviewer/test, support or billing), environment and Vault
+item reference. One identity may have several roles; do not duplicate it just for
+labels. Distinct test identities remain separate from production. A passwordless
+SSO login must name the identity provider, exact principal and its existing Vault
+login reference; a client secret or OAuth token alone does not document portal
+access. Do not invent a password, silently substitute an account or infer a
+workspace from an email address.
+
+Save new credentials immediately through the supported private Vault path, then
+read back the saved item metadata and verify a fresh login. Preserve the same
+item/operation identity after interruption. Record MFA method, protected
+authenticator/recovery custody and provider confirmation separately from login
+proof. Absence from a limited metadata search is UNKNOWN, not proof of absence.
+Missing private-write capability is an unfinished custody step, not completion.
+Never rotate working credentials merely to repair missing documentation.
+
+Before completion, the worker and independent verifier fill the account handoff
+receipt below from persisted records. Every applicable value is verified or a
+named gap; use `not_applicable` with a reason rather than empty fields. Keep secret
+values only in protected Vault fields. Provider approval, portal login custody,
+reviewer/test proof and product-operation proof are separate outcomes. A green
+approval badge never closes missing custody or identity proof.
+
+### Account handoff receipt
+
+This is a task/result contract, **not new database columns**. Keep identity and
+credential associations in `provider.account` / `provider.account_credential`,
+secret and login metadata in Vault, and the proof receipt on the existing campaign
+task (or claimed Work Loop result). Link these records; do not start a second
+account registry. Use the normal supported product surfaces; do not fabricate a
+metadata write API. Customer seller/store accounts remain in
+`commerce.marketplace_account`, linked as test targets rather than company logins.
+
+```text
+Provider / capability / owning campaign:
+Approval: exact app/client/project ID, environment, granted capability, receipt URL/date
+Identities used (one row per actual account):
+  purpose/roles; company/customer/test ownership; provider account reference;
+  exact login identity (or protected identity reference); account/workspace IDs;
+  workspace role; environment; login URL and method;
+  Vault login item reference; SSO provider + principal + upstream Vault reference;
+  client/key credential references (never values); status and saved-record readback
+MFA/recovery per identity:
+  method; authenticator on login item; protected recovery location;
+  provider-confirmed state; fresh sign-in result/time; observed failure if any
+Tests:
+  exact test/reviewer identity reference; target tenant/workspace/store reference;
+  environment; scopes/role; operation/result/evidence/time;
+  test data retained or removed; cleanup/revoke/reconnect instructions
+Handoff:
+  next operator's login path; existing owner; last verified time;
+  each unresolved gap, recovery attempted, next action and resumption condition
+```
+
+A verifier starts from those persisted references, not a worker's open session.
+For public signup, SSO, OAuth and commerce portal work, require fresh login under
+the intended identity and a match between portal account/workspace and the saved
+record. An authenticated browser inherited from another worker is not that proof.
+No applicable identity or custody gap may be omitted from the final task status.
 <!-- rules:stamp-end -->
 
 This skill is the follow-through loop. A recurring runner may wake every 30 minutes, but it acts only
@@ -74,16 +147,19 @@ declared Mandate by `mandate_key`; it may not take a hardcoded agent UUID or sil
 3. Support ticket or escalation route when the promised window has elapsed.
 4. Canonical AI Matrx connection state when an approval may have landed.
 
-Exhaust authenticated browser sessions, provider CLI/API access, Vault credentials, and service
-identities before asking Arman to log in. A provider-enforced challenge is an owner blocker; a stale
-agent login that can be repaired through the normal account flow is not.
+Exhaust approved isolated sessions, provider CLI/API access, Vault credentials
+and service identities. An unattended run never asks for login or waits for a
+reply: persist an enforced runner/provider gate and continue due campaigns. A
+stale login repairable through the normal account flow is agent-owned work.
 
 ## On a new event
 
 - Record the exact provider event, timestamp, source identity, case/thread/message ID, and links.
 - Create/update the consequential `crm.interaction`; keep secrets out of the body.
 - Update task `Phase`, exact next action, and next check in the same pass.
-- Approval: verify the real product connection/operation before marking complete.
+- Approval: verify the real product connection/operation and complete the stamped
+  account handoff receipt before marking complete; approval does not erase
+  identity, test-account or Vault custody gaps.
 - Request for evidence/clarification: prepare the smallest factual response and required assets.
 - Rejection: preserve the reason, compare it with submitted scopes/assets, and prepare a repair plan.
 - Deadline: escalate immediately with the exact action and deadline.
@@ -100,7 +176,8 @@ Set the next check from the provider's stated timing and current conversation in
 - active same-day reviewer exchange: 1 hour unless the provider states otherwise;
 - ordinary pending review: daily during business days;
 - stated review window: at the end of that window, then use the documented escalation route;
-- owner blocker: immediately after the owner action, plus a reasonable reminder;
+- owner/runner gate: resume after recorded resolution; do not repeat an unchanged
+  approval question on every scheduled check;
 - completed/cancelled/dismissed: no further check.
 
 The 30-minute runner is a dispatcher, not a mandate to poll every provider twice an hour.

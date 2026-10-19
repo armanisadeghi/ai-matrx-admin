@@ -1,6 +1,7 @@
 ---
 name: provider-access-scout
 subject: integrations/provider-access
+rules: [activation]
 description: "Decision-ready scouting record for a user-connected provider access campaign. Use when an assigned Provider Access Launch task needs its easiest official route, minimum scopes, cost, account needs, approval path, implementation consumer, and easy-execute verdict established before submission. NOT for client Local Listings distribution."
 ---
 

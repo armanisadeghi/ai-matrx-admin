@@ -44,3 +44,13 @@ provider search UI; rotate production API keys everywhere.
 
 This proves guidance and trigger behavior only. Live account setup remains a
 separate acceptance criterion and is never inferred from these evaluations.
+
+## Unattended custody regression — 2026-10-19
+
+Three baseline and three revised-instruction agents tested forced runner approval,
+Google SSO, ambiguous workspace roles and a separate reviewer identity. Baseline
+agents detected missing custody but asked/waited; all revised agents parked the
+gate without asking and required persisted identity/test references. Agent IDs,
+scenario and observed decisions: [web-request behavioral checks](../codex-web-request/evals.md).
+These are behavioral simulations; live account and credential-write proof remains
+request-specific.
