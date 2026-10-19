@@ -1,5 +1,6 @@
 ---
 name: test-model-selection
+subject: policies/ai-model-and-spend-rules
 type: Skill
 title: "test-model-selection — which model a coding agent tests with"
 description: "Picks the model a coding agent uses when a test or browser check sends an AI call. Use when choosing a model for any test, UI check, bench, or agent run, or when a test names Opus, Sonnet, Fable, Astra, or any model by habit."

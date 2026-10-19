@@ -1,5 +1,6 @@
 ---
 name: route-discovery-system
+subject: matrx-frontend:.claude/skills/route-discovery-system
 description: "Filesystem auto-discovery of App Router pages into navigable index pages. Use when creating an index/listing page, adding route directories, converting hard-coded route configs to auto-discovery, or adding a route-listing display variant."
 ---
 

@@ -90,7 +90,8 @@ describe("the structured path", () => {
     );
     expect(result.headline).toContain("We dropped this run");
     expect(result.headline).not.toMatch(/your .*run failed/i);
-    expect(result.nextStep).toContain("Nothing was charged");
+    expect(result.nextStep).toContain("Your rules are untouched");
+    expect(result.nextStep).not.toMatch(/charged/i);
     // The operational detail is kept, but it is not what the reader is told.
     expect(result.technical).toContain("Force-failed");
     expect(result.headline).not.toContain("Force-failed");

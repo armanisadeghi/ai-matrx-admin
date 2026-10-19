@@ -63,7 +63,6 @@ import { toast } from "@/lib/toast";
 import { organizationArchiveState, restoreArchivedOrganizationById } from "@/features/organizations/service/organizationArchive";
 import { useAppSelector, useAppStore } from "@/lib/redux/hooks";
 import { currentPointsRate } from "@/components/cost/pointsRate";
-import { selectUserRequestResult } from "@ai-matrx/chat/agents/redux/execution-system/active-requests/active-requests.selectors";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
 import { createRecordsPresencePort } from "@ai-matrx/records/realtime";
 import { createRecordsRealtimePort } from "@ai-matrx/records/realtime";
@@ -446,10 +445,8 @@ export function useRecordsUiPorts({
         zone: askZone,
         organizationId,
         ask,
-        readCostUsd: (requestId) => selectUserRequestResult(requestId)(store.getState() as never)?.total_usage?.total?.total_cost ?? null,
-        pointsRate: currentPointsRate,
       }),
-    [launchMandate, organizationId, store, askZone],
+    [launchMandate, organizationId, askZone],
   );
 
   const navigate = useCallback((href: string) => router.push(href), [router]);

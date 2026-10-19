@@ -146,6 +146,8 @@ export function OfferingsWorkbench() {
   const [adding, setAdding] = useState(false);
   const [editDraft, setEditDraft] = useState<OfferingEditDraft | null>(null);
   const [worthNode, setWorthNode] = useState<CatalogNode | null>(null);
+  /** Values an agent staged into the worth dialog; null when the person opened it. */
+  const [worthSeed, setWorthSeed] = useState<{ nodeId: string; values: Partial<OfferingWorthValues> } | null>(null);
   const [stopping, setStopping] = useState<{ id: string; name: string }[] | null>(null);
   const [removing, setRemoving] = useState<CatalogOffering | null>(null);
   const contextNodeRef = useRef<CatalogNode | null>(null);
@@ -192,15 +194,6 @@ export function OfferingsWorkbench() {
   // ── Derived ───────────────────────────────────────────────────────────────
   const offerings = catalog.data ?? [];
   const tree = buildCatalogTree(offerings, tallyByOffering(stats.data ?? []));
-  usePublishOfferingsFeed({
-    catalog: catalog.data ?? null,
-    prices: prices.data ?? {},
-    site: { id: site.id, domain: site.domain, name: site.name ?? null },
-    stats: stats.data ?? null,
-    placement: placementStatus.data ?? null,
-    draft: editDraft,
-    openDraft: setEditDraft,
-  });
   const metas = buildBandMeta(vocab.data ?? []);
   const offeredCount = offerings.filter((offering) => offering.available).length;
   const valuedCount = offerings.filter((offering) => offering.worthPoints !== null).length;
@@ -359,6 +352,7 @@ export function OfferingsWorkbench() {
       }),
     onSuccess: (_id, input) => {
       setWorthNode(null);
+      setWorthSeed(null);
       void refresh();
       toast.success(input.values ? "Worth saved" : "Ruling removed", {
         description: input.values
@@ -436,6 +430,35 @@ export function OfferingsWorkbench() {
   const busy =
     availability.isPending || move.isPending || save.isPending || worth.isPending || add.isPending || remove.isPending;
 
+  // What the page holds, for the room's agent surface. Site actions run the
+  // same mutations the row buttons run (offer, move) or open the same dialogs
+  // (stop offering, worth) so the person confirms and saves.
+  usePublishOfferingsFeed({
+    catalog: catalog.data ?? null,
+    prices: prices.data ?? {},
+    site: { id: site.id, domain: site.domain, name: site.name ?? null },
+    stats: stats.data ?? null,
+    placement: placementStatus.data ?? null,
+    draft: editDraft,
+    openDraft: setEditDraft,
+    siteActions: {
+      busy,
+      offer: async (ids) => {
+        await availability.mutateAsync({ ids, offered: true, reason: null });
+      },
+      openStop: (entries) => setStopping(entries),
+      openWorth: (offeringId, values) => {
+        const node = tree.byId.get(offeringId);
+        if (!node) return;
+        setWorthSeed({ nodeId: offeringId, values });
+        setWorthNode(node);
+      },
+      move: async (offeringId, parentId, siblingOrder) => {
+        await move.mutateAsync({ offeringId, parentId, siblingOrder });
+      },
+    },
+  });
+
   // ── Actions ───────────────────────────────────────────────────────────────
   const nearestRuledAncestor = (node: CatalogNode): CatalogNode | null => {
     const chain = lineageOf(tree, node.offering.id).slice(0, -1).reverse();
@@ -478,6 +501,7 @@ export function OfferingsWorkbench() {
         });
         return;
       }
+      setWorthSeed(null);
       setWorthNode(node);
     },
     onEdit: (node) =>
@@ -779,10 +803,15 @@ export function OfferingsWorkbench() {
 
       {worthNode ? (
         <OfferingWorthDialog
+          key={`${worthNode.offering.id}:${JSON.stringify(worthSeed?.values ?? null)}`}
           node={worthNode}
           inheritedFrom={nearestRuledAncestor(worthNode)}
           busy={worth.isPending}
-          onCancel={() => setWorthNode(null)}
+          seed={worthSeed?.nodeId === worthNode.offering.id ? worthSeed.values : undefined}
+          onCancel={() => {
+            setWorthNode(null);
+            setWorthSeed(null);
+          }}
           onSave={(values) => worth.mutate({ offeringId: worthNode.offering.id, values })}
           onClear={() => worth.mutate({ offeringId: worthNode.offering.id, values: null })}
         />

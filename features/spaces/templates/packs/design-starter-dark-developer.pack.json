@@ -110,15 +110,15 @@
       {
         "token": "color",
         "name": "Colors",
-        "labelSingular": "Colour",
-        "labelPlural": "Colours",
+        "labelSingular": "Color",
+        "labelPlural": "Colors",
         "type": "entity",
         "display": "grid",
         "weight": "light",
         "ordered": true,
         "icon": "palette",
         "titleField": "name",
-        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "describes": "Every color the product uses, light and dark, and what each is read on.",
         "subject": "thing",
         "fields": [
           {
@@ -324,7 +324,7 @@
               "name": "link",
               "group": "Accent",
               "value": "{\"light\":\"#0a5fb4\",\"dark\":\"#8cc8ff\"}",
-              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
               "reads_on": "background"
             }
           },
@@ -333,7 +333,7 @@
             "values": {
               "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#878f9c\",\"dark\":\"#5d6776\"}",
+              "value": "{\"light\":\"#878f9c\",\"dark\":\"#5d6776\",\"min\":3}",
               "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
               "reads_on": "background"
             }
@@ -343,7 +343,7 @@
             "values": {
               "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#6c7480\",\"dark\":\"#6f7a8a\"}",
+              "value": "{\"light\":\"#6c7480\",\"dark\":\"#6f7a8a\",\"min\":3}",
               "usage_note": "The outline of a field and an off switch.",
               "reads_on": "card"
             }
@@ -353,7 +353,7 @@
             "values": {
               "name": "divider",
               "group": "Lines",
-              "value": "{\"light\":\"#dce0e6\",\"dark\":\"#242a33\"}",
+              "value": "{\"light\":\"#dce0e6\",\"dark\":\"#242a33\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
             }
           },
@@ -362,7 +362,7 @@
             "values": {
               "name": "ring",
               "group": "Lines",
-              "value": "{\"light\":\"#0a7550\",\"dark\":\"#3ddc97\"}",
+              "value": "{\"light\":\"#0a7550\",\"dark\":\"#3ddc97\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
             }
@@ -926,7 +926,7 @@
               "name": "Badge",
               "group": "Status",
               "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:none;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">queued</span><span class=\"x pr\">new</span><span class=\"x ok\"><i></i>passing</span><span class=\"x wa\"><i></i>slow</span><span class=\"x er\"><i></i>failed</span></div>",
-              "usage_note": "A status always pairs its colour with a word."
+              "usage_note": "A status always pairs its color with a word."
             }
           },
           {
@@ -1108,14 +1108,14 @@
     "forms": [
       {
         "token": "color_request",
-        "name": "Propose a colour",
-        "describes": "Suggest a new colour for the system.",
+        "name": "Propose a color",
+        "describes": "Suggest a new color for the system.",
         "audience": "staff",
         "table": "color",
         "fields": [
           {
             "fieldKey": "name",
-            "ask": "What is the colour called?",
+            "ask": "What is the color called?",
             "required": true
           },
           {
@@ -1136,7 +1136,7 @@
     "views": [
       {
         "token": "all_color",
-        "name": "All colours",
+        "name": "All colors",
         "table": "color",
         "kind": "grid",
         "isDefault": true
@@ -1201,7 +1201,7 @@
         {
           "name": "primary_table",
           "table": "color",
-          "describes": "Every colour, its light and dark values and what it is read on."
+          "describes": "Every color, its light and dark values and what it is read on."
         },
         {
           "name": "related_tables",
@@ -1210,7 +1210,7 @@
         }
       ],
       "question": {
-        "ask": "How many colours are in the Surfaces group?",
+        "ask": "How many colors are in the Surfaces group?",
         "whyItMatters": "Ravi keeps the surfaces to a handful so screens stay calm.",
         "expect": {
           "table": "color",
@@ -1291,8 +1291,8 @@
           {
             "kind": "cover",
             "title": "Design system — Dark-first developer tool",
-            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}.b{left:8%;top:14%;width:50%;height:6%;background:var(--success);border-radius:var(--radius-sm)}.d{left:8%;top:30%;width:72%;height:6%;background:var(--muted-foreground);opacity:.5;border-radius:var(--radius-sm)}.e{left:8%;top:46%;width:8%;height:8%;background:var(--primary)}</style><div class=\"h\"><div><p class=\"k\">$ design-system --dark</p><h1 class=\"x\">Built for<br>the terminal.</h1><p class=\"t\">Near-black panels, a mint signal colour, dense rows and mono where it matters.</p><div class=\"c\"><span>Console</span><span>Logs</span><span>Keys</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
-            "text": "## Principles\n\n- Dark first, light equal: every token is chosen on dark and proven on light.\n- Dense, not cramped: tight rows, 4.5:1 text and visible focus.\n- Mono for machine values: ids, keys, paths and numbers people copy.\n\n## Starter profile\n\n- **Fits:** developer tools, observability, data, security, infrastructure, ai tooling. Not for children, luxury, healthcare.\n- **Mood:** technical, calm; density compact; shape soft; contrast standard; dark first.\n- **Type:** Inter, JetBrains Mono.\n- **Adapt first:** primary, ring, success, link. **Keep:** background, card, font-code.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}.b{left:8%;top:14%;width:50%;height:6%;background:var(--success);border-radius:var(--radius-sm)}.d{left:8%;top:30%;width:72%;height:6%;background:var(--muted-foreground);opacity:.5;border-radius:var(--radius-sm)}.e{left:8%;top:46%;width:8%;height:8%;background:var(--primary)}</style><div class=\"h\"><div><p class=\"k\">$ design-system --dark</p><h1 class=\"x\">Built for<br>the terminal.</h1><p class=\"t\">Near-black panels, a mint signal color, dense rows and mono where it matters.</p><div class=\"c\"><span>Console</span><span>Logs</span><span>Keys</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
+            "text": "## Principles\n\n- Dark first, light equal: every token is chosen on dark and proven on light.\n- Dense, not cramped: tight rows, 4.5:1 text and visible focus.\n- Mono for machine values: ids, keys, paths and numbers people copy.\n\n## Starter profile\n\n- **Fits:** developer tools, observability, data, security, infrastructure, ai tooling. Not for children, luxury, healthcare.\n- **Mood:** technical, calm; density compact; shape soft; contrast standard; dark first.\n- **Type:** Inter, JetBrains Mono.\n- **Adapt first:** primary, ring, success, link. **Keep:** background, card, font-code.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colors, type, spacing, corners, shadows, opacity and motion. Each color shows its light and dark values and is checked against the color it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by color alone.\n",
             "size": {
               "w": 1020,
               "h": 1000
@@ -1426,7 +1426,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280

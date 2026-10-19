@@ -269,7 +269,7 @@ export async function consume<T>(
     const followed = (await (deps.followRun ?? followRunToEnd)(runId)) as T;
     return followed;
   }
-  throw new Error(`${what} ended before the server started it. Nothing was charged; try again.`);
+  throw new Error(`${what} ended before the server started it; try again.`);
 }
 
 export function makePressClip(

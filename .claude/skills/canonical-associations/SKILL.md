@@ -1,5 +1,6 @@
 ---
 name: canonical-associations
+subject: platform/access
 description: "The one association system (platform.associations) and schema-qualified table refs. Use when touching an M2M junction table, an associate_*/attach_*/tag_* RPC, FK columns used as tags, a 'things attached to X' list or card, or a PGRST205 / 42703 table-not-found on a bare .from()."
 ---
 

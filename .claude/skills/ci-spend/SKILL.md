@@ -1,5 +1,6 @@
 ---
 name: ci-spend
+subject: policies/ci-spend
 type: Skill
 title: "ci-spend — GitHub Actions cost discipline"
 description: "The CI cost rules ($100/week of real money, all CI). Use when editing .github/workflows, adding a schedule or cron, dispatching a workflow, publishing a package version, hitting a billing block, or seeing a CI SPEND OFF TRACK line, ci-breaker issue or spend alert."

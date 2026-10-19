@@ -1,5 +1,6 @@
 ---
 name: on-track
+subject: skills/on-track
 type: Skill
 title: "on-track — is this work still what he asked for? Find the conversation, extract his words, judge against reality, plan the remedy, bring him the choice"
 description: "Run the full on-track check on a conversation, project, or keyword the owner names: find the sessions, extract exactly what he typed, dispatch independent judges who go to the live product as him and report what was missed, plan the remedy, and return one page — what he will see, what is missing, the plan. Use when told to check whether work is on track, to audit a project that has drifted, on 'run the on-track check on X', or when a long campaign is about to freeze, hand off, or claim done."

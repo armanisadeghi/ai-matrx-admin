@@ -119,7 +119,7 @@ function text(): string {
 
 /** The 2026-09-20 run's own shape: five items that would have been paid. */
 const NOT_ALLOWED_SENTENCE =
-    "Paid work was NOT run and nothing was charged: 5 videos have no usable captions and were left without a transcript.";
+    "Paid work was NOT run: 5 videos have no usable captions and were left without a transcript.";
 const HOW_TO_ALLOW =
     "To transcribe them anyway, turn on paid transcription for this run, or switch on paid work by default for this organization in Library settings.";
 const ALLOWED_SENTENCE =
@@ -150,7 +150,7 @@ function finishedJob(paidPolicy: unknown) {
 }
 
 describe("A · a finished job states whether money was spent", () => {
-    it("says nothing was charged, and how to allow it, when paid work was not allowed", async () => {
+    it("says paid work was not run, and how to allow it, when paid work was not allowed", async () => {
         transport.mockResolvedValue({
             data: {
                 job: finishedJob({
@@ -209,7 +209,7 @@ describe("A · a finished job states whether money was spent", () => {
         expect(container!.querySelector("h2")).not.toBeNull();
         expect(text()).toContain("Transcribe 5 videos");
         // And it invents neither answer.
-        expect(text()).not.toContain("nothing was charged");
+        expect(text()).not.toContain("Paid work was NOT run");
         expect(text()).not.toContain("PAID WORK IS SWITCHED ON");
     });
 });

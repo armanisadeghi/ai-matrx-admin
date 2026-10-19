@@ -14,7 +14,7 @@ This route: app/(core)
 
 The following skills are required before proceeding. Read them. Apply them.
 
-- `.claude/skills/ssr-zero-layout-shift/SKILL.md` — also owns everything from `nextjs-ssr-architecture` (`.claude/skills/nextjs-ssr-architecture/SKILL.md` is now a retired pointer to it)
+- `.claude/skills/ssr-zero-layout-shift/SKILL.md` — owns all Next.js App Router SSR doctrine
 
 # Caching:
 - **`'use cache'` is NOT available** — `cacheComponents` is off in `next.config.js`, so the directive is a build error. Dynamic rendering by default; per-request dedup is React `cache()`. Any `'use cache'` guidance in a skill does not apply here. Law: `CLAUDE.md` § Core invariants (machine-verified by `pnpm check:doc-claims`).

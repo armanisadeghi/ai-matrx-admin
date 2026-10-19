@@ -1,9 +1,25 @@
 ---
 name: admin-debug-context
+subject: platform/ui-shell/builder-panel
 description: "Admin debug system wiring for the floating AdminIndicator's live debug data and Copy Full Context. Use when adding debug visibility to a route or feature, wiring useDebugContext or the debug panel, capturing console errors, or enabling the copy-context workflow for a page."
 ---
 
 # Admin Debug Context
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/platform/ui-shell/builder-panel/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **No AI integration starts without a Builder feed.** The same change that adds a data step to a
+   surface publishes its inputs, findings, workflow step outputs, AI runs and provision snapshots, so
+   Arman can see every value the page has, in real time, from the first minute.
+2. **The panel shows the truth, unmodified.** Every exact request and response (client calls and the
+   server's external calls), an Activity timeline, and derived values only in a separate group that
+   links to its raw source. Values render through the canonical multi-format JSON component; copy is
+   icon-only, never a "Copy" label.
+3. **Evidence is tiered by certainty and risk.** Early raw-input steps are safe, read-only searches;
+   deeper or risky steps fire only after a person confirms; a node fires when its inputs are ready or
+   confirmed. Jev pre-suggests choices with a "we think this one" animation, still provision-first.
+<!-- rules:stamp-end -->
 
 ## Performance guarantee
 

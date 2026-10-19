@@ -12,7 +12,7 @@ import { displayLabel } from "@ai-matrx/kit/text-case";
 
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 import { RefusalView } from "@/features/data-sources/RefusalView";
-import { useDataSources, useFetchEstimate } from "@/features/data-sources/hooks";
+import { useDataSources } from "@/features/data-sources/hooks";
 import { clearRun, startRun, useRun } from "@/features/data-sources/runs";
 import { fetchData } from "@/features/data-sources/server";
 import { fetchInputFromToolSpec } from "@/features/data-sources/toolSpec";
@@ -29,13 +29,12 @@ function cell(v: unknown): string {
 /**
  * The agent's `site_data` result: how many records came back with a compact preview, and the way
  * to keep them — "Open table" when the call already saved them, else "Save as table", which runs
- * the same fetch the Get data panel runs (its points quoted first). The data vendor is never named.
+ * the same fetch the Get data panel runs. The data vendor is never named.
  */
 export function SiteDataInline({ entry, expanded, onToggleExpanded }: ToolRendererProps) {
   const data = useMemo(() => parseSiteData(entry), [entry]);
   const { organizationId } = useOrganizationRequired();
   const catalog = useDataSources(organizationId ?? null);
-  const estimate = useFetchEstimate();
   const [confirming, setConfirming] = useState(false);
   const runKey = `site-data:${entry.callId}`;
   const run = useRun(runKey);
@@ -50,7 +49,6 @@ export function SiteDataInline({ entry, expanded, onToggleExpanded }: ToolRender
   const tableName = data.tableName ?? saved?.table_name ?? null;
   const title = data.label ?? "Live data";
   const shown = data.records.slice(0, PREVIEW_ROWS);
-  const quote = estimate(source, count);
 
   const actions: EntityAction[] = tableId ? [{ label: "Open table", icon: ExternalLink, href: `/data/${tableId}` }] : [];
 
@@ -118,7 +116,7 @@ export function SiteDataInline({ entry, expanded, onToggleExpanded }: ToolRender
             ) : confirming ? (
               <>
                 <span className="text-xs text-muted-foreground">
-                  Fetches {formatCount(count)} again{quote ? ` · ${quote}` : ""}
+                  Fetches {formatCount(count)} again
                 </span>
                 <Button variant="primary" onClick={save} data-site-data-confirm="">
                   Save as table
@@ -131,7 +129,6 @@ export function SiteDataInline({ entry, expanded, onToggleExpanded }: ToolRender
               <Button
                 variant="outline"
                 icon={<Save className="h-4 w-4" />}
-                meta={quote ?? undefined}
                 disabled={!source || !input || !organizationId}
                 onClick={() => setConfirming(true)}
                 data-site-data-save=""

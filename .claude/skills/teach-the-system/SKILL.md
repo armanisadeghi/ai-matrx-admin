@@ -1,5 +1,6 @@
 ---
 name: teach-the-system
+subject: masterwork
 type: Skill
 title: "teach-the-system — teach the platform one body of expertise until it breaks, fix it, continue"
 description: "Trial protocol for teaching AI Matrx an expert's knowledge until the platform breaks, fixing it. Use when asked to run an expertise trial, distil a person/creator/recent video into a Masterwork, or test the capture product. NOT for a known-missing feature (use build-sub-feature)."

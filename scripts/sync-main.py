@@ -980,7 +980,30 @@ def sweep_holds():
 SWEEP_HELD = []   # what the last commit_all held back (main() re-sweeps once after a package update)
 
 
+def repair_skill_copies():
+    """LAW 15 (2026-10-18): the sweep below commits with --no-verify, so no hook ever sees what it
+    carries. First this repo's synced skill copies are rewritten from common-docs HEAD (stale copies,
+    hand edits and leftovers repaired), so none of those rides a release. Never fails the sync."""
+    top = git("rev-parse", "--show-toplevel")[1].strip()
+    tools = os.path.join(os.path.dirname(top), "common-docs", "meta", "scripts")
+    if not os.path.isfile(os.path.join(tools, "sync_skills.py")):
+        return
+    name = os.path.basename(top)
+    runs = [["sync_skills.py", "--repair", "--repo", name]]
+    if name == "common-docs":
+        # The canonical side: stamp each home's rules into its skills, and refresh the workspace
+        # root copies (the root is no repo, so nothing else writes them).
+        runs = [["one_home.py", "--write"], ["sync_skills.py", "--repair", "--root"]]
+    for args in runs:
+        try:
+            subprocess.run([sys.executable, os.path.join(tools, args[0]), *args[1:]],
+                           cwd=top, timeout=180, check=False)
+        except Exception as exc:  # noqa: BLE001 — a repair failure never stops the sync
+            say(f"LAW 15 REPAIR SKIPPED ({' '.join(args)}): {exc}")
+
+
 def commit_all():
+    repair_skill_copies()
     _, common, _ = git("rev-parse", "--git-common-dir")
     planted = live_plants(os.getcwd(), os.path.abspath(common.strip()))
     held = sweep_holds()

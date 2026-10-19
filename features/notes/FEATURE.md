@@ -1,3 +1,7 @@
+---
+type: Feature
+subject: matrx-frontend:features/notes
+---
 # FEATURE.md — `notes`
 
 **Status:** `active` — production, actively maintained

@@ -1,5 +1,6 @@
 ---
 name: supabase-realtime
+subject: architecture/realtime
 description: "Doctrine for all Supabase realtime: postgres_changes, broadcast, presence. Use before writing a `.channel(`/useChannel subscription, echo suppression, reconnect logic, an autosave loop beside realtime, or replacing polling with live updates, or when the tab freezes, messages duplicate, or a subscription delivers nothing."
 ---
 

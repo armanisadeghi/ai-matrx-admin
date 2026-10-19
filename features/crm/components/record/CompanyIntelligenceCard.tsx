@@ -4,8 +4,7 @@
 //
 // "Company intelligence" on a company record: what live data says about the
 // company (employees, followers, funding, rating, reviews, address, hours),
-// one row per source. NOTHING fetches without a click, and every Get / Refresh
-// names its price in points first. A source whose web address the record does
+// one row per source. NOTHING fetches without a click. A source whose web address the record does
 // not have yet offers a paste box; the address is saved as a contact method
 // (the record's canonical home for links), never into a private field.
 //
@@ -152,7 +151,6 @@ function IntelRow({
     }
   };
 
-  const price = lookup.quote ?? "…";
   return (
     <li className="px-2.5 py-1.5" data-intel-source={source.key}>
       <div className="flex items-center gap-2">
@@ -164,10 +162,9 @@ function IntelRow({
             className="h-6 gap-1 px-2 text-[11px]"
             disabled={running || !lookup.source}
             onClick={get}
-            title={price}
           >
             {stored ? <RefreshCw className="h-3 w-3" /> : null}
-            {running ? "Getting…" : `${stored ? "Refresh" : "Get"} · ${price}`}
+            {running ? "Getting…" : stored ? "Refresh" : "Get"}
           </Button>
         ) : null}
       </div>

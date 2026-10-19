@@ -1,5 +1,6 @@
 ---
 name: settings-system
+subject: account/settings
 description: "The Matrx user settings system (SettingsShell, useSetting, tab registry). Use when adding a preference or settings tab, binding a Redux slice to settings, wiring a settings deep link, or touching features/settings, components/official/settings, or components/user-preferences."
 ---
 

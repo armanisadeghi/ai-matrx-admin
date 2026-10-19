@@ -1,5 +1,6 @@
 ---
 name: interface-text
+subject: policies/interface-text-is-layout
 type: Skill
 title: "interface-text — in-app text is layout: labels, not prose"
 description: "Rules for every string rendered inside the app, plus the sweep that removes in-app prose. Use when writing or changing a label, hint, description, tooltip, empty state or KPI tile in a .tsx file, or when running Pattern Patrol P14 or asked to find or fix long UI text."

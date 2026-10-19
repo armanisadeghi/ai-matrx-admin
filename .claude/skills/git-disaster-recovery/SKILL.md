@@ -1,5 +1,6 @@
 ---
 name: git-disaster-recovery
+subject: skills/git-disaster-recovery
 type: Skill
 title: "git-disaster-recovery — get the shared folder back to GitHub main, fast"
 description: "One-time recovery when a shared checkout has drifted far from GitHub main: hundreds ahead/behind, stacked worktrees and PRs, a dirty tree nobody owns. Use when tempted to reset or force-push. NOT for the ordinary 30-minute release loop (operations/INTEGRATION_MAINTAINER.md)."

@@ -102,7 +102,7 @@ export default async function QuickMathPage() {
           </Card>
           <Card className="text-center">
             <CardContent className="py-4">
-              <div className="text-2xl font-bold text-primary mb-1">Free</div>
+              <div className="text-2xl font-bold text-primary mb-1">Open</div>
               <div className="text-xs text-muted-foreground">Access</div>
             </CardContent>
           </Card>

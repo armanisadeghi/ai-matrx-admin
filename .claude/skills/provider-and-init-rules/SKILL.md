@@ -1,5 +1,6 @@
 ---
 name: provider-and-init-rules
+subject: matrx-frontend:.claude/skills/provider-and-init-rules
 description: "Startup rules for the app shell, layouts, and global providers. Use when editing app/Providers.tsx, app/DeferredSingletonWrapper.tsx / DeferredSingletonCore.tsx, a layout.tsx, StoreProvider, or a global provider; adding startup fetches or mount-time useEffects high in the tree; or reading auth state (isAdmin, isGuest, fingerprintId) client-side."
 ---
 

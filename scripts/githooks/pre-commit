@@ -62,6 +62,17 @@ if [ -n "$STAGED" ]; then
         exit 1
     fi
 fi
+# ONE SUBJECT, ONE HOME (law 15, 2026-10-18): a new skill names its home (`subject:`), a synced skill
+# copy is never hand-edited, a subject never gets a second home. The guard lives in common-docs beside
+# this repo; a checkout without it skips this job. Only runs when a .md file is staged (~1 s).
+ONE_HOME="$ROOT/../common-docs/meta/scripts/one_home.py"
+if [ -f "$ONE_HOME" ] && git diff --cached --name-only | grep -q '\.md$'; then
+    python3 "$ONE_HOME" --staged || {
+        echo "COMMIT REFUSED: law 15, one subject one home (above)." >&2
+        exit 1
+    }
+fi
+
 # LINT-GUARD (Arman, 2026-10-14): a lint error on a line THIS commit changed refuses the commit — the
 # agent that wrote it fixes it now, so it never reaches whoever releases next. Errors on lines the
 # commit did not touch never refuse; their author's conversation is mailed (once) instead.

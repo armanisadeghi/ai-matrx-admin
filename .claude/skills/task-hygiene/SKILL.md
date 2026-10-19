@@ -1,5 +1,6 @@
 ---
 name: task-hygiene
+subject: skills/task-hygiene
 type: Skill
 title: "task-hygiene — cleanup and triage of the repo task system"
 description: "Cleanup and triage of the task ledgers FOUND_DEFECTS.md, CURRENT_ERRORS.md, .matrx/AGENT_TASKS.md, .matrx/ARMAN_TASKS.md. Use when invoked as /task-hygiene <step>, cleaning up tasks, defects, or errors, triaging an error dump, promoting defects, or bootstrapping these files."

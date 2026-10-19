@@ -3,7 +3,7 @@
   "catalogueId": "SP0491",
   "version": 2,
   "title": "Design system — Calm neutral",
-  "description": "Cool greys, an indigo action and soft cards: the modern software look.",
+  "description": "Cool grays, an indigo action and soft cards: the modern software look.",
   "forWho": "Software products and SaaS teams",
   "icon": {
     "icon": "Palette"
@@ -108,15 +108,15 @@
       {
         "token": "color",
         "name": "Colors",
-        "labelSingular": "Colour",
-        "labelPlural": "Colours",
+        "labelSingular": "Color",
+        "labelPlural": "Colors",
         "type": "entity",
         "display": "grid",
         "weight": "light",
         "ordered": true,
         "icon": "palette",
         "titleField": "name",
-        "describes": "Every colour the product uses, light and dark, and what each is read on.",
+        "describes": "Every color the product uses, light and dark, and what each is read on.",
         "subject": "thing",
         "fields": [
           {
@@ -322,7 +322,7 @@
               "name": "link",
               "group": "Accent",
               "value": "{\"light\":\"#4338ca\",\"dark\":\"#a5a8ff\"}",
-              "usage_note": "Coloured text: links and active tabs. Also reads on cards.",
+              "usage_note": "Colored text: links and active tabs. Also reads on cards.",
               "reads_on": "background"
             }
           },
@@ -331,7 +331,7 @@
             "values": {
               "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#858d9d\",\"dark\":\"#646c7e\"}",
+              "value": "{\"light\":\"#858d9d\",\"dark\":\"#646c7e\",\"min\":3}",
               "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
               "reads_on": "background"
             }
@@ -341,7 +341,7 @@
             "values": {
               "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#6b7385\",\"dark\":\"#7a8396\"}",
+              "value": "{\"light\":\"#6b7385\",\"dark\":\"#7a8396\",\"min\":3}",
               "usage_note": "The outline of a field and an off switch.",
               "reads_on": "card"
             }
@@ -351,7 +351,7 @@
             "values": {
               "name": "divider",
               "group": "Lines",
-              "value": "{\"light\":\"#e3e7ee\",\"dark\":\"#272d39\"}",
+              "value": "{\"light\":\"#e3e7ee\",\"dark\":\"#272d39\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
             }
           },
@@ -360,7 +360,7 @@
             "values": {
               "name": "ring",
               "group": "Lines",
-              "value": "{\"light\":\"#5b54e8\",\"dark\":\"#8b8cf8\"}",
+              "value": "{\"light\":\"#5b54e8\",\"dark\":\"#8b8cf8\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
             }
@@ -915,7 +915,7 @@
               "name": "Metric card",
               "group": "Containers",
               "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.c{max-width:400px;padding:var(--space-4);border-radius:var(--radius-lg);border:1px solid var(--divider);background:var(--card);color:var(--card-foreground);box-shadow:var(--shadow-sm)}.k{margin:0 0 var(--space-1);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--muted-foreground)}.t{margin:0 0 var(--space-1);font-family:var(--font-heading);font-size:var(--text-heading);line-height:var(--leading-heading);font-weight:var(--weight-heading)}.m{margin:0 0 var(--space-3);font-size:var(--text-caption);line-height:var(--leading-caption);color:var(--muted-foreground)}.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3)}.n{margin:0;font-family:var(--font-metric);font-size:var(--text-metric);line-height:var(--leading-metric);font-weight:var(--weight-metric);font-variant-numeric:tabular-nums}.u{color:var(--success);font-size:var(--text-caption);font-weight:var(--weight-label)}.dn{color:var(--destructive)}</style><div class=\"w g\"><div class=\"c\"><p class=\"k\">Active users</p><p class=\"n\">2,418</p><span class=\"u\">+4.2% vs last week</span></div><div class=\"c\"><p class=\"k\">Churn</p><p class=\"n\">1.9%</p><span class=\"u dn\">+0.3 pts</span></div></div>",
-              "usage_note": "The figure first, then the change, with a word or sign, never colour alone."
+              "usage_note": "The figure first, then the change, with a word or sign, never color alone."
             }
           },
           {
@@ -923,8 +923,8 @@
             "values": {
               "name": "Badge",
               "group": "Status",
-              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:none;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Trial</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Active</span><span class=\"x wa\"><i></i>Past due</span><span class=\"x er\"><i></i>Cancelled</span></div>",
-              "usage_note": "A status always pairs its colour with a word."
+              "sample": "<style>.w{font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-body);color:var(--foreground)}.r{display:flex;flex-wrap:wrap;gap:var(--space-2)}.x{display:inline-flex;align-items:center;gap:var(--space-1);padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:none;border:1px solid var(--divider);color:var(--foreground);background:var(--muted)}.x i{width:.5em;height:.5em;border-radius:50%;background:currentColor}.ok{color:var(--success)}.wa{color:var(--warning)}.er{color:var(--destructive)}.pr{background:var(--accent);color:var(--accent-foreground);border-color:transparent}</style><div class=\"w r\"><span class=\"x\">Trial</span><span class=\"x pr\">New</span><span class=\"x ok\"><i></i>Active</span><span class=\"x wa\"><i></i>Past due</span><span class=\"x er\"><i></i>Canceled</span></div>",
+              "usage_note": "A status always pairs its color with a word."
             }
           },
           {
@@ -1106,14 +1106,14 @@
     "forms": [
       {
         "token": "color_request",
-        "name": "Propose a colour",
-        "describes": "Suggest a new colour for the system.",
+        "name": "Propose a color",
+        "describes": "Suggest a new color for the system.",
         "audience": "staff",
         "table": "color",
         "fields": [
           {
             "fieldKey": "name",
-            "ask": "What is the colour called?",
+            "ask": "What is the color called?",
             "required": true
           },
           {
@@ -1134,7 +1134,7 @@
     "views": [
       {
         "token": "all_color",
-        "name": "All colours",
+        "name": "All colors",
         "table": "color",
         "kind": "grid",
         "isDefault": true
@@ -1199,7 +1199,7 @@
         {
           "name": "primary_table",
           "table": "color",
-          "describes": "Every colour, its light and dark values and what it is read on."
+          "describes": "Every color, its light and dark values and what it is read on."
         },
         {
           "name": "related_tables",
@@ -1208,7 +1208,7 @@
         }
       ],
       "question": {
-        "ask": "How many colours are in the Surfaces group?",
+        "ask": "How many colors are in the Surfaces group?",
         "whyItMatters": "Tomasz keeps the surfaces to a handful so screens stay calm.",
         "expect": {
           "table": "color",
@@ -1289,8 +1289,8 @@
           {
             "kind": "cover",
             "title": "Design system — Calm neutral",
-            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0 30% 40% 0;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}.b{inset:30% 0 10% 20%;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}.d{left:28%;right:12%;bottom:22%;height:12%;background:var(--primary);border-radius:var(--radius-sm)}.e{left:28%;width:30%;bottom:38%;height:8%;background:var(--accent);border-radius:var(--radius-sm)}</style><div class=\"h\"><div><p class=\"k\">Design system</p><h1 class=\"x\">Calm screens,<br>clear numbers.</h1><p class=\"t\">Cool greys, one indigo action, soft cards and quiet motion.</p><div class=\"c\"><span>Dashboards</span><span>Forms</span><span>Settings</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
-            "text": "## Principles\n\n- Clear before clever: every screen says what it is for in its first line.\n- Calm by default: colour is for meaning, never decoration.\n- Numbers first: the figure a person came for is the biggest thing on the card.\n\n## Starter profile\n\n- **Fits:** software, saas, b2b, productivity, startups. Not for luxury, children.\n- **Mood:** calm, technical; density medium; shape soft; contrast standard; light first.\n- **Type:** Inter, JetBrains Mono.\n- **Adapt first:** primary, link, ring, accent. **Keep:** foreground, muted-foreground, border.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colours, type, spacing, corners, shadows, opacity and motion. Each colour shows its light and dark values and is checked against the colour it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by colour alone.\n",
+            "hero": "<style>.h{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--space-8);align-items:center;padding:var(--space-2) 0;font-family:var(--font-body);color:var(--foreground)}@media (max-width:640px){.h{grid-template-columns:1fr}.g{display:none}}.k{margin:0 0 var(--space-3);font-family:var(--font-label);font-size:var(--text-label);font-weight:var(--weight-label);letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--link)}.x{margin:0;font-family:var(--font-display);font-size:var(--text-display);line-height:var(--leading-display);font-weight:var(--weight-display);letter-spacing:var(--tracking-display);color:var(--foreground)}.t{margin:var(--space-4) 0 0;max-width:32ch;font-size:var(--text-body);line-height:var(--leading-body);color:var(--muted-foreground)}.c{display:flex;gap:var(--space-2);margin-top:var(--space-6);flex-wrap:wrap}.c span{font-family:var(--font-label);font-size:var(--text-caption);font-weight:var(--weight-label);padding:var(--space-1) var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--border);color:var(--foreground)}.g{position:relative;aspect-ratio:1/1;max-width:300px;justify-self:end;width:100%}.g i{position:absolute;display:block}.a{inset:0 30% 40% 0;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}.b{inset:30% 0 10% 20%;background:var(--card);border:1px solid var(--divider);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}.d{left:28%;right:12%;bottom:22%;height:12%;background:var(--primary);border-radius:var(--radius-sm)}.e{left:28%;width:30%;bottom:38%;height:8%;background:var(--accent);border-radius:var(--radius-sm)}</style><div class=\"h\"><div><p class=\"k\">Design system</p><h1 class=\"x\">Calm screens,<br>clear numbers.</h1><p class=\"t\">Cool grays, one indigo action, soft cards and quiet motion.</p><div class=\"c\"><span>Dashboards</span><span>Forms</span><span>Settings</span></div></div><div class=\"g\" aria-hidden=\"true\"><i class=\"a\"></i><i class=\"b\"></i><i class=\"d\"></i><i class=\"e\"></i></div></div>",
+            "text": "## Principles\n\n- Clear before clever: every screen says what it is for in its first line.\n- Calm by default: color is for meaning, never decoration.\n- Numbers first: the figure a person came for is the biggest thing on the card.\n\n## Starter profile\n\n- **Fits:** software, saas, b2b, productivity, startups. Not for luxury, children.\n- **Mood:** calm, technical; density medium; shape soft; contrast standard; light first.\n- **Type:** Inter, JetBrains Mono.\n- **Adapt first:** primary, link, ring, accent. **Keep:** foreground, muted-foreground, border.\n\n## Using tokens\n\nUse a token by its name, never its value. Change a value here and every screen and every component sample below follows: colors, type, spacing, corners, shadows, opacity and motion. Each color shows its light and dark values and is checked against the color it is read on.\n\n## Using components\n\nBuild screens from the components in this system. Each one is drawn below in its states, with a note on when to use it. When one is missing, add a row to Components.\n\n## Accessibility\n\nText reaches 4.5:1 against what it sits on; control edges and focus 3:1. Focus is always visible. Nothing is told by color alone.\n",
             "size": {
               "w": 1020,
               "h": 1000
@@ -1424,7 +1424,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280

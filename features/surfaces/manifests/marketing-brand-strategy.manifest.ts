@@ -10,8 +10,8 @@
  * Inherits the brand context from `matrx-user/marketing-brand` (the Identity
  * layout's `BrandIdentitySurface`); this room declares only its own layer.
  *
- * Runtime scope assembly: `features/marketing/strategy/surface-scope.ts`
- * (emitter + write handler in `StrategyBriefWorkspace.tsx`).
+ * Runtime: `features/marketing/strategy/components/BrandStrategySurface.tsx`
+ * (provider + write handler); values from `StrategyBriefWorkspace.tsx`.
  */
 
 import type {
@@ -158,6 +158,18 @@ const surfaceSpecific: SurfaceValue[] = [
     sortOrder: 530,
     group: "strategy_version",
   },
+  {
+    name: "strategy_history",
+    label: "Earlier versions",
+    description:
+      "Every earlier version, newest first: { version_no, generated_at, reviewed_at, confidence, guidance, brief_markdown }. Empty array when this is the first version; absent while it loads or when no strategy exists. Bindable only.",
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 6000,
+    autoContext: false,
+    sortOrder: 540,
+    group: "strategy_version",
+  },
 ];
 
 /**
@@ -243,6 +255,7 @@ export function createMarketingBrandStrategyScope(values: {
   strategy_version_no?: number;
   strategy_confidence?: Record<string, unknown>;
   strategy_built_from?: readonly string[];
+  strategy_history?: ReadonlyArray<Record<string, unknown>>;
   selection?: string;
   context?: Record<string, unknown>;
 }): SurfaceScopePayload {

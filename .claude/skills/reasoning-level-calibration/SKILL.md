@@ -1,5 +1,6 @@
 ---
 name: reasoning-level-calibration
+subject: policies/ai-model-and-spend-rules
 type: Skill
 title: "reasoning-level-calibration — set an agent's reasoning effort by need, prove it with real runs"
 description: "Method for choosing and auditing an agent's reasoning_effort. Use when setting or reviewing reasoning_effort, when an agent was created with high, or when asked to cut reasoning spend. NOT for changing an agent's model (use test-model-selection)."

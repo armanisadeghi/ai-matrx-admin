@@ -9,8 +9,9 @@
  * the whole point of it existing.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import {
   createGoogleConnectCallbackGroup,
@@ -38,46 +39,48 @@ export interface GoogleConnectWindowHandle {
   dispose: () => void;
 }
 
-export function useOpenGoogleConnectWindow() {
-  const dispatch = useAppDispatch();
-
-  return useCallback(
-    (options?: OpenGoogleConnectOptions): GoogleConnectWindowHandle => {
-      const callbacks =
-        options?.onDriveImported || options?.onWindowClose
-          ? createGoogleConnectCallbackGroup({
-              onDriveImported: options.onDriveImported,
-              onWindowClose: options.onWindowClose,
-            })
-          : null;
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            reason: options?.reason ?? null,
-            mode: options?.mode ?? "workspace",
-            initialConnectionId: options?.initialConnectionId ?? null,
-            importDestinationFolderPath:
-              options?.importDestinationFolderPath ?? null,
-            accept: options?.accept ?? null,
-            multiple: options?.multiple ?? true,
-            callbackGroupId: callbacks?.callbackGroupId ?? null,
-          },
-        }),
-      );
-      const dispose = () => {
-        callbacks?.dispose();
-      };
-      return {
-        close: () => {
-          dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
-          dispose();
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createGoogleConnectWindowOpener(store: Pick<AppStore, "dispatch">) {
+  const dispatch = store.dispatch;
+  return (options?: OpenGoogleConnectOptions): GoogleConnectWindowHandle => {
+    const callbacks =
+      options?.onDriveImported || options?.onWindowClose
+        ? createGoogleConnectCallbackGroup({
+            onDriveImported: options.onDriveImported,
+            onWindowClose: options.onWindowClose,
+          })
+        : null;
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          reason: options?.reason ?? null,
+          mode: options?.mode ?? "workspace",
+          initialConnectionId: options?.initialConnectionId ?? null,
+          importDestinationFolderPath:
+            options?.importDestinationFolderPath ?? null,
+          accept: options?.accept ?? null,
+          multiple: options?.multiple ?? true,
+          callbackGroupId: callbacks?.callbackGroupId ?? null,
         },
-        dispose,
-      };
-    },
-    [dispatch],
-  );
+      }),
+    );
+    const dispose = () => {
+      callbacks?.dispose();
+    };
+    return {
+      close: () => {
+        dispatch(closeOverlay({ overlayId: OVERLAY_ID }));
+        dispose();
+      },
+      dispose,
+    };
+  };
+}
+
+export function useOpenGoogleConnectWindow() {
+  const store = useAppStore();
+  return useMemo(() => createGoogleConnectWindowOpener(store), [store]);
 }
 
 export type GoogleConnectWindowDefinitionData = OpenGoogleConnectOptions;

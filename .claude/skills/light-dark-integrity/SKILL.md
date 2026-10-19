@@ -1,5 +1,6 @@
 ---
 name: light-dark-integrity
+subject: intelligence/pattern-patrols
 description: "Light/dark theme violation repair for Pattern Patrol P4. Use when you find raw bg-white/text-black classes or a state invisible in one theme, or when running a P4 patrol."
 ---
 

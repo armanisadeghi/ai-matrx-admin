@@ -1,9 +1,12 @@
 ---
-name: component-consolidation
-description: "Safe removal of a duplicate component in favor of the one being kept. Use when asked to remove a component in favor of another, eliminate duplicates, reduce two versions of something to one, or clean up redundant UI components."
+type: Reference
+title: "one-canonical — removing one duplicate component"
+description: "The six-phase procedure for deleting one redundant component in favor of the one being kept: audit, usages, preserve unique logic, update consumers, delete, prove. Companion to the one-canonical skill."
+tags: [consolidation, components, migration]
+timestamp: 2026-10-18T00:00:00Z
 ---
 
-# Component Consolidation
+# Removing one duplicate component
 
 Workflow for safely removing a redundant component when a preferred replacement already exists.
 

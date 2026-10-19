@@ -1,5 +1,6 @@
 ---
 name: domain-vision-interview
+subject: skills/domain-vision-interview
 type: Skill
 title: "domain-vision-interview — extract the minimal vision and the final vision"
 description: "The quick interview that captures a Domain's or major Feature's minimal (go-live) and final vision verbatim into its VISION.md. Use when a node shows VISION MISSING, a registry domain is ratified without a vision, gap analysis lacks a go-live bar, or on /domain-vision-interview <domain>."

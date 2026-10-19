@@ -1,5 +1,6 @@
 ---
 name: data-to-kinds
+subject: architecture/content-ir
 description: "The staged pipeline that turns any API, provider payload, scrape, or computed result into registered, rendered platform kinds. Use on 'create kinds for X', 'distill X into kinds', 'point yourself at API X', or as a stage (A/B/V/D/C) of a running data-to-kinds run. NOT for consuming existing kinds (use aidream's workflow-io-kinds / matrx-frontend's shape-system)."
 ---
 

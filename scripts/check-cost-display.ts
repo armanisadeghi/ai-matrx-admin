@@ -35,6 +35,19 @@
  *   R7 a kit points call whose `rate` is a number literal — a second copy of
  *      the setting that an organization's rate (or the platform's) never reaches.
  *
+ * AND WHERE (Arman, 2026-10-18 — law 14, common-docs/policies/points-and-money-in-the-ui.md):
+ *   P1 a price only where the person is DECIDING OR INVESTIGATING, never where
+ *      they are DOING. A file shows a price when it uses a `components/cost`
+ *      render export, a kit points call, a PRICE_HELPERS name or a DERIVED
+ *      helper (an exported price/cost/points/estimate-named function whose own
+ *      body shows a price, followed through imports to a fixpoint), or literal
+ *      price text ("3 pts", "N points used", a bare "Free", "not charged",
+ *      "costs nothing"). Such a file must sit in ALLOWED_PLACES, whose every
+ *      reason names its deciding/investigating case; NOT_A_PRICE holds literal
+ *      look-alikes (a "Free" crop ratio). Scans this repo AND the sibling
+ *      aidream/apps/shared packages (a loud note when that checkout is absent).
+ *      Existing violations ride the same ratchet baseline (`placement`).
+ *
  * NOT FLAGGED: `components/cost/**` (the primitive), tests, scripts, and the
  * DOMAIN_MONEY files below — real money that is not what the platform charged
  * for AI work (a worker's pay, a course price, a keyword's CPC, a print order's
@@ -48,10 +61,12 @@
  *   pnpm check:cost-display
  *   pnpm check:cost-display --write       # ratchet down / seed
  *   pnpm check:cost-display --self-test   # every rule fires on a planted line
+ *   pnpm check:cost-display --sites <file…>  # print a file's P1 (price) lines
+ *   pnpm check:cost-display --counts      # every file's current counts, as JSON
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, posix, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { exitAfterDrain } from "./lib/exit-after-drain";
@@ -105,6 +120,12 @@ export const DOMAIN_MONEY: Record<string, string> = {
   "features/admin/dated-changes/describe.ts": "the provider's per-million-token USD price schedule, shown only in the admin attention queue",
   "../aidream/apps/shared/chat/src/action-requests/components/spendAmount.ts": "the approve-spend amount box's dollar text, reached ONLY when the viewer's unit is usd (a system admin's switch); members type points",
   "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx": "the provider's per-million-token USD price list, shown to an admin debugging a tool-test sample's cost estimate",
+  "app/(core)/organizations/[orgId]/settings/payments/page.tsx": "an amount the organization asks a customer to pay through its own payment account",
+  "features/payments/server.ts": "an amount the organization asks a customer to pay through its own payment account",
+  "features/marketing/seo/domain-research/summaries.ts": "a domain's estimated organic value and ad budget in the ad market, in real dollars",
+  "features/admin/attention/sources/tool-health.ts": "the vendor's published price book entry, shown only in the admin attention queue",
+  "features/admin/tool-control/ToolAlertRecord.tsx": "the vendor's published price book entry, shown only on the admin tool alert record",
+  "features/tool-battle/derive.ts": "a tool's measured cost per success in the admin-only tool battle",
 };
 
 const SKIP_PREFIXES = ["components/cost/", "scripts/", "node_modules/", ".next/"];
@@ -256,6 +277,8 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/ai-test-mode/admin/**": "admin-gated: test-mode admin",
   "features/ai-watch/**": "admin-gated: the AI watch dev panel",
   "features/tool-battle/**": "admin-gated: the tool battle (an admin comparison of tools)",
+  "features/scheduling/components/admin/**": "admin-gated: the scheduler's system-jobs admin",
+  "app/(core)/organizations/[orgId]/admin/automations/**": "info/details: one automation's page under organization admin",
   // model picker
   "features/ai-models/components/AiModelDetailPanel.tsx": "model picker: a model's price is part of choosing it",
   // battle
@@ -264,6 +287,28 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/agent-comparison/**": "battle: agent battles and comparisons, price per arm is part of the verdict",
   "features/workflow-comparison/**": "battle: workflow battles, price per arm is part of the verdict",
   "features/workflow-runtime/bakeoff/**": "battle: workflow bake-offs, price per entrant is part of the verdict",
+  "features/comparison/**": "battle: comparing options side by side, price is part of the choice",
+  "features/masterwork/encore/**": "battle: the encore bench and auditions compare entrants, price per entrant is part of the verdict",
+  "features/mandates/candidates/**": "battle: a mandate's live vs candidate comparison",
+  "features/mandates/record-next/MandateCandidatesPanel.tsx": "battle: a mandate's live vs candidate comparison",
+  "features/ai-models/decisions/**": "model picker: the decision playground weighs models, price included",
+  // info/details — a run's, agent's or session's own facts, looked up
+  "../aidream/apps/shared/chat/src/agents/components/run-controls/panels/**":
+    "info/details: a request's and a session's stats panels, opened to look things up",
+  "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/**": "info/details: one trigger run's details page",
+  "features/hindsight/**": "info/details: hindsight reviews and replays past runs, what each cost is a fact under review",
+  "features/agents/decision-review/**": "info/details: a reviewer inspects one decision and its reference run",
+  "features/agents/run-review/**": "info/details: a run's review card",
+  "features/agents/org-chart/components/AgentOrgCard.tsx": "info/details: an agent's info card (its own and its branch's spend)",
+  "features/podcasts/studio/components/RunTruthInspector.tsx": "info/details: the run inspector",
+  "features/cloud-browser/components/TelemetrySurface.tsx": "info/details: a browser session's telemetry",
+  "features/mandates/runs/**": "info/details: a mandate run's facts",
+  // history table
+  "features/mandates/run-history/**": "history table: a mandate's run history",
+  "features/agents/factory/components/FactoryBuildsPage.tsx": "history table: the factory's past builds",
+  "features/scheduling/components/triggers/TriggerRunsTable.tsx": "history table: a trigger's past runs",
+  "features/marketing/seo/run-console/RunHistoryPanel.tsx": "history table: the SEO run console's run history",
+  "features/marketing/content-plan/components/PlanAiRunsView.tsx": "history table: a content plan's past AI runs",
   // bulk/repeating confirm
   "features/marketing/content-plan/setup/components/SetupBridgeSection.tsx":
     "bulk/repeating confirm: the estimate before a content plan's bulk run starts",
@@ -279,10 +324,20 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/spaces/data/Automations.tsx": "schedule setup: an automation's per-check and monthly estimate",
   "features/marketing/monitor-setup/MonitorSetupEditor.tsx":
     "schedule setup: a monitor's per-run cost, monthly projection and ceiling",
+  "features/scheduling/components/triggers/TriggersManager.tsx": "schedule setup: a trigger's 30-day cost and monthly estimate while setting it up",
+  "features/marketing/monitor-setup/inputs/**": "schedule setup: a monitor's inputs, priced per run while setting it up",
   "features/scheduling/components/costs/**": "billing/usage/pricing/budget: the automation cost page",
+  "features/scheduling/service/automationCosts.ts": "billing/usage/pricing/budget: the automation cost page's data",
+  "features/applets/format.ts": "billing/usage/pricing/budget: an app's usage KPIs on its analytics",
+  "features/applets/route/AppletSettingsContent.tsx": "billing/usage/pricing/budget: an app's usage on its settings",
+  "lib/entity-list/usageColumns.tsx": "billing/usage/pricing/budget: the usage columns of an entity list",
   "features/scheduling/components/limits/AutomationLimitsSection.tsx": "billing/usage/pricing/budget: automation limits",
   // billing/usage/pricing/budget
   "features/entitlements/**": "billing/usage/pricing/budget: plans, usage, wallet, usage history",
+  "features/settings/tabs/PlanUsageTab.tsx": "billing/usage/pricing/budget: the plan and usage settings tab",
+  "app/api/education/coppa-verification/**": "billing/usage/pricing/budget: a guardian's real card authorization, voided",
+  "features/education/family/components/GuardianConsentVerifyDialog.tsx":
+    "billing/usage/pricing/budget: a guardian's real card authorization, voided",
   "features/pricing/**": "billing/usage/pricing/budget: plan prices and upgrade",
   "features/batch-savings/**": "billing/usage/pricing/budget: what batching billed and saved",
   "features/organizations/components/OrgPrivacyTab.tsx": "billing/usage/pricing/budget: the organization's daily budget",
@@ -290,6 +345,107 @@ export const ALLOWED_PLACES: Record<string, string> = {
   "features/marketing/components/operations/SeoSpendChart.tsx": "billing/usage/pricing/budget: the SEO spend dashboard",
   "features/research/components/costs/**": "billing/usage/pricing/budget: the research cost dashboard",
   "components/official/drill-explorer/**": "billing/usage/pricing/budget: the usage explorer",
+  // zero-baseline pass (Arman, 2026-10-18): each file below sits at a deciding or investigating moment
+  "../aidream/apps/shared/chat/src/agents/components/inputs/smart-input/CatalogToolsSection.tsx":
+    "option picker: the add-a-tool picker shows each tool's price hint, part of choosing it",
+  "../aidream/apps/shared/matrx-agents/tools/catalog-search.ts":
+    "option picker: the tool price hint the add-a-tool picker and tool info cards read",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/format.ts":
+    "info/details: the memory inspector's cost formatter",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryCostCard.tsx":
+    "info/details: the memory inspector's cost card",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/components/MemoryEventTimeline.tsx":
+    "info/details: the memory inspector's event timeline, opened to look up what memory work cost",
+  "../aidream/apps/shared/chat/src/agents/components/observational-memory/ObservationalMemoryCore.tsx":
+    "info/details: the memory inspector",
+  "../aidream/apps/shared/records-ui/src/Enrich.tsx":
+    "info/details: an enrichment field's settings and run history line (runs, spend so far, per row)",
+  "../aidream/apps/shared/records-ui/src/pointsCost.ts":
+    "info/details: the points formatter for the enrichment settings and history line",
+  "features/agent-tests/components/TestCost.tsx":
+    "history table: the cost cell of the agent tests' run and result history",
+  "features/agent-tests/components/AgentTestsPlatformPage.tsx":
+    "history table: the platform's agent test runs table",
+  "features/agent-tests/components/AgentTestTables.tsx":
+    "history table: one agent's test runs and results tables",
+  "features/agent-tests/components/ResultDetail.tsx":
+    "info/details: one test result's details page",
+  "features/agents/components/shared/AgentOptionsMenu.tsx":
+    "admin-gated: the super-admin-only conversation cost row in an agent's options menu",
+  "features/audio/limits.ts":
+    "bulk/repeating confirm: the length, cost and time estimate shown before a long transcription spends",
+  "features/audio/transcriptionSpendGate.ts":
+    "bulk/repeating confirm: the estimate dialog before a long transcription runs",
+  "features/board/data-fetch/GetDataBody.tsx":
+    "bulk/repeating confirm: the points estimate for the chosen record count beside Fetch, before records are pulled",
+  "features/chat-tool-renderers/renderers/compare/CompareInline.tsx":
+    "bulk/repeating confirm: the compare quote shown on the confirm step, before the comparison runs",
+  "features/crm/components/record/ContactCandidatesCard.tsx":
+    "bulk/repeating confirm: the Find contact info dialog names the paid lookup's cost before it runs",
+  "features/crm/media-research/MediaResearchPreviewCard.tsx":
+    "bulk/repeating confirm: the research preview's maximum cost before Run it",
+  "features/data-sources/ChangesPanel.tsx":
+    "history table: a data source's refresh history (when, counts, points spent)",
+  "features/data-sources/hooks.ts":
+    "option picker: the data-source price text the library and Get data estimate read",
+  "features/data-sources/lab/DataToModelLab.tsx":
+    "battle: the lab compares handing data over against the model fetching it, price is part of the verdict",
+  "features/data-sources/library/catalog.ts":
+    "option picker: each data source's own price per record, part of choosing a source",
+  "features/data-sources/library/DataLibraryPage.tsx":
+    "option picker: the data library lists each source with its price per record",
+  "features/data-sources/library/hooks.ts":
+    "option picker: the price text for a source in the data library",
+  "features/data-sources/library/SourceDetail.tsx":
+    "info/details: a data source's detail page with its unit price and the total before Get data",
+  "features/data-sources/library/tools/ToolCard.tsx":
+    "info/details: a tool's info card in the tool catalog",
+  "features/data-sources/library/tools/ToolPage.tsx":
+    "info/details: a tool's own page states its price hint",
+  "features/data-sources/live-column/LiveDataColumnButton.tsx":
+    "bulk/repeating confirm: the points preview for filling a column, before anything is fetched",
+  "features/data-sources/unlock/UnlockPage.tsx":
+    "battle: the unlock page compares unlockers side by side with a verdict, cost per arm is part of it",
+  "features/marketing/content-plan/format.ts":
+    "history table: one past AI run's line in the content plan's AI runs history",
+  "features/marketing/data/operations-format.ts":
+    "billing/usage/pricing/budget: the SEO spend panel's runtime cost formatter",
+  "features/marketing/news-monitor/CostBanner.tsx":
+    "billing/usage/pricing/budget: the news monitor's monthly run-cost ceiling and month-to-date spend",
+  "features/marketing/news-monitor/NewsMonitorRunView.tsx":
+    "billing/usage/pricing/budget: the monitor's monthly run-cost ceiling banner mounted on its run view",
+  "features/marketing/offerings/BrandOfferingsPanel.tsx":
+    "bulk/repeating confirm: the refresh quote confirm names the points before paid sources run",
+  "features/marketing/seo/ai-visibility/brand/RunCheckButton.tsx":
+    "bulk/repeating confirm: a costly manual check asks first, naming the points",
+  "features/marketing/seo/ai-visibility/panels/format.ts":
+    "bulk/repeating confirm: the wave cost formatter for the gate review",
+  "features/marketing/seo/ai-visibility/panels/GateReviewCard.tsx":
+    "bulk/repeating confirm: the gate review shows the cost of one wave before the next is approved",
+  "features/marketing/smart-add/helpers/HelperPanel.tsx":
+    "admin-gated: the helper's admin block (estimate and measured cost), plus the expensive-search confirm",
+  "features/marketing/social/components/SocialProviderCard.tsx":
+    "billing/usage/pricing/budget: Operations > Connections shows the social provider's monthly spend",
+  "features/marketing/social/components/video/StudioParts.tsx":
+    "bulk/repeating confirm: the video studio's estimate line before anything is made",
+  "features/marketing/social/components/video/VideoFormatNew.tsx":
+    "bulk/repeating confirm: the planned video's estimate before it is made",
+  "features/marketing/social/components/video/VideoProjectStudio.tsx":
+    "bulk/repeating confirm: the Make it panel's estimate before a video is made",
+  "features/marketing/social/cost.ts":
+    "bulk/repeating confirm: the social spend confirm steps and agent approval cards name the points before spending",
+  "features/marketing/social/video/clone.ts":
+    "bulk/repeating confirm: the points formatter for the video estimate",
+  "features/marketing/social/video/estimate.ts":
+    "bulk/repeating confirm: the video estimate and the line telling when the studio stops to ask",
+  "features/masterwork/components/masterworks/MasterworksPage.tsx":
+    "history table: a masterwork's recent runs list",
+  "features/research/components/analysis/AnalysisList.tsx":
+    "info/details: an analysis's usage details",
+  "features/research/components/document/DocumentViewer.tsx":
+    "info/details: a document's token usage and cost details panel",
+  "features/source-library/components/JobPanel.tsx":
+    "info/details: a library job's own page with its promised cost, and the cancel confirm",
 };
 
 /** Exports of `components/cost/*` that put a price on screen. The rest of that
@@ -318,53 +474,86 @@ const COST_RENDER_NAMES = new Set([
 ]);
 const KIT_RENDER_NAMES = new Set(["formatCost", "formatPoints", "usdToPoints"]);
 
-/** A literal price in code: `${n} points`, `{n} pts`, `3 points`, "Free",
- *  "No charge" — counted only on a line that also names money (cost, spend,
- *  price, charge, budget, wallet, credit, estimate, usd, points_per…), so "12 data points",
- *  a score's "+5 points" or a "Free" crop ratio never fire. */
-const LITERAL_PRICE: RegExp[] = [
-  /(?:\d[\d,.]*|\})\s*(?:AI\s+)?(?:points?|pts)\b(?!\s*[.(\[=:?])(?!\s+(?:at|to)\b)/,
-  /["'`>]\s*(?:Free|No charge)\s*[."'`<]/,
+/** Literal price text that is a price on its own, wherever it appears. */
+const LITERAL_ALWAYS: RegExp[] = [
+  // "3 pts", `${n} pts` — "pts" is only ever our price unit
+  /(?:\d[\d,.]*|\})\s*pts\b/,
+  // "{n} points used", "20 points a check", "5 points left"
+  /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\s+(?:used|left|charged|spent|remaining|each|per\b|a\s+(?:check|run|month|day|week|call|record))/i,
+  // a free-of-charge claim: "You were not charged", "nothing was charged", "costs nothing"
+  /(?:\bnot|n't|\bnever|\bnothing\s+was|\bno\s+one\s+was)\s+charged\b/i,
+  /\bcosts?\s+nothing\b/i,
+  /\bno\s+(?:credits?|points?)\s+(?:used|spent|charged)\b/i,
+  /\bfree\s+of\s+charge\b/i,
+  /\bNo charge\b/,
+  // a bare "Free" as a whole string / label / JSX text, or opening a sentence ("Free, no credits used");
+  // "Free trial", "free text", "free-form" do not fire
+  /(?:["'`]|>)\s*Free\s*(?:["'`<]|[,.·—–:;!](?!\w))/,
+  /^\s*Free\s*$/,
 ];
+/** "N points" is a price only beside a money word ("12 data points", a score's "+5 points" are not). */
+const LITERAL_POINTS = /(?:\d[\d,.]*|\})\s*(?:AI\s+)?points?\b(?!\s*[.(\[=:?])(?!\s+(?:at|to)\b)/;
 const MONEY_WORD = /cost|spen[dt]|price|charge|budget|wallet|credit|estimat|usd|points_?per|pointsPer/i;
 
 /** True when a code line carries a literal price string. Pure. */
 export function literalPriceOn(code: string): boolean {
-  return MONEY_WORD.test(code) && LITERAL_PRICE.some((re) => re.test(code));
+  if (LITERAL_ALWAYS.some((re) => re.test(code))) return true;
+  return MONEY_WORD.test(code) && LITERAL_POINTS.test(code);
 }
 
-function importedLocals(source: string, from: RegExp, names: Set<string>): string[] {
+/**
+ * PRICE HELPERS — local hooks, components and helpers that hand a ready-made
+ * price string or element to their caller. A file that imports one of these
+ * (from anywhere) and uses it shows a price. Beside this maintained list, the
+ * scan DERIVES more: any exported function/const in a scanned file whose name
+ * matches PRODUCER_NAME and whose body itself shows a price (a literal, a
+ * `components/cost` render, a kit points call, or another helper) is a price
+ * helper for every file that imports it — to a fixpoint, so a helper of a
+ * helper counts.
+ */
+export const PRICE_HELPERS: Record<string, string> = {
+  usePriceText: "features/data-sources/library/hooks.ts — a source's price text",
+  useFetchEstimate: "features/data-sources/hooks.ts — \"≈ N points\" for a fetch",
+  CostLine: "features/marketing/social/components/video/StudioParts.tsx — the studio's cost line",
+  toolPriceText: "@ai-matrx/agents/tools catalog-search — a catalog tool's price (\"Free\" / \"N pts\")",
+};
+export const PRODUCER_NAME = /price|cost|points?|estimat|charge/i;
+
+/** Does an import specifier, seen from `file`, bring in `name` as a price producer? */
+export type ProducerLookup = (specifier: string, name: string, file: string) => boolean;
+
+function importedLocalsWhere(
+  source: string,
+  keep: (specifier: string, name: string) => boolean,
+): string[] {
   const locals: string[] = [];
   const re = /import\s+(type\s+)?\{([^}]*)\}\s*from\s*["']([^"']+)["']/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(source))) {
-    if (m[1] || !from.test(m[3])) continue;
+    if (m[1]) continue;
     for (const spec of m[2].split(",")) {
       const s = spec.trim().match(/^(?:type\s+)?(\w+)(?:\s+as\s+(\w+))?$/);
       if (!s || spec.trim().startsWith("type ")) continue;
-      if (names.has(s[1])) locals.push(s[2] ?? s[1]);
+      if (keep(m[3], s[1])) locals.push(s[2] ?? s[1]);
     }
   }
   return locals;
 }
 
-/** P1 — lines where a file puts a price on screen: a use of a cost-rendering
- *  export of `components/cost/*`, a kit points call, or a literal price string.
- *  Comments and import lines excluded. Pure. */
-export function costRenderSites(source: string): number[] {
-  const locals = [
-    ...importedLocals(source, /(^|\/)components\/cost\/\w+$/, COST_RENDER_NAMES),
-    ...importedLocals(source, /^@ai-matrx\/kit\/format$/, KIT_RENDER_NAMES),
-  ];
-  const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\b`));
-  const hits = new Set<number>();
+/** Code lines of a source with comments blanked and import statements dropped
+ *  (index = line number - 1; a dropped line is ""). Pure. */
+function codeLines(source: string): string[] {
+  const out: string[] = [];
   let inImport = false;
   let inBlockComment = false;
-  source.split("\n").forEach((raw, i) => {
+  for (const raw of source.split("\n")) {
     let line = raw;
     if (inBlockComment) {
       const end = line.indexOf("*/");
-      if (end === -1) return;
+      if (end === -1) {
+        out.push("");
+        continue;
+      }
       line = line.slice(end + 2);
       inBlockComment = false;
     }
@@ -374,17 +563,109 @@ export function costRenderSites(source: string): number[] {
       inBlockComment = true;
       line = line.slice(0, open);
     }
-    if (/^\s*(\*|\/\/)/.test(line)) return;
-    const code = line.replace(/(^|[^:"'`\\])\/\/.*$/, "$1");
-    if (/^\s*import\b/.test(code)) inImport = !/from\s*["']/.test(code);
-    else if (inImport) {
-      if (/from\s*["']/.test(code)) inImport = false;
-      return;
-    } else if (uses.some((re) => re.test(code)) || literalPriceOn(code)) {
-      hits.add(i + 1);
+    if (/^\s*(\*|\/\/)/.test(line)) {
+      out.push("");
+      continue;
     }
+    const code = line.replace(/(^|[^:"'`\\])\/\/.*$/, "$1");
+    if (/^\s*import\b/.test(code)) {
+      inImport = !/from\s*["']/.test(code) && !/^\s*import\s*["']/.test(code);
+      out.push("");
+    } else if (inImport) {
+      if (/from\s*["']/.test(code)) inImport = false;
+      out.push("");
+    } else out.push(code);
+  }
+  return out;
+}
+
+/** P1 — lines where a file puts a price on screen: a use of a cost-rendering
+ *  export of `components/cost/*`, a kit points call, a PRICE_HELPERS name or a
+ *  derived price helper, or a literal price string. Comments and import lines
+ *  excluded. Pure (the derived helpers come in through `isProducer`). */
+export function costRenderSites(source: string, file = "", isProducer?: ProducerLookup): number[] {
+  const locals = importedLocalsWhere(
+    source,
+    (spec, name) =>
+      (/(^|\/)components\/cost\/\w+$/.test(spec) && COST_RENDER_NAMES.has(name)) ||
+      (spec === "@ai-matrx/kit/format" && KIT_RENDER_NAMES.has(name)) ||
+      Object.hasOwn(PRICE_HELPERS, name) ||
+      (isProducer?.(spec, name, file) ?? false),
+  );
+  const uses = locals.map((name) => new RegExp(`(?<![\\w.])${name}\\b(?!\\s*:)`));
+  const hits: number[] = [];
+  codeLines(source).forEach((code, i) => {
+    if (code && (uses.some((re) => re.test(code)) || literalPriceOn(code))) hits.push(i + 1);
   });
-  return [...hits].sort((a, b) => a - b);
+  return hits;
+}
+
+/** Exported functions/consts and the line span of each body (1-based, inclusive). Pure. */
+export function exportRegions(source: string): { name: string; from: number; to: number }[] {
+  const lines = source.split("\n");
+  const starts: { name: string; at: number }[] = [];
+  const topLevel: number[] = [];
+  lines.forEach((line, i) => {
+    const m = line.match(/^export\s+(?:default\s+)?(?:async\s+)?(?:function\s*\*?\s*(\w+)|(?:const|let)\s+(\w+))/);
+    if (m) starts.push({ name: m[1] ?? m[2], at: i });
+    if (/^(?:export\s|function\s|async\s|const\s|let\s|class\s|interface\s|type\s|import\s|enum\s)/.test(line)) topLevel.push(i);
+  });
+  return starts.map(({ name, at }) => {
+    const next = topLevel.find((t) => t > at) ?? lines.length;
+    return { name, from: at + 1, to: next };
+  });
+}
+
+/** Strip a module path to its key: no extension, no trailing /index. Pure. */
+function moduleKey(path: string): string {
+  return path.replace(/\.(tsx?|mjs|js)$/, "").replace(/\/index$/, "");
+}
+
+/** Where an import specifier lands, as a module key; null for a bare package. */
+function resolveSpecifier(specifier: string, fromFile: string, sharedPrefix: string): string | null {
+  if (specifier.startsWith("@/")) return moduleKey(specifier.slice(2));
+  if (specifier.startsWith(".")) return moduleKey(posix.normalize(posix.join(posix.dirname(fromFile), specifier)));
+  void sharedPrefix;
+  return null;
+}
+
+/**
+ * Derive the price helpers across a set of sources (file → source), to a
+ * fixpoint. Returns the lookup costRenderSites uses: a relative/`@/` import
+ * resolves to its file; a bare `@ai-matrx/*` import matches by name against
+ * every helper derived inside the shared packages. Pure.
+ */
+export function deriveProducers(sources: Map<string, string>, sharedPrefix = SHARED_PREFIX): ProducerLookup {
+  const byModule = new Map<string, Set<string>>();
+  const sharedNames = new Set<string>();
+  const lookup: ProducerLookup = (spec, name, file) => {
+    if (spec.startsWith("@ai-matrx/")) return sharedNames.has(name);
+    const key = resolveSpecifier(spec, file, sharedPrefix);
+    return key !== null && (byModule.get(key)?.has(name) ?? false);
+  };
+  const regions = new Map<string, ReturnType<typeof exportRegions>>();
+  for (const [file, source] of sources) {
+    const r = exportRegions(source).filter((x) => PRODUCER_NAME.test(x.name) || Object.hasOwn(PRICE_HELPERS, x.name));
+    if (r.length > 0) regions.set(file, r);
+  }
+  for (let pass = 0; pass < 8; pass++) {
+    let changed = false;
+    for (const [file, rs] of regions) {
+      const hits = costRenderSites(sources.get(file) ?? "", file, lookup);
+      if (hits.length === 0) continue;
+      const key = moduleKey(file);
+      for (const r of rs) {
+        if (byModule.get(key)?.has(r.name)) continue;
+        if (!hits.some((h) => h >= r.from && h <= r.to)) continue;
+        if (!byModule.has(key)) byModule.set(key, new Set());
+        byModule.get(key)!.add(r.name);
+        if (file.startsWith(sharedPrefix)) sharedNames.add(r.name);
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
+  return lookup;
 }
 
 function placeMatcher(pattern: string): (file: string) => boolean {
@@ -422,6 +703,53 @@ interface Baseline {
   placement: Counts;
 }
 
+/** The sibling aidream checkout's shared packages, keyed from this repo's root. */
+export const SHARED_PREFIX = "../aidream/apps/shared/";
+const SHARED_ROOT = join(ROOT, "..", "aidream");
+/** The shared-package primitives that ARE the price formatter (as components/cost is here). */
+const SHARED_SKIP = [
+  `${SHARED_PREFIX}kit/src/format.ts`, // formatCost / formatPoints themselves
+  `${SHARED_PREFIX}chat/src/host/ui-slots.tsx`, // the chat package's Cost slot the host fills (the components/cost of the package)
+];
+
+function isSharedUiFile(file: string): boolean {
+  if (!/\.(ts|tsx)$/.test(file) || file.endsWith(".d.ts")) return false;
+  if (/(^|\/)__(tests|fixtures|mocks)__\//.test(file) || /\.(test|spec|stories)\.tsx?$/.test(file)) return false;
+  if (/\/(node_modules|dist|scripts|tests?|demo)\//.test(file)) return false;
+  return !SHARED_SKIP.includes(file);
+}
+
+/** Tracked + untracked .ts/.tsx under a checkout, as repo-relative paths. */
+function gitFiles(cwd: string, pathspecs: string[]): string[] {
+  return execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", ...pathspecs], {
+    cwd,
+    encoding: "utf8",
+    maxBuffer: 64 * 1024 * 1024,
+  })
+    .split("\n")
+    .filter(Boolean);
+}
+
+/** NOT A PRICE — files whose literal hits are not a price at all (a crop
+ *  ratio named "Free"). Each carries its reason; the file is skipped by P1. */
+export const NOT_A_PRICE: Record<string, string> = {
+  "components/official/image-cropper/ImageCropper.tsx": "\"Free\" is the free-form crop ratio",
+  "features/image-studio/components/InitialCropPanel.tsx": "\"Free\" is the free-form crop ratio",
+  "../aidream/apps/shared/capture/src/components/ImageEditSheet.tsx": "\"Free\" is the free-form crop ratio",
+  "components/image/unsplash/UnsplashSearch.tsx": "\"Free\" is Unsplash's license filter",
+  "features/education/data/subjects.ts": "\"Free\" is a tier id whose label reads \"Core tools\"",
+  "features/templates/files/seeds/document-templates.ts": "\"+5 pts\" is a percentage-point change in a sample report",
+  "features/education/study/learning-gain/components/LearningGainReportView.tsx": "\"pts\" is a learning gain in percentage points",
+  "features/masterwork/sitting/textEntrySurfaces.ts": "\"costs nothing\" means no effort, not no charge",
+  "features/masterwork/understudy/UnderstudyCard.tsx": "\"costs nothing\" means no effort, not no charge",
+  "features/surfaces/manifests/**": "text for agents describing a surface, never drawn",
+  "providers/chatUiRegistration.ts": "host wiring: hands the cost formatter to the shared chat package, whose own files P1 scans",
+  "providers/chatUiRegistrationImpl.ts": "host wiring: hands the cost formatter to the shared chat package, whose own files P1 scans",
+  "features/agents/hooks/agentBuilderContextBundle.ts": "points sent into an agent's context, never drawn",
+};
+
+const NOT_A_PRICE_MATCHERS = Object.keys(NOT_A_PRICE).map((p) => ({ pattern: p, test: placeMatcher(p) }));
+
 function scanTree(): {
   counts: Counts;
   placement: Counts;
@@ -429,20 +757,16 @@ function scanTree(): {
   staleDomain: string[];
   switchIgnored: string[];
   literalRates: string[];
+  sharedNote: string;
 } {
-  const listed = execFileSync(
-    "git",
-    ["ls-files", "--cached", "--others", "--exclude-standard", "--", "*.ts", "*.tsx"],
-    { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
-  )
-    .split("\n")
-    .filter(Boolean);
+  const listed = gitFiles(ROOT, ["*.ts", "*.tsx"]);
   const counts: Counts = {};
   const placement: Counts = {};
   const usedPlaces = new Set<string>();
   const staleDomain: string[] = [];
   const switchIgnored: string[] = [];
   const literalRates: string[] = [];
+  const sources = new Map<string, string>();
   for (const file of listed) {
     if (!isUiFile(file)) continue;
     const abs = join(ROOT, file);
@@ -456,7 +780,33 @@ function scanTree(): {
       continue;
     }
     if (n > 0) counts[file] = n;
-    const shown = costRenderSites(source).length;
+    sources.set(file, source);
+  }
+  let sharedNote: string;
+  if (existsSync(join(SHARED_ROOT, "apps", "shared"))) {
+    const shared = gitFiles(SHARED_ROOT, ["apps/shared/*.ts", "apps/shared/*.tsx"]);
+    let scanned = 0;
+    for (const rel of shared) {
+      const file = `../aidream/${rel}`;
+      if (!isSharedUiFile(file) || file in DOMAIN_MONEY) continue;
+      const abs = join(SHARED_ROOT, rel);
+      if (!existsSync(abs)) continue;
+      sources.set(file, readFileSync(abs, "utf8"));
+      scanned++;
+    }
+    sharedNote = `P1 also scanned ${scanned} files of the sibling aidream/apps/shared packages.`;
+  } else {
+    sharedNote = `NOTE: P1 did NOT scan aidream/apps/shared — no sibling checkout at ${SHARED_ROOT}. Shared-package prices are unchecked on this run.`;
+  }
+  const isProducer = deriveProducers(sources);
+  const usedExemptions = new Set<string>();
+  for (const [file, source] of sources) {
+    const shown = costRenderSites(source, file, isProducer).length;
+    const exempt = NOT_A_PRICE_MATCHERS.find((m) => m.test(file));
+    if (exempt) {
+      if (shown > 0) usedExemptions.add(exempt.pattern);
+      continue;
+    }
     if (shown === 0) continue;
     const place = allowedPlaceFor(file);
     if (place) usedPlaces.add(place);
@@ -467,8 +817,11 @@ function scanTree(): {
   }
   // A glob names an area (the admin tree, billing); an exact file is a grant
   // that rots when its price leaves, so only exact files are reported unused.
-  const unusedPlaces = Object.keys(ALLOWED_PLACES).filter((p) => !p.includes("*") && !usedPlaces.has(p));
-  return { counts, placement, unusedPlaces, staleDomain: staleDomain.sort(), switchIgnored, literalRates };
+  const unusedPlaces = [
+    ...Object.keys(ALLOWED_PLACES).filter((p) => !p.includes("*") && !usedPlaces.has(p)),
+    ...Object.keys(NOT_A_PRICE).filter((f) => !f.includes("*") && !usedExemptions.has(f)),
+  ];
+  return { counts, placement, unusedPlaces, staleDomain: staleDomain.sort(), switchIgnored, literalRates, sharedNote };
 }
 
 export interface Verdict {
@@ -596,14 +949,90 @@ function selfTest(): number {
     { name: "P1 a type-only import", source: `import type { CostProps } from "@/components/cost/Cost";\nlet p: CostProps;`, want: 0 },
     { name: "P1 data points", source: "<span>{heatmap.data.length} points</span>", want: 0 },
     { name: "P1 a score's points", source: "`dropped ${Math.abs(d)} points on ${when}`", want: 0 },
-    { name: "P1 a 'Free' crop ratio", source: `{ label: "Free", value: null }`, want: 0 },
     { name: "P1 a comment", source: `// shows <Cost usd={x} /> and "3 points" of cost`, want: 0 },
+    {
+      name: "P1 an import named like an Object builtin",
+      source: `import { toString as hastToString } from "hast-util-to-string";\nconst t = hastToString(el).trim();`,
+      want: 0,
+    },
   ];
   for (const c of placeCases) {
     const got = costRenderSites(c.source).length;
     const ok = got === c.want;
     if (!ok) failed++;
     console.log(`${ok ? "PASS" : "FAIL"}  ${c.name}: got ${got}, want ${c.want}`);
+  }
+
+  // P1 fail-then-pass: each reviewer probe fires; its fixed form (the price gone) does not.
+  const probes: { name: string; bad: string; fixed: string }[] = [
+    { name: "a price on a button", bad: "<button>Run check · 3 pts</button>", fixed: "<button>Run check</button>" },
+    { name: "bare Free in JSX", bad: "<span>Free</span>", fixed: "<span>Ready</span>" },
+    { name: "Free as a label", bad: `<Chip label="Free" />`, fixed: `<Chip label="Ready" />` },
+    { name: "Free alone on a JSX line", bad: "<span>\n  Free\n</span>", fixed: "<span>\n  Ready\n</span>" },
+    { name: "points used", bad: "<p>{n} points used</p>", fixed: "<p>Done</p>" },
+    { name: "points a check", bad: "`${t.every} min · ${t.per} points a check`", fixed: "`every ${t.every} min`" },
+    { name: "not charged", bad: `toast("You were not charged")`, fixed: `toast("Nothing changed")` },
+    { name: "weren't charged", bad: `"You weren't charged for this"`, fixed: `"Try again"` },
+    { name: "nothing was charged", bad: `"It failed, so nothing was charged."`, fixed: `"It failed."` },
+    { name: "costs nothing", bad: `<p>This step costs nothing.</p>`, fixed: `<p>This step is instant.</p>` },
+    { name: "Free, no credits used", bad: `note: "Free, no credits used"`, fixed: `note: "Done"` },
+    { name: "a template pts", bad: "const s = `${n} pts`;", fixed: "const s = `${n} rows`;" },
+    {
+      name: "usePriceText",
+      bad: `import { usePriceText } from "@/features/data-sources/library/hooks";\nconst price = usePriceText();`,
+      fixed: `import { useLibrary } from "@/features/data-sources/library/hooks";\nconst lib = useLibrary();`,
+    },
+    {
+      name: "useFetchEstimate",
+      bad: `import { useFetchEstimate } from "../hooks";\nconst est = useFetchEstimate();`,
+      fixed: `import { useFetchSpec } from "../hooks";\nconst spec = useFetchSpec();`,
+    },
+    {
+      name: "CostLine",
+      bad: `import { CostLine } from "./StudioParts";\n<CostLine label={l} pts={p} />`,
+      fixed: `import { RunLog } from "./StudioParts";\n<RunLog steps={s} />`,
+    },
+    {
+      name: "toolPriceText",
+      bad: `import { toolPriceText } from "@ai-matrx/agents/tools";\nnote: toolPriceText(hit) ?? undefined,`,
+      fixed: `import { toolTitle } from "@ai-matrx/agents/tools";\nnote: toolTitle(hit),`,
+    },
+  ];
+  for (const p of probes) {
+    const bad = costRenderSites(p.bad).length;
+    const fixed = costRenderSites(p.fixed).length;
+    const ok = bad > 0 && fixed === 0;
+    if (!ok) failed++;
+    console.log(`${ok ? "PASS" : "FAIL"}  P1 probe ${p.name}: fires ${bad}, fixed ${fixed}`);
+  }
+  const notPrices = ["free text", "a free-form note", `"Free trial"`, `"Free-form"`, "`${rows.length} data points`", "`${d} points on ${when}`", "points at this page"];
+  for (const text of notPrices) {
+    const got = costRenderSites(`const s = ${text.startsWith('"') || text.startsWith("`") ? text : `"${text}"`};`).length;
+    if (got !== 0) failed++;
+    console.log(`${got === 0 ? "PASS" : "FAIL"}  P1 not a price: ${text}`);
+  }
+
+  // P1 derived helpers: an exported price-named helper whose body shows a price
+  // carries P1 to every importer, through a helper of a helper; a price-named
+  // export with no price in it does not.
+  const tree = new Map<string, string>([
+    ["features/v/parts.ts", "export function pointsLabel(n: number) {\n  return `${n} pts`;\n}\nexport function costTone(n: number) {\n  return n > 3;\n}\n"],
+    ["features/v/line.tsx", `import { pointsLabel } from "./parts";\nexport function CostNote({ n }: { n: number }) {\n  return <i>{pointsLabel(n)}</i>;\n}\n`],
+    ["features/v/Page.tsx", `import { CostNote } from "@/features/v/line";\nexport const Page = () => <CostNote n={3} />;\n`],
+    ["features/v/Tone.tsx", `import { costTone } from "./parts";\nexport const Tone = () => <b>{costTone(4) ? "a" : "b"}</b>;\n`],
+    [`${SHARED_PREFIX}agents/tools/price.ts`, "export function toolCostLabel(n: number) {\n  return n === 0 ? \"Free\" : `${n} pts`;\n}\n"],
+    ["features/w/Chip.tsx", `import { toolCostLabel } from "@ai-matrx/agents/tools";\nexport const C = () => <i>{toolCostLabel(1)}</i>;\n`],
+  ]);
+  const derived = deriveProducers(tree);
+  const derivedWant: Record<string, number> = {
+    "features/v/Page.tsx": 1,
+    "features/v/Tone.tsx": 0,
+    "features/w/Chip.tsx": 1,
+  };
+  for (const [file, want] of Object.entries(derivedWant)) {
+    const got = costRenderSites(tree.get(file)!, file, derived).length;
+    if (got !== want) failed++;
+    console.log(`${got === want ? "PASS" : "FAIL"}  P1 derived helper reaches ${file}: got ${got}, want ${want}`);
   }
 
   // P1 allowed places — the admin tree, a picker, a battle pass; a chat block does not.
@@ -651,9 +1080,22 @@ function selfTest(): number {
 function main(): number {
   const args = new Set(process.argv.slice(2));
   if (args.has("--self-test")) return selfTest();
+  if (args.has("--sites")) {
+    // Print the P1 lines of the named files (local helpers only; cross-file helpers need the full scan).
+    for (const file of process.argv.slice(2).filter((a) => !a.startsWith("--"))) {
+      const source = readFileSync(join(ROOT, file), "utf8").split("\n");
+      for (const line of costRenderSites(source.join("\n"), file)) console.log(`${file}:${line}: ${source[line - 1].trim().slice(0, 160)}`);
+    }
+    return 0;
+  }
 
-  const { counts: current, placement, unusedPlaces, staleDomain, switchIgnored, literalRates } = scanTree();
+  const { counts: current, placement, unusedPlaces, staleDomain, switchIgnored, literalRates, sharedNote } = scanTree();
+  console.log(sharedNote);
   const baseline = readBaseline();
+  if (args.has("--counts")) {
+    console.log(JSON.stringify({ dollars: sortCounts(current), placement: sortCounts(placement) }, null, 2));
+    return 0;
+  }
   if (args.has("--write")) {
     if (!baseline) {
       writeBaseline({ dollars: current, placement });
@@ -723,7 +1165,7 @@ function main(): number {
   }
   if (unusedPlaces.length > 0) {
     console.log(
-      `note: ${unusedPlaces.length} ALLOWED_PLACES entr${unusedPlaces.length === 1 ? "y renders" : "ies render"} no price any more — delete ${unusedPlaces.length === 1 ? "it" : "them"}: ${unusedPlaces.join(", ")}`,
+      `note: ${unusedPlaces.length} ALLOWED_PLACES / NOT_A_PRICE entr${unusedPlaces.length === 1 ? "y renders" : "ies render"} no price any more — delete ${unusedPlaces.length === 1 ? "it" : "them"}: ${unusedPlaces.join(", ")}`,
     );
   }
   if (code === 0) {

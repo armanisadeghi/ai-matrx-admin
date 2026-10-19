@@ -59,11 +59,9 @@ import {
   runArgs,
   shortDate,
   sourceLine,
-  costText,
   type CompareRow,
   type GridState,
 } from "./grid-model";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { readSeoLocalPrice } from "./prices";
 import { RankGridMap } from "./RankGridMap";
 import {
@@ -444,7 +442,6 @@ function PreviewView({
   running: boolean;
   onRun: (centerConfirmed: string) => void;
 }) {
-  const { format } = useCostDisplay();
   const matched = data.matched_business;
   const free = data.estimate_usd === 0;
   const total = data.points.length;
@@ -485,7 +482,7 @@ function PreviewView({
           disabled={running}
           onClick={() => onRun(data.center_confirmed_value)}
         >
-          {free ? "Open stored grid" : `Run grid${costText(format, data.estimate_usd) ? ` · ${costText(format, data.estimate_usd)}` : ""}`}
+          {free ? "Open stored grid" : "Run grid"}
         </Button>
       </div>
       {extra.map((n) => (

@@ -21,6 +21,7 @@ import type {
   SurfaceScopePayload,
   SurfaceValue,
   SurfaceValueGroup,
+  SurfaceWriteTarget,
 } from "@ai-matrx/chat/surfaces/types";
 import { mergeBaselineValues, pickBaseline } from "@ai-matrx/chat/surfaces/manifests/_baseline.manifest";
 import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
@@ -32,6 +33,12 @@ const groups: SurfaceValueGroup[] = [
     label: "Ladder progress",
     sortOrder: 100,
     description: "Which rungs have run on this website, when, and what is next.",
+  },
+  {
+    key: "ladder_proposals",
+    label: "Proposals waiting",
+    sortOrder: 150,
+    description: "The proposals the ladder has queued for the owner's ruling, and which rung is running right now.",
   },
   {
     key: "ladder_results",
@@ -50,7 +57,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "discovery_steps",
     label: "Discovery steps",
     description:
-      "One row per rung, in ladder order: { step, title, implemented, status (not_run | completed | failed | ...), completed_at (ISO | null), prerequisites_met (boolean) }. Empty array while the ladder loads.",
+      "One row per rung, in ladder order: { step, title, implemented, status (not_run | completed | failed | ...), run_id (the server run for that rung, or null), completed_at (ISO | null), prerequisites_met (boolean) }. Empty array while the ladder loads.",
     valueType: "array",
     alwaysAvailable: false,
     typicalCharCount: 1200,
@@ -78,6 +85,39 @@ const surfaceSpecific: SurfaceValue[] = [
     typicalCharCount: 20,
     sortOrder: 130,
     group: "ladder_progress",
+  },
+  {
+    name: "discovery_running_step",
+    label: "Running step",
+    description:
+      "The ladder rung whose Run / Re-run button was pressed and has not finished (a step key such as money_map). Absent when no rung is running. Per-row server run state is in discovery_steps (status, run_id).",
+    valueType: "string",
+    alwaysAvailable: false,
+    typicalCharCount: 20,
+    sortOrder: 140,
+    group: "ladder_progress",
+  },
+  {
+    name: "discovery_pending_proposals",
+    label: "Proposals waiting on the owner",
+    description:
+      "The offering and guideline-edit proposals this site's discovery steps queued and nobody has ruled, newest first, exactly the rows 'Discovery proposals waiting on you' shows: { key, kind (offering | guideline_edit), headline, accept_effect, reject_effect, proposed_by, proposed_at, agent_can_decide (boolean), left_to_person_because (why not, or null) }. Empty array when nothing waits; absent while the queue loads or if it failed to load.",
+    valueType: "array",
+    alwaysAvailable: false,
+    typicalCharCount: 1500,
+    sortOrder: 150,
+    group: "ladder_proposals",
+  },
+  {
+    name: "discovery_proposal_counts",
+    label: "Proposal counts",
+    description:
+      "{ total, offering, guideline_edit } — how many discovery proposals wait on the owner, by kind. Absent while the queue loads.",
+    valueType: "object",
+    alwaysAvailable: false,
+    typicalCharCount: 60,
+    sortOrder: 160,
+    group: "ladder_proposals",
   },
   {
     name: "discovery_business_model",
@@ -153,6 +193,29 @@ const surfaceSpecific: SurfaceValue[] = [
   },
 ];
 
+/**
+ * One write target: ruling a pending discovery proposal, through the approval
+ * queue's own decision writer (the same function its Approve / Reject buttons
+ * call). The ladder's Run / Re-run buttons are NOT targets: they start paid AI
+ * jobs and stay with the person. Proposals that must be read on their own (a
+ * full guidelines document) are refused by the handler. Handler:
+ * `features/marketing/seo/value-system/discovery/KnowledgeRoomSurface.tsx`.
+ */
+const writeTargets: SurfaceWriteTarget[] = [
+  {
+    name: "discovery_proposal_decision",
+    label: "Rule a discovery proposal",
+    description:
+      'Approve or reject one pending discovery proposal. Value: { item_key: string (a key from discovery_pending_proposals whose agent_can_decide is true), decision: "approve" | "reject", reason?: string }. Approve performs the exact write in that row\'s accept_effect (for an offering: the canonical offering writers) and Reject records the reason and never proposes that exact suggestion again, so it is asked of the owner first. Throws for an unknown key, an already-ruled proposal, or one left to the person.',
+    valueType: "object",
+    updatesValue: "discovery_pending_proposals",
+    mode: "entity",
+    applyPolicy: "ask",
+    group: "ladder_proposals",
+    sortOrder: 100,
+  },
+];
+
 export const marketingBrandKnowledgeManifest: SurfaceManifest = {
   surfaceName: "matrx-user/marketing-brand-knowledge",
   client: "matrx-user",
@@ -165,14 +228,15 @@ export const marketingBrandKnowledgeManifest: SurfaceManifest = {
   inheritsFrom: "matrx-user/marketing-site",
   readiness: "partial",
   readinessNote:
-    "Rung state and results are declared and emitted (2026-10-18). No write targets: the ladder's only edits are button runs and rulings made in the shared approval queue, which is not part of this room's own state. Pending proposals and in-flight run state are not declared. No live binding run yet.",
+    "Rung state and results, the pending discovery proposals (read from the approval queue's own cache entry), the running rung, and one write target (ruling a pending proposal through the queue's own decision writer) are declared and emitted and synced to the DB mirror (2026-10-18). The Run / Re-run buttons are deliberately not agent-writable (they start paid AI jobs), and proposals that must be read in their own card (guideline documents) are left to the person. The running rung is only what this tab started; a run started elsewhere shows only as a step status. No live binding run yet.",
   intro: `<surface_intro>
 You are on a brand's Knowledge room: the Business Discovery Ladder for one of its websites (site_name, site_root_url and brand_context arrive from the parent). AI reads the site's own crawled pages cold and proposes, rung by rung: business model, ideal customer, money map, offerings, offering values, proposed setup, then a business guidelines draft.
 Start with discovery_steps and discovery_next_step to see how far the ladder has climbed. Each discovery_* result is a proposal for the owner to read and rule, not established truth. A rung that is absent has not run.
-Helping here means: spotting where one rung contradicts another or the brand context, and saying what to re-run. The owner runs rungs with the buttons on the page and rules proposals in the approval queue.
+Helping here means: spotting where one rung contradicts another or the brand context, saying what to re-run, and noting which proposals in discovery_pending_proposals look right or wrong. The owner runs rungs with the buttons on the page; you may rule a simple proposal with discovery_proposal_decision, which the owner confirms first.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(pickBaseline("selection", "context"), surfaceSpecific),
+  writeTargets,
   agentRoles: [
     {
       name: "business_model_analyst",
@@ -263,6 +327,9 @@ export function createMarketingBrandKnowledgeScope(values: {
   discovery_steps?: ReadonlyArray<Record<string, unknown>>;
   discovery_completed_steps?: readonly string[];
   discovery_next_step?: string;
+  discovery_running_step?: string;
+  discovery_pending_proposals?: ReadonlyArray<Record<string, unknown>>;
+  discovery_proposal_counts?: Record<string, unknown>;
   discovery_business_model?: Record<string, unknown>;
   discovery_ideal_customer?: Record<string, unknown>;
   discovery_money_map?: Record<string, unknown>;

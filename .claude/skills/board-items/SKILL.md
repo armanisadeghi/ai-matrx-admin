@@ -1,5 +1,6 @@
 ---
 name: board-items
+subject: matrx-frontend:.claude/skills/board-items
 description: "Putting a platform feature on the Board (/board) as an Add-menu item with its real component and full agent surface. Use when adding a feature, record type or 'X on the board', or editing features/board/items/** or a tile body."
 ---
 

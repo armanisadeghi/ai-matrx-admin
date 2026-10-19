@@ -2,7 +2,7 @@
 
 Floating, resizable, minimizable OS-style windows. The engine (`WindowPanel`, window manager, tray, pop-out, phone presentations, persistence, `?panels=` links) is the npm package **`@ai-matrx/summon`** (`../aidream/apps/shared/summon`; its `README.md` is the usage guide). This folder holds the app's window components and the few things around them.
 
-> Full rules and laws: [`FEATURE.md`](./FEATURE.md). Overlay rendering: [`../overlays/FEATURE.md`](../overlays/FEATURE.md). Skills: `overlay-system`, `window-panels`, `window-panel-authoring`, `remove-window-panel`.
+> Full rules and laws: [`FEATURE.md`](./FEATURE.md). Overlay rendering: [`../overlays/FEATURE.md`](../overlays/FEATURE.md). Skills: `overlay-system`, `window-panels`, `window-panel-authoring` (includes removal).
 
 ## Add a window: declare it, then write it
 

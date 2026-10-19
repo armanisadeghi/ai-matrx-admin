@@ -1,5 +1,6 @@
 ---
 name: provider-access-submit
+subject: integrations/provider-access
 description: "End-to-end execution of a scouted third-party provider access campaign. Use when a Provider Access Launch task is ready_to_submit or scouted easy_execute and needs account or app registration, scopes, reviewer assets, Vault credential custody, the canonical connection, and real verification."
 ---
 

@@ -738,7 +738,7 @@ export function JobPanel({
                             </span>
 
                             <span className="text-muted-foreground">
-                                Free lane ({laneSentence("free_captions", vocabulary)})
+                                Captions lane ({laneSentence("free_captions", vocabulary)})
                             </span>
                             <span className="text-right tabular-nums text-foreground">
                                 {formatCount(estimate.free_count)}

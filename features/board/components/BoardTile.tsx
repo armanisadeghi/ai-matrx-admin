@@ -581,7 +581,9 @@ export function BoardTile({
       // Never grow or shrink to a body still loading or not laid out (`tileContentReady`).
       if (!tileContentReady(card)) return;
       const boxes: ScrollerBox[] = [];
-      for (const el of card.querySelectorAll<HTMLElement>("*")) {
+      // Only the scroller the body REGISTERED (`data-board-scroll-root`): never every element of the card
+      // (an O(n²) walk per input), and never another component's own scrollers.
+      for (const el of card.querySelectorAll<HTMLElement>("[data-board-scroll-root]")) {
         const fitted = el.dataset.boardFitScroll === "1";
         const style = getComputedStyle(el);
         const overflowY = fitted ? "auto" : style.overflowY;

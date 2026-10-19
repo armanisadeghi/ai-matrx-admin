@@ -1,5 +1,6 @@
 ---
 name: reviewer-playbook
+subject: skills/reviewer-playbook
 type: Skill
 title: "reviewer-playbook — how the Sonnet reviewer works"
 description: "Working playbook preloaded into the reviewer helper; the coach updates its Lessons after each round. Use only when acting as reviewer or coaching it. NOT for writing a verifier brief (use subagent-dispatch)."

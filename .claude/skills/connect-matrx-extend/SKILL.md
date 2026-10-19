@@ -1,5 +1,6 @@
 ---
 name: connect-matrx-extend
+subject: apps/extension
 description: "The matrx-frontend side of the matrx-extend Chrome extension bridge. Use when adding or changing a FRONTEND_RPC action handler, a window-panels deep-link the extension opens, a headless API route it calls, or debugging a silent chrome.runtime.sendMessage or Broadcast round-trip. NOT for code in matrx-extend, matrx-local, or aidream (each has its own connect-* skill)."
 ---
 

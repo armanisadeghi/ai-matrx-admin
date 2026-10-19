@@ -1,8 +1,8 @@
 /** @jest-environment node */
 // The whole start-a-payment path (startCheckout) on a fake database and a fake Stripe:
-//  PAYMENTS-FINAL  a portal whose client can edit the amount field, or that carries a form asking it, is refused
-//                  at CHARGE time (the DB refuses it at save: pnpm check:payment-settle-rules M3p, M3pf);
-//                  read-only and off the portal, the same ask charges.
+//  PAYMENTS-FINAL  the payer never sets her own price: an amount field that any live form on the table asks, or
+//                  that an open portal lets its client edit, is refused at CHARGE time (the DB refuses it at ask,
+//                  form and portal save: pnpm check:payment-settle-rules M3*); read-only everywhere, it charges.
 //  REVIEW-PAYMENTS-2 I2  a pending payment whose Stripe session can no longer be read (connected account
 //                  deleted, 404 at the session read) is settled expired and a NEW session opens; any other
 //                  Stripe failure still stops the start (never opens a second live session).
@@ -24,7 +24,6 @@ interface Call { schema: string; table: string; op: string; payload?: unknown; f
 const calls: Call[] = [];
 const rpcs: { schema: string; fn: string; args: unknown }[] = [];
 let portalHits: { portal_id: string }[] = [];
-let portalForms: { config: unknown }[] = [];
 let formHits: { id: string }[] = [];
 let paymentRows: unknown[] = [];
 
@@ -38,13 +37,11 @@ function answer(q: Call): { data: unknown; error: null } {
     case "custom.record":
       return { data: { table_id: "tbl1", data: { value: "25" } }, error: null };
     case "custom.anon_form":
-      return q.filters.some((f) => f[0] === "in") ? { data: formHits, error: null } : { data: { exposed_field_keys: [] }, error: null };
+      return { data: formHits, error: null };
     case "custom.portal_table":
       return { data: portalHits, error: null };
     case "custom.portal":
-      return q.filters.some((f) => f[0] === "eq" && f[1] === "organization_id")
-        ? { data: portalForms, error: null }
-        : { data: portalHits.map((h) => ({ id: h.portal_id })), error: null };
+      return { data: portalHits.map((h) => ({ id: h.portal_id })), error: null };
     case "billing.payment":
       return { data: paymentRows, error: null };
     default:
@@ -59,7 +56,7 @@ function from(schema: string, table: string) {
   const filter = (name: string) => (...args: unknown[]) => { q.filters.push([name, ...args]); return api; };
   Object.assign(api, {
     select: () => api,
-    eq: filter("eq"), is: filter("is"), in: filter("in"), contains: filter("contains"), order: filter("order"),
+    eq: filter("eq"), is: filter("is"), in: filter("in"), contains: filter("contains"), order: filter("order"), limit: filter("limit"),
     insert: (payload: unknown) => { q.op = "insert"; q.payload = payload; return api; },
     update: (payload: unknown) => { q.op = "update"; q.payload = payload; return api; },
     maybeSingle: async () => answer(q),
@@ -96,7 +93,6 @@ beforeEach(() => {
   calls.length = 0;
   rpcs.length = 0;
   portalHits = [];
-  portalForms = [];
   formHits = [];
   paymentRows = [];
   jest.clearAllMocks();
@@ -108,7 +104,7 @@ describe("a portal client never sets her own price (PAYMENTS-FINAL)", () => {
   it("refuses at charge time when an open portal lets the client edit the amount field", async () => {
     portalHits = [{ portal_id: "portal1" }];
     await expect(start(fieldAsk)).rejects.toThrow(PaymentRefusal);
-    await expect(start(fieldAsk)).rejects.toThrow(/portal lets the payer change the amount/);
+    await expect(start(fieldAsk)).rejects.toThrow(/This portal lets people type the amount this payment charges/);
     expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
     expect(inserts()).toHaveLength(0);
   });
@@ -121,19 +117,19 @@ describe("a portal client never sets her own price (PAYMENTS-FINAL)", () => {
     expect(portalRead?.filters).toEqual(expect.arrayContaining([["eq", "table_id", "tbl1"], ["contains", "editable_field_keys", JSON.stringify(["value"])]]));
   });
 
-  it("refuses at charge time when a form her portal carries asks the amount field", async () => {
-    portalForms = [{ config: { forms: [{ order: 1, form_id: "form9" }] } }];
+  it("refuses at charge time when any live form on the table asks the amount field (public, booking or portal form)", async () => {
     formHits = [{ id: "form9" }];
-    await expect(start(fieldAsk)).rejects.toThrow(/portal lets the payer change the amount/);
-    const formRead = calls.find((c) => c.table === "anon_form" && c.filters.some((f) => f[0] === "in"));
-    expect(formRead?.filters).toEqual(expect.arrayContaining([["in", "id", ["form9"]], ["eq", "table_id", "tbl1"], ["contains", "exposed_field_keys", JSON.stringify(["value"])]]));
+    await expect(start(fieldAsk)).rejects.toThrow(/This form lets people type the amount this payment charges/);
+    const formRead = calls.find((c) => c.table === "anon_form");
+    expect(formRead?.filters).toEqual(expect.arrayContaining([["eq", "organization_id", "org1"], ["eq", "table_id", "tbl1"], ["is", "deleted_at", null], ["contains", "exposed_field_keys", JSON.stringify(["value"])]]));
     expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+    expect(inserts()).toHaveLength(0);
   });
 
   it("a fixed amount never asks the portals", async () => {
     portalHits = [{ portal_id: "portal1" }];
     await start(ask({}));
-    expect(calls.some((c) => c.table === "portal_table")).toBe(false);
+    expect(calls.some((c) => c.table === "portal_table" || c.table === "anon_form")).toBe(false);
   });
 });
 

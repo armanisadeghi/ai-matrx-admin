@@ -1,5 +1,6 @@
 ---
 name: work-loop
+subject: architecture/work-loop
 type: Skill
 title: work-loop — operate the durable autonomous task fleet
 description: "Operating guide for the durable Autonomous Work Loop task fleet. Use when adding work to, coordinating, or working an Autonomous Work Loop campaign, or when calling the work_loop MCP tool."

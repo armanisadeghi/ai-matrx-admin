@@ -1,5 +1,6 @@
 ---
 name: unify-main
+subject: policies/shared-checkout
 description: The standing order for local git state in every AI Matrx repo — zero worktrees, zero local branches, zero dirty files, zero open PRs, everything merged to origin/main, and no code ever lost. Use when you find a worktree, a local branch, a stale checkout, an unpushed commit, or a dirty tree in any repo under /Users/armanisadeghi/code, when asked to "clean up", "unify", "merge everything", or when you are tempted to create a worktree or branch. Works without any access to Arman.
 ---
 

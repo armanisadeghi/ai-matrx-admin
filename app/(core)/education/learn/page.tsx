@@ -19,7 +19,7 @@ export const metadata = createRouteMetadata("/education", {
   titlePrefix: "Study Guides",
   title: "Education",
   description:
-    "Free, in-depth study guides and topic explainers — clear content on the subjects you're learning, with one-click paths to study them in the app.",
+    "In-depth study guides and topic explainers — clear content on the subjects you're learning, with one-click paths to study them in the app.",
   letter: "Lr",
   canonicalPath: "/education/learn",
 });

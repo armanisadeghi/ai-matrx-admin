@@ -18,8 +18,7 @@
  *
  * THE SEAMS: `lib/email/client.ts::sendEmail` (all app email), `app/api/test-email`,
  * `lib/sms/send.ts::sendSms` (every SMS), `lib/sms/verify.ts::sendVerification` (Twilio Verify),
- * `lib/sms/numbers.ts` purchase + webhook repoint (Twilio account writes), and
- * `app/api/slack-proxy` (third-party Slack writes).
+ * and `lib/sms/numbers.ts` purchase + webhook repoint (Twilio account writes).
  *
  * Nothing fails silently: every refusal is a `console.warn` naming channel and database, and the
  * seam returns its own failure shape carrying `suppressed_on_clone` — never a success.

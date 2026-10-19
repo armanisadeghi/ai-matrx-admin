@@ -1,7 +1,3 @@
----
-name: remove-window-panel
-description: "No-trace removal recipe for a window panel or overlay. Use when deleting, killing or retiring a window/overlay, or consolidating X into Y and deleting X ('kill this panel', 'remove the X window'). NOT for adding or opening an overlay (use overlay-system)."
----
 
 # Remove a Window Panel (kill it completely)
 

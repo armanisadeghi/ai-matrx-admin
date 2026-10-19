@@ -3,7 +3,7 @@
 // "Fill from Google Maps" for a location's canonical profile. Paste the place's
 // Google Maps link (or its place id); the live record maps to the same suggestion
 // chips the profile already shows - nothing is saved until the person hits Save.
-// The price is quoted in points on the button, and nothing runs without a click.
+// Nothing runs without a click.
 
 import { useState } from "react";
 import { MapPin } from "lucide-react";
@@ -34,7 +34,6 @@ export function MapsAutofill({
   });
   const running = lookup.run.status === "running";
   const url = placeLookupUrl(text);
-  const price = lookup.quote ?? "…";
 
   const fill = () => {
     if (!url) return;
@@ -71,7 +70,7 @@ export function MapsAutofill({
           aria-label="Google Maps link or place id"
         />
         <Button type="button" variant="primary" disabled={!url || running || !lookup.source} onClick={fill}>
-          {running ? "Getting…" : `Fill from Google Maps · ${price}`}
+          {running ? "Getting…" : "Fill from Google Maps"}
         </Button>
         <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={running}>
           Close

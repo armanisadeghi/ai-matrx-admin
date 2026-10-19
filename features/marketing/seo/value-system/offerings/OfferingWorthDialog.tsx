@@ -47,6 +47,7 @@ export function OfferingWorthDialog({
   node,
   inheritedFrom,
   busy,
+  seed,
   onCancel,
   onSave,
   onClear,
@@ -55,16 +56,24 @@ export function OfferingWorthDialog({
   /** The nearest ANCESTOR (never self) carrying a ruling on this site. */
   inheritedFrom: CatalogNode | null;
   busy: boolean;
+  /** Values staged into the form (by an agent) before the person reviews and saves; unset keys keep the saved ruling. */
+  seed?: Partial<OfferingWorthValues>;
   onCancel: () => void;
   onSave: (values: OfferingWorthValues) => void;
   onClear: () => void;
 }) {
   const own = node.offering;
   const hasOwn = own.worthPoints !== null;
-  const [points, setPoints] = useState(hasOwn ? String(own.worthPoints) : "");
-  const [leadQuality, setLeadQuality] = useState<string | null>(own.leadQuality);
-  const [offeringMatch, setOfferingMatch] = useState<string | null>(own.offeringMatch);
-  const [notes, setNotes] = useState(own.worthNotes ?? "");
+  const [points, setPoints] = useState(
+    seed?.worthPoints !== undefined ? String(seed.worthPoints) : hasOwn ? String(own.worthPoints) : "",
+  );
+  const [leadQuality, setLeadQuality] = useState<string | null>(
+    seed?.leadQuality !== undefined ? seed.leadQuality : own.leadQuality,
+  );
+  const [offeringMatch, setOfferingMatch] = useState<string | null>(
+    seed?.offeringMatch !== undefined ? seed.offeringMatch : own.offeringMatch,
+  );
+  const [notes, setNotes] = useState(seed?.notes ?? own.worthNotes ?? "");
 
   const trimmed = points.trim();
   const parsed = trimmed === "" ? null : Number(trimmed);

@@ -1,5 +1,6 @@
 ---
 name: build-sub-feature
+subject: skills/build-sub-feature
 type: Skill
 title: "build-sub-feature — add a capability INTO a live feature, to a world-class bar"
 description: "Doctrine for adding a capability INTO a live, existing feature to a world-class bar. Use on 'add X to Y', 'extend Y to support X', a new option, button, setting, endpoint, or tool for Y, or a sub-feature spec to implement. NOT for whole-feature audits or overhauls (use feature-deep-dive)."

@@ -1,5 +1,6 @@
 ---
 name: feature-deep-dive
+subject: skills/feature-deep-dive
 type: Skill
 title: "feature-deep-dive — exhaustive audit, target vision, approved plan, complete build"
 description: "Doctrine for auditing an ENTIRE feature and building it to its ideal state. Use on 'deep dive on X', 'audit the X feature', 'figure out everything X does', 'take over X and finish it', 'bring X up to best practices', or when a whole feature needs overhauling, unifying, or finishing, not patching. NOT for one small addition (use build-sub-feature)."

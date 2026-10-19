@@ -1,5 +1,6 @@
 ---
 name: provider-access-chase
+subject: integrations/provider-access
 description: "Follow-up sweep for pending third-party provider access campaigns. Use when the recurring 30-minute Provider Access Launch dispatcher wakes, or for a manual status check of due email threads, developer portals, support cases, or review deadlines."
 ---
 

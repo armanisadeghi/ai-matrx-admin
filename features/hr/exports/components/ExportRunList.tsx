@@ -1062,7 +1062,7 @@ export function ExportRunList({
             icon: <Layers className="h-6 w-6" aria-hidden />,
             title: "This period has never been exported",
             description:
-              "Nothing has been built for payroll yet. Preview the file first — looking costs nothing and creates no record.",
+              "Nothing has been built for payroll yet. Preview the file first — looking creates no record.",
           }}
 
         />

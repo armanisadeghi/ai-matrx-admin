@@ -1,9 +1,52 @@
 ---
 name: window-panel-authoring
-description: "Recipe for creating or changing a floating window. Use when adding a window, editing a window component, declaring restore or ephemeral behavior, wiring a ?panels= link or the Tools grid, or a window fails to restore after reload. NOT for drag/resize/tray internals (use window-panels)."
+subject: platform/ui-shell
+description: "Recipe for creating or changing a floating window. Use when adding a window, deleting, killing or retiring a window or overlay ('kill this panel', 'remove the X window', consolidating X into Y and deleting X), editing a window component, declaring restore or ephemeral behavior, wiring a ?panels= link or the Tools grid, or a window fails to restore after reload. NOT for drag/resize/tray internals (use window-panels) or for opening an overlay (use overlay-system)."
 ---
 
 # Window Panel Authoring
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/platform/ui-shell/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Delete means archive, everywhere.** A delete that does not archive is a defect.
+2. **A menu regroup ships as a side-by-side demo page** with a what-goes-where list, never as a
+   direct change.
+3. **Every surface mounts the canonical menu.** Use `NonEditableContextMenu` or
+   `EditableContextMenu` from `features/context-menu-v3/`. Never use a bespoke `DropdownMenu` or a
+   raw `contextmenu` handler, and never keep both.
+4. **A menu without a source is a defect.** A menu with no `contentSource`, `entity` or
+   `surfaceName` opens with every verb dark. Fix these before unwired surfaces.
+5. **Lists built on `EntityListPage` inherit the row menu** through `ItemContextMenu`. They need
+   their own wiring only for surface-specific sections.
+6. **A window or overlay mounts its own menu.** It never delegates to the page under it.
+7. **Reuse the domain's action registry.** Never create a second one.
+8. **Secret-bearing surfaces follow `VaultContextMenu`.** Pass `getApplicationScope`, force
+   `selection: ""`, put names and field keys in the content (never values or notes), and pass no
+   `entity`.
+9. **Done means the menu opens clean.** The console shows no `INERT MENU` or
+   `VALUE MAPPING GAP` scream.
+10. **Chat is a universal agent host.** Never bind a page-agent roster to it.
+11. **Anything with an id shows it through the one canonical id component** (display plus one-click
+    copy, in `@ai-matrx/design-system`). Never hand-built id text, never Copy ID buried in a menu;
+    Peek carries it for every record, and a guard refuses new hand-built id displays.
+12. **Flagship and first-run screens get a bespoke elevated stage**, not the 28px app-chrome controls:
+    display type, giant inputs, a living background, real-data animation, inside the feature folder
+    with theme and motion tokens. The brief names the champions; 3+ screenshot-critique rounds
+    precede any showing.
+13. **Before a link goes to Arman, every screen on its path is walked at the Steve Jobs bar** by an
+    Opus reviewer who fixes what it finds, then a fresh user walk confirms.
+14. **Admin tables filter, search and sort on the server** (controlled mode, footer total = server
+    total), and people are picked by name or email, never by an id input.
+15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
+    toolbar, buttons are mostly icons with short text, a button can carry status and action
+    together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
+<!-- rules:stamp-end -->
 
 A window is an overlay whose render module returns a `WindowPanel`. The engine (`WindowPanel`, window manager, persistence, links) is the package `@ai-matrx/summon`; **a defect in that engine is fixed in `../aidream/apps/shared/summon` in the same session**, never worked around in the window. Slots, drag, tray and phone presentation: `window-panels` skill. Definition, render module, registry and opener rules: `overlay-system` skill (read it first, the file list below assumes it).
 
@@ -134,4 +177,17 @@ A window survives a refresh only when its `window.preservation.dataKeys` lists w
 
 - Package guides: `../aidream/apps/shared/summon/README.md` (WindowPanel, links, persistence, handles) and `FEATURE.md` (invariants).
 - App window facts and laws: `features/window-panels/FEATURE.md`. Definitions: `features/overlays/definitions/`. Host: `features/overlays/host/`.
-- Openers, registry, mounting: `overlay-system` skill. Slots, drag, tray: `window-panels` skill. Removal: `remove-window-panel` skill.
+- Openers, registry, mounting: `overlay-system` skill. Slots, drag, tray: `window-panels` skill. Removal: [`removing.md`](removing.md) in this skill.
+
+## Removing a window panel
+
+Deleting a panel means removing it from every place its registration spreads, then proving zero residue: no shims, aliases, forwarding openers or tombstone comments. The full no-trace recipe (keystone, ten-row checklist, repoint-before-delete greps, shared infrastructure not to delete, verification) is in [`removing.md`](removing.md). Read it in full before any deletion.
+
+## Relocated
+
+| Old skill and trigger | Now |
+|---|---|
+| `remove-window-panel`: deleting, killing or retiring a window/overlay | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: consolidating X into Y and deleting X | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: "kill this panel", "remove the X window" | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: NOT for adding or opening an overlay | `overlay-system` skill |

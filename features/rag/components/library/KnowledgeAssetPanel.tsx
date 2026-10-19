@@ -572,7 +572,7 @@ function RepresentationCard({
       const costPhrase =
         estUnits > 0
           ? resume
-            ? "only on the missing parts (already-done work is skipped for free)"
+            ? "only on the missing parts (already-done work is skipped)"
             : `about ${costText(estUnits)}`
           : "points — we couldn't compute an exact estimate right now";
       const ok = await confirm({

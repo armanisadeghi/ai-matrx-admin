@@ -1,9 +1,52 @@
 ---
 name: window-panels
+subject: platform/ui-shell
 description: "WindowPanel (@ai-matrx/summon/window) and its window manager. Use when a window won't drag, resize, minimize or pop out, the tray or restore is wrong, rendering <WindowPanel> on a page, or editing features/window-panels/**. NOT for opening or registering overlays (use overlay-system)."
 ---
 
 # Window Panels: `WindowPanel` from `@ai-matrx/summon/window`
+
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/platform/ui-shell/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Delete means archive, everywhere.** A delete that does not archive is a defect.
+2. **A menu regroup ships as a side-by-side demo page** with a what-goes-where list, never as a
+   direct change.
+3. **Every surface mounts the canonical menu.** Use `NonEditableContextMenu` or
+   `EditableContextMenu` from `features/context-menu-v3/`. Never use a bespoke `DropdownMenu` or a
+   raw `contextmenu` handler, and never keep both.
+4. **A menu without a source is a defect.** A menu with no `contentSource`, `entity` or
+   `surfaceName` opens with every verb dark. Fix these before unwired surfaces.
+5. **Lists built on `EntityListPage` inherit the row menu** through `ItemContextMenu`. They need
+   their own wiring only for surface-specific sections.
+6. **A window or overlay mounts its own menu.** It never delegates to the page under it.
+7. **Reuse the domain's action registry.** Never create a second one.
+8. **Secret-bearing surfaces follow `VaultContextMenu`.** Pass `getApplicationScope`, force
+   `selection: ""`, put names and field keys in the content (never values or notes), and pass no
+   `entity`.
+9. **Done means the menu opens clean.** The console shows no `INERT MENU` or
+   `VALUE MAPPING GAP` scream.
+10. **Chat is a universal agent host.** Never bind a page-agent roster to it.
+11. **Anything with an id shows it through the one canonical id component** (display plus one-click
+    copy, in `@ai-matrx/design-system`). Never hand-built id text, never Copy ID buried in a menu;
+    Peek carries it for every record, and a guard refuses new hand-built id displays.
+12. **Flagship and first-run screens get a bespoke elevated stage**, not the 28px app-chrome controls:
+    display type, giant inputs, a living background, real-data animation, inside the feature folder
+    with theme and motion tokens. The brief names the champions; 3+ screenshot-critique rounds
+    precede any showing.
+13. **Before a link goes to Arman, every screen on its path is walked at the Steve Jobs bar** by an
+    Opus reviewer who fixes what it finds, then a fresh user walk confirms.
+14. **Admin tables filter, search and sort on the server** (controlled mode, footer total = server
+    total), and people are picked by name or email, never by an id input.
+15. **Wasted vertical space is the worst sin:** header rows collapse into the app header or one
+    toolbar, buttons are mostly icons with short text, a button can carry status and action
+    together, and every status shown is backed by real state.
+16. **A new output style or menu layout is a NEW function used only by the new path.** Never thin or
+    rewrite a shared builder (`buildAgentPayload`, the Alchemy menus) that other hosts go through.
+    Before changing one, diff the old render path element by element against a baseline commit and
+    keep every element a home; when tests fail after a redesign, read every deleted assertion, since
+    each is a lost feature. Guard the real host shape, and fix forward, never revert.
+<!-- rules:stamp-end -->
 
 `WindowPanel`, the window manager (`windowManager` slice), the tray, pop-out, the three phone presentations and window persistence are the **npm package `@ai-matrx/summon`** (source `../aidream/apps/shared/summon/src/window`, `src/core`, `src/persistence`; guides in the package `README.md` and `FEATURE.md`). This repo no longer contains that engine. What stays here: the **window components** (`features/window-panels/windows/**`), the **Tools grid**, **tray previews**, the **Detail primitive** host and the app's wiring. Deep reference for what stays: [`features/window-panels/FEATURE.md`](../../../features/window-panels/FEATURE.md).
 
@@ -17,7 +60,7 @@ Opening, registering and closing an overlay is the [`overlay-system`](../overlay
 - Tray, minimized cards, `windowManager` state, reveal, silent-render guard → [tray-and-window-manager.md](tray-and-window-manager.md)
 - Save/restore, `window.preservation`, `onCollectData`, `ephemeral`, `?panels=` links → [persistence.md](persistence.md)
 - Phone presentation (`window.mobile`) → [mobile-presentation.md](mobile-presentation.md)
-- Creating or changing a window → `window-panel-authoring` skill; deleting one → `remove-window-panel` skill.
+- Creating or changing a window → `window-panel-authoring` skill; deleting one → `window-panel-authoring` skill (removing.md).
 
 ## Mental model
 

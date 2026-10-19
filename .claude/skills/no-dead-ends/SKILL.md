@@ -1,5 +1,6 @@
 ---
 name: no-dead-ends
+subject: policies/no-dead-ends
 description: "Recipe for THE DOOR LAW (every record the UI names opens; every detected problem ships its fix) and THE INVENTORY LAW. Use before building or fixing a surface that names a record or flags a problem (cell, row, dialog, badge, warning, id, count), or on 'no link to X', 'why can't I click this', 'dead end', EntityRef, peek. NOT for page chrome (use core-route-headers)."
 ---
 

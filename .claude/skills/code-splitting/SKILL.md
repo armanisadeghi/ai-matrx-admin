@@ -1,5 +1,6 @@
 ---
 name: code-splitting
+subject: matrx-frontend:.claude/skills/code-splitting
 description: "next/dynamic code splitting and build-graph cost; first stop for build failures. Use before lazy-loading or deferring a heavy component, adding a dynamic import, React.lazy, or ssr: false; on 'window is not defined' or a hydration mismatch; shrinking the bundle; or on 'build failed', OOM, SIGKILL, a slower build, or 'Collecting page data'."
 ---
 

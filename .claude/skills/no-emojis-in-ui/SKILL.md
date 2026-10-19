@@ -1,5 +1,6 @@
 ---
 name: no-emojis-in-ui
+subject: intelligence/pattern-patrols
 description: "Emoji and Unicode-glyph removal for Lucide-only UI (Pattern Patrol P6). Use when running a P6 patrol, a UI edit meets an emoji or icon glyph in TSX, or asked to enforce Lucide-only icons."
 ---
 

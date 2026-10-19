@@ -19,7 +19,6 @@ import type { ServedInput } from "@ai-matrx/chat/mandates/invoke/served-input";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Button, Tabs } from "@ai-matrx/design-system/controls";
-import { toolPriceText } from "@ai-matrx/agents/tools";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -125,7 +124,6 @@ function LaneBox({
 
   const approval = view?.status === "needs_approval" ? (view.approval as ScreenRunApproval | null) : null;
   const running = view != null && (view.status === "queued" || view.status === "running" || view.status === "waiting");
-  const price = toolPriceText({ price_hint_points: form.facts.priceHintPoints });
 
   return (
     <div className="flex flex-col gap-5" data-tool-lane={lane.id} data-tool-job={jobKey}>
@@ -148,7 +146,6 @@ function LaneBox({
         submitLabel={form.facts.submitLabel || undefined}
         size="standard"
         autoFocus
-        footer={price && !view ? <span className="text-xs text-muted-foreground" data-tool-price="">{price}</span> : undefined}
       />
       {finder.state.phase !== "idle" ? (
         <div className="flex flex-wrap items-center gap-2" role="status" aria-live="polite" data-tool-finder={finder.state.phase}>

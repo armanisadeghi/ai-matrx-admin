@@ -626,9 +626,9 @@ export const WORK_ITEMS: BoardItemType[] = [
     // Room for the notes core: modes + tools, the editor, metadata and save strip.
     defaultSize: { w: 560, h: 620 },
     matches: (s) => isEntity(s, "note"),
-    // Page layout: the tile grows until the note's editor no longer scrolls (the notes core keeps its
-    // own scroller, so the tile grows around it rather than the body laying out at its natural height).
-    autoHeight: () => "fill",
+    // Page layout: the note reads as a card at its natural height (no notes toolbar, menu or second
+    // title); a press opens the real editor in place (NotePageCard).
+    autoHeight: () => true,
     Body: NoteItemBody,
     Face: NoteFace,
     TitleField: NoteTileTitle,

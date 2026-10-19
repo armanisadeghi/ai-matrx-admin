@@ -1,5 +1,6 @@
 ---
 name: ask-arman
+subject: platform/question-desk
 type: Skill
 title: "ask-arman — the homework gate, the Question Desk, and the interview"
 description: "The gate and path for any question an agent wants Arman to decide. Use when about to ask him anything, ending a turn on a question for him, writing 'needs Arman's decision', marking work blocked on him, or on /ask-arman. NOT for a step only he can perform (use a guided session)."

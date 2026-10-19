@@ -23,7 +23,7 @@ import { useEffect, useRef } from "react";
 import { BellRingTapButton, BellTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
-import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
+import { useOpenAuthGateDialog } from "@ai-matrx/chat/host/window-openers";
 import { useInboxCounts } from "../useInbox";
 import { useNotificationsToggle } from "../canvas/notificationsKind";
 

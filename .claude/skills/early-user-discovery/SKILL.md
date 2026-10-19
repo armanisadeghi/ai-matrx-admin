@@ -1,5 +1,6 @@
 ---
 name: early-user-discovery
+subject: skills/early-user-discovery
 type: Skill
 title: Early user discovery and founder feedback trials
 description: "Early-user discovery and feedback trials. Use when reviewing unfamiliar AI Matrx accounts, classifying owner relationships, recommending trial plans, or running approved outreach and reply checks."

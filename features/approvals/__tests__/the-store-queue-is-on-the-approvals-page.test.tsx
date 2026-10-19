@@ -141,7 +141,6 @@ async function mockRpc(fn: string, args: Record<string, unknown>) {
         ? { data: { id: VISIT, patient: "Robert Chen", status: "Scheduled" }, error: null }
         : { data: null, error: null };
     case "work_approval_decide":
-      console.log("DECIDE", JSON.stringify(args));
       decideCalls.push(args);
       pending = pending.filter((id) => id !== args.p_approval_id);
       return {
@@ -191,13 +190,18 @@ function mockRecordsDataSource() {
   };
 }
 // `store-door.ts` reads the light `/helpers` entry; the root re-exports the same helper.
-// Both are stubbed so whichever entry a module imports reaches these doors.
+// All entries are stubbed so whichever entry a module imports reaches these doors.
 jest.mock("@ai-matrx/records-ui", () => ({
   ...jest.requireActual("@ai-matrx/records-ui"),
   recordsDataSource: () => mockRecordsDataSource(),
 }));
 jest.mock("@ai-matrx/records-ui/helpers", () => ({
   ...jest.requireActual("@ai-matrx/records-ui/helpers"),
+  recordsDataSource: () => mockRecordsDataSource(),
+}));
+// `applyRecordChange.ts` (the one decide function) reads the `/data-source` entry.
+jest.mock("@ai-matrx/records-ui/data-source", () => ({
+  ...jest.requireActual("@ai-matrx/records-ui/data-source"),
   recordsDataSource: () => mockRecordsDataSource(),
 }));
 // The assists ledger answers an empty page: this suite is about the store's rows.
@@ -267,7 +271,7 @@ async function settle(times = 30) {
 async function until(what: string, ok: () => boolean, timeoutMs = 10_000) {
   const start = Date.now();
   while (!ok()) {
-    if (Date.now() - start > timeoutMs) { console.log("TOASTS", JSON.stringify(require("@/lib/toast").toast.error.mock.calls), JSON.stringify(require("@/lib/toast").toast.success.mock.calls)); console.log("DUMP", decideCalls.length, pending.join(","), (container?.textContent ?? "").slice(0,500), "BODY", document.body.textContent?.slice(0,400)); throw new Error(`never happened: ${what}`); }
+    if (Date.now() - start > timeoutMs) throw new Error(`never happened: ${what}`);
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });

@@ -1,5 +1,6 @@
 ---
 name: settings-truth-audit
+subject: account/settings
 type: Skill
 title: "settings-truth-audit — prove every setting is read, honest, previewable and reachable from where it acts"
 description: "Audit-and-fix method for one user setting area across every repo. Use when a setting seems ignored, duplicated or confusing, on 'audit the X settings' or 'why doesn't my X setting apply', or as a lane of the settings sweep. NOT for adding a new setting (use build-sub-feature)."

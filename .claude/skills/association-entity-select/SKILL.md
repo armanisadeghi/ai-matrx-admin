@@ -1,5 +1,6 @@
 ---
 name: association-entity-select
+subject: matrx-frontend:.claude/skills/association-entity-select
 description: "AssociationEntitySelect, the name dropdown for the note, session, chat, or document a panel is bound to. Use when a surface must show that name and let the user rename, switch, unlink, or add new ('add a note switcher', 'show the session name'). NOT for count cards or row lists (use canonical-associations)."
 ---
 

@@ -12,16 +12,16 @@ const BY_CODE: Record<string, string> = {
   unknown_renderer: "That renderer isn't available. Pick another one.",
   wrong_organization: "This video belongs to another organization. Switch organization, then try again.",
   organization_required: "Pick an organization first, then try again.",
-  render_fleet_unavailable: "The render fleet isn't available right now. Nothing was charged for the render.",
-  render_unavailable: "Rendering isn't available right now. Nothing was charged for the render.",
-  render_failed: "The render didn't finish. Nothing was charged for it.",
-  engine_unavailable: "The video engine isn't ready on the server yet. Nothing was charged.",
-  clone_plan_failed: "The clone could not be planned. Nothing was generated or charged.",
+  render_fleet_unavailable: "The render fleet isn't available right now. Try again in a moment.",
+  render_unavailable: "Rendering isn't available right now. Try again in a moment.",
+  render_failed: "The render didn't finish. Try again.",
+  engine_unavailable: "The video engine isn't ready on the server yet. Try again in a moment.",
+  clone_plan_failed: "The clone could not be planned. Nothing was generated.",
   forbidden: "You can't change this video.",
   not_found: "This video wasn't found.",
 };
 
-const GENERIC = "That didn't finish. Nothing more was charged.";
+const GENERIC = "That didn't finish. Try again.";
 
 /** The words a person sees for a typed code + the server's message. */
 export function plainRenderMessage(code: string | null | undefined, message?: string | null): string {

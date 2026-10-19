@@ -2,7 +2,7 @@
   "packVersion": 1,
   "catalogueId": "SP0363",
   "version": 6,
-  "title": "Design Tokens Board",
+  "title": "Design system board",
   "description": "Product teams: colours, type, spacing, corners and shadows as one editable board.",
   "forWho": "Product teams keeping one design system",
   "icon": {
@@ -320,7 +320,7 @@
             "values": {
               "name": "border",
               "group": "Lines",
-              "value": "{\"light\":\"#8a93a5\",\"dark\":\"#5d6679\"}",
+              "value": "{\"light\":\"#8a93a5\",\"dark\":\"#5d6679\",\"min\":3}",
               "usage_note": "Edges of controls and outline buttons; 3:1 so they are found.",
               "reads_on": "background"
             }
@@ -330,7 +330,7 @@
             "values": {
               "name": "input",
               "group": "Lines",
-              "value": "{\"light\":\"#646d80\",\"dark\":\"#8d97aa\"}",
+              "value": "{\"light\":\"#646d80\",\"dark\":\"#8d97aa\",\"min\":3}",
               "usage_note": "The outline of a field and an off switch.",
               "reads_on": "card"
             }
@@ -340,7 +340,7 @@
             "values": {
               "name": "divider",
               "group": "Lines",
-              "value": "{\"light\":\"#e2e6ee\",\"dark\":\"#262c38\"}",
+              "value": "{\"light\":\"#e2e6ee\",\"dark\":\"#262c38\",\"min\":3}",
               "usage_note": "Hairlines between rows and around cards. Decorative only."
             }
           },
@@ -349,7 +349,7 @@
             "values": {
               "name": "ring",
               "group": "Lines",
-              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#8aa4ff\"}",
+              "value": "{\"light\":\"#2f5bea\",\"dark\":\"#8aa4ff\",\"min\":3}",
               "usage_note": "Keyboard focus. Always visible, never removed.",
               "reads_on": "background"
             }
@@ -1414,7 +1414,7 @@
           {
             "kind": "note",
             "title": "Assets",
-            "text": "Assets\n\nKeep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
+            "text": "Keep the logo files, icon set and brand photography here, or on the Files page. Name each file for what it is and where it is used.\n",
             "size": {
               "w": 1020,
               "h": 280

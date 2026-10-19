@@ -1,5 +1,6 @@
 ---
 name: protected-resources
+subject: platform/access
 description: "Super-Admin-only lock-down pattern. Use before touching admin.admins, admin.admin_audit_log, is_super_admin() / requireSuperAdmin() / selectIsSuperAdmin, app/api/admin/admins/**, app/(admin)/administration/users/admins/**, the admin RPCs (admin_promote, admin_update, admin_revoke, admin_list, admin_list_audit, admin_find_user_by_email), createAdminClient(), a new RLS policy, SECURITY DEFINER RPC, or admin-gated route, or when locking a sensitive table to Super Admin."
 ---
 

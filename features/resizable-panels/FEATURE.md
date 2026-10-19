@@ -1,3 +1,7 @@
+---
+type: Feature
+subject: matrx-frontend:features/resizable-panels
+---
 # FEATURE.md — `resizable-panels`
 
 **Status:** `active`

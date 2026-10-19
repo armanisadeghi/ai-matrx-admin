@@ -53,7 +53,6 @@
  * detail row.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, MessagesSquare } from "lucide-react";
 
@@ -72,10 +71,8 @@ import type { AgentRunFacts } from "@/features/workflow-runtime/agent-run-output
 // 2026-09-07). `compact` is the elapsed-work voice: 250ms / 5.2s / 5m 30s /
 // 1h 02m. THE UNIT LAW puts the unit in the name.
 import {
-  formatCost,
   formatCount,
   formatDurationMs,
-  type CostUnit,
 } from "@ai-matrx/kit/format";
 
 import { DisclosureHeader } from "@ai-matrx/design-system/controls";
@@ -119,7 +116,7 @@ interface Fact {
   value: string;
 }
 
-function factList(facts: AgentRunFacts, unit: CostUnit, rate: number | null): Fact[] {
+function factList(facts: AgentRunFacts): Fact[] {
   const out: Fact[] = [];
   if (facts.models.length > 0) {
     out.push({ label: "Model", value: facts.models.join(", ") });
@@ -132,9 +129,6 @@ function factList(facts: AgentRunFacts, unit: CostUnit, rate: number | null): Fa
   }
   if (facts.toolCalls !== null) {
     out.push({ label: "Tool calls", value: formatCount(facts.toolCalls) });
-  }
-  if (facts.costUsd !== null) {
-    out.push({ label: "Cost", value: formatCost(facts.costUsd, { rate, unit }) });
   }
   if (facts.inputTokens !== null || facts.outputTokens !== null) {
     out.push({
@@ -164,7 +158,6 @@ function summaryLine(facts: AgentRunFacts): string | null {
 }
 
 function RunDetail({ facts }: { facts: AgentRunFacts }) {
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const [open, setOpen] = useState(false);
   const detailRef = useRef<HTMLDivElement>(null);
   // The row sits at the BOTTOM of a bounded, scrollable host (the workflow
@@ -174,7 +167,7 @@ function RunDetail({ facts }: { facts: AgentRunFacts }) {
   useEffect(() => {
     if (open) detailRef.current?.scrollIntoView({ block: "nearest" });
   }, [open]);
-  const items = factList(facts, costUnit, costRate);
+  const items = factList(facts);
   // Nothing to tell and nowhere to go — render no row at all rather than a
   // control that opens onto an empty box.
   if (items.length === 0 && !facts.conversationId) return null;

@@ -23,7 +23,7 @@ import { getMoreCount, inputWords, type DataFetchInput, type DataFetchResult } f
 import { useOpenDataChangesWindow } from "@/features/overlays/definitions/dataChangesWindow.overlay";
 
 import { barFacts } from "./barFacts";
-import { fetchSpecKey, limitSettingHref, liveRowCountKey, refreshHistoryKey, useDataSources, useFetchEstimate, useFetchSpec, useLiveRowCount } from "./hooks";
+import { fetchSpecKey, limitSettingHref, liveRowCountKey, refreshHistoryKey, useDataSources, useFetchSpec, useLiveRowCount } from "./hooks";
 import { isOpenJob } from "./contract";
 import { recordNoun } from "./inputWords";
 import { RefusalView } from "./RefusalView";
@@ -109,7 +109,6 @@ function Bar({
   const catalog = useDataSources(organizationId);
   const specRead = useFetchSpec(tableId);
   const queryClient = useQueryClient();
-  const estimate = useFetchEstimate();
   const spec = specRead.data ?? null;
   const sourceKey = spec?.sourceKey ?? fetched?.sourceKey ?? null;
   const catalogSource = catalog.data?.sources.find((s) => s.key === sourceKey) ?? null;
@@ -159,11 +158,8 @@ function Bar({
   const when = spec?.finishedAt ?? spec?.createdAt ?? fetched?.fetchedAt ?? "";
   const facts = barFacts({ liveRows, spec, rememberedRows: fetched?.rows ?? null, refreshCount, limit: limit?.value ?? null, runBusy: run.status === "running" });
   const { rows, busy, allCount, showAll } = facts;
-  const refreshCost = estimate(catalogSource, refreshCount);
   // Refresh re-fetches the stored count (the newest N); when the table holds more than that, "all" is its own honest choice.
   const noun = recordNoun(label);
-  const allCost = showAll ? estimate(catalogSource, allCount) : null;
-  const moreCost = estimate(catalogSource, moreCount);
   const textValues = fetched?.valuesAsText ?? 0;
   const trimmed = fetched?.limitApplied ?? null;
   const notices = fetched?.notices ?? [];
@@ -195,7 +191,6 @@ function Bar({
             <Button
               variant="quiet"
               icon={<RefreshCw className={busy ? "h-4 w-4 animate-spin" : "h-4 w-4"} />}
-              meta={refreshCost ?? undefined}
               disabled={busy || !organizationId}
               onClick={() => go(refreshCount)}
               data-fetch-refresh=""
@@ -213,7 +208,6 @@ function Bar({
           <Button
             variant="quiet"
             icon={<RefreshCw className="h-4 w-4" />}
-            meta={allCost ?? undefined}
             disabled={busy || !organizationId}
             onClick={() => go(allCount)}
             data-fetch-refresh-all=""
@@ -226,7 +220,6 @@ function Bar({
             <Button
               variant="quiet"
               icon={<DownloadCloud className="h-4 w-4" />}
-              meta={moreCost ?? undefined}
               disabled={busy || !organizationId || atLimit}
               onClick={() => go(moreCount)}
               data-fetch-more=""
@@ -235,7 +228,7 @@ function Bar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {atLimit ? `At your limit of ${formatCount(limit?.value ?? 0)}` : `Fetch up to ${formatCount(moreCount)} into this table (billed for all)`}
+            {atLimit ? `At your limit of ${formatCount(limit?.value ?? 0)}` : `Fetch up to ${formatCount(moreCount)} into this table`}
           </TooltipContent>
         </Tooltip>
         {facts.changesJob && !busy && (

@@ -1,5 +1,6 @@
 ---
 name: efficient-tap-button-migration
+subject: matrx-frontend:.claude/skills/efficient-tap-button-migration
 description: "Migrating custom icon buttons to TapButtons. Use when replacing a raw <button>, IconButton, or className-styled icon; migrating header, toolbar, or footer icons; lazy-splitting a button's highlight decoration; or on 'tap targets', 'efficiency update', 'lazy split', or making a small component production-ready."
 ---
 
