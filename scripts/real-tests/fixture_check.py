@@ -378,10 +378,10 @@ def print_result(result: Dict[str, Any]) -> None:
     print(f"fixture check {pb}: {'MATCH, every fixture equals the manifest' if result['ok'] else f'{n} difference(s)'}")
 
 
-def require_fixtures(playbook: str, accept_drift: Optional[str]) -> Dict[str, Any]:
+def require_fixtures(playbook: str, accept_drift: Optional[str], reader: Optional[Reader] = None) -> Dict[str, Any]:
     """Run by every sender before it sends. Prints the check; exits 3 on any difference unless the runner gave
     --accept-drift <reason>. Returns the record the run identity stores."""
-    result = check(playbook)
+    result = check(playbook, reader=reader)
     print_result(result)
     record = {"playbook": playbook, "ok": result["ok"], "differences": result["differences"],
               "accepted_drift": None, "fixtures": {}}
