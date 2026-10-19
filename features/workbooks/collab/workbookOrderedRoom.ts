@@ -7,6 +7,7 @@
 import { ICommandService, IResourceLoaderService, IUndoRedoService, IUniverInstanceService, type Univer } from "@univerjs/core";
 import { IDefinedNamesService } from "@univerjs/engine-formula";
 import { SelectionMoveType, SheetsSelectionsService } from "@univerjs/preset-sheets-core";
+import { SheetsFilterService } from "@univerjs/preset-sheets-filter";
 import type { AwarenessState, OpOfflineState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
 import {
   startWorkbookOtRoom,
@@ -91,6 +92,15 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     definedNames: (unitId) => definedNames.getDefinedNameMap(unitId) as Record<string, { name?: string }> | undefined,
     saveUnit: (unitId) => loader.saveUnit(unitId),
     undoRedo: () => undo,
+    // Univer's filter grows its own range under a value written below it (no mutation): the port sends that growth
+    // and keeps a peer's write from growing it again here (office C5e)
+    filterRange: (unitId, subUnitId) => {
+      try {
+        return injector.get(SheetsFilterService).getFilterModel(unitId, subUnitId)?.getRange() ?? null;
+      } catch {
+        return null; // no filter plugin on this editor
+      }
+    },
     // a peer's row/column change carries this seat's selection along, never past the sheet's edge
     selections: {
       sheetId: activeSheetId,
