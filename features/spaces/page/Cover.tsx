@@ -3,8 +3,9 @@
 // features/spaces/page/Cover.tsx — the full-bleed cover (A4): gallery / upload / link, Change cover,
 // Reposition (drag, Save position / Cancel), Remove.
 //
-// The gallery is Notion's: a "Color & gradient" row drawn with CSS and a row of landscape pictures
-// bundled with the feature (page/gallery.ts) — both stored as `gallery:<key>`. Uploads go through our
+// The gallery is Notion's: a "Color & gradient" row drawn with CSS, a row of landscape pictures bundled with
+// the feature, then the platform cover library by category (photos on our CDN, lib/spaces-blocks/cover-library)
+// — all stored as `gallery:<key>`. Uploads go through our
 // file handler and are stored as `{ fileId }`.
 
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
@@ -12,27 +13,16 @@ import { Button, Field, Tabs } from "@ai-matrx/design-system/controls";
 import { useRef, useState } from "react";
 
 import type { SpaceDoc } from "../contract";
-import { COVER_PHOTOS, galleryImage } from "./gallery";
+import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
+
+import { COVER_GALLERY, COVER_PHOTOS, galleryImage, libraryCoverGroups } from "./gallery";
 import { uploadSpaceImage, useSpaceMediaUrl } from "./media";
 
 type CoverValue = NonNullable<SpaceDoc["cover"]>;
 
-export const COVER_GALLERY: Record<string, string> = {
-  "gradient-sunset": "linear-gradient(135deg, #f6d365 0%, #fda085 45%, #2f7d6d 100%)",
-  "gradient-ocean": "linear-gradient(135deg, #2e3192 0%, #1bffff 100%)",
-  "gradient-dusk": "linear-gradient(135deg, #42275a 0%, #734b6d 100%)",
-  "gradient-meadow": "linear-gradient(135deg, #134e5e 0%, #71b280 100%)",
-  "gradient-peach": "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-  "gradient-sky": "linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%)",
-  "solid-red": "#e16259",
-  "solid-yellow": "#dfab01",
-  "solid-blue": "#0b6e99",
-  "solid-beige": "#e8dfd0",
-  "solid-green": "#4d6461",
-  "solid-gray": "#9b9a97",
-};
 
 const GALLERY_KEYS = Object.keys(COVER_GALLERY);
+const CATEGORY_LABEL = new Map<string, string>(SPACE_TEMPLATE_CATEGORIES.map((c) => [c.key, c.label]));
 
 function coverStyle(cover: CoverValue, url: string | null, offsetY: number): React.CSSProperties {
   if ("url" in cover && cover.url.startsWith("gallery:") && !galleryImage(cover.url)) {
@@ -74,7 +64,7 @@ export function CoverPicker({ onPick, children }: { onPick: (cover: CoverValue |
           </Button>
         </div>
         {tab === "gallery" ? (
-          <div className="p-3">
+          <div className="max-h-[26rem] overflow-y-auto p-3" data-cover-gallery="">
             <p className="mb-2 type-secondary text-muted-foreground">Color &amp; gradient</p>
             <div className="grid grid-cols-4 gap-2">
               {GALLERY_KEYS.map((key) => (
@@ -104,6 +94,27 @@ export function CoverPicker({ onPick, children }: { onPick: (cover: CoverValue |
                 />
               ))}
             </div>
+            {libraryCoverGroups().map((group) => (
+              <div key={group.category} data-cover-library-group={group.category}>
+                <p className="mt-3 mb-2 type-secondary text-muted-foreground">{CATEGORY_LABEL.get(group.category) ?? group.category}</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {group.covers.map((photo) => (
+                    <button
+                      key={photo.key}
+                      type="button"
+                      data-cover-option={photo.key}
+                      aria-label={photo.alt}
+                      title={`${photo.alt} · Photo: ${photo.credit}`}
+                      className="h-16 overflow-hidden rounded hover:opacity-85"
+                      style={{ background: photo.color ?? undefined }}
+                      onClick={() => pick({ url: `gallery:${photo.key}`, offsetY: 50 })}
+                    >
+                      <img src={photo.thumb} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : null}
         {tab === "upload" ? (

@@ -54,6 +54,15 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   and records-ui's embedded skeleton, with the controls of `frameControls(isChart, { shape, published })` — the one decision
   `DatabaseFrame` also gates every control through. Page columns stack by a container query (`spaces-content`, 368px content
   width = 560px less gutters), never a ResizeObserver after hydration. Guard: data/__tests__/a-loading-database-block-is-the-live-frame.
+- 2026-10-19 — COVER LIBRARY. **Platform cover photos live in `lib/spaces-blocks/cover-library.json`** (208 Pexels-License
+  photos, one per template pack plus extras, every category): each is platform media in the file service (Matrx System org,
+  `system-files/spaces-covers/`, published to the web; `fileId` is identity, `src`/`thumb` the durable CDN 2000px / 480px
+  copies; credit + licence per photo). Stored like any gallery cover, `{ url: "gallery:<key>" }`; `page/gallery.ts`
+  `galleryImage` resolves bundled and library keys (and now holds `COVER_GALLERY`). The cover picker's Gallery tab lists the
+  library by category; public gallery cards draw a cover strip (`public/SpaceTemplateIcon` `SpaceTemplateCover`). The pack
+  checker refuses a `gallery:` key that names no cover and a root page whose cover differs from the template's. Sourcing and
+  upload tooling: `scripts/spaces-cover-library/`. Tests `lib/spaces-blocks/__tests__/cover-library.test.ts` (incl. no two
+  non-design packs share a cover) and `templates/__tests__/cover-library-install.test.ts`.
 - 2026-10-18 — ADVERSARIAL-1 fixes. **Template search is ONE pure module, `lib/spaces-blocks/template-search.ts`**
   (`searchTemplates(items, query, faceOf)`; the public /templates gallery imports it too): the query is cut into words,
   each word matches its synonyms (to do/todo/task/checklist, kanban/board, crm/client/customer/lead, calendar/planner/
