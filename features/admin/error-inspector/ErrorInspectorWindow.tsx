@@ -28,6 +28,7 @@ import { useCapturedErrors } from "@/lib/diagnostics/useCapturedErrors";
 import {
   clearCapturedErrors,
   dismissCapturedError,
+  getStatsSnapshot,
   markAllSeen,
   type CapturedError,
 } from "@/lib/diagnostics/errorCaptureStore";
@@ -51,14 +52,17 @@ import {
   capturedErrorsToInvestigationPrompt,
   sourceLabel,
 } from "@/lib/diagnostics/buildCapturedErrorPayload";
+import {
+  badgeTierFor,
+  filterInspectorErrors,
+  type TierFilter,
+} from "@/lib/diagnostics/errorInspectorView";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface ErrorInspectorWindowProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-type TierFilter = ErrorTier | "all";
 
 /** THE relative-time voice: @ai-matrx/kit/format owns "3m ago". */
 function relativeTime(ms: number): string {
@@ -120,7 +124,11 @@ export default function ErrorInspectorWindow({
   const isAdmin = useAppSelector(selectIsAdminDebugger);
   const errors = useCapturedErrors();
   const [query, setQuery] = useState("");
-  const [tierFilter, setTierFilter] = useState<TierFilter>("all");
+  // Opens on the tier the badge was counting, so the number a person clicked
+  // is the number of rows they see (L32).
+  const [tierFilter, setTierFilter] = useState<TierFilter>(() =>
+    badgeTierFor(getStatsSnapshot()),
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Mark everything seen whenever the inspector is open (resets the badge).
@@ -139,26 +147,10 @@ export default function ErrorInspectorWindow({
     return c;
   }, [errors]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return errors.filter((e) => {
-      if (tierFilter !== "all" && e.tier !== tierFilter) return false;
-      if (!q) return true;
-      return [
-        e.message,
-        e.code,
-        e.relation,
-        e.schema,
-        e.operation,
-        e.source,
-        e.route,
-        e.details,
-        e.hint,
-      ]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q));
-    });
-  }, [errors, query, tierFilter]);
+  const filtered = useMemo(
+    () => filterInspectorErrors(errors, tierFilter, query),
+    [errors, query, tierFilter],
+  );
 
   const selected =
     filtered.find((e) => e.id === selectedId) ?? filtered[0] ?? null;
@@ -275,9 +267,9 @@ export default function ErrorInspectorWindow({
         <span className="flex items-center gap-1.5 min-w-0">
           <Bug className="h-4 w-4 text-primary shrink-0" />
           <span className="shrink-0">Error Inspector</span>
-          {errors.length > 0 && (
+          {filtered.length > 0 && (
             <span className="rounded-full bg-destructive/20 text-destructive-ink px-1.5 text-[11px] font-semibold shrink-0">
-              {errors.length}
+              {filtered.length}
               <ErrorAlchemyMenu />
             </span>
           )}
