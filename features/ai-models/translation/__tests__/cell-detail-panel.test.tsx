@@ -121,7 +121,9 @@ describe("nothing hidden", () => {
     expect(text()).toContain("https://docs.example.com/x");
     expect(text()).toContain("Metadata: origin");
     expect(text()).toContain("No agent run recorded for this draft");
-    expect(text()).toContain("Proven by a passing live test");
+    // the passing entry carries no server stamp (by/for_rule), so the door would not count it
+    expect(text()).toContain("Not proven by a live test");
+    expect(text()).toContain("Passing tests on record are for an earlier rule or not server-run");
     expect(text()).not.toContain("$");
     const chat = host!.querySelector('a[href="/administration/chat/cx-dashboard/conversations/105adb24-07e8-443c-9682-62034d7e988e"]');
     expect(chat).not.toBeNull();
