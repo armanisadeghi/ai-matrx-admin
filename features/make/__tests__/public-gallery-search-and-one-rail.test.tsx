@@ -70,7 +70,7 @@ jest.mock("next/navigation", () => {
   };
 });
 jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({ TemplatePackPreview: () => <div data-space-template-preview="" /> }));
-jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null }));
+jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null, SpaceTemplateCover: () => null }));
 jest.mock("../gallery/TemplateLivePreview", () => ({ TemplateLivePreview: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 jest.mock("../gallery/TemplateUseAction", () => ({
   TemplateUseAction: () => <a>Use this template</a>,

@@ -77,7 +77,7 @@ jest.mock("@/features/spaces/public/TemplatePackPreview", () => ({
 }));
 // The table templates' live preview loads records-ui in the browser; its server HTML is its children.
 jest.mock("../gallery/TemplateLivePreview", () => ({ TemplateLivePreview: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
-jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null }));
+jest.mock("@/features/spaces/public/SpaceTemplateIcon", () => ({ SpaceTemplateIcon: () => null, SpaceTemplateCover: () => null }));
 jest.mock("../gallery/TemplateUseAction", () => ({
   TemplateUseAction: ({ signUpHref }: { signUpHref: string }) => <a href={signUpHref}>Use this template</a>,
   SpaceTemplateUseAction: ({ signUpHref }: { signUpHref: string }) => <a href={signUpHref}>Use this template</a>,

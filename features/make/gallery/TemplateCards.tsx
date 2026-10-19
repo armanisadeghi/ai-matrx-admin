@@ -12,7 +12,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { SpaceTemplateIcon } from "@/features/spaces/public/SpaceTemplateIcon";
+import { SpaceTemplateCover, SpaceTemplateIcon } from "@/features/spaces/public/SpaceTemplateIcon";
 
 import { footprintLine, footprintParts, wordFor, type GalleryCard } from "./catalogue";
 import { spaceCategoryLabel } from "./publicGallery";
@@ -59,10 +59,10 @@ export function TemplateCardGrid({
 }
 
 /**
- * Space templates (card.space): a picture of the template — its main table with the first sample rows, drawn on
- * the server (`card.thumb`, the same rows the social image draws; ADVERSARIAL-2 #13: cards had no picture) — then
+ * Space templates (card.space): a picture of the template — its cover strip (the template's own photo or gradient),
+ * then its main table with the first sample rows, drawn on the server (`card.thumb`, the same rows the social image draws; ADVERSARIAL-2 #13: cards had no picture) — then
  * its icon, title, one line, and how many pages it makes. The picture frame has one fixed height on every card,
- * so a grid never moves and no image loads.
+ * so a grid never moves; the cover is a lazy 480px copy from our CDN.
  */
 export function SpaceTemplateCardGrid({
   cards,
@@ -84,13 +84,14 @@ export function SpaceTemplateCardGrid({
               data-space-category={card.space.category}
               className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <span className="relative block h-36 shrink-0 overflow-hidden border-b border-border bg-muted p-3" data-space-card-picture="">
+              <span className={`relative block h-36 shrink-0 overflow-hidden border-b border-border bg-muted p-3${card.space.cover ? " pt-12" : ""}`} data-space-card-picture="">
+                <SpaceTemplateCover cover={card.space.cover} className="absolute inset-x-0 top-0 block h-16 w-full" />
                 {card.thumb?.columns.length ? (
-                  <span className="block origin-top-left transition group-hover:-translate-y-0.5">
+                  <span className="relative block origin-top-left transition group-hover:-translate-y-0.5">
                     <TemplateThumb thumb={card.thumb} />
                   </span>
                 ) : (
-                  <span className="flex h-full items-center justify-center" aria-hidden="true">
+                  <span className="relative flex h-full items-center justify-center" aria-hidden="true">
                     <SpaceTemplateIcon media={card.space.icon} size={40} />
                   </span>
                 )}
