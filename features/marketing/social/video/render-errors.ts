@@ -25,11 +25,14 @@ const GENERIC = "That didn't finish. Try again.";
 
 /** The words a person sees for a typed code + the server's message. */
 export function plainRenderMessage(code: string | null | undefined, message?: string | null): string {
+  const m = (message ?? "").trim();
+  const plain = m && !TECHNICAL.test(m) && m.length <= 200 ? m : null;
+  // A failed render says WHY: the server's plain reason (a take that needs regenerating, a clip it cannot read) wins over
+  // the generic "didn't finish"; any other code keeps its fixed words.
+  if (code === "render_failed" && plain) return plain;
   const mapped = code ? BY_CODE[code] : undefined;
   if (mapped) return mapped;
-  const m = (message ?? "").trim();
-  if (m && !TECHNICAL.test(m) && m.length <= 200) return m;
-  return GENERIC;
+  return plain ?? GENERIC;
 }
 
 /** Code + message out of whatever was thrown (stream refusal, HTTP refusal, plain Error). */

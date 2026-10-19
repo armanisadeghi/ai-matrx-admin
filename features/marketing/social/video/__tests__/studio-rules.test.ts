@@ -73,6 +73,11 @@ describe("render messages", () => {
   it("uses the typed code's words", () => {
     expect(plainRenderMessage("local_render_disabled", "x")).toMatch(/turned off/);
   });
+  it("a failed render says its real reason when the server sends one in plain words (walk 4)", () => {
+    const reason = "A take's caption timing belongs to different words. Generate again so the takes and the script match, then render.";
+    expect(plainRenderMessage("render_failed", reason)).toBe(reason);
+    expect(plainRenderMessage("render_failed", null)).toMatch(/didn't finish/);
+  });
 });
 
 describe("text cuts", () => {
