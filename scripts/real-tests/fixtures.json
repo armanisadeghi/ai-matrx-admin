@@ -250,13 +250,13 @@
    "name": "Platform Routing Desk",
    "version_may_advance": true,
    "note": "pb02 call 6 edits then restores it, adding two versions per run: the version may advance, every content hash must still match",
-   "live_version": 4,
-   "live_version_id": "7cb5f1a1-4105-40f8-b66f-1764f136a728",
+   "live_version": 7,
+   "live_version_id": "defcb1e0-3a8d-4830-91c6-cd9c8cb58f59",
    "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
    "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
-   "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
-   "definition_sha256": "f93faa8b8d9c0c81369fb3fb73856ede15df6d43a5b4b5296b88916e37379e11",
+   "variables_sha256": "632c7c75d2f11636990323c59e948b855decfa6213b1cf53df88789064420658",
+   "definition_sha256": "43f5187171a9baef3c4616b181730d9bc785c9485e98b601fc04139f7b03d304",
    "tools": [
     "agent",
     "send_message"

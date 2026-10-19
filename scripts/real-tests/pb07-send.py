@@ -50,6 +50,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
+from scope_probe import with_scope  # noqa: E402
 from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
@@ -171,6 +172,7 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
 
 def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
     path, body, agent, cid = build(door)
+    body = with_scope(SERVER, "POST", path, body, SCOPE, door) or body
     if kind == "dry":
         body = {**body, "dry_run": True}
     sent_at = datetime.now(timezone.utc).isoformat()
