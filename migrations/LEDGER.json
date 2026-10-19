@@ -11599,6 +11599,12 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based.sql",
+      "checksum": "9f0ac1252ec210a334c266714ea2bcaafd49c2c902bd5de8d8f99df3ef23dc07",
+      "applied_at": "2026-10-19 19:30:37.377381+00"
     }
   }
 }
