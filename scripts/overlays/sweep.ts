@@ -109,7 +109,25 @@ async function sweepIds(page: Page, ids: readonly string[], opts: { settle: numb
   page.on("console", onConsole);
   page.on("pageerror", (e) => current.push(`pageerror: ${String(e).slice(0, 500)}`));
   const rows: Row[] = [];
+  // A dev server restart or HMR full reload mid-run navigates the page: wait for the hook again and
+  // retry that id once, instead of losing the whole run (2026-10-18, T2: one restart killed a run at id 160).
+  const recover = async (): Promise<void> => {
+    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await page.waitForFunction(() => { const h = (window as unknown as Partial<HookWindow>).__overlaysTest; return !!h && h.ids().length > 0; }, null, { timeout: 600_000 });
+  };
   for (const id of ids) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        await sweepOne(id);
+        break;
+      } catch (error) {
+        if (attempt === 1 || !/context was destroyed|navigation|Target closed|detached/i.test(String(error))) throw error;
+        console.log(`retry         ${id}  (page navigated: ${String(error).split("\n")[0].slice(0, 120)})`);
+        await recover();
+      }
+    }
+  }
+  async function sweepOne(id: string): Promise<void> {
     current = [];
     failed = [];
     const t0 = Date.now();
@@ -203,7 +221,8 @@ async function main(): Promise<void> {
   const ids: string[] = only ?? (await page.evaluate(() => (window as unknown as HookWindow).__overlaysTest.ids()));
   if (!argv.includes("--no-debug-mode")) console.log(`admin debug mode on: ${await ensureDebugMode(page)}`);
   console.log(`sweeping ${ids.length} overlays on ${route}`);
-  const rows = await sweepIds(page, ids, { settle, data });
+  // a retried id keeps its last row
+  const rows = [...new Map((await sweepIds(page, ids, { settle, data })).map((r) => [r.id, r] as const)).values()];
   await browser.close();
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify({ base, route, at: new Date().toISOString(), rows }, null, 2));
