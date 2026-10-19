@@ -32,3 +32,64 @@ export async function readBaseMoveJob(organizationId: string, jobId: string): Pr
   const { data } = await getJson<BaseMoveJobView>(`/base-move/jobs/${jobId}`, { organizationId });
   return data;
 }
+
+// ── snapshots and restores (AT-SNAPJOB, 2026-10-19) ─────────────────────────────────────────────────────────────────────
+// The same job and the same knob: above records.base_move_direct_max_rows a snapshot (or a restore) runs on the server in ONE
+// transaction (aidream `POST /base-move/snapshot-jobs` / `/restore-jobs`), each copy and archive pass lands a progress note,
+// and this reads them from `GET /base-move/jobs/{id}` once a second. Smaller bases stay on the direct path.
+
+export interface BaseJobProgress { table?: string; at?: number; of?: number; done?: number | null; total?: number | null; seconds?: number }
+export type BaseSnapshotJobView =
+  | { state: "running"; kind: "snapshot" | "restore"; phase: string; progress?: BaseJobProgress }
+  | { state: "done"; kind: "snapshot" | "restore"; result: Record<string, unknown>; seconds?: number | null }
+  | { state: "refused"; kind: "snapshot" | "restore"; code?: string | null; message: string };
+
+/** The progress line: "Copying Tasks (1 of 2): 275 of 1,050 rows… 6 s". */
+export function snapshotProgressLine(view: BaseSnapshotJobView | null, verb: "snapshot" | "restore"): string {
+  const start = verb === "snapshot" ? "Taking the snapshot…" : "Restoring as a new base…";
+  if (!view || view.state !== "running") return start;
+  const p = view.progress ?? {};
+  const secs = typeof p.seconds === "number" ? ` ${Math.round(p.seconds)} s` : "";
+  const which = p.table ? `${p.table}${p.of && p.of > 1 ? ` (${p.at} of ${p.of})` : ""}` : "";
+  if (view.phase === "copying" && which) {
+    const rows = typeof p.total === "number" ? `: ${(p.done ?? 0).toLocaleString()} of ${p.total.toLocaleString()} rows` : "";
+    return `Copying ${which}${rows}…${secs}`;
+  }
+  if (view.phase === "putting_away" && which) return `Putting away ${which}…${secs}`;
+  if (view.phase === "linking") return `Linking the copies…${secs}`;
+  return `${start}${secs}`;
+}
+
+export async function startBaseSnapshotJob(organizationId: string, args: { homeId: string; tables: Array<{ id: string; name: string }>; label: string }): Promise<string> {
+  const { data } = await postJson<{ job_id: string }>("/base-move/snapshot-jobs",
+    { organization_id: organizationId, home_id: args.homeId, tables: args.tables, label: args.label, origin: "manual" }, { organizationId });
+  return data.job_id;
+}
+
+export async function startSnapshotRestoreJob(organizationId: string, args: { snapshotId: string; tables: unknown[]; baseName: string }): Promise<string> {
+  const { data } = await postJson<{ job_id: string }>("/base-move/restore-jobs",
+    { organization_id: organizationId, snapshot_id: args.snapshotId, tables: args.tables, base_name: args.baseName }, { organizationId });
+  return data.job_id;
+}
+
+export async function readBaseSnapshotJob(organizationId: string, jobId: string): Promise<BaseSnapshotJobView> {
+  const { data } = await getJson<BaseSnapshotJobView>(`/base-move/jobs/${jobId}`, { organizationId });
+  return data;
+}
+
+/** Follow a job once a second until it lands or is refused; every running view goes to `onView`. */
+export async function followBaseSnapshotJob(organizationId: string, jobId: string, onView: (v: BaseSnapshotJobView) => void): Promise<BaseSnapshotJobView> {
+  for (;;) {
+    const view = await readBaseSnapshotJob(organizationId, jobId);
+    onView(view);
+    if (view.state !== "running") return view;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+/** A restore's size is the snapshot's own record counts (its copies are put away, so a live count reads them as empty). */
+export async function planSnapshotRestore(tables: ReadonlyArray<{ records?: number | null }>): Promise<{ rows: number; job: boolean }> {
+  const max = await knobInt("records", "base_move_direct_max_rows");
+  const rows = tables.reduce((n, t) => n + (Number(t.records) || 0), 0);
+  return { rows, job: rows > max };
+}

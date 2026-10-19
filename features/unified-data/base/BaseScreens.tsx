@@ -29,7 +29,10 @@ import { useOrganizationRequired } from "@/features/organizations/useOrganizatio
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { makeEmptyBase } from "./makeEmptyBase";
-import { planBaseMove, readBaseMoveJob, startBaseMoveJob } from "./baseMoveJob";
+import {
+  followBaseSnapshotJob, planBaseMove, planSnapshotRestore, readBaseMoveJob, snapshotProgressLine, startBaseMoveJob, startBaseSnapshotJob, startSnapshotRestoreJob,
+  type BaseSnapshotJobView,
+} from "./baseMoveJob";
 import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
@@ -542,10 +545,11 @@ function DuplicateDialog({ open, onClose, name, tables, organizationId, identity
 
 // ── snapshots ───────────────────────────────────────────────────────────────────────────────
 
-function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, identity, onNeedIdentity }: {
+export function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, identity, onNeedIdentity }: {
   open: boolean; onClose: () => void; homeId: string; organizationId: string; name: string; tables: HomeTable[]; identity: BaseIdentity | null; onNeedIdentity: () => Promise<BaseIdentity>;
 }) {
   const port = useBasePort();
+  const client = useRecordsClient();
   const router = useRouter();
   const [base, setBase] = useState<BaseIdentity | null>(identity);
   const [rows, setRows] = useState<BaseSnapshotRow[]>([]);
@@ -571,6 +575,18 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
       const b = base ?? (await onNeedIdentity());
       setBase(b);
       const when = label.trim() || new Date().toLocaleString();
+      const picked = tables.map((t) => ({ id: t.id, name: t.name }));
+      // A big base (above records.base_move_direct_max_rows) is snapshotted by the server job: one transaction, a progress line.
+      const plan = await planBaseMove(client, picked.map((t) => t.id));
+      if (plan.job) {
+        const jobId = await startBaseSnapshotJob(organizationId, { homeId, tables: picked, label: when });
+        const view = await followBaseSnapshotJob(organizationId, jobId, (v) => setBusy(snapshotProgressLine(v, "snapshot")));
+        if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The snapshot stopped before it finished."); return; }
+        const result = view.result as { label?: string; origin?: "manual" | "schedule"; tables?: BaseSnapshotRow["tables"] };
+        await saveSnapshot(organizationId, b.id, { label: result.label ?? when, origin: result.origin ?? "manual", tables: result.tables ?? [] });
+        setLabel(""); await load(b);
+        return;
+      }
       const res = await snapshotBase(port, { organizationId, tables: tables.map((t) => ({ id: t.id, name: t.name })), label: when, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
       if (!res.ok) {
         // `leftInLists` (@ai-matrx/records ≥ the W4 fix): copies the snapshot could not put away. Read loosely so this
@@ -588,6 +604,20 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
   const restore = async (s: BaseSnapshotRow) => {
     setBusy("Restoring as a new base…"); setNote(null);
     const restoredOn = new Date().toLocaleDateString();
+    const plan = await planSnapshotRestore(s.tables).catch(() => ({ rows: 0, job: false }));
+    if (plan.job) {
+      try {
+        const jobId = await startSnapshotRestoreJob(organizationId, { snapshotId: s.id, tables: s.tables, baseName: restoredBaseName(name, restoredOn) });
+        const view: BaseSnapshotJobView = await followBaseSnapshotJob(organizationId, jobId, (v) => setBusy(snapshotProgressLine(v, "restore")));
+        if (view.state !== "done") { setNote(view.state === "refused" ? view.message : "The restore stopped before it finished. The snapshot itself is untouched."); return; }
+        const done = view.result as { home_id?: string; tables?: unknown[] };
+        const jobHome = done.home_id ?? null;
+        if (jobHome) await saveBase(organizationId, jobHome, { name: restoredBaseName(name, restoredOn), icon: identity?.icon ?? null, color: identity?.color ?? null, description: identity?.description ?? null, template: "restore" });
+        setNote(`Restored as a new base: ${(done.tables ?? []).length} tables.`);
+        if (jobHome) router.push(`/data/bases/${jobHome}`);
+      } catch (e) { setNote(sayError(e, "The restore failed.")); } finally { setBusy(null); }
+      return;
+    }
     const res = await restoreSnapshot(port, { organizationId, baseName: name, restoredOn, snapshot: { label: s.label, origin: s.origin, tables: s.tables }, onProgress: (p) => setBusy(`Copying ${p.tableName} (${p.at} of ${p.of})…`) });
     setBusy(null);
     if (!res.ok) { setNote(`The restore stopped at ${res.stoppedAt.name}. The snapshot itself is untouched.`); return; }
@@ -605,7 +635,7 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
           <Field value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Label (optional)" aria-label="Snapshot label" disabled={!!busy} />
           <Button variant="primary" disabled={!!busy} onClick={() => void take()} data-snapshot-take="">Take snapshot</Button>
         </div>
-        {busy ? <Words>{busy}</Words> : null}
+        {busy ? <span data-snapshot-progress=""><Words>{busy}</Words></span> : null}
         {note ? <Words>{note}</Words> : null}
         <ul className="divide-y divide-border rounded-md border border-border">
           {rows.length === 0 ? <li className="px-3 py-2"><Words>No snapshots yet.</Words></li> : rows.map((s) => (
