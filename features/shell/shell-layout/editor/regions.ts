@@ -17,6 +17,8 @@ import {
   addHeaderButton,
   addRow,
   buildCatalogTree,
+  findByRef,
+  moveNode,
   placedRefs,
   type CatalogTree,
 } from "./tree";
@@ -63,6 +65,8 @@ export interface AddToMenuResult {
   body: ShellLayoutBody;
   /** False when nothing could be added (already there, or the Dock is full). */
   added: boolean;
+  /** It was already in the Sidebar elsewhere and was moved to the chosen place. */
+  moved?: boolean;
   reason?: "already" | "dock-full";
 }
 
@@ -91,8 +95,15 @@ export function addPageToBody(
   const region = place.region;
   const before = region === "sidebar" ? sidebarOf(body) : dockOf(body);
   if (region === "dock" && before.length >= SHELL_DOCK_MAX_ITEMS) return { body, added: false, reason: "dock-full" };
-  if (entry && placedRefs(before).has(entry.id)) return { body, added: false, reason: "already" };
   const intoId = place.region === "sidebar" ? place.intoId : null;
+  if (entry && placedRefs(before).has(entry.id)) {
+    // Already in the Sidebar somewhere else: move it where she asked (promote / regroup) instead.
+    const at = region === "sidebar" ? findByRef(before, entry.id) : null;
+    if (!at || at.parentId === intoId) return { body, added: false, reason: "already" };
+    const moved = moveNode(before, at.node.id, intoId ? { kind: "inside", id: intoId } : { kind: "top" }, "sidebar");
+    if (!moved) return { body, added: false, reason: "already" };
+    return { body: { ...body, sidebar: moved }, added: true, moved: true };
+  }
   const next = entry
     ? addEntryInto(before, tree, entry.id, region, intoId)
     : item.record

@@ -60,9 +60,9 @@ function AddChoices({ item, onDone }: { item: MenuPageItem; onDone: () => void }
       return;
     }
     const where = place.region === "header" ? "header" : place.region === "dock" ? "dock" : "sidebar";
-    const answer = await store.save("person", result.body, `Added ${item.label} to the ${where}`);
+    const answer = await store.save("person", result.body, `${result.moved ? "Moved" : "Added"} ${item.label} in the ${where}`);
     if (answer.ok) {
-      toast.success(`Added to your ${where}`);
+      toast.success(result.moved ? `Moved in your ${where}` : `Added to your ${where}`);
       onDone();
     } else toast.error(answer.error);
   };
