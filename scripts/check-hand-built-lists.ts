@@ -14,7 +14,7 @@
  *   named-list        the same, in a component named `*List` / `*Table` / `*Grid` under features/,
  *                     where ANY row chrome (border/divide, hover:, padding) is enough.
  *
- * THE LADDER (canonical-table-usage rule 16) — pick the lightest piece that fits:
+ * THE LADDER (table-drill-down rule 16) — pick the lightest piece that fits:
  *   one fact → PropertyRow (RowGroup for a group) · list of records → RecordList
  *   (@ai-matrx/design-system/record-list; one row: ItemRow) · small fully loaded set with columns or
  *   sorting → LiteTable (@ai-matrx/design-system/lite-table) · filters, paging, editing, bulk →
@@ -265,7 +265,7 @@ function scanApp(baseline: Baseline): Result {
 }
 
 const LADDER =
-  "Ladder (canonical-table-usage rule 16): one fact PropertyRow/RowGroup · records RecordList (@ai-matrx/design-system/record-list) · small set with columns/sorting LiteTable (@ai-matrx/design-system/lite-table) · filters/paging/editing MatrxDataTable or MatrxTableCard · scoped list page EntityListPage. Genuine exception: `// list-exception: <reason>` above the .map.";
+  "Ladder (table-drill-down rule 16): one fact PropertyRow/RowGroup · records RecordList (@ai-matrx/design-system/record-list) · small set with columns/sorting LiteTable (@ai-matrx/design-system/lite-table) · filters/paging/editing MatrxDataTable or MatrxTableCard · scoped list page EntityListPage. Genuine exception: `// list-exception: <reason>` above the .map.";
 
 function selfTest(): never {
   const tmp = mkdtempSync(join(tmpdir(), "hand-built-lists-"));

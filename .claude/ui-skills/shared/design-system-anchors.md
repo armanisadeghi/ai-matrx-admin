@@ -33,7 +33,7 @@ Glass is a first-class part of this app. Use it; just use ours.
 
 ## Tables & lists
 
-- **Tables:** `MatrxDataTable` from `@ai-matrx/design-system/data-table` (~240 route files) — sort + filter on every column, canonical Copy / Copy-for-AI. Column/toolbar rules live in the `canonical-table-usage` skill. `GenericDataTable` is legacy (2 callers) — never for new work.
+- **Tables:** `MatrxDataTable` from `@ai-matrx/design-system/data-table` (~240 route files) — sort + filter on every column, canonical Copy / Copy-for-AI. Column/toolbar rules live in the `table-drill-down` skill. `GenericDataTable` is legacy (2 callers) — never for new work.
 - **Lists:** `EntityListPage` (`lib/entity-list/components/EntityListPage.tsx`) + `useListViewPrefs`, which also owns the real empty state.
 - `components/official/card-and-grid/{Card,Grid,List,HorizontalCard}.tsx`, `components/official/cards/{SimpleCard,SectionCard,EmptyStateCard,CardGrid}.tsx` — when cards/boards/galleries are the right tool.
 

@@ -481,7 +481,7 @@ surface). Say which parts you judged as authored content.
   `check:reserved-icons` · `check:new-tab-icon` · `check:theme-color-literals` ·
   `check:route-metadata:strict` · `check:favicon-letters` ·
   `node .claude/skills/light-dark-integrity/scripts/detect-light-dark.mjs <paths> --strict`.
-- Procedures: `efficient-tap-button-migration` · `canonical-table-usage` ·
+- Procedures: `efficient-tap-button-migration` · `table-drill-down` ·
   `picker-custom-entry` · `overlay-system` · `no-emojis-in-ui` ·
   `light-dark-integrity` · `route-metadata-favicons` · `compact-nav-menus`.
 

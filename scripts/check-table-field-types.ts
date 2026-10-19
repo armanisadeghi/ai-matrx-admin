@@ -7,7 +7,7 @@
  *    opinionated … put some rules in place that then we get an army of agents to go and fix so
  *    that we don't have to guess."
  *
- * The rule (canonical-table-usage rule 10): a table column over a database field declares its
+ * The rule (table-drill-down rule 10): a table column over a database field declares its
  * field type in `format` (or the matching `filter`), so its filter is a date range for a moment
  * and a value list for an enum — never a text box. This script reads every column definition
  * (an object literal with `header` and `accessorKey`/`id`) in files that use the canonical table

@@ -31,7 +31,7 @@ export type {
 } from "@ai-matrx/records/list";
 
 /**
- * A DATE RANGE in the filter bag (canonical-table-usage rules 10–11), keyed by column id like every
+ * A DATE RANGE in the filter bag (table-drill-down rules 10–11), keyed by column id like every
  * other entry. The table's `date` filter lands here as-is (preset + anchor, for the header to show)
  * WITH its bounds resolved by `dateFilterBounds` — `since` inclusive, `until` exclusive — so every
  * scoped list RPC reads plain instants (`platform.list_date_filter_ok(p_filters, '<column id>', value)`)

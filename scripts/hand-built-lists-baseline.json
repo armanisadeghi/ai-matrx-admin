@@ -1,5 +1,5 @@
 {
-  "_note": "Hand-built record lists that predate the guard. Shrink-only: delete an entry when its file moves to a shared piece (PropertyRow/RowGroup, ItemRow, Table*, MatrxDataTable/MatrxTableCard, EntityListPage). Never add; new lists use the ladder (canonical-table-usage rule 16) or carry `// list-exception: <reason>`. A stale entry fails the guard.",
+  "_note": "Hand-built record lists that predate the guard. Shrink-only: delete an entry when its file moves to a shared piece (PropertyRow/RowGroup, ItemRow, Table*, MatrxDataTable/MatrxTableCard, EntityListPage). Never add; new lists use the ladder (table-drill-down rule 16) or carry `// list-exception: <reason>`. A stale entry fails the guard.",
   "files": {
     "app/(admin)/administration/agents/system-agents/agents/new/page.tsx": "pre-existing, migrate to ItemRow",
     "app/(admin)/administration/agents/system-agents/page.tsx": "pre-existing, migrate to MatrxDataTable",
