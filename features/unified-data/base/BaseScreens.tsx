@@ -314,7 +314,7 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
         )}
       </section>
 
-      <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); load(); }} />
+      <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { const saved = await saveBase(org, homeId, v, identity?.id); setIdentity(saved); setDialog(null); }} />
       <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} identity={identity} />
       <MoveBaseDialog open={dialog === "move"} onClose={() => setDialog(null)} homeId={homeId} name={name} organizationId={org} tableCount={tables.length} tableIds={tables.map((t) => t.id)} />
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
