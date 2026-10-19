@@ -14,11 +14,15 @@ const UPSTREAM = `${SUPABASE_URL}/auth/v1/oauth/token`;
 export async function POST(req: NextRequest) {
   const contentType = req.headers.get("content-type") ?? "";
   const body = await req.text();
+  // Apps are registered as client_secret_basic: the secret travels in the Authorization header,
+  // so it must reach the upstream or every confidential client is refused.
+  const authorization = req.headers.get("authorization");
 
   const upstream = await fetch(UPSTREAM, {
     method: "POST",
     headers: {
       "Content-Type": contentType || "application/x-www-form-urlencoded",
+      ...(authorization ? { Authorization: authorization } : {}),
     },
     body,
     signal: AbortSignal.timeout(15_000),

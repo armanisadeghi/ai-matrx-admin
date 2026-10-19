@@ -1,0 +1,429 @@
+-- AT-SLOW-2 (Airtable parity: a 2-table linked base still took 2.2–5.7 s to move against the 8 s client budget). Measured live, rolled back:
+--   custom.table_move put every relation edge of a moving row to sleep and woke it again (ends unchanged), and each of those two writes ran
+--   platform.trg_reachability_on_association for its edge. For a store edge (origin 'campaign') that trigger also ran its W1-REL marking,
+--   UPDATE platform.reachability ... WHERE (container_id = src AND item_id = tgt) OR (container_id = tgt AND item_id = src): neither half
+--   names a type, so no index leads with it and every call read the whole table (Seq Scan, 58,828 rows, 114 ms cold).
+--   1. custom.table_move: sets platform.reachability_batch = 'move' for the move, then refreshes access ONCE for the moved set — every edge
+--      that starts or ends at a moved row, live or removed, each distinct container once (platform._reachability_touch_edges) — and does
+--      the campaign marking for the moved live store edges as one statement.
+--   2. platform.trg_reachability_on_association: 'move' skips an UPDATE that leaves the edge's ends where they were (campaign edges too:
+--      the caller does their marking); the W1-REL marking names the endpoint types, so it is two primary-key/item-index probes.
+-- chair-step: replaces custom.table_move (its body holds a DELETE on custom.visibility_cache) and the association reachability trigger; AT-SLOW-2, authorized by the program's owning session.
+-- Inverse: migrations/inverse/atslow2_a_table_move_one_access_refresh_down.sql
+-- based-on: custom.table_move(uuid, uuid, integer) 20971be744e88fe1239edde2293aca5eca48c5cb11b04fde66bffd8d3288a3d7
+-- based-on: platform.trg_reachability_on_association() 1d9ff9468aa21603815a6c47b7fb3aa17d6ab651dba81e1d869566e62d6cf4ef
+
+CREATE OR REPLACE FUNCTION custom.table_move(p_table_id uuid, p_to_organization_id uuid, p_expected_version integer DEFAULT NULL::integer)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+AS $function$
+declare
+  v_me      uuid := custom.query_principal();
+  v_opens   jsonb;
+  v_plan    jsonb;
+  v_from    uuid;
+  v_id      uuid;
+  v_to_name text;
+  v_dest    jsonb;
+  v_tables  uuid[];
+  v_fields  uuid[];
+  v_recs    uuid[];
+  v_others  uuid[];
+  v_all     uuid[];
+  v_rows    uuid[];
+  v_forms   uuid[];
+  v_pending uuid[];
+  v_ids     uuid[];
+  v_home_from uuid;
+  v_home_to   uuid;
+  v_n       bigint;
+  v_wave    integer := 0;
+  v_moved   jsonb := '{}'::jsonb;
+  v_version integer;
+  v_events  bigint;
+  v_made_home boolean := false;
+  v_prev_batch text;
+  v_edges   jsonb;
+begin
+  if v_me is null then
+    raise exception 'Sign in to move a table.' using errcode = '42501';
+  end if;
+  if p_table_id is null or p_to_organization_id is null then
+    raise exception 'Say which table to move and which organization it goes to.' using errcode = '22004';
+  end if;
+
+  v_opens := custom.where_id_opens(p_table_id);
+  if v_opens is null or v_opens ->> 'kind' is distinct from 'table' then
+    raise exception 'That table is not one you have been given, so nothing moved.'
+      using errcode = '42501',
+            hint = 'The store says the same for a table you may not open and one that does not exist.';
+  end if;
+  v_from := (v_opens ->> 'organization_id')::uuid;
+  v_id   := (v_opens ->> 'resolved_id')::uuid;
+  -- THE DECISION, IN THIS BODY (lane SUITE-HEALTH-2): the organization wall of the Table's own
+  -- organization, asked here and not only inside custom.where_id_opens. The row half — who may
+  -- move it (its maker, or an owner or admin) — is custom._table_move_plan's may_move below.
+  perform custom.assert_client_may_reach(v_from, 'custom.table_move');
+
+  v_plan := custom._table_move_plan(v_id, p_to_organization_id, v_me);
+
+  if not coalesce((v_plan ->> 'may_move')::boolean, false) then
+    raise exception '%', v_plan ->> 'why_not' using errcode = '42501';
+  end if;
+  if p_to_organization_id = v_from then
+    raise exception '% is already in %.', v_plan #>> '{table,name}', v_plan #>> '{organization,name}'
+      using errcode = '22023';
+  end if;
+  select d into v_dest from jsonb_array_elements(v_plan -> 'destinations') d
+   where d ->> 'id' = p_to_organization_id::text;
+  if v_dest is null then
+    raise exception 'You are not a member of that organization, so % cannot go there.', v_plan #>> '{table,name}'
+      using errcode = '42501',
+            hint = 'A table moves only into an organization you belong to.';
+  end if;
+  v_to_name := v_dest ->> 'name';
+  if not coalesce((v_dest ->> 'ok')::boolean, false) then
+    raise exception '%', v_dest ->> 'why' using errcode = '55000';
+  end if;
+  -- THE SWITCH, IN THIS BODY (lane SUITE-HEALTH-2): the rows are written into the destination, so
+  -- the destination's store is asked in the store's own words. A destination the plan passed as
+  -- ok already has its store open, so this refuses nobody the plan admitted.
+  perform custom.assert_store_door(p_to_organization_id, 'custom.table_move');
+  if jsonb_array_length(v_plan -> 'held_by') > 0 then
+    raise exception '%', v_plan -> 'held_by' ->> 0
+      using errcode = '55000',
+            detail = (v_plan -> 'held_by')::text,
+            hint = format('Nothing moved. %s stays in %s until this is sorted.',
+                          v_plan #>> '{table,name}', v_plan #>> '{organization,name}');
+  end if;
+  v_version := (v_plan #>> '{table,version}')::integer;
+  if p_expected_version is not null and p_expected_version <> v_version then
+    raise exception 'Someone changed % while you were deciding. Look again, then move it.', v_plan #>> '{table,name}'
+      using errcode = '40001';
+  end if;
+
+  select array(select (x #>> '{}')::uuid from jsonb_array_elements(v_plan #> '{_carry,tables}') x)  into v_tables;
+  select array(select (x #>> '{}')::uuid from jsonb_array_elements(v_plan #> '{_carry,fields}') x)  into v_fields;
+  select array(select (x #>> '{}')::uuid from jsonb_array_elements(v_plan #> '{_carry,records}') x) into v_recs;
+  select array(select (x #>> '{}')::uuid from jsonb_array_elements(v_plan #> '{_carry,others}') x)  into v_others;
+  v_all  := v_tables || v_fields || v_recs || v_others;
+  v_rows := v_tables || v_recs;
+
+  -- THE ORGANIZATION'S OWN RECORD, on both sides (asked here: custom.organization_home_id is
+  -- G11's and its inverse removes it — check:inverses-leave-the-ground-standing, clause d).
+  v_home_from := (select h.id from custom.record h
+                   where h.organization_id = v_from and h.table_id = custom.organization_kernel_id()
+                     and h.deleted_at is null order by h.created_at, h.id limit 1);
+  v_home_to   := (select h.id from custom.record h
+                   where h.organization_id = p_to_organization_id and h.table_id = custom.organization_kernel_id()
+                     and h.deleted_at is null order by h.created_at, h.id limit 1);
+
+  -- A TABLE HAS TO LIVE SOMEWHERE, AND WHERE IT LIVES IN THE DESTINATION IS THE STORE'S FACT, NOT
+  -- THE PERSON'S (MOVE-AND-OUTSIDER, VERIFIER-19 finding 1). A table the app made sits in its own
+  -- Home record ("<name> Home"), which stays where it is; a table in the source organization's
+  -- record goes to the destination's record; so the moved Table is always put in the destination
+  -- organization's own record. An organization the store never gave one (G11 made the Home
+  -- optional at provision) gets it here, named after the organization, in the same transaction:
+  -- a person is never refused for a fact the store owns. The answer says it was made.
+  if v_home_to is null then
+    insert into custom.record (organization_id, table_id, data)
+    values (p_to_organization_id, custom.organization_kernel_id(),
+            jsonb_build_object('name', coalesce(nullif(btrim(v_to_name), ''), 'Organization')))
+    returning id into v_home_to;
+    v_made_home := true;
+  end if;
+
+  -- THE MARK custom._store_door reads: this transaction moves rows out of v_from. Cleared below.
+  perform set_config('custom.table_move_from', v_from::text, true);
+  -- ONE ACCESS REFRESH FOR THE MOVED SET (AT-SLOW-2). Every edge below is put to sleep and woken again with its ends where they
+  -- were; each of those writes used to re-derive access for its edge, twice an edge. 'move' tells the edge trigger that this body
+  -- refreshes, once and as a set, every edge that starts or ends at a moved row (after the loop and the re-filing below).
+  v_prev_batch := coalesce(current_setting('platform.reachability_batch', true), '');
+  perform set_config('platform.reachability_batch', 'move', true);
+
+  -- IN CONTAINMENT ORDER (SC-1-TAILS). The containment guard and the wall judge every row as it
+  -- lands, so a row moves only once everything it points at that is ALSO moving has moved: its
+  -- container (parent_id), its Table (table_id), the Table its Field belongs to. The Table first,
+  -- then its Fields and rows, then the Tables inside those rows, then theirs — one statement a
+  -- wave. The moved Table itself is re-homed under the new organization's own record (or at its
+  -- top); a row whose container moves with it keeps its container.
+  v_pending := v_tables || v_fields || v_recs;
+  loop
+    v_wave := v_wave + 1;
+    select coalesce(array_agg(x.id), array[]::uuid[]) into v_ids
+      from custom.record x
+     where x.organization_id = v_from
+       and x.id = any (v_pending)
+       and not exists (
+             select 1 from custom.record p
+              where p.organization_id = v_from
+                and p.id = any (v_pending)
+                and p.id <> x.id
+                and (   p.id = x.table_id
+                     or p.id = nullif(x.data ->> 'entity_definition_id', '')::uuid
+                     -- a Field waits on the Tables it points at when they move too (the wall judges it)
+                     or (x.table_id = custom.field_kernel_id()
+                         and (p.id = nullif(x.data ->> 'relation_target', '')::uuid
+                              or p.id = nullif(x.data -> 'config' ->> 'options_table_id', '')::uuid))
+                     or (x.id <> v_id and p.id = custom.containment_parent(x.data))
+                     -- a row is judged against its Table's Fields, so they land first
+                     or (x.table_id <> custom.field_kernel_id()
+                         and p.table_id = custom.field_kernel_id()
+                         and p.data ->> 'entity_definition_id' = x.table_id::text)));
+    exit when coalesce(array_length(v_ids, 1), 0) = 0;
+
+    -- THE EDGES OF THIS WAVE'S ROWS GO FIRST, AND ASLEEP. A row that lands in the new organization
+    -- re-states its relation edges there (custom._relation_associations, as an INSERT), and an
+    -- edge still filed under the old organization would be judged there against a Field that has
+    -- already left (platform.enforce_relation_edge: "there is no field … in this organization").
+    -- So each live edge starting at a row of this wave is re-filed under the new organization
+    -- while retired and marked as this move's (the edge contract does not judge a retired row);
+    -- the row's own trigger wakes the ones its value still states, and the sweep after the loop
+    -- wakes the rest. An edge that was already retired is re-filed as it is.
+    update platform.associations a
+       set organization_id  = p_to_organization_id,
+           deleted_at       = coalesce(a.deleted_at, now()),
+           deleted_via_type = case when a.deleted_at is null then 'table_move' else a.deleted_via_type end,
+           deleted_via_id   = case when a.deleted_at is null then v_id else a.deleted_via_id end
+     where a.organization_id = v_from
+       and a.source_type = 'record' and a.source_id = any (v_ids)
+       and a.relation_field_id is not null;
+
+    update custom.record x
+       set organization_id = p_to_organization_id,
+           data = case
+                    when x.id <> v_id then x.data
+                    when custom.containment_parent(x.data) = any (v_all) then x.data
+                    else jsonb_set(x.data, '{parent_id}', to_jsonb(v_home_to::text)) end
+     where x.organization_id = v_from
+       and x.id = any (v_ids);
+    get diagnostics v_n = row_count;
+    exit when v_n = 0;
+    v_pending := array(select p.id from custom.record p
+                        where p.organization_id = v_from and p.id = any (v_pending));
+    exit when coalesce(array_length(v_pending, 1), 0) = 0;
+    if v_wave > 64 then exit; end if;
+  end loop;
+  -- The edges this move put to sleep and no row's trigger woke: woken, in the new organization.
+  update platform.associations a
+     set deleted_at = null, deleted_via_type = null, deleted_via_id = null
+   where a.organization_id = p_to_organization_id
+     and a.deleted_via_type = 'table_move' and a.deleted_via_id = v_id
+     and a.deleted_at is not null;
+  if coalesce(array_length(v_pending, 1), 0) > 0 then
+    raise exception 'Some of what % carries points at itself in a circle, so nothing moved.', v_plan #>> '{table,name}'
+      using errcode = '55000',
+            hint = 'REC-8: containment is a tree. The store found rows that wait on each other; report this with the table''s name.';
+  end if;
+  v_moved := v_moved || jsonb_build_object(
+    'tables',  (select count(*) from custom.record t where t.organization_id = p_to_organization_id and t.id = any (v_tables)),
+    'fields',  coalesce(array_length(v_fields, 1), 0),
+    'records', coalesce(array_length(v_recs, 1), 0),
+    'waves',   v_wave,
+    'home',    jsonb_build_object('id', v_home_to, 'made', v_made_home));
+
+  update custom.record x set organization_id = p_to_organization_id
+   where x.organization_id = v_from and x.id = any (v_others);
+  get diagnostics v_n = row_count; v_moved := v_moved || jsonb_build_object('with_it', v_n);
+  perform set_config('custom.table_move_from', '', true);
+
+  -- What hangs off its rows, keyed by the Table or by one of its rows.
+  update custom.io_comment c set organization_id = p_to_organization_id
+   where c.organization_id = v_from and (c.table_id = any (v_tables) or c.record_id = any (v_rows));
+  -- RC-A2e: record comments live in platform.comments (entity_type 'record'); they follow too.
+  update platform.comments c set organization_id = p_to_organization_id
+   where c.organization_id = v_from and c.entity_type = 'record' and c.entity_id = any (v_rows);
+  update custom.io_import i set organization_id = p_to_organization_id
+   where i.organization_id = v_from and i.table_id = any (v_tables);
+  update custom.io_outbox o set organization_id = p_to_organization_id
+   where o.organization_id = v_from and (o.table_id = any (v_tables) or o.record_id = any (v_rows));
+  update custom.agent_table_origin a set organization_id = p_to_organization_id
+   where a.organization_id = v_from and a.table_id = any (v_tables);
+  update custom.doc_render d set organization_id = p_to_organization_id
+   where d.organization_id = v_from and (d.table_id = any (v_tables) or d.record_id = any (v_rows));
+  update custom.doc_signature s set organization_id = p_to_organization_id
+   where s.organization_id = v_from and s.record_id = any (v_rows);
+  update custom.external_link l set organization_id = p_to_organization_id
+   where l.organization_id = v_from and l.record_id = any (v_rows);
+  select coalesce(array_agg(f.id), array[]::uuid[]) into v_forms
+    from custom.anon_form f where f.organization_id = v_from and f.table_id = any (v_tables);
+  update custom.anon_form f set organization_id = p_to_organization_id
+   where f.organization_id = v_from and f.id = any (v_forms);
+  update custom.anon_inbound i set organization_id = p_to_organization_id
+   where i.organization_id = v_from and i.table_id = any (v_tables);
+  update custom.anon_submission s set organization_id = p_to_organization_id
+   where s.organization_id = v_from and (s.table_id = any (v_tables) or s.form_id = any (v_forms));
+  update custom.anon_replay s set organization_id = p_to_organization_id
+   where s.organization_id = v_from and s.table_id = any (v_tables);
+  update custom.anon_token k set organization_id = p_to_organization_id
+   where k.organization_id = v_from and (k.form_id = any (v_forms) or k.record_id = any (v_rows));
+  update custom.anon_hit h set organization_id = p_to_organization_id
+   where h.organization_id = v_from and h.form_id = any (v_forms);
+  update custom.anon_form_draft d set organization_id = p_to_organization_id
+   where d.organization_id = v_from and d.form_id = any (v_forms);
+  update custom.record_alias a set organization_id = p_to_organization_id
+   where a.organization_id = v_from and a.new_id = any (v_all);
+  update platform.saved_view v set organization_id = p_to_organization_id
+   where v.organization_id = v_from and v.subject_id = any (v_tables);
+  -- AN EDGE IS FILED UNDER THE ORGANIZATION OF THE ROW IT STARTS AT (REL-12). One that starts at
+  -- a moving row goes with it; one that starts at a row that stays and points at a moving row
+  -- stays, and holds its value across the wall the plan already found open. An edge from
+  -- something that is not a record (a file, a note) naming a moving row goes with the row, as
+  -- before.
+  update platform.associations a set organization_id = p_to_organization_id
+   where a.organization_id = v_from
+     and ((a.source_type = 'record' and a.source_id = any (v_all))
+          or (a.source_type <> 'record' and a.target_type = 'record' and a.target_id = any (v_all)));
+
+  -- THE ONE REFRESH: every edge at a moved row, live or not (a removed edge narrows access and is refreshed too), each distinct
+  -- container once; then the campaign marking the per-edge trigger keeps for a live campaign edge, as one statement.
+  perform set_config('platform.reachability_batch', v_prev_batch, true);
+  select coalesce(jsonb_agg(jsonb_build_object('source_type', e.source_type, 'source_id', e.source_id,
+                                               'target_type', e.target_type, 'target_id', e.target_id, 'label', e.label)), '[]'::jsonb)
+    into v_edges
+    from (select a.source_type, a.source_id, a.target_type, a.target_id, a.label
+            from platform.associations a where a.source_type = 'record' and a.source_id = any (v_all)
+          union
+          select a.source_type, a.source_id, a.target_type, a.target_id, a.label
+            from platform.associations a where a.target_type = 'record' and a.target_id = any (v_all)) e;
+  perform platform._reachability_touch_edges(v_edges);
+  if platform.relations_are_on(p_to_organization_id) then
+    update platform.reachability r
+       set origin = 'campaign'
+      from platform.associations a
+     where a.source_type = 'record' and a.source_id = any (v_all)
+       and a.origin = 'campaign' and a.deleted_at is null
+       and r.origin is distinct from 'campaign'
+       and ((r.container_type = a.source_type and r.container_id = a.source_id and r.item_type = a.target_type and r.item_id = a.target_id)
+         or (r.container_type = a.target_type and r.container_id = a.target_id and r.item_type = a.source_type and r.item_id = a.source_id));
+  end if;
+
+  -- ITS HISTORY GOES WITH IT. A version is the history OF A ROW; the row now answers in the new
+  -- organization, so "who changed this and when" must still answer there.
+  update history.row_versions v set organization_id = p_to_organization_id
+   where v.entity_type = 'custom.record' and v.organization_id = v_from and v.row_id = any (v_all);
+
+  -- THE MOVE ITSELF IS A VERSION OF EACH TABLE IT CARRIED. The store's capture triggers pair old
+  -- and new rows by (organization, id), so a row that changed organization is not paired by
+  -- them; this writes the one version per Table that says what happened, who did it, from where.
+  insert into history.row_versions
+         (entity_type, row_id, organization_id, version, operation, row_data, actor_id, actor_tier,
+          migration_id, operation_name)
+  select 'custom.record', t.id, t.organization_id, t.version, 'UPDATE',
+         to_jsonb(t) || jsonb_build_object('moved_from_organization_id', v_from,
+                                           'moved_with_table_id', case when t.id <> v_id then v_id end),
+         v_me, platform.actor_tier(), null, 'table_move'
+    from custom.record t
+   where t.organization_id = p_to_organization_id and t.id = any (v_tables) and t.data_class = 'table';
+
+  -- A MOVE IS A CHANGE EVENT (SC-1-TAILS). The capture triggers pair by (organization, id) and so
+  -- see nothing here; the door writes the pair itself, on the store's one outbox, so matrx-local's
+  -- sync, pg_notify('records_changed') and the realtime broadcast learn of it in this transaction:
+  -- every live row it moved is `deleted` where it was and `created` where it is. Written AFTER the
+  -- outbox re-key above, so these rows are never re-keyed themselves.
+  insert into custom.io_outbox (organization_id, event_key, record_id, table_id, operation,
+                                changed_field_ids, actor, dedupe_key, op_id)
+  select side.org, 'records.changed', x.id, x.table_id, side.op, '[]'::jsonb,
+         jsonb_build_object(
+           'user_id',   v_me,
+           'role',      custom.caller_role()::text,
+           'tier',      coalesce(platform.declared_actor_tier(), platform.actor_tier()),
+           'declared',  'table_move',
+           'moved_table_id', v_id,
+           'moved_from_organization_id', v_from,
+           'moved_to_organization_id', p_to_organization_id),
+         side.org::text || ':' || x.id::text || ':' || coalesce(x.version, 0)::text || ':' || side.op
+           || ':table_move:' || txid_current()::text,
+         nullif(current_setting('custom.op_id', true), '')::uuid
+    from custom.record x
+   cross join (values (v_from, 'deleted'), (p_to_organization_id, 'created')) side(org, op)
+   where x.organization_id = p_to_organization_id and x.id = any (v_all) and x.deleted_at is null
+   order by side.op desc, x.id
+  on conflict do nothing;
+  get diagnostics v_events = row_count;
+  v_moved := v_moved || jsonb_build_object('events', v_events);
+
+  -- What the visibility cache remembers about these rows was worked out in the old organization.
+  -- It is a cache (VIS-7): emptied for them, it is rebuilt on the next read. (Not
+  -- custom.bump_epoch: W2-EPOCH's inverse removes it — check:inverses-leave-the-ground-standing.)
+  delete from custom.visibility_cache c
+   where c.item_id = any (v_all) or c.container_id = any (v_all);
+
+  return jsonb_build_object(
+    'moved', true,
+    'table', v_plan -> 'table',
+    'from',  v_plan -> 'organization',
+    'to',    jsonb_build_object('id', p_to_organization_id, 'name', v_to_name),
+    'carried', v_moved,
+    'path',  '/data/' || v_id::text);
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION platform.trg_reachability_on_association()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+BEGIN
+  -- A bulk un-link/re-link (platform._gc_entity_associations, soft_delete_cascade_step)
+  -- refreshes each distinct container ONCE after its statement, through
+  -- platform._reachability_touch_edges; the per-row refresh here would re-derive the
+  -- same container for every link. Only an UPDATE that leaves the edge where it is.
+  -- 'move' (custom.table_move, AT-SLOW-2): the caller refreshes every edge at the moved rows once, campaign marking included.
+  IF TG_OP = 'UPDATE'
+     AND (OLD.source_type, OLD.source_id, OLD.target_type, OLD.target_id, OLD.label)
+         IS NOT DISTINCT FROM
+         (NEW.source_type, NEW.source_id, NEW.target_type, NEW.target_id, NEW.label)
+     AND (   (coalesce(current_setting('platform.reachability_batch', true), '') = 'on'
+              AND NEW.origin IS DISTINCT FROM 'campaign')
+          OR coalesce(current_setting('platform.reachability_batch', true), '') = 'move') THEN
+    RETURN NEW;
+  END IF;
+
+  -- The OLD edge's container is refreshed when the edge is removed or when it MOVED. An UPDATE
+  -- that leaves the endpoints and label alone (a soft delete, a restore) names the same container
+  -- in OLD and NEW, and the refresh reads the table as it is now — one refresh, below, is the
+  -- whole answer; doing it twice doubled the cost of every trash and restore.
+  IF TG_OP = 'DELETE'
+     OR (TG_OP = 'UPDATE'
+         AND (OLD.source_type, OLD.source_id, OLD.target_type, OLD.target_id, OLD.label)
+             IS DISTINCT FROM
+             (NEW.source_type, NEW.source_id, NEW.target_type, NEW.target_id, NEW.label)) THEN
+    PERFORM platform.reachability_touch(OLD.source_type, OLD.source_id,
+                                        OLD.target_type, OLD.target_id, OLD.label);
+  END IF;
+  -- 1381: a bulk writer on the server may DEFER the refresh a NEW edge causes (never a removed
+  -- edge: removal narrows access and is always immediate). platform.reachability_deferring() is
+  -- true only for a trusted backend that set the transaction-local flag; the container is
+  -- recorded in platform.reachability_pending, and platform.reachability_flush() settles it.
+  IF TG_OP = 'INSERT' AND platform.reachability_deferring() THEN
+    PERFORM platform.reachability_defer(NEW.source_type, NEW.source_id,
+                                        NEW.target_type, NEW.target_id, NEW.label);
+  ELSIF TG_OP IN ('INSERT','UPDATE') THEN
+    PERFORM platform.reachability_touch(NEW.source_type, NEW.source_id,
+                                        NEW.target_type, NEW.target_id, NEW.label);
+  END IF;
+
+  -- ---------------------------------------------------------------- W1-REL, and nothing above
+  -- this line moved. custom/associations_guard: while it resolves false, or while this edge is
+  -- not one of the campaign's own (origin IS NULL on every row that predates it), the function
+  -- ends exactly where it used to.
+  IF TG_OP <> 'DELETE'
+     AND NEW.origin = 'campaign'
+     AND platform.relations_are_on(NEW.organization_id) THEN
+    UPDATE platform.reachability r
+       SET origin = 'campaign'
+     WHERE r.origin IS DISTINCT FROM 'campaign'
+       AND ((r.container_type = NEW.source_type AND r.container_id = NEW.source_id
+             AND r.item_type = NEW.target_type AND r.item_id = NEW.target_id)
+         OR (r.container_type = NEW.target_type AND r.container_id = NEW.target_id
+             AND r.item_type = NEW.source_type AND r.item_id = NEW.source_id));
+  END IF;
+
+  RETURN COALESCE(NEW, OLD);
+END $function$
+;

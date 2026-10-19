@@ -1,4 +1,4 @@
--- AT-SLOW: a two-table linked base (3 Tasks -> 3 Projects) moves in under 2 s, and the move plan's crossing check reads the moving rows' edges only.
+-- AT-SLOW: a two-table linked base (30 Tasks -> 30 Projects; AT-SLOW-2 raised it from 3) moves in under 2 s, and the move plan's crossing check reads the moving rows' edges only.
 -- Run: python3 scripts/campaign-tests/viewlink_run.py scripts/campaign-tests/atslow_a_base_move_timing.sql   (one transaction, always rolled back)
 begin;
 do $t$
@@ -24,7 +24,7 @@ begin
     'ordered',false,'weight','light','retention_days',365,'row_order','sorted','agent_writable',true,'parent_id',v_h3::text,'title_field','title','default_sort','[]'::jsonb,
     'fields', jsonb_build_array(jsonb_build_object('name','title'))));
   v_ff := custom.field_declare(v_b, v_tk, jsonb_build_object('key','project','label','Project','type','relation','multi',false,'relation_target',v_pj,'relation_max',1,'on_target_delete','restrict'));
-  for i in 1..3 loop
+  for i in 1..30 loop
     v_tr := custom.record_write(v_b, v_tk, jsonb_build_object('title','t'||i));
     v_pr := custom.record_write(v_b, v_pj, jsonb_build_object('title','p'||i));
     perform platform.relation_set(v_b, v_tr, 'project', jsonb_build_array(v_pr::text));
@@ -34,9 +34,10 @@ begin
   t0 := clock_timestamp();
   perform custom.base_move(v_h3, v_a);
   raise notice 'BASE_MOVE ms=%', round(extract(epoch from clock_timestamp()-t0)*1000);
+  perform set_config('role','postgres', true);
   if clock_timestamp()-t0 > interval '2 s' then raise exception 'TIMING FAILED: base_move took % ms (budget 2000)', round(extract(epoch from clock_timestamp()-t0)*1000); end if;
   if (select count(*) from custom.record where organization_id = v_a and id in (v_h3, v_tk, v_pj, v_ff)) <> 4 then raise exception 'MOVE FAILED: the base is not whole in the destination'; end if;
-  if (select count(*) from platform.associations a where a.organization_id = v_a and a.relation_field_id = v_ff and a.deleted_at is null) <> 3 then raise exception 'MOVE FAILED: links did not survive'; end if;
+  if (select count(*) from platform.associations a where a.organization_id = v_a and a.relation_field_id = v_ff and a.deleted_at is null) <> 30 then raise exception 'MOVE FAILED: links did not survive'; end if;
   raise notice 'AT-SLOW base move timing GREEN';
 end $t$;
 rollback;
