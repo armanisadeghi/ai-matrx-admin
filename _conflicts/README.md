@@ -32,6 +32,7 @@ Its files stay as they are.
 
 ## Held files
 - _conflicts/2026-10-19-123326/features/settings/pages/IntegrationsSettingsPage.tsx.held — LOCAL latest 2026-10-19 12:49; GITHUB latest 2026-10-19 12:44; LOCAL lacks 0 of GITHUB's 12 new lines; GITHUB lacks 9 of LOCAL's 21 new lines; recover: git show fc3c3d9713:'features/settings/pages/IntegrationsSettingsPage.tsx' / ec8a41ffc3:'features/settings/pages/IntegrationsSettingsPage.tsx'
+- _conflicts/2026-10-19-132707/migrations/LEDGER.json.held — LOCAL latest 2026-10-19 13:25; GITHUB latest 2026-10-19 13:32; LOCAL lacks 0 of GITHUB's 9 new lines; GITHUB lacks 1 of LOCAL's 9 new lines; recover: git show 3a999e2830:'migrations/LEDGER.json' / 82add9cd3e:'migrations/LEDGER.json'
 
 ## Resolution log
 

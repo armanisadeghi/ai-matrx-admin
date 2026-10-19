@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T20:29:29.203Z",
+  "generated_at": "2026-10-19T19:30:48.619Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -145,12 +145,6 @@
       "filename": "20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based.sql",
       "checksum": "9f0ac1252ec210a334c266714ea2bcaafd49c2c902bd5de8d8f99df3ef23dc07",
       "applied_at": "2026-10-19 19:30:37.377381+00"
-    },
-    "migrations/campaign/20261020001000_readspeedorg_b_a_page_asks_only_its_own_columns.sql": {
-      "source": "matrx-frontend",
-      "filename": "20261020001000_readspeedorg_b_a_page_asks_only_its_own_columns.sql",
-      "checksum": "099828408d47fc84e979ffdf8b2d437d40e1eb44fc4d43040dd35ec8451d3d93",
-      "applied_at": "2026-10-19 20:29:27.601919+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
@@ -787,12 +781,6 @@
       "filename": "atdbfix_b_a_webhook_test_receiver_keeps_what_it_got.sql",
       "checksum": "2c9616fc25867746c72250f74b5e19e8a2c14340ec07687a65e3d53e552237a9",
       "applied_at": "2026-10-15 04:14:39.464138+00"
-    },
-    "migrations/campaign/atfixg2_follow_a_record.sql": {
-      "source": "matrx-frontend",
-      "filename": "atfixg2_follow_a_record.sql",
-      "checksum": "a762915c7713de7e2acea571ba8f24a6245e880947cd8043d3d7b745daa989d9",
-      "applied_at": "2026-10-19 20:25:25.121213+00"
     },
     "migrations/campaign/atinterface_a_an_interface_is_shared_and_read_through_its_elements.sql": {
       "source": "matrx-frontend",
@@ -11611,6 +11599,18 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
+    },
+    "migrations/campaign/20261020001000_readspeedorg_b_a_page_asks_only_its_own_columns.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261020001000_readspeedorg_b_a_page_asks_only_its_own_columns.sql",
+      "checksum": "099828408d47fc84e979ffdf8b2d437d40e1eb44fc4d43040dd35ec8451d3d93",
+      "applied_at": "2026-10-19 20:29:27.601919+00"
+    },
+    "migrations/campaign/atfixg2_follow_a_record.sql": {
+      "source": "matrx-frontend",
+      "filename": "atfixg2_follow_a_record.sql",
+      "checksum": "a762915c7713de7e2acea571ba8f24a6245e880947cd8043d3d7b745daa989d9",
+      "applied_at": "2026-10-19 20:25:25.121213+00"
     }
   }
 }
