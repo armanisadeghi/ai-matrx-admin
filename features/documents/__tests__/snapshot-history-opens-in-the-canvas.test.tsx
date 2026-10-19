@@ -128,7 +128,9 @@ describe("snapshot history opens in the canvas", () => {
       const source = readFileSync(join(__dirname, file), "utf8");
       expect(source).not.toContain("MatrxDynamicPanelHost");
       expect(source).toContain(`useToolToggle(${input}`);
-      expect(source).toContain("aria-pressed={snapshotHistory.isVisible}");
+      // The toggle state goes through the Button's own `pressed` prop (one control), not a hand-rolled aria-pressed restyle.
+      expect(source).toContain("pressed={snapshotHistory.isVisible}");
+      expect(source).not.toMatch(/<ControlButton[^>]*aria-pressed=\{snapshotHistory\.isVisible\}/s);
     }
   });
 });

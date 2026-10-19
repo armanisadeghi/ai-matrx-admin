@@ -132,7 +132,7 @@ export function EditorSaveStatus({
   state: EditorSaveState;
   onSaveNow?: () => void;
   /** The co-editing room's offline state (C10). Null or "online": the ordinary state below. */
-  offline?: "online" | "offline_saved" | "offline_unsaved" | "syncing" | null;
+  offline?: "online" | "offline_saved" | "offline_unsaved" | "syncing" | "reconnecting" | null;
 }) {
   const online = useOnline();
   const collab = offline && offline !== "online" ? offline : null;
@@ -142,6 +142,8 @@ export function EditorSaveStatus({
       ? { Icon: CloudOff, label: "Offline — changes are kept in this tab only", tone: "text-destructive" }
       : collab === "syncing"
         ? { Icon: Loader2, label: "Syncing…", tone: "text-muted-foreground animate-spin" }
+        : collab === "reconnecting"
+          ? { Icon: Loader2, label: "Reconnecting…", tone: "text-muted-foreground animate-spin" }
         : !online
     ? { Icon: CloudOff, label: "Offline — changes save when you reconnect", tone: "text-amber-600 dark:text-amber-500" }
     : state === "saving"

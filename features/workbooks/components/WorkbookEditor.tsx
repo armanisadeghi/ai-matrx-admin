@@ -117,6 +117,7 @@ import { isWorkbookSnapshotMutation } from "@ai-matrx/office/univer";
 import { mayAutosave, remoteOriginOf } from "@ai-matrx/data/realtime/collab";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
+import { chooseRoom } from "@/lib/collab/choose-room";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
 import { useSheetComments } from "@/features/workbooks/components/useSheetComments";
@@ -236,7 +237,9 @@ export default function WorkbookEditor({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   /** C10: the ordered room's offline state (unsent edits kept on this device, syncing); null on the relay. */
-  const [collabOffline, setCollabOffline] = useState<OpOfflineState | null>(null);
+  /** Set when the editor closes: a room check still retrying must stop. */
+  const roomClosedRef = useRef(false);
+  const [collabOffline, setCollabOffline] = useState<OpOfflineState | "reconnecting" | null>(null);
   // Snapshot history is a canvas tab beside the editor; the button toggles it.
   const snapshotHistory = useToolToggle(workbookHistoryToggleInput(workbookId, editable, workbookName));
   const router = useRouter();
@@ -494,8 +497,10 @@ export default function WorkbookEditor({
       }
     })();
 
+    roomClosedRef.current = false;
     return () => {
       cancelled = true;
+      roomClosedRef.current = true;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       collabSelectionDisposerRef.current?.dispose();
       collabSelectionDisposerRef.current = null;
@@ -517,25 +522,39 @@ export default function WorkbookEditor({
   /**
    * Join the workbook's co-editing room: the ordered log (C6) when the workbook's room exists or
    * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A workbook already on the ordered log never falls
-   * back to the relay (a relay seat's saves would never reach the room); a failed start says so.
+   * back to the relay (a relay seat's saves would never reach the room); a failed start says so. When the room
+   * check itself cannot be answered (no network at open), it is retried with backoff under a "Reconnecting…"
+   * status (`chooseRoom`) — an unknown answer is never read as "no room".
    */
   const startWorkbookRoom = async () => {
     let ordered = false;
     try {
       const { workbookUsesOrderedRoom } = await import("@ai-matrx/office/univer/collab");
+      const { collabRoomExists } = await import("@ai-matrx/data/realtime/collab");
       const knob = await readCollabOtRooms();
       const who = (await getClaimsUser(supabase)).data?.user?.id;
-      ordered = await workbookUsesOrderedRoom(
-        workbookId,
-        knob,
-        async () => {
-          const res = await getLatestSnapshot(workbookId);
-          return !isServiceFailure(res) && res.data === null;
-        },
-        who ? `${workbookId}:${who}` : undefined,
-      );
+      const chosen = await chooseRoom({
+        roomExists: () => collabRoomExists(supabase as unknown as Parameters<typeof collabRoomExists>[0], workbookId),
+        usesOrderedRoom: () =>
+          workbookUsesOrderedRoom(
+            workbookId,
+            knob,
+            async () => {
+              const res = await getLatestSnapshot(workbookId);
+              return !isServiceFailure(res) && res.data === null;
+            },
+            who ? `${workbookId}:${who}` : undefined,
+          ),
+        onReconnecting: (on) => setCollabOffline(on ? "reconnecting" : null),
+        cancelled: () => roomClosedRef.current,
+      });
+      if (chosen === null) return;
+      ordered = chosen;
     } catch (err) {
-      console.warn("[workbook] could not choose the co-editing room; joining the relay room", err);
+      // An unanswered question is never "no room": do not join the relay for a workbook that may be on the ordered log.
+      console.warn("[workbook] could not choose the co-editing room", err);
+      toast({ title: "Live editing is not connected", description: "Reload the page before editing this workbook.", variant: "destructive" });
+      return;
     }
     if (!ordered) return startCollabSession();
     try {

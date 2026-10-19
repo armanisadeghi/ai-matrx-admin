@@ -330,9 +330,19 @@ export interface MandateBindingPrincipalInput {
   organizationId?: string;
 }
 
+/** The offered-source fields this writer emits itself; every other key rides through. */
+const OFFERED_SOURCE_OWNED_KEYS: ReadonlySet<string> = new Set([
+  "mapType",
+  "target",
+  "deliver",
+  "required",
+  "when_absent",
+  "default",
+]);
+
 /** Wire form of one consumption entry — JSON-safe, undefined members stripped
  * (the strict API payload carries no `undefined`). */
-function consumptionMapForApi(
+export function consumptionMapForApi(
   map: ConsumptionMap,
 ): Record<string, JsonObject | JsonObject[]> {
   const out: Record<string, JsonObject | JsonObject[]> = {};
@@ -361,11 +371,19 @@ function consumptionMapForApi(
         }
         return wire;
       }
-      const wire: JsonObject = {
-        mapType: entry.mapType,
-        target: entry.target,
-        deliver,
-      };
+      // 🚨 A FIELD THIS SCREEN DOES NOT KNOW RIDES THROUGH A SAVE UNTOUCHED
+      // (2026-10-19). The server's offered source carries `template`,
+      // `item_template`, `item_separator`, `separator`, `heading`, `compact`,
+      // `max_*` … and grows more; the parse keeps every key it does not own, and
+      // they are written first so the owned fields below always win.
+      const wire: JsonObject = {};
+      for (const [key, extra] of Object.entries(entry)) {
+        if (OFFERED_SOURCE_OWNED_KEYS.has(key) || extra === undefined) continue;
+        wire[key] = extra as JsonValue;
+      }
+      wire.mapType = entry.mapType;
+      wire.target = entry.target;
+      wire.deliver = deliver;
       if (entry.required === true) wire.required = true;
       if (entry.when_absent) wire.when_absent = entry.when_absent;
       if (entry.default !== undefined)
