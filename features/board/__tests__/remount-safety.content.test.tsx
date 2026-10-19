@@ -1,5 +1,5 @@
 /**
- * Remount safety — board-only content: label, image, write-up, web page, page.
+ * Remount safety — board-only content: label, image, write-up, cover, web page, page.
  *
  * SUT: each type's `Body` from `items/catalog.ts`, mounted as the board mounts
  * a tile (`remount-safety/harness.tsx`). The break each case catches: a body
@@ -66,6 +66,27 @@ remountType(
       },
     }),
   (r) => expectRemountSafe(r, { heading: true, body: true }, []),
+);
+
+const COVER_HERO = '<div class="h"><h1>Harborview Properties, one look</h1></div>';
+const COVER_TEXT = "## Principles\n\n- **Calm by default.** Color is for meaning, never for decoration.";
+remountType(
+  "cover",
+  () =>
+    runCycle(type("cover"), { kind: "entity", entity: "cover", id: null, meta: { hero: COVER_HERO, markdown: COVER_TEXT } }, {
+      title: "Design system",
+      kept: (tile) => ({
+        prose: (tile.container.textContent ?? "").includes("Color is for meaning"),
+        hero: tile.container.querySelector("iframe") !== null,
+        saved: tile.source(),
+      }),
+    }),
+  (r) =>
+    expectRemountSafe(
+      r,
+      { prose: true, hero: true, saved: { kind: "entity", entity: "cover", id: null, meta: { hero: COVER_HERO, markdown: COVER_TEXT } } },
+      [],
+    ),
 );
 
 const WEB = "https://www.portlandoregon.gov/bds/rental-registration";
