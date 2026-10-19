@@ -107,31 +107,31 @@ export const staticSettingsControlIndex = [
     "controlId": "settings-control-office-apps-office-look"
   },
   {
-    "tabId": "appearance.layout",
+    "tabId": "appearance.shellLayout",
     "label": "Sidebar",
     "description": "Choose, order and group your menu.",
     "controlId": "settings-control-customize-sidebar"
   },
   {
-    "tabId": "appearance.layout",
+    "tabId": "appearance.shellLayout",
     "label": "Header",
     "description": "Buttons along the top.",
     "controlId": "settings-control-customize-header"
   },
   {
-    "tabId": "appearance.layout",
+    "tabId": "appearance.shellLayout",
     "label": "Dock",
     "description": "The bar along the bottom on a phone.",
     "controlId": "settings-control-customize-dock"
   },
   {
-    "tabId": "appearance.layout",
+    "tabId": "appearance.shellLayout",
     "label": "Standard view",
     "description": "Show the built-in layout instead of yours.",
     "controlId": "settings-control-customize-standard-view"
   },
   {
-    "tabId": "appearance.layout",
+    "tabId": "appearance.shellLayout",
     "label": "After you sign in",
     "description": "Where a sign-in with no page in mind opens.",
     "controlId": "settings-control-start-page-after-you-sign-in"

@@ -262,7 +262,7 @@ export const settingsRegistry: SettingsTabDef[] = [
     persistence: "synced",
   },
   {
-    id: "appearance.layout",
+    id: "appearance.shellLayout",
     label: "Layout",
     icon: LayoutTemplate,
     parentId: "appearance",
