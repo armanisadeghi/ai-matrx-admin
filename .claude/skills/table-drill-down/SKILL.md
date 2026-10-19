@@ -3,7 +3,7 @@ name: table-drill-down
 subject: data/drill-down
 type: Skill
 title: "Table drill-down — table usage rules, then group, break out, and land on a page about the value"
-description: "Rules for the shared MatrxDataTable and its drill-down, local or server. Use when configuring, migrating or reviewing table columns, filters, toolbars, record links or pagination, adding group-by or 'by X' analytics, or replacing hand-built totals, rollups or lists."
+description: "Rules for the shared MatrxDataTable and its drill-down. Use when configuring, migrating or reviewing table columns, filters, toolbars, record links or pagination, adding group-by, 'by X' analytics or counts and sums by status, owner, model or day, or replacing hand-built totals or lists."
 tags: [tables, ui, drill-down, analytics]
 timestamp: 2026-10-19
 ---
@@ -155,7 +155,7 @@ A level whose list equals the default has not been designed.
 - Summing known values where blanks mean "unknown".
 - Every level showing the same columns (levels not declared).
 - Styling the table from the host (`className`, arbitrary variants). A missing option is added in
-  `@ai-matrx/design-system`, released and adopted (rule 7).
+  `@ai-matrx/design-system`, released and adopted (§0 rule 7).
 - A per-row measure listed as an `attribute`, or an id column offered as a Dimension.
 - A second explorer or a one-off chart instead of `DrillExplorer` / `MatrxDrillChart`.
 
