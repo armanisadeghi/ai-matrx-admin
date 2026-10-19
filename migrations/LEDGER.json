@@ -11605,6 +11605,12 @@
       "filename": "20261020001000_readspeedorg_b_a_page_asks_only_its_own_columns.sql",
       "checksum": "099828408d47fc84e979ffdf8b2d437d40e1eb44fc4d43040dd35ec8451d3d93",
       "applied_at": "2026-10-19 20:29:27.601919+00"
+    },
+    "migrations/campaign/atfixg2_follow_a_record.sql": {
+      "source": "matrx-frontend",
+      "filename": "atfixg2_follow_a_record.sql",
+      "checksum": "a762915c7713de7e2acea571ba8f24a6245e880947cd8043d3d7b745daa989d9",
+      "applied_at": "2026-10-19 20:25:25.121213+00"
     }
   }
 }
