@@ -10,9 +10,10 @@
 
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Sparkles } from "lucide-react";
+import { TextCursorInput } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { getJson, postJson } from "@/lib/python-client";
 
 interface DescribeStatus {
@@ -80,7 +81,7 @@ export function ToolDescribe({
 
   return (
     <div className="flex flex-col gap-2" data-tool-describe="">
-      <Button variant="quiet" className="self-start" pressed={open} onClick={() => setOpen(!open)} icon={<Sparkles className="h-4 w-4" />} aria-expanded={open}>
+      <Button variant="quiet" className="self-start" pressed={open} onClick={() => setOpen(!open)} icon={<TextCursorInput className="h-4 w-4" />} aria-expanded={open}>
         Describe what you want
       </Button>
       {open ? (
@@ -90,8 +91,9 @@ export function ToolDescribe({
               Coming soon
             </p>
           ) : unavailable ? (
-            <p className="text-sm text-muted-foreground" data-describe-unavailable="">
-              Couldn't check this just now. Try again in a moment.
+            <p className="flex items-start gap-2 text-sm text-muted-foreground" data-describe-unavailable="">
+              <span className="min-w-0 flex-1">Couldn't check this just now. Try again in a moment.</span>
+              <ErrorAlchemyMenu error={status.error ?? "The Describe check failed"} />
             </p>
           ) : ready ? (
             <>
@@ -104,8 +106,9 @@ export function ToolDescribe({
                 className="w-full resize-y rounded-lg border border-border bg-background p-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               {fill.isError ? (
-                <p className="text-sm text-destructive" role="alert">
-                  That didn't work. Try again.
+                <p className="flex items-start gap-2 text-sm text-destructive" role="alert">
+                  <span className="min-w-0 flex-1">That didn't work. Try again.</span>
+                  <ErrorAlchemyMenu error={fill.error ?? "Describe failed"} />
                 </p>
               ) : null}
               {noAnswer || (fill.isSuccess && fill.data.status === "no_agent_bound") ? <p className="text-sm text-muted-foreground">Couldn't fill the form from that. Add a little more.</p> : null}

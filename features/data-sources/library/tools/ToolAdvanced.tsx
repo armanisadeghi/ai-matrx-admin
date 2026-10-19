@@ -7,6 +7,7 @@
  * option names are applied; nothing runs until the person presses the Tool's button.
  */
 
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -80,8 +81,9 @@ export function ToolAdvanced({
             className="w-full resize-y rounded-lg border border-border bg-background p-3 font-mono text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {problem ? (
-            <p className="text-sm text-destructive" role="alert" data-advanced-problem="">
-              {problem}
+            <p className="flex items-start gap-2 text-sm text-destructive" role="alert" data-advanced-problem="">
+              <span className="min-w-0 flex-1">{problem}</span>
+              <ErrorAlchemyMenu error={problem} />
             </p>
           ) : null}
           {unused.length > 0 ? (
