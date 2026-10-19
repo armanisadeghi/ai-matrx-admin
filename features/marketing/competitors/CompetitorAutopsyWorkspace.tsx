@@ -1544,7 +1544,7 @@ export default function CompetitorAutopsyWorkspace({
                 icon: <Target className="size-8" />,
                 title: "No opportunities yet",
                 description:
-                  "Run an autopsy to turn competitive evidence into a prioritized action list.",
+                  "Run an autopsy to get a ranked action list.",
               }}
             />
             </NonEditableContextMenu>
@@ -1613,7 +1613,7 @@ export default function CompetitorAutopsyWorkspace({
                 icon: <Swords className="size-8" />,
                 title: "No competitors identified",
                 description:
-                  "Automatic discovery measures real keyword overlap before adding a rival.",
+                  "Run discovery to find rivals by keyword overlap.",
               }}
             />
             </NonEditableContextMenu>
@@ -1701,7 +1701,7 @@ export default function CompetitorAutopsyWorkspace({
               emptyState={{
                 title: "No autopsy history",
                 description:
-                  "Every run will remain here with its durable result and cost evidence.",
+                  "Every run is kept here with its result and cost.",
               }}
             />
             </NonEditableContextMenu>
