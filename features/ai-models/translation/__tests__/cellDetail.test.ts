@@ -138,4 +138,3 @@ describe("normalizeTestResult renders any reply honestly", () => {
     expect(r.outcomes[0]).toMatchObject({ outcome: "skipped", detail: expect.stringContaining("150 of 150") });
   });
 });
-});
