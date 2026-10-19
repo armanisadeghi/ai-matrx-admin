@@ -175,7 +175,7 @@ export function automationCostColumns<T>(
       header: "Mandate",
       accessorFn: (row) => get(row)?.mandates.join(", ") ?? "",
       filter: "text",
-      width: 96,
+      width: 160,
       cell: (row) => <MandateCell row={get(row)} seat={seat} orgSlug={orgSlug} />,
     },
     {
@@ -183,7 +183,7 @@ export function automationCostColumns<T>(
       header: "Agent",
       accessorFn: (row) => get(row)?.agents.map((a) => a.name).join(", ") ?? "",
       filter: "text",
-      width: 96,
+      width: 160,
       cell: (row) => <AgentCell row={get(row)} seat={seat} />,
     },
     {

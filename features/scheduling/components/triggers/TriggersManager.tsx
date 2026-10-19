@@ -459,7 +459,7 @@ export function TriggersManager({
             search: true,
             searchPlaceholder: "Search triggers…",
             actions: (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button variant={aiOnly ? "quiet" : "outline"} aria-pressed={aiOnly} onClick={() => setAiOnly((v) => !v)}>
                   {aiOnly ? `AI only (${hidden.length} hidden)` : "Showing all"}
                 </Button>

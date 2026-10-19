@@ -857,7 +857,7 @@ export function SpendApprovalsBoard({
             search: true,
             searchPlaceholder: "Search names, features, keys, agents…",
             actions: (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {presentation === "list" ? (
                   <Select<StatusFilter>
                     aria-label="Status"
