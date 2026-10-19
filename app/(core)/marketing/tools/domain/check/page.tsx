@@ -1,4 +1,4 @@
-// record-view: none — domain research uses a query, not a single record
+// record-view: none — a domain research tool over any host, not a record page
 // Research ANY domain (seo_domain over the screen-run door) — an agency-plane
 // TOOL beside YouTube research. `?d=<host>&site=<siteId>&tab=…`; the optional
 // site sets brand-term subtraction and the "They rank, we don't" comparison.

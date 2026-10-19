@@ -125,6 +125,8 @@ import type { MicrosoftConnection } from "@/features/microsoft-integration/types
 import { listStorageConnections } from "@/features/storage-connections/service";
 import type { StorageConnection } from "@/features/storage-connections/types";
 import { IntegrationDirectory } from "@/features/connectors/IntegrationDirectory";
+import { AbilitySections } from "@/features/connectors/AbilitySections";
+import { foldAbilities } from "@/features/connectors/provider-folds";
 import { useSettingsTabNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import {
   DEFAULT_DIRECTORY_FILTERS,
@@ -591,7 +593,7 @@ export function IntegrationsWorkspace({
     ...summary,
     sharedBy: id === "google" ? googleSharedBy : undefined,
   });
-  const items: IntegrationDirectoryItem[] = [
+  const baseItems: IntegrationDirectoryItem[] = [
     nativeItem(
       "x",
       "X",
@@ -810,7 +812,6 @@ export function IntegrationsWorkspace({
       ),
     ),
     ...catalog
-      .filter((entry) => entry.slug !== "github")
       .map((entry): IntegrationDirectoryItem => {
         const presentation = catalogPresentation(entry);
         const saved = Boolean(entry.connectionId);
@@ -866,6 +867,7 @@ export function IntegrationsWorkspace({
         };
       }),
   ];
+  const items = foldAbilities(baseItems);
   const visible = filterDirectory(items, filters);
   const catalogLoading = status === "idle" || status === "loading";
   const loading =
@@ -1055,12 +1057,22 @@ export function IntegrationsWorkspace({
     }
   };
 
-  const renderDetail = (item: IntegrationDirectoryItem) => {
+  const renderDetail = (item: IntegrationDirectoryItem) =>
+    item.abilities?.length ? (
+      <AbilitySections
+        item={item}
+        renderAbility={(ability) => renderOwnDetail(ability.item, ability.label)}
+        renderOwn={() => renderOwnDetail({ ...item, abilities: undefined })}
+      />
+    ) : (
+      renderOwnDetail(item)
+    );
+  const renderOwnDetail = (item: IntegrationDirectoryItem, label?: string) => {
     const entry = item.server;
     if (entry)
       return (
         <ServerCard
-          entry={entry}
+          entry={label ? { ...entry, name: label, vendor: item.name } : entry}
           connectionPresentation={catalogPresentation(entry)}
           isExpanded
           onToggleExpand={() => selectDetail(null)}

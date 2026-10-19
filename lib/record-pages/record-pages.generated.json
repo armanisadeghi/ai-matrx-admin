@@ -4651,7 +4651,7 @@
   },
   "route:/marketing/tools/domain/check": {
    "file": "app/(core)/marketing/tools/domain/check/page.tsx",
-   "none": "domain research uses a query, not a single record"
+   "none": "a domain research tool over any host, not a record page"
   },
   "route:/marketing/tools/youtube": {
    "file": "app/(core)/marketing/tools/youtube/page.tsx",
@@ -5749,7 +5749,7 @@
   },
   "route:/search/experience": {
    "file": "app/(core)/search/experience/page.tsx",
-   "none": "search results span records and sources"
+   "none": "the search tool, not a record page"
   },
   "route:/search/speed-test": {
    "file": "app/(core)/search/speed-test/page.tsx",

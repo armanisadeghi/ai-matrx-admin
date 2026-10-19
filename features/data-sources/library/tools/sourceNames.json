@@ -1,0 +1,37 @@
+{
+  "_about": "ONE mapping from what the server sends as a result's source to the name a person reads. Approving the proposal is an edit to this file only. 'brands' are real brands shown by name (the carrier IS the brand). Everything else reads 'Matrx <kind>' by the Tool's job family; a family with no entry reads plain 'Matrx'.",
+  "brands": ["Moz", "SpyFu", "Apollo", "ContactOut", "Crustdata", "Perplexity", "Coinbase", "Semrush", "Ahrefs"],
+  "matrxByFamily": {
+    "seo": "Matrx SEO",
+    "people": "Matrx People",
+    "company": "Matrx Company",
+    "social": "Matrx Social",
+    "ads": "Matrx Ads",
+    "search": "Matrx Search",
+    "reviews": "Matrx Reviews",
+    "ai_visibility": "Matrx AI Check",
+    "market": "Matrx Markets",
+    "ecommerce": "Matrx Shops",
+    "generation": "Matrx Studio",
+    "data_library": "Matrx Data",
+    "public_data": "Matrx Public"
+  },
+  "matrxDefault": "Matrx",
+  "providers": {
+    "tavily": "Matrx Search", "keenable": "Matrx Search", "exa": "Matrx Search", "serper": "Matrx Search",
+    "search1api": "Matrx Search", "octen": "Matrx Search", "you": "Matrx Search",
+    "brightdata": "Matrx Fetch", "olostep": "Matrx Fetch", "tinyfish": "Matrx Fetch", "litescrape": "Matrx Fetch", "crawl4ai": "Matrx Fetch",
+    "scrapecreators": "Matrx Social", "tikhub": "Matrx Social", "justoneapi": "Matrx Social", "limadata": "Matrx Social",
+    "grok_x": "Matrx Social", "mastodon_public": "Matrx Social",
+    "tomba": "Matrx People", "hunter": "Matrx People", "prospeo": "Matrx People", "dropleads": "Matrx People", "companyenrich": "Matrx Company",
+    "millionverifier": "Matrx Verify", "hlrlookup": "Matrx Verify", "trestleiq": "Matrx Verify",
+    "dataforseo": "Matrx SEO", "serpstat": "Matrx SEO", "seranking": "Matrx SEO", "treg": "Matrx SEO",
+    "cloro": "Matrx AI Check",
+    "marketstack": "Matrx Markets",
+    "branddev": "Matrx Brand",
+    "public_status": "Matrx Public", "public_data": "Matrx Public", "github_public": "Matrx Public",
+    "matrx_models": "Matrx Models",
+    "moz": "Moz", "spyfu": "SpyFu", "apollo": "Apollo", "contactout": "ContactOut", "crustdata": "Crustdata",
+    "perplexity": "Perplexity", "coinbase_public": "Coinbase"
+  }
+}

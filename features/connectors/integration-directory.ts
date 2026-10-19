@@ -2,6 +2,7 @@ import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 import { MCP_CATEGORY_META } from "@ai-matrx/chat/agents/types/mcp.types";
 import { matchesIntegrationSearch } from "@/features/settings/tabs/integration-search-match";
 import { readConnectionStatus } from "./connection-status";
+import type { IntegrationAbility } from "./provider-folds";
 import type { ConnectorDefinition } from "./types";
 
 export type DirectoryView = "discover" | "yours";
@@ -29,6 +30,15 @@ export interface IntegrationDirectoryItem {
    */
   sharedBy?: readonly string[];
   server?: McpCatalogEntry;
+  /** Other ways to use this provider, folded into its one card (`provider-folds.ts`). */
+  abilities?: readonly IntegrationAbility[];
+  /** The native connection's own state, before the abilities were merged in. */
+  ownState?: {
+    saved: boolean;
+    connected: boolean;
+    attention: boolean;
+    status: string;
+  };
 }
 
 export interface DirectoryFilters {
