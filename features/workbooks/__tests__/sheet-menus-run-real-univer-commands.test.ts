@@ -129,6 +129,17 @@ function univerCommandIds(): Set<string> {
   return ids;
 }
 
+/**
+ * Command ids our OWN code registers on Univer's command service (anchored comments, C9: they replaced the
+ * Univer thread-comment presets). Read from the registering file itself, so a row can only point at an id that
+ * file really registers (the registration loop there is `cs.registerCommand` over these constants).
+ */
+function ownRegisteredCommandIds(): Set<string> {
+  const src = readFileSync(join(__dirname, "..", "components", "useSheetComments.tsx"), "utf8");
+  expect(src).toContain("cs.registerCommand(");
+  return new Set([...src.matchAll(/export const [A-Z_]+_COMMAND = "(matrx\.operation\.[a-z-]+)"/g)].map((m) => m[1]!));
+}
+
 const PAGE_LINKS = new Set(["help.privacy", "help.terms", "help.feedback"]);
 
 function allRunnables(host: SheetChromeHost) {
@@ -149,7 +160,9 @@ describe("workbook menus and toolbar → Univer", () => {
     for (const a of allRunnables(host)) void a.run();
     const sent = [...new Set(calls.filter((c) => c.kind === "exec").map((c) => c.args[0] as string))];
     expect(sent.length).toBeGreaterThan(60);
-    const unknown = sent.filter((id) => !known.has(id));
+    const own = ownRegisteredCommandIds();
+    expect([...own].sort()).toEqual(["matrx.operation.add-comment", "matrx.operation.toggle-comments"]);
+    const unknown = sent.filter((id) => !known.has(id) && !own.has(id));
     expect(unknown).toEqual([]);
   });
 

@@ -82,7 +82,12 @@ describe("document menus and toolbar → Univer", () => {
     for (const a of allRunnables(host)) void a.run();
     const sent = [...new Set(calls.filter((c) => c.kind === "exec").map((c) => c.args[0] as string))];
     expect(sent.length).toBeGreaterThan(35);
-    expect(sent.filter((id) => !known.has(id))).toEqual([]);
+    // Anchored comments (C9) replaced Univer's thread-comment presets; useDocComments registers these two itself.
+    const hook = readFileSync(join(__dirname, "..", "components", "useDocComments.tsx"), "utf8");
+    expect(hook).toContain("registerCommand(");
+    const own = new Set([...hook.matchAll(/export const [A-Z_]+_COMMAND = "(matrx\.operation\.[a-z-]+)"/g)].map((m) => m[1]!));
+    expect([...own].sort()).toEqual(["matrx.operation.add-comment", "matrx.operation.toggle-comments"]);
+    expect(sent.filter((id) => !known.has(id) && !own.has(id))).toEqual([]);
   });
 
   it("no row is a no-op, and zoom names the document", () => {
