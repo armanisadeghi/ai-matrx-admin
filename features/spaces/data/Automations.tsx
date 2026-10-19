@@ -50,7 +50,7 @@ type Draft =
   | { kind: "flow"; step: Step };
 
 /** The step kinds the visual flow editor owns. */
-const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message"]);
+const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "slack_post"]);
 
 /** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
 const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
@@ -68,6 +68,7 @@ const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
   ["Send Outlook email", () => ({ do: "outlook_mail", to: "", subject: "", body: "" })],
   ["Outlook calendar event", () => ({ do: "outlook_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" })],
   ["Teams message", () => ({ do: "teams_message", channel_link: "", message: "" })],
+  ["Post in Slack", () => ({ do: "slack_post", channel: "", message: "" })],
 ];
 
 function scriptInputs(lines: string): Record<string, string> {
