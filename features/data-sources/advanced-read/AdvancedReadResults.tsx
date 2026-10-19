@@ -5,9 +5,9 @@ import { readEntry, useReadVersion } from "./store";
 
 /** Every page of a batch the advanced reader answered (read or not), each under its address. Absent until one answers. */
 export function AdvancedReadResults({ urls, className }: { urls: readonly string[]; className?: string }) {
-  useReadVersion();
+  const version = useReadVersion();
   const done = [...new Set(urls)].flatMap((url) => {
-    const e = readEntry(url);
+    const e = readEntry(url, version);
     return e?.status === "done" ? [{ url, item: e.item }] : [];
   });
   if (done.length === 0) return null;

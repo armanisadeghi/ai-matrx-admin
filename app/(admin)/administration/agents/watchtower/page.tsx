@@ -1,3 +1,4 @@
+// record-view: none — a scoreboard of canary results per feature, not one record
 import { Suspense } from "react";
 import { WatchtowerPage } from "@/features/admin/watchtower/WatchtowerPage";
 

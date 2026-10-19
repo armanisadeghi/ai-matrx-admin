@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T20:42:05.444Z",
+  "generated_at": "2026-10-19T20:57:21.054Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -793,6 +793,12 @@
       "filename": "atfixg2_follow_a_record.sql",
       "checksum": "a762915c7713de7e2acea571ba8f24a6245e880947cd8043d3d7b745daa989d9",
       "applied_at": "2026-10-19 20:25:25.121213+00"
+    },
+    "migrations/campaign/atg1b_a_an_interface_draws_its_charts_for_outsiders.sql": {
+      "source": "matrx-frontend",
+      "filename": "atg1b_a_an_interface_draws_its_charts_for_outsiders.sql",
+      "checksum": "59ff2dd0f364a8527a31004e301c8036154b1336b332620143b060fc9d833106",
+      "applied_at": "2026-10-19 20:57:17.397487+00"
     },
     "migrations/campaign/atinterface_a_an_interface_is_shared_and_read_through_its_elements.sql": {
       "source": "matrx-frontend",

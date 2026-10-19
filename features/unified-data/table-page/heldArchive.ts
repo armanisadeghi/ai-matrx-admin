@@ -31,7 +31,11 @@ export function heldSentence(source: string, held: number, was?: number | null):
 
 /** The person's answer, remembered on the table and its synced sources. "archive" records the yes a table_sync refresh spends. */
 export async function answerHold(organizationId: string, tableId: string, answer: "keep" | "archive", token: string): Promise<void> {
-  const { error } = await supabase.schema("custom").rpc("archive_hold_answer", {
+  // custom.archive_hold_answer (migration 20261019130000) is newer than the generated database types
+  const door = supabase.schema("custom") as unknown as {
+    rpc: (fn: "archive_hold_answer", args: Record<string, string>) => PromiseLike<{ error: { message: string } | null }>;
+  };
+  const { error } = await door.rpc("archive_hold_answer", {
     p_organization_id: organizationId,
     p_table_id: tableId,
     p_answer: answer,

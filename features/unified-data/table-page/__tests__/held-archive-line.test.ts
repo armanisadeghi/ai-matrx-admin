@@ -19,7 +19,7 @@ describe("a held archive is ONE question on every synced table's bar (review 7)"
       const src = read(bar);
       expect(src).toContain("<HeldArchiveLine");
       expect(src).toContain("answerHold(");
-      expect(src).not.toMatch(/no longer lists/);
+      expect(src).not.toMatch(/Archive them\?/);
     }
   });
 });

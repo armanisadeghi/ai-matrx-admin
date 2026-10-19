@@ -24,7 +24,12 @@ function put(url: string, entry: ReadEntry | null) {
   listeners.forEach((l) => l());
 }
 
-export const readEntry = (url: string): ReadEntry | undefined => entries.get(url);
+/**
+ * The entry for a page. `version` is the value `useReadVersion()` returned in the calling component:
+ * passing it makes it a real input, so the React Compiler re-reads when a read changes instead of
+ * reusing a stale answer (an unused hook result is dropped as a dependency: batch rows stayed "Failed").
+ */
+export const readEntry = (url: string, version?: number): ReadEntry | undefined => (void version, entries.get(url));
 
 /** The state of one page's advanced read (undefined = never tried). */
 export function useReadEntry(url: string): ReadEntry | undefined {

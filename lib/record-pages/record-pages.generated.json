@@ -3,7 +3,7 @@
  "counts": {
   "list.sourceWithoutCustomFields": 2,
   "route.pending": 915,
-  "route.none": 595,
+  "route.none": 596,
   "route.tokens": 53,
   "route.host": 1,
   "window.pending": 195,
@@ -13,9 +13,9 @@
   "peek.tokens": 19,
   "peek.none": 5,
   "peek.any": 1,
-  "table.pending": 369,
+  "table.pending": 368,
   "table.noncanonical": 8,
-  "table.none": 6,
+  "table.none": 7,
   "table.set": 1
  },
  "tokens": [
@@ -346,6 +346,10 @@
   "route:/administration/agents/tool-control/alerts/[id]": {
    "file": "app/(admin)/administration/agents/tool-control/alerts/[id]/page.tsx",
    "none": "a tool-control alarm is a system record with no registry token"
+  },
+  "route:/administration/agents/watchtower": {
+   "file": "app/(admin)/administration/agents/watchtower/page.tsx",
+   "none": "a scoreboard of canary results per feature, not one record"
   },
   "route:/administration/ai": {
    "file": "app/(admin)/administration/ai/page.tsx",
@@ -7485,7 +7489,7 @@
   "features/admin/users/record/UserSecurityTab.tsx": "pending",
   "features/admin/users/record/UserSupportTab.tsx": "pending",
   "features/admin/users/support-sessions/SupportSessionsTableClient.tsx": "pending",
-  "features/admin/watchtower/WatchtowerPage.tsx": "pending",
+  "features/admin/watchtower/WatchtowerPage.tsx": "none — rows are canary scorecards and run results of the monitor itself, keyed by feature_key and run id; they are not records of any registry table.",
   "features/administration/batch/components/ProviderBatchesPanel.tsx": "pending",
   "features/administration/batch/components/WorkItemsPanel.tsx": "pending",
   "features/administration/canonicalization/components/AdminAuditTable.tsx": "pending",
