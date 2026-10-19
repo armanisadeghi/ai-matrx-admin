@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 5,
+  "version": 6,
   "title": "Brewery Taproom Desk",
-  "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
+  "description": "For brewers and taproom managers: batches, tanks, kegs, tap list, distributor orders.",
   "forWho": "Craft breweries, cideries and taproom operators",
   "icon": {
     "emoji": "🍺"
@@ -14,10 +14,12 @@
   },
   "category": "hospitality",
   "tags": [
-    "brewery",
-    "taproom",
-    "batches",
-    "kegs"
+    "brewer",
+    "head brewer",
+    "taproom manager",
+    "kegs",
+    "tanks",
+    "distributor orders"
   ],
   "spec": {
     "specVersion": 1,
@@ -172,6 +174,31 @@
             ]
           },
           {
+            "key": "packaged_bbl",
+            "label": "Barrels packaged",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "loss_pct",
+            "label": "Cellar loss (%)",
+            "parityType": "formula",
+            "formula": "IF({Barrels packaged} > 0, ROUND(({Volume (barrels)} - {Barrels packaged}) / {Volume (barrels)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "abv",
             "label": "ABV (%)",
             "parityType": "number",
@@ -187,6 +214,57 @@
                 "value": 20
               }
             ]
+          },
+          {
+            "key": "og",
+            "label": "Original gravity",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 1.2
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fg",
+            "label": "Final gravity",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0.99
+              },
+              {
+                "kind": "max",
+                "value": 1.1
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ibu",
+            "label": "Bitterness (IBU)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "vessel",
@@ -373,11 +451,13 @@
               "status": "Fermenting",
               "style": "IPA",
               "brewed_on": "@today-6d",
-              "ready_on": "@today+7d",
+              "ready_on": "@today+6d",
               "barrels": 7,
               "abv": 6.8,
               "vessel": "Fermenter 1",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "og": 1.062,
+              "ibu": 55
             }
           },
           {
@@ -387,11 +467,14 @@
               "status": "Conditioning",
               "style": "Pale ale",
               "brewed_on": "@today-16d",
-              "ready_on": "@today+2d",
+              "ready_on": "@today-1d",
               "barrels": 7,
               "abv": 5.4,
               "vessel": "Fermenter 2",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "og": 1.052,
+              "ibu": 38,
+              "fg": 1.011
             }
           },
           {
@@ -405,7 +488,10 @@
               "barrels": 7,
               "abv": 4.9,
               "vessel": "Brite tank",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "og": 1.046,
+              "ibu": 22,
+              "fg": 1.009
             }
           },
           {
@@ -420,7 +506,11 @@
               "abv": 7.2,
               "vessel": "Brite tank",
               "brewer": "tm-1",
-              "packaged_on": "@today-20d"
+              "packaged_on": "@today-20d",
+              "og": 1.072,
+              "ibu": 40,
+              "fg": 1.017,
+              "packaged_bbl": 6.4
             }
           },
           {
@@ -435,7 +525,11 @@
               "abv": 6.1,
               "vessel": "Fermenter 3",
               "brewer": "tm-1",
-              "packaged_on": "@today-28d"
+              "packaged_on": "@today-28d",
+              "og": 1.05,
+              "ibu": 24,
+              "fg": 1.004,
+              "packaged_bbl": 3.2
             }
           },
           {
@@ -449,7 +543,9 @@
               "barrels": 3.5,
               "abv": 5.8,
               "vessel": "Fermenter 3",
-              "brewer": "tm-1"
+              "brewer": "tm-1",
+              "og": 1.054,
+              "ibu": 18
             }
           },
           {
@@ -463,7 +559,9 @@
               "barrels": 3.5,
               "abv": 4.4,
               "vessel": "Fermenter 2",
-              "brewer": "tm-3"
+              "brewer": "tm-3",
+              "og": 1.04,
+              "ibu": 8
             }
           },
           {
@@ -478,7 +576,11 @@
               "abv": 6.8,
               "vessel": "Fermenter 1",
               "brewer": "tm-1",
-              "packaged_on": "@today-14d"
+              "packaged_on": "@today-14d",
+              "og": 1.062,
+              "ibu": 55,
+              "fg": 1.01,
+              "packaged_bbl": 6.3
             }
           }
         ]
@@ -559,6 +661,33 @@
             "key": "location",
             "label": "Location",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "keg_deposit",
+            "label": "Keg deposit (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_back",
+            "label": "Due back",
+            "parityType": "datetime",
+            "format": "date",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -703,7 +832,9 @@
               "filled_on": "@today-12d",
               "location": "Cask & Cleaver pub",
               "batch": "batch-8",
-              "order": "wholesale_order-1"
+              "order": "wholesale_order-1",
+              "keg_deposit": 100,
+              "due_back": "@today+18d"
             }
           },
           {
@@ -715,7 +846,9 @@
               "filled_on": "@today-26d",
               "location": "Birch Street Tavern",
               "batch": "batch-5",
-              "order": "wholesale_order-3"
+              "order": "wholesale_order-3",
+              "keg_deposit": 50,
+              "due_back": "@today-2d"
             }
           },
           {
@@ -742,6 +875,12 @@
               "order": "wholesale_order-2"
             }
           }
+        ],
+        "before": [
+          [
+            "filled_on",
+            "due_back"
+          ]
         ]
       },
       {
@@ -962,7 +1101,7 @@
               "status": "Cleaning",
               "pint_price": 6.5,
               "line_cleaned": "@today-14d",
-              "next_clean": "@today-0d",
+              "next_clean": "@today-1d",
               "owner": "tm-2"
             }
           }
@@ -1022,6 +1161,21 @@
             "contextPolicy": "include"
           },
           {
+            "key": "channel",
+            "label": "Channel",
+            "parityType": "select",
+            "choices": [
+              "Self-distributed",
+              "Distributor"
+            ],
+            "choiceColors": {
+              "Self-distributed": "green",
+              "Distributor": "blue"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "delivery_on",
             "label": "Delivery date",
             "parityType": "datetime",
@@ -1055,6 +1209,23 @@
             ]
           },
           {
+            "key": "empties_back",
+            "label": "Empty kegs collected",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "total",
             "label": "Order total (USD)",
             "parityType": "currency",
@@ -1072,6 +1243,23 @@
                 "value": 100000
               }
             ]
+          },
+          {
+            "key": "invoice",
+            "label": "Invoice",
+            "parityType": "select",
+            "choices": [
+              "Not invoiced",
+              "Invoiced",
+              "Paid"
+            ],
+            "choiceColors": {
+              "Not invoiced": "slate",
+              "Invoiced": "amber",
+              "Paid": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "rep",
@@ -1160,7 +1348,10 @@
               "kegs_ordered": 2,
               "total": 520,
               "rep": "tm-4",
-              "delivered_on": "@today-3d"
+              "delivered_on": "@today-3d",
+              "channel": "Self-distributed",
+              "invoice": "Paid",
+              "empties_back": 2
             }
           },
           {
@@ -1173,7 +1364,10 @@
               "kegs_ordered": 3,
               "total": 690,
               "rep": "tm-4",
-              "delivered_on": "@today-10d"
+              "delivered_on": "@today-10d",
+              "channel": "Self-distributed",
+              "invoice": "Invoiced",
+              "empties_back": 1
             }
           },
           {
@@ -1185,7 +1379,9 @@
               "delivery_on": "@mon+3d",
               "kegs_ordered": 4,
               "total": 980,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "channel": "Self-distributed",
+              "invoice": "Not invoiced"
             }
           },
           {
@@ -1197,7 +1393,9 @@
               "delivery_on": "@today+9d",
               "kegs_ordered": 2,
               "total": 520,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "channel": "Self-distributed",
+              "invoice": "Not invoiced"
             }
           },
           {
@@ -1205,11 +1403,13 @@
             "values": {
               "order_name": "Riverbend Bottle Shop, cans",
               "status": "Requested",
-              "account": "Riverbend Bottle Shop",
+              "account": "Tri-County Beverage, for Riverbend Bottle Shop",
               "delivery_on": "@today+14d",
               "kegs_ordered": 0,
               "total": 640,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "channel": "Distributor",
+              "invoice": "Not invoiced"
             }
           },
           {
@@ -1217,11 +1417,27 @@
             "values": {
               "order_name": "Summit Ski Lodge, winter menu",
               "status": "Confirmed",
-              "account": "Summit Ski Lodge",
+              "account": "Tri-County Beverage, for Summit Ski Lodge",
               "delivery_on": "@today+4d",
               "kegs_ordered": 6,
               "total": 1380,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "channel": "Distributor",
+              "invoice": "Not invoiced"
+            }
+          },
+          {
+            "key": "wholesale_order-7",
+            "values": {
+              "order_name": "Birch Street Tavern, missed drop",
+              "status": "Confirmed",
+              "account": "Birch Street Tavern",
+              "delivery_on": "@today-1d",
+              "kegs_ordered": 1,
+              "total": 230,
+              "rep": "tm-4",
+              "channel": "Self-distributed",
+              "invoice": "Not invoiced"
             }
           }
         ],
@@ -1502,9 +1718,233 @@
               "expected": 35,
               "host": "tm-2"
             }
+          },
+          {
+            "key": "event-8",
+            "values": {
+              "event_name": "Next Tuesday trivia",
+              "status": "Planned",
+              "kind": "Trivia",
+              "event_on": "@mon+8d",
+              "expected": 60,
+              "host": "tm-5"
+            }
+          },
+          {
+            "key": "event-9",
+            "values": {
+              "event_name": "Sunday brewhouse tour",
+              "status": "Confirmed",
+              "kind": "Private party",
+              "event_on": "@mon-1d",
+              "expected": 18,
+              "host": "tm-2"
+            }
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "tank",
+        "name": "Tanks",
+        "labelSingular": "Tank",
+        "labelPlural": "Tanks",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "cylinder",
+        "titleField": "tank_name",
+        "describes": "Each fermenter and brite tank: size, what is in it now, its state and when it was last cleaned.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "tank_name",
+            "label": "Tank",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "State",
+            "parityType": "status",
+            "choices": [
+              "Empty",
+              "Cleaning",
+              "Fermenting",
+              "Conditioning",
+              "Carbonating"
+            ],
+            "statusGroups": {
+              "Empty": "todo",
+              "Cleaning": "in_progress",
+              "Fermenting": "in_progress",
+              "Conditioning": "in_progress",
+              "Carbonating": "in_progress"
+            },
+            "required": true,
+            "choiceColors": {
+              "Empty": "slate",
+              "Cleaning": "teal",
+              "Fermenting": "orange",
+              "Conditioning": "blue",
+              "Carbonating": "violet"
+            },
+            "default": "Empty",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "choices": [
+              "Fermenter",
+              "Brite tank",
+              "Barrel"
+            ],
+            "choiceColors": {
+              "Fermenter": "orange",
+              "Brite tank": "blue",
+              "Barrel": "brown"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "size",
+            "label": "Size (barrels)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_cip",
+            "label": "Last cleaned and sanitized",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "temp",
+            "label": "Set temperature (F)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 28
+              },
+              {
+                "kind": "max",
+                "value": 80
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "batch",
+            "label": "Batch in it",
+            "parityType": "relation",
+            "relationTarget": "batch",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "tank-1",
+            "values": {
+              "tank_name": "Fermenter 1, 7 bbl",
+              "kind": "Fermenter",
+              "size": 7,
+              "status": "Fermenting",
+              "batch": "batch-1",
+              "last_cip": "@today-20d",
+              "temp": 66
+            }
+          },
+          {
+            "key": "tank-2",
+            "values": {
+              "tank_name": "Fermenter 2, 7 bbl",
+              "kind": "Fermenter",
+              "size": 7,
+              "status": "Cleaning",
+              "last_cip": "@today-1d"
+            }
+          },
+          {
+            "key": "tank-3",
+            "values": {
+              "tank_name": "Fermenter 3, 3.5 bbl",
+              "kind": "Fermenter",
+              "size": 3.5,
+              "status": "Fermenting",
+              "batch": "batch-7",
+              "last_cip": "@today-30d",
+              "temp": 68
+            }
+          },
+          {
+            "key": "tank-4",
+            "values": {
+              "tank_name": "Brite tank 1, 7 bbl",
+              "kind": "Brite tank",
+              "size": 7,
+              "status": "Carbonating",
+              "batch": "batch-3",
+              "last_cip": "@today-31d",
+              "temp": 33
+            }
+          },
+          {
+            "key": "tank-5",
+            "values": {
+              "tank_name": "Brite tank 2, 7 bbl",
+              "kind": "Brite tank",
+              "size": 7,
+              "status": "Conditioning",
+              "batch": "batch-2",
+              "last_cip": "@today-17d",
+              "temp": 34
+            }
+          },
+          {
+            "key": "tank-6",
+            "values": {
+              "tank_name": "Barrel rack, oak",
+              "kind": "Barrel",
+              "size": 1,
+              "status": "Empty",
+              "last_cip": "@today-60d"
+            }
+          }
+        ],
+        "independentOf": {
+          "batch": "Either record can be created or change status before the other."
+        }
       }
     ],
     "relationships": [
@@ -1577,6 +2017,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "event_by_host"
+      },
+      {
+        "describes": "Each tank holds at most one batch at a time.",
+        "fromTable": "tank",
+        "fromField": "batch",
+        "toTable": "batch",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "in_tanks"
       }
     ],
     "sharedBlocks": [
@@ -2065,6 +2515,20 @@
             "Confirmed"
           ]
         }
+      },
+      {
+        "token": "all_tank",
+        "name": "All tanks",
+        "table": "tank",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "tank_board",
+        "name": "Tanks board",
+        "table": "tank",
+        "kind": "kanban",
+        "groupBy": "status"
       }
     ],
     "agent": {
@@ -2153,7 +2617,7 @@
         "Foundry Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2175,7 +2639,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "From grain to glass: batches and when they will be ready, every keg and where it is, the tap list and line cleaning, wholesale orders and taproom events. Start on the Dashboard, check Days to ready on every batch, and clean lines on schedule."
+              "text": "The brewhouse and taproom of a seven-barrel brewery: every batch with gravities, bitterness and cellar loss, the tanks and what is in them, kegs and where they are, the tap list and line cleaning, wholesale and distributor orders, and taproom events. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2196,6 +2667,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2748,6 +3225,55 @@
             ],
             "activeViewId": "eve-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tanks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every fermenter and brite tank, what is in it and when it was last cleaned."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tank",
+              "view": "all_tank"
+            },
+            "inline": true,
+            "title": "Tanks",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "tank-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "tank-t",
+                "name": "All tanks",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "tank-b"
+          }
         }
       ]
     },
@@ -3173,6 +3699,84 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tanks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "tank",
+              "view": "all_tank"
+            },
+            "inline": true,
+            "title": "Tanks",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vtk",
+                "name": "Tank board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              }
+            ],
+            "activeViewId": "vtk"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Kegs out past their return date"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "keg",
+              "view": "all_keg"
+            },
+            "inline": true,
+            "title": "Kegs out",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vko",
+                "name": "Kegs at customers",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "At customer"
+                },
+                "sorts": [
+                  {
+                    "field": "due_back",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vko"
+          }
         }
       ]
     },
@@ -3181,14 +3785,14 @@
       "parent": "brewery-taproom-desk",
       "title": "Brew day log",
       "icon": {
-        "emoji": "🧪"
+        "emoji": "🍺"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Write down what you did, not what you meant to do. A log is how the next batch gets better."
+              "text": "A brewery is only as consistent as its records. Logging every brew day the same way lets you repeat a great batch and find out why a bad one went wrong."
             }
           ],
           "background": "blue",
@@ -3200,7 +3804,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before"
+              "text": "Before brewing"
             }
           ],
           "props": {
@@ -3208,106 +3812,65 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Check yeast, hops and grain against the recipe."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Sanitize the vessel and note the time."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "During"
+              "text": "Recipe checked; grain, hops and yeast weighed and on hand"
             }
           ],
           "props": {
-            "level": 2
+            "checked": false
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Record mash temperature, time and pH."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Fermenter cleaned and sanitized; tank set to "
+            },
             {
-              "text": "Record boil gravity, hop additions and times."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Cleaning",
+              "bold": true
+            },
             {
-              "text": "Cool, aerate and pitch; write down the temperature."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
+              "text": " then "
+            },
             {
-              "text": "After"
+              "text": "Empty",
+              "bold": true
             }
           ],
           "props": {
-            "level": 2
+            "checked": false
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Update the batch row with brewed date, vessel and ready date."
+              "text": "Water treated; strike temperature calculated"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Log starting gravity in the batch page."
+              "text": "Yeast healthy: pitch rate worked out for the batch size"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Clean the kettle and fermenter the same day."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "keg-handling",
-      "parent": "brewery-taproom-desk",
-      "title": "Keg handling and tracking",
-      "icon": {
-        "emoji": "🛢️"
-      },
-      "blocks": [
         {
           "type": "heading",
           "text": [
             {
-              "text": "Filling"
+              "text": "On the day"
             }
           ],
           "props": {
@@ -3318,7 +3881,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Clean and sanitize the keg; purge with carbon dioxide."
+              "text": "Add the batch with style, brew date, planned ready date and barrels."
             }
           ]
         },
@@ -3326,7 +3889,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Fill, label with the batch and date, and press Fill a keg on the batch."
+              "text": "Record mash temperature and time, and the boil length."
             }
           ]
         },
@@ -3334,7 +3897,29 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Store in the cooler at the right temperature."
+              "text": "Take the "
+            },
+            {
+              "text": "original gravity",
+              "bold": true
+            },
+            {
+              "text": " after cooling, before pitching."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note the tank on the batch and set the tank to "
+            },
+            {
+              "text": "Fermenting",
+              "bold": true
+            },
+            {
+              "text": " with this batch."
             }
           ]
         },
@@ -3342,63 +3927,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Movement"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Update Where whenever a keg moves: tap, customer, back dock."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check empties weekly; chase any keg out for more than six weeks."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Quality"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Taste each batch at packaging and again a week later. Write the notes in the batch page."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "line-cleaning",
-      "parent": "brewery-taproom-desk",
-      "title": "Draft line cleaning",
-      "icon": {
-        "emoji": "🧽"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Schedule"
+              "text": "During fermentation"
             }
           ],
           "props": {
@@ -3415,12 +3944,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Task"
+                      "text": "Day"
                     }
                   ],
                   [
                     {
-                      "text": "How often"
+                      "text": "Check"
                     }
                   ]
                 ]
@@ -3429,12 +3958,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Line clean"
+                      "text": "1 to 3"
                     }
                   ],
                   [
                     {
-                      "text": "Every two weeks"
+                      "text": "Temperature holding; active fermentation"
                     }
                   ]
                 ]
@@ -3443,12 +3972,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Faucet teardown"
+                      "text": "4 to 7"
                     }
                   ],
                   [
                     {
-                      "text": "Monthly"
+                      "text": "Gravity dropping; dry-hop if the recipe says"
                     }
                   ]
                 ]
@@ -3457,12 +3986,26 @@
                 "cells": [
                   [
                     {
-                      "text": "Coupler scrub"
+                      "text": "7 to 14"
                     }
                   ],
                   [
                     {
-                      "text": "Weekly"
+                      "text": "Final gravity steady on two readings two days apart"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Crash cool; move to brite tank; carbonate"
                     }
                   ]
                 ]
@@ -3474,7 +4017,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Final gravity and ABV"
             }
           ],
           "props": {
@@ -3482,64 +4025,160 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Mark the tap as Cleaning."
+              "text": "When gravity is steady, enter "
+            },
+            {
+              "text": "final gravity",
+              "bold": true
+            },
+            {
+              "text": " and the ABV. A batch that stops high may have tired yeast or too cold a tank."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Flush with water, circulate cleaner for fifteen minutes, rinse until neutral."
+              "text": "Packaging"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fill kegs and add each one with the batch and fill date."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Taste the first pour to confirm no off flavors."
+              "text": "Enter "
+            },
+            {
+              "text": "barrels packaged",
+              "bold": true
+            },
+            {
+              "text": "; the cellar loss shows straight away."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Press Back to pouring, update Line cleaned and set the next clean date."
+              "text": "Set the batch to "
+            },
+            {
+              "text": "Packaged",
+              "bold": true
+            },
+            {
+              "text": " and the brite tank to "
+            },
+            {
+              "text": "Cleaning",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tank cleaning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Clean and sanitize every tank after it empties, and write the date. A tank sitting dirty for days is a contamination risk."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tasting panel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Taste every batch at transfer and at packaging with at least two people. Note off-flavors on the batch: diacetyl (buttery), acetaldehyde (green apple), oxidation (cardboard)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Midnight Ledger stout packaged 6.4 of 7 barrels, a cellar loss near 9 percent. The brewer notes that the dry-hop and the transfer hose length both cost beer, and shortens the hose for the next batch."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "keg-handling",
+      "parent": "brewery-taproom-desk",
+      "title": "Keg handling and tracking",
+      "icon": {
+        "emoji": "🛢️"
+      },
+      "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Bad lines make good beer taste bad. This is the cheapest quality control in the building."
+              "text": "Kegs are expensive and they wander. Tracking each one by tag saves money and helps you get them back."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
-        }
-      ]
-    },
-    {
-      "key": "wholesale-and-distribution",
-      "parent": "brewery-taproom-desk",
-      "title": "Wholesale orders and deliveries",
-      "icon": {
-        "emoji": "🚚"
-      },
-      "blocks": [
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Taking an order"
+              "text": "Tag every keg"
             }
           ],
           "props": {
@@ -3547,18 +4186,150 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Confirm the account, the beers, kegs and delivery window."
+              "text": "Give each keg a colored tag or number that does not come off. Enter it with its size. Half barrels and sixth barrels are tracked the same way."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Check availability against kegs in the cooler."
+              "text": "Where a keg can be"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "In cooler"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full, cold, ready to sell or tap"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "On tap"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pouring in the taproom"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "At customer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Delivered to a bar or restaurant"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Empty"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Back at the brewery, waiting to be cleaned"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Filling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean and sanitize; check the spear and seals."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill from the brite tank; purge with carbon dioxide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the batch and fill date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move to the cooler; status "
+            },
+            {
+              "text": "In cooler",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3574,26 +4345,40 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Load kegs against the order list and note keg numbers."
+              "text": "Link the keg to the wholesale order."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Collect empties and record them."
+              "text": "Set "
+            },
+            {
+              "text": "At customer",
+              "bold": true
+            },
+            {
+              "text": " with the account name as location."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Press Log delivery and update the keg locations."
+              "text": "Charge a keg deposit when your accounts agree to it, and set "
+            },
+            {
+              "text": "Due back",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3601,7 +4386,49 @@
           "type": "heading",
           "text": [
             {
-              "text": "Follow-up"
+              "text": "Getting kegs back"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect empties on every delivery and record how many on the order."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Kegs past "
+            },
+            {
+              "text": "Due back",
+              "bold": true
+            },
+            {
+              "text": " appear on the dashboard; call the account."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lost kegs are written off after 90 days, and the deposit kept."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Freshness"
             }
           ],
           "props": {
@@ -3612,7 +4439,1141 @@
           "type": "text",
           "text": [
             {
-              "text": "Call each account every month; ask what is selling and what they want next."
+              "text": "Hazy and hoppy beers are best within six to eight weeks of filling. Stouts and lagers keep longer cold. Sell oldest first: check "
+            },
+            {
+              "text": "filled on",
+              "bold": true
+            },
+            {
+              "text": " before choosing which keg to tap or deliver."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once a month, count every keg in the building and compare with the list. Kegs that are nowhere get a call to the last account that had them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cleaning returned kegs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rinse and check for damage"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Caustic clean, rinse, acid rinse, sanitize"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pressure test"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status back to "
+            },
+            {
+              "text": "Empty",
+              "bold": true
+            },
+            {
+              "text": ", ready to fill"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Orchard Gate sixth with the purple tag has been at Birch Street Tavern past its return date. The rep picks it up with Thursday's delivery and records one empty collected."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "line-cleaning",
+      "parent": "brewery-taproom-desk",
+      "title": "Draft line cleaning",
+      "icon": {
+        "emoji": "🧪"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Dirty lines make good beer taste bad. Cleaning every line every two weeks keeps the taproom pouring what the brewers made."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every 14 days: full line clean with caustic for each tap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every three months: acid clean as well, and take the faucets apart."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every new keg: wipe the coupler and faucet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Next clean",
+              "bold": true
+            },
+            {
+              "text": " on each tap shows what is due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to clean a line"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Turn off the gas; disconnect the keg."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Flush the line with clean water."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Fill with line cleaner at the strength on the label; leave for 15 minutes, or longer for a long line."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Flush with clean water until the pH test shows clean."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clean faucets and couplers by hand."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reconnect; pour off until beer runs clear."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Line cleaned",
+              "bold": true
+            },
+            {
+              "text": " and set the next date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signs a line needs cleaning sooner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sign"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Likely cause"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Buttery or sour taste"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bacteria in the line"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Flat or foamy pours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Build-up or wrong pressure"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Off smell at the faucet"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yeast or mold"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pouring well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Glasses rinsed cold before every pour."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hold the glass at 45 degrees, then straighten."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One finger of foam on top."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pressure set for each beer's carbonation and the line length."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Kicked kegs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a keg kicks, set the tap to "
+            },
+            {
+              "text": "Kicked",
+              "bold": true
+            },
+            {
+              "text": ", change the keg, and pour off foam. Use the changeover to wipe the coupler."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Glycol and cooler"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check the cooler at 34 to 38 degrees and the glycol chiller every week. Warm beer in the line pours foam, whatever the pressure."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Wear gloves and eye protection with line cleaner. Never mix caustic and acid. Label the cleaning bucket."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The window tap and the right rail tap are due for cleaning next. The patio tap is a day past its date and is being cleaned now, so it is out of service until the evening, and the next clean is booked two weeks out."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "wholesale-and-distribution",
+      "parent": "brewery-taproom-desk",
+      "title": "Wholesale orders and deliveries",
+      "icon": {
+        "emoji": "🚚"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Selling to bars, restaurants and shops grows the brewery beyond the taproom. Clear orders, on-time deliveries and keg returns keep accounts happy."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two ways to sell"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Channel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How it works"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Self-distributed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "You sell and deliver to the account yourself, where your state allows it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Distributor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A distributor buys from you and sells to accounts; you deliver to their warehouse"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rules on self-distribution differ by state; check yours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taking an order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the order with the account, channel, delivery date, kegs and total."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Requested",
+              "bold": true
+            },
+            {
+              "text": "; confirm the beer is ready on that date; then "
+            },
+            {
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Choose kegs from the cooler, oldest fill date first, and link them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kegs loaded and checked against the order"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Delivery note printed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Empties collected; count entered on the order"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kegs set to "
+            },
+            {
+              "text": "At customer",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Order set to "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " with the date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Invoicing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoice on delivery; set "
+            },
+            {
+              "text": "Invoice",
+              "bold": true
+            },
+            {
+              "text": " to Invoiced."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payment terms as agreed; often 30 days for bars, sooner for new accounts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " when the money arrives."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Accounts more than 30 days late get no new deliveries until paid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping accounts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visit each account every month; taste the beer from their tap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer to help with their line cleaning schedule."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask which beers sell fastest and plan brews around it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Missed deliveries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A confirmed order whose delivery date has passed shows under Overdue. Call the account that morning with a new time; a bar that runs out of your beer puts someone else's on the tap."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Distributor orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Distributors order on a schedule. Plan their volume four to six weeks ahead so the tanks are free in time, and agree how they report sales by account."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Hollow Oak Grill is a new account taking four kegs this week. The rep sets payment on delivery for the first three orders and books a visit two weeks later to taste the beer on their lines."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "brewery-taproom-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A small brewery has beer in many places at once: in tanks, in the cooler, on tap, and at bars across town. This workspace tracks each of those, so you know what is ready, what is pouring and who has your kegs."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Batches"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Style, brew and ready dates, barrels brewed and packaged, ABV, original and final gravity, IBU, cellar loss, kegs filled and on tap"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tanks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each fermenter and brite tank: size, state, the batch in it, set temperature, last clean"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kegs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Size, batch, where it is, fill date, deposit and when it is due back"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Taps"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What is pouring, pint price, line cleaning dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wholesale orders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account, channel, delivery date, kegs and empties, total, invoice state"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Taproom events"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Trivia, music, releases, private parties, with expected and actual guests"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "ABV",
+              "bold": true
+            },
+            {
+              "text": " is entered from your gravity readings; a rough check is (original minus final gravity) times 131."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cellar loss",
+              "bold": true
+            },
+            {
+              "text": " compares barrels brewed with barrels packaged. Losses over 10 percent are worth investigating: trub, dry-hop absorption, transfers, dumping."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Kegs on tap",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "kegs filled",
+              "bold": true
+            },
+            {
+              "text": " count from the keg list, so a batch shows how much is still to sell."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every tank with its size and state."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter batches in progress and the last few packaged, with gravities."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tag and enter every keg you own, starting with the ones at customers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add taps with their last line cleaning, and open wholesale orders."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday:",
+              "bold": true
+            },
+            {
+              "text": " tank board; what is ready this week; what to brew next."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Brew days:",
+              "bold": true
+            },
+            {
+              "text": " brew log entered the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every two weeks:",
+              "bold": true
+            },
+            {
+              "text": " line cleaning for every tap."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday:",
+              "bold": true
+            },
+            {
+              "text": " wholesale deliveries confirmed; empty kegs collected; invoices sent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Switchback lager is carbonating in brite tank 1 and ready this week, so the right-hand tap, which kicked, will pour it next. Fermenter 2 is being cleaned for the seasonal brew in eight days."
             }
           ]
         }
