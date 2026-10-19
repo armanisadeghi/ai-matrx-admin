@@ -30,6 +30,7 @@ describe("a record tile follows the record's name", () => {
 
   it("scope and picklist (table) bodies already adopt", () => {
     expect(read("items/scope-items.tsx")).toMatch(/titleToAdopt\(title, scope\?\.name\)/);
-    expect(read("items/data-items.tsx")).toMatch(/titleToAdopt\(title, table\.data\?\.name\)/);
+    // A template's fresh copy reads by its own name ("Colors", not "Colors · Acme"): tileNameOf strips the copy's suffix.
+    expect(read("items/data-items.tsx")).toMatch(/titleToAdopt\(title, tileNameOf\(table\.data\?\.name, source\)\)/);
   });
 });
