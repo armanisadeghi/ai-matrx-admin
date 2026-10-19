@@ -1,3 +1,4 @@
+-- retired: its model/spend columns went live 2026-10-08; the newer live mandate._admin_list_rows / _admin_list_read bodies supersede it — re-running would revert them
 -- draft: mandate-cost-ui lane — proven on the clone; waiting for the owner's go before production
 -- based-on: mandate._admin_list_rows(jsonb, text) 32b18425473d0956a750fefeeebe164d54aa71ffeb3d6323ef617c37f00956fb
 -- based-on: mandate._admin_list_read(text, text, text, uuid, text, jsonb, text, text, integer, integer, jsonb) 282aa7531262db472b3256d194ca66287c9cdd2dfe8e222d80eba5d9ce8be853
