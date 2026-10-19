@@ -255,7 +255,7 @@ function RepoCard({ repo }: { repo: MandateReferenceBoardRepo }) {
  *  * show an empty table when the numbers are simply unreadable. A scheduler
  *    outage says so in red.
  */
-function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
+export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
   const { unit, rate: costRate, format: formatCostDisplay } = useCostDisplay();
   const runColumns: MatrxColumnDef<MandatePatrolRun>[] = [
     {
@@ -509,7 +509,12 @@ function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
               ? "No run recorded yet. The first one appears here after the next due time."
               : "The patrol is disabled, so there are no runs and nothing re-scans on its own.",
         }}
-        detail={{ enabled: false }}
+        window={{
+          title: (run) => `Patrol run · ${run.started_at ?? run.due_at ?? "unscheduled"}`,
+          renderEdit: false,
+          defaultTab: "view",
+        }}
+        paginationLabelFormat={(_start, _end, total) => `Latest ${total} of ${patrol.runs_counted} runs`}
         copy={{
           label: "Mandate patrol runs",
           location: "Mandate Reference Board, patrol runs",
