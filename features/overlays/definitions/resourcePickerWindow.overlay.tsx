@@ -28,7 +28,7 @@ export interface ResourcePickerWindowOverlayData {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createResourcePickerWindowOpener(store: AppStore) {
+export function createResourcePickerWindowOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return ({ initialView, ...group }: OpenResourcePickerWindowOptions) => {
     const { callbackGroupId } = createResourcePickerWindowCallbackGroup(group);

@@ -83,7 +83,7 @@ export interface FeedbackWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createFeedbackWindowOpener(store: AppStore) {
+export function createFeedbackWindowOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (opts: OpenFeedbackWindowOptions = {}): FeedbackWindowHandle => {
     dispatch(

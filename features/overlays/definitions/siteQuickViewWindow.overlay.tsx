@@ -25,7 +25,7 @@ export interface OpenSiteQuickViewWindowOptions {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createSiteQuickViewWindowOpener(store: AppStore) {
+export function createSiteQuickViewWindowOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (options: OpenSiteQuickViewWindowOptions) => {
     dispatch(

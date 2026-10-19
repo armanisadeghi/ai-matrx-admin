@@ -40,7 +40,7 @@ export interface GoogleConnectWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createGoogleConnectWindowOpener(store: AppStore) {
+export function createGoogleConnectWindowOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (options?: OpenGoogleConnectOptions): GoogleConnectWindowHandle => {
     const callbacks =

@@ -46,7 +46,7 @@ export interface KnowledgeCommandBarHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createKnowledgeCommandBarOpener(store: AppStore) {
+export function createKnowledgeCommandBarOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (opts: OpenKnowledgeCommandBarOptions = {}): KnowledgeCommandBarHandle => {
     const needsGroup = Boolean(opts.attach || opts.commands?.length);

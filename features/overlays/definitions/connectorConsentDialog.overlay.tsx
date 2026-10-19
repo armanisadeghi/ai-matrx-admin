@@ -24,7 +24,7 @@ export interface OpenConnectorConsentOptions {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createConnectorConsentDialogOpener(store: AppStore) {
+export function createConnectorConsentDialogOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (options?: OpenConnectorConsentOptions) => {
     dispatch(

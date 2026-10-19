@@ -19,6 +19,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { EntityRef } from "@/components/official/entity-ref/EntityRef";
 import { useOpenDetail } from "@ai-matrx/detail/react";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { extractErrorMessage } from "@/utils/errors";
 import { presentOrganizationRefusal } from "@ai-matrx/chat/host/org";
 // 🚨 REUSE, NEVER FORK: ONE generic server pair serves every synced record
@@ -45,7 +46,6 @@ import { OpenItemsCount } from "./OpenItemsCount";
 import { readAttendeePeople } from "./service";
 import type { AttendeePerson, CalendarEventRow } from "./types";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
-import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /**
  * PLAN §4.6's edge: *"This attendee is a Person here; these are the three open
@@ -338,9 +338,7 @@ function CalendarEventKeepAndArchiveActions({
  * exist.
  */
 function CalendarEventReconnectAction({ event }: { event: CalendarEventRow }) {
-  const openGoogleConnect = useLazyAppOpener("googleConnectWindow", () =>
-    import("@/features/overlays/definitions/googleConnectWindow.overlay").then((m) => m.createGoogleConnectWindowOpener),
-  );
+  const openGoogleConnect = useOpenGoogleConnectWindow();
   const connectionId = event.synced_via_connection_id;
 
   return (

@@ -31,7 +31,7 @@ export interface FilePreviewWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createFilePreviewWindowOpener(store: AppStore) {
+export function createFilePreviewWindowOpener(store: Pick<AppStore, "dispatch">) {
   const dispatch = store.dispatch;
   return (opts: OpenFilePreviewWindowOptions = {}): FilePreviewWindowHandle => {
     dispatch(

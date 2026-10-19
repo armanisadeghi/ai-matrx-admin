@@ -23,10 +23,11 @@
  */
 
 import { useCallback } from "react";
+import { useOpenSourceInspectorWindow } from "@/features/overlays/definitions/sourceInspectorWindow.overlay";
 import { useOpenNotesWindow } from "@ai-matrx/chat/host/window-openers";
+import { useOpenTranscriptStudioWindow } from "@/features/overlays/definitions/transcriptStudioWindow.overlay";
 import { useOpenScraperWindow } from "@ai-matrx/chat/host/window-openers";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 // Canonical home: `@/utils/navigation/should-open-in-new-tab` — re-exported
 // here so existing Knowledge/KG imports keep working.
@@ -53,13 +54,9 @@ export interface CitationInput {
 }
 
 export function useOpenCitation() {
-  const openInspector = useLazyAppOpener("sourceInspectorWindow", () =>
-    import("@/features/overlays/definitions/sourceInspectorWindow.overlay").then((m) => m.createSourceInspectorWindowOpener),
-  );
+  const openInspector = useOpenSourceInspectorWindow();
   const openNotes = useOpenNotesWindow();
-  const openTranscript = useLazyAppOpener("transcriptStudioWindow", () =>
-    import("@/features/overlays/definitions/transcriptStudioWindow.overlay").then((m) => m.createTranscriptStudioWindowOpener),
-  );
+  const openTranscript = useOpenTranscriptStudioWindow();
   const openScraper = useOpenScraperWindow();
 
   return useCallback(

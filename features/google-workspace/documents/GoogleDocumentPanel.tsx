@@ -31,6 +31,7 @@ import {
   SENT_FOR_APPROVAL_MESSAGE,
 } from "@/features/google-workspace/service";
 import { getGoogleDrivePickerToken } from "@/features/google-workspace/drivePickerToken";
+import { useOpenGoogleConnectWindow } from "@/features/overlays/definitions/googleConnectWindow.overlay";
 import { pickGoogleWorkspaceFile } from "@/lib/googlePicker";
 
 import {
@@ -53,7 +54,6 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 import { openOutbound } from "@ai-matrx/kit/outbound";
-import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 /**
  * 🚨 N12 — THE DOOR TO GOOGLE IS DERIVED FROM THE FILE ID WHEN THE ROW HAS NO URL.
  *
@@ -108,9 +108,7 @@ function UnavailableActions({
   row: GoogleDocumentRow;
   onRepicked: () => Promise<void> | void;
 }) {
-  const openGoogleConnect = useLazyAppOpener("googleConnectWindow", () =>
-    import("@/features/overlays/definitions/googleConnectWindow.overlay").then((m) => m.createGoogleConnectWindowOpener),
-  );
+  const openGoogleConnect = useOpenGoogleConnectWindow();
   const [picking, setPicking] = useState(false);
   const [pickNote, setPickNote] = useState<string | null>(null);
   const connectionId = row.synced_via_connection_id;

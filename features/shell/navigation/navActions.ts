@@ -43,12 +43,12 @@ import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/createProjectWindow.overlay";
 import { useOpenPickListManagerWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenFavoritesManagerWindow } from "@/features/overlays/definitions/favoritesManagerWindow.overlay";
+import { useOpenCrmCreatePartyWindow } from "@/features/overlays/definitions/crmCreatePartyWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
 import { isServiceFailure } from "@/features/data-tables/types";
 import type { ShellNavActionId } from "../constants/nav-data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 export type ShellNavActionHandlers = Record<ShellNavActionId, () => void>;
 
@@ -59,9 +59,7 @@ export function useNavActions(): ShellNavActionHandlers {
   const openCreateProject = useOpenCreateProjectWindow();
   const openPickListManager = useOpenPickListManagerWindow();
   const openFavoritesManager = useOpenFavoritesManagerWindow();
-  const openCrmCreateParty = useLazyAppOpener("crmCreatePartyWindow", () =>
-    import("@/features/overlays/definitions/crmCreatePartyWindow.overlay").then((m) => m.createCrmCreatePartyWindowOpener),
-  );
+  const openCrmCreateParty = useOpenCrmCreatePartyWindow();
 
   return {
     "create-project": () => {

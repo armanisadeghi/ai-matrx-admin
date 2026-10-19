@@ -28,6 +28,7 @@ import { useAlchemyActions } from "@ai-matrx/alchemy/react/host";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { openOverlay } from "@ai-matrx/summon/open";
+import { useOpenFeedbackWindow } from "@/features/overlays/definitions/feedbackDialog.overlay";
 import { selectUserId } from "@/lib/redux/slices/userSlice";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
@@ -60,7 +61,6 @@ import { textareaSelectionRect } from "@ai-matrx/rich-content/selection-toolbar/
 // The formatting buttons for every engine (no Tiptap in this chunk).
 import "@ai-matrx/rich-content/editor/format/format-actions";
 import { liveSelectionShapeText } from "@ai-matrx/rich-content/selection-toolbar/selection-shape";
-import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /**
  * The live selection written back as the shapes it was drawn from (VERIFIER-30 #1): a browser
@@ -143,9 +143,7 @@ export function SelectionToolbarRoot(): React.ReactElement | null {
   const zonesVersion = useSelectionZonesVersion();
   const userId = useAppSelector(selectUserId);
   const dispatch = useAppDispatch();
-  const openFeedback = useLazyAppOpener("feedbackDialog", () =>
-    import("@/features/overlays/definitions/feedbackDialog.overlay").then((m) => m.createFeedbackWindowOpener),
-  );
+  const openFeedback = useOpenFeedbackWindow();
   const router = useRouter();
   const orgId = useAppSelector(selectOrganizationId);
   const [open, setOpen] = React.useState<OpenState | null>(null);
