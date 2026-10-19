@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 4,
+  "version": 5,
   "title": "Digital Marketing Agency HQ",
-  "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
+  "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
   "icon": {
     "emoji": "📈"
@@ -14,9 +14,11 @@
   },
   "category": "agencies",
   "tags": [
-    "agency",
+    "marketing agency",
+    "account manager",
     "retainers",
     "campaigns",
+    "client approvals",
     "reporting"
   ],
   "spec": {
@@ -165,6 +167,40 @@
             ]
           },
           {
+            "key": "contract",
+            "label": "Contract",
+            "parityType": "select",
+            "choices": [
+              "Month to month",
+              "Six months",
+              "Twelve months"
+            ],
+            "choiceColors": {
+              "Month to month": "blue",
+              "Six months": "green",
+              "Twelve months": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notice_days",
+            "label": "Notice period (days)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "hours_included",
             "label": "Hours included per month",
             "parityType": "number",
@@ -180,6 +216,13 @@
                 "value": 500
               }
             ]
+          },
+          {
+            "key": "scope",
+            "label": "Scope in the retainer",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "renews_on",
@@ -249,6 +292,23 @@
             "filter": {
               "status": "Live"
             }
+          },
+          {
+            "key": "spend_managed",
+            "label": "Ad spend managed",
+            "parityType": "rollup",
+            "via": "campaigns",
+            "pick": "spend",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Planned"
+                ]
+              }
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "reports_owed",
@@ -434,7 +494,10 @@
               "hours_included": 60,
               "renews_on": "@today+38d",
               "manager": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Twelve months",
+              "notice_days": 60,
+              "scope": "Paid search and paid social for two product lines; monthly report; one strategy call a month"
             }
           },
           {
@@ -448,8 +511,11 @@
               "since": "@today-300d",
               "monthly_fee": 4200,
               "hours_included": 40,
-              "renews_on": "@today+12d",
-              "manager": "tm-5"
+              "renews_on": "@today",
+              "manager": "tm-5",
+              "contract": "Six months",
+              "notice_days": 30,
+              "scope": "Email newsletter weekly; social posting three times a week; monthly report"
             }
           },
           {
@@ -465,7 +531,10 @@
               "hours_included": 35,
               "renews_on": "@today-4d",
               "manager": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Month to month",
+              "notice_days": 30,
+              "scope": "Local search ads and the business profile; call tracking; monthly report"
             }
           },
           {
@@ -480,7 +549,10 @@
               "monthly_fee": 5200,
               "hours_included": 50,
               "renews_on": "@today+75d",
-              "manager": "tm-5"
+              "manager": "tm-5",
+              "contract": "Twelve months",
+              "notice_days": 60,
+              "scope": "Paid social and email for membership drives; quarterly campaign planning"
             }
           },
           {
@@ -496,7 +568,10 @@
               "hours_included": 45,
               "renews_on": "@today+345d",
               "manager": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Twelve months",
+              "notice_days": 60,
+              "scope": "Site relaunch SEO and local landing pages; paid search after launch"
             }
           },
           {
@@ -511,7 +586,10 @@
               "monthly_fee": 9000,
               "hours_included": 90,
               "renews_on": "@today+110d",
-              "manager": "tm-1"
+              "manager": "tm-1",
+              "contract": "Twelve months",
+              "notice_days": 90,
+              "scope": "Trial nurture emails, content hub and paid search; two reports a month"
             }
           },
           {
@@ -527,7 +605,10 @@
               "hours_included": 25,
               "renews_on": "@today+20d",
               "manager": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Month to month",
+              "notice_days": 30,
+              "scope": "List warming only while paused; no paid media"
             }
           },
           {
@@ -554,7 +635,10 @@
               "hours_included": 30,
               "renews_on": "@today+5d",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Six months",
+              "notice_days": 30,
+              "scope": "Paid social, product feed and two guide articles a month"
             }
           },
           {
@@ -569,7 +653,10 @@
               "monthly_fee": 2800,
               "hours_included": 28,
               "renews_on": "@today-60d",
-              "manager": "tm-5"
+              "manager": "tm-5",
+              "contract": "Month to month",
+              "notice_days": 30,
+              "scope": "Year-end appeal only; contract ended"
             }
           },
           {
@@ -585,7 +672,10 @@
               "hours_included": 30,
               "renews_on": "@today+95d",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Six months",
+              "notice_days": 30,
+              "scope": "Paid social and open-day promotions; monthly report"
             }
           },
           {
@@ -677,6 +767,13 @@
             }
           },
           {
+            "key": "kpi",
+            "label": "Goal agreed with client",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "starts_on",
             "label": "Starts",
             "parityType": "datetime",
@@ -747,6 +844,31 @@
             ]
           },
           {
+            "key": "leads",
+            "label": "Leads or sales",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cpl",
+            "label": "Cost per result (USD)",
+            "parityType": "formula",
+            "formula": "IF({Leads or sales} > 0, ROUND({Spend to date (USD)} / {Leads or sales}, 2), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "spend_pct",
             "label": "Budget spent (%)",
             "parityType": "formula",
@@ -804,6 +926,22 @@
             "filter": {
               "status": "Done"
             }
+          },
+          {
+            "key": "waiting_client",
+            "label": "Waiting on client approval",
+            "parityType": "rollup",
+            "via": "deliverables",
+            "pick": "deliverable_name",
+            "agg": "count",
+            "filter": {
+              "approval": [
+                "Waiting on client",
+                "Changes requested"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "progress",
@@ -1000,7 +1138,9 @@
               "client": "client-1",
               "lead": "tm-2",
               "owner_me": "@installer",
-              "live_on": "@today-25d"
+              "live_on": "@today-25d",
+              "leads": 164,
+              "kpi": "Online orders at under 35 dollars each"
             }
           },
           {
@@ -1015,7 +1155,9 @@
               "spend": 3900,
               "client": "client-1",
               "lead": "tm-2",
-              "live_on": "@today-120d"
+              "live_on": "@today-120d",
+              "leads": 412,
+              "kpi": "Protect brand clicks at under 12 dollars a lead"
             }
           },
           {
@@ -1025,13 +1167,14 @@
               "status": "Live",
               "channel": "Email",
               "starts_on": "@today-40d",
-              "ends_on": "@today+15d",
+              "ends_on": "@today",
               "budget": 0,
               "spend": 0,
               "client": "client-2",
               "lead": "tm-4",
               "owner_me": "@installer",
-              "live_on": "@today-40d"
+              "live_on": "@today-40d",
+              "kpi": "Open rate above 40 percent"
             }
           },
           {
@@ -1046,7 +1189,9 @@
               "spend": 5200,
               "client": "client-3",
               "lead": "tm-2",
-              "live_on": "@today-60d"
+              "live_on": "@today-60d",
+              "leads": 96,
+              "kpi": "Booked emergency calls at under 60 dollars"
             }
           },
           {
@@ -1061,7 +1206,9 @@
               "spend": 7850,
               "client": "client-4",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "leads": 231,
+              "kpi": "250 new members"
             }
           },
           {
@@ -1075,7 +1222,8 @@
               "budget": 0,
               "spend": 0,
               "client": "client-5",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "kpi": "Organic visits back to pre-launch level in 90 days"
             }
           },
           {
@@ -1091,7 +1239,9 @@
               "client": "client-6",
               "lead": "tm-4",
               "owner_me": "@installer",
-              "live_on": "@today-90d"
+              "live_on": "@today-90d",
+              "leads": 58,
+              "kpi": "Trial to paid above 18 percent"
             }
           },
           {
@@ -1105,7 +1255,8 @@
               "budget": 0,
               "spend": 0,
               "client": "client-6",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "kpi": "Six pillar articles live"
             }
           },
           {
@@ -1120,7 +1271,8 @@
               "spend": 0,
               "client": "client-7",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kpi": "Reactivate 15 percent of the list"
             }
           },
           {
@@ -1130,12 +1282,14 @@
               "status": "Live",
               "channel": "Paid social",
               "starts_on": "@today-18d",
-              "ends_on": "@today+12d",
+              "ends_on": "@today-2d",
               "budget": 5400,
               "spend": 2900,
               "client": "client-9",
               "lead": "tm-2",
-              "live_on": "@today-18d"
+              "live_on": "@today-18d",
+              "leads": 118,
+              "kpi": "Bundle sales at under 30 dollars each"
             }
           },
           {
@@ -1150,7 +1304,8 @@
               "spend": 0,
               "client": "client-9",
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "kpi": "Four guide articles ranking on page one"
             }
           },
           {
@@ -1164,7 +1319,8 @@
               "budget": 4500,
               "spend": 0,
               "client": "client-11",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "kpi": "40 open-day sign-ups"
             }
           },
           {
@@ -1180,7 +1336,8 @@
               "client": "client-10",
               "lead": "tm-4",
               "owner_me": "@installer",
-              "closed_on": "@today-90d"
+              "closed_on": "@today-90d",
+              "kpi": "Raise 20,000 dollars"
             }
           }
         ]
@@ -1233,6 +1390,42 @@
               "In review": "in_progress",
               "Done": "done"
             }
+          },
+          {
+            "key": "approval",
+            "label": "Client approval",
+            "parityType": "select",
+            "choices": [
+              "Not needed",
+              "Waiting on client",
+              "Approved",
+              "Changes requested"
+            ],
+            "choiceColors": {
+              "Not needed": "blue",
+              "Waiting on client": "green",
+              "Approved": "amber",
+              "Changes requested": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rounds",
+            "label": "Revision rounds",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "kind",
@@ -1443,7 +1636,9 @@
               "estimate": 14,
               "campaign": "campaign-1",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approval": "Waiting on client",
+              "rounds": 1
             }
           },
           {
@@ -1455,7 +1650,9 @@
               "due_on": "@today+3d",
               "estimate": 6,
               "campaign": "campaign-1",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1469,7 +1666,9 @@
               "campaign": "campaign-2",
               "owner": "tm-2",
               "owner_me": "@installer",
-              "completed_on": "@today-9d"
+              "completed_on": "@today-9d",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1481,7 +1680,9 @@
               "due_on": "@today+1d",
               "estimate": 5,
               "campaign": "campaign-3",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "approval": "Waiting on client",
+              "rounds": 1
             }
           },
           {
@@ -1494,7 +1695,9 @@
               "estimate": 5,
               "campaign": "campaign-3",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1506,7 +1709,9 @@
               "due_on": "@today-3d",
               "estimate": 8,
               "campaign": "campaign-4",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "approval": "Changes requested",
+              "rounds": 2
             }
           },
           {
@@ -1519,7 +1724,9 @@
               "estimate": 6,
               "campaign": "campaign-5",
               "owner": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1531,7 +1738,9 @@
               "due_on": "@mon+3d",
               "estimate": 16,
               "campaign": "campaign-6",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1544,7 +1753,9 @@
               "estimate": 20,
               "campaign": "campaign-6",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approval": "Waiting on client",
+              "rounds": 0
             }
           },
           {
@@ -1557,7 +1768,9 @@
               "estimate": 4,
               "campaign": "campaign-7",
               "owner": "tm-4",
-              "completed_on": "@today-14d"
+              "completed_on": "@today-14d",
+              "approval": "Approved",
+              "rounds": 1
             }
           },
           {
@@ -1570,7 +1783,9 @@
               "estimate": 12,
               "campaign": "campaign-8",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "approval": "Waiting on client",
+              "rounds": 1
             }
           },
           {
@@ -1582,7 +1797,9 @@
               "due_on": "@mon+1d",
               "estimate": 7,
               "campaign": "campaign-10",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "approval": "Not needed",
+              "rounds": 0
             }
           },
           {
@@ -1596,7 +1813,9 @@
               "campaign": "campaign-11",
               "owner": "tm-3",
               "owner_me": "@installer",
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "approval": "Approved",
+              "rounds": 1
             }
           },
           {
@@ -1608,7 +1827,9 @@
               "due_on": "@today+4d",
               "estimate": 3,
               "campaign": "campaign-12",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "approval": "Waiting on client",
+              "rounds": 0
             }
           }
         ],
@@ -1747,7 +1968,7 @@
             "key": "time_entry-1",
             "values": {
               "entry": "Ad set build and QA",
-              "worked_on": "@today-1d",
+              "worked_on": "@today",
               "hours": 3.5,
               "client": "client-1",
               "campaign": "campaign-1",
@@ -1959,6 +2180,13 @@
             }
           },
           {
+            "key": "headline",
+            "label": "Headline result",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "client",
             "label": "Client",
             "parityType": "relation",
@@ -2131,7 +2359,8 @@
               "status": "Drafting",
               "client": "client-1",
               "due_on": "@today+2d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "Online orders up a fifth on the new ad sets"
             }
           },
           {
@@ -2141,7 +2370,8 @@
               "status": "Not started",
               "client": "client-2",
               "due_on": "@today+4d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "Newsletter open rate holding above 40 percent"
             }
           },
           {
@@ -2151,7 +2381,8 @@
               "status": "Client review",
               "client": "client-3",
               "due_on": "@today-1d",
-              "author": "tm-2"
+              "author": "tm-2",
+              "headline": "Booked calls up, cost per call down"
             }
           },
           {
@@ -2161,7 +2392,8 @@
               "status": "Drafting",
               "client": "client-4",
               "due_on": "@mon+3d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "Membership drive closed at 231 of 250"
             }
           },
           {
@@ -2172,7 +2404,8 @@
               "client": "client-6",
               "due_on": "@today-6d",
               "sent_on": "@today-5d",
-              "author": "tm-1"
+              "author": "tm-1",
+              "headline": "Trial to paid at 19 percent"
             }
           },
           {
@@ -2182,7 +2415,8 @@
               "status": "Not started",
               "client": "client-9",
               "due_on": "@today+6d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "Bundle feed fixed; sales picked up mid-month"
             }
           },
           {
@@ -2193,7 +2427,8 @@
               "client": "client-11",
               "due_on": "@today-8d",
               "sent_on": "@today-7d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "Open-day planning underway"
             }
           },
           {
@@ -2204,7 +2439,8 @@
               "client": "client-7",
               "due_on": "@today-25d",
               "sent_on": "@today-24d",
-              "author": "tm-5"
+              "author": "tm-5",
+              "headline": "List warming paused with the account"
             }
           }
         ]
@@ -2932,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2971,6 +3207,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -3558,6 +3800,373 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "digital-marketing-agency",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs an agency's client side: what each client pays and what that buys, how many hours have been used this month, which campaigns are live and how they perform, what is waiting on the client to approve, and which monthly reports are owed. Time tracking, ad platforms and invoicing stay in their own tools; the numbers that matter land here."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One retainer client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retainer, contract, notice, scope, hours used, renewal date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Campaigns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One push on one channel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Goal, budget, spend, results, cost per result, deliverables waiting on the client"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deliverables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One piece of work"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kind, due date, client approval, revision rounds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time entries"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours on one task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client, campaign, billable"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reports"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One client report for a period"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Due, status, headline result"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hours used (%)",
+              "bold": true
+            },
+            {
+              "text": " compares this month's time with the hours in the retainer. Near limit at 80 percent, Over at 100."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reports owed",
+              "bold": true
+            },
+            {
+              "text": " counts reports not started, drafting or in client review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ad spend managed",
+              "bold": true
+            },
+            {
+              "text": " adds spend on every campaign past Planned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Waiting on client approval",
+              "bold": true
+            },
+            {
+              "text": " counts deliverables waiting or sent back with changes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter each client with the retainer, the contract length and notice period, and the scope in their words from the signed agreement."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter live campaigns with the goal you agreed, the budget and spend so far."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the deliverables due in the next two weeks and mark which need the client's approval."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the team to log time daily against client and campaign."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "First three working days"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reports drafted and checked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "By the fifth"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reports sent with a short call offered"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mid-month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours check: any client near the limit gets a scope talk"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two months before renewal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Renewal plan with results and next quarter's ideas"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Marigold Pet Supply renews in five days on a six-month contract. The account manager sends the renewal note with the bundle results and two ideas for the next quarter, and books a call the same week."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "digital-marketing-agency",
       "title": "Dashboard",
@@ -4062,14 +4671,14 @@
       "parent": "digital-marketing-agency",
       "title": "Monthly reporting routine",
       "icon": {
-        "emoji": "📝"
+        "emoji": "📊"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A report is what keeps a retainer renewed. Clients rarely remember the work, they remember the story you told about it."
+              "text": "The monthly report is where a client decides whether the retainer is worth it. A good one is short, honest and leads with what changed for the business, not with charts."
             }
           ],
           "background": "blue",
@@ -4081,7 +4690,190 @@
           "type": "heading",
           "text": [
             {
-              "text": "When it happens"
+              "text": "The schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the first working day, every active client gets a report row with a due date no later than the fifth."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The author pulls numbers from the ad platforms, analytics and email tool."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The account lead reviews before anything goes to the client."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send, then press the status to "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": " and record the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The shape of every report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Section"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What goes in it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Headline result"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One sentence: the most important outcome against the goal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Goal versus actual"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each campaign's agreed goal and what happened"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spend"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Budget, spend and cost per result for each paid campaign"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What we did"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deliverables finished this month, in plain words"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What we learned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One or two honest observations, good or bad"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Next month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Three planned actions, each tied to a goal"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the "
+            },
+            {
+              "text": "Headline result",
+              "bold": true
+            },
+            {
+              "text": " on the report row too, so the whole team sees it without opening the file."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing tips"
             }
           ],
           "props": {
@@ -4092,7 +4884,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Start on the second working day of the month, once ad platforms have settled their final numbers."
+              "text": "Lead with the business result: orders, booked calls, members, donations. Clicks come later."
             }
           ]
         },
@@ -4100,7 +4892,23 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Every report row in the Monthly reports table is due by the fifth working day. Drafting beyond that needs the account manager to tell the client."
+              "text": "Compare with last month and the same month last year where you can."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Explain any bad number before the client asks about it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep it to what the client can read in five minutes."
             }
           ]
         },
@@ -4108,58 +4916,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Build it in five steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open the client row and read Hours used this month and Campaigns live."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Pull the spend and result figures from each channel into the report row's Numbers section."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write the headline last. It should say what changed and why in one sentence."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "List what shipped from the Deliverables table, using the Done filter for that client."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write the recommendation: one thing to start, one to stop, one decision you need from them."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before you send"
+              "text": "Review checklist"
             }
           ],
           "props": {
@@ -4170,7 +4927,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Numbers match the platform screens, not last month's copy"
+              "text": "Every number matches its source"
             }
           ],
           "props": {
@@ -4181,7 +4938,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Hours used is shown against hours included"
+              "text": "Spend matches the platform invoices"
             }
           ],
           "props": {
@@ -4192,7 +4949,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Every recommendation names who decides and by when"
+              "text": "Every campaign has its goal stated"
             }
           ],
           "props": {
@@ -4203,7 +4960,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "A second person read the headline"
+              "text": "Next month's actions are realistic for the hours left in the retainer"
             }
           ],
           "props": {
@@ -4214,7 +4971,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After sending"
+              "text": "The call"
             }
           ],
           "props": {
@@ -4225,7 +4982,26 @@
           "type": "text",
           "text": [
             {
-              "text": "Press Mark sent on the report row so the client's Reports owed count drops, then log any follow-up questions as deliverables."
+              "text": "Offer a 20-minute call with each report. Clients who talk through results renew more often than those who only receive a file."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Brightwater's report is in client review and one day past due. The emergency search campaign booked more calls at a lower cost per call, so the account lead calls the owner to walk through it rather than waiting for an email reply."
             }
           ]
         }
@@ -4243,7 +5019,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The first thirty days decide whether a client sees you as a vendor or a partner. Treat access as the first deliverable."
+              "text": "The first 30 days set the tone for the whole relationship. A client who sees early structure and quick wins stays; a client who waits three weeks for access requests starts looking around."
             }
           ],
           "background": "blue",
@@ -4255,7 +5031,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week one"
+              "text": "Before the kickoff"
             }
           ],
           "props": {
@@ -4266,7 +5042,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Contract and retainer terms entered on the client row (fee, hours included, renewal date)"
+              "text": "Signed agreement with retainer, contract length, notice period and scope"
             }
           ],
           "props": {
@@ -4277,7 +5053,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Kickoff call held; notes saved in the client page"
+              "text": "First invoice paid"
             }
           ],
           "props": {
@@ -4288,7 +5064,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Access requested: ad accounts, analytics, tag manager, email platform, CMS"
+              "text": "Client added with "
+            },
+            {
+              "text": "Scope in the retainer",
+              "bold": true
+            },
+            {
+              "text": " written from the agreement"
             }
           ],
           "props": {
@@ -4299,18 +5082,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Shared folder created and the client contact told where assets go"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "First campaign row created with a goal that has a number in it"
+              "text": "Account manager and campaign leads named"
             }
           ],
           "props": {
@@ -4321,7 +5093,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weeks two and three"
+              "text": "Access (ask for everything in one list)"
             }
           ],
           "props": {
@@ -4329,34 +5101,65 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Audit the tracking before spending money: do conversions fire once, with the right value?"
+              "text": "Ad accounts with admin access for your agency's business manager"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Agree the reporting day and who receives the report."
+              "text": "Analytics and tag manager"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Set the weekly call and put the standing agenda in the client page."
+              "text": "Website or content system for landing pages and tracking"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Email platform and customer lists"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Brand guide, logos, photo library and past campaign results"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Week four"
+              "text": "The kickoff meeting"
             }
           ],
           "props": {
@@ -4364,18 +5167,41 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Send a short first-month note: what was learned, what is planned, what is needed from them."
+              "text": "Agree the goal for each channel as a number the business cares about: orders, calls, members or leads. Write it into "
+            },
+            {
+              "text": "Goal agreed with client",
+              "bold": true
+            },
+            {
+              "text": " on each campaign."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Review hours used against hours included and tell the client if the scope looks too small or too large."
+              "text": "Agree who approves work on their side, and how fast. Two working days is a fair default."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk through the monthly rhythm: reports by the fifth, a mid-month check, a strategy call each quarter."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree what is not in scope, kindly and clearly."
             }
           ]
         },
@@ -4383,34 +5209,146 @@
           "type": "heading",
           "text": [
             {
-              "text": "Common traps"
+              "text": "The first 30 days"
             }
           ],
           "props": {
-            "level": 3
+            "level": 2
           }
         },
         {
-          "type": "bulleted",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Access, tracking checked end to end, audit of current accounts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quick fixes from the audit; first campaign plan shared"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First new creative and landing pages to the client for approval"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Campaigns live; first short update sent"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Accepting access to a personal account instead of the business account."
+              "text": "Hand-over from sales"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask whoever sold the account for the promises made in the pitch. Write any that are not in the agreement on the client, and agree with the client which ones still stand."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Starting ads before conversion tracking is checked."
+              "text": "Tracking first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Nothing launches until conversions are tracked and tested. A test order or a test form fill, seen arriving in analytics, is the proof."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Promising a result date before you have seen thirty days of data."
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Fernhill Dental is onboarding. The SEO crawl is in progress and three service area landing pages are waiting on the client's approval, so the account manager books a 15-minute call to approve them together instead of waiting for email."
             }
           ]
         }
@@ -4428,7 +5366,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Hours are the agency's only stock. These rules keep the balance honest without making clients feel metered."
+              "text": "A retainer buys a fixed amount of work each month. Agencies lose money quietly when the work grows and the fee does not. These rules keep both sides honest."
             }
           ],
           "background": "blue",
@@ -4440,7 +5378,33 @@
           "type": "heading",
           "text": [
             {
-              "text": "Logging time"
+              "text": "What the retainer covers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The scope is written on each client in "
+            },
+            {
+              "text": "Scope in the retainer",
+              "bold": true
+            },
+            {
+              "text": ", copied from the agreement. If a request is not in that text, it is new work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours"
             }
           ],
           "props": {
@@ -4451,7 +5415,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Log time the same day. Use one entry per client per task, with the campaign filled in when there is one."
+              "text": "Everyone logs time daily against the client and campaign."
             }
           ]
         },
@@ -4459,7 +5423,133 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Internal work such as pitches and training is not billable; untick Billable."
+              "text": "Hours used this month",
+              "bold": true
+            },
+            {
+              "text": " adds up this month's entries. "
+            },
+            {
+              "text": "Hours used (%)",
+              "bold": true
+            },
+            {
+              "text": " compares them with "
+            },
+            {
+              "text": "Hours included per month",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours used"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Under 80 percent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Normal"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "80 to 99 percent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account lead told; non-urgent requests moved to next month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "100 percent or more"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Talk to the client before more work is done"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a client asks for something new"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank them and say you will come back with a plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the scope text. If it is in scope, schedule it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If not, offer three choices: swap it for something planned this month, add it as a one-off project with a price, or raise the retainer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write down what they chose, on the client."
             }
           ]
         },
@@ -4467,7 +5557,272 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reading the numbers"
+              "text": "Revision rounds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two rounds of changes per deliverable are normal. "
+            },
+            {
+              "text": "Revision rounds",
+              "bold": true
+            },
+            {
+              "text": " on each deliverable makes the third round visible. A third round usually means the brief was unclear; fix the brief, not just the work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewals and notice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Renews on",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Days to renewal",
+              "bold": true
+            },
+            {
+              "text": " show what is coming. Start renewal talks two months ahead."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notice period",
+              "bold": true
+            },
+            {
+              "text": " is the days either side must give to end the agreement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A client at Over for three months in a row needs a bigger retainer or a smaller scope at renewal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Lumen Ledger asked for a webinar landing page. It is not in their scope, so the account lead offers to swap it for one content hub article this month or quote it as a small project."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ad spend is separate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ad budgets are paid to the platforms, not to you. Keep the retainer and the media budget on separate lines in every conversation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-team-rhythm",
+      "parent": "digital-marketing-agency",
+      "title": "Weekly team rhythm",
+      "icon": {
+        "emoji": "🗓️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short, fixed weekly rhythm keeps a busy agency calm: everyone knows what is due, what is waiting on clients, and where hours are running out."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday stand-up (20 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deliverables due this week, by owner. Anything at risk is said out loud."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deliverables "
+            },
+            {
+              "text": "Waiting on client",
+              "bold": true
+            },
+            {
+              "text": " for more than two working days. The account manager chases each one that day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clients near or over their hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Campaigns whose spend is ahead of or behind plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Midweek performance check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every live paid campaign checked for spend pacing and cost per result"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any campaign more than 20 percent off its goal gets a written change: new creative, new audience or a budget shift"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Changes noted on the campaign so the monthly report can explain them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday wrap-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time entries complete for the week; missing days chased."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deliverables finished this week marked done."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One short note to each active client: what shipped, what is next, what we need from them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Roles"
             }
           ],
           "props": {
@@ -4484,17 +5839,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Hours used (%)"
+                      "text": "Role"
                     }
                   ],
                   [
                     {
-                      "text": "Meaning"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Action"
+                      "text": "Owns"
                     }
                   ]
                 ]
@@ -4503,17 +5853,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Under 80"
+                      "text": "Account manager"
                     }
                   ],
                   [
                     {
-                      "text": "On track"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Nothing"
+                      "text": "Client relationship, scope, approvals, renewals"
                     }
                   ]
                 ]
@@ -4522,17 +5867,12 @@
                 "cells": [
                   [
                     {
-                      "text": "80 to 99"
+                      "text": "Campaign lead"
                     }
                   ],
                   [
                     {
-                      "text": "Near limit"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Tell the client this week which work will finish first"
+                      "text": "Strategy, setup and optimization of each campaign"
                     }
                   ]
                 ]
@@ -4541,17 +5881,26 @@
                 "cells": [
                   [
                     {
-                      "text": "100 or more"
+                      "text": "Specialists"
                     }
                   ],
                   [
                     {
-                      "text": "Over"
+                      "text": "Creative, copy, landing pages, email and tracking"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Agency lead"
                     }
                   ],
                   [
                     {
-                      "text": "Agree extra hours or drop scope before doing more"
+                      "text": "Pricing, hiring, the clients at risk"
                     }
                   ]
                 ]
@@ -4563,42 +5912,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Handling extra requests"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write down the request in the client page with a rough hour estimate."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Offer two options: swap it for planned work, or buy extra hours."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Record the decision and log the work against the right campaign."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "At renewal"
+              "text": "Workload"
             }
           ],
           "props": {
@@ -4609,44 +5923,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Open the renewal view at 45 days. Bring last quarter's results, hours used per month and one proposal to grow the scope."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "weekly-team-rhythm",
-      "parent": "digital-marketing-agency",
-      "title": "Weekly team rhythm",
-      "icon": {
-        "emoji": "🗓️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Monday"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Open the Dashboard and read the overdue deliverables list aloud. Each item gets an owner and a new date or a reason."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check Reports waiting on us and assign authors."
+              "text": "If one person owns more than a fair share of deliverables due this week, move work before Monday ends. Burned-out specialists lose clients faster than any campaign."
             }
           ]
         },
@@ -4654,7 +5931,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Midweek"
+              "text": "Example"
             }
           ],
           "props": {
@@ -4662,18 +5939,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "quote",
           "text": [
             {
-              "text": "Account managers review Hours used on their clients and flag anything near the limit."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Paid media checks pacing: Budget spent against days elapsed."
+              "text": "The emergency call-extension copy for Brightwater is three days overdue with changes requested twice. At the stand-up, the team agrees the account manager will get one clear brief from the owner and the copywriter will finish it the same afternoon."
             }
           ]
         },
@@ -4681,7 +5950,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Friday"
+              "text": "Client approvals"
             }
           ],
           "props": {
@@ -4689,40 +5958,38 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Everyone logs the week's time before leaving."
+              "text": "Approvals are where weeks disappear. Send work for approval with a clear question and a date: \"Approve these three ads by Wednesday so they go live Friday.\" Mark the deliverable "
+            },
+            {
+              "text": "Waiting on client",
+              "bold": true
+            },
+            {
+              "text": " the moment it goes out."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Move finished deliverables to Done so campaign progress is true."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write one line per live campaign in its page: what happened and what is next."
-            }
-          ]
-        },
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A Friday that ends with clean statuses makes Monday a ten minute meeting."
+              "text": "Keep the meeting short"
             }
           ],
-          "background": "blue",
           "props": {
-            "icon": "Lightbulb"
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Discuss only what is late, waiting or off track. Everything on time stays out of the meeting."
+            }
+          ]
         }
       ]
     }
