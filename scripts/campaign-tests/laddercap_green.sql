@@ -276,7 +276,7 @@ begin
     -- contained the word "access" or "permission" — it called that "saying what it was", and
     -- it is the opposite: those are the words of a database, not of a person. Lane TALK-REC's
     -- ruling replaced them. The sentence a person meets now is
-    --   "You have View access on this record, and custom.record_update needs Edit access."
+    --   "Changing a record needs Edit access; you have View access on this record."
     -- The clause asserts THAT promise instead of the old vocabulary, and it is far stricter
     -- than a substring of jargon: the refusal has to name the level she HOLDS, the level the
     -- door NEEDS, and the door it was refused at.

@@ -1,6 +1,29 @@
 -- INVERSE of atsweep3_a_the_ladder_refusal_names_the_action_not_the_door.sql: the earlier words of every function it replaces.
 -- chair-step: restores function bodies.
-@@BASEDON@@
+-- based-on: custom.assert_client_may_change(uuid, uuid, text, permission_level, text) d8699474e0470554afb328301d4d15a7d06d01703fcce1769a333ef502d3624a
+-- based-on: custom.io_restore(uuid, uuid, integer) c716d9a8f4e2a7facdd263ac44356b9c4ca313d68db955675b8057eb324ae7e7
+-- based-on: custom.io_restore(uuid, uuid, integer, jsonb) 3deb7a00a305ee6bfe9853947f8a93069bfd07b8ffb75f695e7ae5859f2a7a28
+-- based-on: custom.anon_capture(uuid, text, uuid, jsonb, text, timestamp with time zone) a771d00661dcddfb3906edff9f806f89e16a57f4b397eb0d8309109c5a6fa76b
+-- based-on: custom.anon_token_issue(uuid, text, jsonb, uuid, uuid, uuid, timestamp with time zone) 59084abbea9e55b58fee5112b4ca601251effff300479f02d855487f83ef4da9
+-- based-on: custom.io_comment_write(uuid, uuid, text, jsonb, uuid) 04982d5b9f6317afd73b2150d018f099a08a866d76b28ac56e27d1fd76a03fba
+-- based-on: custom.conversation_scope_bind(uuid, uuid, uuid) 65bd231d8e3040bad29b9b050ed6a4007ec13373a25722131e9cf14f744f3663
+-- based-on: research.save_reader_edit(text, uuid, text, integer) 290adde850cca0e53888d6953859886a67c45bbe53eb2abd2d8414f43ef5d45a
+-- based-on: custom.work_approval_decide(uuid, uuid, boolean, text) a5f9cad87f917d19af7b3587817bf6df7161e34aaeb08d92f4b5a6c0b356e175
+-- based-on: custom.work_assign(uuid, uuid, uuid, timestamp with time zone, boolean) a2c33f7058b0c7ce182ecddd156d4efc3d454f4fbdf6e8bcca05334fca989fc9
+-- based-on: custom.assert_client_may_open(uuid, uuid, text, permission_level, text) 7f0424d9869456ae369c008db5d30c394c70eddc93acd9e6452ab4b20129f437
+-- based-on: custom.record_table(uuid, uuid) 2d0918813c7a319c00babf9d328fdd7c14fe58b586637ccecbc3a36799fbaefc
+-- based-on: custom.table_webhook_declare(uuid, uuid, text, text[], text) b13bd689c495941200f111e7b4a7cf9979a64949053b2cd3da8e2cd8e48bc22f
+-- based-on: public.cmt_add(text, uuid, text, uuid, uuid, jsonb, text, uuid) 33dbfb4e1901eee62795889a3b5152d30010f7c81447914783d379e9e39238b1
+-- based-on: public.cmt_resolve(uuid, boolean) 77a3de6db075014f8d2c763464a52c8369b36de822c99e360b76e95d7827319f
+-- based-on: public.cmt_delete(uuid) 3b77206b6acc1329474adc6cde2df0eb11acb33fbd650470e4b01dab39eac35f
+-- based-on: public.cmt_restore(uuid) c1e2106888dd2c593f7e5beaed2cd3e9608aeaafd99a71f9538864c330a1e34c
+-- based-on: custom.capture_submit(uuid, uuid, text, jsonb, jsonb, text, timestamp with time zone, jsonb) 272c169609e7ec36aada4f010aaaaddcfdad53db8abf7f1f110b782b1899ac8f
+-- based-on: custom.entity_value_write(uuid, text, uuid, jsonb) db5765846d3b8d2b9dee21efc799ca9ebdce35467e901fd87349bf0d8b6b72de
+-- based-on: custom.subscription_mute(uuid, uuid, boolean) 1774216ada7a6983a4f4b319d13a295073a9f99cc35cf1f824e98e5bdde4f049
+-- based-on: custom.work_approval_request(uuid, uuid, jsonb, text, uuid, text, uuid) 20b131d2f638d1a92071344adceffb709e837f4f2ac7e247547aa489a4a91da5
+-- based-on: custom.anon_publish(uuid, uuid, boolean) e5d5502f1faf990392c0c23061cb313f2e3f65b143167e22603d823f5032ed97
+-- based-on: custom.table_share_outside_invite(uuid, uuid, text, permission_level) d1872260c11ef31fcf23ed8f6d85b298b488cbbf5283548ef2277839fbb595c6
+-- based-on: custom.table_share_outside_grant(uuid, uuid, text, permission_level) 597dde040bc199e2ab8b5155a96b397e3c84dbd7af4c00037e9404d90d650e17
 CREATE OR REPLACE FUNCTION custom.assert_client_may_change(p_organization_id uuid, p_subject_id uuid, p_door text, p_required permission_level DEFAULT 'editor'::permission_level, p_subject_word text DEFAULT 'record'::text)
  RETURNS void
  LANGUAGE plpgsql

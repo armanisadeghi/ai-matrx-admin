@@ -1,5 +1,5 @@
 -- AT-SWEEP-2: the shared ladder refusal (custom.assert_client_may_change) names levels in the share screen's words (View access / Comment access / Edit access / Full access), message AND hint. begin..rollback, fixture orgs, nothing persists.
--- RED before atsweep2_a ("needs the admin level"); GREEN after.
+-- (AT-SWEEP-3 changed the sentence's wording: it now names the action, not the door.) RED before atsweep2_a ("needs the admin level"); GREEN after.
 begin;
 do $g$
 declare
@@ -36,7 +36,7 @@ begin
   if v_msg ~* '(admin|viewer|editor|commenter) level' or v_hint ~* '(admin|viewer|editor|commenter) level|an admin of this|< admin' then
     raise exception 'RED: the refusal still uses the ladder''s raw level words: % | %', v_msg, v_hint;
   end if;
-  if v_msg not like 'You have View access on this table, and custom.field_declare needs Full access.' or v_hint not like '%View < Comment < Edit < Full access%' or v_hint not like '%someone with Full access%' then
+  if v_msg not like 'Changing a column needs Full access; you have View access on this table.' or v_hint not like '%View < Comment < Edit < Full access%' or v_hint not like '%someone with Full access%' then
     raise exception 'RED: the refusal does not read in the share screen''s words: % | %', v_msg, v_hint;
   end if;
   raise notice 'GREEN: % | %', v_msg, v_hint;

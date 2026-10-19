@@ -314,9 +314,9 @@ begin
   -- 🚨 RE-PINNED (lane RED-SUITES-2, 2026-09-21). "In plain words" was measured by looking for
   -- `access`, `permission`, `not yours` or `may not` — four pieces of database vocabulary, in a
   -- suite whose whole subject is talking to a person. This lane's own ruling replaced them. The
-  -- sentence is now "You have View access on this record, and custom.record_update needs
-  -- Edit access.", and that is what is asserted: the level she holds, the level the door
-  -- needs, and the door — which no substring of jargon ever checked.
+  -- sentence is now "Changing a record needs Edit access; you have View access on this record.",
+  -- and that is what is asserted: the level she holds, the level the action needs, and the
+  -- action in plain words — which no substring of jargon ever checked.
   if v_caught not ilike '%View access%' or v_caught not ilike '%Edit access%'
      or v_caught not like '%custom.record_update%' then
     raise exception '5a: the refusal does not name the level she holds, the level the door needs, and the door: %', v_caught;

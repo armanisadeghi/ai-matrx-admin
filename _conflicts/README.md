@@ -31,10 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-121519/lib/record-pages/pending.json.held — LOCAL latest 2026-10-19 12:24; GITHUB latest 2026-10-19 12:17; LOCAL lacks 66 of GITHUB's 403 new lines; GITHUB lacks 1 of LOCAL's 338 new lines; recover: git show 9906637fb8:'lib/record-pages/pending.json' / a7ef95a1c9:'lib/record-pages/pending.json'
-- _conflicts/2026-10-19-121519/lib/record-pages/record-pages.generated.json.held — LOCAL latest 2026-10-19 12:25; GITHUB latest 2026-10-19 12:17; LOCAL lacks 2 of GITHUB's 446 new lines; GITHUB lacks 466 of LOCAL's 910 new lines; recover: git show 9906637fb8:'lib/record-pages/record-pages.generated.json' / a7ef95a1c9:'lib/record-pages/record-pages.generated.json'
 
 ## Resolution log
+
+- 2026-10-19 12:31 PDT — Codex resolved the two `2026-10-19-121519` record-page census held files. Owner: none found; active ship-all owner notified 12:28 PDT. Kept LOCAL's later 458 route classifications, six tokens and two records; declared the two newly added tool/search routes as non-record views; regenerated the map. `pnpm exec tsx scripts/record-pages/generate.ts` and the focused Jest census (9 tests) pass.
 
 - 2026-10-19 11:29 PDT — Codex resolved `_conflicts/2026-10-19-111501/migrations/LEDGER.json.held` by refreshing the production ledger snapshot. It now has 1932 files and contains every entry from LOCAL b5a582e68f and GITHUB 133a160cea with identical metadata, including readspeed_d missing from the prior snapshot; `pnpm refresh:ledger-snapshot --check` confirms it matches production. Owner: none found; current sweep owner notified urgently.
 
