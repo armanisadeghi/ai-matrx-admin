@@ -50,7 +50,27 @@ export function valueText(value: JsonValue | undefined): string {
 }
 
 /** The exact value, in its own height-capped scroll box, with copy. */
-export function ValueBox({ name, value, truncated }: { name: string; value: JsonValue | undefined; truncated?: boolean }) {
+export function ValueBox({
+  name,
+  value,
+  truncated,
+  withheld,
+  chars,
+}: {
+  name: string;
+  value: JsonValue | undefined;
+  truncated?: boolean;
+  /** The value stayed on the server (AI Watch off) — never drawn as empty or missing. */
+  withheld?: boolean;
+  chars?: number | null;
+}) {
+  if (withheld) {
+    return (
+      <span className="text-muted-foreground" data-testid={`value-withheld-${name}`}>
+        Withheld{typeof chars === "number" ? ` · ${chars.toLocaleString()} chars` : ""}
+      </span>
+    );
+  }
   const text = valueText(value);
   if (value === undefined) return <span className="text-muted-foreground">Not recorded</span>;
   if (text === "") return <span className="text-muted-foreground">Empty</span>;
@@ -164,7 +184,15 @@ export function PlacementTable({ placement, values = [], problems = [], label }:
         }
         landed={landedCell(p.landed)}
         verdict={verdictCell(verdict, problem)}
-        value={<ValueBox name={p.name} value={value} truncated={p.truncated || resolved?.truncated} />}
+        value={
+          <ValueBox
+            name={p.name}
+            value={value}
+            truncated={p.truncated || resolved?.truncated}
+            withheld={value === undefined && (p.withheld || resolved?.withheld === true)}
+            chars={p.valueChars ?? resolved?.valueChars ?? null}
+          />
+        }
       />
     );
   });

@@ -10,6 +10,7 @@
 // so `contractCall` is the ONE place their path is cast to the typed callApi
 // config. When `pnpm sync-types` carries them, delete the cast and the helper.
 
+import { withRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
 import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { isJsonObject, type JsonObject, type JsonValue } from "@/types/json";
@@ -36,6 +37,9 @@ export interface PlacementProvision {
   value: JsonValue | undefined;
   truncated: boolean;
   valueRef: string | null;
+  /** The value stayed on the server (the viewer is not watching AI); `valueChars` is its size. */
+  withheld: boolean;
+  valueChars: number | null;
   landed: PlacementLanding[];
 }
 
@@ -82,6 +86,15 @@ export interface RunProvisionValue {
   kind: string | null;
   value: JsonValue | undefined;
   truncated: boolean;
+  /** The value stayed on the server (the viewer is not watching AI); `valueChars` is its size. */
+  withheld: boolean;
+  valueChars: number | null;
+}
+
+/** A delivered variable or context entry whose value stayed on the server: its name and size. */
+export interface WithheldEntry {
+  name: string;
+  chars: number | null;
 }
 
 export interface StoredRun {
@@ -103,6 +116,11 @@ export interface StoredRun {
   provisions: RunProvisionValue[];
   /** What the record delivered — the only values an old run (no placement) has. */
   delivered: { variables: JsonObject; context: JsonObject; userInput: string | null };
+  /** True when the server kept this run's values (the viewer is not watching AI): names and sizes only. */
+  valuesWithheld: boolean;
+  /** Delivered variables / context the server withheld (`delivered` holds none of them then). */
+  withheldVariables: WithheldEntry[];
+  withheldContext: WithheldEntry[];
   /** `agent_run` — a run of the Holder agent that kept no mandate record (shown, never refused). */
   recordedAs: "mandate_run" | "agent_run";
   /** The server's one line when the run is not a full mandate record. */
@@ -156,6 +174,8 @@ function parseProvision(v: JsonValue): PlacementProvision | null {
     value: "value" in v ? v.value : undefined,
     truncated: v.truncated === true,
     valueRef: str(v.value_ref),
+    withheld: v.withheld === true,
+    valueChars: num(v.value_chars),
     landed: list(v.landed).map(parseLanding).filter((l): l is PlacementLanding => l !== null),
   };
 }
@@ -231,6 +251,8 @@ function parseStoredRun(conversationId: string, data: unknown): StoredRun {
       kind: str(item.kind),
       value: "value" in item ? item.value : undefined,
       truncated: item.truncated === true,
+      withheld: item.withheld === true,
+      valueChars: num(item.value_chars),
     });
   }
   return {
@@ -255,7 +277,17 @@ function parseStoredRun(conversationId: string, data: unknown): StoredRun {
     placement: parsePlacement(d.placement),
     provisions,
     delivered,
+    valuesWithheld: d.values_withheld === true,
+    withheldVariables: parseWithheld(d.withheld_variables),
+    withheldContext: parseWithheld(d.withheld_context),
   };
+}
+
+function parseWithheld(v: JsonValue | undefined): WithheldEntry[] {
+  return list(v)
+    .filter(isJsonObject)
+    .map((e) => ({ name: str(e.name) ?? "", chars: num(e.chars) }))
+    .filter((e) => e.name);
 }
 
 // ── The calls ────────────────────────────────────────────────────────────────
@@ -289,7 +321,9 @@ export async function fetchStoredRun(
   mandateKey: AnyMandateKey | null,
 ): Promise<StoredRun> {
   const res = await contractCall(dispatch, {
-    path: `/mandates/runs/${seg(conversationId)}${forMandate(mandateKey)}`,
+    // AI WATCH: `?debug_view=1` while this tab is in debug mode (the server admits only a permitted
+    // viewer); otherwise the run arrives withheld.
+    path: withRunDebugView(`/mandates/runs/${seg(conversationId)}${forMandate(mandateKey)}`),
     method: "GET",
   });
   if (res.error) throw new Error(res.error.message || "The run could not be read.");

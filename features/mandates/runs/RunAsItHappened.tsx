@@ -16,6 +16,7 @@ import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { PlacementTable, ValueBox } from "./PlacementTable";
 import { RunFacts, StreamedRunBlock } from "./RunFacts";
 import { streamReplay, type StoredRun } from "./service";
+import type { JsonValue } from "@/types/json";
 import type { StoredRunState } from "./useStoredRun";
 import { useStreamedRun } from "./useStreamedRun";
 
@@ -50,9 +51,13 @@ export function StoredRunGate({ stored, children }: { stored: StoredRunState; ch
 
 function DeliveredTable({ run }: { run: StoredRun }) {
   const d = run.delivered;
-  const rows = [
+  type Row = { name: string; value: JsonValue | undefined; as: string; withheld?: boolean; chars?: number | null };
+  const rows: Row[] = [
     ...Object.entries(d?.variables ?? {}).map(([name, value]) => ({ name, value, as: "Variable" })),
+    // Withheld (AI Watch off): the server sent names and sizes only — shown as withheld, never as empty.
+    ...run.withheldVariables.map((w) => ({ name: w.name, value: undefined, as: "Variable", withheld: true, chars: w.chars })),
     ...Object.entries(d?.context ?? {}).map(([name, value]) => ({ name, value, as: "Context" })),
+    ...run.withheldContext.map((w) => ({ name: w.name, value: undefined, as: "Context", withheld: true, chars: w.chars })),
     ...(d?.userInput ? [{ name: "user_input", value: d.userInput, as: "Message" }] : []),
   ];
   if (rows.length === 0) return <p className="text-[12px] text-muted-foreground">No delivered values recorded</p>;
@@ -64,7 +69,7 @@ function DeliveredTable({ run }: { run: StoredRun }) {
           columns={DELIVERED_COLUMNS}
           cells={{
             name: <span className="font-medium">{humanizeIdentifier(r.name) || r.name}</span>,
-            value: <ValueBox name={r.name} value={r.value} />,
+            value: <ValueBox name={r.name} value={r.value} withheld={r.withheld} chars={r.chars} />,
             as: r.as,
           }}
         />

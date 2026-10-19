@@ -248,7 +248,7 @@ function TryWithRun({
             values={
               run.provisions.length > 0
                 ? run.provisions
-                : Object.entries(provisions).map(([name, value]) => ({ name, kind: null, value, truncated: false }))
+                : Object.entries(provisions).map(([name, value]) => ({ name, kind: null, value, truncated: false, withheld: false, valueChars: null }))
             }
             problems={preview.problems}
           />
@@ -261,8 +261,15 @@ function TryWithRun({
         <Button
           icon={<Play />}
           variant="primary"
-          disabled={!holder || tryRun.running}
-          title={blocked ? "A red problem above may stop this run" : "Runs the model once and stores a test run"}
+          // A run whose values stayed on the server (AI Watch off) has nothing to try with: say so, never run empty.
+          disabled={!holder || tryRun.running || run.valuesWithheld}
+          title={
+            run.valuesWithheld
+              ? "This run's values are withheld — turn on AI Watch to try it"
+              : blocked
+                ? "A red problem above may stop this run"
+                : "Runs the model once and stores a test run"
+          }
           onClick={() =>
             holder &&
             void tryRun.start((d, onAdopted) =>

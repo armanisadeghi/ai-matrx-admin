@@ -242,7 +242,7 @@ export async function fetchAiWatchRuns(scope: {
     },
     { label: "chat.user_request (Watch AI runs)" },
   );
-  return (rows as Row[]).map(withLabelMetadata).map((row, index) => {
+  return (rows as unknown as Row[]).map(withLabelMetadata).map((row, index) => {
     const metadata = obj(row.metadata) ?? {};
     const holder = obj(metadata.mandate_holder);
     const watch = obj(metadata.mandate_watch);
