@@ -111,6 +111,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [modeOverride, setModeOverride] = useState<InputMode | null>(null);
   const [scope, setScope] = useState<Scope>("auto");
   const [discovered, setDiscovered] = useState<DiscoverResult | null>(null);
+  const [discoveredFor, setDiscoveredFor] = useState("");
   const [progress, setProgress] = useState<ItemProgress[]>([]);
   const [identities, setIdentities] = useState<ProgressRowIdentity[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -197,6 +198,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       }
       if (out.reading.area && !near.trim() && out.kind === "local_business") setNear(out.reading.area);
       setDiscovered(out);
+      setDiscoveredFor(text);
     } catch (err) {
       setAskError(err instanceof ComparisonRefusal ? err.userMessage : "That search did not answer. Try again.");
     } finally {
@@ -348,7 +350,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
 
       <AskBar kindKey={kindKey} text={text} onText={onText} near={near} mode={mode} onMode={setModeOverride}
         scope={scope} onScope={setScope} finding={finding} stage={stage} organizationId={organizationId}
-        onFind={() => void find()} onFill={fill} />
+        onFind={() => void find()} onFill={fill} quiet={discovered !== null && discoveredFor === text} />
       {askError ? <ErrorNotice message={askError} /> : null}
 
       {discovered ? (

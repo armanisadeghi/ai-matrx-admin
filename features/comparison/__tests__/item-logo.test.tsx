@@ -60,4 +60,13 @@ describe("a logo is raw; dark mode only puts it on a light chip", () => {
     expect(el.querySelector("img")).toBeNull();
     expect(el.textContent).toBe("C");
   });
+  it("a source's stand-in picture is no picture: the favicon shows (old saved runs too)", async () => {
+    const ph = "https://businessunitprofile-cdn.trustpilot.net/businessunitprofile-consumersite/public/default-business-unit-image-118x89.svg";
+    const el = await render({ name: "Topo Designs", logoUrl: ph, website: "topodesigns.com", size: 44 });
+    const img = el.querySelector("img") as HTMLImageElement;
+    expect(img.getAttribute("src")).toContain("favicons?domain=topodesigns.com");
+    const none = await render({ name: "Cotopaxi", logoUrl: ph, size: 44 });
+    expect(none.querySelector("img")).toBeNull();
+    expect(none.textContent).toBe("C");
+  });
 });
