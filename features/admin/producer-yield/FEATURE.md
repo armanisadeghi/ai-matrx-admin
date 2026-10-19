@@ -1,10 +1,8 @@
 # FEATURE — Yield register (pointer)
 
-**Canonical doc:** [`common-docs/systems/intelligence/producer-yield/FEATURE.md`](../../../../common-docs/systems/intelligence/producer-yield/FEATURE.md)
+Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/intelligence/producer-yield/FEATURE.md — read it before touching this feature in ANY repo.
 
-The admin surface for disease D13: every autonomous spender in the platform and
-what its money actually bought. Route:
-`/administration/reporting/producer-yield`.
+Route: `/administration/reporting/producer-yield`.
 
 | File | What it is |
 |---|---|

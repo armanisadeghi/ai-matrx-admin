@@ -1,7 +1,8 @@
 # Builder panel — FEATURE
 
-The admin window that shows everything a page has and can do. Product truth:
-`../common-docs/systems/platform/ui-shell/builder-panel/FEATURE.md`.
+The admin window that shows everything a page has and can do.
+
+Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/platform/ui-shell/builder-panel/FEATURE.md — read it before touching this feature in ANY repo.
 
 ## Files
 
@@ -44,53 +45,7 @@ useEffect(() => {
 - Keep the page's publisher admin-only code: import only the surface key statically and load the
   publisher with `import()` inside the admin-gated effect (Smart Add: `builderSurface.ts` +
   `builderFeed.ts`).
-- Publish data exactly as the page holds it. Anything the page COMPUTED goes in group `derived`
-  with `fromNodes` (the step ids whose raw output it came from). Never reshape a value for display.
-- Steps, their raw outputs, every server-side external call (`output.requests`, aidream
-  `request_ledger.py`) and provision snapshots need no publishing: the panel reads them from the
-  database for every `workflow_run` ref (and `record` ref for snapshots of a saved record).
-- `ref` drives the tabs: `workflow_run` → Workflow, Requests, Activity, Provision; `record` →
-  Provision (with `organizationId`: Capture buttons for the page's `provisionKey` refs); `ai_run` → AI calls (a workflow run is never counted as an AI call);
-  `provision_snapshot` → Provision; `mandate` (`mandateKey` / `provisionKey`) → Mandates.
-
-## Layout (round 3: step first)
-
-- **Sidebar = the run story.** Row 0 what the person typed; each run heads a section; each step
-  and each external call inside it is a numbered row with its exact query or URL, status, time
-  and cost. A step with one call is one row (Check the website · GET https://…). A step that did
-  nothing or has no record is grayed with its reason (`waits for: name confirmed`).
-- **Run tab** (a story row): Sent (exact request) · Received (exact raw response) · What we took
-  from it (derived entries with `fromNodes` = the step; on a call row only those its response
-  holds or its engine found, each with the response path it came from). Step input/output below.
-- **Decisions** (after Run): the path each round chose and why (above).
-- **Secondary tabs:** Values (every published entry, grouped with icons; Derived inside) · Page
-  calls (page requests; All / Server still list every server call) · Activity · Workflow ·
-  Mandates · AI calls · Provision. Round 2 tab ids `data` / `requests` map to `values` / `calls`.
-
-## Rendering
-
-Every value renders through `BuilderJson` → `JsonInspector` (formatted / path explorer / tree /
-truncator; ONE Alchemy copy menu — JSON, text, Copy for AI — and an expand button that shows the
-same inspector full size and back). No smart view, no summaries. Activity: the flow's own
-requests (`isFlowRequest`), steps (time, cost, step labels), gates, run starts and provision
-captures, each opening its raw record; a server call opens its story row.
-
-## Proposals
-
-`mandate.proposal` rows (by `surface_key`) feed the Proposed areas of Workflow (`shape_type =
-workflow`) and Mandates (`shape_type = mandate`). Add one with SQL or any writer that carries an
-explicit `organization_id`; nothing in code holds a proposal.
-
-## Change log
-
-- `2026-10-17` — Claude: Provision tab **Capture now** (admin tool moved off the brand Identity page). A page publishes a `record` ref with `organizationId` (+`label`) and `mandate` refs with `provisionKey` (+`provisionLabel`); the tab shows one "Capture <inputs>" button per point (`captureProvision`, opens the Provision window) and lists the record's earlier captures. Consumer: `features/marketing/brand-guide/BrandIdentityBuilderFeed.tsx`.
-- `2026-10-14` — Claude: Builder records only while debug mode is on (Arman). Requests and page values stop and are dropped when debug turns off; the panel says so with a Turn on button. Guard: `__tests__/recording.test.ts`.
-- 2026-10-13 — round 3 (Arman: "more intuitive, don't lose any data"): the sidebar is the run as a
-  numbered story; a row shows Sent · Received · What we took from it; Data → Values (group icons),
-  Requests → Page calls; `JsonInspector` copy is the one Alchemy menu and panes expand to full size.
-
-- 2026-10-13 — round 2 (Arman's review): Requests + Activity, page request log, server request
-  ledger read from node outcomes, values only through `JsonInspector`, Derived group, Provision
-  from the database by run id (it showed only Create's capture), all proposals in Mandates, AI calls
-  no longer counts workflow runs, Workflow links the definition the run used.
-- 2026-10-12 — created: publish API, window, sidebar entry, `mandate.proposal`, Smart Add consumer.
+- What to publish and what the panel reads by itself (`derived` + `fromNodes`, `output.requests`): see the node.
+- `ref` types and the tabs they drive: see the node (Publish API).
+- Every value renders through `BuilderJson` (= `JsonInspector`); never a smart view or summary.
+- `decisions.ts` `runPathLabel` puts the path on the story's run row.
