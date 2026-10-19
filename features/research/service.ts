@@ -818,20 +818,44 @@ export interface YouTubeChannelIdentity {
   description: string | null;
 }
 
-/** `@handle` / `UC…` id out of a channel URL; null for anything else. */
-export function youTubeChannelKey(url: string): { handle?: string; channelId?: string } | null {
+/** Paths on youtube.com that are pages, never a channel's vanity name. */
+const YOUTUBE_NON_CHANNEL_PATHS = new Set([
+  "", "watch", "results", "shorts", "playlist", "feed", "embed", "live", "hashtag",
+  "about", "premium", "kids", "music", "gaming", "redirect", "t", "account", "signin",
+]);
+
+/**
+ * What a channel URL names. `handle` (`/@x`) and `channelId` (`/channel/UC…`)
+ * match the details we already hold; `legacy` (`/c/x`, `/user/x`, `/x`) only a
+ * YouTube lookup can answer — guessing it as `@x` can match someone else.
+ * Null for a URL that is not a channel (the youtube.com home page, a video).
+ */
+export function youTubeChannelKey(
+  url: string,
+): { handle?: string; channelId?: string; legacy?: string } | null {
   try {
-    const path = new URL(url).pathname;
+    const parsed = new URL(url);
+    if (!/(^|\.)youtube\.com$/i.test(parsed.hostname)) return null;
+    const path = parsed.pathname;
     const handle = /^\/(@[^/]+)/.exec(path)?.[1];
     if (handle) return { handle: decodeURIComponent(handle).toLowerCase() };
     const id = /^\/channel\/(UC[\w-]+)/.exec(path)?.[1];
     if (id) return { channelId: id };
-    const legacy = /^\/(?:c|user)\/([^/]+)/.exec(path)?.[1];
-    if (legacy) return { handle: `@${decodeURIComponent(legacy).toLowerCase()}` };
+    const legacy = /^\/(?:c\/|user\/)?([^/]+)\/?$/.exec(path)?.[1];
+    if (legacy && !YOUTUBE_NON_CHANNEL_PATHS.has(legacy.toLowerCase())) {
+      return { legacy: decodeURIComponent(legacy).toLowerCase() };
+    }
   } catch {
     return null;
   }
   return null;
+}
+
+/** One string per channel, so three links to the same channel are one lookup. */
+export function youTubeChannelKeyString(url: string): string | null {
+  const key = youTubeChannelKey(url);
+  if (!key) return null;
+  return key.handle ?? key.channelId ?? `legacy:${key.legacy}`;
 }
 
 type JsonObject = Record<string, unknown>;
@@ -881,7 +905,7 @@ export function savedChannelIdentity(item: ResearchMedia): YouTubeChannelIdentit
 export async function getYouTubeChannelIdentities(
   urls: string[],
 ): Promise<Map<string, YouTubeChannelIdentity>> {
-  const keys = new Map<string, { handle?: string; channelId?: string }>();
+  const keys = new Map<string, { handle?: string; channelId?: string; legacy?: string }>();
   for (const url of new Set(urls)) {
     const key = youTubeChannelKey(url);
     if (key) keys.set(url, key);
@@ -922,25 +946,33 @@ export async function getYouTubeChannelIdentities(
   return byUrl;
 }
 
-/** Saves a looked-up channel onto its media row so it never needs asking again. */
+/** Saves a looked-up channel onto its media row so it never needs asking
+ * again. Merges into `metadata` without dropping a concurrent writer's keys;
+ * the row's own caption is left as the source wrote it. */
 export async function saveChannelIdentity(
   mediaId: string,
-  metadata: Record<string, unknown> | null | undefined,
   identity: YouTubeChannelIdentity,
 ): Promise<void> {
-  await writeOneRow(
-    supabase
-      .schema("research")
-      .from("rs_media")
-      .update({
-        thumbnail_url: identity.avatar,
-        caption: identity.title,
-        metadata: { ...(metadata ?? {}), youtube_channel: identity },
-      })
-      .eq("id", mediaId)
-      .select("id"),
-    { action: "update", noun: "channel details" },
-  );
+  const columns = "id,version,metadata,thumbnail_url";
+  const result = await mergeJsonColumn({
+    fetchCurrent: () =>
+      supabase.schema("research").from("rs_media").select(columns).eq("id", mediaId).maybeSingle(),
+    readColumn: (row) => row.metadata,
+    merge: (current) => ({ ...current, youtube_channel: identity }),
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      supabase
+        .schema("research")
+        .from("rs_media")
+        .update({ metadata: value, version: nextVersion, thumbnail_url: identity.avatar })
+        .eq("id", mediaId)
+        .eq("version", expectedVersion)
+        .select(columns)
+        .maybeSingle(),
+  });
+  if (result.status === "saved") return;
+  if (result.status === "not_found") throw new Error("That channel row no longer exists.");
+  if (result.status === "conflict") throw new Error("The row changed during the save. Try again.");
+  throw result.error;
 }
 
 export async function getSources(

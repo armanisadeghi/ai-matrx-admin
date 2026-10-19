@@ -29,7 +29,9 @@ describe("the wheel over a card in page layout", () => {
     let store: BoardCameraStore | null = null;
     await act(async () =>
       root.render(
-        <BoardViewport initialCamera={{ x: 0, y: 0, z: 1 }} fitOnMount={false} onStore={(s) => (store = s)}>
+        <BoardViewport initialCamera={{ x: 0, y: 0, z: 1 }} fitOnMount={false} onStore={(s) => {
+            store = s;
+          }}>
           <BoardTile id="cover" rect={{ x: 0, y: 0, w: 1000, h: 600 }} title="Overview" onMove={null} onResize={null}>
             {() => <p id="prose">Prose</p>}
           </BoardTile>

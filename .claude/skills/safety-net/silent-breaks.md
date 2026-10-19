@@ -28,6 +28,10 @@ row says otherwise, it passes when the answer uses the hidden fact.
 | SB-07 | One way of starting the agent changes what it receives | The same chain started from the run page, chat and the AI Dream connector; passes only if the answer is identical on every door |
 | SB-08 | State the agent did not bind still reaches it | A fact in a value the call supplies but the agent's binding does not take; passes only if no request to the model ever contains it |
 | SB-09 | A variable filled from the user's own table arrives empty on some way in | The fact only in a table row the variable is bound to; the same run started from every door must carry it |
+| SB-10 | Text or tools the agent never declared reach the model | A canary agent with no tools and one declared value; passes only if every segment of the stored request is declared or on the allow-list |
+| SB-11 | The builder preview differs from what the real run sends | The same canary run through the preview and for real; passes only if the two requests match apart from the per-turn date |
+| SB-12 | A value frozen at turn 1 changes later, or a live value fails to refresh | One bound value and one live context value, both changed between turns; passes only if turn 2 keeps the bound value and shows the new live one |
+| SB-13 | A background helper's result, follow-up or wake-up never reaches the chat | A fact only the helper can produce, plus a follow-up and a 2-minute wake-up; passes only if each lands in the chat with its own value |
 
 ## Test concepts
 
