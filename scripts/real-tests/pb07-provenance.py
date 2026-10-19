@@ -58,7 +58,7 @@ import json
 import re
 import sys
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -412,15 +412,67 @@ class AmbiguousCanary(Exception):
 _CONV_COLS = "id::text id, parent_conversation_id::text parent, initial_agent_id::text agent, created_at"
 
 
+WINDOW_SLACK = timedelta(seconds=5)
+
+
+def _when(text: Any) -> Optional[datetime]:
+    """An ISO timestamp or an HTTP Date header as an aware datetime, else None."""
+    if not isinstance(text, str) or not text.strip():
+        return None
+    try:
+        return datetime.fromisoformat(text.strip().replace("Z", "+00:00"))
+    except ValueError:
+        pass
+    try:
+        from email.utils import parsedate_to_datetime
+
+        return parsedate_to_datetime(text.strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def run_window(run: Path) -> Tuple[Optional[datetime], Optional[datetime]]:
+    """The run's own (start, finish): start from run-identity.json (``started_at_utc``); finish is the latest
+    time any response file of the run records (its ``sent_at`` and the response's ``Date`` header). A missing
+    time is None, and a window with no finish is not used to look anything up."""
+    start = None
+    ident = run / "run-identity.json"
+    if ident.exists():
+        try:
+            start = _when(json.loads(ident.read_text()).get("started_at_utc"))
+        except ValueError:
+            start = None
+    times: List[datetime] = []
+    for f in sorted(run.glob("*.json")):
+        if f.name in ("manifest.json", "run-identity.json"):
+            continue
+        try:
+            rec = json.loads(f.read_text())
+        except ValueError:
+            continue
+        if not isinstance(rec, dict):
+            continue
+        hdr = rec.get("headers")
+        for raw in (rec.get("sent_at"), hdr.get("Date") if isinstance(hdr, dict) else None):
+            t = _when(raw)
+            if t is not None:
+                times.append(t if t.tzinfo else t.replace(tzinfo=timezone.utc))
+    if start is not None and start.tzinfo is None:
+        start = start.replace(tzinfo=timezone.utc)
+    return start, (max(times) if times else None)
+
+
 def find_canary_conversation(conn, agent_id: str, after: str, exclude: set, root: Optional[str] = None,
-                             request_ids: Tuple[Optional[str], ...] = (), source_feature: Optional[str] = None) -> Optional[str]:
+                             request_ids: Tuple[Optional[str], ...] = (), source_feature: Optional[str] = None,
+                             before: Optional[datetime] = None, run_start: Optional[datetime] = None) -> Optional[str]:
     """The conversation whose agent IS the canary, belonging to THIS run.
 
     Bound to the run's own identifiers: the conversation id the sender recorded (``root``), any conversation
     carrying one of the run's request ids, and every descendant of those by parent links, to any depth (the
     agent-call chain is caller -> second caller -> canary). When the run has no such conversation (the door
     records none), a top-level conversation of the canary agent created after the send AND carrying the door's
-    ``source_feature``; a time window alone is never enough. Zero matches -> None. More than one ->
+    ``source_feature``, inside the run's own window (``run_start`` .. ``before``, the run's finish; with no
+    ``before`` the window is not used); a time window alone is never enough. Zero matches -> None. More than one ->
     AmbiguousCanary naming them all."""
     ids = [i for i in request_ids if i]
     seen: Dict[str, dict] = {}
@@ -438,11 +490,14 @@ def find_canary_conversation(conn, agent_id: str, after: str, exclude: set, root
                 seen[k["id"]] = k
                 frontier.append(k["id"])
     hits = [r for r in seen.values() if r["agent"] == agent_id and r["id"] not in exclude]
-    if not seen and source_feature:
-        t = datetime.fromisoformat(after) - timedelta(seconds=5)
+    if not seen and source_feature and before is not None:
+        t = datetime.fromisoformat(after) - WINDOW_SLACK
+        if run_start is not None and t < run_start:
+            t = run_start
         hits = [r for r in q(conn, f"select {_CONV_COLS} from chat.conversation where initial_agent_id::text = %s "
                                    "and created_at >= %s and parent_conversation_id is null and source_feature = %s "
-                                   "order by created_at", (agent_id, t, source_feature)) if r["id"] not in exclude]
+                                   "and created_at <= %s order by created_at",
+                             (agent_id, t, source_feature, before + WINDOW_SLACK)) if r["id"] not in exclude]
     hits.sort(key=lambda r: str(r["created_at"]))
     if len(hits) > 1:
         raise AmbiguousCanary("more than one conversation matches this run: " + ", ".join(r["id"] for r in hits))
@@ -650,17 +705,47 @@ def tool_text(t: dict) -> str:
     return norm(json.dumps({"name": tool_name(t), "description": f.get("description", ""), "params": sorted(found)}))
 
 
-# Lines of these kinds make the helper exit non-zero (FAIL_EXIT): the helper could not read or could not find
-# what the run declared, so whatever else it printed cannot be read as clean.
+# The helper exits non-zero when it printed any FAIL-kind line, by the sealed PB-07 N6 table. Fail closed: a
+# printed line passes only when it is a note, a titler template line, or a kind the table marks allowed or
+# INCONCLUSIVE; a kind the table does not name is FAIL (N6: "a kind the helper prints that is not in this
+# list is FAIL until this row names it").
 UNVERIFIED_BLOCK = "unattributed platform block, no dry run for this door to verify it"
 NOT_LISTED = "not in this door's dry run platform_parts"
-FAIL_CLOSED_KINDS = ("missing declared value", "unparsed payload shape")
+UNPARSED = "unparsed payload shape"
 FAIL_EXIT = 2
+# INCONCLUSIVE (or allowed) kinds, matched against the line's third field (door | where | kind | detail) or,
+# for the lookup and sender lines, the whole line.
+_INCONCLUSIVE_KIND_PREFIX = (
+    "no dry run captured",  # N3 only
+    "relayed through ",  # agent-call N5
+    "the caller's agent_call user_input was not found",  # agent-call N2 unreadable
+)
+_INCONCLUSIVE_DETAIL_PREFIX = ("more than one conversation matches",)  # lookup line `<door> | - | <error>`
+FAIL_CLOSED_KINDS = ("every kind the sealed N6 table marks FAIL, and every kind it does not name",)
+
+
+def line_fails(line: str) -> bool:
+    """True when the printed line is a FAIL kind under the sealed N6 table (or a kind the table does not name)."""
+    if line.startswith("("):  # the helper's own notes: INCONCLUSIVE for the conversations or doors they name
+        return False
+    parts = line.split(" | ", 3)
+    if len(parts) < 3:
+        return True
+    door, kind = parts[0], parts[2]
+    if "side job: conversation titler" in door:
+        if kind == SIDE_JOB_TEXT:  # the titler's own template line; the grader reads its segment
+            return False
+        return UNPARSED not in kind  # `unparsed payload shape` is INCONCLUSIVE for the titler only
+    if door.endswith("(dry run)") and parts[1].strip() == "-" and kind.startswith("HTTP "):
+        return False  # INCONCLUSIVE for that door's N3
+    if parts[1].strip() == "-" and kind.startswith(_INCONCLUSIVE_DETAIL_PREFIX):
+        return False
+    return not kind.startswith(_INCONCLUSIVE_KIND_PREFIX)
 
 
 def exit_status(report: List[str]) -> int:
-    """FAIL_EXIT when any printed line is of a fail-closed kind, else 0."""
-    return FAIL_EXIT if any(k in line for line in report for k in FAIL_CLOSED_KINDS) else 0
+    """FAIL_EXIT when any printed line is a FAIL kind, else 0."""
+    return FAIL_EXIT if any(line_fails(line) for line in report) else 0
 
 
 def agent_call_prompt(snaps: List[dict]) -> Optional[str]:
@@ -1105,6 +1190,7 @@ def main() -> None:
     baselines: Dict[str, Baseline] = {}
     if run:
         manifest = json.loads((run / "manifest.json").read_text())
+        run_start, run_finish = run_window(run)
         claimed = {e["conversation_id"] for e in manifest.values() if e.get("conversation_id")}
         for name, e in manifest.items():
             if e["kind"] == "dry":
@@ -1118,7 +1204,8 @@ def main() -> None:
             try:
                 if e["door"] in ("mandate-try", "workflow"):
                     feature = "workflow_run" if e["door"] == "workflow" else _mandate_feature(rec)
-                    cid = find_canary_conversation(conn, e["agent_id"], e["sent_at"], others, cid, rids, feature)
+                    cid = find_canary_conversation(conn, e["agent_id"], e["sent_at"], others, cid, rids, feature,
+                                                   run_finish, run_start)
                 elif e["door"] == "agent-call" and cid:
                     side.append((e["door"] + " (caller)", cid, e.get("typed") or args.typed))
                     cid = find_canary_conversation(conn, CANARY, e["sent_at"], others, cid, rids)
@@ -1180,7 +1267,9 @@ def main() -> None:
     print_report(report)
     status = exit_status(report)
     if status:
-        print(f"(exit {status}: a line of kind {' / '.join(FAIL_CLOSED_KINDS)} was printed)", file=sys.stderr)
+        bad = [ln for ln in report if line_fails(ln)]
+        print(f"(exit {status}: {len(bad)} line(s) of a FAIL kind under the sealed N6 table; first: {bad[0][:200]})",
+              file=sys.stderr)
     sys.exit(status)
 
 
@@ -1437,6 +1526,7 @@ def _self_test_cases() -> list:
                                    TYPED, VARIABLE_VALUES, rep)) if side else None))
     rows.extend(_lookup_cases())
     rows.extend(_baseline_cases())
+    rows.extend(_exit_cases())
     return rows
 
 
@@ -1499,9 +1589,89 @@ def _baseline_cases() -> list:
     ]
 
 
+# ── exit-status cases: every FAIL kind of the sealed N6 table exits non-zero; allowed / INCONCLUSIVE kinds do not ──
+_EX_TITLER = f"door side job: conversation titler | messages[0] part 0 | {SIDE_JOB_TEXT} | Write a short title."
+_EX_FAIL_LINES = [
+    ("unattributed", "door | system | unattributed | some platform text"),
+    ("unattributed inside AL-xx", "door | system | unattributed inside Skills | a line"),
+    ("unattributed platform block, no dry run", f"door | system | {UNVERIFIED_BLOCK} | Skills: text"),
+    ("row not in the dry run platform_parts", f"door | system | Skills {NOT_LISTED} | text"),
+    ("tool not declared and not in the dry run", "door | tools | tool not declared and not in this door's dry run tools | ask_person"),
+    ("tool definition differs", "door | tools | tool definition differs from this door's dry run | context"),
+    ("tool not declared (no dry run)", "door | tools | tool not declared by the canary (no dry run for this door to compare) | context"),
+    ("platform part not in baseline", "door | dry run platform_parts | platform part not in baseline | label 'X'"),
+    ("tool not in baseline", "door | tools | tool not in baseline | context (source 'context'; baseline lists none)"),
+    ("appended to the person's turn", "door | messages[0] | appended to the person's turn | extra"),
+    ("user-role text the person did not type", "door | messages[1] | user-role text the person did not type | text"),
+    ("typed text missing", "door | messages | the person's typed text is missing or altered | expected: x"),
+    ("parity, real only", "door | parity | in the real request, not in its dry run | seg"),
+    ("parity, dry only", "door | parity | in the dry run, not in the real request | seg"),
+    ("no conversation found", "door | - | no conversation found for this door (HTTP 200)"),
+    ("no request snapshot", "door | 1234 | no request snapshot stored for this conversation"),
+    ("missing declared value", "door | request | missing declared value | context: PB7-CTX-8W5N"),
+    ("missing authored segment", "door | request | missing authored segment | frag"),
+    ("no system prompt", "door | system | no system prompt in the request | the authored system text was dropped"),
+    ("duplicated authored segment", "door | request | duplicated authored segment, 2 copies | frag"),
+    ("duplicated declared value", "door | request | duplicated declared value, 2 copies | v: x"),
+    ("duplicated typed text", "door | request | duplicated typed text, 2 copies | typed"),
+    ("duplicated platform block", "door | request | duplicated platform block, 2 copies | Skills"),
+    ("output contract text", "door | system | output contract text the canary does not declare | text"),
+    ("non-text part", "door | messages[0] | non-text part (image) | text"),
+    ("tool result", "door | messages[2] | tool result (what a tool returned; not attributable here) | text"),
+    ("request key this helper does not read", "door | request | request key this helper does not read, holding text | key"),
+    ("message with a role this helper does not read", "door | request | message with a role this helper does not read | role"),
+    ("unparsed payload shape", "door | unified_payload | unparsed payload shape | str | 'x'"),
+    ("titler carries a value the person did not type", "door side job: conversation titler | request | carries a value the person did not type or fill in | marker: PB7-CTX-8W5N"),
+    ("titler non-text part", "door side job: conversation titler | messages[0] | non-text part (image) | text"),
+    ("a kind the table does not name", "door | request | some new kind | text"),
+]
+_EX_OK_LINES = [
+    ("titler template line", _EX_TITLER),
+    ("titler unparsed payload shape (INCONCLUSIVE for the titler only)",
+     "door side job: conversation titler | request | unparsed payload shape | str"),
+    ("relayed through intermediate callers", "agent-call | c1 | relayed through 1 intermediate caller conversation(s) below the first caller r | graded"),
+    ("no dry run captured", "door | - | no dry run captured | preview/real parity not checked for this door"),
+    ("caller user_input not found", "agent-call | c1 | the caller's agent_call user_input was not found in the first caller's snapshots (r)"),
+    ("lookup ambiguity", "mandate-try | - | more than one conversation matches this run: a, b"),
+    ("dry run HTTP status", "door (dry run) | - | HTTP 500 | body"),
+    ("no dry run given note", "(no dry run given for the conversations: every platform block and tool is unattributed)"),
+    ("baseline gate not applied note", "(conversation mode: the pinned baseline gate is not applied; grade in --run mode)"),
+    ("no auth user note", "(no auth user x: the ambient user object cannot be attributed)"),
+]
+
+
+def _exit_cases() -> list:
+    rows: list = []
+
+    def status(lines):
+        return lambda rep: rep.append(f"exit status {exit_status(list(lines))}")
+
+    for name, line in _EX_FAIL_LINES:
+        rows.append((f"exit status: a `{name}` line exits non-zero", f"exit status {FAIL_EXIT}", status([line])))
+    rows.append(("exit status: a FAIL line among allowed lines exits non-zero", f"exit status {FAIL_EXIT}",
+                 status([_EX_TITLER, _EX_OK_LINES[1][1], _EX_FAIL_LINES[7][1]])))
+    for name, line in _EX_OK_LINES:
+        rows.append((f"exit status: a `{name}` line leaves the exit status 0", "exit status 0", status([line])))
+    rows.append(("exit status: no lines leaves the exit status 0", "exit status 0", status([])))
+
+    def baseline_gate_exit(run):
+        # the real gate: a note this door's dry run lists but the pinned baseline does not
+        def go(rep):
+            inner: List[str] = []
+            run(inner)
+            rep.append(f"exit status {exit_status(inner)}")
+        return go
+
+    for name, kind, run in _baseline_cases():
+        if kind in ("platform part not in baseline", "tool not in baseline"):
+            rows.append((f"exit status: {name}", f"exit status {FAIL_EXIT}", baseline_gate_exit(run)))
+    return rows
+
+
 # ── lookup cases: a fake chat.conversation table behind q() ─────────────────────────────────────────
 _LK_CANARY = "40379907-a685-4d59-93db-6533c5fdcb75"
 _LK_CALLER = "a9cf243e-90b3-435d-96e2-f21e56fe08f5"
+_LK_FINISH = datetime.fromisoformat("2026-10-18T07:38:30+00:00")
 
 
 def _lk_row(cid: str, parent: Optional[str], agent: str, at: str, feature: str = "", last_req: str = "") -> dict:
@@ -1521,6 +1691,8 @@ def _lk_fake_q(table: List[dict]):
             out = [r for r in out if r["parent"] is None]
         if "source_feature = %s" in sql:
             out = [r for r in out if r["source_feature"] == args[2]]
+        if "created_at <= %s" in sql:
+            out = [r for r in out if r["created_at"] <= args[3]]
         return sorted(out, key=lambda r: r["created_at"])
     return fake
 
@@ -1566,7 +1738,7 @@ def _lookup_cases() -> list:
     def feature(rep):
         feat = [_lk_row("other-wf", None, _LK_CANARY, "2026-10-18T07:37:23+00:00", "workflow_run"),
                 _lk_row("mine", None, _LK_CANARY, "2026-10-18T07:37:24+00:00", "mandate:realtests.pb07_canary")]
-        got = _lk_call(feat, source_feature="mandate:realtests.pb07_canary")
+        got = _lk_call(feat, source_feature="mandate:realtests.pb07_canary", before=_LK_FINISH)
         rep.append("lookup: time window bound" if got == "mine"
                    else f"lookup resolved {got!r} for the mandate door, wanted mine")
 
@@ -1583,11 +1755,75 @@ def _lookup_cases() -> list:
             return
         rep.append(f"lookup silently picked {got!r} of two matches")
 
+    def later_run(rep):
+        # a LATER run of the same door (same feature, after this run finished) must not make the lookup ambiguous
+        table = [_lk_row("mine", None, _LK_CANARY, "2026-10-18T07:37:24+00:00", "workflow_run"),
+                 _lk_row("later-run", None, _LK_CANARY, "2026-10-18T07:52:24+00:00", "workflow_run")]
+        try:
+            got = _lk_call(table, source_feature="workflow_run", before=_LK_FINISH,
+                           run_start=datetime.fromisoformat("2026-10-18T07:37:00+00:00"))
+        except Exception as exc:
+            rep.append(f"lookup raised {type(exc).__name__} with a later run in the table: {exc}")
+            return
+        rep.append("lookup: a later run is outside the window" if got == "mine"
+                   else f"lookup resolved {got!r}, wanted mine")
+
+    def earlier_run(rep):
+        table = [_lk_row("before-run", None, _LK_CANARY, "2026-10-18T07:36:50+00:00", "workflow_run"),
+                 _lk_row("mine", None, _LK_CANARY, "2026-10-18T07:37:24+00:00", "workflow_run")]
+        try:
+            got = _lk_call(table, source_feature="workflow_run", before=_LK_FINISH,
+                           run_start=datetime.fromisoformat("2026-10-18T07:37:20+00:00"))
+        except Exception as exc:
+            rep.append(f"lookup raised {type(exc).__name__}: {exc}")
+            return
+        rep.append("lookup: nothing before the run start" if got == "mine" else f"lookup resolved {got!r}, wanted mine")
+
+    def no_finish(rep):
+        # no recorded finish: the window is not used at all (never an open-ended lookup)
+        table = [_lk_row("mine", None, _LK_CANARY, "2026-10-18T07:37:24+00:00", "workflow_run")]
+        got = _lk_call(table, source_feature="workflow_run")
+        rep.append("lookup: no finish, no window lookup" if got is None else f"lookup resolved {got!r} with no finish")
+
+    def recorded_beats_window(rep):
+        table = [_lk_row("rec", None, _LK_CANARY, "2026-10-18T07:37:30+00:00", "agent", "req-r"),
+                 _lk_row("win", None, _LK_CANARY, "2026-10-18T07:37:25+00:00", "workflow_run")]
+        got = _lk_call(table, root="rec", request_ids=("req-r",), source_feature="workflow_run", before=_LK_FINISH)
+        rep.append("lookup: the recorded id beats the window" if got == "rec" else f"lookup resolved {got!r}, wanted rec")
+
+    def window_from_files(rep):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            dd = Path(d)
+            (dd / "run-identity.json").write_text(json.dumps({"started_at_utc": "2026-10-19T07:27:04.129581+00:00"}))
+            (dd / "manifest.json").write_text("{}")
+            (dd / "a.json").write_text(json.dumps({"sent_at": "2026-10-19T07:27:05.165564+00:00",
+                                                   "headers": {"Date": "Mon, 19 Oct 2026 07:27:09 GMT"}}))
+            (dd / "b.json").write_text(json.dumps({"sent_at": "2026-10-19T07:28:30.938932+00:00",
+                                                   "headers": {"Date": "Mon, 19 Oct 2026 07:28:12 GMT"}}))
+            start, finish = run_window(dd)
+        ok = (start == datetime.fromisoformat("2026-10-19T07:27:04.129581+00:00")
+              and finish == datetime.fromisoformat("2026-10-19T07:28:30.938932+00:00"))
+        rep.append("window: start from the run identity, finish from the response files" if ok
+                   else f"window read as {start} .. {finish}")
+
     return [("lookup: canary two levels below the caller (caller -> caller -> canary)", "lookup: grandchild resolved", grandchild),
             ("lookup: two overlapping runs keep their own conversations", "lookup: overlapping runs kept apart", overlap),
             ("lookup: a door with no recorded conversation is bound to its feature, not just the time",
              "lookup: time window bound", feature),
-            ("lookup: two matches in one run fail loudly, naming both", "lookup: ambiguity fails loudly", ambiguous)]
+            ("lookup: two matches in one run fail loudly, naming both", "lookup: ambiguity fails loudly", ambiguous),
+            ("lookup: a later run of the same door is outside the window (no false ambiguity)",
+             "lookup: a later run is outside the window", later_run),
+            ("lookup: a run started earlier is outside the window", "lookup: nothing before the run start", earlier_run),
+            ("lookup: with no recorded finish the time window is not used", "lookup: no finish, no window lookup", no_finish),
+            ("lookup: a recorded conversation id is preferred over any time window",
+             "lookup: the recorded id beats the window", recorded_beats_window),
+            ("window: run start from the identity file, finish from the response files",
+             "window: start from the run identity, finish from the response files",
+             window_from_files if "run_window" in globals() else (lambda rep: rep.append(
+                 "window read as: the helper has no run_window"))),
+            ]
 
 
 VARIABLE_VALUES = {"canary_code": "PB7-VAR-7Q2K"}
