@@ -16702,10 +16702,12 @@ export type Database = {
           metadata: Json
           notes: string | null
           organization_id: string
+          pending_runs: Json
           reflect_agent_id: string | null
           reviewer_agent_id: string | null
           status: string
           steward_agent_id: string | null
+          subject_label: string | null
           subject_user_id: string
           test_expires_at: string | null
           test_run_id: string | null
@@ -16724,10 +16726,12 @@ export type Database = {
           metadata?: Json
           notes?: string | null
           organization_id: string
+          pending_runs?: Json
           reflect_agent_id?: string | null
           reviewer_agent_id?: string | null
           status?: string
           steward_agent_id?: string | null
+          subject_label?: string | null
           subject_user_id: string
           test_expires_at?: string | null
           test_run_id?: string | null
@@ -16746,10 +16750,12 @@ export type Database = {
           metadata?: Json
           notes?: string | null
           organization_id?: string
+          pending_runs?: Json
           reflect_agent_id?: string | null
           reviewer_agent_id?: string | null
           status?: string
           steward_agent_id?: string | null
+          subject_label?: string | null
           subject_user_id?: string
           test_expires_at?: string | null
           test_run_id?: string | null

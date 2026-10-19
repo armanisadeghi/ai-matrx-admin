@@ -58,22 +58,9 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
   );
   const ids = execs.map((e) => e.id);
 
-  const rows = ids.length
-    ? await readAllRows(({ from, to }) =>
-        runtime
-          .from("work_item")
-          .select(
-            "id, canonical_key, state, attempts, max_attempts, not_before, error, payload, created_at, updated_at",
-            { count: "exact" },
-          )
-          .in("execution_id", ids)
-          .is("deleted_at", null)
-          .order("updated_at", { ascending: false })
-          .order("id", { ascending: true })
-          .range(from, to),
-        { label: "runtime.work_item (system processes)" },
-      )
-    : [];
+  // One process execution today; batched so a growing list keeps the PostgREST URL short.
+  const rows: Awaited<ReturnType<typeof readWorkItems>> = [];
+  for (let i = 0; i < ids.length; i += 200) rows.push(...(await readWorkItems(ids.slice(i, i + 200))));
 
   const items: QueueItem[] = rows.map((r) => {
     const sep = r.canonical_key.indexOf(":");
@@ -109,4 +96,22 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
   }));
 
   return { items, knobs };
+}
+
+function readWorkItems(ids: string[]) {
+  return readAllRows(({ from, to }) =>
+    supabase
+      .schema("runtime")
+      .from("work_item")
+      .select(
+        "id, canonical_key, state, attempts, max_attempts, not_before, error, payload, created_at, updated_at",
+        { count: "exact" },
+      )
+      .in("execution_id", ids)
+      .is("deleted_at", null)
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, to),
+    { label: "runtime.work_item (system processes)" },
+  );
 }

@@ -13,6 +13,7 @@ import { RecordId } from "@ai-matrx/design-system";
 import { Button, PropertyRow, Select } from "@ai-matrx/design-system/controls";
 import {
   MEMORY_ROLES,
+  POINT_VALUE_NAMES,
   ROLE_LABEL,
   ROLE_POINTS,
   type LabAgent,
@@ -33,6 +34,7 @@ function RoleRow({
   agent,
   knownValues,
   disabled,
+  locked,
   onAgent,
   onBindings,
 }: {
@@ -41,6 +43,7 @@ function RoleRow({
   agent: LabAgent | undefined;
   knownValues: Map<string, string[]>;
   disabled: boolean;
+  locked: boolean;
   onAgent: (agentId: string | null) => void;
   onBindings: (bindings: TrialBindings) => void;
 }) {
@@ -49,7 +52,7 @@ function RoleRow({
   const options = [
     { value: SAME_NAME, label: "Same name" },
     ...ROLE_POINTS[role].flatMap((point) =>
-      (knownValues.get(point) ?? []).map((name) => ({
+      [...new Set([...(POINT_VALUE_NAMES[point] ?? []), ...(knownValues.get(point) ?? [])])].map((name) => ({
         value: `${point}.${name}`,
         label: name,
         meta: pointShort(point),
@@ -68,16 +71,20 @@ function RoleRow({
     <section className="flex flex-col gap-2 border-t border-border pt-2 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-center gap-2">
         <span className="type-label w-20 text-foreground">{ROLE_LABEL[role]}</span>
-        <AgentListDropdown
-          onSelect={(id) => onAgent(id)}
-          activeAgentId={agentId ?? undefined}
-          label={agentId ? undefined : "Choose agent"}
-          includeSystemInAll
-        />
+        {locked ? null : (
+          <AgentListDropdown
+            onSelect={(id) => onAgent(id)}
+            activeAgentId={agentId ?? undefined}
+            label={agentId ? undefined : "Choose agent"}
+            includeSystemInAll
+          />
+        )}
         {agentId ? (
           <>
             <RecordId value={agentId} label={agent?.name ?? "Agent"} token="agent" labelled />
-            <Button variant="quiet" icon={<X />} aria-label="Clear agent" disabled={disabled} onClick={() => onAgent(null)} />
+            {locked ? null : (
+              <Button variant="quiet" icon={<X />} aria-label="Clear agent" disabled={disabled} onClick={() => onAgent(null)} />
+            )}
           </>
         ) : (
           <span className="type-caption text-muted-foreground">No agent yet: captures the provision only</span>
@@ -99,7 +106,7 @@ function RoleRow({
                 }
                 onValueChange={(v) => setSource(variable, v)}
                 aria-label={`Value for ${variable}`}
-                disabled={disabled}
+                disabled={disabled || locked}
               />
             </PropertyRow>
           ))}
@@ -114,11 +121,16 @@ export function RoleAgentsPanel(props: {
   agents: Map<string, LabAgent>;
   knownValues: Map<string, string[]>;
   disabled: boolean;
+  /** An archived trial: agents and bindings are read-only. */
+  locked: boolean;
   onAgent: (role: MemoryRole, agentId: string | null) => void;
   onBindings: (bindings: TrialBindings) => void;
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-card p-3">
+      {props.locked ? (
+        <span className="type-caption text-muted-foreground">Archived: restore the trial to change agents</span>
+      ) : null}
       {MEMORY_ROLES.map((role) => {
         const id = props.trial.agents[role];
         return (
@@ -129,6 +141,7 @@ export function RoleAgentsPanel(props: {
             agent={id ? props.agents.get(id) : undefined}
             knownValues={props.knownValues}
             disabled={props.disabled}
+            locked={props.locked}
             onAgent={(agentId) => props.onAgent(role, agentId)}
             onBindings={props.onBindings}
           />

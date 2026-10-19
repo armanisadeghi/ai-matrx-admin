@@ -1,11 +1,12 @@
 /**
- * Memory Lab — data. Trials and steps are read and written directly in Supabase (admin reads ride
- * the admin lane on /administration). The client creates trials, edits title / agents / bindings /
- * notes and archives; it never writes `files` or a step — the server's apply door does.
+ * Memory Lab — data. Trials and steps are read and written directly in Supabase. Reading another
+ * person's conversations works because every browser client rides the admin lane on /administration
+ * (installAdminLane in lib/diagnostics/supabaseErrorCapture.ts), which opens `is_platform_admin()` and
+ * so the `platform_admin_read` policy on chat.conversation, agent.definition and the trial tables.
+ * The client creates trials, edits title / agents / bindings / notes / pending runs and archives; it never writes `files` or a step — the server's apply door does.
  * Server: aidream/services/agent_memory (capture points + POST /memory-lab/trials/{id}/apply).
  */
-import { mergeJsonColumn, readAllRows } from "@ai-matrx/data/db";
-import { extractErrorMessage } from "@/utils/errors";
+import { guardedUpdate, readAllRows } from "@ai-matrx/data/db";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
@@ -36,7 +37,7 @@ import {
 const chat = () => supabase.schema("chat");
 
 const TRIAL_COLUMNS =
-  "id, title, subject_user_id, status, files, reviewer_agent_id, reflect_agent_id, steward_agent_id, bindings, notes, organization_id, metadata, created_at, updated_at";
+  "id, title, subject_user_id, status, files, reviewer_agent_id, reflect_agent_id, steward_agent_id, bindings, notes, organization_id, subject_label, pending_runs, version, created_at, updated_at";
 
 type TrialRow = {
   id: string;
@@ -50,18 +51,19 @@ type TrialRow = {
   bindings: Json;
   notes: string | null;
   organization_id: string;
-  metadata: Json;
+  subject_label: string | null;
+  pending_runs: Json;
+  version: number;
   created_at: string;
   updated_at: string;
 };
 
 function toTrial(row: TrialRow): MemoryTrial {
-  const metadata = asRecord(row.metadata) as Record<string, Json | undefined>;
   return {
     id: row.id,
     title: row.title,
     subjectUserId: row.subject_user_id,
-    subjectLabel: typeof metadata.subject_label === "string" ? metadata.subject_label : "",
+    subjectLabel: row.subject_label ?? "",
     status: row.status === "archived" ? "archived" : "open",
     files: parseFiles(row.files),
     agents: {
@@ -72,8 +74,7 @@ function toTrial(row: TrialRow): MemoryTrial {
     bindings: parseBindings(row.bindings),
     notes: row.notes ?? "",
     organizationId: row.organization_id,
-    pendingRuns: parsePendingRuns(metadata),
-    metadata,
+    pendingRuns: parsePendingRuns(row.pending_runs),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -124,7 +125,7 @@ export async function createTrial(input: {
       title: input.title,
       subject_user_id: input.subjectUserId,
       organization_id: organizationId,
-      metadata: { subject_label: input.subjectLabel },
+      subject_label: input.subjectLabel,
     })
     .select(TRIAL_COLUMNS)
     .single();
@@ -171,32 +172,36 @@ export async function updateTrial(trial: MemoryTrial, patch: TrialPatch): Promis
 }
 
 /**
- * Runs started and not yet applied live on `metadata.pending_runs`, so a reload can finish them.
- * A guarded jsonb merge: the server writes the same row (files) while a run applies.
+ * Runs started and not yet applied live on `trial.pending_runs`, so a reload can finish them.
+ * A whole-column write under the row's version guard (the server writes `files` on the same row
+ * while a run applies), re-read and re-applied on a lost race.
  */
 export async function savePendingRuns(
   trial: MemoryTrial,
   mutate: (pending: PendingRun[]) => PendingRun[],
 ): Promise<MemoryTrial> {
-  type Versioned = TrialRow & { version: number };
-  const columns = `${TRIAL_COLUMNS}, version`;
-  const result = await mergeJsonColumn<Versioned>({
-    fetchCurrent: () => chat().from("memory_trial").select(columns).eq("id", trial.id).maybeSingle(),
-    readColumn: (row) => row.metadata,
-    merge: (current) => ({ ...current, pending_runs: mutate(parsePendingRuns(current)) }),
-    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
-      chat()
-        .from("memory_trial")
-        .update({ metadata: value as Json, version: nextVersion })
-        .eq("id", trial.id)
-        .eq("version", expectedVersion)
-        .select(columns)
-        .maybeSingle(),
-  });
-  if (result.status === "saved") return toTrial(result.row);
-  if (result.status === "not_found") throw new Error("This trial no longer exists.");
-  if (result.status === "conflict") throw new Error("The trial kept changing; try again.");
-  throw new Error(extractErrorMessage(result.error));
+  const fetchCurrent = () => chat().from("memory_trial").select(TRIAL_COLUMNS).eq("id", trial.id).maybeSingle();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const current = await fetchCurrent();
+    if (current.error) throw current.error;
+    if (!current.data) throw new Error("This trial no longer exists.");
+    const next = mutate(parsePendingRuns(current.data.pending_runs));
+    const result = await guardedUpdate<TrialRow>({
+      expectedVersion: current.data.version,
+      applyUpdate: ({ expectedVersion, nextVersion }) =>
+        chat()
+          .from("memory_trial")
+          .update({ pending_runs: next as unknown as Json, version: nextVersion })
+          .eq("id", trial.id)
+          .eq("version", expectedVersion)
+          .select(TRIAL_COLUMNS)
+          .maybeSingle(),
+      fetchCurrent,
+    });
+    if (result.status === "saved") return toTrial(result.row);
+    if (result.status === "not_found") throw new Error("This trial no longer exists.");
+  }
+  throw new Error("The trial kept changing; try again.");
 }
 
 const STEP_COLUMNS =

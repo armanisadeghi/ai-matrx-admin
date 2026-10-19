@@ -2,6 +2,7 @@
 "use client";
 
 import { Suspense } from "react";
+import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { SystemProcessesBoard } from "@/features/system-processes/SystemProcessesBoard";
 
@@ -10,7 +11,7 @@ export default function SystemProcessesPage() {
     <>
       <RecordPageHeader record={{ name: "System processes" }} />
       <div className="flex h-full min-h-0 flex-col p-3">
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-md bg-muted/50" />}>
+        <Suspense fallback={<RegionSkeleton shape="rows" count={8} aria-label="Reading system processes" />}>
           <SystemProcessesBoard />
         </Suspense>
       </div>

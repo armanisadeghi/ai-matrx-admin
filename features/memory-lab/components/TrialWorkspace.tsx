@@ -199,6 +199,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                 busy={runner.busy}
                 runningId={phase?.subjectConversationId ?? null}
                 hasReviewer={Boolean(trial.agents.review)}
+                archived={archived}
                 onReview={(id) => void runner.review(id)}
                 onReviewMany={(ids) => void runner.reviewMany(ids)}
                 onCapture={(id) => void captureAndOpen("review", id)}
@@ -225,7 +226,12 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                   <Button variant="quiet" icon={<Eye />} onClick={() => watchAiRun({ conversationId: p.runConversationId })}>
                     Watch AI
                   </Button>
-                  <Button variant="primary" disabled={runner.busy} onClick={() => void runner.finishPending(p)}>
+                  <Button
+                    variant="primary"
+                    disabled={runner.busy || archived}
+                    title={archived ? "Archived: restore the trial to apply" : undefined}
+                    onClick={() => void runner.finishPending(p)}
+                  >
                     Apply its edits
                   </Button>
                   <Button variant="quiet" icon={<Trash2 />} disabled={runner.busy} onClick={() => void runner.discardPending(p)}>
@@ -239,6 +245,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                 agents={agents}
                 knownValues={knownValues}
                 disabled={runner.busy}
+                locked={archived}
                 onAgent={(role, agentId) => void patch({ agent: { role, agentId } })}
                 onBindings={(bindings) => void patch({ bindings })}
               />
@@ -247,8 +254,8 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                 <Button
                   variant="outline"
                   icon={<Layers />}
-                  disabled={runner.busy || !trial.agents.reflect}
-                  title={trial.agents.reflect ? undefined : "Choose a reflection agent first"}
+                  disabled={runner.busy || archived || !trial.agents.reflect}
+                  title={archived ? "Archived: restore the trial to run" : trial.agents.reflect ? undefined : "Choose a reflection agent first"}
                   onClick={() => void runner.reflect()}
                 >
                   Reflect
@@ -271,6 +278,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                   value={stewardText}
                   onChange={(e) => setStewardText(e.target.value)}
                   placeholder="What the person would ask, e.g. forget my old address"
+                  disabled={archived}
                   rows={2}
                   surfaceName={SURFACE_NAME}
                 />
@@ -278,8 +286,8 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
                   <Button
                     variant="primary"
                     icon={<Send />}
-                    disabled={runner.busy || !trial.agents.steward || !stewardText.trim()}
-                    title={trial.agents.steward ? undefined : "Choose a steward agent first"}
+                    disabled={runner.busy || archived || !trial.agents.steward || !stewardText.trim()}
+                    title={archived ? "Archived: restore the trial to run" : trial.agents.steward ? undefined : "Choose a steward agent first"}
                     onClick={async () => {
                       const step = await runner.steward(stewardText.trim());
                       if (step) setStewardText("");

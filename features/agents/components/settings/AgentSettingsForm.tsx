@@ -38,6 +38,8 @@ import {
 } from "lucide-react";
 import { mergePartialAgent } from "@ai-matrx/chat/agents/redux/agent-definition/slice";
 import { supabase } from "@/utils/supabase/client";
+import { toast } from "@/lib/toast";
+import { extractErrorMessage } from "@/utils/errors";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { InfoHint } from "@/components/official/InfoHint";
 import { EngagementPicker } from "@/features/scopes/components/active-context/engagement/EngagementPicker";
@@ -269,21 +271,38 @@ export function AgentSettingsForm({
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
-  // A DB trigger mirrors `is_chat_agent` to the `chat-agent` tag; read the tags back after it saves.
-  const refreshTagsAfterChatAgentSave = async (save: Promise<unknown>) => {
-    await save;
-    const { data } = await supabase
+  // A DB trigger mirrors `is_chat_agent` to the `chat-agent` tag; read the tags back once every
+  // save has settled (the tags save below writes the same column).
+  const refreshTagsAfterChatAgentSave = async () => {
+    const { data, error } = await supabase
       .schema("agent")
       .from("definition")
       .select("tags")
       .eq("id", agentId)
       .maybeSingle();
-    if (!data) return;
-    dispatch(mergePartialAgent({ id: agentId, tags: data.tags }));
-    setTagsInput(data.tags.join(", "));
+    if (error || !data) {
+      toast.error("Saved, but the tags could not be read back. Reload to see them.");
+      return;
+    }
+    const tags = data.tags ?? [];
+    dispatch(mergePartialAgent({ id: agentId, tags }));
+    setTagsInput(tags.join(", "));
   };
 
+  const saveField = <K extends keyof AgentDefinition>(field: K, value: AgentDefinition[K]) =>
+    dispatch(saveAgentField({ agentId, field, value }))
+      .unwrap()
+      .then(
+        () => true,
+        (e: unknown) => {
+          toast.error(`Could not save ${String(field)}: ${extractErrorMessage(e)}`);
+          return false;
+        },
+      );
+
   const handleSave = () => {
+    const saves: Promise<boolean>[] = [];
+    let chatAgentSave: Promise<boolean> | null = null;
     // Diff and dispatch
     for (const key of Object.keys(draft) as Array<keyof AgentDefinition>) {
       if (key === "tags") continue;
@@ -292,10 +311,9 @@ export function AgentSettingsForm({
       // key was never populated in the draft (no AgentDefinition field is
       // itself `| undefined`), so there's nothing real to persist.
       if (draftValue !== undefined && draftValue !== agent[key]) {
-        const save = dispatch(saveAgentField({ agentId, field: key, value: draftValue })).unwrap();
-        if (key === "isChatAgent") {
-          void refreshTagsAfterChatAgentSave(save).catch(() => undefined);
-        }
+        const save = saveField(key, draftValue);
+        saves.push(save);
+        if (key === "isChatAgent") chatAgentSave = save;
       }
     }
     // Save tags
@@ -305,7 +323,13 @@ export function AgentSettingsForm({
       .filter(Boolean);
     const currentTags = agent.tags || [];
     if (JSON.stringify(draftTags) !== JSON.stringify(currentTags)) {
-      dispatch(saveAgentField({ agentId, field: "tags", value: draftTags }));
+      saves.push(saveField("tags", draftTags));
+    }
+    const chatSaved = chatAgentSave;
+    if (chatSaved) {
+      void Promise.all(saves).then(async () => {
+        if (await chatSaved) await refreshTagsAfterChatAgentSave();
+      });
     }
   };
 

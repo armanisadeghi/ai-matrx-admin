@@ -31,10 +31,41 @@ export const ROLE_POINTS: Record<MemoryRole, readonly string[]> = {
   steward: [STORE_POINT],
 };
 
+/**
+ * The value names each point declares (server contract, aidream/services/agent_memory/provision.py),
+ * so a binding can be set before the first capture. A capture adds whatever else the server returns.
+ */
+export const POINT_VALUE_NAMES: Record<string, readonly string[]> = {
+  [REVIEW_POINT]: [
+    "conversation_transcript",
+    "person_messages",
+    "agent_template",
+    "variable_values",
+    "agent_name",
+    "agent_description",
+    "agent_is_chat_agent",
+    "agent_adds_to_memory",
+    "person_runs_of_agent",
+    "person_chat_conversation_count",
+    "conversation_title",
+    "conversation_started_at",
+    "person_name",
+  ],
+  [STORE_POINT]: [
+    "memory_files",
+    "memory_index",
+    "corrections",
+    "person_name",
+    "person_chat_conversation_count",
+    "store_kind",
+    "trial_step_count",
+  ],
+};
+
 /** `{role: {variable: "<point key>.<value name>"}}` — saved on the trial. */
 export type TrialBindings = Partial<Record<MemoryRole, Record<string, string>>>;
 
-/** A run started but not yet applied — kept on `trial.metadata.pending_runs` so a reload can finish it. */
+/** A run started but not yet applied — kept on `trial.pending_runs` so a reload can finish it. */
 export interface PendingRun {
   role: MemoryRole;
   runConversationId: string;
@@ -57,7 +88,6 @@ export interface MemoryTrial {
   notes: string;
   organizationId: string;
   pendingRuns: PendingRun[];
-  metadata: Record<string, Json | undefined>;
   createdAt: string;
   updatedAt: string;
 }
@@ -178,8 +208,7 @@ function stringList(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
 }
 
-export function parsePendingRuns(metadata: unknown): PendingRun[] {
-  const list = asRecord(metadata).pending_runs;
+export function parsePendingRuns(list: unknown): PendingRun[] {
   if (!Array.isArray(list)) return [];
   const out: PendingRun[] = [];
   for (const item of list) {
