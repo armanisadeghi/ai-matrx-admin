@@ -17,7 +17,7 @@ import {
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
 import { safeForwardedHost } from "@/utils/auth/safe-redirect";
-import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
+import { markShellLayoutDeviceAtSignIn, shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import {
   authDestinationOr,
   normalizeAuthDestination,
@@ -448,6 +448,7 @@ export async function GET(request: Request) {
 
       // Every sign-in path lands the same way (utils/auth/FEATURE.md): the page asked for wins; the
       // platform default "/dashboard" counts as none, so the person's saved landing applies.
+      if (type !== "recovery") await markShellLayoutDeviceAtSignIn(supabase);
       const finalRedirectTo =
         type === "recovery"
           ? redirectTo

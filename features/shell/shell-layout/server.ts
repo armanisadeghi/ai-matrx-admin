@@ -49,6 +49,34 @@ type RpcClient = {
   schema(name: string): unknown;
 };
 
+const SHELL_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+/**
+ * THE DEVICE LEARNS IT HOLDS A LAYOUT AT SIGN-IN. `matrx_shell=1` is what lets a server render whose seed
+ * missed its 400 ms deadline reserve the nav column instead of painting the DEFAULT menu. Until
+ * 2026-10-19 only `ShellLayoutSync` wrote it, after hydration — so the first pages on a new device (or
+ * any request without it) painted the default whenever the seed was slow (the live walk: 4 of 35 signed-in
+ * GETs, each a logged seed miss of 0.6-2.4 s). Every sign-in path now sets it when the person or any of
+ * her organizations holds a layout. One small RPC on the sign-in path only; a failure leaves the cookie
+ * as it was, loudly.
+ */
+export async function markShellLayoutDeviceAtSignIn(supabase: RpcClient): Promise<void> {
+  try {
+    const answer = await (supabase.schema("iam") as {
+      rpc(name: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>;
+    }).rpc("shell_layout_seed", { p_organization_ids: null });
+    if (answer.error) {
+      console.warn(`[shell-layout] sign-in layout check failed (${answer.error.message}); the device cookie is unchanged`);
+      return;
+    }
+    const seed = parseShellBootSeed(answer.data, "iam.shell_layout_seed() at sign-in");
+    if (!seed || (!seed.person && Object.keys(seed.organizations).length === 0)) return;
+    (await cookies()).set(SHELL_CUSTOM_COOKIE, "1", { path: "/", maxAge: SHELL_COOKIE_MAX_AGE, sameSite: "lax" });
+  } catch (error) {
+    console.warn("[shell-layout] sign-in layout check threw; the device cookie is unchanged", error);
+  }
+}
+
 /**
  * Where a sign-in with NO explicit destination lands: the person's layout's `landing`, else the landing
  * every one of her organizations' layouts agrees on; null = the platform default. An explicit destination

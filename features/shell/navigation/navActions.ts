@@ -49,6 +49,7 @@ import { isServiceFailure } from "@/features/data-tables/types";
 import type { ShellNavActionId } from "../constants/nav-data";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
+import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
 
 export type ShellNavActionHandlers = Record<ShellNavActionId, () => void>;
 
@@ -59,6 +60,7 @@ export function useNavActions(): ShellNavActionHandlers {
   const openCreateProject = useOpenCreateProjectWindow();
   const openPickListManager = useOpenPickListManagerWindow();
   const openFavoritesManager = useOpenFavoritesManagerWindow();
+  const openShellLayoutEditor = useOpenShellLayoutEditor();
   const openCrmCreateParty = useLazyAppOpener("crmCreatePartyWindow", () =>
     import("@/features/overlays/definitions/crmCreatePartyWindow.overlay").then((m) => m.createCrmCreatePartyWindowOpener),
   );
@@ -160,6 +162,10 @@ export function useNavActions(): ShellNavActionHandlers {
     "manage-favorites": () => {
       // Opens the Manage Favorites window (check app areas to pin/unpin).
       openFavoritesManager({});
+    },
+    "edit-sidebar": () => {
+      // A custom layout's empty group offers this (shell-layout resolve.ts): the editor, in place.
+      openShellLayoutEditor({ region: "sidebar" });
     },
   };
 }

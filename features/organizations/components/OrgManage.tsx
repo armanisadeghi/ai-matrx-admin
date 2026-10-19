@@ -607,7 +607,14 @@ export function OrgManage({
           )}
 
           {canManageSettings && (
-            <SectionCard id="layout" icon={LayoutTemplate} title="Layout" description="The sidebar, header and dock your members start from.">
+            <SectionCard
+              anchor="layout"
+              tabIndex={-1}
+              bodyClassName="p-5"
+              icon={LayoutTemplate}
+              title="Layout"
+              about="The sidebar, header and dock your members start from."
+            >
               <OrgLayoutSection organizationId={displayOrganization.id} />
             </SectionCard>
           )}

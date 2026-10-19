@@ -54,11 +54,13 @@ let revalidatedAt = 0;
 function revalidateHeldLayouts(dispatch: AppDispatch, force = false): Promise<void> {
   if (revalidating) return revalidating;
   if (!force && Date.now() - revalidatedAt < REVALIDATE_FRESH_MS) return Promise.resolve();
+  const requestedAt = Date.now();
   revalidating = fetchShellLayoutSeed()
     .then((seed) => {
       if (seed === "failed") return; // fetchShellLayoutSeed already said why; the held copy stays
       revalidatedAt = Date.now();
-      dispatch(shellLayoutLoaded(seed));
+      // Carries when it was asked: an answer asked before a save that landed meanwhile is dropped.
+      dispatch(shellLayoutLoaded(seed, requestedAt));
     })
     .finally(() => {
       revalidating = null;
