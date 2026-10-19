@@ -13,7 +13,7 @@
 import { Search } from "lucide-react";
 import { SearchTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
-import { useOpenAuthGateDialog } from "@/features/overlays/definitions/authGate.overlay";
+import { useOpenAuthGateDialog } from "@ai-matrx/chat/host/window-openers";
 
 const GATE = {
   featureName: "Search",

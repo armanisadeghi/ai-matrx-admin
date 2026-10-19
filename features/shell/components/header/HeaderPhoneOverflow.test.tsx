@@ -60,7 +60,8 @@ jest.mock("@/features/ai-test-mode/AiTestModeDock", () => ({
 jest.mock("@/features/knowledge/command-bar/OpenCommandBarButtons", () => ({
   useOpenBarOrGate: () => openBar,
 }));
-jest.mock("@/features/overlays/definitions/authGate.overlay", () => ({
+// The header opens the gate through the chat host's lazy opener (never the opener module at boot).
+jest.mock("@ai-matrx/chat/host/window-openers", () => ({
   useOpenAuthGateDialog: () => openAuthGate,
 }));
 jest.mock("@ai-matrx/chat/surfaces/components/chrome/SurfaceAgentsHeaderButton", () => ({

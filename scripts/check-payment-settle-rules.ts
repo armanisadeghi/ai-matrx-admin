@@ -9,6 +9,11 @@
  *   I1b an older session failing after a newer one was paid never flips the record off Paid
  *   I1c the record's own current payment expiring still says Unpaid
  *   M1  a partial refund keeps the payment paid and says "Partially refunded 10.00 USD"; the rest makes it Refunded
+ *   M3  an amount from a question the public form asks is refused at save
+ *   M3p an amount from a field a portal client can change is refused at save (and accepted when read-only)
+ *   M3pf an amount from a question a form on her portal asks is refused at save
+ *   M3f  an amount from a question ANY live form on the table asks is refused at save
+ *   M3fs/M3ps a form save / portal save that would let people type a field-mode ask's amount is refused (fixed: accepted)
  *   I2  a second pending payment for the same record is refused (23505) — one live session per record
  *
  *   pnpm check:payment-settle-rules
@@ -18,15 +23,83 @@ import { withGateDb } from "./lib/gate-db";
 import { exitAfterDrain } from "./lib/exit-after-drain";
 import type pg from "pg";
 
-/** The Ashford Labs booking ask (disabled) and one of its records — the test fixture of PAYMENTS-CONNECT-2. */
-const ASK = "25af55b9-c9db-4e60-925a-cd1db1fbf005";
-const RECORD = "ae4c110c-cf55-4acc-96dc-bd10ddd34802";
+/**
+ * The fixture is FOUND, never pinned (PAYMENTS-FINAL): a pinned record was archived by a walk's cleanup and
+ * every record-word scenario went red on a deleted record. The newest live ask whose table still has its
+ * Payment field and a live record is used; none at all is UNMEASURED, not green.
+ */
+let ASK = "";
+let RECORD = "";
+const FIXTURE_SQL = `
+  select a.id as ask, r.id as record
+    from billing.payment_ask a
+    join custom.record r on r.table_id = a.table_id and r.organization_id = a.organization_id and r.deleted_at is null
+   where a.deleted_at is null
+     and exists (select 1 from custom.field f where f.entity_definition_id = a.table_id and f.key = a.status_field_key)
+   order by a.created_at desc, r.created_at desc
+   limit 1`;
+
+/** Admin of the Ashford Labs organization (admin@admin.com), its form ask's table, and its one portal. */
+const ADMIN = "87a6e699-3622-4869-8843-d0867456c0dd";
+const ORG = "c19a81b7-f65f-4c01-b04c-00f97f8b7e4d";
+const PORTAL_TABLE_ROW = "1c8c1fcf-6d9e-4eaf-bbb8-43f5a396b1d2";
+const PRICE_TABLE = "f282a7f1-4fab-4741-84fb-fee1304025c1";
+
+/** As the admin, inside the scenario's rolled-back transaction: an open portal shows PRICE_TABLE with `editable`. */
+async function portalEdits(db: pg.Client, editable: string[], opts: { forms?: string[]; field?: string } = {}): Promise<string> {
+  await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: ADMIN, role: "authenticated" })]);
+  await db.query(
+    "update custom.portal set archived_at = null, config = jsonb_set(coalesce(config, '{}'::jsonb), '{forms}', $2::jsonb) where id = (select portal_id from custom.portal_table where id = $1)",
+    [PORTAL_TABLE_ROW, JSON.stringify((opts.forms ?? []).map((form_id, i) => ({ order: i + 1, form_id })))],
+  );
+  const { rowCount } = await db.query(
+    "update custom.portal_table set table_id = $2, editable_field_keys = $3::jsonb where id = $1",
+    [PORTAL_TABLE_ROW, PRICE_TABLE, JSON.stringify(editable)],
+  );
+  if (rowCount !== 1) throw new Error("the portal fixture row is gone");
+  await db.query("savepoint m3p");
+  try {
+    await db.query("select billing.payment_ask_set($1, 'table', $2, $3::jsonb)", [
+      ORG, PRICE_TABLE, JSON.stringify({ enabled: false, amount_mode: "field", amount_field: opts.field ?? "value", currency: "usd" }),
+    ]);
+    return "accepted";
+  } catch (thrown) {
+    await db.query("rollback to savepoint m3p");
+    return (thrown as { code?: string }).code === "22023" ? "refused" : `error ${(thrown as Error).message}`;
+  }
+}
 
 interface Scenario {
   name: string;
   /** Resolves to an outcome word that replaces the record's word, when the scenario measures something else. */
   run: (db: pg.Client, pay: (session: string, status: string, ageMinutes: number) => Promise<void>) => Promise<string | void>;
   expect: string;
+}
+
+/**
+ * An enabled ask on PRICE_TABLE (amount from "value", or a fixed amount) is saved first; then a form save adds
+ * "value" to the Ashford Labs form's questions, or a portal save opens "value" for editing. Rolled back.
+ */
+async function saveAfterAsk(db: pg.Client, mode: "field" | "fixed", target: "form" | "portal"): Promise<string> {
+  await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: ADMIN, role: "authenticated" })]);
+  await db.query("select billing.payment_ask_set($1, 'table', $2, $3::jsonb)", [
+    ORG, PRICE_TABLE,
+    JSON.stringify(mode === "field" ? { enabled: true, amount_mode: "field", amount_field: "value", currency: "usd" } : { enabled: true, amount_mode: "fixed", amount_cents: 500, currency: "usd" }),
+  ]);
+  await db.query("savepoint m3s");
+  try {
+    if (target === "form") {
+      await db.query(
+        "update custom.anon_form set exposed_field_keys = exposed_field_keys || '[\"value\"]'::jsonb where id = '15c126ea-f561-4c7c-98ed-925a517612cd'",
+      );
+    } else {
+      await db.query("update custom.portal_table set table_id = $2, editable_field_keys = '[\"value\"]'::jsonb where id = $1", [PORTAL_TABLE_ROW, PRICE_TABLE]);
+    }
+    return "accepted";
+  } catch (thrown) {
+    await db.query("rollback to savepoint m3s");
+    return (thrown as { code?: string }).code === "22023" ? "refused" : `error ${(thrown as Error).message}`;
+  }
 }
 
 const SCENARIOS: Scenario[] = [
@@ -126,6 +199,47 @@ const SCENARIOS: Scenario[] = [
     expect: "refused",
   },
   {
+    name: "M3p an amount taken from a field a portal client can change is refused at save",
+    run: (db) => portalEdits(db, ["value"]),
+    expect: "refused",
+  },
+  {
+    name: "M3pf an amount taken from a question a portal form asks is refused at save",
+    // The Ashford Labs form asks "usage_note" and writes into PRICE_TABLE; here the portal carries it.
+    run: (db) => portalEdits(db, [], { forms: ["15c126ea-f561-4c7c-98ed-925a517612cd"], field: "usage_note" }),
+    expect: "refused",
+  },
+  {
+    name: "M3f  a table ask whose amount a public form on the table asks is refused at save",
+    run: (db) => portalEdits(db, [], { forms: [], field: "usage_note" }),
+    expect: "refused",
+  },
+  {
+    name: "M3fs a form save that starts asking a field-mode ask's amount field is refused",
+    run: (db) => saveAfterAsk(db, "field", "form"),
+    expect: "refused",
+  },
+  {
+    name: "M3fs-ok the same form save beside a fixed-amount ask is accepted",
+    run: (db) => saveAfterAsk(db, "fixed", "form"),
+    expect: "accepted",
+  },
+  {
+    name: "M3ps a portal save that opens a field-mode ask's amount field is refused",
+    run: (db) => saveAfterAsk(db, "field", "portal"),
+    expect: "refused",
+  },
+  {
+    name: "M3ps-ok the same portal save beside a fixed-amount ask is accepted",
+    run: (db) => saveAfterAsk(db, "fixed", "portal"),
+    expect: "accepted",
+  },
+  {
+    name: "M3p-ok the same amount field, read-only on the portal, is accepted",
+    run: (db) => portalEdits(db, []),
+    expect: "accepted",
+  },
+  {
     name: "I2  a second pending payment for one record is refused",
     run: async (db, pay) => {
       await pay("cs_rule_a", "pending", 2);
@@ -150,6 +264,12 @@ async function main(): Promise<number> {
     return 1;
   }
   return withGateDb(env, { gate: "check:payment-settle-rules" }, async (db) => {
+    const { rows: fixture } = await db.query(FIXTURE_SQL);
+    if (!fixture[0]) {
+      console.error("[FAIL] UNMEASURED: no live payment ask has a live record and its Payment field to settle against");
+      return 1;
+    }
+    ({ ask: ASK, record: RECORD } = fixture[0] as { ask: string; record: string });
     let failed = 0;
     for (const s of SCENARIOS) {
       await db.query("begin");

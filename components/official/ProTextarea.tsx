@@ -164,7 +164,7 @@ import {
   fitFieldControls,
 } from "@/components/official/proFieldControlFit";
 import { motion } from "motion/react";
-import { useOpenDiffViewerWindow } from "@/features/overlays/definitions/diffViewerWindow.overlay";
+import { useOpenDiffViewerWindow } from "@ai-matrx/chat/host/window-openers";
 import { useMicField } from "@/features/audio/hooks/useMicField";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";

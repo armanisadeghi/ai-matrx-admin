@@ -7,8 +7,9 @@
  * the callback group's lifetime and disposes it on close.
  */
 
-import { useCallback } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useMemo } from "react";
+import { useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { openOverlay } from "@ai-matrx/summon/open";
 import {
   createResourcePickerWindowCallbackGroup,
@@ -26,16 +27,19 @@ export interface ResourcePickerWindowOverlayData {
   initialView: Exclude<ResourcePickerViewId, null>;
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createResourcePickerWindowOpener(store: Pick<AppStore, "dispatch">) {
+  const dispatch = store.dispatch;
+  return ({ initialView, ...group }: OpenResourcePickerWindowOptions) => {
+    const { callbackGroupId } = createResourcePickerWindowCallbackGroup(group);
+    const data: ResourcePickerWindowOverlayData = { callbackGroupId, initialView };
+    dispatch(openOverlay({ overlayId: "resourcePickerWindow", data }));
+  };
+}
+
 export function useOpenResourcePickerWindow() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    ({ initialView, ...group }: OpenResourcePickerWindowOptions) => {
-      const { callbackGroupId } = createResourcePickerWindowCallbackGroup(group);
-      const data: ResourcePickerWindowOverlayData = { callbackGroupId, initialView };
-      dispatch(openOverlay({ overlayId: "resourcePickerWindow", data }));
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createResourcePickerWindowOpener(store), [store]);
 }
 
 export type ResourcePickerWindowDefinitionData = OpenResourcePickerWindowOptions;

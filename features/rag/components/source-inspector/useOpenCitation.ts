@@ -24,9 +24,9 @@
 
 import { useCallback } from "react";
 import { useOpenSourceInspectorWindow } from "@/features/overlays/definitions/sourceInspectorWindow.overlay";
-import { useOpenNotesWindow } from "@/features/overlays/definitions/notesWindow.overlay";
+import { useOpenNotesWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenTranscriptStudioWindow } from "@/features/overlays/definitions/transcriptStudioWindow.overlay";
-import { useOpenScraperWindow } from "@/features/overlays/definitions/scraperWindow.overlay";
+import { useOpenScraperWindow } from "@ai-matrx/chat/host/window-openers";
 import { openOutbound } from "@ai-matrx/kit/outbound";
 
 // Canonical home: `@/utils/navigation/should-open-in-new-tab` — re-exported

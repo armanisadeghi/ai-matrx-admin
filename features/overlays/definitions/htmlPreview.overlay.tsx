@@ -17,7 +17,7 @@
  * self-handle via `conversationId` + `messageId`.
  */
 
-import { useCallback, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import { createFullScreenEditorCallbackGroup, disposeFullScreenEditorCallbackGroup } from "./callbacks/fullScreenEditor";
@@ -49,10 +49,9 @@ export interface HtmlPreviewBridgeHandle {
   close: () => void;
 }
 
-export function useOpenHtmlPreviewBridge() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (opts: OpenHtmlPreviewBridgeOptions): HtmlPreviewBridgeHandle => {
+/** The opener as a plain function of dispatch (no hook): what a lazy caller loads on click. */
+export function createHtmlPreviewBridgeOpener(dispatch: ReturnType<typeof useAppDispatch>) {
+  return (opts: OpenHtmlPreviewBridgeOptions): HtmlPreviewBridgeHandle => {
       const instanceId =
         opts.instanceId ??
         `htmlPreview-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -95,9 +94,12 @@ export function useOpenHtmlPreviewBridge() {
           disposeFullScreenEditorCallbackGroup(callbackGroupId);
         },
       };
-    },
-    [dispatch],
-  );
+  };
+}
+
+export function useOpenHtmlPreviewBridge() {
+  const dispatch = useAppDispatch();
+  return useMemo(() => createHtmlPreviewBridgeOpener(dispatch), [dispatch]);
 }
 
 /**

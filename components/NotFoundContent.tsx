@@ -33,7 +33,7 @@ import { ArrowLeft, Compass, Home, SearchX } from "lucide-react";
 import { Grid, CardProps } from "@/components/official/card-and-grid";
 import { Button } from "@/components/ui/button";
 import { allNavigationLinks } from "@/features/shell/navigation/navigationLinks";
-import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { LazyErrorAlchemyMenu as ErrorAlchemyMenu } from "@/components/errors/LazyErrorAlchemyMenu";
 
 interface NotFoundContentProps {
   /** Optional custom navigation items to display instead of defaults */

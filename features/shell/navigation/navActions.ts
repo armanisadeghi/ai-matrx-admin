@@ -41,7 +41,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/lib/toast";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { useOpenCreateProjectWindow } from "@/features/overlays/definitions/createProjectWindow.overlay";
-import { useOpenPickListManagerWindow } from "@/features/overlays/definitions/pickListManagerWindow.overlay";
+import { useOpenPickListManagerWindow } from "@ai-matrx/chat/host/window-openers";
 import { useOpenFavoritesManagerWindow } from "@/features/overlays/definitions/favoritesManagerWindow.overlay";
 import { useOpenCrmCreatePartyWindow } from "@/features/overlays/definitions/crmCreatePartyWindow.overlay";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";

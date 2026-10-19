@@ -8,8 +8,9 @@
  * page instead of sending anyone to a settings route.
  */
 
-import { useCallback, useEffect } from "react";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useEffect, useMemo } from "react";
+import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
+import type { AppStore } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -22,27 +23,30 @@ export interface OpenConnectorConsentOptions {
   initialProductKeys?: readonly string[];
 }
 
+/** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
+export function createConnectorConsentDialogOpener(store: Pick<AppStore, "dispatch">) {
+  const dispatch = store.dispatch;
+  return (options?: OpenConnectorConsentOptions) => {
+    dispatch(
+      openOverlay({
+        overlayId: OVERLAY_ID,
+        data: {
+          initialConnectionId: options?.initialConnectionId ?? null,
+          initialProductKeys: options?.initialProductKeys
+            ? [...options.initialProductKeys]
+            : null,
+        },
+      }),
+    );
+    return {
+      close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
+    };
+  };
+}
+
 export function useOpenConnectorConsentDialog() {
-  const dispatch = useAppDispatch();
-  return useCallback(
-    (options?: OpenConnectorConsentOptions) => {
-      dispatch(
-        openOverlay({
-          overlayId: OVERLAY_ID,
-          data: {
-            initialConnectionId: options?.initialConnectionId ?? null,
-            initialProductKeys: options?.initialProductKeys
-              ? [...options.initialProductKeys]
-              : null,
-          },
-        }),
-      );
-      return {
-        close: () => dispatch(closeOverlay({ overlayId: OVERLAY_ID })),
-      };
-    },
-    [dispatch],
-  );
+  const store = useAppStore();
+  return useMemo(() => createConnectorConsentDialogOpener(store), [store]);
 }
 
 export function ConnectorConsentDialogController({
