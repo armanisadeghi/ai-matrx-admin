@@ -388,6 +388,10 @@ export interface PackRun {
 export interface PackRunJournal {
   read(): PackRun | null;
   write(run: PackRun | null): void;
+  /** The table copy's install id when it is known before any page exists (an attempt journal keeps it). */
+  installId?(): string | null;
+  /** Keeps the install id the door answered before the run's first page write (refresh resumes that copy). */
+  noteInstallId?(installId: string): void;
 }
 
 /** A browser-tab journal for one template in one organization (an in-flight run is specific to this client). */
@@ -649,7 +653,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
   }, Math.max(50, Math.min(1000, Math.floor(stallMs / 4))));
 
   // The copy's install id lives with the pages in the journal: Try again continues the SAME copy.
-  let installId = r.journal.read()?.installId ?? null;
+  let installId = r.journal.read()?.installId ?? r.journal.installId?.() ?? null;
   const journal: PackRunJournal = {
     read: () => {
       const run = r.journal.read();
@@ -675,6 +679,7 @@ export async function runUseTemplate(r: UseTemplateRun): Promise<UseTemplateResu
             installId = id;
             const run = r.journal.read();
             if (run) r.journal.write({ ...run, installId: id });
+            else r.journal.noteInstallId?.(id);
           },
         },
       )
