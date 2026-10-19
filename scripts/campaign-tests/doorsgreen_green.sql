@@ -195,7 +195,7 @@ begin
   -- The ladder names the rung he is missing, and it has to be `admin` — the same rung
   -- custom.form_declare asks one line later. If this ever reads `editor`, the door has
   -- drifted below its siblings and a crew lead can rewrite what the whole crew captures.
-  if v_hint not like '%needs the admin level%' then
+  if v_hint not like '%needs Full access%' then
     raise exception '4: the crew lead is not told he needs admin: "%"', v_hint;
   end if;
   raise notice 'PART 4 PASSED — editor refused: "%" / "%"', v_txt, v_hint;

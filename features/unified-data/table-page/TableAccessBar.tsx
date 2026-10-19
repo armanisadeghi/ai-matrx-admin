@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Activity, Check, Copy, Loader2, LockKeyhole } from "lucide-react";
 import { useFields, useMyLevel } from "@ai-matrx/records/react";
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import { ErrorNotice, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -83,7 +83,7 @@ function RequestEditAccess({ tableId, level }: { tableId: string; level: string 
               placeholder="Add a note (optional)"
               className="w-full resize-none rounded border bg-background p-1.5 text-xs"
             />
-            {state === "failed" && <p className="text-xs text-destructive">{said}</p>}
+            {state === "failed" && <ErrorNotice size="inline" message={said} className="text-xs" />}
             <button
               type="button"
               onClick={send}
@@ -126,7 +126,8 @@ export function ActivityFeedButton({ subjectId, organizationId }: { subjectId: s
   );
 
   useEffect(() => {
-    if (open) void load(null);
+    // In a promise callback, never the effect body: `load` sets state first (a synchronous setState in an effect cascades renders).
+    if (open) void Promise.resolve().then(() => load(null));
   }, [open, load]);
 
   return (
@@ -138,7 +139,7 @@ export function ActivityFeedButton({ subjectId, organizationId }: { subjectId: s
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="max-h-[70vh] w-96 overflow-y-auto p-0">
-        {state === "failed" && <p className="p-3 text-xs text-destructive">{why}</p>}
+        {state === "failed" && <ErrorNotice size="inline" message={why} className="p-3 text-xs" />}
         {state === "loading" && entries.length === 0 && (
           <div className="flex items-center gap-2 p-3 text-xs text-muted-foreground">
             <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -240,7 +241,7 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
           {state === "loading" && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Find
         </button>
-        {state === "failed" && <p className="text-xs text-destructive">{why}</p>}
+        {state === "failed" && <ErrorNotice size="inline" message={why} className="text-xs" />}
         {groups && groups.length === 0 && state === "idle" && <p className="text-xs text-muted-foreground">No duplicates found.</p>}
         {merged && <p className="text-xs" data-duplicates-merged>{merged}</p>}
         {groups?.map((g, i) => (

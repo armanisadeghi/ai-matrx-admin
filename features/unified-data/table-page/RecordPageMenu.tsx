@@ -48,8 +48,8 @@ export function recordPageSection(actions: Actions, name: string): ContextMenuEx
   return { id: "record-page", label: name || "Record", primary: true, items };
 }
 
-/** Reads the record's actions into `into` (a hook host, so it renders nothing). */
-function RecordActionsSource({ tableId, row, name, into }: { tableId: string; row: ReadRow; name: string; into: { current: ContextMenuExtraSection | null } }) {
+/** Hands the record's actions to `onSection` (a hook host, so it renders nothing). */
+function RecordActionsSource({ tableId, row, name, onSection }: { tableId: string; row: ReadRow; name: string; onSection: (section: ContextMenuExtraSection | null) => void }) {
   // Drawn inside the table page's lazy `RecordsMount`, so records-ui's hooks come through the front door.
   const ru = useRecordsUiModule("RecordPageMenu");
   const host = ru.useRecordActionHost({ tableId, row });
@@ -57,11 +57,11 @@ function RecordActionsSource({ tableId, row, name, into }: { tableId: string; ro
   const rights = ru.useRecordRights(row.id);
   const section = recordPageSection(recordActions({ record: { id: row.id, tableId, name }, rights, host }), name);
   useEffect(() => {
-    into.current = section;
+    onSection(section);
     return () => {
-      into.current = null;
+      onSection(null);
     };
-  }, [section, into]);
+  }, [section, onSection]);
   return null;
 }
 
@@ -106,7 +106,7 @@ export function RecordPageMenu({ tableId, recordId, children }: { tableId: strin
       }}
     >
       <div className="contents">
-        {row ? <RecordActionsSource tableId={tableId} row={{ id: row.record_id, document: row.document, hidden: row.hidden, level: "" /* rights: useRecordRights */ }} name={name} into={section} /> : null}
+        {row ? <RecordActionsSource tableId={tableId} row={{ id: row.record_id, document: row.document, hidden: row.hidden, level: "" /* rights: useRecordRights */ }} name={name} onSection={(next) => { section.current = next; }} /> : null}
         {children}
       </div>
     </NonEditableContextMenu>

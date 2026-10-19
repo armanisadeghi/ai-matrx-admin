@@ -22,8 +22,8 @@
 --   PART 0  the seat is `authenticated` and cannot read custom.record directly
 --   PART 1  Greenline's Jobs table and its real rows, through the doors
 --   PART 2  A STRANGER holds nothing, and is told he has no access — unchanged, still true
---   PART 3  VIEWER: "You hold the viewer level on this table, and custom.field_declare needs the admin level."
---   PART 4  EDITOR: "You hold the editor level on this table, …" — the rung he holds, named
+--   PART 3  VIEWER: "You have View access on this table, and custom.field_declare needs Full access."
+--   PART 4  EDITOR: "You have Edit access on this table, …" — the rung he holds, named
 --   PART 5  ADMIN: no refusal at all; Marisol declares the column and it lands
 --
 -- RED TWIN: `tails_the_ladder_names_the_level_red.sql` puts the pre-fix body back inside a
@@ -157,10 +157,10 @@ begin
   if v_txt like '%do not have access to this table%' then
     raise exception '3: THE DEFECT — a viewer who can open this table is told he has no access to it: "%"', v_txt;
   end if;
-  if v_txt not like '%You hold the viewer level on this table%' then
+  if v_txt not like '%You have View access on this table%' then
     raise exception '3: the refusal does not name the level he holds: "%"', v_txt;
   end if;
-  if v_txt not like '%needs the admin level%' then
+  if v_txt not like '%needs Full access%' then
     raise exception '3: the refusal does not name the level it needs: "%"', v_txt;
   end if;
   raise notice 'PART 3 PASSED — viewer: "%"', v_txt;
@@ -183,13 +183,13 @@ begin
   if v_txt like '%do not have access to this table%' then
     raise exception '4: THE DEFECT — an editor who writes into this table daily is told he has no access to it: "%"', v_txt;
   end if;
-  if v_txt not like '%You hold the editor level on this table%' then
+  if v_txt not like '%You have Edit access on this table%' then
     raise exception '4: the refusal does not name the level he holds: "%"', v_txt;
   end if;
-  if v_txt not like '%needs the admin level%' then
+  if v_txt not like '%needs Full access%' then
     raise exception '4: the refusal does not name the level it needs: "%"', v_txt;
   end if;
-  if v_hint not like '%viewer < commenter < editor < admin%' then
+  if v_hint not like '%View < Comment < Edit < Full access%' then
     raise exception '4: the hint no longer shows the ladder: "%"', v_hint;
   end if;
   raise notice 'PART 4 PASSED — editor: "%" / hint: "%"', v_txt, v_hint;
