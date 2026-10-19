@@ -32,6 +32,8 @@ import {
   saveTranslationCell,
 } from "@/features/ai-models/translation/data";
 import { cellNeedsYou, summarizeRule } from "@/features/ai-models/translation/model";
+import { sourceLabel, TRANSLATION_GRID_QUERY_KEY } from "@/features/ai-models/translation/cellDetail";
+import CellDetailPanel from "@/features/ai-models/translation/components/CellDetailPanel";
 import type { TranslationBundle, TranslationCellRow } from "@/features/ai-models/translation/types";
 import { extractErrorMessage } from "@/utils/errors";
 import type {
@@ -46,7 +48,7 @@ import type {
 const KIND_ID = "settings_translation";
 const GRID_HREF = "/administration/ai/ai-models/translations";
 /** Shared with the grid so a decision here refreshes the grid and the reverse. */
-const GRID_QUERY_KEY = ["ai-models", "translation-grid"] as const;
+const GRID_QUERY_KEY = TRANSLATION_GRID_QUERY_KEY;
 
 type TranslationItem = ApprovalItem & { cell: TranslationCellRow; reach: number };
 
@@ -79,9 +81,10 @@ function toItem(bundle: TranslationBundle, cell: TranslationCellRow): Translatio
       cell.state === "approved"
         ? "Nothing — an approved rule is replaced in the grid, never archived from here."
         : `Archives this rule; the layer below takes over for ${models}.`,
-    proposedBy:
-      cell.source === "agent" ? "Drafting agent" : cell.source === "probe" ? "Live probe" : cell.source === "ingest" ? "Provider facts" : null,
+    proposedBy: sourceLabel(cell.source),
     proposedAt: cell.updated_at,
+    // Everything the cell carries — confidence, evidence, the agent's chat, Test now.
+    body: <CellDetailPanel cell={cell} />,
     doors: (
       <AppLink
         href={`${GRID_HREF}?tab=needs`}

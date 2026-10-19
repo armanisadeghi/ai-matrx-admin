@@ -34,7 +34,8 @@ import NeedsYouQueue from "./NeedsYouQueue";
 import TranslationCellEditor, { type EditorTarget } from "./TranslationCellEditor";
 import { overrideTarget, queueTarget, targetFor } from "./editorTargets";
 
-export const TRANSLATION_GRID_QUERY_KEY = ["ai-models", "translation-grid"] as const;
+import { TRANSLATION_GRID_QUERY_KEY } from "../cellDetail";
+export { TRANSLATION_GRID_QUERY_KEY };
 type View = "needs" | "missing" | "all";
 const VIEWS: readonly View[] = ["needs", "missing", "all"];
 const VIEW_LABEL: Record<View, string> = { needs: "Needs you", missing: "No rule yet", all: "All" };

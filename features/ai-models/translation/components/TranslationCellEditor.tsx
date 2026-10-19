@@ -44,6 +44,7 @@ import type {
 } from "../types";
 import { CellStateBadge, ConflictBadge } from "./CellStateBadge";
 import RuleFields from "./RuleFields";
+import CellDetailPanel from "./CellDetailPanel";
 
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
@@ -293,14 +294,6 @@ export default function TranslationCellEditor({
               {plainRule(draft, target.settingKey, setting, { consumedBy: target.consumedBy })}
             </p>
           )}
-          {cell?.rationale ? (
-            <p
-              className="line-clamp-3 text-xs text-muted-foreground"
-              title={cell.rationale}
-            >
-              {cell.rationale}
-            </p>
-          ) : null}
           {blank ? null : (
             <WirePreview
               rule={draft}
@@ -309,19 +302,6 @@ export default function TranslationCellEditor({
               ctx={{ consumedBy: target.consumedBy }}
             />
           )}
-
-          {cell?.conflict?.sources?.length ? (
-            <div className="space-y-1 rounded-md border border-rose-500/30 bg-rose-500/[0.06] px-2.5 py-2">
-              {cell.conflict.sources.map((s, i) => (
-                <div key={i} className="text-xs">
-                  <span className="font-medium">{s.name ?? "Source"}</span>{" "}
-                  <span className="font-mono text-muted-foreground">
-                    {JSON.stringify(s.says)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : null}
 
           <RuleFields
             rule={draft}
@@ -368,6 +348,8 @@ export default function TranslationCellEditor({
               ))}
             </div>
           ) : null}
+
+          {cell ? <CellDetailPanel cell={cell} /> : null}
 
           {reach > 0 ? (
             <details className="text-xs">

@@ -430,3 +430,32 @@ export async function isPlatformAdmin(): Promise<boolean> {
   if (error) return false;
   return data === true;
 }
+
+/**
+ * Everything one cell carries beyond the list read — `evidence`, `metadata`
+ * (the drafting run, `metadata.run`) and who/when created it. Read per cell,
+ * when one cell is opened, so the 4,000-row list read stays light.
+ */
+export type TranslationCellDetailRow = {
+  id: string;
+  evidence: unknown;
+  metadata: Record<string, unknown> | null;
+  created_at: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+};
+
+export async function readTranslationCellDetail(
+  cellId: string,
+): Promise<TranslationCellDetailRow | null> {
+  const { data, error } = await withAdminFeature(
+    "ai.translation-approvals",
+    ai()
+      .from("translation_cell")
+      .select("id, evidence, metadata, created_at, created_by, updated_by")
+      .eq("id", cellId)
+      .maybeSingle(),
+  );
+  if (error) throw error;
+  return (data as TranslationCellDetailRow | null) ?? null;
+}

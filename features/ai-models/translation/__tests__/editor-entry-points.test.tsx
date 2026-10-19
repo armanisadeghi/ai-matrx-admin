@@ -27,6 +27,12 @@ jest.mock("@/components/official/ProTextarea", () => {
 });
 jest.mock("../data", () => ({ saveTranslationCell: jest.fn(), archiveTranslationCell: jest.fn() }));
 jest.mock("@/lib/toast", () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+// The cell's evidence panel reads the store, the knob register and the database; this suite
+// examines what the editor OPENS with, so the panel is a marker here (its logic: cellDetail.test.ts).
+jest.mock("../components/CellDetailPanel", () => ({
+  __esModule: true,
+  default: () => <div data-testid="translation-cell-detail" />,
+}));
 
 const API = "11111111-1111-1111-1111-111111111111";
 const OFF_A = "aaaaaaaa-0000-0000-0000-000000000001";
