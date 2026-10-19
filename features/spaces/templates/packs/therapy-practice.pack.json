@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 2,
+  "version": 3,
   "title": "Mental Health Practice",
   "description": "Inquiries, clients, sessions with note status, and statements for a counseling practice.",
   "forWho": "Therapy and counseling practices",
@@ -2114,7 +2114,7 @@
         "Fremont Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
