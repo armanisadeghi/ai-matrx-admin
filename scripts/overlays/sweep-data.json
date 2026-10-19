@@ -8,5 +8,6 @@
   "agentChatAssistant": {"conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2"},
   "agentInlineOverlay": {"conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2"},
   "aiWatchWindow": {"conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2", "label": "Sweep"},
-  "executionStateDebug": {"instanceId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2"}
+  "executionStateDebug": {"instanceId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2"},
+  "resourceDebugIndicator": {"conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2"}
 }
