@@ -12,6 +12,15 @@ description: "Follow-up sweep for pending third-party provider access campaigns.
 
 # Chase Provider Access
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/integrations/provider-access/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Free or cheap provider APIs are activated in batches per company, Google first,** through the
+   expand, scout and submit skills (Google Fact Check Tools and PageSpeed are the model). Enabling
+   one is a prompt for Codex, so dozens for one company are one prompt.
+2. **An activation ends with a platform tool registered** for users and agents, not just a key.
+<!-- rules:stamp-end -->
+
 This skill is the follow-through loop. A recurring runner may wake every 30 minutes, but it acts only
 on due campaigns and stays quiet only when nothing changed **and nothing actionable remains**.
 

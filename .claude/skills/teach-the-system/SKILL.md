@@ -16,6 +16,29 @@ timestamp: 2026-09-14T00:00:00Z
 
 # teach-the-system — teach the platform one body of expertise until it breaks, fix it, continue
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/masterwork/STATE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Basics before prompting.** Before any capture method or prompt work, build what a person does
+   first, in bulk, in seconds (a whole channel or library in, shorts vs longs, metrics, transcribe
+   all or some, then actions) as an adapter-based platform primitive with a real screen; measure
+   time-to-result (Arman, 2026-09-17).
+2. **A block is the deliverable.** Never swap an easy target for a hard one: report the block
+   exactly, fix it or bring the decision. Agents gather and organize every source; when an AI step
+   is needed, say "we need an agent that does xyz" and hand it to Arman to guide (Arman, 2026-09-17).
+3. **Trials go beyond books:** expertise also lives in heads and in examples of work, so interview a
+   person and distil from their work, and judge with withheld ground truth; pick what computers are
+   bad at (judgment, questions, diagnosis) and real jobs; report what improved in the system, not
+   what happened to the run (Arman, 2026-09-11/12).
+4. **Drive every declared distillation method as a real user on the real UI** and report every UI bug
+   however small; never choose easy subjects to make a trial pass (Arman, 2026-09-12).
+5. **The guide is the plan plus a build book, never an archive.** A build book is not done until an
+   agent that never saw it has tried to break it and its schedule adds up; no irreversible change
+   to production before rehearsal (Arman, 2026-09-15).
+6. **Status leads with the assigned core's state.** A locked ruling document is the go signal; never
+   park work on "awaiting his document" (Arman, 2026-09-14).
+<!-- rules:stamp-end -->
+
 **Companion file — read only the branch your run reaches:**
 
 - **[lessons.md](lessons.md)** — every dated lesson from past trials (§8). **Read it once end to end
