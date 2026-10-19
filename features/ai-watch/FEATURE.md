@@ -61,9 +61,10 @@ never selects `chat.request_snapshot` payload columns; stage 5 revokes them), pr
 that ran), `mandate.definition.version` (changed-since-run hint); runs lists via `readAllRows`. Run LISTS
 (`fetchAiWatchRuns`, `fetchFollowedRuns`, `everything-feed.ts`) select only the label fields of `metadata`
 (`RUN_LABEL_METADATA_COLUMNS` + `withLabelMetadata`), never the whole column with its watch frame.
-**On the wire** — the chat package adds `?debug_view=1` to every AI stream while `selectCanWatchAi` holds
-(`providers/ChatHostAdapter.tsx` `server.aiWatch` → `@ai-matrx/chat/host/ai-watch`); otherwise the server streams
-no `context_analysis` and withholds values (provision leak fix, stage 2).
+**On the wire** — `@ai-matrx/chat/host/ai-watch` adds `?debug_view=1` to every AI stream when the host's
+`server.aiWatch()` says the person is watching; without it the server streams no `context_analysis` and withholds
+values (provision leak fix, stage 2). The host wiring (`providers/ChatHostAdapter.tsx` `aiWatch: selectCanWatchAi`)
+lands with the package adoption.
 
 **Identity source** — `@ai-matrx/chat` ≥ 0.8.73: `ActiveRequest.serverRequestId` (header or the
 stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run` frame),

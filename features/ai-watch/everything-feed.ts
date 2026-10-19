@@ -63,7 +63,8 @@ export interface EverythingRow {
 
 export const EVERYTHING_PAGE_SIZE = 40;
 
-const COLUMNS =
+// Typed `string`: the JSON-path label aliases are beyond the select-string type parser (TS2589).
+const COLUMNS: string =
   `id, status, source_feature, agent_id, conversation_id, workflow_run_id, origin_class, created_by, organization_id, total_cost, created_at, ${RUN_LABEL_METADATA_COLUMNS}`;
 
 type Row = Record<string, unknown>;
@@ -154,7 +155,7 @@ export async function fetchEverythingPage(
   if (before) q = q.lt("created_at", before);
   const { data, error } = await everything(q.order("created_at", { ascending: false }).limit(pageSize));
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map((row) => everythingRow(withLabelMetadata(row)));
+  return ((data ?? []) as unknown as Row[]).map((row) => everythingRow(withLabelMetadata(row)));
 }
 
 /** Pure: new rows merged over the old by id, newest first (a refresh never drops older pages). */
