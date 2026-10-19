@@ -19,6 +19,8 @@ let code = 1;
 try {
   console.log("signed in as", s.who);
   await page.goto(`${ORIGIN}/data/${table}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+  const resume = page.getByRole("button", { name: "Resume this preview" });
+  if (await resume.count()) { console.log("preview was paused: resuming"); await resume.click(); }
   await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.waitForTimeout(3000);
   const boxes = page.getByRole("checkbox", { name: /select row|select .*row|tick/i }).or(page.locator("tbody input[type=checkbox], [role=row] input[type=checkbox], [role=row] [role=checkbox]"));
   console.log("checkboxes", await boxes.count());
