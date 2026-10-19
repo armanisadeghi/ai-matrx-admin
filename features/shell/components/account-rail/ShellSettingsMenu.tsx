@@ -20,6 +20,7 @@ import {
   Monitor,
   Moon,
   MonitorSpeaker,
+  LayoutTemplate,
   Settings,
   SlidersHorizontal,
   Sun,
@@ -43,7 +44,10 @@ import {
   USER_MENU_PANEL_CLASS,
 } from "@/features/shell/components/header/header-right-menu/menuItemClass";
 import { RailMenuHeader, RAIL_MENU_DIVIDER } from "./RailMenuHeader";
-import { SegmentedControl } from "@ai-matrx/design-system/controls";
+import { SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
+import { selectHoldsShellLayout, selectShellStandardView } from "@/features/shell/shell-layout/useResolvedShellLayout";
+import { shellStandardViewChanged } from "@/features/shell/shell-layout/shellLayoutSlice";
+import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellLayoutSync";
 
 // The account rail's one menu look: the account menu's own row class.
 const ROW = MENU_ITEM_CLASS;
@@ -67,6 +71,28 @@ function ThemeRow() {
       <span className="min-w-0 flex-1 truncate">Theme</span>
       <SegmentedControl aria-label="Theme" value={mode} onValueChange={(choice) => dispatch(setMode(choice))} data={THEME_CHOICES.map(({ mode: choice, label, Icon }) => ({ value: choice, ariaLabel: label, title: label, label: <Icon aria-hidden="true" /> }))} />
     </div>
+  );
+}
+
+/**
+ * Standard view: the built-in menu, header and dock in one press, and back (custom-experience). Shown
+ * only to a person who has a saved layout (her own or her organization's).
+ */
+function StandardViewRow() {
+  const dispatch = useAppDispatch();
+  const holds = useAppSelector(selectHoldsShellLayout);
+  const on = useAppSelector(selectShellStandardView);
+  if (!holds) return null;
+  const flip = (next: boolean) => {
+    setShellStandardViewCookie(next);
+    dispatch(shellStandardViewChanged(next));
+  };
+  return (
+    <label className={cn(ROW, "cursor-default hover:bg-transparent")}>
+      <LayoutTemplate />
+      <span className="min-w-0 flex-1 truncate">Standard view</span>
+      <Switch aria-label="Standard view" checked={on} onCheckedChange={flip} />
+    </label>
   );
 }
 
@@ -100,6 +126,7 @@ function SettingsMenuList({ onDone }: { onDone: () => void }) {
         <span className="min-w-0 flex-1 truncate text-left">Preferences</span>
       </button>
       <ThemeRow />
+      <StandardViewRow />
       <button type="button" className={ROW} role="menuitem" onClick={() => open("audioControlWindow")}>
         <MonitorSpeaker />
         <span className="min-w-0 flex-1 truncate text-left">Media</span>

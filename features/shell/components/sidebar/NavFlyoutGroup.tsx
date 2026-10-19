@@ -34,7 +34,7 @@ import {
   type ShellNavItem,
 } from "../../constants/nav-data";
 import { useNavActions } from "../../navigation/navActions";
-import { useNavPanelActions } from "../../navigation/navPanelActions";
+import { useNavPanelActions, useRunNavTile } from "../../navigation/navPanelActions";
 import {
   findActiveNavBranch,
   findActiveNavChild,
@@ -74,7 +74,7 @@ const SUB_LEAVE_GRACE = 700;
 const VIEWPORT_MARGIN = 8;
 
 function childKey(child: ShellNavChild): string {
-  return `${child.panelAction ?? child.action ?? child.href}::${child.label}`;
+  return `${child.panelAction ?? child.action ?? child.tileId ?? child.href}::${child.label}`;
 }
 
 /** Arrow-key focus movement among a panel's menu items. */
@@ -108,6 +108,7 @@ export default function NavFlyoutGroup({
   // Gated destinations (Make, Records) appear where their switch is on.
   const navActions = useNavActions();
   const navPanelActions = useNavPanelActions();
+  const runTile = useRunNavTile();
 
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
@@ -487,9 +488,12 @@ export default function NavFlyoutGroup({
   // anything in the Education submenu used to close it 320ms later).
   const renderChild = (child: ShellNavChild, activeHref?: string, inSubmenu = false) => {
     const closeSubOnEnter = subKey && !inSubmenu ? () => scheduleSubClose() : undefined;
+    const tileId = child.tileId;
     const panelHandler = child.panelAction
       ? navPanelActions[child.panelAction]
-      : undefined;
+      : tileId
+        ? () => runTile(tileId)
+        : undefined;
     if (panelHandler) {
       return (
         <button

@@ -18,6 +18,8 @@ import type { AccountPreferencesRow } from "@/lib/organizations/accountOrganizat
 import type { MbrCountRow, MbrForUserRow } from "@/features/organizations/service/membershipsService";
 import type { MemberOrganizationRow } from "@/features/organizations/service/memberOrganizationRows";
 import type { KnobSnapshotSeed } from "@/lib/scoped-config/effectiveKnobs";
+import type { ShellBootSeed } from "@/features/shell/shell-layout/contract";
+import { parseShellBootSeed } from "@/features/shell/shell-layout/seed";
 
 export interface CoreBootSeed {
   userId: string;
@@ -32,6 +34,12 @@ export interface CoreBootSeed {
   organizationsNextCursor: string | null;
   /** The account's `users.user_preferences` row; null when the person has none. */
   preferencesRow: AccountPreferencesRow | null;
+  /**
+   * THE LAYOUT BOOLEAN (custom-experience §5.3): null when neither the person nor any organization on
+   * the seeded page has a saved layout — the zero-cost path for everyone who never customized. A
+   * malformed value is refused (null, with a console warning naming it), never half-read.
+   */
+  shell: ShellBootSeed | null;
 }
 
 export type { KnobSnapshotSeed };
@@ -55,5 +63,6 @@ export function parseCoreBootSeed(raw: unknown, userId: string): CoreBootSeed | 
     organizationsHasMore: r.organizations_has_more,
     organizationsNextCursor: typeof r.organizations_next_cursor === "string" ? r.organizations_next_cursor : null,
     preferencesRow: row && typeof row === "object" ? (row as AccountPreferencesRow) : null,
+    shell: parseShellBootSeed(r.shell),
   };
 }

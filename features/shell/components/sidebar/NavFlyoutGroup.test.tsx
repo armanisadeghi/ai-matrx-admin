@@ -20,6 +20,7 @@ jest.mock("next/navigation", () => ({ usePathname: () => "/notes" }));
 jest.mock("../../navigation/navActions", () => ({ useNavActions: () => ({}) }));
 jest.mock("../../navigation/navPanelActions", () => ({
   useNavPanelActions: () => ({}),
+  useRunNavTile: () => () => undefined,
 }));
 jest.mock("@/components/navigation/AppLink", () => ({
   __esModule: true,

@@ -21,6 +21,7 @@ import { WEB_DEVICE_ID_COOKIE, parseWebDeviceIdCookie } from "@/lib/scoped-confi
 // reactive identity source so non-React consumers see the current state.
 import AppShell from "@/features/shell/components/AppShell";
 import { readSidebarExpandedCookie } from "@/features/shell/utils/server-cookies";
+import { pickShellLayoutServer } from "@/features/shell/shell-layout/server";
 import type { UserData } from "@/utils/userDataMapper";
 import type { Metadata } from "next";
 import { InternalGoogleAnalytics } from "@/lib/product-analytics/InternalGoogleAnalytics";
@@ -173,6 +174,8 @@ export default async function AppLayout({
       adminLaneOpen: headersList.get(ADMIN_LANE_HEADER) === "1",
       usageSnapshot,
       coreBootSeed,
+      // THE LAYOUT (custom-experience §5.3): picked here from the seed above + two cookies, no request.
+      shellLayout: await pickShellLayoutServer(coreBootSeed, headersList.get("x-search-params")),
     };
     coreSeedLanded = coreBootSeed !== null;
     if (usageSnapshot === null) usageStreamed = streamedUsageSeedServer(supabase);

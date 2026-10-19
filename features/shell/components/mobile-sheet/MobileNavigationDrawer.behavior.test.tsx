@@ -18,6 +18,7 @@ jest.mock("next/navigation", () => ({ usePathname: () => "/chat/abc" }));
 jest.mock("@/features/shell/navigation/navActions", () => ({ useNavActions: () => ({}) }));
 jest.mock("@/features/shell/navigation/navPanelActions", () => ({
   useNavPanelActions: () => ({}),
+  useRunNavTile: () => () => undefined,
 }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => true }));
 jest.mock("@/lib/redux/selectors/userSelectors", () => ({ selectIsAuthenticated: () => true }));

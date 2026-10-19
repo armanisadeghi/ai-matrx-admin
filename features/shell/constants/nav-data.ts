@@ -155,6 +155,12 @@ export interface ShellNavChild {
    */
   panelAction?: ShellNavPanelActionId;
   /**
+   * A custom layout's row that launches a Tools-grid tile (`tile.*`) in place: its `href` is a
+   * `#tile.*` anchor that never navigates, so every renderer runs the tile instead
+   * (`useRunNavTile`; shell-layout/FEATURE.md). Never set in nav-data itself.
+   */
+  tileId?: string;
+  /**
    * Marks this child as an **action** (a create/add affordance) rather than a
    * navigation destination. Action children always render together in a
    * dedicated section at the BOTTOM of the menu, below a divider, regardless of
@@ -415,6 +421,8 @@ export interface ShellNavItem {
   external?: boolean;
   /** Open an internal destination beside the current workspace. */
   openInNewTab?: boolean;
+  /** A custom layout's Tools-grid tile row — see `ShellNavChild.tileId`. */
+  tileId?: string;
   /**
    * Additional first-party route namespaces owned by this item. Children are
    * matched under each prefix by replacing the canonical parent prefix, so an

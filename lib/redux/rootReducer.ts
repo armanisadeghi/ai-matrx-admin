@@ -113,6 +113,8 @@ import wizardDraftReducer from "@/lib/redux/slices/wizardDraftSlice";
 // catalogs live on `scopesTree.contextItemsByTypeId`, values on `contextValues`,
 // templates are no longer in the store (the gallery reads them itself).
 import scopesTreeReducer from "@/features/scopes/redux/scopesSlice";
+// Custom layouts (custom-experience): the held Sidebar/Header/Dock layouts, seeded by the (core) layout.
+import shellLayoutReducer from "@/features/shell/shell-layout/shellLayoutSlice";
 import contextValuesReducer from "@/features/scopes/redux/contextValuesSlice";
 
 import hierarchyReducer from "@/features/agent-context/redux/hierarchySlice";
@@ -263,6 +265,7 @@ export const slimReducerMap = {
 
   // ─── features/scopes — the only scope state ─────────────────────────
   scopesTree: scopesTreeReducer,
+  shellLayout: shellLayoutReducer,
   contextValues: contextValuesReducer,
   // Reads kept by key and read once (`lib/redux/store-reads/useStoreRead.ts`):
   // a remount, a wake or a second view renders the answer and reads nothing.
