@@ -70,7 +70,8 @@ const StatusDot: React.FC<StatusDotProps> = ({ status, size = 8 }) => {
 };
 
 interface MediumIndicatorProps {
-  onDragStart: (e: React.MouseEvent) => void;
+  /** The dock's pointer-down (summon/dock `handleProps.onPointerDown`). */
+  onDragStart: (e: React.PointerEvent<HTMLElement>) => void;
   onSizeUp: () => void;
   onSizeDown: () => void;
 }
@@ -108,7 +109,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
   const handleToggleDebugMode = () => dispatch(toggleDebugMode());
   const handleToggleSnapshot = () => dispatch(setUseSnapshot(!isSnapshot));
 
-  const handleContainerMouseDown = (e: React.MouseEvent) => {
+  const handleContainerMouseDown = (e: React.PointerEvent<HTMLElement>) => {
     if (e.currentTarget === e.target) onDragStart(e);
   };
 
@@ -172,7 +173,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
   return (
     <div
       className="flex flex-col w-96 rounded-lg bg-slate-800 text-white shadow-lg overflow-visible"
-      onMouseDown={handleContainerMouseDown}
+      onPointerDown={handleContainerMouseDown}
     >
       {/* Header */}
       <div className="flex justify-between items-center px-2 py-1 bg-slate-900">
@@ -180,7 +181,7 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
         <div className="flex items-center gap-1">
           <div
             className="cursor-move p-1 rounded hover:bg-slate-700"
-            onMouseDown={onDragStart}
+            onPointerDown={onDragStart}
           >
             <Move size={14} />
           </div>

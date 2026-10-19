@@ -1,6 +1,6 @@
 {
   "name": "app-matrx",
-  "version": "0.4.3345",
+  "version": "0.4.3346",
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
@@ -727,6 +727,9 @@
     "check:server-trace-scope:self-test": "node --test scripts/check-server-trace-scope.test.mjs",
     "check:import-fanout": "node scripts/check-import-fanout.mjs",
     "check:import-fanout:self-test": "node scripts/check-import-fanout.mjs --self-test",
+    "check:login-hydrates:self-test": "node --test scripts/build-lab/next-assets.test.mjs",
+    "check:overlays-sweep": "tsx scripts/overlays/sweep.ts",
+    "check:overlays-sweep:self-test": "tsx scripts/overlays/sweep.ts --self-test",
     "check:records-ui-front-door": "node scripts/check-records-ui-front-door.mjs",
     "check:records-ui-front-door:self-test": "node scripts/check-records-ui-front-door.mjs --self-test",
     "check:shell-eager-graph": "tsx scripts/check-shell-eager-graph.ts",

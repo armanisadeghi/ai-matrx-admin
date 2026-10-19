@@ -71,9 +71,10 @@ export function parseReviewWalkUrlId(id: string | null | undefined): WalkUnitRef
  * The `?panels=` URL hydrator runs on mount, before the local window workspace
  * has been read, and an open walk is never overwritten by that later read — so
  * whatever the address does not carry is lost on reload. Keys are one letter
- * (the `?panels=` arg grammar is `k-v_k-v`); values are free text, so they are
- * percent-encoded with `_` escaped too (`_` separates args; a `-` inside a
- * value is safe because the parser splits each pair on its FIRST hyphen).
+ * (the `?panels=` arg grammar is `k-v_k-v`). Values are free text and go in RAW:
+ * summon's link grammar v2 percent-encodes every arg value on write (`% , : _ -`)
+ * and decodes it on read, so encoding here too would double-encode (a label that
+ * literally held `%41` came back as `A`).
  * A link without these args still opens (agent-name / unit-kind fallback).
  */
 export interface WalkLabels {
@@ -93,26 +94,17 @@ const LABEL_ARG = {
 /** Labels longer than this never reach the address (a title is ≤ 40 chars). */
 const LABEL_ARG_MAX = 80;
 
-function encodeArg(value: string): string {
-  return encodeURIComponent(value.slice(0, LABEL_ARG_MAX)).replace(/_/g, "%5F");
-}
-
-function decodeArg(value: string | undefined): string | null {
-  if (!value) return null;
-  try {
-    const decoded = decodeURIComponent(value).trim();
-    return decoded ? decoded.slice(0, LABEL_ARG_MAX) : null;
-  } catch {
-    return null;
-  }
+function clampLabel(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, LABEL_ARG_MAX) : null;
 }
 
 /** The `?panels=` args for a walk's labels; absent labels write nothing. */
 export function reviewWalkUrlArgs(labels: WalkLabels): Record<string, string> | undefined {
   const out: Record<string, string> = {};
   for (const key of Object.keys(LABEL_ARG) as (keyof WalkLabels)[]) {
-    const value = labels[key]?.trim();
-    if (value) out[LABEL_ARG[key]] = encodeArg(value);
+    const value = clampLabel(labels[key] ?? undefined);
+    if (value) out[LABEL_ARG[key]] = value;
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -122,7 +114,7 @@ export function reviewWalkLabelsFromUrlArgs(args: Record<string, string> | undef
   const out: WalkLabels = {};
   if (!args) return out;
   for (const key of Object.keys(LABEL_ARG) as (keyof WalkLabels)[]) {
-    const value = decodeArg(args[LABEL_ARG[key]]);
+    const value = clampLabel(args[LABEL_ARG[key]]);
     if (value) out[key] = value;
   }
   return out;

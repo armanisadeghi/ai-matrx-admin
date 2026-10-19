@@ -24,7 +24,9 @@
  * and open it by setting the target.
  */
 
-import { usePopoutContainer } from "@ai-matrx/summon/window";
+// ./root, not ./window: this dialog is imported by ~190 files, and ./window put the whole window
+// section in first load wherever a confirm was reachable (F2, 2026-10-18).
+import { usePopoutContainer } from "@ai-matrx/summon/root";
 import {
   ConfirmDialog as PackageConfirmDialog,
   type ConfirmDialogProps,

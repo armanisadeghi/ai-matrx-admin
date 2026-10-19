@@ -5,7 +5,7 @@
 // AdminFeatureProvider — no per-component boundaries. That shell mounts this
 // core only for an admin (any tier); each piece below keeps its own gate:
 //   - isAdmin (admin POWER, super admin, admin section only): the indicator,
-//     credential notifier, debug indicators.
+//     credential notifier. (The debug indicators are summon overlays: promptDebugIndicator, resourceDebugIndicator, executionStateDebug.)
 //   - canDebug (super admin, every page): Auto-watch (Smart Add runs on user
 //     pages too; it also gates itself on `useCanWatchAi`).
 //   - ErrorInspectorBadge gates itself on `selectIsAdminDebugger` (any tier).
@@ -18,7 +18,6 @@
 import { lazy, Suspense } from "react";
 import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 import CredentialExpiryNotifier from "@/components/admin/CredentialExpiryNotifier";
-import { DebugIndicatorManager } from "@/components/debug/DebugIndicatorManager";
 import AutoWatch from "@/features/ai-watch/AutoWatch";
 import FollowedWorkSync from "@/features/ai-watch/FollowedWorkSync";
 import ErrorInspectorBadge from "@/features/admin/error-inspector/ErrorInspectorBadge";
@@ -46,7 +45,6 @@ export default function AdminFeatureProviderCore({
         <>
           <AdminIndicatorWrapper />
           <CredentialExpiryNotifier />
-          <DebugIndicatorManager />
           {isDebugMode && DevPerfOverlay && (
             <Suspense fallback={null}>
               <DevPerfOverlay />

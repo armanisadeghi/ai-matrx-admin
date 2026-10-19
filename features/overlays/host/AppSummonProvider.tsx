@@ -9,7 +9,7 @@
  */
 import { useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { SummonRoot, type OverlayErrorExtrasContext } from "@ai-matrx/summon/root";
+import { SummonRoot, type OverlayErrorExtrasContext, type OverlayRenderContext } from "@ai-matrx/summon/root";
 import { SurfaceLayerBoundary } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { useAppStore } from "@/lib/redux/hooks";
 import { AppWindowSelectionSurface } from "./AppWindowSelectionSurface";
@@ -22,7 +22,13 @@ const WINDOWS = { selectionSurface: AppWindowSelectionSurface, escapeYieldSelect
 // Shown only when an overlay crashes; never in the provider's static graph.
 const OverlayErrorCopyForAi = dynamic(() => import("./OverlayErrorCopyForAi"), { ssr: false });
 
-const renderInSurfaceLayer = (node: ReactNode) => <SurfaceLayerBoundary>{node}</SurfaceLayerBoundary>;
+// `data-overlay-id` marks each rendered overlay for the sweep's on-screen proof (scripts/overlays/sweep.ts);
+// `display: contents` gives the wrapper no box of its own, so layout is unchanged.
+const renderInSurfaceLayer = (node: ReactNode, ctx: OverlayRenderContext) => (
+  <div data-overlay-id={ctx.overlayId} data-overlay-instance={ctx.instanceId} style={{ display: "contents" }}>
+    <SurfaceLayerBoundary>{node}</SurfaceLayerBoundary>
+  </div>
+);
 const errorReportExtras = (ctx: OverlayErrorExtrasContext) => <OverlayErrorCopyForAi {...ctx} />;
 const loadRuntime = () => import("./AppSummonRuntime");
 

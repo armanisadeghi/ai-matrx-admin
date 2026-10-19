@@ -54,8 +54,9 @@ describe("review walk address", () => {
     expect(def?.link?.key).toBe(REVIEW_WALK_URL_KEY);
     expect(def?.window?.mobile).toBe("fullscreen");
     expect(def?.window?.ephemeral).toBeFalsy();
-    expect(def?.window?.preservation?.requiredDataKeys).toEqual(["unitKind", "unitId"]);
-    expect(def?.window?.preservation?.dataKeys).toEqual(expect.arrayContaining(["unitKind", "unitId", "agentId", "agentName"]));
+    const preservation = def?.window?.preservation || undefined; // `false` = opted out (summon 0.1.22+)
+    expect(preservation?.requiredDataKeys).toEqual(["unitKind", "unitId"]);
+    expect(preservation?.dataKeys).toEqual(expect.arrayContaining(["unitKind", "unitId", "agentId", "agentName"]));
   });
 
   it("opens the walk from a link under the opener's deterministic instance id", async () => {

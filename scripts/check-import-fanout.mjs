@@ -65,6 +65,33 @@ export const HOST_ONLY = [
   { module: "features/overlays/host/AppSummonRuntime.tsx", hosts: [] },
 ];
 
+// THE BOOT-GRAPH RULE (same law, the package half). `resolveSpecifier` sees only repo files, so a
+// static `import { WindowPanel } from "@ai-matrx/summon/window"` in a layout or provider passed
+// every gate (adversarial review 2026-10-18, item 6). Files in the boot graph — every layout, the
+// providers, lib/redux, the shell, the root Providers, the shared components/ui primitives — may import summon only through its light
+// entries (`./open`, `./root`, `./define`) or as types; the heavy entries load on first open.
+export const BOOT_GRAPH = [
+  /^app\/(?:.*\/)?layout\.(?:tsx?|jsx?)$/,
+  /^app\/Providers\.tsx$/,
+  /^providers\//,
+  /^lib\/redux\//,
+  /^features\/shell\//,
+  // Shared UI primitives ride nearly every route (components/ui/confirm-dialog.tsx imported
+  // usePopoutContainer from ./window: the window section in ~190 importers' first load, F2 2026-10-18).
+  /^components\/ui\//,
+];
+export const HEAVY_SUMMON_ENTRY =
+  /^@ai-matrx\/summon(?:\/(?:react|window|window-host|url|persistence|lite|dialog|sheet|dock|handles))?$/;
+
+export function findBootGraphSummonImports(files, read = (f) => readFileSync(f, "utf8")) {
+  const violations = [];
+  for (const f of files) {
+    if (!BOOT_GRAPH.some((re) => re.test(f))) continue;
+    for (const spec of staticSpecifiers(read(f))) if (HEAVY_SUMMON_ENTRY.test(spec)) violations.push({ file: f, target: spec });
+  }
+  return violations;
+}
+
 const STATIC_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^'"`;]*?\sfrom\s*)?(["'])([^"']+)\1/gm;
 
 /** Static (non-type) import specifiers of one file. */
@@ -142,12 +169,34 @@ function selfTest() {
   console.log(`self-test GREEN (map reached only by its host; type-only import of a render file): ${greenHost ? "ok" : "FALSE ALARM"}`);
   console.log(`self-test RED (a non-host file imports the render map): ${redMap ? "caught" : "MISSED"}`);
   console.log(`self-test RED (a definition statically re-exports its render module): ${redRender ? "caught" : "MISSED"}`);
+  const boot = {
+    "app/layout.tsx": 'import type { OverlayRenderProps } from "@ai-matrx/summon/react";\nimport { SummonRoot } from "@ai-matrx/summon/root";',
+    "providers/Store.tsx": 'import { openOverlay } from "@ai-matrx/summon/open";\nimport { defineOverlay } from "@ai-matrx/summon/define";',
+    "lib/redux/rootReducer.ts": 'import type { SummonState } from "@ai-matrx/summon";',
+    "features/notes/NotesPage.tsx": 'import { WindowPanel } from "@ai-matrx/summon/window";',
+  };
+  const bootRd = (f) => boot[f];
+  const greenBoot = findBootGraphSummonImports(Object.keys(boot), bootRd).length === 0;
+  const redBoot = {};
+  for (const [file, spec] of [
+    ["app/(core)/notes/layout.tsx", "@ai-matrx/summon/window"],
+    ["providers/Store.tsx", "@ai-matrx/summon"],
+    ["lib/redux/store.ts", "@ai-matrx/summon/handles"],
+    ["features/shell/Shell.tsx", "@ai-matrx/summon/react"],
+    ["app/Providers.tsx", "@ai-matrx/summon/url"],
+    ["components/ui/confirm-dialog.tsx", "@ai-matrx/summon/window"],
+  ]) {
+    redBoot[file] = findBootGraphSummonImports([file], () => `import { x } from "${spec}";`).length === 1;
+  }
+  const redBootAll = Object.values(redBoot).every(Boolean);
+  console.log(`self-test GREEN (boot graph: light entries, type-only heavy imports, heavy import outside the boot graph): ${greenBoot ? "ok" : "FALSE ALARM"}`);
+  for (const [file, ok] of Object.entries(redBoot)) console.log(`self-test RED (heavy summon entry imported by ${file}): ${ok ? "caught" : "MISSED"}`);
   const greenTypes = findOffenders(["b.ts"], () => typesOnly).length === 0;
   const greenShared = findOffenders(["c.ts"], () => shared).length === 0;
   console.log(`self-test RED (${MAX_TARGETS + 1} per-item import() targets): ${red ? "caught" : "MISSED"}`);
   console.log(`self-test GREEN (50 type-position imports): ${greenTypes ? "ok" : "FALSE ALARM"}`);
   console.log(`self-test GREEN (50 calls into ONE module): ${greenShared ? "ok" : "FALSE ALARM"}`);
-  process.exit(red && greenTypes && greenShared && greenHost && redMap && redRender ? 0 : 1);
+  process.exit(red && greenTypes && greenShared && greenHost && redMap && redRender && greenBoot && redBootAll ? 0 : 1);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
@@ -169,4 +218,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     console.error("  Fix: metadata comes from overlay-meta-index.ts; render modules load only through the overlay host (HOST_ONLY).");
     process.exitCode = 1;
   } else console.log(`[import-fanout] host-only modules (${HOST_ONLY.length} rules) are statically reached only by their hosts.`);
+  const bootHeavy = findBootGraphSummonImports(files);
+  if (bootHeavy.length) {
+    console.error(`[import-fanout] ${bootHeavy.length} boot-graph file(s) statically import a heavy @ai-matrx/summon entry:`);
+    for (const v of bootHeavy) console.error(`  ${v.file} -> ${v.target}`);
+    console.error("  Fix: import from @ai-matrx/summon/open, /root or /define, use `import type`, or load the heavy entry with import() on first open.");
+    process.exitCode = 1;
+  } else console.log("[import-fanout] boot graph (layouts, providers, lib/redux, shell) imports summon only through its light entries.");
 }

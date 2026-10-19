@@ -11,5 +11,6 @@ export const setContextValueWindowOverlay = defineOverlay<SetContextValueWindowD
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  window: {},
+  // One-shot (a one-shot setter dialog): never comes back after a reload.
+  window: { preservation: false },
 });

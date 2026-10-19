@@ -1,0 +1,11 @@
+{
+  "shareLinkDialog": { "resourceId": "3ccaccd2-4849-49a6-834a-07a850736b6a" },
+  "shareModal": { "resourceType": "note", "resourceId": "f7226f7e-0686-48e0-8938-27cfa9d757d6", "resourceName": "Sweep note", "isOwner": true },
+  "shareModalWindow": { "resourceType": "note", "resourceId": "f7226f7e-0686-48e0-8938-27cfa9d757d6", "resourceName": "Sweep note", "isOwner": true },
+  "changeReviewWindow": { "verb": "move", "entityType": "note", "ids": ["f7226f7e-0686-48e0-8938-27cfa9d757d6"], "recordName": "Sweep note" },
+  "accessSetupWindow": { "headType": "note", "recordId": "f7226f7e-0686-48e0-8938-27cfa9d757d6", "recordName": "Sweep note" },
+  "userSearchWindow": { "callbackGroupId": "sweep-group", "title": "Find a person", "initialQuery": "", "directory": "admin", "candidates": [], "excludeUserIds": [] },
+  "agentChatAssistant": { "conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2" },
+  "agentInlineOverlay": { "conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2" },
+  "aiWatchWindow": { "conversationId": "ee1ee635-0dc0-4cd7-a413-5696209d9cf2", "label": "Sweep" }
+}

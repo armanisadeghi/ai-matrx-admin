@@ -12,7 +12,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCodeWorkspace } from "../../CodeWorkspaceProvider";
-import { listWorkspaceIds, subscribeWorkspace } from "../../runtime/workspaceRegistry";
+import { callbackManager } from "@ai-matrx/summon/handles";
+import { WORKSPACE_HANDLE_GROUP, workspaceIdsFromHandleIds } from "../../runtime/workspaceRegistry";
+
+const registeredWorkspaceIds = () => workspaceIdsFromHandleIds(callbackManager.groupMembers(WORKSPACE_HANDLE_GROUP));
 import { SidePanelHeader } from "../SidePanelChrome";
 import { getToolDisplayName } from "@ai-matrx/chat/tool-call-visualization/registry/registry";
 
@@ -71,17 +74,13 @@ export const ExtensionsPanel: React.FC<ExtensionsPanelProps> = ({
   className,
 }) => {
   const { workspaceId } = useCodeWorkspace();
-  const [registeredIds, setRegisteredIds] = useState<string[]>(() =>
-    listWorkspaceIds(),
-  );
+  const [registeredIds, setRegisteredIds] = useState<string[]>(registeredWorkspaceIds);
 
-  useEffect(() => {
-    // Re-poll on any workspace change for this id — lightweight; registry is small.
-    const unsub = subscribeWorkspace(workspaceId, () => {
-      setRegisteredIds(listWorkspaceIds());
-    });
-    return unsub;
-  }, [workspaceId]);
+  useEffect(
+    // Workspaces live in summon's handle registry; re-read the group on any registry change.
+    () => callbackManager.subscribeToRegistry(() => setRegisteredIds(registeredWorkspaceIds())),
+    [],
+  );
 
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>

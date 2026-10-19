@@ -77,11 +77,20 @@ New overlays declare an event map on `defineOverlay` and pass `handlers` when op
 
 ## Testing
 
-`definitions/__tests__/` (generated-index guard, link kit, ported link tests, per-overlay tests) and `app/__tests__/nothing-loads-until-engaged.test.tsx`. Package fakes: `@ai-matrx/summon/testing` (`createTestPorts`, `createTestSummonStore`, `createMemoryPersistence`). Runtime sweep of every id (dev build, admin sign-in from the app `.env`): `npx tsx scripts/overlays-convert/sweep.ts --url http://<session>.localhost:3001 [--only id1,id2] [--data data.json]`. Ids that need data from their launcher (`agentInlineOverlay`, `applyToSourceReview`, `resourcePickerWindow`) legitimately close themselves in a bare sweep.
+`definitions/__tests__/` (generated-index guard, link kit, ported link tests, per-overlay tests) and `app/__tests__/nothing-loads-until-engaged.test.tsx`. Package fakes: `@ai-matrx/summon/testing` (`createTestPorts`, `createTestSummonStore`, `createMemoryPersistence`). 
+
+**The sweep gate** (`scripts/overlays/sweep.ts`): opens every registered id in a running build, signed in as the test admin from the app `.env`, and counts an id "rendered" only with ON-SCREEN proof (`scripts/overlays/sweep-probe.ts`): summon's window render-ack plus that `[data-window-id]` box, a visible node inside the host's `[data-overlay-id]` wrapper (`AppSummonProvider` renderWrapper; `display: contents`), or a new dialog surface. A store flag is not proof: open-but-nothing-on-screen is `blank`, a stuck loading fallback is `loading`. Run it against `next start` of a build made with `NEXT_PUBLIC_OVERLAYS_SWEEP=1` (that flag, or dev, compiles in `window.__overlaysTest`; a normal production build has no hook):
+
+```
+NEXT_PUBLIC_OVERLAYS_SWEEP=1 pnpm build:next && pnpm exec next start -p <port>
+pnpm check:overlays-sweep --url http://localhost:<port> --min 213 --data scripts/overlays/sweep-data.json
+```
+
+It needs a build and a sign-in, so it is a documented gate, not a release gate; its proof logic is guarded by `scripts/overlays/__tests__/sweep-probe.test.ts` (jest, planted null render / zero box / stuck loading / stale dialog) and `pnpm check:overlays-sweep:self-test` (real Chromium over planted overlays). Ids that need data from their launcher (`agentInlineOverlay`, `applyToSourceReview`, `resourcePickerWindow`) legitimately close themselves in a bare sweep.
 
 ## Open items
 
-1. Runtime proof of the switch is a sweep (214 of 223 clean; the rest are external 404/409s or need launcher data); keep rerunning it after package upgrades.
+1. Rerun the sweep gate after every summon upgrade; the ids that stay non-clean are external 404/409s or need launcher data (see the latest report).
 2. `ChatWindowId` from the installed chat package contains an id with no definition here (ChatHostAdapter `chatWindowOverlay` type error): add the definition or fix the chat package.
 3. Carried lint errors: `react-hooks/refs` in `extractionCellEditorWindow.overlay.tsx`, `matrx/alchemy-data-in` in `host/OverlayErrorCopyForAi.tsx`.
 4. `definitions/audioDevices.tsx` is an opener only: it opens `audioControlWindow` with `tab: "devices"`.

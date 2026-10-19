@@ -1,13 +1,16 @@
+import { peekHandle, registerHandleEntry, unregisterHandleEntry } from "@ai-matrx/summon/open";
 import type { AppStore } from "@/lib/redux/store";
 import type { FilesystemAdapter } from "../adapters/FilesystemAdapter";
 import type { ProcessAdapter } from "../adapters/ProcessAdapter";
 
 /**
- * Module-level handle to an active `<CodeWorkspace>` instance. Lets non-React
- * call-sites (agent tools, server-action consumers, keyboard shortcut
- * handlers) drive the same filesystem + process adapters the UI is using —
- * including pushing lines into the Redux-backed terminal log so users can
- * see what the agent is doing.
+ * Handle to an active `<CodeWorkspace>` instance. Lets non-React call-sites (agent tools,
+ * server-action consumers, keyboard shortcut handlers) drive the same filesystem + process
+ * adapters the UI is using — including pushing lines into the Redux-backed terminal log so users
+ * can see what the agent is doing.
+ *
+ * Stored in summon's ONE handle registry (`@ai-matrx/summon/open` light entries: an object handle
+ * under a fixed id), not a module Map of its own (adversarial review 2026-10-18, D-5).
  */
 export interface WorkspaceRuntimeHandle {
   /** Stable workspace id. `"default"` for the single-instance route. */
@@ -18,32 +21,30 @@ export interface WorkspaceRuntimeHandle {
   store: AppStore;
 }
 
-type Listener = (handle: WorkspaceRuntimeHandle | null) => void;
-
-const handles = new Map<string, WorkspaceRuntimeHandle>();
-const listeners = new Map<string, Set<Listener>>();
-
 export const DEFAULT_WORKSPACE_ID = "default";
+
+/** The handle-registry group every workspace joins (list it with summon's `groupMembers`). */
+export const WORKSPACE_HANDLE_GROUP = "code-workspaces";
+const HANDLE_PREFIX = "code-workspace:";
+const handleId = (workspaceId: string) => `${HANDLE_PREFIX}${workspaceId}`;
+
+/** Workspace ids from the group's handle ids. */
+export function workspaceIdsFromHandleIds(handleIds: readonly string[]): string[] {
+  return handleIds.filter((id) => id.startsWith(HANDLE_PREFIX)).map((id) => id.slice(HANDLE_PREFIX.length));
+}
 
 /** Register (or replace) a workspace handle. Returns an unregister function. */
 export function registerWorkspace(handle: WorkspaceRuntimeHandle): () => void {
-  handles.set(handle.id, handle);
-  const subs = listeners.get(handle.id);
-  if (subs) subs.forEach((fn) => fn(handle));
+  const id = registerHandleEntry(handle, { id: handleId(handle.id), groupId: WORKSPACE_HANDLE_GROUP });
   return () => {
-    if (handles.get(handle.id) === handle) {
-      handles.delete(handle.id);
-      const s = listeners.get(handle.id);
-      if (s) s.forEach((fn) => fn(null));
-    }
+    // a newer mount under the same workspace id replaced this one: leave it registered
+    if (peekHandle<WorkspaceRuntimeHandle>(id) === handle) unregisterHandleEntry(id);
   };
 }
 
 /** Lookup a registered workspace. Throws if none found. */
-export function getWorkspace(
-  id: string = DEFAULT_WORKSPACE_ID,
-): WorkspaceRuntimeHandle {
-  const handle = handles.get(id);
+export function getWorkspace(id: string = DEFAULT_WORKSPACE_ID): WorkspaceRuntimeHandle {
+  const handle = tryGetWorkspace(id);
   if (!handle) {
     throw new Error(
       `[code/runtime] No workspace registered for id "${id}". Mount a <CodeWorkspace workspaceId="${id}" /> first.`,
@@ -53,27 +54,6 @@ export function getWorkspace(
 }
 
 /** Non-throwing lookup. */
-export function tryGetWorkspace(
-  id: string = DEFAULT_WORKSPACE_ID,
-): WorkspaceRuntimeHandle | null {
-  return handles.get(id) ?? null;
-}
-
-export function listWorkspaceIds(): string[] {
-  return Array.from(handles.keys());
-}
-
-/** Subscribe to a specific workspace id (also fires with `null` on unregister). */
-export function subscribeWorkspace(id: string, fn: Listener): () => void {
-  let subs = listeners.get(id);
-  if (!subs) {
-    subs = new Set();
-    listeners.set(id, subs);
-  }
-  subs.add(fn);
-  fn(handles.get(id) ?? null);
-  return () => {
-    subs!.delete(fn);
-    if (subs!.size === 0) listeners.delete(id);
-  };
+export function tryGetWorkspace(id: string = DEFAULT_WORKSPACE_ID): WorkspaceRuntimeHandle | null {
+  return peekHandle<WorkspaceRuntimeHandle>(handleId(id)) ?? null;
 }

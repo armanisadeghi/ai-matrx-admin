@@ -11,5 +11,6 @@ export const contextAssignmentOverlay = defineOverlay<ContextAssignmentDefinitio
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  window: {},
+  // One-shot (an "Attach to" picker that returns its choice to the opener): never comes back after a reload.
+  window: { preservation: false },
 });
