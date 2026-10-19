@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 5,
+  "version": 6,
   "title": "Accounting Firm Desk",
-  "description": "Clients, monthly closes, filing deadlines and document requests for an accounting firm.",
-  "forWho": "Bookkeeping and accounting firms",
+  "description": "For accounting firms: clients, monthly close checklists, tax deadlines, document requests.",
+  "forWho": "Bookkeeping, tax and accounting firms",
   "icon": {
     "emoji": "🧮"
   },
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "accounting",
-    "bookkeeping",
+    "accountant",
+    "bookkeeper",
+    "tax preparer",
     "monthly close",
-    "deadlines"
+    "tax deadlines",
+    "document requests"
   ],
   "spec": {
     "specVersion": 1,
@@ -156,6 +158,39 @@
             ]
           },
           {
+            "key": "letter",
+            "label": "Engagement letter signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "software",
+            "label": "Books kept in",
+            "parityType": "select",
+            "choices": [
+              "QuickBooks Online",
+              "Xero",
+              "Desktop software",
+              "Spreadsheets"
+            ],
+            "choiceColors": {
+              "QuickBooks Online": "blue",
+              "Xero": "green",
+              "Desktop software": "amber",
+              "Spreadsheets": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "year_end",
+            "label": "Fiscal year ends",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "contact_email",
             "label": "Contact email",
             "parityType": "email",
@@ -211,6 +246,23 @@
                 "Reminded"
               ]
             }
+          },
+          {
+            "key": "open_deadlines",
+            "label": "Deadlines not filed",
+            "parityType": "rollup",
+            "via": "deadlines",
+            "pick": "deadline_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Filed"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "owner_me",
@@ -356,7 +408,10 @@
               "contact_email": "owner@foxglovefloral.net",
               "since": "@today-540d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "letter": true,
+              "software": "QuickBooks Online",
+              "year_end": "December"
             }
           },
           {
@@ -369,7 +424,10 @@
               "fee": 2400,
               "contact_email": "office@brightwaterdental.net",
               "since": "@today-900d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "letter": true,
+              "software": "Xero",
+              "year_end": "December"
             }
           },
           {
@@ -383,7 +441,10 @@
               "contact_email": "treasurer@cedarhollowgarden.net",
               "since": "@today-300d",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "letter": true,
+              "software": "Spreadsheets",
+              "year_end": "June"
             }
           },
           {
@@ -396,7 +457,10 @@
               "fee": 780,
               "contact_email": "kitchen@aldervinebar.net",
               "since": "@today-210d",
-              "owner": "tm-3"
+              "owner": "tm-3",
+              "letter": true,
+              "software": "QuickBooks Online",
+              "year_end": "December"
             }
           },
           {
@@ -410,7 +474,10 @@
               "contact_email": "odell@odellhandyman.net",
               "since": "@today-120d",
               "owner": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "letter": true,
+              "software": "QuickBooks Online",
+              "year_end": "December"
             }
           },
           {
@@ -423,7 +490,9 @@
               "fee": 200,
               "contact_email": "kimurareyes@mailpost.net",
               "since": "@today-700d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "letter": true,
+              "year_end": "December"
             }
           },
           {
@@ -437,7 +506,10 @@
               "contact_email": "director@pineconeplay.net",
               "since": "@today-14d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "letter": false,
+              "software": "Desktop software",
+              "year_end": "August"
             }
           },
           {
@@ -450,7 +522,10 @@
               "fee": 1800,
               "contact_email": "books@westfieldtool.net",
               "since": "@today-1200d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "letter": true,
+              "software": "Desktop software",
+              "year_end": "December"
             }
           }
         ]
@@ -505,6 +580,20 @@
             }
           },
           {
+            "key": "recs_done",
+            "label": "Statements reconciled",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ap_ar",
+            "label": "Payables and receivables reviewed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "docs_due",
             "label": "Documents due",
             "parityType": "datetime",
@@ -544,6 +633,23 @@
                 "value": 500
               }
             ]
+          },
+          {
+            "key": "questions",
+            "label": "Questions for the client",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -697,7 +803,10 @@
               "unreconciled": 14,
               "client": "client-1",
               "preparer": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recs_done": true,
+              "ap_ar": false,
+              "questions": 3
             }
           },
           {
@@ -709,7 +818,10 @@
               "due_on": "@mon+3d",
               "unreconciled": 3,
               "client": "client-2",
-              "preparer": "tm-2"
+              "preparer": "tm-2",
+              "recs_done": true,
+              "ap_ar": true,
+              "questions": 1
             }
           },
           {
@@ -722,7 +834,10 @@
               "unreconciled": 32,
               "client": "client-3",
               "preparer": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recs_done": false,
+              "ap_ar": false,
+              "questions": 0
             }
           },
           {
@@ -734,7 +849,10 @@
               "due_on": "@today-1d",
               "unreconciled": 9,
               "client": "client-4",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "recs_done": false,
+              "ap_ar": false,
+              "questions": 5
             }
           },
           {
@@ -748,7 +866,10 @@
               "unreconciled": 0,
               "client": "client-5",
               "preparer": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recs_done": true,
+              "ap_ar": true,
+              "questions": 0
             }
           },
           {
@@ -761,7 +882,10 @@
               "delivered_on": "@today-27d",
               "unreconciled": 0,
               "client": "client-1",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "recs_done": true,
+              "ap_ar": true,
+              "questions": 0
             }
           },
           {
@@ -775,7 +899,10 @@
               "unreconciled": 0,
               "client": "client-2",
               "preparer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recs_done": true,
+              "ap_ar": true,
+              "questions": 0
             }
           },
           {
@@ -787,7 +914,10 @@
               "due_on": "@today+14d",
               "unreconciled": 60,
               "client": "client-7",
-              "preparer": "tm-2"
+              "preparer": "tm-2",
+              "recs_done": false,
+              "ap_ar": false,
+              "questions": 2
             }
           }
         ]
@@ -858,6 +988,37 @@
               "Extension": "violet",
               "Annual filing": "teal"
             }
+          },
+          {
+            "key": "authority",
+            "label": "Filed with",
+            "parityType": "select",
+            "choices": [
+              "Federal",
+              "State",
+              "City or county"
+            ],
+            "choiceColors": {
+              "Federal": "blue",
+              "State": "green",
+              "City or county": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "period",
+            "label": "Period",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "extension",
+            "label": "Extension filed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1003,7 +1164,10 @@
               "kind": "Payroll tax",
               "due_on": "@today+6d",
               "client": "client-4",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "authority": "Federal",
+              "period": "Third quarter",
+              "extension": false
             }
           },
           {
@@ -1014,7 +1178,10 @@
               "kind": "Sales tax",
               "due_on": "@today+9d",
               "client": "client-1",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "authority": "State",
+              "period": "Monthly",
+              "extension": false
             }
           },
           {
@@ -1025,7 +1192,10 @@
               "kind": "Income tax",
               "due_on": "@today+19d",
               "client": "client-2",
-              "preparer": "tm-4"
+              "preparer": "tm-4",
+              "authority": "Federal",
+              "period": "Fourth quarter estimate",
+              "extension": false
             }
           },
           {
@@ -1036,7 +1206,10 @@
               "kind": "Annual filing",
               "due_on": "@today+45d",
               "client": "client-3",
-              "preparer": "tm-4"
+              "preparer": "tm-4",
+              "authority": "Federal",
+              "period": "Fiscal year",
+              "extension": false
             }
           },
           {
@@ -1047,7 +1220,10 @@
               "kind": "Income tax",
               "due_on": "@today+2d",
               "client": "client-6",
-              "preparer": "tm-4"
+              "preparer": "tm-4",
+              "authority": "Federal",
+              "period": "Tax year",
+              "extension": true
             }
           },
           {
@@ -1059,7 +1235,10 @@
               "due_on": "@today-8d",
               "filed_on": "@today-10d",
               "client": "client-5",
-              "preparer": "tm-4"
+              "preparer": "tm-4",
+              "authority": "Federal",
+              "period": "Third quarter estimate",
+              "extension": false
             }
           },
           {
@@ -1071,7 +1250,10 @@
               "due_on": "@today-12d",
               "filed_on": "@today-13d",
               "client": "client-4",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "authority": "State",
+              "period": "Monthly",
+              "extension": false
             }
           },
           {
@@ -1082,7 +1264,10 @@
               "kind": "Annual filing",
               "due_on": "@today-3d",
               "client": "client-7",
-              "preparer": "tm-2"
+              "preparer": "tm-2",
+              "authority": "State",
+              "period": "Annual",
+              "extension": false
             }
           },
           {
@@ -1093,7 +1278,10 @@
               "kind": "Payroll tax",
               "due_on": "@mon+4d",
               "client": "client-1",
-              "preparer": "tm-3"
+              "preparer": "tm-3",
+              "authority": "Federal",
+              "period": "Calendar year",
+              "extension": false
             }
           }
         ]
@@ -1143,6 +1331,40 @@
               "Reminded": "in_progress",
               "Received": "done"
             }
+          },
+          {
+            "key": "method",
+            "label": "Send it by",
+            "parityType": "select",
+            "choices": [
+              "Client portal",
+              "Email",
+              "Paper drop-off"
+            ],
+            "choiceColors": {
+              "Client portal": "blue",
+              "Email": "green",
+              "Paper drop-off": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "reminders",
+            "label": "Reminders sent",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "asked_on",
@@ -1258,7 +1480,9 @@
               "status": "Reminded",
               "asked_on": "@today-9d",
               "due_on": "@today-2d",
-              "client": "client-3"
+              "client": "client-3",
+              "method": "Client portal",
+              "reminders": 2
             }
           },
           {
@@ -1268,7 +1492,9 @@
               "status": "Requested",
               "asked_on": "@today-2d",
               "due_on": "@today+5d",
-              "client": "client-3"
+              "client": "client-3",
+              "method": "Client portal",
+              "reminders": 0
             }
           },
           {
@@ -1279,7 +1505,9 @@
               "asked_on": "@today-10d",
               "due_on": "@today-5d",
               "client": "client-4",
-              "received_on": "@today-5d"
+              "received_on": "@today-5d",
+              "method": "Email",
+              "reminders": 1
             }
           },
           {
@@ -1289,7 +1517,9 @@
               "status": "Requested",
               "asked_on": "@today-1d",
               "due_on": "@today+6d",
-              "client": "client-5"
+              "client": "client-5",
+              "method": "Client portal",
+              "reminders": 0
             }
           },
           {
@@ -1299,7 +1529,9 @@
               "status": "Reminded",
               "asked_on": "@today-14d",
               "due_on": "@today-4d",
-              "client": "client-7"
+              "client": "client-7",
+              "method": "Paper drop-off",
+              "reminders": 3
             }
           },
           {
@@ -1309,7 +1541,9 @@
               "status": "Requested",
               "asked_on": "@today-3d",
               "due_on": "@today+7d",
-              "client": "client-6"
+              "client": "client-6",
+              "method": "Email",
+              "reminders": 0
             }
           },
           {
@@ -1320,7 +1554,9 @@
               "asked_on": "@today-8d",
               "due_on": "@today-3d",
               "client": "client-1",
-              "received_on": "@today-3d"
+              "received_on": "@today-3d",
+              "method": "Client portal",
+              "reminders": 0
             }
           },
           {
@@ -1330,7 +1566,9 @@
               "status": "Requested",
               "asked_on": "@today-2d",
               "due_on": "@mon+4d",
-              "client": "client-2"
+              "client": "client-2",
+              "method": "Client portal",
+              "reminders": 0
             }
           }
         ]
@@ -1887,7 +2125,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1926,6 +2164,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2386,6 +2630,349 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "accounting-firm-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs the client side of a bookkeeping and accounting firm: who each client is and what you do for them, every monthly close and where it stands, every filing deadline, and the documents you are waiting for. The books themselves stay in each client's accounting software; this is where the firm sees the whole workload."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A business or household you serve"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service, fee, engagement letter, books kept in, fiscal year end, closes not delivered, requests waiting, deadlines not filed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monthly closes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One client's month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Documents due, statements reconciled, payables and receivables reviewed, questions, due date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deadlines"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One filing or payment due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Filed with, period, preparer, extension, due date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Document requests"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One thing asked of a client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send it by, reminders sent, due date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No work without a signed engagement letter."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every deadline is in the list the day the client signs, for the whole year ahead."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A close is delivered only after review by a second person."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter each client with service, fee, accounting software and fiscal year end."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every filing deadline for the next twelve months."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add this month's close for each bookkeeping client with the documents due date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter outstanding document requests and how many reminders went out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days 1 to 3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Statements pulled; document requests sent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days 5 to 10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bookkeeping and reconciliations"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days 10 to 15"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Review, questions to clients, closes delivered"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "All month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deadlines due in 14 days checked every Monday"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Alder & Vine's close is a day late with five questions for the owner and the bank still not reconciled. The preparer sends the questions in one email this morning and books a ten-minute call so the close can go out this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Busy season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "From January to April, tax work takes over. Agree with bookkeeping clients in December which closes may run a few days later during those months, and say so in writing."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "accounting-firm-desk",
       "title": "Dashboard",
@@ -2820,14 +3407,14 @@
       "parent": "accounting-firm-desk",
       "title": "Monthly close routine",
       "icon": {
-        "emoji": "📅"
+        "emoji": "📒"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A repeatable close is the product. Clients buy not having to think about it."
+              "text": "A monthly close turns a month of transactions into numbers an owner can trust. Doing it the same way every month, for every client, is what makes it fast and reliable."
             }
           ],
           "background": "blue",
@@ -2839,7 +3426,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Day one to three"
+              "text": "The close checklist"
             }
           ],
           "props": {
@@ -2847,34 +3434,125 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Create the close row for each client and set Documents due and Package due."
+              "text": "Bank and credit card feeds complete for the month"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Send the document request with a clear list and a date."
+              "text": "Every bank and card account reconciled to the statement; tick "
+            },
+            {
+              "text": "Statements reconciled",
+              "bold": true
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Chase anything missing on day three with a phone call, not another email."
+              "text": "Uncategorized transactions cleared; the count goes in "
+            },
+            {
+              "text": "Unreconciled items",
+              "bold": true
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payroll entries match the payroll report"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payables and receivables aged and reviewed; tick "
+            },
+            {
+              "text": "Payables and receivables reviewed",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Loan balances agree with lender statements"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sales tax collected agrees with the sales tax return"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fixed asset purchases and depreciation recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Questions for the client listed in one place; the count in "
+            },
+            {
+              "text": "Questions for the client",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Bookkeeping"
+              "text": "The stages"
             }
           ],
           "props": {
@@ -2882,28 +3560,83 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Reconcile every bank and card account to the statement."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Review uncategorized transactions and ask the client about anything unusual."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Post payroll and check sales tax accounts."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Waiting on documents"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Statements or receipts missing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bookkeeping"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Entering and reconciling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A second person checks it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reports sent to the client"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
@@ -2917,54 +3650,60 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Reconciliations tie to statements"
+              "text": "The reviewer looks at the balance sheet first: cash matches the bank, no odd balances, no negative payables. Then the profit and loss against the last three months: anything that jumped or vanished gets a question."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "No unexplained balances"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Month-over-month changes explained"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "A second person has looked at the numbers"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Delivery"
+              "text": "Delivering the close"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the profit and loss, balance sheet and a short note: three things the owner should know this month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send all open questions in that same email."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When numbers look wrong"
             }
           ],
           "props": {
@@ -2975,7 +3714,52 @@
           "type": "text",
           "text": [
             {
-              "text": "Send the package with two or three sentences on what changed, then press Deliver package."
+              "text": "If a balance cannot be explained, do not force it. Park the difference in a clearly named suspense account, list it as a question for the client, and clear it next month. Hidden differences grow."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Due dates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most firms promise closes by the 15th. "
+            },
+            {
+              "text": "Documents due",
+              "bold": true
+            },
+            {
+              "text": " is usually the 5th; if documents are late, the close date moves the same number of days, and the client is told."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Cedar Hollow's close is still waiting on bank statements that were due a day ago. The bookkeeper sends one reminder through the portal and moves on to Brightwater Dental, which is ready for review."
             }
           ]
         }
@@ -2986,14 +3770,26 @@
       "parent": "accounting-firm-desk",
       "title": "Keeping the deadline calendar",
       "icon": {
-        "emoji": "⏰"
+        "emoji": "📅"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A missed filing means penalties, interest and an unhappy client, and often the firm pays. The deadline list is the firm's most important list, and it is complete for the year ahead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Setting up"
+              "text": "Setting up each client"
             }
           ],
           "props": {
@@ -3001,18 +3797,125 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Add every recurring deadline per client at onboarding: payroll, sales tax, estimates and annual filings."
+              "text": "When a client signs, add every deadline for the next twelve months:"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Sales tax"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly or quarterly returns per state"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Payroll tax"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quarterly federal and state returns; year-end forms"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Income tax"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Business and household returns; quarterly estimates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Annual filing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nonprofit information return; state annual reports"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Extension"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Filed before the original due date"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
           "text": [
             {
-              "text": "Give each a preparer and a due date, and confirm both with the client."
+              "text": "Fill "
+            },
+            {
+              "text": "Filed with",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Period",
+              "bold": true
+            },
+            {
+              "text": " and the preparer for each."
             }
           ]
         },
@@ -3020,7 +3923,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Working it"
+              "text": "The Monday check"
             }
           ],
           "props": {
@@ -3028,26 +3931,137 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Check Deadlines in the next 14 days every Monday."
+              "text": "Deadlines due in the next 14 days each have a preparer and a plan"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Anything Upcoming within seven days gets a preparer and a plan."
+              "text": "Anything Prepared is waiting only on the client's signature or payment"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "When a deadline cannot be met, record an extension request and tell the client why."
+              "text": "Anything overdue is filed today, with the client told"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Status"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Upcoming"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Not started"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prepared"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ready; waiting on review, signature or payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Filed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Submitted; confirmation saved; filed date entered"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Extensions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An extension gives more time to file, not to pay. Estimate what is owed and tell the client to pay by the original date. Tick "
+            },
+            {
+              "text": "Extension filed",
+              "bold": true
+            },
+            {
+              "text": " and add a new deadline for the extended date."
             }
           ]
         },
@@ -3066,7 +4080,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Press Record filing and note the confirmation number."
+              "text": "Save the confirmation in the client's folder."
             }
           ]
         },
@@ -3074,37 +4088,30 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Save the copy in the client folder."
+              "text": "Enter "
+            },
+            {
+              "text": "Filed on",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
         {
-          "type": "callout",
+          "type": "bulleted",
           "text": [
             {
-              "text": "This template tracks the work. The rules for each filing come from your professional guidance and the authorities concerned."
+              "text": "Add next period's deadline if it is not already there."
             }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        }
-      ]
-    },
-    {
-      "key": "client-onboarding",
-      "parent": "accounting-firm-desk",
-      "title": "Onboarding a new client",
-      "icon": {
-        "emoji": "🚪"
-      },
-      "blocks": [
+          ]
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Week one"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3112,73 +4119,10 @@
           }
         },
         {
-          "type": "todo",
+          "type": "quote",
           "text": [
             {
-              "text": "Engagement letter signed and fee set on the client row"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Access to bank feeds and accounting software confirmed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Prior year records and opening balances requested"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Deadlines for the year added to the calendar"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Week two"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Review the books they already have and list every clean-up item."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Agree the document routine: where files go, who sends, by which day."
+              "text": "Pinecone Playschool's state registration renewal is three days overdue. The preparer files it today, notes the late fee for the client, and adds next year's renewal to the list straight away."
             }
           ]
         },
@@ -3186,7 +4130,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "First close"
+              "text": "Busy season planning"
             }
           ],
           "props": {
@@ -3197,7 +4141,320 @@
           "type": "text",
           "text": [
             {
-              "text": "Run the first close slowly. Write down every question you had to ask, and turn the answers into the checklist on the client page."
+              "text": "In December, list every return due between January and April with its preparer. If one person has too many, move work early rather than in March."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the client must act"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Many deadlines need the client to sign or pay. Send the request at least a week ahead with the amount and the exact steps, and call if it is not done two days before."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "client-onboarding",
+      "parent": "accounting-firm-desk",
+      "title": "Onboarding a new client",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first month with a client sets up every month after. A clean start means accurate opening balances, a complete deadline list and a client who knows what to send and when."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before any work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagement letter signed: services, fee, what the client provides and when; tick "
+            },
+            {
+              "text": "Engagement letter signed",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee and service entered on the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client portal invitation sent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gather documents (one request list)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Prior year tax returns and financial statements"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bank, card and loan statements from the last year end"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payroll reports and payroll tax filings"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sales tax registrations and recent returns"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Login access to the accounting software, as a user, never with the owner's password"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Loan agreements, leases and fixed asset records"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add each as a document request with a due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Set up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Books kept in",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Fiscal year ends",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review the books: bank balances, uncategorized items, payables and receivables. Note what needs cleaning up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree opening balances with the prior accountant's numbers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every deadline for the year ahead."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the first monthly close with a documents due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The kickoff call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Walk through the monthly rhythm: what they send by the 5th, what they get by the 15th."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Show them the portal and how to answer questions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree one contact person on their side."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Expect the first close to take twice as long as later ones. Note what slowed it down, and fix those things before the second month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clean-up work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the books need months of catch-up, quote it separately from the monthly fee. Catch-up work underpriced as part of the monthly fee is the most common money loser for bookkeeping firms."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Pinecone Playschool is onboarding without a signed engagement letter, and its prior year return is still not in after three reminders. The owner of the firm calls the director to get both done before any bookkeeping starts."
             }
           ]
         }
@@ -3208,14 +4465,76 @@
       "parent": "accounting-firm-desk",
       "title": "Chasing missing documents",
       "icon": {
-        "emoji": "📨"
+        "emoji": "📬"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most late closes and late returns are waiting on the client. A polite, consistent chasing routine gets documents in without damaging the relationship."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "The ladder"
+              "text": "Asking well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for everything in one list, not one item at a time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say exactly what you need: \"Statements for every bank account, all pages, for last month.\""
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give a due date and how to send it: "
+            },
+            {
+              "text": "Send it by",
+              "bold": true
+            },
+            {
+              "text": " portal, email or paper drop-off."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Explain why it matters: \"We need this to finish your close by the 15th.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The reminder rhythm"
             }
           ],
           "props": {
@@ -3232,7 +4551,7 @@
                 "cells": [
                   [
                     {
-                      "text": "Day"
+                      "text": "When"
                     }
                   ],
                   [
@@ -3246,12 +4565,12 @@
                 "cells": [
                   [
                     {
-                      "text": "0"
+                      "text": "Due date"
                     }
                   ],
                   [
                     {
-                      "text": "Send a request with a list and a date"
+                      "text": "Friendly reminder through the portal"
                     }
                   ]
                 ]
@@ -3260,12 +4579,12 @@
                 "cells": [
                   [
                     {
-                      "text": "3"
+                      "text": "Three days late"
                     }
                   ],
                   [
                     {
-                      "text": "Friendly reminder; set the row to Reminded"
+                      "text": "Second reminder, with what is delayed"
                     }
                   ]
                 ]
@@ -3274,12 +4593,12 @@
                 "cells": [
                   [
                     {
-                      "text": "7"
+                      "text": "A week late"
                     }
                   ],
                   [
                     {
-                      "text": "Phone call, and offer to help locate the file"
+                      "text": "Phone call from the client manager"
                     }
                   ]
                 ]
@@ -3288,12 +4607,12 @@
                 "cells": [
                   [
                     {
-                      "text": "10"
+                      "text": "Two weeks late"
                     }
                   ],
                   [
                     {
-                      "text": "Escalate to the owner and warn what will be late"
+                      "text": "Note to the partner; agree new dates in writing"
                     }
                   ]
                 ]
@@ -3302,10 +4621,74 @@
           }
         },
         {
+          "type": "text",
+          "text": [
+            {
+              "text": "Count each reminder in "
+            },
+            {
+              "text": "Reminders sent",
+              "bold": true
+            },
+            {
+              "text": " and set the status to "
+            },
+            {
+              "text": "Reminded",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Making it easier"
+              "text": "When it arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check it is complete: every account, every page, the right dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank the client; short and warm."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Make it easy"
             }
           ],
           "props": {
@@ -3316,7 +4699,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask for a few documents at a time, not thirty."
+              "text": "Bank feeds and automatic statement downloads remove most monthly requests."
             }
           ]
         },
@@ -3324,7 +4707,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Offer a secure upload link and say how long it takes."
+              "text": "A standing monthly list (statements, receipts over an agreed amount, payroll report) means clients know what to send without being asked."
             }
           ]
         },
@@ -3332,7 +4715,83 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Thank them as soon as something arrives, and press Log arrival."
+              "text": "Paper drop-off is fine for clients who prefer it; scan it the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a client is always late"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Talk about it at renewal. Offer a later close date, a higher fee for the extra chasing, or a simpler service. Record what you agreed on the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Cedar Hollow's bank statements are two days past due after two reminders. The client manager calls the treasurer, who forgot the portal login, and the statements arrive within the hour."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Year-end lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "In November, send every client the list of year-end documents: tax forms, donation receipts, asset purchases and loan statements. Early lists mean fewer late returns."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never ask for documents or passwords by plain email for sensitive data. Use the portal, and never store client passwords in notes."
             }
           ]
         }
