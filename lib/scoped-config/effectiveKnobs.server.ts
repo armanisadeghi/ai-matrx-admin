@@ -15,7 +15,11 @@ import { createClient } from "@/utils/supabase/server";
 import { noteServerConfigRead } from "@/lib/config-attestation/serverReporter.server";
 
 /** The register's own (feature, key) pair, as `{ feature, key }`; the browser module is not imported here. */
-export async function readEffectiveKnobOnServer(address: { feature: string; key: string }): Promise<unknown> {
+export async function readEffectiveKnobOnServer(
+  address: { feature: string; key: string },
+  /** Resolve for this organization (its overrides apply); absent = the person's own snapshot. */
+  options: { organizationId?: string | null } = {},
+): Promise<unknown> {
   const { feature, key } = address;
   try {
     const supabase = await createClient();
@@ -23,7 +27,7 @@ export async function readEffectiveKnobOnServer(address: { feature: string; key:
       supabase.schema("platform") as unknown as {
         rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
       }
-    ).rpc("knob_snapshot", { p_organization_id: null });
+    ).rpc("knob_snapshot", { p_organization_id: options.organizationId ?? null });
     if (error) {
       console.error(`[knob] server read of ${feature}.${key} failed (${error.message}); the page falls back to the browser's read.`);
       return undefined;

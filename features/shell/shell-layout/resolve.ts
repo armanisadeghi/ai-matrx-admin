@@ -69,6 +69,12 @@ export interface ResolveShellLayoutInput {
   standardView: boolean;
   isAdmin: boolean;
   isGuest: boolean;
+  /**
+   * Members may customize (the `shell.members_may_customize` knob, organization rung). `false` = the
+   * organization locked its layout: the person's own layout is ignored. Default true. (Amendment
+   * 2026-10-19, REGISTER.md.)
+   */
+  personAllowed?: boolean;
 }
 
 export interface ResolvedShellLayout {
@@ -355,12 +361,14 @@ export function resolveShellLayout({
   standardView,
   isAdmin,
   isGuest,
+  personAllowed = true,
 }: ResolveShellLayoutInput): ResolvedShellLayout {
   if (isGuest) return defaultLayout("default");
   if (standardView) return defaultLayout("standard-view");
-  const body = person ?? organization;
+  const own = personAllowed ? person : null;
+  const body = own ?? organization;
   if (!body) return defaultLayout("default");
-  const source: ShellLayoutSource = person ? "person" : "organization";
+  const source: ShellLayoutSource = own ? "person" : "organization";
   const walk: Walk = { isAdmin, problems: [] };
   return {
     source,
