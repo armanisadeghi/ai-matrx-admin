@@ -1,22 +1,24 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0405",
-  "version": 3,
-  "title": "Mental Health Practice",
-  "description": "Inquiries, clients, sessions with note status, and statements for a counseling practice.",
-  "forWho": "Therapy and counseling practices",
+  "version": 4,
+  "title": "Therapy & Counseling Practice",
+  "description": "For therapists and counselors: inquiries, intakes, sessions, notes and statements.",
+  "forWho": "Therapists, counselors and group mental health practices",
   "icon": {
-    "emoji": "🌿"
+    "emoji": "🛋️"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:gradient-dusk",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
-    "therapy",
-    "sessions",
-    "intake",
+    "therapist",
+    "counselor",
+    "mental health",
+    "private practice",
+    "progress notes",
     "billing"
   ],
   "spec": {
@@ -111,6 +113,25 @@
             }
           },
           {
+            "key": "payer",
+            "label": "Plans to pay by",
+            "parityType": "select",
+            "choices": [
+              "Private pay",
+              "Insurance",
+              "Sliding scale",
+              "Not sure"
+            ],
+            "choiceColors": {
+              "Private pay": "green",
+              "Insurance": "blue",
+              "Sliding scale": "yellow",
+              "Not sure": "gray"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "received_on",
             "label": "Received",
             "parityType": "datetime",
@@ -201,92 +222,100 @@
           {
             "key": "q01",
             "values": {
-              "inq_title": "Individual inquiry - Calloway",
+              "inq_title": "Winnifred C., work stress",
               "source": "Website form",
               "seeking": "Individual",
               "received_on": "@today-1d",
               "status": "New",
               "reply_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "payer": "Insurance"
             }
           },
           {
             "key": "q02",
             "values": {
-              "inq_title": "Couples inquiry - Ibarra and Nwosu",
+              "inq_title": "Ibarra and Nwosu, couples",
               "source": "Provider directory",
               "seeking": "Couples",
               "received_on": "@today",
               "status": "New",
               "reply_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "payer": "Private pay"
             }
           },
           {
             "key": "q03",
             "values": {
-              "inq_title": "Teen inquiry - parent of Okada",
+              "inq_title": "Parent calling for a 15-year-old",
               "source": "Referral from clinician",
               "seeking": "Teen",
               "received_on": "@today-3d",
               "status": "Contacted",
-              "reply_by": "@mon+2d"
+              "reply_by": "@mon+2d",
+              "payer": "Insurance"
             }
           },
           {
             "key": "q04",
             "values": {
-              "inq_title": "Individual inquiry - Brightwater",
+              "inq_title": "Odalys B., grief after a loss",
               "source": "Phone call",
               "seeking": "Individual",
               "received_on": "@today-6d",
               "status": "Contacted",
               "reply_by": "@today-2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "payer": "Sliding scale"
             }
           },
           {
             "key": "q05",
             "values": {
-              "inq_title": "Assessment inquiry - Vasquez-Lund",
+              "inq_title": "ADHD assessment for an adult",
               "source": "Website form",
               "seeking": "Assessment",
               "received_on": "@today-9d",
               "status": "Intake booked",
-              "reply_by": "@today-7d"
+              "reply_by": "@today-7d",
+              "payer": "Private pay"
             }
           },
           {
             "key": "q06",
             "values": {
-              "inq_title": "Family inquiry - Teller",
+              "inq_title": "Teller family, blended household",
               "source": "Provider directory",
               "seeking": "Family",
               "received_on": "@today-11d",
               "status": "Waitlist",
-              "reply_by": "@today-9d"
+              "reply_by": "@today-9d",
+              "payer": "Not sure"
             }
           },
           {
             "key": "q07",
             "values": {
-              "inq_title": "Individual inquiry - Marchetti",
+              "inq_title": "Request for court-ordered evaluation",
               "source": "Website form",
               "seeking": "Individual",
               "received_on": "@today-16d",
               "status": "Not a fit",
-              "reply_by": "@today-14d"
+              "reply_by": "@today-14d",
+              "payer": "Private pay"
             }
           },
           {
             "key": "q08",
             "values": {
-              "inq_title": "Individual inquiry - Osei-Bonsu",
+              "inq_title": "Kwame O., panic attacks",
               "source": "Phone call",
               "seeking": "Individual",
               "received_on": "@today-2d",
               "status": "New",
-              "reply_by": "@mon+4d"
+              "reply_by": "@mon+4d",
+              "payer": "Insurance"
             }
           }
         ],
@@ -485,6 +514,36 @@
             }
           },
           {
+            "key": "code",
+            "label": "Service code",
+            "parityType": "select",
+            "choices": [
+              "90791 intake",
+              "90834 45 min",
+              "90837 60 min",
+              "90847 couples/family",
+              "90853 group",
+              "96130 testing"
+            ],
+            "choiceColors": {
+              "90791 intake": "purple",
+              "90834 45 min": "blue",
+              "90837 60 min": "green",
+              "90847 couples/family": "pink",
+              "90853 group": "yellow",
+              "96130 testing": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "telehealth",
+            "label": "Telehealth",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "fee",
             "label": "Fee",
             "parityType": "currency",
@@ -585,7 +644,7 @@
           {
             "key": "s01",
             "values": {
-              "session_title": "Individual - Calloway",
+              "session_title": "Weekly session, CBT for worry",
               "client": "c01",
               "clinician": "tm-rhea",
               "when_at": "@today 09:00",
@@ -593,13 +652,15 @@
               "fee": 140,
               "status": "Scheduled",
               "note": "Not started",
-              "admin": "@installer"
+              "admin": "@installer",
+              "code": "90834 45 min",
+              "telehealth": false
             }
           },
           {
             "key": "s02",
             "values": {
-              "session_title": "Couples - Ibarra",
+              "session_title": "Couples, repair after conflict",
               "client": "c02",
               "clinician": "tm-emeka",
               "when_at": "@today 11:00",
@@ -607,13 +668,15 @@
               "fee": 170,
               "status": "Scheduled",
               "note": "Not started",
-              "admin": "@installer"
+              "admin": "@installer",
+              "code": "90847 couples/family",
+              "telehealth": false
             }
           },
           {
             "key": "s03",
             "values": {
-              "session_title": "Intake - Lindqvist-Ode",
+              "session_title": "Intake and history",
               "client": "c04",
               "clinician": "tm-emeka",
               "when_at": "@today 14:00",
@@ -621,52 +684,59 @@
               "fee": 190,
               "status": "Scheduled",
               "note": "Not started",
-              "admin": "@installer"
+              "admin": "@installer",
+              "code": "90791 intake",
+              "telehealth": true
             }
           },
           {
             "key": "s04",
             "values": {
-              "session_title": "Individual - Venkataraman",
+              "session_title": "Weekly session, sleep and mood",
               "client": "c03",
               "clinician": "tm-rhea",
               "when_at": "@mon+2d 10:00",
               "kind": "Individual",
               "fee": 90,
               "status": "Scheduled",
-              "note": "Not started"
+              "note": "Not started",
+              "code": "90837 60 min",
+              "telehealth": true
             }
           },
           {
             "key": "s05",
             "values": {
-              "session_title": "Assessment - Tavita",
+              "session_title": "Testing, attention battery part 2",
               "client": "c08",
               "clinician": "tm-saskia",
               "when_at": "@mon+4d 13:00",
               "kind": "Assessment",
               "fee": 300,
               "status": "Scheduled",
-              "note": "Not started"
+              "note": "Not started",
+              "code": "96130 testing"
             }
           },
           {
             "key": "s06",
             "values": {
-              "session_title": "Individual - Brightwater",
+              "session_title": "Grief work, week 5",
               "client": "c05",
               "clinician": "tm-saskia",
               "when_at": "@today+4d 16:00",
               "kind": "Individual",
               "fee": 160,
               "status": "Scheduled",
-              "note": "Not started"
+              "note": "Not started",
+              "code": "90834 45 min",
+              "telehealth": true
             }
           },
           {
             "key": "s07",
             "values": {
-              "session_title": "Individual - Calloway (last)",
+              "session_title": "Weekly session, exposure plan",
               "client": "c01",
               "clinician": "tm-rhea",
               "when_at": "@today-7d 09:00",
@@ -674,13 +744,14 @@
               "fee": 140,
               "status": "Completed",
               "note": "Drafted",
-              "completed_on": "@today-7d"
+              "completed_on": "@today-7d",
+              "code": "90834 45 min"
             }
           },
           {
             "key": "s08",
             "values": {
-              "session_title": "Couples - Ibarra (last)",
+              "session_title": "Couples, communication goals",
               "client": "c02",
               "clinician": "tm-emeka",
               "when_at": "@today-7d 11:00",
@@ -688,13 +759,14 @@
               "fee": 170,
               "status": "Completed",
               "note": "Signed",
-              "completed_on": "@today-7d"
+              "completed_on": "@today-7d",
+              "code": "90847 couples/family"
             }
           },
           {
             "key": "s09",
             "values": {
-              "session_title": "Individual - Venkataraman (last)",
+              "session_title": "Weekly session, values check-in",
               "client": "c03",
               "clinician": "tm-rhea",
               "when_at": "@today-5d 10:00",
@@ -702,13 +774,15 @@
               "fee": 90,
               "status": "Completed",
               "note": "Not started",
-              "completed_on": "@today-5d"
+              "completed_on": "@today-5d",
+              "code": "90837 60 min",
+              "telehealth": true
             }
           },
           {
             "key": "s10",
             "values": {
-              "session_title": "Individual - Brightwater (last)",
+              "session_title": "Grief work, week 4",
               "client": "c05",
               "clinician": "tm-saskia",
               "when_at": "@today-6d 16:00",
@@ -716,26 +790,29 @@
               "fee": 160,
               "status": "Completed",
               "note": "Drafted",
-              "completed_on": "@today-6d"
+              "completed_on": "@today-6d",
+              "code": "90834 45 min",
+              "telehealth": true
             }
           },
           {
             "key": "s11",
             "values": {
-              "session_title": "Individual - Marchand",
+              "session_title": "Weekly session, cancelled late",
               "client": "c06",
               "clinician": "tm-rhea",
               "when_at": "@today-14d 15:00",
               "kind": "Individual",
               "fee": 140,
               "status": "Late cancel",
-              "note": "Signed"
+              "note": "Signed",
+              "code": "90834 45 min"
             }
           },
           {
             "key": "s12",
             "values": {
-              "session_title": "Individual - Solberg",
+              "session_title": "Closing session and relapse plan",
               "client": "c07",
               "clinician": "tm-emeka",
               "when_at": "@today-30d 12:00",
@@ -743,13 +820,14 @@
               "fee": 140,
               "status": "Completed",
               "note": "Signed",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "code": "90837 60 min"
             }
           },
           {
             "key": "s13",
             "values": {
-              "session_title": "Assessment - Tavita (feedback)",
+              "session_title": "Assessment feedback meeting",
               "client": "c08",
               "clinician": "tm-saskia",
               "when_at": "@today-12d 13:00",
@@ -757,20 +835,22 @@
               "fee": 300,
               "status": "Completed",
               "note": "Signed",
-              "completed_on": "@today-12d"
+              "completed_on": "@today-12d",
+              "code": "96130 testing"
             }
           },
           {
             "key": "s14",
             "values": {
-              "session_title": "Individual - Calloway (earlier)",
+              "session_title": "Weekly session, missed",
               "client": "c01",
               "clinician": "tm-rhea",
               "when_at": "@today-14d 09:00",
               "kind": "Individual",
               "fee": 140,
               "status": "No-show",
-              "note": "Signed"
+              "note": "Signed",
+              "code": "90834 45 min"
             }
           }
         ],
@@ -988,6 +1068,30 @@
             "relationMax": 1
           },
           {
+            "key": "consent_on",
+            "label": "Consent signed",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "estimate_on",
+            "label": "Good faith estimate sent",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan_review",
+            "label": "Treatment plan review",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "sessions_done",
             "label": "Sessions completed",
             "parityType": "rollup",
@@ -1008,7 +1112,14 @@
             "contextPolicy": "include",
             "via": "statements",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft"
+                ]
+              }
+            }
           },
           {
             "key": "paid",
@@ -1024,12 +1135,20 @@
             }
           },
           {
-            "key": "balance",
-            "label": "Balance",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Billed} - {Paid}"
+            "key": "owed",
+            "label": "Waiting on payment",
+            "parityType": "rollup",
+            "via": "statements",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "book_btn",
@@ -1071,7 +1190,10 @@
               "phone": "(612) 555-0131",
               "email": "winnie.c@mailbox-demo.net",
               "payment": "Private pay",
-              "clinician": "tm-rhea"
+              "clinician": "tm-rhea",
+              "consent_on": "@today-60d",
+              "estimate_on": "@today-60d",
+              "plan_review": "@today+30d"
             }
           },
           {
@@ -1082,7 +1204,9 @@
               "phone": "(612) 555-0132",
               "email": "marcelo.i@mailbox-demo.net",
               "payment": "Insurance",
-              "clinician": "tm-emeka"
+              "clinician": "tm-emeka",
+              "consent_on": "@today-50d",
+              "plan_review": "@today+40d"
             }
           },
           {
@@ -1093,7 +1217,10 @@
               "phone": "(612) 555-0133",
               "email": "priya.v@mailbox-demo.net",
               "payment": "Sliding scale",
-              "clinician": "tm-rhea"
+              "clinician": "tm-rhea",
+              "consent_on": "@today-90d",
+              "estimate_on": "@today-90d",
+              "plan_review": "@today-4d"
             }
           },
           {
@@ -1104,7 +1231,8 @@
               "phone": "(612) 555-0134",
               "email": "jasper.lo@mailbox-demo.net",
               "payment": "Insurance",
-              "clinician": "tm-emeka"
+              "clinician": "tm-emeka",
+              "consent_on": "@today-2d"
             }
           },
           {
@@ -1115,7 +1243,10 @@
               "phone": "(612) 555-0135",
               "email": "odalys.b@mailbox-demo.net",
               "payment": "Private pay",
-              "clinician": "tm-saskia"
+              "clinician": "tm-saskia",
+              "consent_on": "@today-40d",
+              "estimate_on": "@today-40d",
+              "plan_review": "@today+50d"
             }
           },
           {
@@ -1126,7 +1257,9 @@
               "phone": "(612) 555-0136",
               "email": "zeke.m@mailbox-demo.net",
               "payment": "Insurance",
-              "clinician": "tm-rhea"
+              "clinician": "tm-rhea",
+              "consent_on": "@today-120d",
+              "plan_review": "@today-30d"
             }
           },
           {
@@ -1137,7 +1270,9 @@
               "phone": "(612) 555-0137",
               "email": "annika.s@mailbox-demo.net",
               "payment": "Private pay",
-              "clinician": "tm-emeka"
+              "clinician": "tm-emeka",
+              "consent_on": "@today-200d",
+              "plan_review": "@today-110d"
             }
           },
           {
@@ -1148,7 +1283,10 @@
               "phone": "(612) 555-0138",
               "email": "tavita.f@mailbox-demo.net",
               "payment": "Sliding scale",
-              "clinician": "tm-saskia"
+              "clinician": "tm-saskia",
+              "consent_on": "@today-25d",
+              "estimate_on": "@today-26d",
+              "plan_review": "@today+65d"
             }
           }
         ],
@@ -1246,6 +1384,12 @@
               ]
             }
           }
+        ],
+        "before": [
+          [
+            "consent_on",
+            "plan_review"
+          ]
         ]
       },
       {
@@ -1384,7 +1528,7 @@
           {
             "key": "m01",
             "values": {
-              "stmt_title": "Statement - Calloway, month 1",
+              "stmt_title": "Four sessions, first month",
               "client": "c01",
               "amount": 560,
               "issued_on": "@today-45d",
@@ -1396,7 +1540,7 @@
           {
             "key": "m02",
             "values": {
-              "stmt_title": "Statement - Ibarra, month 1",
+              "stmt_title": "Couples sessions, first month",
               "client": "c02",
               "amount": 340,
               "issued_on": "@today-40d",
@@ -1408,7 +1552,7 @@
           {
             "key": "m03",
             "values": {
-              "stmt_title": "Statement - Venkataraman, month 1",
+              "stmt_title": "Three sessions plus intake",
               "client": "c03",
               "amount": 180,
               "issued_on": "@today-20d",
@@ -1419,7 +1563,7 @@
           {
             "key": "m04",
             "values": {
-              "stmt_title": "Statement - Brightwater, month 1",
+              "stmt_title": "Sliding-scale sessions, month one",
               "client": "c05",
               "amount": 480,
               "issued_on": "@today-18d",
@@ -1431,7 +1575,7 @@
           {
             "key": "m05",
             "values": {
-              "stmt_title": "Statement - Tavita, assessment",
+              "stmt_title": "Attention assessment, full battery",
               "client": "c08",
               "amount": 600,
               "issued_on": "@today-12d",
@@ -1443,7 +1587,7 @@
           {
             "key": "m06",
             "values": {
-              "stmt_title": "Statement - Calloway, month 2",
+              "stmt_title": "Four sessions, second month",
               "client": "c01",
               "amount": 420,
               "issued_on": "@today-3d",
@@ -1454,7 +1598,7 @@
           {
             "key": "m07",
             "values": {
-              "stmt_title": "Statement - Marchand, month 1",
+              "stmt_title": "Two sessions and a late cancel",
               "client": "c06",
               "amount": 280,
               "issued_on": "@today-30d",
@@ -1465,7 +1609,7 @@
           {
             "key": "m08",
             "values": {
-              "stmt_title": "Statement - Solberg, final",
+              "stmt_title": "Final sessions before closing",
               "client": "c07",
               "amount": 140,
               "issued_on": "@today-35d",
@@ -2114,18 +2258,18 @@
         "Fremont Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "therapy-practice",
       "parent": null,
-      "title": "Mental Health Practice",
+      "title": "Therapy & Counseling Practice",
       "icon": {
-        "emoji": "🌿"
+        "emoji": "🛋️"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:gradient-dusk",
         "offsetY": 50
       },
       "settings": {
@@ -2189,6 +2333,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-billing"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2965,14 +3115,14 @@
       "parent": "therapy-practice",
       "title": "Answering an inquiry",
       "icon": {
-        "emoji": "💬"
+        "emoji": "📨"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A prompt, warm reply matters. Keep messages short and follow your own privacy practices."
+              "text": "Reaching out for therapy is hard. A warm, prompt reply within one business day makes the difference between someone starting care and giving up."
             }
           ],
           "background": "blue",
@@ -2984,7 +3134,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reply"
+              "text": "Within one business day"
             }
           ],
           "props": {
@@ -2995,7 +3145,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log the inquiry and set Reply by to the next business day."
+              "text": "Add the inquiry with a first name or initials, what they are looking for (individual, couples, family, teen, assessment), how they plan to pay and where they found you. Set "
+            },
+            {
+              "text": "Reply by",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3003,7 +3160,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reply with availability, fees and how intake works."
+              "text": "Reply by the method they used. If they called, call back; if they wrote, write back and offer a short phone consultation."
             }
           ]
         },
@@ -3011,7 +3168,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If the practice is full, offer the Waitlist and say how long it usually takes."
+              "text": "Press "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3019,7 +3183,143 @@
           "type": "heading",
           "text": [
             {
-              "text": "When it is not a fit"
+              "text": "The 15-minute consultation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask what is bringing them in now, in a sentence or two. Do not start therapy on the phone."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask about safety: \"Are you having thoughts of harming yourself or anyone else?\" If yes, follow your crisis protocol and give the crisis line number before anything else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check fit: the clinician's specialty, availability, location or telehealth, and fees."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Explain fees plainly. For self-pay clients, explain that they will receive a good faith estimate of expected costs before the first session."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking the intake"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake booked with a clinician who fits"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake paperwork sent: consent, privacy notice, fee policy, cancellation policy, release forms if needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Good faith estimate sent to self-pay and sliding-scale clients"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Inquiry marked "
+            },
+            {
+              "text": "Intake booked",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When you are not the right fit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say so kindly and give two or three specific referrals."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark the inquiry "
+            },
+            {
+              "text": "Not a fit",
+              "bold": true
+            },
+            {
+              "text": " and write which referrals you gave."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waitlist"
             }
           ],
           "props": {
@@ -3030,7 +3330,45 @@
           "type": "text",
           "text": [
             {
-              "text": "Share two or three referral options and mark the inquiry Not a fit."
+              "text": "If no clinician has space, offer the waitlist with an honest estimate of the wait. Check the waitlist every week; people who wait longer than a month should get a call with referrals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Teens and minors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Speak with the parent or guardian first; check who holds the right to consent in your state, and that both parents' consent is in place when required."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example reply"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Thank you for reaching out, Winnifred. I have openings on Tuesday mornings and Thursday evenings. Would you like a 15-minute call tomorrow to see whether we are a good fit?\""
             }
           ]
         }
@@ -3041,123 +3379,14 @@
       "parent": "therapy-practice",
       "title": "Intake checklist",
       "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before the first session"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Consent, privacy notice and fee agreement signed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Insurance verified, if used"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Reminder method chosen"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "First session"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Late cancellation policy explained"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Recurring slot proposed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Client status moved to Active"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        }
-      ]
-    },
-    {
-      "key": "sop-notes",
-      "parent": "therapy-practice",
-      "title": "Keeping notes on time",
-      "icon": {
-        "emoji": "🗒️"
+        "emoji": "📋"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Unfinished notes pile up fast. Review every Friday."
+              "text": "The intake sets the frame for the work: consent, expectations, fees and the first treatment plan. A clean intake prevents most later billing and boundary problems."
             }
           ],
           "background": "blue",
@@ -3169,7 +3398,109 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Before the intake session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Consent to treatment signed; "
+            },
+            {
+              "text": "Consent signed",
+              "bold": true
+            },
+            {
+              "text": " date filled in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Privacy notice acknowledged"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee, cancellation and no-show policy signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Good faith estimate sent (self-pay and sliding scale); "
+            },
+            {
+              "text": "Good faith estimate sent",
+              "bold": true
+            },
+            {
+              "text": " filled in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance verified if billing insurance: mental health benefits, copay, deductible, whether prior authorization is needed, telehealth coverage"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Releases of information signed if the client wants you to speak with another provider"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Telehealth link and a backup phone number if the session is online"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The intake session (service code 90791)"
             }
           ],
           "props": {
@@ -3180,7 +3511,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Sessions and filter Note status Not started and Drafted."
+              "text": "Review confidentiality and its limits in plain words."
             }
           ]
         },
@@ -3188,7 +3519,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Each clinician finishes their own and sets Signed."
+              "text": "Gather history and current concerns."
             }
           ]
         },
@@ -3196,7 +3527,23 @@
           "type": "numbered",
           "text": [
             {
-              "text": "The administrator sends a gentle reminder for anything older than a week."
+              "text": "Screen for safety and document the plan if risk is present."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree initial goals and how often to meet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the next four sessions at a steady weekly time."
             }
           ]
         },
@@ -3204,7 +3551,146 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reminder"
+              "text": "Within one week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake note signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Treatment plan written and signed by the client where required"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Treatment plan review",
+              "bold": true
+            },
+            {
+              "text": " date set (every 90 days is common, sooner if a payer requires it)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client status moved from Intake to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Couples and family intakes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every adult signs consent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Agree the policy on secrets between partners before the first individual contact."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Decide who the statement goes to and who pays."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Jasper's intake is today at 2 pm by telehealth. His consent came back two days ago; his insurance needs no prior authorization. After the session, Emeka signs the note, writes the plan and sets the first review for 90 days."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-notes",
+      "parent": "therapy-practice",
+      "title": "Keeping notes on time",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Late notes are the most common reason a practice cannot bill, and they become an ethical and legal risk if records are requested. A simple daily habit fixes it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rule"
             }
           ],
           "props": {
@@ -3215,7 +3701,267 @@
           "type": "text",
           "text": [
             {
-              "text": "Only the status lives here. The note itself stays in your clinical record system."
+              "text": "Every session's note is drafted the same day and signed within 48 hours. Insurers may ask to see notes; a claim without a signed note should not go out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How Note status works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Not started"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Session completed, no note yet"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Drafted"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Written but not reviewed and signed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Signed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final; the session can be billed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily (10 minutes at the end of each clinical day)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Filter Sessions to completed today with Note status not Signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Draft each note before leaving. Set it to "
+            },
+            {
+              "text": "Drafted",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review and sign yesterday's drafts. Set them to "
+            },
+            {
+              "text": "Signed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly (Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Front office lists every completed session from the week whose note is not signed and sends each clinician their list."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notes older than seven days are discussed in supervision or the practice meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What a good progress note covers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Date, service code, length and whether it was telehealth."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What was worked on, linked to a treatment plan goal."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The client's response and any change in risk."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The plan for the next session."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep it brief and factual. Write it as if the client may read it one day, because they may."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supervisees and pre-licensed clinicians"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Their notes need the supervisor's co-signature. Add the supervisor review to the weekly list and do not bill until both signatures are in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a session is a no-show or late cancel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write a short administrative note anyway: the time, the attempts to contact the client and the outcome. It protects the client and the practice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Rhea sees six clients on Mondays. At 5:30 she drafts all six notes, then signs Friday's two drafts before leaving. Her Note status column shows nothing older than one day."
             }
           ]
         }
@@ -3224,51 +3970,28 @@
     {
       "key": "sop-billing",
       "parent": "therapy-practice",
-      "title": "Statements and collections",
+      "title": "Estimates, statements and collections",
       "icon": {
-        "emoji": "💳"
+        "emoji": "🧾"
       },
       "blocks": [
         {
-          "type": "heading",
+          "type": "callout",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Talking about money is part of good care. Clear estimates up front and steady monthly statements mean fewer awkward conversations later."
             }
           ],
+          "background": "blue",
           "props": {
-            "level": 2
+            "icon": "Lightbulb"
           }
         },
         {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Create one statement per client from the completed sessions."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send it the way the client prefers and mark it Sent."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark it Paid as payments arrive."
-            }
-          ]
-        },
-        {
           "type": "heading",
           "text": [
             {
-              "text": "Overdue"
+              "text": "Good faith estimates for self-pay clients"
             }
           ],
           "props": {
@@ -3279,7 +4002,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "After the due date, mark it Overdue and send a short, kind reminder."
+              "text": "Before the first session, send a written estimate of expected costs: fee per session, expected number of sessions for the first months, and any assessment fees."
             }
           ]
         },
@@ -3287,7 +4010,642 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "After two reminders, the clinician decides on next steps."
+              "text": "Record the date in "
+            },
+            {
+              "text": "Good faith estimate sent",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the plan changes a lot (for example, adding couples sessions), send an updated estimate."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the first business day of the month, create a statement for each client with sessions last month. Include each date, service code and fee, and late cancel fees under your policy."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Insurance clients who pay out of network receive a superbill they can submit themselves."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark sent",
+              "bold": true
+            },
+            {
+              "text": " and set the due date (15 or 30 days)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Due date passes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status Overdue; a short friendly reminder"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "15 days overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clinician mentions it gently at the next session"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30 days overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a payment plan in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "60 days overdue"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Practice owner decides: pause new sessions or write off"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Waiting on payment",
+              "bold": true
+            },
+            {
+              "text": " on each client totals statements that are sent or overdue."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sliding scale"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review sliding-scale fees every six months. Write the agreed fee and review date on the client's page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late cancels and no-shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Charge only what your signed policy says and apply it the same way for everyone. Waive it for emergencies; write down why."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist each month end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every completed session is on a statement"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No statement left in Draft longer than a week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Overdue statements each have a note of the last contact"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sliding-scale reviews due this month are booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Priyanka's statement for three sessions plus the intake was due five days ago. The front office sends a reminder today; her clinician will mention it at Wednesday's session if it is still open."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "therapy-practice",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The administrative side of a therapy practice: people reaching out, intakes, the week's sessions, notes that still need signing, and statements. Clinical notes themselves stay in your secure records system; nothing here should hold what was said in session."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inquiries",
+              "bold": true
+            },
+            {
+              "text": ": everyone who called or wrote, what they are looking for, how they plan to pay and when you promised to reply."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": contact details, clinician, payment type, consent date, good faith estimate date for self-pay clients, the next treatment plan review, sessions completed and money owed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sessions",
+              "bold": true
+            },
+            {
+              "text": ": each appointment with its service code, fee, telehealth flag, status and "
+            },
+            {
+              "text": "Note status",
+              "bold": true
+            },
+            {
+              "text": " (not started, drafted, signed)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Statements",
+              "bold": true
+            },
+            {
+              "text": ": monthly statements or superbills with issue date, due date, sent and paid dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A word on privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep titles and notes in this workspace administrative. Use first names and initials in inquiries, never a diagnosis in a title, and keep anything clinical in your records system. Limit who can see Clients and Statements."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your clinicians to the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter active clients with consent date and next treatment plan review."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add next week's sessions with service codes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open statements so "
+            },
+            {
+              "text": "Waiting on payment",
+              "bold": true
+            },
+            {
+              "text": " is right from day one."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Daily"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Inquiries due today; Today's sessions; notes from yesterday signed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Treatment plan reviews due in the next 14 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Statements: drafts sent, overdue followed up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Month end"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Caseload by clinician, no-show and late cancel counts"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inquiries: "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Intake booked",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sessions: "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark no-show",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients: "
+            },
+            {
+              "text": "Book session",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Create statement",
+              "bold": true
+            },
+            {
+              "text": ". Statements: "
+            },
+            {
+              "text": "Mark sent",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Priyanka's treatment plan review was due four days ago. Her next session is booked for Wednesday, so her clinician does the review then and sets the next date three months out."
             }
           ]
         }

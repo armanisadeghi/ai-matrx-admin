@@ -19,7 +19,7 @@ import { Input } from "@ai-matrx/design-system/controls";
 import { IconResolver,
   getCuratedIconIdsForPicker,
 } from "@ai-matrx/icons";
-import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
+import { TapTargetButtonTransparent } from "@ai-matrx/design-system/tap-target";
 import { TapTargetLabeled } from "@ai-matrx/design-system/tap-target";
 import {
   CURATED_PICKER_AI_ACTIONS,
@@ -247,9 +247,8 @@ function IconPickerTapestry({
     <div className="flex flex-wrap gap-y-1">
       {ids.map((id) => (
         <TapTargetLabeled key={id} label={id}>
-          <TapTargetButton
+          <TapTargetButtonTransparent
             type="button"
-            variant="transparent"
             ariaLabel={id}
             tooltip={false}
             onClick={() => onPick(id)}
@@ -280,6 +279,7 @@ function AiTapTapestry({
         return (
           <TapTargetLabeled key={`${label}-${selectValue}`} label={label}>
             <Component
+              variant="transparent"
               ariaLabel={label}
               tooltip={false}
               colored={colored}

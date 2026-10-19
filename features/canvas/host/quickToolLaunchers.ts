@@ -30,7 +30,7 @@ export const QUICK_DATA_TITLE = "Quick Data";
 export const QUICK_SCRIBE_TITLE = "Quick Scribe";
 
 export function freshQuickChatData(conversationId: string | null): QuickChatTabData {
-  return { conversationId, agentId: null, history: false, newChat: 0 };
+  return { conversationId, agentId: null, mandateKey: null, history: false, newChat: 0 };
 }
 
 /**

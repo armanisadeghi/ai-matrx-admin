@@ -15,6 +15,7 @@ export default function QuickChatCanvasView({ item, data, canvas }: CanvasKindPr
       instanceKey={item.key}
       initialConversationId={tab.conversationId ?? undefined}
       resumeAgentId={tab.agentId ?? undefined}
+      resumeMandateKey={tab.mandateKey}
       showHistory={tab.history}
       newChatSignal={tab.newChat}
       onConversationChange={(ref) => patchQuickChatData(canvas, item.id, ref)}

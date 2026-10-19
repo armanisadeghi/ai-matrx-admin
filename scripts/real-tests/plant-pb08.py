@@ -18,6 +18,20 @@ import importlib.util
 from datetime import datetime, timezone
 from pathlib import Path
 
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fixture_check  # noqa: E402
+
+
+def write_record(playbook: str, key: str) -> None:
+    rec = fixture_check.write_plant_record(playbook, key)
+    note = "" if rec["differs_from_manifest"] else " (the planted value does not differ from the manifest: record inert)"
+    print(f"grader record written for {playbook}, expires {rec['expires_at']}{note}")
+
+
+def drop_record(playbook: str) -> None:
+    print(f"grader record for {playbook}: {'deleted' if fixture_check.delete_plant_record(playbook) else 'none present'}")
+
 _spec = importlib.util.spec_from_file_location("pb08_send", Path(__file__).resolve().parent / "pb08-send.py")
 if _spec is None or _spec.loader is None:
     raise SystemExit("cannot load pb08-send.py beside this script")
@@ -34,6 +48,10 @@ def main() -> None:
     names = [n for n in pb08.TOOL_IDS if n != "task_stop"] if args.plant else list(pb08.TOOL_IDS)
     print(f"{'planted' if args.plant else 'restored'} at {datetime.now(timezone.utc).isoformat()} (UTC):")
     pb08.set_lead_tools(pb08.Session(), names)
+    if args.plant:
+        write_record("PB-08", "ops_lead")
+    else:
+        drop_record("PB-08")
 
 
 if __name__ == "__main__":

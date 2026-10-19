@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 3,
+  "version": 4,
   "title": "Chiropractic Office",
-  "description": "Inquiries, patients, visits and prepaid packages for a chiropractic office.",
-  "forWho": "Chiropractors and wellness clinics",
+  "description": "For chiropractors: new-patient calls, care plans, prepaid visits, re-exams and the desk.",
+  "forWho": "Chiropractors and chiropractic front desks",
   "icon": {
     "emoji": "🩻"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:solid-beige",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
+    "chiropractor",
     "chiropractic",
-    "visits",
-    "packages",
-    "patients"
+    "care plans",
+    "adjustments",
+    "prepaid visits",
+    "wellness"
   ],
   "spec": {
     "specVersion": 1,
@@ -69,6 +71,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "source",
@@ -202,92 +211,100 @@
           {
             "key": "i01",
             "values": {
-              "inq_title": "Low back inquiry - Grayson Pell",
+              "inq_title": "Grayson Pell",
               "source": "Google search",
               "reason": "Low back",
               "received_on": "@today-1d",
               "status": "New",
               "call_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "phone": "(512) 555-0188"
             }
           },
           {
             "key": "i02",
             "values": {
-              "inq_title": "Headache inquiry - Sabine Okafor",
+              "inq_title": "Sabine Okafor",
               "source": "Patient referral",
               "reason": "Headaches",
               "received_on": "@today",
               "status": "New",
               "call_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "phone": "(512) 555-0193"
             }
           },
           {
             "key": "i03",
             "values": {
-              "inq_title": "Sports injury inquiry - Marlon Tseng",
+              "inq_title": "Marlon Tseng",
               "source": "Workplace event",
               "reason": "Sports injury",
               "received_on": "@today-3d",
               "status": "Called",
-              "call_by": "@mon+3d"
+              "call_by": "@mon+3d",
+              "phone": "(512) 555-0102"
             }
           },
           {
             "key": "i04",
             "values": {
-              "inq_title": "Neck inquiry - Delphine Arkwright",
+              "inq_title": "Delphine Arkwright",
               "source": "Social media",
               "reason": "Neck",
               "received_on": "@today-6d",
               "status": "Called",
               "call_by": "@today-2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "phone": "(512) 555-0117"
             }
           },
           {
             "key": "i05",
             "values": {
-              "inq_title": "Posture inquiry - Ignatius Bello",
+              "inq_title": "Ignatius Bello",
               "source": "Google search",
               "reason": "Posture",
               "received_on": "@today-8d",
               "status": "Booked",
-              "call_by": "@today-6d"
+              "call_by": "@today-6d",
+              "phone": "(512) 555-0124"
             }
           },
           {
             "key": "i06",
             "values": {
-              "inq_title": "Wellness inquiry - Rosalie Vanterpool",
+              "inq_title": "Rosalie Vanterpool",
               "source": "Patient referral",
               "reason": "Wellness",
               "received_on": "@today-10d",
               "status": "Booked",
-              "call_by": "@today-8d"
+              "call_by": "@today-8d",
+              "phone": "(512) 555-0139"
             }
           },
           {
             "key": "i07",
             "values": {
-              "inq_title": "Low back inquiry - Cassius Moreau",
+              "inq_title": "Cassius Moreau",
               "source": "Physician referral",
               "reason": "Low back",
               "received_on": "@today-15d",
               "status": "Lost",
-              "call_by": "@today-13d"
+              "call_by": "@today-13d",
+              "phone": "(512) 555-0146"
             }
           },
           {
             "key": "i08",
             "values": {
-              "inq_title": "Neck inquiry - Annelise Dube",
+              "inq_title": "Annelise Dube",
               "source": "Google search",
               "reason": "Neck",
               "received_on": "@today-2d",
               "status": "New",
-              "call_by": "@mon+4d"
+              "call_by": "@mon+4d",
+              "phone": "(512) 555-0158"
             }
           }
         ],
@@ -481,6 +498,44 @@
             }
           },
           {
+            "key": "regions",
+            "label": "Regions adjusted",
+            "parityType": "multi_select",
+            "choices": [
+              "Cervical",
+              "Thoracic",
+              "Lumbar",
+              "Pelvis",
+              "Extremity"
+            ],
+            "choiceColors": {
+              "Cervical": "blue",
+              "Thoracic": "purple",
+              "Lumbar": "orange",
+              "Pelvis": "pink",
+              "Extremity": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid_by",
+            "label": "Paid by",
+            "parityType": "select",
+            "choices": [
+              "Care plan",
+              "Insurance",
+              "Cash"
+            ],
+            "choiceColors": {
+              "Care plan": "green",
+              "Insurance": "blue",
+              "Cash": "yellow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -544,176 +599,224 @@
           {
             "key": "v01",
             "values": {
-              "visit_title": "Adjustment - Castellanos",
+              "visit_title": "Lumbar and pelvis, week 3",
               "patient": "p01",
               "package": "k01",
               "provider": "tm-gideon",
               "when_at": "@today 08:30",
               "kind": "Adjustment",
               "status": "Checked in",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "regions": [
+                "Lumbar",
+                "Pelvis"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v02",
             "values": {
-              "visit_title": "Adjustment - Osei",
+              "visit_title": "Neck and upper back, week 2",
               "patient": "p02",
               "package": "k02",
               "provider": "tm-noor",
               "when_at": "@today 09:15",
               "kind": "Adjustment",
               "status": "Scheduled",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "regions": [
+                "Cervical",
+                "Thoracic"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v03",
             "values": {
-              "visit_title": "Initial exam - Rahimi",
+              "visit_title": "New patient exam and X-ray review",
               "patient": "p04",
               "provider": "tm-noor",
               "when_at": "@today 16:00",
               "kind": "Initial exam",
               "status": "Scheduled",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "paid_by": "Insurance"
             }
           },
           {
             "key": "v04",
             "values": {
-              "visit_title": "Massage - Lundqvist",
+              "visit_title": "60-minute deep tissue",
               "patient": "p05",
               "package": "k03",
               "provider": "tm-lucinda",
               "when_at": "@mon+3d 12:00",
               "kind": "Massage",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v05",
             "values": {
-              "visit_title": "Adjustment - Nwosu",
+              "visit_title": "Early adjustment before shift",
               "patient": "p07",
               "package": "k04",
               "provider": "tm-gideon",
               "when_at": "@mon+4d 07:45",
               "kind": "Adjustment",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "regions": [
+                "Thoracic",
+                "Lumbar"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v06",
             "values": {
-              "visit_title": "Re-exam - Castellanos",
+              "visit_title": "12-visit re-exam",
               "patient": "p01",
               "package": "k01",
               "provider": "tm-gideon",
               "when_at": "@today+6d 08:30",
               "kind": "Re-exam",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v07",
             "values": {
-              "visit_title": "Adjustment - Castellanos (last)",
+              "visit_title": "Pelvic blocking and SI work",
               "patient": "p01",
               "package": "k01",
               "provider": "tm-gideon",
               "when_at": "@today-3d 08:30",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-3d"
+              "completed_on": "@today-3d",
+              "regions": [
+                "Pelvis",
+                "Lumbar"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v08",
             "values": {
-              "visit_title": "Adjustment - Osei (last)",
+              "visit_title": "Cervical drop table",
               "patient": "p02",
               "package": "k02",
               "provider": "tm-noor",
               "when_at": "@today-4d 09:15",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-4d"
+              "completed_on": "@today-4d",
+              "regions": [
+                "Cervical"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v09",
             "values": {
-              "visit_title": "Adjustment - Beaumont",
+              "visit_title": "Monthly wellness adjustment",
               "patient": "p03",
               "provider": "tm-gideon",
               "when_at": "@today-12d 17:00",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-12d"
+              "completed_on": "@today-12d",
+              "regions": [
+                "Cervical",
+                "Thoracic",
+                "Lumbar"
+              ],
+              "paid_by": "Cash"
             }
           },
           {
             "key": "v10",
             "values": {
-              "visit_title": "Massage - Lundqvist (last)",
+              "visit_title": "Trigger point massage, shoulders",
               "patient": "p05",
               "package": "k03",
               "provider": "tm-lucinda",
               "when_at": "@today-9d 12:00",
               "kind": "Massage",
               "status": "Completed",
-              "completed_on": "@today-9d"
+              "completed_on": "@today-9d",
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v11",
             "values": {
-              "visit_title": "Adjustment - Nwosu (last)",
+              "visit_title": "Missed early slot",
               "patient": "p07",
               "package": "k04",
               "provider": "tm-gideon",
               "when_at": "@today-6d 07:45",
               "kind": "Adjustment",
-              "status": "No-show"
+              "status": "No-show",
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v12",
             "values": {
-              "visit_title": "Adjustment - Aoki",
+              "visit_title": "Wellness check, hip and knee",
               "patient": "p08",
               "provider": "tm-noor",
               "when_at": "@today-20d 10:00",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "regions": [
+                "Pelvis",
+                "Extremity"
+              ],
+              "paid_by": "Cash"
             }
           },
           {
             "key": "v13",
             "values": {
-              "visit_title": "Adjustment - Osei (earlier)",
+              "visit_title": "First week, acute neck",
               "patient": "p02",
               "package": "k02",
               "provider": "tm-noor",
               "when_at": "@today-11d 09:15",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-11d"
+              "completed_on": "@today-11d",
+              "regions": [
+                "Cervical"
+              ],
+              "paid_by": "Care plan"
             }
           },
           {
             "key": "v14",
             "values": {
-              "visit_title": "Adjustment - Castellanos (earlier)",
+              "visit_title": "First week, acute low back",
               "patient": "p01",
               "package": "k01",
               "provider": "tm-gideon",
               "when_at": "@today-10d 08:30",
               "kind": "Adjustment",
               "status": "Completed",
-              "completed_on": "@today-10d"
+              "completed_on": "@today-10d",
+              "regions": [
+                "Lumbar"
+              ],
+              "paid_by": "Care plan"
             }
           }
         ],
@@ -866,6 +969,23 @@
             "default": "In care"
           },
           {
+            "key": "phase",
+            "label": "Care phase",
+            "parityType": "select",
+            "choices": [
+              "Relief",
+              "Corrective",
+              "Wellness"
+            ],
+            "choiceColors": {
+              "Relief": "red",
+              "Corrective": "orange",
+              "Wellness": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "phone",
             "label": "Phone",
             "parityType": "phone",
@@ -889,6 +1009,14 @@
             "relationMax": 1
           },
           {
+            "key": "reexam_on",
+            "label": "Re-exam due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "visit_count",
             "label": "Visits completed",
             "parityType": "rollup",
@@ -902,14 +1030,33 @@
             }
           },
           {
+            "key": "missed",
+            "label": "Missed visits",
+            "parityType": "rollup",
+            "via": "visits",
+            "pick": "visit_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "No-show",
+                "Cancelled"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "pkg_count",
-            "label": "Packages",
+            "label": "Active care plans",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "packages",
             "pick": "pkg_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": "Active"
+            }
           },
           {
             "key": "visit_btn",
@@ -950,7 +1097,9 @@
               "status": "In care",
               "phone": "(512) 555-0131",
               "email": "ivo.c@mailbox-demo.net",
-              "provider": "tm-gideon"
+              "provider": "tm-gideon",
+              "phase": "Relief",
+              "reexam_on": "@today+6d"
             }
           },
           {
@@ -960,7 +1109,9 @@
               "status": "In care",
               "phone": "(512) 555-0132",
               "email": "marguerite.o@mailbox-demo.net",
-              "provider": "tm-noor"
+              "provider": "tm-noor",
+              "phase": "Corrective",
+              "reexam_on": "@today+12d"
             }
           },
           {
@@ -970,7 +1121,9 @@
               "status": "Maintenance",
               "phone": "(512) 555-0133",
               "email": "harlan.b@mailbox-demo.net",
-              "provider": "tm-gideon"
+              "provider": "tm-gideon",
+              "phase": "Wellness",
+              "reexam_on": "@today+40d"
             }
           },
           {
@@ -980,7 +1133,8 @@
               "status": "New",
               "phone": "(512) 555-0134",
               "email": "zainab.r@mailbox-demo.net",
-              "provider": "tm-noor"
+              "provider": "tm-noor",
+              "phase": "Relief"
             }
           },
           {
@@ -990,7 +1144,9 @@
               "status": "In care",
               "phone": "(512) 555-0135",
               "email": "pieter.l@mailbox-demo.net",
-              "provider": "tm-gideon"
+              "provider": "tm-gideon",
+              "phase": "Corrective",
+              "reexam_on": "@today+18d"
             }
           },
           {
@@ -1000,7 +1156,8 @@
               "status": "Discharged",
               "phone": "(512) 555-0136",
               "email": "odessa.w@mailbox-demo.net",
-              "provider": "tm-noor"
+              "provider": "tm-noor",
+              "phase": "Wellness"
             }
           },
           {
@@ -1010,7 +1167,9 @@
               "status": "In care",
               "phone": "(512) 555-0137",
               "email": "raff.n@mailbox-demo.net",
-              "provider": "tm-gideon"
+              "provider": "tm-gideon",
+              "phase": "Corrective",
+              "reexam_on": "@today-3d"
             }
           },
           {
@@ -1020,7 +1179,9 @@
               "status": "Maintenance",
               "phone": "(512) 555-0138",
               "email": "clem.a@mailbox-demo.net",
-              "provider": "tm-noor"
+              "provider": "tm-noor",
+              "phase": "Wellness",
+              "reexam_on": "@today+25d"
             }
           }
         ],
@@ -1122,9 +1283,9 @@
       },
       {
         "token": "package",
-        "name": "Packages",
-        "labelSingular": "Package",
-        "labelPlural": "Packages",
+        "name": "Care plans",
+        "labelSingular": "Care plan",
+        "labelPlural": "Care plans",
         "type": "entity",
         "display": "board",
         "weight": "light",
@@ -1136,7 +1297,7 @@
         "fields": [
           {
             "key": "pkg_title",
-            "label": "Package",
+            "label": "Care plan",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1209,6 +1370,33 @@
             ]
           },
           {
+            "key": "paid",
+            "label": "Paid so far",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "owed",
+            "label": "Balance owed",
+            "parityType": "formula",
+            "formula": "{Price} - {Paid so far}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "expires_on",
             "label": "Expires",
             "parityType": "datetime",
@@ -1271,78 +1459,85 @@
           {
             "key": "k01",
             "values": {
-              "pkg_title": "12-visit plan - Castellanos",
+              "pkg_title": "Corrective plan, 12 visits (low back)",
               "patient": "p01",
               "visits_total": 12,
               "price": 780,
               "expires_on": "@today+75d",
-              "status": "Active"
+              "status": "Active",
+              "paid": 780
             }
           },
           {
             "key": "k02",
             "values": {
-              "pkg_title": "12-visit plan - Osei",
+              "pkg_title": "Corrective plan, 12 visits (neck)",
               "patient": "p02",
               "visits_total": 12,
               "price": 780,
               "expires_on": "@mon+5d",
-              "status": "Active"
+              "status": "Active",
+              "paid": 390
             }
           },
           {
             "key": "k03",
             "values": {
-              "pkg_title": "Massage 5-pack - Lundqvist",
+              "pkg_title": "Massage five-pack",
               "patient": "p05",
               "visits_total": 5,
               "price": 375,
               "expires_on": "@today+20d",
-              "status": "Active"
+              "status": "Active",
+              "paid": 375
             }
           },
           {
             "key": "k04",
             "values": {
-              "pkg_title": "8-visit plan - Nwosu",
+              "pkg_title": "Relief plan, 8 visits",
               "patient": "p07",
               "visits_total": 8,
               "price": 560,
               "expires_on": "@today+9d",
-              "status": "Active"
+              "status": "Active",
+              "paid": 260
             }
           },
           {
             "key": "k05",
             "values": {
-              "pkg_title": "12-visit plan - Whitfield",
+              "pkg_title": "Corrective plan, 12 visits (2nd round)",
               "patient": "p06",
               "visits_total": 12,
               "price": 780,
               "expires_on": "@today-40d",
-              "status": "Used up"
+              "status": "Used up",
+              "paid": 780
             }
           },
           {
             "key": "k06",
             "values": {
-              "pkg_title": "6-visit plan - Aoki",
+              "pkg_title": "Six-visit wellness card",
               "patient": "p08",
               "visits_total": 6,
               "price": 420,
               "expires_on": "@today-15d",
-              "status": "Expired"
+              "status": "Expired",
+              "paid": 330
             }
           },
           {
             "key": "k07",
             "values": {
-              "pkg_title": "10-visit plan - Beaumont",
+              "pkg_title": "Ten-visit maintenance card",
               "patient": "p03",
               "visits_total": 10,
               "price": 650,
               "expires_on": "@today-4d",
-              "status": "Active"
+              "status": "Active",
+              "paid": 480
             }
           }
         ],
@@ -1984,7 +2179,7 @@
         "Pecan Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1995,7 +2190,7 @@
         "emoji": "🩻"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:solid-beige",
         "offsetY": 50
       },
       "settings": {
@@ -2059,6 +2254,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-daily"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2840,7 +3041,7 @@
     {
       "key": "sop-inquiry",
       "parent": "chiropractic-office",
-      "title": "Returning a new inquiry",
+      "title": "Returning a new-patient call",
       "icon": {
         "emoji": "📞"
       },
@@ -2849,7 +3050,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A call back inside one business day is the biggest factor in whether someone books."
+              "text": "People call a chiropractor when something hurts. The office that calls back first, books soonest and sounds like it can help usually gets the patient."
             }
           ],
           "background": "blue",
@@ -2861,7 +3062,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The call"
+              "text": "Same day, every time"
             }
           ],
           "props": {
@@ -2872,7 +3073,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Say your name and the practice name, then thank them for reaching out."
+              "text": "Add the caller under "
+            },
+            {
+              "text": "Inquiries",
+              "bold": true
+            },
+            {
+              "text": " with their name, phone, how they found you and the reason (low back, neck, headaches, sports injury, posture or wellness). Set "
+            },
+            {
+              "text": "Call by",
+              "bold": true
+            },
+            {
+              "text": " to today."
             }
           ]
         },
@@ -2880,7 +3095,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask what is going on and how long; write it on the inquiry."
+              "text": "Call back within an hour during office hours. If you get voicemail, leave your name, the office and two times available today or tomorrow."
             }
           ]
         },
@@ -2888,15 +3103,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer two first-visit times and book one."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the intake form by email or text."
+              "text": "Text the same two times right after."
             }
           ]
         },
@@ -2904,7 +3111,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the call"
+              "text": "On the call"
             }
           ],
           "props": {
@@ -2915,7 +3122,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Mark the inquiry Booked and add the person under Patients."
+              "text": "Ask what happened and when. Recent injuries from a fall or car accident need a different intake (auto claims, possible imaging)."
             }
           ]
         },
@@ -2923,25 +3130,31 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "If no answer, leave a message and try again the next day."
+              "text": "Ask about red flags the doctor wants to hear about before booking: numbness in both legs, loss of bladder or bowel control, severe unexplained pain, recent major trauma. Those callers are referred to urgent care or the emergency room; write that down on the inquiry."
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "sop-package",
-      "parent": "chiropractic-office",
-      "title": "Selling and tracking packages",
-      "icon": {
-        "emoji": "🎟️"
-      },
-      "blocks": [
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Explain the first visit plainly: history, exam, X-rays if needed, a report of findings, and often a first adjustment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the price of the first visit and whether you bill their insurance."
+            }
+          ]
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "At the sale"
+              "text": "Booking"
             }
           ],
           "props": {
@@ -2949,34 +3162,58 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Press Sell a package on the patient."
+              "text": "New patient exam booked within 48 hours"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Enter visits included, price and expiry date."
+              "text": "Intake forms sent by text or email"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Explain that each completed visit uses one."
+              "text": "Directions and parking sent"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Inquiry marked "
+            },
+            {
+              "text": "Booked",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Tracking"
+              "text": "If they do not book"
             }
           ],
           "props": {
@@ -2984,26 +3221,89 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Visits left updates itself as visits are marked completed."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Packages with two visits left or expiring in 30 days show on the Dashboard."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call and text"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call again; offer the first early or late slot"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Email with a short note about what a first visit includes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mark Lost and write the reason"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Expired packages"
+              "text": "Workplace screenings and events"
             }
           ],
           "props": {
@@ -3014,25 +3314,194 @@
           "type": "text",
           "text": [
             {
-              "text": "Mark them Expired and let the provider know before the next visit."
+              "text": "Leads from a screening get a call within two days while they still remember you. Mention the event by name."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Phrases that work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"We can see you tomorrow at 7:30 before work, or 5:15 after. The first visit is about an hour, and Dr. Gideon will tell you at the end whether he thinks he can help.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at inquiries by "
+            },
+            {
+              "text": "How they found us",
+              "bold": true
+            },
+            {
+              "text": " once a month. If social posts bring wellness callers and patient referrals bring injury cases, plan your outreach around that."
             }
           ]
         }
       ]
     },
     {
-      "key": "sop-new-patient",
+      "key": "sop-package",
       "parent": "chiropractic-office",
-      "title": "New patient first visit",
+      "title": "Care plans and prepaid visits",
       "icon": {
-        "emoji": "📝"
+        "emoji": "💳"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Care plans give patients a clear path and the office steady income. They only work when the visits are tracked honestly and expiring plans are used, not forgotten."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Before"
+              "text": "Recommending a plan"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At the report of findings, the doctor recommends a phase: "
+            },
+            {
+              "text": "Relief",
+              "bold": true
+            },
+            {
+              "text": " (frequent visits for two to four weeks), "
+            },
+            {
+              "text": "Corrective",
+              "bold": true
+            },
+            {
+              "text": " (fewer visits over six to twelve weeks) or "
+            },
+            {
+              "text": "Wellness",
+              "bold": true
+            },
+            {
+              "text": " (monthly)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer the plan that matches the recommendation, with the per-visit price beside it so the saving is visible."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write the plan under "
+            },
+            {
+              "text": "Care plans",
+              "bold": true
+            },
+            {
+              "text": ": visits included, price, what was paid today and the expiry date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payment options"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Paid in full on the first day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Split in two or three payments; record each in "
+            },
+            {
+              "text": "Paid so far",
+              "bold": true
+            },
+            {
+              "text": ". "
+            },
+            {
+              "text": "Balance owed",
+              "bold": true
+            },
+            {
+              "text": " shows what is left."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never extend credit without a written agreement signed by the patient."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping the counts right"
             }
           ],
           "props": {
@@ -3043,7 +3512,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Intake form back and reviewed"
+              "text": "Every visit is linked to the patient's active care plan before it is completed"
             }
           ],
           "props": {
@@ -3054,7 +3523,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Insurance or self-pay confirmed"
+              "text": "Massage visits use the massage pack, not the adjustment plan"
             }
           ],
           "props": {
@@ -3065,7 +3534,29 @@
           "type": "todo",
           "text": [
             {
-              "text": "Initial exam booked with enough time"
+              "text": "A plan with Visits left at 0 is marked "
+            },
+            {
+              "text": "Used up",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A plan past its expiry with visits left is marked "
+            },
+            {
+              "text": "Expired",
+              "bold": true
+            },
+            {
+              "text": " after the patient has been offered a chance to use them"
             }
           ],
           "props": {
@@ -3076,7 +3567,178 @@
           "type": "heading",
           "text": [
             {
-              "text": "At the visit"
+              "text": "Expiring plans (every Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at care plans with an expiry in the next 30 days and visits left."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call each patient and book the remaining visits."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they cannot use them in time, the office manager decides on an extension. Write the reason on the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Refunds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a patient stops care, refund unused visits at the plan's per-visit price, less any discount they received for buying the plan. Put the policy in writing at the point of sale."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Harlan's ten-visit maintenance card shows an expiry date four days ago with visits left. The front desk calls, he books two visits next week, and the manager notes a two-week extension on the plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to watch monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why it matters"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plans sold per new patient"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shows whether the report of findings is landing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits left on expired plans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Money taken but service not given"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance owed across all plans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Payments that need a friendly reminder"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-new-patient",
+      "parent": "chiropractic-office",
+      "title": "The first two visits",
+      "icon": {
+        "emoji": "🩺"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The first visit decides whether someone becomes a patient. The second visit, the report of findings, decides whether they follow a plan."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the first visit"
             }
           ],
           "props": {
@@ -3087,7 +3749,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Welcome and tour of the office"
+              "text": "Intake forms returned: history, current medications, previous injuries and surgeries"
             }
           ],
           "props": {
@@ -3098,7 +3760,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Consent and privacy forms signed"
+              "text": "Insurance checked if you bill it: chiropractic visit limit, copay, whether X-rays are covered"
             }
           ],
           "props": {
@@ -3109,7 +3771,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Care plan discussed and next visits booked"
+              "text": "Prior imaging requested from their physician if it exists"
             }
           ],
           "props": {
@@ -3120,7 +3782,122 @@
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "Visit 1: history and exam (about an hour)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check in, scan the ID and insurance card, collect the first-visit fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The doctor takes a history, does the orthopedic and neurological exam, and decides on X-rays."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If red flags appear, the doctor refers out and the visit ends there. Write it down."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Many offices give a first adjustment at this visit when it is safe to do so."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book visit 2 within two days before the patient leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visit 2: report of findings (20 to 30 minutes)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The doctor explains what was found in plain words, shows the X-rays, and recommends a phase and a number of visits."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The front desk presents the matching care plan and payment options, then books the full first two weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set the patient's "
+            },
+            {
+              "text": "Care phase",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Re-exam due",
+              "bold": true
+            },
+            {
+              "text": " (usually after 12 visits or 30 days)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the patient from New to "
+            },
+            {
+              "text": "In care",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After visit 2"
             }
           ],
           "props": {
@@ -3131,12 +3908,79 @@
           "type": "todo",
           "text": [
             {
-              "text": "Patient status moved to In care"
+              "text": "Care plan entered with price and amount paid"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First two weeks of visits on the calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome text with the schedule and the home stretches the doctor gave"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Re-exams"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At each re-exam the doctor measures progress against the first visit and decides the next phase. Update "
+            },
+            {
+              "text": "Care phase",
+              "bold": true
+            },
+            {
+              "text": " and set the next re-exam date. Patients in Wellness are re-examined every six months."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Zainab came in with headaches after a new desk job. Her exam was today at 4 pm; her report of findings is booked for Thursday. If she starts a Relief plan, her re-exam goes in for four weeks out."
+            }
+          ]
         }
       ]
     },
@@ -3145,14 +3989,26 @@
       "parent": "chiropractic-office",
       "title": "Daily desk routine",
       "icon": {
-        "emoji": "✅"
+        "emoji": "☀️"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short, repeatable routine keeps the tables full and the money right."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Open"
+              "text": "Opening"
             }
           ],
           "props": {
@@ -3163,7 +4019,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review Visits for today"
+              "text": "Voicemails returned and new inquiries entered with Call by today"
             }
           ],
           "props": {
@@ -3174,7 +4030,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Call back every inquiry marked New"
+              "text": "Today's visit list printed or on the front screen"
             }
           ],
           "props": {
@@ -3185,7 +4041,25 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm tomorrow's first visits"
+              "text": "Patients with a "
+            },
+            {
+              "text": "Re-exam due",
+              "bold": true
+            },
+            {
+              "text": " this week flagged for the doctor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tables wiped, paper rolls stocked, massage room linens fresh"
             }
           ],
           "props": {
@@ -3196,7 +4070,69 @@
           "type": "heading",
           "text": [
             {
-              "text": "Close"
+              "text": "Through the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " each patient. Confirm the visit is linked to the right care plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Collect cash visits or copays at check-in, not after."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the adjustment, press "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " and book the next visit to match the care phase."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Patients at 0 visits left get the renewal conversation at checkout."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No-shows get a call within 15 minutes and a new time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
             }
           ],
           "props": {
@@ -3207,7 +4143,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Mark all visits completed or missed"
+              "text": "Every visit today is completed, cancelled or marked no-show"
             }
           ],
           "props": {
@@ -3218,7 +4154,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check packages with two visits left"
+              "text": "Inquiries not reached today carried over with a new Call by date"
             }
           ],
           "props": {
@@ -3229,12 +4165,595 @@
           "type": "todo",
           "text": [
             {
-              "text": "Update tomorrow's schedule printout"
+              "text": "Payments reconciled against completed cash visits"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's patients reminded by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients in Corrective care with no visit booked in the next seven days get a call."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients with two or more "
+            },
+            {
+              "text": "Missed visits",
+              "bold": true
+            },
+            {
+              "text": " get a call from the doctor."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Care plans expiring in 30 days are reviewed (see Care plans and prepaid visits)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example of a good checkout"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"You've got four visits left on your plan, Rafferty. Same 7:45 slot Monday and Thursday? I'll text you the night before.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the schedule slips"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the doctor is running more than ten minutes behind, tell the waiting patients and offer anyone in a hurry a quick re-book."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Use gaps to call inquiries and patients with no visit booked; one call often fills the next open slot."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A walk-in with acute pain is seen between scheduled patients only after a short intake form and the doctor's okay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits kept as booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "90% or more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "New patients completing the report of findings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "85% or more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Patients in Corrective care with a visit booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every one"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "chiropractic-office",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The business side of a chiropractic office: calls from people in pain, care plans they have bought, the visits on the table today and who is due for a re-exam. Notes and X-rays stay in your clinical software."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inquiries",
+              "bold": true
+            },
+            {
+              "text": ": everyone who called, filled in the web form or stopped by after a workplace screening. Each has a "
+            },
+            {
+              "text": "Call by",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": ": care phase (Relief, Corrective, Wellness), re-exam due date, completed visits, missed visits and active care plans."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits",
+              "bold": true
+            },
+            {
+              "text": ": each appointment with the regions adjusted and how it was paid (care plan, insurance or cash)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Care plans",
+              "bold": true
+            },
+            {
+              "text": ": prepaid visit plans and massage packs, with visits used, visits left, expiry date and any balance still owed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers connect"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where it comes from"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits used on a care plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Completed visits linked to that plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Visits included minus visits used"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Balance owed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price minus paid so far"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missed visits on a patient"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No-shows and cancellations"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Put your doctors and massage therapists in the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every patient on an active care plan, with the plan, visits included, price and what they have paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link this week's visits to the right care plan so the counts start correct."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Re-exam due",
+              "bold": true
+            },
+            {
+              "text": " for each patient in Relief or Corrective care."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily and weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each morning",
+              "bold": true
+            },
+            {
+              "text": ": Inquiries Today view, then the visit list."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each afternoon",
+              "bold": true
+            },
+            {
+              "text": ": book anyone who left without a next visit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fridays",
+              "bold": true
+            },
+            {
+              "text": ": care plans expiring in the next 30 days with visits left, patients with a re-exam due, and any balance owed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inquiries: "
+            },
+            {
+              "text": "Mark called",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark booked",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Visits: "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients: "
+            },
+            {
+              "text": "Book visit",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Sell a package",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Care plans: "
+            },
+            {
+              "text": "Add visit",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark used up",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ivo bought a 12-visit low back plan and has used seven. His re-exam is in six days. At that visit the doctor decides whether he moves from Relief to Corrective, and the front desk updates the phase."
+            }
+          ]
         }
       ]
     }

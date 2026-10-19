@@ -1,22 +1,24 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0406",
-  "version": 3,
-  "title": "Home Health Agency",
-  "description": "Referrals, clients, shifts with hours and caregiver credentials for a home care agency.",
+  "version": 4,
+  "title": "Home Care Agency",
+  "description": "For home care agencies: referrals, clients, caregiver shifts, visit checks, credentials.",
   "forWho": "Home care and home health agencies",
   "icon": {
     "emoji": "🏡"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:gradient-sunset",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
     "home care",
-    "caregivers",
-    "shifts",
+    "caregiver",
+    "home health",
+    "scheduler",
+    "visit verification",
     "credentials"
   ],
   "spec": {
@@ -199,7 +201,7 @@
           {
             "key": "r01",
             "values": {
-              "ref_title": "Personal care referral - Hawthorne",
+              "ref_title": "Eleanor H., home from hip surgery",
               "source": "Hospital discharge planner",
               "need": "Personal care",
               "received_on": "@today-1d",
@@ -211,7 +213,7 @@
           {
             "key": "r02",
             "values": {
-              "ref_title": "Companion care referral - Delacour",
+              "ref_title": "Cornelius D., lives alone, early memory loss",
               "source": "Family member",
               "need": "Companion care",
               "received_on": "@today",
@@ -223,7 +225,7 @@
           {
             "key": "r03",
             "values": {
-              "ref_title": "Respite referral - Mbeki-Cole",
+              "ref_title": "Daughter needs weekend relief for her mother",
               "source": "Family member",
               "need": "Respite",
               "received_on": "@today-3d",
@@ -234,7 +236,7 @@
           {
             "key": "r04",
             "values": {
-              "ref_title": "Skilled support referral - Lindgren",
+              "ref_title": "Rosalind L., wound care follow-up at home",
               "source": "Physician office",
               "need": "Skilled nursing support",
               "received_on": "@today-5d",
@@ -246,7 +248,7 @@
           {
             "key": "r05",
             "values": {
-              "ref_title": "Personal care referral - Teague",
+              "ref_title": "Bartholomew T., help with bathing and meals",
               "source": "Hospital discharge planner",
               "need": "Personal care",
               "received_on": "@today-8d",
@@ -257,7 +259,7 @@
           {
             "key": "r06",
             "values": {
-              "ref_title": "Companion care referral - Obuya",
+              "ref_title": "Beatrice O., afternoon company",
               "source": "Self",
               "need": "Companion care",
               "received_on": "@today-20d",
@@ -268,7 +270,7 @@
           {
             "key": "r07",
             "values": {
-              "ref_title": "Personal care referral - Ashworth",
+              "ref_title": "Overnight care request, outside our area",
               "source": "Physician office",
               "need": "Personal care",
               "received_on": "@today-14d",
@@ -279,7 +281,7 @@
           {
             "key": "r08",
             "values": {
-              "ref_title": "Respite referral - Quint",
+              "ref_title": "Respite while family travels",
               "source": "Family member",
               "need": "Respite",
               "received_on": "@today-2d",
@@ -479,6 +481,33 @@
             ]
           },
           {
+            "key": "tasks",
+            "label": "Care tasks",
+            "parityType": "multi_select",
+            "choices": [
+              "Bathing",
+              "Dressing",
+              "Meals",
+              "Medication reminders",
+              "Mobility",
+              "Housekeeping",
+              "Companionship",
+              "Errands"
+            ],
+            "choiceColors": {
+              "Bathing": "blue",
+              "Dressing": "purple",
+              "Meals": "orange",
+              "Medication reminders": "red",
+              "Mobility": "green",
+              "Housekeeping": "brown",
+              "Companionship": "pink",
+              "Errands": "yellow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -549,121 +578,162 @@
           {
             "key": "h01",
             "values": {
-              "shift_title": "Morning care - Hawthorne",
+              "shift_title": "Morning routine, shower day",
               "client": "c01",
               "caregiver": "tm-ottis",
               "starts_at": "@today 08:00",
               "hours": 4,
               "status": "In progress",
               "verified": false,
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "tasks": [
+                "Bathing",
+                "Dressing",
+                "Meals"
+              ]
             }
           },
           {
             "key": "h02",
             "values": {
-              "shift_title": "Afternoon visit - Teague",
+              "shift_title": "Lunch and afternoon walk",
               "client": "c02",
               "caregiver": "tm-yvette",
               "starts_at": "@today 13:00",
               "hours": 3,
               "status": "Scheduled",
               "verified": false,
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "tasks": [
+                "Meals",
+                "Mobility",
+                "Companionship"
+              ]
             }
           },
           {
             "key": "h03",
             "values": {
-              "shift_title": "Evening care - Mbeki-Cole",
+              "shift_title": "Supper, medications and bedtime",
               "client": "c03",
               "caregiver": "tm-casper",
               "starts_at": "@today 17:00",
               "hours": 4,
               "status": "Scheduled",
               "verified": false,
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "tasks": [
+                "Meals",
+                "Medication reminders",
+                "Dressing"
+              ]
             }
           },
           {
             "key": "h04",
             "values": {
-              "shift_title": "Morning care - Lindgren",
+              "shift_title": "Dressing change support and breakfast",
               "client": "c05",
               "caregiver": "tm-casper",
               "starts_at": "@mon+2d 09:00",
               "hours": 5,
               "status": "Scheduled",
-              "verified": false
+              "verified": false,
+              "tasks": [
+                "Meals",
+                "Mobility"
+              ]
             }
           },
           {
             "key": "h05",
             "values": {
-              "shift_title": "Bathing and breakfast - Hawthorne",
+              "shift_title": "Shower, breakfast, light housekeeping",
               "client": "c01",
               "caregiver": "tm-ottis",
               "starts_at": "@mon+4d 08:00",
               "hours": 4,
               "status": "Scheduled",
-              "verified": false
+              "verified": false,
+              "tasks": [
+                "Bathing",
+                "Meals",
+                "Housekeeping"
+              ]
             }
           },
           {
             "key": "h06",
             "values": {
-              "shift_title": "Garden and lunch visit - Teague",
+              "shift_title": "Garden time and grocery run",
               "client": "c02",
               "caregiver": "tm-yvette",
               "starts_at": "@today+5d 13:00",
               "hours": 3,
               "status": "Scheduled",
-              "verified": false
+              "verified": false,
+              "tasks": [
+                "Companionship",
+                "Errands"
+              ]
             }
           },
           {
             "key": "h07",
             "values": {
-              "shift_title": "Morning care - Hawthorne (completed)",
+              "shift_title": "Morning routine, no shower",
               "client": "c01",
               "caregiver": "tm-ottis",
               "starts_at": "@today-1d 08:00",
               "hours": 4,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-1d"
+              "completed_on": "@today-1d",
+              "tasks": [
+                "Dressing",
+                "Meals",
+                "Medication reminders"
+              ]
             }
           },
           {
             "key": "h08",
             "values": {
-              "shift_title": "Evening care - Mbeki-Cole (last)",
+              "shift_title": "Supper and evening medications",
               "client": "c03",
               "caregiver": "tm-casper",
               "starts_at": "@today-2d 17:00",
               "hours": 4,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-2d"
+              "completed_on": "@today-2d",
+              "tasks": [
+                "Meals",
+                "Medication reminders"
+              ]
             }
           },
           {
             "key": "h09",
             "values": {
-              "shift_title": "Morning care - Lindgren (prior)",
+              "shift_title": "Breakfast and walker practice",
               "client": "c05",
               "caregiver": "tm-casper",
               "starts_at": "@today-3d 09:00",
               "hours": 5,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-3d"
+              "completed_on": "@today-3d",
+              "tasks": [
+                "Meals",
+                "Mobility"
+              ]
             }
           },
           {
             "key": "h10",
             "values": {
-              "shift_title": "Missed afternoon - Teague",
+              "shift_title": "Afternoon visit, caregiver sick",
               "client": "c02",
               "caregiver": "tm-yvette",
               "starts_at": "@today-4d 13:00",
@@ -675,53 +745,71 @@
           {
             "key": "h11",
             "values": {
-              "shift_title": "Morning routine - Hawthorne (last week)",
+              "shift_title": "Morning routine, shower day (prior week)",
               "client": "c01",
               "caregiver": "tm-ottis",
               "starts_at": "@today-6d 08:00",
               "hours": 4,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-6d"
+              "completed_on": "@today-6d",
+              "tasks": [
+                "Bathing",
+                "Dressing",
+                "Meals"
+              ]
             }
           },
           {
             "key": "h12",
             "values": {
-              "shift_title": "Respite visit - Ashworth",
+              "shift_title": "Respite afternoon",
               "client": "c06",
               "caregiver": "tm-yvette",
               "starts_at": "@today-20d 10:00",
               "hours": 6,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "tasks": [
+                "Companionship",
+                "Meals"
+              ]
             }
           },
           {
             "key": "h13",
             "values": {
-              "shift_title": "Evening meal and care - Mbeki-Cole",
+              "shift_title": "Supper, laundry and bedtime",
               "client": "c03",
               "caregiver": "tm-casper",
               "starts_at": "@today-5d 17:00",
               "hours": 4,
               "status": "Completed",
               "verified": false,
-              "completed_on": "@today-5d"
+              "completed_on": "@today-5d",
+              "tasks": [
+                "Meals",
+                "Housekeeping",
+                "Dressing"
+              ]
             }
           },
           {
             "key": "h14",
             "values": {
-              "shift_title": "Afternoon visit - Obuya",
+              "shift_title": "Afternoon company and errands",
               "client": "c07",
               "caregiver": "tm-yvette",
               "starts_at": "@today-40d 14:00",
               "hours": 3,
               "status": "Completed",
               "verified": true,
-              "completed_on": "@today-40d"
+              "completed_on": "@today-40d",
+              "tasks": [
+                "Companionship",
+                "Errands"
+              ]
             }
           }
         ],
@@ -894,6 +982,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "contact",
+            "label": "Family contact",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
             "key": "payer",
             "label": "Funding",
             "parityType": "select",
@@ -931,7 +1026,7 @@
           },
           {
             "key": "hours_week",
-            "label": "Hours per week",
+            "label": "Authorized hours a week",
             "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -954,6 +1049,14 @@
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "sup_visit",
+            "label": "Supervisory visit due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "shift_count",
@@ -982,6 +1085,49 @@
             }
           },
           {
+            "key": "hours_booked",
+            "label": "Hours booked ahead",
+            "parityType": "rollup",
+            "via": "shifts",
+            "pick": "hours",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Scheduled",
+                "In progress"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "bill_rate",
+            "label": "Bill rate per hour",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billed",
+            "label": "Billed to date",
+            "parityType": "formula",
+            "formula": "{Hours delivered} * {Bill rate per hour}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "shift_btn",
             "label": "Schedule shift",
             "parityType": "button",
@@ -1007,7 +1153,10 @@
               "payer": "Long-term care policy",
               "care_level": "Personal care",
               "hours_week": 20,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 34,
+              "sup_visit": "@today+12d",
+              "contact": "Margaret Hawthorne (daughter)"
             }
           },
           {
@@ -1019,7 +1168,10 @@
               "payer": "Private pay",
               "care_level": "Companion",
               "hours_week": 12,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 36,
+              "sup_visit": "@today-3d",
+              "contact": "Silas Teague (son)"
             }
           },
           {
@@ -1031,7 +1183,10 @@
               "payer": "State waiver program",
               "care_level": "Personal care",
               "hours_week": 28,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 32,
+              "sup_visit": "@today+40d",
+              "contact": "Ines Mbeki-Cole (niece)"
             }
           },
           {
@@ -1043,7 +1198,8 @@
               "payer": "Private pay",
               "care_level": "Companion",
               "hours_week": 8,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "contact": "Paulette Delacour (sister)"
             }
           },
           {
@@ -1055,7 +1211,10 @@
               "payer": "Veterans benefit",
               "care_level": "Skilled support",
               "hours_week": 15,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 38,
+              "sup_visit": "@today+25d",
+              "contact": "Henrik Lindgren (husband)"
             }
           },
           {
@@ -1067,7 +1226,10 @@
               "payer": "Long-term care policy",
               "care_level": "Personal care",
               "hours_week": 18,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 34,
+              "sup_visit": "@today-20d",
+              "contact": "Rhea Ashworth (wife)"
             }
           },
           {
@@ -1079,7 +1241,9 @@
               "payer": "Private pay",
               "care_level": "Companion",
               "hours_week": 10,
-              "supervisor": "tm-marisol"
+              "supervisor": "tm-marisol",
+              "bill_rate": 30,
+              "contact": "Kofi Obuya (son)"
             }
           }
         ],
@@ -1305,7 +1469,7 @@
           {
             "key": "k01",
             "values": {
-              "cred_title": "CPR certification - Brennan",
+              "cred_title": "Ottis's CPR card",
               "caregiver": "tm-ottis",
               "kind": "CPR certification",
               "issued_on": "@today-700d",
@@ -1317,7 +1481,7 @@
           {
             "key": "k02",
             "values": {
-              "cred_title": "TB screening - Okonkwo",
+              "cred_title": "Yvette's TB screen",
               "caregiver": "tm-yvette",
               "kind": "TB screening",
               "issued_on": "@today-300d",
@@ -1328,7 +1492,7 @@
           {
             "key": "k03",
             "values": {
-              "cred_title": "Annual training - Lindholm",
+              "cred_title": "Casper's annual in-service hours",
               "caregiver": "tm-casper",
               "kind": "Annual training",
               "issued_on": "@today-360d",
@@ -1340,7 +1504,7 @@
           {
             "key": "k04",
             "values": {
-              "cred_title": "Nursing licence - Whitfield",
+              "cred_title": "Marisol's RN licence",
               "caregiver": "tm-marisol",
               "kind": "Nursing licence",
               "issued_on": "@today-500d",
@@ -1351,7 +1515,7 @@
           {
             "key": "k05",
             "values": {
-              "cred_title": "Background check - Okonkwo",
+              "cred_title": "Yvette's background check",
               "caregiver": "tm-yvette",
               "kind": "Background check",
               "issued_on": "@today-1000d",
@@ -1362,7 +1526,7 @@
           {
             "key": "k06",
             "values": {
-              "cred_title": "CPR certification - Lindholm",
+              "cred_title": "Casper's CPR card",
               "caregiver": "tm-casper",
               "kind": "CPR certification",
               "issued_on": "@today-740d",
@@ -1374,7 +1538,7 @@
           {
             "key": "k07",
             "values": {
-              "cred_title": "TB screening - Brennan",
+              "cred_title": "Ottis's TB screen",
               "caregiver": "tm-ottis",
               "kind": "TB screening",
               "issued_on": "@today-330d",
@@ -1385,7 +1549,7 @@
           {
             "key": "k08",
             "values": {
-              "cred_title": "Annual training - Okonkwo",
+              "cred_title": "Yvette's annual in-service hours",
               "caregiver": "tm-yvette",
               "kind": "Annual training",
               "issued_on": "@today-200d",
@@ -2061,18 +2225,18 @@
         "Juniper Hollow"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
       "key": "home-health-agency",
       "parent": null,
-      "title": "Home Health Agency",
+      "title": "Home Care Agency",
       "icon": {
         "emoji": "🏡"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:gradient-sunset",
         "offsetY": 50
       },
       "settings": {
@@ -2136,6 +2300,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-credentials"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2946,14 +3116,14 @@
       "parent": "home-health-agency",
       "title": "Handling a new referral",
       "icon": {
-        "emoji": "📞"
+        "emoji": "📥"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Families usually call several agencies. The first helpful call often wins."
+              "text": "Referrals from hospitals often need care to start within 24 to 48 hours. The agency that answers fast, assesses well and starts on time becomes the agency discharge planners call first."
             }
           ],
           "background": "blue",
@@ -2965,7 +3135,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Same day"
+              "text": "Within two hours"
             }
           ],
           "props": {
@@ -2976,7 +3146,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log the referral and set Assess by."
+              "text": "Add the referral with a short description, source, care needed and "
+            },
+            {
+              "text": "Assess by",
+              "bold": true
+            },
+            {
+              "text": " date (today or tomorrow for hospital discharges)."
             }
           ]
         },
@@ -2984,7 +3161,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Call the family, listen first, then explain how an assessment works."
+              "text": "Call the referral source back to confirm you can take the case, and ask: discharge date, diagnosis that affects care, mobility, cognitive status, who is at home, and the funding."
             }
           ]
         },
@@ -2992,7 +3169,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the assessment with the clinical supervisor."
+              "text": "Call the family contact. Press "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3000,7 +3184,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the assessment"
+              "text": "Funding check before the assessment"
             }
           ],
           "props": {
@@ -3008,18 +3192,241 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Funding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to confirm"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Private pay"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rate sheet sent; deposit and billing cycle agreed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Long-term care policy"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Policy number; elimination period; daily or hourly benefit; claim forms"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "State waiver program"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Authorization number and authorized hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Veterans benefit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Authorization from the regional office and hours approved"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Move the person to Clients and agree hours and funding."
+              "text": "The assessment visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Supervisor or nurse visits the home within 48 hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Home safety walk-through: rugs, stairs, bathroom grab bars, lighting, smoke detectors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Care plan written with the client and family: tasks, schedule, preferences, what not to do"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Emergency contacts, physician, pharmacy and medication list recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Service agreement signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Starting care"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the client to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            },
+            {
+              "text": " and fill in authorized hours a week, bill rate and the first supervisory visit date (often 30 days after start, then every 60 to 90 days)."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Mark the referral Started."
+              "text": "Match a caregiver by skills, schedule, distance and personality. Introduce them at the first shift if you can."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark the referral "
+            },
+            {
+              "text": "Started",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When to decline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Decline politely, and quickly, when the care needed is beyond your licence, the location is outside your area, or you cannot staff the hours. Give the source another agency's name. Mark "
+            },
+            {
+              "text": "Declined",
+              "bold": true
+            },
+            {
+              "text": " with the reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Eleanor's discharge planner called at 9 am: hip replacement, home on Friday, needs help bathing and dressing five mornings a week, long-term care policy. The supervisor assessed on Thursday, the policy claim forms went out the same day, and Ottis started Friday at 8."
             }
           ]
         }
@@ -3034,90 +3441,10 @@
       },
       "blocks": [
         {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Every Thursday"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open Clients and check Hours per week for each active client."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Schedule shifts for next week using Schedule shift on the client."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Match caregivers to clients they already know where possible."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check that each caregiver's credentials are Valid."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Changes"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "When a caregiver calls out, find cover the same day and tell the client."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mark missed shifts Missed and note why."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-verification",
-      "parent": "home-health-agency",
-      "title": "Visit verification",
-      "icon": {
-        "emoji": "✅"
-      },
-      "blocks": [
-        {
           "type": "callout",
           "text": [
             {
-              "text": "Every visit should be verified before billing."
+              "text": "A good schedule gives clients the same familiar caregivers, keeps caregivers' hours steady, and never leaves a client without a visit."
             }
           ],
           "background": "blue",
@@ -3129,7 +3456,227 @@
           "type": "heading",
           "text": [
             {
-              "text": "After each shift"
+              "text": "Every Thursday for the next week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List active clients with their "
+            },
+            {
+              "text": "Authorized hours a week",
+              "bold": true
+            },
+            {
+              "text": " and preferred times."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Start from last week's shifts. Keep the same caregiver at the same times wherever you can; continuity matters more than anything to clients with memory loss."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each shift with start time, hours and "
+            },
+            {
+              "text": "Care tasks",
+              "bold": true
+            },
+            {
+              "text": " from the care plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Compare "
+            },
+            {
+              "text": "Hours booked ahead",
+              "bold": true
+            },
+            {
+              "text": " with authorized hours for each client and fix any gap."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check each caregiver's total hours and travel. Avoid overtime unless it is planned and approved."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send each caregiver their schedule and each family the visit times."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matching rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Credentials current for every caregiver on the schedule (see Credential tracking)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Skills match the tasks: transfers, hoists, dementia care."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Client preferences honored: gender of caregiver, language, pets, smoking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a caregiver calls out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the back-up caregiver who already knows the client"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer the shift to available caregivers with the right skills"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "3"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Supervisor covers if no one else can"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "4"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the family before the shift start time if the visit will be late or cannot happen"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never let a client find out by no one arriving. A missed shift is marked "
+            },
+            {
+              "text": "Missed",
+              "bold": true
+            },
+            {
+              "text": " with the reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly checks"
             }
           ],
           "props": {
@@ -3140,7 +3687,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Arrival and departure confirmed"
+              "text": "No client below authorized hours without a reason"
             }
           ],
           "props": {
@@ -3151,7 +3698,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Care log complete"
+              "text": "No caregiver above 40 hours without approval"
             }
           ],
           "props": {
@@ -3162,7 +3709,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Shift marked Completed and Visit verified ticked"
+              "text": "Every shift has care tasks listed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Back-up caregiver named for every client"
             }
           ],
           "props": {
@@ -3173,7 +3731,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Holidays and weather"
             }
           ],
           "props": {
@@ -3184,7 +3742,410 @@
           "type": "text",
           "text": [
             {
-              "text": "The scheduler lists completed shifts that are not verified and chases them before payroll."
+              "text": "Build holiday schedules two weeks early and confirm them with families. On snow or storm days, call every client in the morning, keep the visits for people who live alone or need help with medication first, and record any shift that could not happen."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Rosalind's caregiver Casper works her Monday, Wednesday and Friday mornings. When he was out last week, the back-up who had shadowed him twice took the shift, and Rosalind's husband was called the night before."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-verification",
+      "parent": "home-health-agency",
+      "title": "Visit verification and billing",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every shift is billed and paid from the verified record. Payers that use electronic visit verification will not pay for a visit without a matching clock-in and clock-out at the client's home."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The caregiver clocks in on arrival at the client's home. The shift moves to "
+            },
+            {
+              "text": "In progress",
+              "bold": true
+            },
+            {
+              "text": " (press "
+            },
+            {
+              "text": "Start shift",
+              "bold": true
+            },
+            {
+              "text": " if the office records it)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The caregiver completes the care tasks and notes anything unusual: a fall, a change in eating, confusion, a skin problem."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The caregiver clocks out before leaving."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Same day in the office"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every shift that should have started has a clock-in; late ones get a call within 15 minutes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Completed shifts marked "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " with the actual hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Visit verified",
+              "bold": true
+            },
+            {
+              "text": " ticked when clock-in, clock-out and location match the schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mismatches fixed with a written reason (forgot to clock out, phone had no signal) signed by the caregiver"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Changes in condition"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Anything unusual a caregiver reports is passed to the supervisor the same day and to the family by the supervisor. Falls are always reported, even with no injury."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly billing (Monday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Filter shifts completed last week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every shift must be verified before it is billed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Bill private-pay clients from "
+            },
+            {
+              "text": "Hours delivered",
+              "bold": true
+            },
+            {
+              "text": " times "
+            },
+            {
+              "text": "Bill rate per hour",
+              "bold": true
+            },
+            {
+              "text": "; bill programs and policies on their own forms."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Caregiver payroll uses the same verified hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common problems"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clock-in from the wrong place"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the caregiver; confirm and note the reason"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shift longer than scheduled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Supervisor approves or the extra time is not billed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visit not verified by Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hold the billing line, not the caregiver's pay"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clock-in watch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scheduler on duty"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mismatches and approvals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Supervisor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billing and payroll"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Office manager"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Casper forgot to clock out after Odile's evening shift. He confirmed the time by text, the scheduler noted the reason, and the shift was verified before Monday billing."
             }
           ]
         }
@@ -3199,10 +4160,81 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A caregiver with an expired CPR card, TB screen or background check should not be on the schedule. Tracking credentials is how the agency keeps clients safe and passes inspections."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "What to track for each caregiver"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "CPR and first aid (usually every two years)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "TB screening (yearly in many states)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Criminal background check and registry checks (at hire and as your state requires)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Nursing licence for nurses and aides who need one"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Annual in-service training hours"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Driver's licence and car insurance for caregivers who drive clients"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly (first Monday, 20 minutes)"
             }
           ],
           "props": {
@@ -3213,7 +4245,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Credentials and look at the Next 30 days view."
+              "text": "Filter "
+            },
+            {
+              "text": "Credentials",
+              "bold": true
+            },
+            {
+              "text": " for expiry in the next 60 days."
             }
           ]
         },
@@ -3221,7 +4260,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Message each caregiver with the renewal date."
+              "text": "Tell each caregiver in writing what is due and by when, and book the class or screening if the agency provides it."
             }
           ]
         },
@@ -3229,7 +4268,29 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark Renewal requested, then Valid when proof arrives."
+              "text": "Press "
+            },
+            {
+              "text": "Mark renewal requested",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the new card or result arrives, enter the new expiry date and press "
+            },
+            {
+              "text": "Mark valid",
+              "bold": true
+            },
+            {
+              "text": ". Keep a copy in the personnel file."
             }
           ]
         },
@@ -3237,7 +4298,96 @@
           "type": "heading",
           "text": [
             {
-              "text": "Expired"
+              "text": "Expired credentials"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A caregiver with an expired credential is taken off the schedule until it is renewed. No exceptions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Status "
+            },
+            {
+              "text": "Expired",
+              "bold": true
+            },
+            {
+              "text": "; the scheduler moves their shifts to the back-up caregiver."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "New hires"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Background check cleared before the first shift"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "TB screen and CPR in date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Orientation and competency check signed by the supervisor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each credential entered with an expiry date on day one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections"
             }
           ],
           "props": {
@@ -3248,7 +4398,443 @@
           "type": "text",
           "text": [
             {
-              "text": "Remove the caregiver from upcoming shifts until the credential is valid again."
+              "text": "Inspectors ask for proof that every caregiver who worked in the last year had current credentials on each shift date. Keeping expiry dates here and copies in the file answers that question in minutes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it simple"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One person owns credentials. They hold the list, send the reminders and say no when an expired caregiver is put on the schedule. Back them up when they do; the agency's licence depends on it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Casper's CPR card expired ten days ago. He was moved off this week's shifts, booked into Saturday's class, and the back-up covered Rosalind's mornings until his new card came in."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "home-health-agency",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The office of a home care agency: new referrals, the clients you serve, the shifts caregivers work, whether each visit was verified, and the credentials that let each caregiver work. Care notes and medical records stay in your care management system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Referrals",
+              "bold": true
+            },
+            {
+              "text": ": calls from hospital discharge planners, physician offices and families, with the care needed and an "
+            },
+            {
+              "text": "Assess by",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": funding, care level, authorized hours a week, bill rate, family contact, the supervisor and the date of the next supervisory visit. Money and hours add up from shifts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shifts",
+              "bold": true
+            },
+            {
+              "text": ": every visit with caregiver, start time, hours, care tasks, status and whether the visit was verified."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Credentials",
+              "bold": true
+            },
+            {
+              "text": ": CPR cards, TB screens, background checks, licences and annual training hours, with expiry dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the numbers work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours delivered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Completed shift hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours booked ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Scheduled and in-progress shift hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billed to date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours delivered times the bill rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Authorized hours a week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the payer or family agreed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare hours booked with authorized hours every week. Over is unpaid work; under is a client not getting the care they need."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your caregivers and supervisors to the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter active clients with funding, authorized hours, bill rate and next supervisory visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build next week's shifts with care tasks."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every caregiver credential with its expiry date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": Today's shifts; missed or late clock-ins called within 15 minutes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": Referrals due for contact."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thursday",
+              "bold": true
+            },
+            {
+              "text": ": next week's schedule built and sent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly",
+              "bold": true
+            },
+            {
+              "text": ": credentials expiring in 60 days; supervisory visits due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Referrals: "
+            },
+            {
+              "text": "Mark contacted",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assessment booked",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shifts: "
+            },
+            {
+              "text": "Start shift",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": ". Clients: "
+            },
+            {
+              "text": "Schedule shift",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Credentials: "
+            },
+            {
+              "text": "Mark renewal requested",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark valid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Bartholomew's supervisory visit was due three days ago and he missed a shift last week when his caregiver was sick. The supervisor visits this week, checks the care plan with his son and books a back-up caregiver."
             }
           ]
         }
