@@ -10,6 +10,7 @@
 import { storeDoors } from "@ai-matrx/records/core";
 
 import { supabase } from "@/utils/supabase/client";
+import { storeError } from "@/features/unified-data/base/baseStore";
 
 export type TableLevel = "viewer" | "commenter" | "editor" | "admin" | "owner";
 
@@ -81,7 +82,7 @@ export function parseActivity(data: unknown): ActivityPage {
 
 export async function readMyTableLevel(organizationId: string, tableId: string): Promise<string | null> {
   const { data, error } = await storeDoors(supabase).rpc("my_level", { p_organization_id: organizationId, p_id: tableId, p_type: "table" });
-  if (error) throw new Error(error.message);
+  if (error) throw storeError(error);
   return typeof data === "string" ? data : null;
 }
 
@@ -92,7 +93,7 @@ export async function readActivity(organizationId: string, subjectId: string, be
     p_limit: limit,
     p_before: before,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw storeError(error);
   return parseActivity(data);
 }
 
@@ -121,7 +122,7 @@ export function parseDuplicates(data: unknown): DuplicateGroup[] {
 
 export async function findDuplicates(organizationId: string, tableId: string, fields: string[]): Promise<DuplicateGroup[]> {
   const { data, error } = await storeDoors(supabase).rpc("find_duplicates", { p_organization_id: organizationId, p_table_id: tableId, p_fields: fields, p_limit: 50 });
-  if (error) throw new Error(error.message);
+  if (error) throw storeError(error);
   return parseDuplicates(data);
 }
 
@@ -140,7 +141,7 @@ export async function mergeDuplicateGroup(organizationId: string, memberIds: str
   let done = 0;
   for (const loser of losers) {
     const { error } = await storeDoors(supabase).rpc("migrate_merge", { p_organization_id: organizationId, p_winner_id: winner, p_loser_id: loser, p_note: "Merged from Find duplicates" });
-    if (error) throw new Error(done > 0 ? `${done} merged, then: ${error.message}` : error.message);
+    if (error) throw done > 0 ? Object.assign(storeError(error), { message: `${done} merged, then: ${error.message}` }) : storeError(error);
     done += 1;
   }
   return done;

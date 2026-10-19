@@ -10,6 +10,13 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 const baseMove = jest.fn();
+jest.mock("@/features/organizations/components/OrganizationChooser", () => ({
+  OrganizationChooser: ({ value, onChange, excludeId }: { value: string | null; onChange: (o: { id: string; name: string; slug: string }) => void; excludeId?: string | null }) => (
+    <select aria-label="Workspace" value={value ?? ""} onChange={(e) => onChange({ id: e.target.value, name: e.target.value, slug: "" })}>
+      {[{ id: "", name: "Choose a workspace" }, { id: "org-a", name: "Harbor Clinic" }, { id: "org-b", name: "Bayview Clinic" }].filter((o) => o.id !== excludeId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+    </select>
+  ),
+}));
 jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: () => ({ baseMove }) }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ refresh: jest.fn(), push: jest.fn() }) }));
 jest.mock("@/lib/redux/hooks", () => ({ useAppSelector: () => [{ id: "org-a", name: "Harbor Clinic" }, { id: "org-b", name: "Bayview Clinic" }] }));

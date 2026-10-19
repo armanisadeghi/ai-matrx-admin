@@ -307,13 +307,13 @@ nothing on failure.
 ### 7. Choose the model on evidence — and leave `settings` alone
 
 The builder's default model is never the final answer. `agent_author update` with a
-`model_id` chosen from `agent_catalog list_models`. Current favorites (Arman, 2026-08 —
-verify against `list_models`, favorites change monthly):
-
-- **Gemini Flash (current gen)** — the default for most everything: intelligent and fast.
-- **Anthropic Opus (current gen)** — high intelligence where the run will NOT become a
-  long tool-call chain (cost).
-- **Anthropic Sonnet (current gen)** — intelligence WITH tool calls.
+`model_id` chosen from `agent_catalog list_models`. **The ladder is rule 12 of
+[ai-model-and-spend-rules](/policies/ai-model-and-spend-rules.md): every agent starts on
+Haiku (Claude Haiku 5.5).** Sonnet only when tests PROVE Haiku fails the job, on the same
+definition with only the model changed and the failing runs as evidence; Opus only if Sonnet
+also fails and it truly beats both, then Arman approves it. An agent born on Opus (or any
+premium model) is a defect to explain. Per-row and repeating jobs get the most scrutiny.
+Gemini Flash is not the default; use it only as a measured side-by-side candidate.
 
 🚨 **AN AGENTIC AGENT IS NOT AN EASY TASK — never pick the lite model for one.** If the
 agent carries three or more executable tools it runs a LOOP: it reads a tool result,
@@ -322,11 +322,11 @@ turn. A lite/mini model looks fine on the first call and fails on the fourth —
 as a wrong tool choice rather than an error. So: **cheapness is never a reason; a
 side-by-side run is.** Pick a capable current model (`agent_catalog list_models`;
 `is_primary` only marks a model family's CURRENT version for the UI — it says nothing about
-tools), and when the job is genuinely hard, RUN IT TWICE — once on the current-gen Flash,
-once on Sonnet — and pin the winner. The server no longer refuses any model/tool pairing
+tools), and when the job is genuinely hard, RUN IT ON THE LADDER — Haiku first, then Sonnet only
+if Haiku's failing runs are the evidence — and pin the cheapest that passes. The server no longer refuses any model/tool pairing
 (removed 2026-10-03); the only model fact that matters for tools is whether it accepts them.
 Tool rules: `common-docs/systems/agents/agent-tools/TOOL-SOURCES.md`. Origin (Arman, 2026-09-16, review row
-`ca931876`): the Sandbox Specialist was born correctly on the primary Flash and re-pinned
+`ca931876`): the Sandbox Specialist was born correctly on a capable primary model and re-pinned
 to Flash-Lite with 11 tools **2 minutes and 22 seconds later**, and stayed there for
 eleven versions until he moved it back himself.
 

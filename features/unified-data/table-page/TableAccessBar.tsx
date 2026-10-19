@@ -28,6 +28,7 @@ import {
   readActivity,
   type ActivityEntry,
 } from "./tableAccessService";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 const BUTTON =
   "inline-flex h-8 shrink-0 items-center gap-1.5 rounded px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-60";
@@ -53,7 +54,7 @@ function RequestEditAccess({ tableId, level }: { tableId: string; level: string 
       setSaid(made.already ? "Already asked. Waiting on an answer." : "Asked. You will hear back here.");
       setState("sent");
     } catch (err) {
-      setSaid(err instanceof Error ? err.message : "The request did not go through.");
+      setSaid(sayError(err, "The request did not go through."));
       setState("failed");
     }
   }, [note, tableId, userId]);
@@ -117,7 +118,7 @@ export function ActivityFeedButton({ subjectId, organizationId }: { subjectId: s
         setNext(page.nextBefore);
         setState("idle");
       } catch (err) {
-        setWhy(err instanceof Error ? err.message : "The activity could not be read.");
+        setWhy(sayError(err, "The activity could not be read."));
         setState("failed");
       }
     },
@@ -180,7 +181,7 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
       setGroups(await findDuplicates(organizationId, tableId, chosen));
       setState("idle");
     } catch (err) {
-      setWhy(err instanceof Error ? err.message : "The search did not run.");
+      setWhy(sayError(err, "The search did not run."));
       setState("failed");
     }
   }, [chosen, organizationId, tableId]);
@@ -196,7 +197,7 @@ function FindDuplicates({ tableId, organizationId, level }: { tableId: string; o
         setConfirming(null);
         await find();
       } catch (err) {
-        setWhy(err instanceof Error ? err.message : "The merge did not run.");
+        setWhy(sayError(err, "The merge did not run."));
         setState("failed");
       }
     },

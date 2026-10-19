@@ -1,8 +1,14 @@
 // AT-WALK-A driver: ONE signed-in headless browser that stays up; runs cmd-N.mjs files dropped in $D, writing out-N.log.
 // Each cmd file exports default async ({ page, ctx, browser, say }) => {}. Stop by creating $D/stop (or stop-member).
-import { existsSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, writeFileSync, readdirSync, renameSync } from "node:fs";
 import { boot, D } from "./at-walk-a-lib.mjs";
 const member = process.argv[2] === "member";
+const pre = member ? "mcmd-" : "cmd-";
+// A RESTARTED DRIVER RUNS ONLY NEW COMMANDS (AT-SNAPJOB, from AT-WALK-E6): every cmd file already in $D was queued for the
+// previous driver, so it is moved aside as old-<name> before this one boots (an E6 restart re-ran them all).
+for (const f of readdirSync(D).filter((f) => f.startsWith(pre) && f.endsWith(".mjs"))) {
+  try { renameSync(`${D}/${f}`, `${D}/old-${Date.now()}-${f}`); } catch (e) { console.error("could not move aside", f, e.message); }
+}
 const s = await boot(member);
 writeFileSync(`${D}/driver-${member ? "member" : "admin"}.ready`, String(s.who));
 console.log("ready", s.who);
@@ -17,7 +23,6 @@ const late = (kind) => (e) => {
 };
 process.on("unhandledRejection", late("unhandledRejection"));
 process.on("uncaughtException", late("uncaughtException"));
-const pre = member ? "mcmd-" : "cmd-";
 while (!existsSync(`${D}/stop${member ? "-member" : ""}`)) {
   for (const f of readdirSync(D).filter((f) => f.startsWith(pre) && f.endsWith(".mjs") && !done.has(f)).sort()) {
     done.add(f); const n = f.slice(0, -4); let log = "";

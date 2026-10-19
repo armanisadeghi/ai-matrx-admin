@@ -18,6 +18,7 @@ import { NonEditableContextMenu } from "@ai-matrx/context-menu/react";
 import type { ContextMenuExtraItem, ContextMenuExtraSection } from "@ai-matrx/context-menu/engine";
 import { saveRowPageAsTableTemplate } from "@/features/spaces/embed/RecordBodySpace";
 import { toast } from "@/lib/toast";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 type Actions = ReturnType<typeof recordActions>;
 type Action = Actions[number];
@@ -94,7 +95,7 @@ export function RecordPageMenu({ tableId, recordId, children }: { tableId: strin
                   const tableName = table.data?.name?.trim() || "Row";
                   void saveRowPageAsTableTemplate({ organizationId, tableId, recordId, name: `${tableName} page` }).then(
                     () => toast.success(`New ${tableName} rows now start from this page.`),
-                    (err: unknown) => toast.error(err instanceof Error ? err.message : "The template could not be saved."),
+                    (err: unknown) => toast.error(sayError(err, "The template could not be saved.")),
                   );
                 },
               },

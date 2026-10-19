@@ -24,6 +24,7 @@ import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
 import { ensureWorkspaceHome } from "./ensureWorkspaceHome";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 const WHOLE_TABLE = "__whole_table__";
 
@@ -81,7 +82,7 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
     setBusy(false);
     if (!done.ok) {
       if (/data home/i.test(done.error.message)) setNoHome(done.error.message);
-      toast.error(done.error.message);
+      toast.error(sayError(done.error, "The sync did not run."), { action: { label: "Try again", onClick: () => void sync() } });
       return;
     }
     setOpen(false);

@@ -22,6 +22,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAutoRefresh } from "./service";
 import { SyncedBadge } from "./SyncedBadge";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 /** A table refreshed this recently is not refreshed again just for being opened. */
 const OPEN_REFRESH_AFTER_MS = 60_000;
@@ -71,6 +72,7 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
   const interval = auto ?? source?.auto_refresh ?? (source?.provider === "matrx_view" ? "on_change" : "off");
   const choices = INTERVALS[source?.provider === "matrx_view" ? "matrx_view" : "default"];
 
+  const again = useRef<() => void>(() => {});
   const refresh = useCallback(
     async (quiet: boolean) => {
       if (!orgId) return;
@@ -81,7 +83,7 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
         tableShapeChanged(tableId);
         if (!quiet && answer.warnings?.length) toast.warning(answer.warnings.join(" "));
       } catch (err) {
-        if (!quiet) toast.error(extractErrorMessage(err));
+        if (!quiet) toast.error(sayError(err, "The refresh did not run."), { action: { label: "Try again", onClick: () => void again.current() } });
         else console.warn("[synced table] refresh on open did not run:", extractErrorMessage(err));
       } finally {
         setBusy(false);
@@ -90,6 +92,8 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
     [orgId, tableId],
   );
 
+  useEffect(() => { again.current = () => void refresh(false); }, [refresh]);
+
   const setInterval = useCallback(
     async (next: SyncAutoRefresh) => {
       const before = interval;
@@ -97,7 +101,7 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
       const done = await client.tableSyncSettingsSet({ table_id: tableId, settings: { auto_refresh: next } });
       if (!done.ok) {
         setAuto(before);
-        toast.error(done.error.message);
+        toast.error(sayError(done.error, "The refresh setting was not saved."));
       }
     },
     [client, interval, tableId],

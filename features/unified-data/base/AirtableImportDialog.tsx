@@ -41,7 +41,13 @@ export function AirtableImportDialog({ open, onClose, organizationId }: { open: 
   const [problem, setProblem] = useState<string | null>(null);
 
   const reload = useCallback(async () => setTokens(await savedTokens().catch(() => [])), []);
-  useEffect(() => { if (open) { setBases(null); setReport(null); setProblem(null); setPreview({}); setProgress(null); void reload(); } }, [open, reload]);
+  // Opening the dialog starts clean: adjusted during render (React's "store previous props" pattern), not in an effect.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) { setBases(null); setReport(null); setProblem(null); setPreview({}); setProgress(null); }
+  }
+  useEffect(() => { if (open) void savedTokens().catch(() => []).then(setTokens); }, [open]);
 
   const listFor = async (id: string) => {
     setItem(id); setProblem(null); setStep("Asking Airtable which bases this token can read…");

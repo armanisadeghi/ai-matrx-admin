@@ -43,7 +43,7 @@ const from = (t: string) => (createClient().schema("custom" as never) as unknown
  * The store's own refusal, kept whole: the sentence AND its SQLSTATE. A bare `new Error(error.message)` dropped the code, so a
  * statement timeout (57014) reached ErrorNotice and the capture layer as Postgres' raw words with nothing saying what it was.
  */
-export function storeError(error: { message?: string; code?: string; details?: string | null; hint?: string | null }): Error & { code?: string; sqlstate?: string } {
+export function storeError(error: { message?: string; code?: string | null; details?: unknown; hint?: unknown }): Error & { code?: string; sqlstate?: string } {
   const e = new Error(error.message || "The store refused this.") as Error & { code?: string; sqlstate?: string; details?: unknown; hint?: unknown };
   if (error.code) { e.code = error.code; e.sqlstate = error.code; }
   if (error.details) e.details = error.details;

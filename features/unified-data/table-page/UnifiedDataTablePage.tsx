@@ -49,6 +49,7 @@ import {
   useUnifiedTable,
   type TableAddress,
 } from "@/features/unified-data/table-page/UnifiedTable";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 /**
  * THE PAGE'S HEADER — the app's standard one (lane TABLE-PAGE-CHROME, owner 2026-09-25: "Align with
@@ -152,7 +153,7 @@ function TableCapture({
   useTableCaptureContribution({
     tableId,
     table: table.data,
-    tableError: table.error ? String((table.error as { message?: string }).message ?? table.error) : null,
+    tableError: table.error ? sayError(table.error, "The table could not be read.") : null,
     filter,
     recordId,
   });
