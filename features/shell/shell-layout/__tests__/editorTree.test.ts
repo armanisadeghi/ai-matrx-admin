@@ -24,6 +24,8 @@ import {
   tickState,
   untickEntry,
   updateNode,
+  listDropIndex,
+  moveInList,
 } from "../editor/tree";
 
 const tree = buildCatalogTree(buildShellCatalog({ isAdmin: true }));
@@ -185,5 +187,22 @@ describe("Add to my menu", () => {
     expect(link.body.dock!.at(-1)).toMatchObject({ kind: "link", href: "/somewhere/odd?x=1" });
     const hdr = addPageToBody(emptyBody(), { href: page.href!, label: page.label, record: null }, { region: "header" }, { isAdmin: false });
     expect(hdr.body.header!.some((b) => b.kind === "nav" && b.ref === page.id)).toBe(true);
+  });
+});
+
+describe("listDropIndex (the Header pane's drag)", () => {
+  const ids = ["a", "b", "c", "d"].map((id) => ({ id }));
+  const drag = (id: string, over: string, side: "before" | "after") => {
+    const from = ids.findIndex((x) => x.id === id);
+    const at = ids.findIndex((x) => x.id === over);
+    return moveInList(ids, id, listDropIndex(from, at, side)).map((x) => x.id).join("");
+  };
+  it("drops a row exactly where the line was drawn, dragging down or up", () => {
+    expect(drag("a", "c", "before")).toBe("bacd");
+    expect(drag("a", "c", "after")).toBe("bcad");
+    expect(drag("d", "b", "before")).toBe("adbc");
+    expect(drag("d", "a", "before")).toBe("dabc");
+    expect(drag("a", "d", "after")).toBe("bcda");
+    expect(drag("b", "b", "after")).toBe("abcd");
   });
 });

@@ -2,7 +2,7 @@
 
 // AddOwnRow — the "Add" menu of the layout editors: a group, a link (any URL), one of your launchpads, and
 // on the Header an AI job (a declared job from the catalogue, never a raw agent id). Records come from
-// "Add to my menu" on the record's own page (it knows the record; a typed id would not).
+// "Record…" (AddRecordRow, the universal record picker) and "Add to my menu" on the record's own page.
 import { useState } from "react";
 import { FolderPlus, LayoutGrid, Link2, Plus, Zap } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
