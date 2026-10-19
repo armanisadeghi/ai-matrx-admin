@@ -15,7 +15,20 @@ import { storeError } from "../baseStore";
 import { sayError } from "../sayError";
 
 const DIR = join(__dirname, "..");
-const files = readdirSync(DIR).filter((f) => /\.(ts|tsx)$/.test(f));
+// Every source file under features/unified-data/base, subfolders included (AT-REVIEW-3); tests are not screens.
+function sources(dir: string, rel = ""): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? e.name === "__tests__" ? [] : sources(join(dir, e.name), join(rel, e.name))
+      : /\.(ts|tsx)$/.test(e.name) && !/\.test\.(ts|tsx)$/.test(e.name) ? [join(rel, e.name)] : [],
+  );
+}
+const files = sources(DIR);
+
+it("the scan sees every base file, subfolders included", () => {
+  expect(files).toEqual(expect.arrayContaining(["BaseScreens.tsx", "baseStore.ts", "sayError.ts"]));
+  expect(files.some((f) => f.includes("__tests__"))).toBe(false);
+});
 
 it("no base screen turns a caught error into on-screen text by hand", () => {
   const offenders: string[] = [];
