@@ -53,6 +53,9 @@ jest.mock("../gallery/publicCatalogue.server", () => {
   };
 });
 
+// The search box's island moves the address with the app router, which a static render does not mount.
+jest.mock("next/navigation", () => ({ ...jest.requireActual("next/navigation"), useRouter: () => ({ replace: () => undefined }) }));
+
 // The install island is a client component over the store; signed out it is the sign-up link.
 jest.mock("../gallery/TemplateUseAction", () => ({
   TemplateUseAction: ({ signUpHref }: { signUpHref: string }) => <a href={signUpHref}>Use this template</a>,

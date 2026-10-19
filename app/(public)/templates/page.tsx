@@ -7,22 +7,27 @@ import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
+import { galleryPageHref, pageParam, PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
 import { industryHref, PUBLIC_GALLERY_PATH } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue } from "@/features/make/gallery/publicCatalogue.server";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = createRouteMetadata(PUBLIC_GALLERY_PATH, {
-  title: "Templates",
-  description: "Ready-made workspaces, tables, boards and dashboards for your business, filled with sample data. Search, preview every page, make it yours.",
-  canonicalPath: PUBLIC_GALLERY_PATH,
-});
+type Search = Promise<{ industry?: string; q?: string; page?: string }>;
 
-export default async function PublicTemplatesPage({ searchParams }: { searchParams: Promise<{ industry?: string; q?: string }> }) {
-  const { industry, q } = await searchParams;
+export async function generateMetadata({ searchParams }: { searchParams: Search }): Promise<Metadata> {
+  const page = pageParam((await searchParams).page);
+  return createRouteMetadata(PUBLIC_GALLERY_PATH, {
+    title: page > 1 ? `Templates, page ${page}` : "Templates",
+    description: "Ready-made workspaces, tables, boards and dashboards for your business, filled with sample data. Search, preview every page, make it yours.",
+    canonicalPath: galleryPageHref(PUBLIC_GALLERY_PATH, "", page),
+  });
+}
+
+export default async function PublicTemplatesPage({ searchParams }: { searchParams: Search }) {
+  const { industry, q, page } = await searchParams;
   if (industry) permanentRedirect(industryHref(industry));
   const read = await readPublicCatalogue();
   const cards = read.state === "open" ? read.cards : [];
-  return <PublicGalleryPage title="Templates" cards={cards} all={cards} path={PUBLIC_GALLERY_PATH} query={q ?? ""} hub state={read.state} />;
+  return <PublicGalleryPage title="Templates" cards={cards} all={cards} path={PUBLIC_GALLERY_PATH} query={q ?? ""} page={pageParam(page)} hub state={read.state} />;
 }

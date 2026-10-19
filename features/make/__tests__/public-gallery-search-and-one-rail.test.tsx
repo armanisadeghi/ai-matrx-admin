@@ -84,6 +84,8 @@ import PublicTemplatesPage from "@/app/(public)/templates/page";
 import PublicTemplatePage, { generateMetadata } from "@/app/(public)/templates/[slug]/page";
 // eslint-disable-next-line import/first
 import WorkspaceCategoryPage from "@/app/(public)/templates/workspaces/[category]/page";
+// eslint-disable-next-line import/first
+import WorkspaceTemplatesPage from "@/app/(public)/templates/workspaces/page";
 
 const html = async (node: Promise<React.ReactElement>) => renderToStaticMarkup(await node);
 const hub = (q?: string) => html(PublicTemplatesPage({ searchParams: Promise.resolve(q === undefined ? {} : { q }) }));
@@ -131,7 +133,8 @@ describe("the public gallery searches, leads with featured templates and has one
   });
 
   it("every workspace card shows a picture of its table, drawn on the server", async () => {
-    const page = await hub();
+    // The hub pictures only the featured row (GALLERY-PERF); the workspace list pictures every card.
+    const page = await html(WorkspaceTemplatesPage({ searchParams: Promise.resolve({}) }));
     const cards = page.split('data-space-card-picture=""').length - 1;
     expect(cards).toBeGreaterThanOrEqual(SPACES.length);
     expect(page).toContain("data-template-thumb");

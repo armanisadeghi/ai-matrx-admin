@@ -7,31 +7,32 @@ import { INDUSTRY_GROUPS } from "@ai-matrx/records/templates";
 
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { wordFor } from "@/features/make/gallery/catalogue";
-import { PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
+import { galleryPageHref, pageParam, PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
 import { industryHref, INDUSTRY_CATEGORY } from "@/features/make/gallery/publicGallery";
 import { readPublicCatalogue } from "@/features/make/gallery/publicCatalogue.server";
 
 export const revalidate = 60;
 
-type Props = { params: Promise<{ industry: string }>; searchParams: Promise<{ q?: string }> };
+type Props = { params: Promise<{ industry: string }>; searchParams: Promise<{ q?: string; page?: string }> };
 
 export function generateStaticParams() {
   return INDUSTRY_GROUPS.map((industry) => ({ industry }));
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { industry } = await params;
+  const page = pageParam((await searchParams).page);
   const word = wordFor("industry", industry);
   return createRouteMetadata(industryHref(industry), {
-    title: `${word} templates`,
+    title: page > 1 ? `${word} templates, page ${page}` : `${word} templates`,
     description: `Ready-made ${word.toLowerCase()} tables, forms, booking pages and dashboards, filled with sample data. Pick one and it is yours in seconds.`,
-    canonicalPath: industryHref(industry),
+    canonicalPath: galleryPageHref(industryHref(industry), "", page),
   });
 }
 
 export default async function IndustryTemplatesPage({ params, searchParams }: Props) {
   const { industry } = await params;
-  const { q } = await searchParams;
+  const { q, page } = await searchParams;
   if (!(INDUSTRY_GROUPS as readonly string[]).includes(industry)) notFound();
   const read = await readPublicCatalogue();
   const all = read.state === "open" ? read.cards : [];
@@ -43,6 +44,7 @@ export default async function IndustryTemplatesPage({ params, searchParams }: Pr
       all={all}
       path={industryHref(industry)}
       query={q ?? ""}
+      page={pageParam(page)}
       active={INDUSTRY_CATEGORY[industry] ?? null}
       state={read.state}
     />

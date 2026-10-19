@@ -4,7 +4,8 @@
 //
 // Server-rendered from the one page read (public.template_public_page: card.space + spec + spec.spacePack); the
 // only client islands are the preview (features/spaces/public/TemplatePackPreview, a fence entry point) and
-// the use button. No other data is read.
+// the use button. The preview gets the page frames and outlines only; it reads the spec and pack itself, from the
+// same public door, when the visitor reaches it (GALLERY-PERF) — they never ride this page as client props.
 
 import "@blocknote/shadcn/style.css";
 import "@/features/spaces/spaces.css";
@@ -12,10 +13,9 @@ import "@/features/spaces/spaces.css";
 import Link from "next/link";
 import { Suspense } from "react";
 
-import type { TemplateSpec } from "@ai-matrx/records/templates";
 import { siteConfig } from "@/config/extras/site";
 import { TemplatePackPreview } from "@/features/spaces/public/TemplatePackPreview";
-import { packPagesInOrder, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { packPageSettings, packPagesInOrder, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 
 import { footprintLine, isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
 import { spacePageOutlines } from "./SpacePageOutline";
@@ -141,7 +141,9 @@ export function SpaceTemplatePublicBody({
         </header>
 
         <TemplatePackPreview
-          template={{ id: card.id, catalogue_id: card.catalogue_id, version: card.version, spec: spec as unknown as TemplateSpec, pack }}
+          templateKey={card.slug ?? card.catalogue_id}
+          catalogueId={card.catalogue_id}
+          pages={pages.map((p) => ({ key: p.key, title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p) }))}
           outlines={spacePageOutlines(pages, spec)}
         />
 
