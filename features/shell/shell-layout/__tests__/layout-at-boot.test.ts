@@ -11,7 +11,10 @@
 jest.mock("server-only", () => ({}), { virtual: true });
 const cookieJar = new Map<string, string>();
 jest.mock("next/headers", () => ({
-  cookies: async () => ({ get: (name: string) => (cookieJar.has(name) ? { name, value: cookieJar.get(name) } : undefined) }),
+  cookies: async () => ({
+    get: (name: string) => (cookieJar.has(name) ? { name, value: cookieJar.get(name) } : undefined),
+    set: (name: string, value: string) => void cookieJar.set(name, value),
+  }),
 }));
 
 import { dockItems, primaryNavItems } from "../../constants/nav-data";
@@ -27,7 +30,7 @@ import reducer, {
   shellLayoutStored,
   type ShellLayoutState,
 } from "../shellLayoutSlice";
-import { pickShellLayoutServer } from "../server";
+import { markShellLayoutDeviceAtSignIn, pickShellLayoutServer } from "../server";
 import { parseCoreBootSeed, type CoreBootSeed } from "@/lib/boot/coreBootSeedShape";
 import { REHYDRATE_ACTION_TYPE } from "@/lib/sync/engine/rehydrate";
 
@@ -187,5 +190,22 @@ describe("the held layouts, after boot", () => {
     expect(reducer(first, shellLayoutLoaded(null, 3_000)).person).toBeNull();
     const freshFetch = { ...staleFetch, payload: { ...staleFetch.payload, state: { ...staleFetch.payload.state, requestedAt: 3_000 } } };
     expect(reducer(first, freshFetch).person).toBeNull();
+  });
+});
+
+describe("sign-in tells the device it holds a layout (so a late seed reserves, never paints the default)", () => {
+  const client = (data: unknown) => ({ schema: () => ({ rpc: async () => ({ data, error: null }) }) });
+  beforeEach(() => cookieJar.clear());
+
+  it("sets matrx_shell=1 when the person or an organization holds a layout; a later seed miss reserves", async () => {
+    await markShellLayoutDeviceAtSignIn(client({ person: stored("mine", ORG_A), organizations: {} }));
+    expect(cookieJar.get(SHELL_CUSTOM_COOKIE)).toBe("1");
+    expect(await pickShellLayoutServer(null, null)).toMatchObject({ reserved: true, status: "unknown" });
+  });
+
+  it("leaves the cookie off for someone with no layout (no reserve, the default paints at once)", async () => {
+    await markShellLayoutDeviceAtSignIn(client(null));
+    expect(cookieJar.has(SHELL_CUSTOM_COOKIE)).toBe(false);
+    expect(await pickShellLayoutServer(null, null)).toMatchObject({ reserved: false });
   });
 });

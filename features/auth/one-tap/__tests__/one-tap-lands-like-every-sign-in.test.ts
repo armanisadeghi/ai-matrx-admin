@@ -5,7 +5,7 @@
  * RED when: the action lands on /dashboard while a saved landing exists, or a deep link loses to the landing.
  */
 const landing = jest.fn<Promise<string | null>, []>();
-jest.mock("@/features/shell/shell-layout/server", () => ({ shellLandingAfterSignIn: () => landing() }));
+jest.mock("@/features/shell/shell-layout/server", () => ({ shellLandingAfterSignIn: () => landing(), markShellLayoutDeviceAtSignIn: async () => undefined }));
 jest.mock("@/utils/supabase/server", () => ({ createClient: async () => ({ auth: { signInWithIdToken: jest.fn() } }) }));
 jest.mock("@/lib/guest/session-handover", () => ({
   handOverSession: async () => ({ data: { user: { id: "u-1", is_anonymous: false } }, error: null }),
