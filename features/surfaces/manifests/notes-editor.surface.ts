@@ -54,6 +54,8 @@ export function createNotesScope(values: {
     __kind: "resource_ref";
     resource_type: "note";
     resource_id: string;
+    /** Which view the server inlines: the note's body. */
+    representation?: "content";
     overlay?: { content: string; is_dirty: true };
   };
   current_note_id?: string;

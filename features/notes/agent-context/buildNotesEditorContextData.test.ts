@@ -28,6 +28,7 @@ describe("notes agent context", () => {
       __kind: "resource_ref",
       resource_type: "note",
       resource_id: NOTE_ID,
+      representation: "content",
     });
     // The body on screen is always supplied on the universal key.
     expect(scope.content).toBe("# Heading\nA persisted note body.");
