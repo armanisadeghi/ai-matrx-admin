@@ -11,6 +11,9 @@ export const TABLE_ENTITY = "data-table";
 /** `meta.layout` of a table tile drawn as a section (records-ui `SectionCard`) rather than the table page. */
 export const TABLE_LAYOUT_SECTION = "section";
 
+/** `meta.layout` of a custom-table tile drawn as a table card (records-ui `RecordsTableCard`): a click on a row opens that row's detail inside the card, with Back. */
+export const TABLE_LAYOUT_CARD = "card";
+
 /**
  * A TABLE TILE OVER A REAL SCHEMA TABLE. The platform keeps its own data in tables made with
  * `platform.create_entity_table` (`web.brand_choice`, token `web_brand_choice`), not in custom Tables, so a

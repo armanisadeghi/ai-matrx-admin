@@ -14,6 +14,7 @@ import { Columns3, Link2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input, Select, Switch } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { extractErrorMessage } from "@/utils/errors";
 
 import { connectSyncedLink, previewSyncedLink, type ColumnKind, type ColumnPick } from "./service";
@@ -160,9 +161,9 @@ export function SyncFromLinkForm({ organizationId }: { organizationId: string })
         </div>
       ) : null}
       {error ? (
-        <p role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive-ink" data-sync-from-link-error="">
-          {error}
-        </p>
+        <div data-sync-from-link-error="">
+          <ErrorNotice size="inline" message={error} className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm" />
+        </div>
       ) : null}
     </form>
   );

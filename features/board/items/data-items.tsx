@@ -50,7 +50,7 @@ import { dataHomeTables, findTables } from "./record-finders";
 import { GetDataBody } from "../data-fetch/GetDataBody";
 import { FetchedSourceBar } from "../data-fetch/FetchedSourceBar";
 import { getDataSource, readDataFetchMeta } from "../data-fetch/tile-meta";
-import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, entityTableOf, tableLookHint, type EntityTileFilter } from "./table-tile";
+import { TABLE_ENTITY, TABLE_LAYOUT_CARD, TABLE_LAYOUT_SECTION, entityTableOf, tableLookHint, type EntityTileFilter } from "./table-tile";
 import { useTileAutoHeight } from "../components/BoardTile";
 
 
@@ -64,14 +64,21 @@ function tableSource(id: string | null): NodeSource {
  * Colors, a case plan's deadlines). Kept on the tile as `meta.layout`; the table is the same record.
  */
 
-export function tableLayoutOf(source: NodeSource): "table" | "section" {
-  return source.kind === "entity" && source.meta?.layout === TABLE_LAYOUT_SECTION ? "section" : "table";
+export type TableLayout = "table" | "section" | "card";
+
+export function tableLayoutOf(source: NodeSource): TableLayout {
+  if (source.kind !== "entity") return "table";
+  if (source.meta?.layout === TABLE_LAYOUT_SECTION) return "section";
+  // A card is the custom table's own: a registered schema table has no row detail to open inside it.
+  if (source.meta?.layout === TABLE_LAYOUT_CARD && source.entity === TABLE_ENTITY && source.id) return "card";
+  return "table";
 }
 
-function withTableLayout(source: NodeSource, layout: "table" | "section"): NodeSource {
+function withTableLayout(source: NodeSource, layout: TableLayout): NodeSource {
   if (source.kind !== "entity") return source;
   const rest = Object.fromEntries(Object.entries(source.meta ?? {}).filter(([k]) => k !== "layout"));
-  const meta = layout === "section" ? { ...rest, layout: TABLE_LAYOUT_SECTION } : rest;
+  const meta =
+    layout === "section" ? { ...rest, layout: TABLE_LAYOUT_SECTION } : layout === "card" ? { ...rest, layout: TABLE_LAYOUT_CARD } : rest;
   const { meta: _old, ...base } = source;
   void _old;
   return Object.keys(meta).length > 0 ? { ...base, meta } : base;
@@ -221,7 +228,8 @@ function AdoptTableLook({ tableId, source, onSource }: { tableId: string } & Pic
 /** The table tile's own "…" entries: switch between the table page and the section card. */
 export function tableMenuActions({ source, onSource }: TileMenuContext): TileMenuAction[] {
   if (!tableIdOf(source) && !entityTableOf(source)) return [];
-  const next = tableLayoutOf(source) === "section" ? "table" : "section";
+  const now = tableLayoutOf(source);
+  const next = now === "table" ? "section" : "table";
   return [
     {
       key: "layout",
@@ -229,6 +237,10 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
       icon: next === "section" ? LayoutList : Table2,
       onSelect: () => onSource(withTableLayout(source, next)),
     },
+    // A custom table only: a row clicked in the card opens its detail inside the card (records-ui `openRowInCard`).
+    ...(tableIdOf(source) && now !== "card"
+      ? [{ key: "card", label: "Show as card", icon: LayoutList, onSelect: () => onSource(withTableLayout(source, "card")) }]
+      : []),
   ];
 }
 
@@ -279,6 +291,7 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
   // A table made by "Get data" (anywhere) says where its rows came from, with Refresh and Get more.
   const fetched = (source.kind === "entity" ? readDataFetchMeta(source.meta)?.fetched : undefined) ?? null;
   const section = tableLayoutOf(source) === "section";
+  const card = tableLayoutOf(source) === "card";
   // Page layout: the section card IS the tile (no padding, no inner scroll); the tile takes its height.
   const auto = useTileAutoHeight() && section;
   return (
@@ -301,7 +314,11 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
             <AdoptTableLook tableId={id} source={source} onSource={onSource} />
           </>
         }
-        {...(section ? { content: <SectionWithBoardTokens tableId={id} title={title} /> } : {})}
+        {...(section
+          ? { content: <SectionWithBoardTokens tableId={id} title={title} /> }
+          : card
+            ? { content: <RecordsTableCard source={{ kind: "table", id }} openRowInCard editable /> }
+            : {})}
       />
     </div>
   );
@@ -439,7 +456,7 @@ export const DATA_ITEMS: readonly BoardItemType[] = [
     Body: TableItemBody,
     menuActions: tableMenuActions,
     // A section card carries its own title (its h2) and lays out at its natural height.
-    namesItself: (s) => (Boolean(tableIdOf(s)) || Boolean(entityTableOf(s))) && tableLayoutOf(s) === "section",
+    namesItself: (s) => (Boolean(tableIdOf(s)) || Boolean(entityTableOf(s))) && tableLayoutOf(s) !== "table",
     autoHeight: (s) => (Boolean(tableIdOf(s)) || Boolean(entityTableOf(s))) && tableLayoutOf(s) === "section",
     // Wakes with its grid, scroll, selection and open cell intact: the gates keep their answers
     // (lib/kept-answer), so a wake never drops to "Opening the table…" (lane REMOUNT-SAFETY).

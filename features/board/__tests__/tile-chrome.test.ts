@@ -11,7 +11,7 @@
  * chapters; a page re-flow that keeps resizing a chapter's one tile.
  */
 
-import { DATA_ITEMS } from "../items/data-items";
+import { DATA_ITEMS, tableLayoutOf } from "../items/data-items";
 import { TABLE_ENTITY, TABLE_LAYOUT_SECTION, tableLookHint } from "../items/table-tile";
 import { tileMenuKeys } from "../components/TileMenu";
 import {
@@ -39,12 +39,13 @@ describe("one menu per tile", () => {
       "open",
       "fullscreen",
       "type:layout",
+      "type:card",
     ]);
   });
 
   it("the table's layout switch is a menu entry that flips the layout", () => {
     let next: NodeSource | null = null;
-    const [toSection] = table.menuActions!({ tileId: "a", source: plain, title: "Colors", onSource: (s) => (next = s) });
+    const [toSection, toCard] = table.menuActions!({ tileId: "a", source: plain, title: "Colors", onSource: (s) => (next = s) });
     expect(toSection.label).toBe("Show as section");
     toSection.onSelect();
     expect(next).toEqual(section);
@@ -52,6 +53,17 @@ describe("one menu per tile", () => {
     expect(toTable.label).toBe("Show as table");
     toTable.onSelect();
     expect(next).toEqual(plain);
+    // AT-FIX-F: "Show as card" keeps the same table and draws it in the table card whose rows open inside it.
+    expect(toCard.label).toBe("Show as card");
+    toCard.onSelect();
+    expect(next).toEqual({ ...plain, meta: { layout: "card" } });
+    const asCard = next as unknown as NodeSource;
+    expect(tableLayoutOf(asCard)).toBe("card");
+    const [fromCard, noMoreCard] = table.menuActions!({ tileId: "a", source: asCard, title: "Colors", onSource: (s) => (next = s) });
+    expect(fromCard.label).toBe("Show as table");
+    expect(noMoreCard).toBeUndefined();
+    // a registered schema table has no row detail to open inside a card
+    expect(tableLayoutOf({ kind: "entity", entity: TABLE_ENTITY, id: null, meta: { layout: "card", token: "web_brand_choice" } })).toBe("table");
   });
 
   it("a draft table (no id) has no layout entry", () => {

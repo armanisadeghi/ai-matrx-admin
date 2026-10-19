@@ -112,7 +112,8 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
     if (!isOutside || opened.current || !orgId) return;
     opened.current = true;
     const last = source?.synced_at ? new Date(source.synced_at).getTime() : 0;
-    if (Date.now() - last > OPEN_REFRESH_AFTER_MS) void refresh(true);
+    // In a promise callback, never the effect body: the refresh sets `busy` (a synchronous setState in an effect cascades renders).
+    if (Date.now() - last > OPEN_REFRESH_AFTER_MS) void Promise.resolve().then(() => refresh(true));
   }, [isOutside, orgId, source?.synced_at, refresh]);
 
   if (!source?.provider) return null;

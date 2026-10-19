@@ -1981,7 +1981,7 @@ body[style*="pointer-events: none"] {
 :root[data-admin-attention] .shell-main::after {
   content: "";
   display: block;
-  height: max(var(--shell-fixed-alert-clearance), var(--matrx-floating-clearance));
+  height: max(var(--shell-fixed-alert-clearance), var(--matrx-page-runway));
   pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule below */
 }
 
@@ -2143,6 +2143,13 @@ body[style*="pointer-events: none"] {
     max(var(--matrx-floating-measured, 0px), env(safe-area-inset-bottom, 0px)) +
       var(--matrx-page-end)
   );
+  /* THE PAGE RUNWAY (owner, 2026-10-19): every page that scrolls can scroll
+     its last line up to about HALF the screen — never less than what floats.
+     The one value every page scroller, notes editor pane and education page
+     reads; nothing hand-writes a big bottom padding. lib/layout/page-rhythm.ts
+     PAGE_RUNWAY_VIEWPORT_FRACTION pins it; the dev guard screams
+     `[page-runway]` when a page ends short of it. */
+  --matrx-page-runway: max(50dvh, var(--matrx-floating-clearance));
 }
 
 /* A DIALOG BODY THAT SCROLLS ENDS CLEAR OF FLOATING CHROME TOO. A dialog is portalled outside
@@ -2187,7 +2194,7 @@ body[style*="pointer-events: none"] {
   flex: none;
   grid-column: 1 / -1;
   block-size: max(
-    var(--matrx-floating-clearance),
+    var(--matrx-page-runway),
     var(--shell-fixed-alert-clearance, 0px)
   );
   pointer-events: none;
@@ -2327,7 +2334,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   grid-column: 1 / -1;
-  block-size: max(var(--matrx-floating-clearance), var(--shell-fixed-alert-clearance, 0px));
+  block-size: max(var(--matrx-page-runway), var(--shell-fixed-alert-clearance, 0px));
   pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule above */
 }
 
@@ -2348,7 +2355,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   grid-column: 1 / -1;
-  block-size: max(var(--matrx-floating-clearance), var(--shell-fixed-alert-clearance, 0px));
+  block-size: max(var(--matrx-page-runway), var(--shell-fixed-alert-clearance, 0px));
   pointer-events: none;  visibility: hidden; /* not a layout-shift source — see the runway rule above */
 }
 
@@ -2362,16 +2369,12 @@ body[style*="pointer-events: none"] {
 .education-scroll-boundary > .overflow-y-auto,
 .education-scroll-boundary > .overflow-auto {
   padding-block-end: max(
-    20rem,
-    40dvh,
-    calc(var(--keyboard-inset-height, 0px) + 6rem),
-    var(--matrx-floating-clearance)
+    var(--matrx-page-runway),
+    calc(var(--keyboard-inset-height, 0px) + 6rem)
   );
   scroll-padding-bottom: max(
-    20rem,
-    40dvh,
-    calc(var(--keyboard-inset-height, 0px) + 6rem),
-    var(--matrx-floating-clearance)
+    var(--matrx-floating-clearance),
+    calc(var(--keyboard-inset-height, 0px) + 6rem)
   );
 }
 
@@ -2387,8 +2390,7 @@ body[style*="pointer-events: none"] {
   display: block;
   flex: none;
   block-size: max(
-    20rem,
-    40dvh,
+    var(--matrx-page-runway),
     calc(var(--keyboard-inset-height, 0px) + 6rem)
   );
   pointer-events: none;
