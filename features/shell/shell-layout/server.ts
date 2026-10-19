@@ -18,6 +18,9 @@ import { predictedOrganizationId } from "@/lib/boot/coreBootSeed.server";
 import type { CoreBootSeed } from "@/lib/boot/coreBootSeedShape";
 import { SHELL_CUSTOM_COOKIE, SHELL_VIEW_COOKIE } from "./contract";
 import { seedShellLayoutState, type ShellLayoutState } from "./shellLayoutSlice";
+import { parseShellBootSeed } from "./seed";
+import { shellLandingHref } from "./resolve";
+import { parseShellLayoutBody } from "./validate";
 
 export async function pickShellLayoutServer(seed: CoreBootSeed | null, search: string | null): Promise<ShellLayoutState> {
   const jar = await cookies();
@@ -31,4 +34,35 @@ export async function pickShellLayoutServer(seed: CoreBootSeed | null, search: s
     standardView,
     reserved: seed === null && customized && !standardView,
   });
+}
+
+type RpcClient = {
+  schema(name: string): unknown;
+};
+
+/**
+ * Where a sign-in with NO explicit destination lands: the person's layout's `landing`, else the landing
+ * every one of her organizations' layouts agrees on; null = the platform default. An explicit destination
+ * (a bounced person's `redirectTo`) always wins — callers ask this only when there is none
+ * (utils/auth/FEATURE.md). One small RPC on the sign-in path only; a failure is the default, loudly.
+ */
+export async function shellLandingAfterSignIn(supabase: RpcClient): Promise<string | null> {
+  try {
+    const answer = await (supabase.schema("iam") as {
+      rpc(name: string, args?: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>;
+    }).rpc("shell_layout_seed", { p_organization_ids: null });
+    if (answer.error) {
+      console.warn(`[shell-layout] landing read failed (${answer.error.message}); the default destination is used`);
+      return null;
+    }
+    const seed = parseShellBootSeed(answer.data, "iam.shell_layout_seed() at sign-in");
+    if (!seed) return null;
+    const landingOf = (body: string) => shellLandingHref(parseShellLayoutBody(body).body?.landing ?? null);
+    if (seed.person) return landingOf(seed.person.body);
+    const orgLandings = new Set(Object.values(seed.organizations).map((o) => landingOf(o.body)));
+    return orgLandings.size === 1 ? ([...orgLandings][0] ?? null) : null;
+  } catch (error) {
+    console.warn("[shell-layout] landing read threw; the default destination is used", error);
+    return null;
+  }
 }

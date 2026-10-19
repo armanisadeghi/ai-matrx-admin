@@ -126,6 +126,16 @@ The shell chat opens by default at >= 1440px. A route whose own layout needs the
 `SHELL_CHAT_CLOSED_BY_DEFAULT_PAGES` (`../aidream/apps/shared/chat/src/canvas/workspace/shell-chat-route.ts`; `/spaces` is on it):
 the chat starts closed, the person opens it by hand (the rail's Chat row on a desktop, the header toggle at 768–1023px, the ⋮ row on a phone, Cmd+\), and a remembered choice still wins.
 
+## CUSTOM LAYOUTS — the menu, header and dock a person or organization saved (2026-10-19)
+
+The Sidebar rows, phone drawer, Dock and the header control set render from ONE resolved layout
+(`shell-layout/useResolvedShellLayout`), picked on the server from `iam.core_boot_seed().shell` (null for
+everyone who never customized — the default renders the nav-data arrays themselves, byte-identical) and
+seeded into the store, so the first frame is already theirs and a save re-renders live. Cookies:
+`matrx_shell=1` (this browser holds a layout → a late seed reserves the nav column) and
+`matrx_shell_view=standard` (Standard view, Settings menu). Storage, boot path and the editor door:
+[`shell-layout/FEATURE.md`](./shell-layout/FEATURE.md).
+
 ## Change log
 
 - `2026-10-19` — claude (custom-experience lane A): **every nav node has a permanent id** (`ShellNavItem.id` / `ShellNavChild.id`, guard `__tests__/nav-ids.test.ts`) and `shell-layout/` gains the catalog, validator and resolver for custom layouts — read `shell-layout/FEATURE.md`. Renderers unchanged.

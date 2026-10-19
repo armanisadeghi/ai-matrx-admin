@@ -39,7 +39,7 @@ const body = (label: string): string =>
   serializeShellLayoutBody({
     schemaVersion: SHELL_LAYOUT_SCHEMA_VERSION,
     basedOnCatalogVersion: SHELL_CATALOG_VERSION,
-    sidebar: [{ kind: "link", id: `l.${label}`, label, icon: "Link", href: `/${label}` }],
+    sidebar: [{ kind: "link", id: `l.${label}`, label, icon: "Link2", href: `/${label}` }],
   } satisfies ShellLayoutBody);
 
 const stored = (label: string, organizationId: string, version = 1) => ({

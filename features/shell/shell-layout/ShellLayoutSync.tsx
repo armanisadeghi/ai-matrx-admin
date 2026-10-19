@@ -16,7 +16,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { RootState } from "@/lib/redux/rootReducer";
 import { drainBootSeeds } from "@/lib/boot/bootSeedSlot";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
-import { SHELL_CUSTOM_COOKIE } from "./contract";
+import { SHELL_CUSTOM_COOKIE, SHELL_VIEW_COOKIE } from "./contract";
 import { holdsShellLayout, initialShellLayoutState, shellLayoutOrganizationChanged } from "./shellLayoutSlice";
 
 /** The streamed seed's own deadline (`CORE_SEED_STREAM_DEADLINE_MS`) plus a margin. */
@@ -59,5 +59,24 @@ export default function ShellLayoutSync() {
     if (!holds && present) document.cookie = `${SHELL_CUSTOM_COOKIE}=; path=/; max-age=0; samesite=lax`;
   }, [holds]);
 
+  // Another tab flipped Standard view (broadcast): this tab's cookie follows the store.
+  const standardView = enabled ? held.standardView : null;
+  useEffect(() => {
+    if (standardView === null) return;
+    const present = document.cookie.split("; ").some((c) => c === `${SHELL_VIEW_COOKIE}=standard`);
+    if (standardView !== present) setShellStandardViewCookie(standardView);
+  }, [standardView]);
+
   return null;
+}
+
+/**
+ * THE STANDARD VIEW switch (custom-experience §1.4): one press shows the built-in default everywhere,
+ * at once (the slice re-renders the shell; other tabs follow by broadcast), and the cookie makes the
+ * next server render default too. Pressing again brings the saved layout back. Nothing is deleted.
+ */
+export function setShellStandardViewCookie(on: boolean): void {
+  document.cookie = on
+    ? `${SHELL_VIEW_COOKIE}=standard; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`
+    : `${SHELL_VIEW_COOKIE}=; path=/; max-age=0; samesite=lax`;
 }
