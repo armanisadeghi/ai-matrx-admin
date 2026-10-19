@@ -11539,6 +11539,12 @@
       "filename": "template_fresh3_e_archive_honours_its_time_budget_per_row.sql",
       "checksum": "0e3dedff037d5249837bb6129b31edf8909f1346bc4bb6255c88bdc95031b504",
       "applied_at": "2026-10-19 16:54:44.823636+00"
+    },
+    "migrations/campaign/20261019190000_atslack_a_post_in_slack_step_as_the_owner.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019190000_atslack_a_post_in_slack_step_as_the_owner.sql",
+      "checksum": "74a41b9cb2fb80178e11b8cd4b5a9fcd82e1fc426451c3ada9d19380d27f71de",
+      "applied_at": "2026-10-19 17:09:00.964806+00"
     }
   }
 }
