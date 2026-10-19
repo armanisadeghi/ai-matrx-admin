@@ -94,7 +94,7 @@ export function StickyCard({ shape, box, editing }: { shape: BoardShape; box: Re
           style={{ textAlign: alignOf(st.textAlign) }}
         >
           {/* Below legibility the words become bars along their own lines (`.board-ink`). */}
-          {text}
+          <span className="board-ink">{text}</span>
         </div>
       )}
     </div>

@@ -542,7 +542,7 @@ export function BoardTile({
 
   const culled = tier === "offscreen";
   const overview = level !== "full";
-  const mountBody = true || focused || interacting || chrome.autoHeight || chrome.growToFit;
+  const mountBody = bodyWanted || focused || interacting || chrome.autoHeight || chrome.growToFit;
 
   // Auto height: the card lays out at its content's height and the tile follows it. Only a real
   // change of a READY measurement is written (`tileContentReady`: never a skeleton, a loading table, an
