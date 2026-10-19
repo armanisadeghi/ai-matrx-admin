@@ -54,8 +54,22 @@ const INVISIBLES = new RegExp(
 );
 const UNICODE_SPACES = new RegExp(
   `[${chars(
-    0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
-    0x2007, 0x2008, 0x2009, 0x200a, 0x202f, 0x205f, 0x3000,
+    0x00a0,
+    0x1680,
+    0x2000,
+    0x2001,
+    0x2002,
+    0x2003,
+    0x2004,
+    0x2005,
+    0x2006,
+    0x2007,
+    0x2008,
+    0x2009,
+    0x200a,
+    0x202f,
+    0x205f,
+    0x3000,
   )}]`,
   "g",
 );
@@ -73,7 +87,14 @@ export const PROTECTED_CLOSE = String.fromCodePoint(0xe001);
 const ELLIPSIS = new RegExp(chars(0x2026), "g");
 const BULLET_GLYPHS = new RegExp(
   `^(\\s*)[${chars(
-    0x2022, 0x2023, 0x25e6, 0x2043, 0x2219, 0x25aa, 0x25cf, 0x00b7,
+    0x2022,
+    0x2023,
+    0x25e6,
+    0x2043,
+    0x2219,
+    0x25aa,
+    0x25cf,
+    0x00b7,
   )}]\\s+`,
   "gm",
 );
@@ -90,7 +111,11 @@ function regexEdits(
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) !== null) {
     if (typeof make === "string") {
-      out.push({ start: m.index, end: m.index + m[0].length, replacement: make });
+      out.push({
+        start: m.index,
+        end: m.index + m[0].length,
+        replacement: make,
+      });
     } else {
       out.push(make(m));
     }
@@ -111,6 +136,119 @@ export function applyEdits(text: string, edits: CleanupEdit[]): string {
 
 function fromEdits(text: string, edits: CleanupEdit[]): OperationRunResult {
   return { text: applyEdits(text, edits), changes: edits.length };
+}
+
+/** Code points a decoder may never produce: NUL, lone surrogates, and the two
+ *  protected-region sentinels (decoding one would desync the unmask step). */
+function decodableCodePoint(cp: number): boolean {
+  return (
+    Number.isInteger(cp) &&
+    cp > 0 &&
+    cp <= 0x10ffff &&
+    !(cp >= 0xd800 && cp <= 0xdfff) &&
+    cp !== 0xe000 &&
+    cp !== 0xe001
+  );
+}
+
+/** A literal escape sequence as text: `\n`, `\t`, `\r\n`, `\"`, `\'`, `\uXXXX`.
+ *  The lookbehind skips an escaped backslash (`\\n` is a backslash + "n"). */
+const LITERAL_ESCAPES = /(?<!\\)\\(r\\n|[nrt"']|u[0-9a-fA-F]{4})/g;
+
+/** A backslash run before ASCII punctuation: a markdown escape (CommonMark
+ *  allows exactly this set). Doubled runs (`\\*`) are re-escaped pastes. */
+const MARKDOWN_ESCAPES = /\\+(?=[!-/:-@[-`{-~])/g;
+
+/** LaTeX math spans: `$$...$$`, `$...$`, and `\\(...\\)` / `\\[...\\]` pairs whose
+ *  body carries a LaTeX command, `^` or `_` (a plain `\\[link\\]` is not math). */
+function mathSpans(t: string): BlockSpan[] {
+  const out: BlockSpan[] = [];
+  const re =
+    /\$\$[\s\S]+?\$\$|\$(?=\S)[^$\n]+?(?<=\S)\$|\\\(([\s\S]+?)\\\)|\\\[([\s\S]+?)\\\]/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(t)) !== null) {
+    const body = m[1] ?? m[2];
+    if (body !== undefined && !/\\[a-zA-Z]|[\^_]/.test(body)) {
+      re.lastIndex = m.index + 2; // not math; let its interior be scanned
+      continue;
+    }
+    out.push({ start: m.index, end: m.index + m[0].length });
+  }
+  return out;
+}
+
+/** Named HTML entities decoded by `decode-html-entities` (lowercase keys).
+ *  Values are code points so the source stays ASCII. */
+const NAMED_ENTITIES: Record<string, number> = {
+  amp: 0x26,
+  lt: 0x3c,
+  gt: 0x3e,
+  quot: 0x22,
+  apos: 0x27,
+  nbsp: 0x20,
+  mdash: 0x2014,
+  ndash: 0x2013,
+  hellip: 0x2026,
+  bull: 0x2022,
+  middot: 0x00b7,
+  lsquo: 0x2018,
+  rsquo: 0x2019,
+  ldquo: 0x201c,
+  rdquo: 0x201d,
+  copy: 0x00a9,
+  reg: 0x00ae,
+  trade: 0x2122,
+  deg: 0x00b0,
+  times: 0x00d7,
+  rarr: 0x2192,
+  larr: 0x2190,
+  euro: 0x20ac,
+  pound: 0x00a3,
+  cent: 0x00a2,
+};
+/** One pass, so `&amp;lt;` decodes once to `&lt;` and stops there. */
+const HTML_ENTITY =
+  /&(#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z]{2,8});|<br\s*\/?>/g;
+
+function decodeEntity(match: string, body: string | undefined): string | null {
+  if (body === undefined) return "\n"; // <br>
+  let cp: number | undefined;
+  if (body[0] === "#") {
+    cp =
+      body[1] === "x" || body[1] === "X"
+        ? Number.parseInt(body.slice(2), 16)
+        : Number.parseInt(body.slice(1), 10);
+  } else {
+    cp = NAMED_ENTITIES[body.toLowerCase()];
+  }
+  if (cp === undefined || !decodableCodePoint(cp)) return null;
+  // &#160; / &nbsp; become a plain space, never a non-breaking one.
+  return cp === 0xa0 ? " " : String.fromCodePoint(cp);
+}
+
+/** Edits that turn literal escape sequences into the characters they name.
+ *  Shared with the value engine (`value-operations.ts`). */
+export function decodeEscapeSequenceEdits(t: string): CleanupEdit[] {
+  return regexEdits(t, LITERAL_ESCAPES, (m) => {
+    const seq = m[1];
+    let replacement: string;
+    if (seq === "r\\n" || seq === "n" || seq === "r") replacement = "\n";
+    else if (seq === "t") replacement = "\t";
+    else if (seq[0] === "u") {
+      const cp = Number.parseInt(seq.slice(1), 16);
+      replacement = decodableCodePoint(cp) ? String.fromCodePoint(cp) : m[0];
+    } else replacement = seq; // \" or \'
+    return { start: m.index, end: m.index + m[0].length, replacement };
+  }).filter((e) => t.slice(e.start, e.end) !== e.replacement);
+}
+
+/** Edits removing markdown escape backslashes, skipping LaTeX math.
+ *  Shared with the value engine (`value-operations.ts`). */
+export function unescapeMarkdownEdits(t: string): CleanupEdit[] {
+  const math = mathSpans(t);
+  return regexEdits(t, MARKDOWN_ESCAPES, "").filter(
+    (e) => !math.some((m) => e.start >= m.start && e.start < m.end),
+  );
 }
 
 export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
@@ -135,6 +273,54 @@ export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
     defaultEnabled: true,
     group: "recommended",
     edits: (t) => regexEdits(t, INVISIBLES, ""),
+    run(t) {
+      return fromEdits(t, this.edits(t));
+    },
+  },
+  {
+    id: "decode-escape-sequences",
+    human: "Turned escaped text like \\n into real characters",
+    label: "Decode escape sequences",
+    description:
+      'Literal \\n, \\t, \\" and \\u2019 text become real characters.',
+    defaultEnabled: false,
+    group: "extra",
+    edits: (t) => decodeEscapeSequenceEdits(t),
+    run(t) {
+      return fromEdits(t, this.edits(t));
+    },
+  },
+  {
+    id: "decode-html-entities",
+    human: "Decoded HTML codes like &amp; and <br>",
+    label: "Decode HTML entities",
+    description: "&amp;, &nbsp;, &#39; become characters; <br> a line break.",
+    defaultEnabled: false,
+    group: "extra",
+    edits: (t) => {
+      const out: CleanupEdit[] = [];
+      for (const e of regexEdits(t, HTML_ENTITY, (m) => ({
+        start: m.index,
+        end: m.index + m[0].length,
+        replacement: decodeEntity(m[0], m[1]) ?? m[0],
+      }))) {
+        if (t.slice(e.start, e.end) !== e.replacement) out.push(e);
+      }
+      return out;
+    },
+    run(t) {
+      return fromEdits(t, this.edits(t));
+    },
+  },
+  {
+    id: "unescape-markdown",
+    human: "Removed stray backslashes before markdown symbols",
+    label: "Remove markdown escapes",
+    description: "\\*\\*bold\\*\\* becomes **bold** so formatting renders.",
+    defaultEnabled: true,
+    group: "recommended",
+    // Backslashes inside math ($...$, \\(...\\), \\[...\\]) are LaTeX, not escapes.
+    edits: (t) => unescapeMarkdownEdits(t),
     run(t) {
       return fromEdits(t, this.edits(t));
     },
@@ -269,7 +455,8 @@ export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
     id: "trim-document-edges",
     human: "Removed blank space at the start and end",
     label: "Trim leading/trailing blank lines",
-    description: "Remove blank lines and whitespace at the very top and bottom.",
+    description:
+      "Remove blank lines and whitespace at the very top and bottom.",
     defaultEnabled: true,
     group: "recommended",
     edits: (t) => {
@@ -291,13 +478,15 @@ export const CLEANUP_OPERATIONS: CleanupOperationDef[] = [
 ];
 
 export const CLEANUP_OPERATION_META: CleanupOperationMeta[] =
-  CLEANUP_OPERATIONS.map(({ id, label, description, defaultEnabled, group }) => ({
-    id,
-    label,
-    description,
-    defaultEnabled,
-    group,
-  }));
+  CLEANUP_OPERATIONS.map(
+    ({ id, label, description, defaultEnabled, group }) => ({
+      id,
+      label,
+      description,
+      defaultEnabled,
+      group,
+    }),
+  );
 
 /** Plain-language phrase for an operation id (review headlines). */
 export const OPERATION_HUMAN: Record<CleanupOperationId, string> =

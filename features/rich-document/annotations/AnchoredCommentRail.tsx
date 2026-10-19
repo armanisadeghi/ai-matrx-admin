@@ -22,6 +22,7 @@ import { toast } from "@/lib/toast";
 import type { AnchoredComment, AnchoredThread } from "./anchored-comments";
 import { CommentBody } from "./AnnotationPanel";
 import { MentionComposer } from "./MentionComposer";
+import { SignInAgainButton } from "./signed-out";
 import type { AnnotationSource } from "./types";
 import type { AnchoredComments } from "./useAnchoredComments";
 
@@ -352,7 +353,12 @@ export function AnchoredCommentRail({
           {removedOpen.length || wholeRecord.length || comments.status === "error" ? (
             <div className="flex max-h-[40%] shrink-0 flex-col gap-2 overflow-y-auto border-b border-border p-3">
               {comments.status === "error" ? (
-                <EmptyState icon={<MessageSquare />} title="Comments didn't load" action={<Button variant="outline" onClick={comments.reload}>Try again</Button>} />
+                <EmptyState
+                  icon={<MessageSquare />}
+                  title="Comments didn't load"
+                  line={comments.error?.message}
+                  action={comments.error?.signedOut ? <SignInAgainButton /> : <Button variant="outline" onClick={comments.reload}>Try again</Button>}
+                />
               ) : null}
               {[...removedOpen, ...wholeRecord].map((t) => (
                 <ThreadCard

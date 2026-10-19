@@ -4,12 +4,13 @@
 import React, { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { useSocialAccountInput } from "../components/SocialAccountInput";
-import { fetchAccount } from "../account-lookup";
+import { fetchAccount, findCachedAccount } from "../account-lookup";
 import type { FoundAccount } from "../account-input";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 jest.mock("../account-lookup", () => ({ fetchAccount: jest.fn(), findCachedAccount: jest.fn(async () => null) }));
-jest.mock("../cost", () => ({ useSocialSpend: () => ({ confirmSpend: async () => true, costText: () => null }) }));
+const confirmSpend = jest.fn(async () => true);
+jest.mock("../cost", () => ({ useSocialSpend: () => ({ confirmSpend, costText: () => null }) }));
 jest.mock("../server", () => ({
   profileAvatarDoor: () => "avatar",
   socialErrorCode: () => null,
@@ -57,6 +58,21 @@ test("Track pressed while the lookup runs gets the fetched profile, and the vend
 });
 
 test("no lookup started means Track fetches as before", async () => {
+  await expect(input?.fetchedAccount()).resolves.toBeNull();
+  expect(fetchAccount).not.toHaveBeenCalled();
+});
+
+test("a declined lookup leaves Track to fetch as before", async () => {
+  confirmSpend.mockResolvedValueOnce(false);
+  await act(async () => { await input?.check(); });
+  await expect(input?.fetchedAccount()).resolves.toBeNull();
+  expect(fetchAccount).not.toHaveBeenCalled();
+});
+
+test("a profile only read from our store is never handed to Track (the 12-hour reuse rule still decides)", async () => {
+  jest.mocked(findCachedAccount).mockResolvedValueOnce({ ...khaby, source: "cache" });
+  await act(async () => { await new Promise((resolve) => setTimeout(resolve, 500)); }); // the free store check
+  await act(async () => { await input?.check(); });
   await expect(input?.fetchedAccount()).resolves.toBeNull();
   expect(fetchAccount).not.toHaveBeenCalled();
 });

@@ -25,6 +25,8 @@ export interface FoundSocialLink {
   platform: CompetitorSocialPlatform;
   /** Canonical profile URL (https, no query, no trailing slash). */
   url: string;
+  /** The stored profile a lookup just fetched for this link: tracking it then fetches nothing again. */
+  profileId?: string;
 }
 
 const RESERVED: Record<CompetitorSocialPlatform, ReadonlySet<string>> = {

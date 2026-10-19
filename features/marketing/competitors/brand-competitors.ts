@@ -319,6 +319,8 @@ export interface TrackSocialRequest {
   role: "competitor";
   brand_id: string;
   label: string;
+  /** The profile a lookup just fetched (the server then skips its own fetch). */
+  profile_id?: string;
 }
 
 export interface TrackSocialResult {
@@ -359,6 +361,7 @@ export async function trackSocialAccount(req: TrackSocialRequest, organizationId
     call: async () => {
       const answer = await trackAccount(
         {
+          profileId: req.profile_id,
           handleOrUrl: req.handle_or_url,
           platform: req.platform as SocialPlatform,
           role: req.role,

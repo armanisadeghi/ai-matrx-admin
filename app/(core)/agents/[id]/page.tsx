@@ -1,10 +1,9 @@
 // record-view: agent
 import { getAgent } from "@/lib/agents/data";
-import { AgentViewContent } from "@/features/agents/route/AgentViewContent";
+import { AgentRecord } from "@/features/agents/route/AgentRecord";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
-import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 
 export default async function AgentViewPage({
@@ -34,7 +33,7 @@ export default async function AgentViewPage({
       <PageHeader>
         <AgentHeader agentId={id} agentName={agent.name} />
       </PageHeader>
-      <AgentViewContent agentId={id} recordSections={<EntityCustomFields entityToken="agent" recordId={id} organizationId={agent.organizationId} />} />
+      <AgentRecord agentId={id} hydrated />
     </>
   );
 }

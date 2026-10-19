@@ -69,7 +69,13 @@ jest.mock("@/components/official/entity-ref/EntityRef", () => ({ EntityRef: () =
 jest.mock("@ai-matrx/rich-content/levels/RichContent", () => ({ RichContent: ({ source }: { source: string }) => <span>{source}</span> }));
 jest.mock("../LinkRecordSheet", () => ({ LinkRecordSheet: () => null }));
 
+let mockSessionState = "unknown";
+jest.mock("@/utils/supabase/sessionBarrier", () => ({ sessionStateNow: () => mockSessionState }));
+const anchored = { listAnchoredThreads: jest.fn(), addAnchoredComment: jest.fn(), deleteComment: jest.fn(), editComment: jest.fn(), mentionedUserIds: () => [], notifyMentions: jest.fn(), resolveComment: jest.fn() };
+jest.mock("../anchored-comments", () => anchored);
+
 import { useAnnotationSidecar } from "../useAnnotationSidecar";
+import { useAnchoredComments } from "../useAnchoredComments";
 import { SIGNED_OUT_LEAD, humanError, isSignedOutSentence } from "../errors";
 import { toast } from "@/lib/toast";
 
@@ -120,10 +126,46 @@ describe("a signed-out tab is told to sign in, not to ask an owner", () => {
     expect(e.message).not.toMatch(/owner/);
   });
 
+  it("a signed-in tab meeting a door it holds no EXECUTE on is a permission refusal, not signed out", () => {
+    mockSessionState = "attached";
+    try {
+      const gap = humanError("restoring the comment", { code: "42501", message: "permission denied for function cmt_restore" });
+      expect(gap.signedOut).toBe(false);
+    } finally {
+      mockSessionState = "unknown";
+    }
+  });
+
   it("an HTTP 401 is signed out; a real permission refusal is still a permission sentence", () => {
     expect(humanError("posting your comment", { code: "42501", status: 401, message: "x" }).signedOut).toBe(true);
     const real = humanError("posting your comment", { code: "42501", message: "cmt_add: you cannot comment on this record (message)" });
     expect(real.signedOut).toBe(false);
     expect(real.message).toMatch(/permission/);
+  });
+});
+
+describe("a Doc or Sheet comment rail says why its comments did not load", () => {
+  let anchoredApi: ReturnType<typeof useAnchoredComments> | null = null;
+  function Rail() {
+    anchoredApi = useAnchoredComments("document", "doc-1", "/documents/doc-1");
+    return null;
+  }
+
+  it("a signed-out read reaches the rail with its sentence and remedy (before: console.warn only)", async () => {
+    anchored.listAnchoredThreads.mockRejectedValueOnce({ code: "42501", message: "permission denied for function cmt_list" });
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<Rail />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(anchoredApi!.status).toBe("error");
+    expect(anchoredApi!.error?.signedOut).toBe(true);
+    expect(anchoredApi!.error?.message.startsWith(SIGNED_OUT_LEAD)).toBe(true);
+    act(() => root.unmount());
+    container.remove();
   });
 });

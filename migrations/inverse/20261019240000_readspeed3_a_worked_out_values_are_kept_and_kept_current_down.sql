@@ -1,9 +1,6 @@
 -- target: branch,production
 -- lane: READ-SPEED-3
 -- Inverse of migrations/campaign/20261019240000_readspeed3_a_worked_out_values_are_kept_and_kept_current.sql: the read-time path exactly as before; nothing kept.
-DROP TRIGGER IF EXISTS zzzzzz_computed_stale_i ON platform.associations;
-DROP TRIGGER IF EXISTS zzzzzz_computed_stale_u ON platform.associations;
-DROP TRIGGER IF EXISTS zzzzzz_computed_stale_d ON platform.associations;
 CREATE OR REPLACE FUNCTION custom.read_records_by_ids(p_organization_id uuid, p_table_id uuid, p_record_ids uuid[], p_by_id boolean DEFAULT false)
  RETURNS TABLE(id uuid, document jsonb, level permission_level)
  LANGUAGE plpgsql
@@ -528,7 +525,6 @@ $function$
 DROP FUNCTION custom._computed_sort_value(uuid, uuid, text);
 DROP FUNCTION custom.computed_refresh_progress(uuid);
 DROP FUNCTION custom.computed_refresh_drain(integer);
-DROP FUNCTION custom._computed_assoc_stmt();
 DROP FUNCTION custom._computed_mark_org(uuid);
 DROP FUNCTION custom._computed_mark(uuid, uuid[], uuid[]);
 DROP FUNCTION custom.computed_refresh(uuid, uuid, uuid[]);

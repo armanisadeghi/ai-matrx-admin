@@ -23,6 +23,11 @@
 // pure ASCII — no invisible glyphs hiding in a regex literal (same rule as
 // `operations.ts`).
 
+import {
+  applyEdits,
+  decodeEscapeSequenceEdits,
+  unescapeMarkdownEdits,
+} from "./operations";
 import type {
   ValueCleanupOperationDef,
   ValueCleanupOperationId,
@@ -41,8 +46,22 @@ const INVISIBLES = new RegExp(
 );
 const UNICODE_SPACES = new RegExp(
   `[${chars(
-    0x00a0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006,
-    0x2007, 0x2008, 0x2009, 0x200a, 0x202f, 0x205f, 0x3000,
+    0x00a0,
+    0x1680,
+    0x2000,
+    0x2001,
+    0x2002,
+    0x2003,
+    0x2004,
+    0x2005,
+    0x2006,
+    0x2007,
+    0x2008,
+    0x2009,
+    0x200a,
+    0x202f,
+    0x205f,
+    0x3000,
   )}]`,
   "g",
 );
@@ -60,7 +79,16 @@ const ELLIPSIS = new RegExp(chars(0x2026), "g");
 const OPEN_DQUOTES = chars(0x201c, 0x201e, 0x201f) + '"';
 const CLOSE_DQUOTES = chars(0x201d, 0x201c, 0x201f) + '"';
 /** Bullet glyphs that show up as a pasted list marker. */
-const BULLET_CHARS = chars(0x2022, 0x2023, 0x25e6, 0x2043, 0x2219, 0x25aa, 0x25cf, 0x00b7);
+const BULLET_CHARS = chars(
+  0x2022,
+  0x2023,
+  0x25e6,
+  0x2043,
+  0x2219,
+  0x25aa,
+  0x25cf,
+  0x00b7,
+);
 
 /**
  * Strip a symmetric wrapper (`marker` … `marker`) from a value, but only when
@@ -82,7 +110,11 @@ function unwrapSymmetric(value: string, marker: string): string | null {
 }
 
 /** Strip a wrapper whose open/close chars differ (quote pairs). */
-function unwrapPair(value: string, opens: string, closes: string): string | null {
+function unwrapPair(
+  value: string,
+  opens: string,
+  closes: string,
+): string | null {
   const t = value.trim();
   if (t.length < 3) return null;
   const first = t[0];
@@ -177,6 +209,32 @@ export const VALUE_CLEANUP_OPERATIONS: ValueCleanupOperationDef[] = [
     },
   },
   {
+    id: "decode-escape-sequences",
+    label: "Decode escape sequences",
+    description:
+      'Literal \\n, \\t, \\" and \\u2019 text become real characters.',
+    human: "Turned escaped text like \\n into real characters",
+    defaultEnabled: false,
+    group: "extra",
+    run: (v) => {
+      const edits = decodeEscapeSequenceEdits(v);
+      return edits.length ? applyEdits(v, edits) : null;
+    },
+  },
+  {
+    // Before the unwrappers, so \*\*value\*\* becomes **value** and then unwraps.
+    id: "unescape-markdown",
+    label: "Remove markdown escapes",
+    description: "\\*\\*bold\\*\\* becomes **bold** so formatting renders.",
+    human: "Removed stray backslashes before markdown symbols",
+    defaultEnabled: true,
+    group: "recommended",
+    run: (v) => {
+      const edits = unescapeMarkdownEdits(v);
+      return edits.length ? applyEdits(v, edits) : null;
+    },
+  },
+  {
     id: "unwrap-code-ticks",
     label: "Unwrap code ticks",
     description:
@@ -203,7 +261,8 @@ export const VALUE_CLEANUP_OPERATIONS: ValueCleanupOperationDef[] = [
   {
     id: "unwrap-italic",
     label: "Unwrap italic markers",
-    description: "A value that is entirely *italic* or _italic_ loses the markers.",
+    description:
+      "A value that is entirely *italic* or _italic_ loses the markers.",
     human: "Removed italic markers wrapping the whole value",
     defaultEnabled: false,
     group: "extra",
@@ -265,7 +324,8 @@ export const VALUE_CLEANUP_OPERATIONS: ValueCleanupOperationDef[] = [
   {
     id: "strip-heading-marker",
     label: "Strip heading markers",
-    description: "Remove a leading markdown heading marker (#, ##, ###) from the value.",
+    description:
+      "Remove a leading markdown heading marker (#, ##, ###) from the value.",
     human: "Removed a leading heading marker",
     defaultEnabled: false,
     group: "extra",
@@ -305,7 +365,8 @@ export const VALUE_CLEANUP_OPERATIONS: ValueCleanupOperationDef[] = [
   {
     id: "collapse-blank-lines",
     label: "Collapse extra blank lines",
-    description: "Collapse 2+ consecutive blank lines into a single blank line.",
+    description:
+      "Collapse 2+ consecutive blank lines into a single blank line.",
     human: "Removed extra blank lines",
     defaultEnabled: true,
     group: "recommended",

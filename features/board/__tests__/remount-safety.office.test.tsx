@@ -165,3 +165,49 @@ remountType(
     }),
   (r) => expectRemountSafe(r, { line: true, loading: false }, [/^transcripts\.transcripts$/]),
 );
+
+// ─── Agent ───────────────────────────────────────────────────────────────────
+const AGENT_ID = "a9c3e7b1-4d26-4f80-b5a2-6e1d8c0f3b97";
+const AGENT_NAME = "Lease Summarizer";
+const AGENT_INSTRUCTION = "Summarize the lease in plain language and list every date the tenant must act on.";
+const agentRow = {
+  id: AGENT_ID,
+  name: AGENT_NAME,
+  description: "Reads a lease and lists what the tenant must do.",
+  agent_type: "user",
+  organization_id: ORGANIZATION.id,
+  user_id: PERSON.id,
+  is_active: true,
+  is_archived: false,
+  is_public: false,
+  version: 1,
+  model_id: null,
+  messages: [{ role: "system", content: [{ type: "text", text: AGENT_INSTRUCTION }] }],
+  variable_definitions: [],
+  settings: {},
+  tools: [],
+  custom_tools: [],
+  context_policies: [],
+  mcp_servers: [],
+  tags: [],
+  category: null,
+  output_schema: null,
+  created_at: "2026-09-30T19:00:00.000Z",
+  updated_at: "2026-09-30T19:00:00.000Z",
+};
+
+// Break: the agent tile re-reads the agent's full definition (and its version history and model
+// catalog) on wake / remount instead of keeping it in the agent store, or drops to its loading line.
+remountType(
+  "agent",
+  () =>
+    runCycle(type("agent"), { kind: "entity", entity: "agent", id: AGENT_ID }, {
+      title: AGENT_NAME,
+      prepare: () => {
+        seed("agent.definition", [agentRow]);
+      },
+      loadMs: 1500,
+      kept: (tile) => ({ instruction: shows(tile.container, AGENT_INSTRUCTION), loading: shows(tile.container, "Loading agent data") }),
+    }),
+  (r) => expectRemountSafe(r, { instruction: true, loading: false }, [/^agent\.definition$/]),
+);

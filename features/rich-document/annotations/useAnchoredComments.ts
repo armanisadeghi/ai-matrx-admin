@@ -11,6 +11,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { toast } from "@/lib/toast";
 
+import { humanError } from "./errors";
+
 import {
   addAnchoredComment,
   deleteComment,
@@ -31,6 +33,8 @@ const officeComments = defineChannelNamespace({
 export interface AnchoredComments {
   threads: AnchoredThread[];
   status: "loading" | "ready" | "error";
+  /** The sentence for a failed read (status "error"), and whether its remedy is signing in again. */
+  error: { message: string; signedOut: boolean } | null;
   reload: () => void;
   post: (body: string, opts: { anchor?: { anchorId: string; quote: string } | null; parentId?: string | null }) => Promise<string>;
   edit: (id: string, body: string, base: { body: string; version: number | null }) => Promise<void>;
@@ -41,6 +45,7 @@ export interface AnchoredComments {
 export function useAnchoredComments(token: string, id: string, href: string, enabled = true): AnchoredComments {
   const [threads, setThreads] = useState<AnchoredThread[]>([]);
   const [status, setStatus] = useState<AnchoredComments["status"]>("loading");
+  const [error, setError] = useState<AnchoredComments["error"]>(null);
   const seq = useRef(0);
 
   const reload = () => {
@@ -49,12 +54,15 @@ export function useAnchoredComments(token: string, id: string, href: string, ena
       (t) => {
         if (mine !== seq.current) return;
         setThreads(t);
+        setError(null);
         setStatus("ready");
       },
       (e: unknown) => {
         if (mine !== seq.current) return;
+        // The sentence reaches the rail (a signed-out tab is told to sign in), never only the console.
+        const h = humanError("loading the comments", e);
+        setError({ message: h.message, signedOut: h.signedOut });
         setStatus("error");
-        console.warn("[comments] loading the comments failed", e);
       },
     );
   };
@@ -103,6 +111,7 @@ export function useAnchoredComments(token: string, id: string, href: string, ena
   return {
     threads,
     status,
+    error,
     reload,
     post,
     edit: async (commentId, body, base) => {

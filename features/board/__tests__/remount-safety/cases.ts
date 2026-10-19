@@ -48,6 +48,8 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "party:quiet": { status: "failing", owner: "board-office lane", why: "PartyRecordPage keeps the record detail, notes, deals and candidates in component state and re-reads about twenty tables on every wake and remount; it needs kept answers keyed by party id before the tile may sleep" },
   "transcript": { status: "passing" },
   "transcript:quiet": { status: "passing" },
+  "agent": { status: "failing", owner: "board-office lane", why: "AgentViewContent reads the version history, access summary, organization names and record fields in effects of its own on every wake and remount (about seven reads); they need kept answers keyed by agent id before the tile may sleep" },
+  "agent:quiet": { status: "failing", owner: "board-office lane", why: "AgentViewContent reads the version history, access summary, organization names and record fields in effects of its own on every wake and remount (about seven reads); they need kept answers keyed by agent id before the tile may sleep" },
   "data-table": { status: "passing" },
   "data-table:quiet": { status: "passing" },
   "record": { status: "passing" },

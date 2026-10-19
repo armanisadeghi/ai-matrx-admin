@@ -18,6 +18,8 @@ export type ValueCleanupOperationId =
   | "remove-invisibles"
   | "normalize-unicode-whitespace"
   | "decode-html"
+  | "decode-escape-sequences"
+  | "unescape-markdown"
   | "unwrap-code-ticks"
   | "unwrap-bold"
   | "unwrap-italic"

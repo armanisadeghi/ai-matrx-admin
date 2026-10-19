@@ -38,7 +38,9 @@ export function AddHandlesForm({ row, brand }: { row: BrandCompetitor; brand: Br
     if (!input.account) return;
     setBusy(true);
     try {
-      const out = await track(row, [{ platform, url: input.account.url }]);
+      // Leaving the field to press Add starts the paid lookup: wait for it and track what it fetched.
+      const fetched = await input.fetchedAccount();
+      const out = await track(row, [{ platform, url: input.account.url, profileId: fetched?.profileId }]);
       if (out.tracked) {
         toast.success("Tracking that account");
         input.reset();

@@ -1,4 +1,3 @@
--- target: branch,production
 -- additive: yes
 -- guard: custom/system_enabled
 -- lane: READ-SPEED-3
@@ -48,6 +47,10 @@ CREATE INDEX record_computed_table_idx ON custom.record_computed (organization_i
 CREATE INDEX record_computed_stale_idx ON custom.record_computed (organization_id, table_id) WHERE stale;
 ALTER TABLE custom.record_computed ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON custom.record_computed FROM PUBLIC, anon, authenticated;
+INSERT INTO platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref)
+VALUES ('record_computed', 'custom', 'record_computed', 'Record Computed Values', 'machinery',
+        'machinery: kept worked-out values of custom.record, written by the refresh job and read only by SECURITY DEFINER read doors; RLS on, no grants to anon or authenticated; schema custom is CLOSED',
+        'custom.record_computed'::regclass);
 COMMENT ON TABLE custom.record_computed IS
   'READ-SPEED-3: each record''s worked-out roll-up, lookup and formula values, kept current on write (stale marks + custom.computed_refresh_drain). Served only to a reader who sees every row and column they derive from (custom._computed_reader_ok); everyone else is worked out at read as before.';
 
@@ -395,41 +398,10 @@ end;
 $function$;
 REVOKE ALL ON FUNCTION custom._computed_mark_org(uuid) FROM PUBLIC, anon, authenticated;
 
--- A hard delete is marked BEFORE the association rows are collected (_gc_assoc_harddelete_s), so the records that
--- linked to it are still found; inserts and updates after the association rows are written (zz_w2a_*).
 
 
 
 
--- An association edge written on its own (not through a record write) marks both ends.
-CREATE FUNCTION custom._computed_assoc_stmt()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'pg_catalog'
-AS $function$
-declare c record;
-begin
-  for c in
-    select x.org, array_agg(distinct x.id) ids from (
-      select n.organization_id org, n.source_id id from new_rows n where tg_op <> 'DELETE' and n.target_type = 'record'
-      union all select n.organization_id, n.target_id from new_rows n where tg_op <> 'DELETE' and n.target_type = 'record'
-      union all select o.organization_id, o.source_id from old_rows o where tg_op <> 'INSERT' and o.target_type = 'record'
-      union all select o.organization_id, o.target_id from old_rows o where tg_op <> 'INSERT' and o.target_type = 'record') x
-     where x.org is not null and x.id is not null
-     group by x.org
-  loop
-    perform custom._computed_mark(c.org, c.ids);
-  end loop;
-  return null;
-end;
-$function$;
-CREATE TRIGGER zzzzzz_computed_stale_i AFTER INSERT ON platform.associations REFERENCING NEW TABLE AS new_rows
-  FOR EACH STATEMENT EXECUTE FUNCTION custom._computed_assoc_stmt();
-CREATE TRIGGER zzzzzz_computed_stale_u AFTER UPDATE ON platform.associations REFERENCING OLD TABLE AS old_rows NEW TABLE AS new_rows
-  FOR EACH STATEMENT EXECUTE FUNCTION custom._computed_assoc_stmt();
-CREATE TRIGGER zzzzzz_computed_stale_d AFTER DELETE ON platform.associations REFERENCING OLD TABLE AS old_rows
-  FOR EACH STATEMENT EXECUTE FUNCTION custom._computed_assoc_stmt();
 
 -- THE REFRESH JOB: stale records, a Table at a time, 50 per call, for up to p_ms milliseconds. Run by pg_cron every
 -- 10 seconds; one runner at a time (advisory lock).
@@ -1071,10 +1043,4 @@ end;
 $function$
 ;
 
--- THE BACKFILL: every record of every Table that may keep values is queued; the refresh job works them out. Served
--- only after READ-SPEED-3 b (the write triggers) lands; b queues everything again.
-SELECT custom._computed_mark_org(o.organization_id)
-  FROM (SELECT DISTINCT f.organization_id FROM custom.record f
-         WHERE f.table_id = custom.field_kernel_id() AND f.deleted_at IS NULL
-           AND custom.parity_type(f.data) IN ('lookup', 'rollup', 'formula')
-           AND coalesce(f.data ->> 'compute_on', '') = 'read') o;
+-- THE BACKFILL is READ-SPEED-3 b's last statement (it queues every record); until then a script drains by hand.

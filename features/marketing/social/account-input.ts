@@ -5,7 +5,7 @@
  */
 
 import { parseSocialAccount, type ParsedAccount } from "./link";
-import type { SocialPlatform } from "./types";
+import type { SocialLimitApplied, SocialPlatform } from "./types";
 
 export type OkAccount = Extract<ParsedAccount, { status: "ok" }>;
 
@@ -51,6 +51,8 @@ export interface FoundAccount {
   followers: number | null;
   /** cache = already in our store (free); fetched = looked up just now. */
   source: "cache" | "fetched";
+  /** A fetched lookup's post walk (what a Track that reuses it reports): posts loaded, a setting's cut, an early stop. */
+  walk?: { postsReceived: number | null; limitApplied: SocialLimitApplied | null; stoppedReason: string | null };
 }
 
 export type LookupState =

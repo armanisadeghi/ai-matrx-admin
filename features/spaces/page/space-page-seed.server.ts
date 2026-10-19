@@ -36,7 +36,7 @@ import type { SpaceBlock, SpaceDoc } from "../contract";
 import { activeView, chartTileSpecs, DEFAULT_CHART, ENTITY_PAGE, entityChartBy, entityRowsArgs, entityShownColumns, hasListFilter } from "../data/first-reads";
 import { viewSpec } from "../data/view-spec";
 import { usesThisRow } from "../data/this-row";
-import { opensNoteLine } from "../data/opens-note";
+import { opensNoteLine, opensStateOf } from "../data/opens-note";
 import { readDatabaseProps, type DatabaseBlockProps, type SpaceDbView } from "../data/sources";
 import { SupabaseSpacesStore } from "../store-db/supabase-store";
 import { linkedPageIds } from "./linked-pages";
@@ -348,7 +348,7 @@ async function readExpectedRows(
       const where = await reads.where(b.props.source.tableId);
       if (!where) return;
       // A table that does not open draws its note whatever the view (DB-BLOCK-CHROME-2): its first paint is the note.
-      const opens = readObjectOrganizationAnswer(where.where, b.props.source.tableId).state;
+      const opens = opensStateOf(readObjectOrganizationAnswer(where.where, b.props.source.tableId));
       if (opensNoteLine(opens) !== null) {
         found.notes[b.blockId] = opens;
         return;

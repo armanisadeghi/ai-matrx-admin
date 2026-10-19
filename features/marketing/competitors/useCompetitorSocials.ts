@@ -102,7 +102,7 @@ export function useCompetitorSocialActions(brand: BrandRef) {
       await Promise.all(
         links.map(async (link) => {
           const result = await trackSocialAccount(
-            { platform: link.platform, handle_or_url: link.url, role: "competitor", brand_id: brand.id, label: row.name },
+            { platform: link.platform, handle_or_url: link.url, role: "competitor", brand_id: brand.id, label: row.name, profile_id: link.profileId },
             brand.organizationId,
           );
           if (!result.ok) {

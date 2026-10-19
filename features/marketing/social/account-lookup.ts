@@ -60,5 +60,12 @@ export async function fetchAccount(args: {
   const row = await readProfile(result.profile_id);
   const found = row ? foundFromRow(row, "fetched") : null;
   if (!found) throw new Error("The account was fetched but could not be read back.");
-  return found;
+  return {
+    ...found,
+    walk: {
+      postsReceived: result.posts_received ?? null,
+      limitApplied: result.limit_applied ?? null,
+      stoppedReason: result.stopped_reason ?? null,
+    },
+  };
 }

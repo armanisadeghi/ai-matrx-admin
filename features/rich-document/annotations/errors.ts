@@ -7,6 +7,8 @@
 // (verify-RC-B11 F4: "add it to the registry + upgrade @ai-matrx/associations"
 // reached a person).
 
+import { sessionStateNow } from "@/utils/supabase/sessionBarrier";
+
 export class SidecarError extends Error {
   /**
    * Whether trying the same write again can succeed. False for a refusal the person cannot
@@ -44,7 +46,10 @@ export function isSignedOutRefusal(e: unknown): boolean {
   const status = e && typeof e === "object" ? (e as { status?: unknown }).status : undefined;
   if (code === "PGRST301" || code === "28000") return true;
   if (code !== "42501") return false;
-  return status === 401 || /permission denied for function/i.test(textOf(e));
+  if (status === 401) return true;
+  // A signed-in caller can also meet this text on a door it holds no EXECUTE on (a real grant gap,
+  // HTTP 403): only a tab whose session is not attached reads it as signed out.
+  return /permission denied for function/i.test(textOf(e)) && sessionStateNow() !== "attached";
 }
 
 /** The error a write raises when the record it belongs to is not known yet (nothing is sent). */

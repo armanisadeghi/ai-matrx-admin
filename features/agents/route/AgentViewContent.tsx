@@ -239,7 +239,7 @@ function MessageCard({ role, content }: { role?: string; content: string }) {
  * fields (lane 7 W5: `<EntityCustomFields entityToken="agent" …>` from the route). The package
  * renders it after the stat strip and never knows what it is.
  */
-export function AgentViewContent({ agentId, recordSections }: { agentId: string; recordSections?: ReactNode }) {
+export function AgentViewContent({ agentId, recordSections, embedded = false }: { agentId: string; recordSections?: ReactNode; /** Inside a board tile: no shell-header offset, and the JSON view sizes to the tile, not the window. */ embedded?: boolean }) {
   const dispatch = useAppDispatch();
   const [mounted, setMounted] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("pretty");
@@ -416,7 +416,7 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
   return (
     <div
       className="h-full overflow-y-auto"
-      style={{ paddingTop: "var(--shell-header-h)" }}
+      style={embedded ? undefined : { paddingTop: "var(--shell-header-h)" }}
     >
       <div className="max-w-5xl mx-auto px-4 pb-6 space-y-5">
         {/* Sticky toolbar */}
@@ -542,7 +542,7 @@ export function AgentViewContent({ agentId, recordSections }: { agentId: string;
         )}
 
         {effectiveView === "json" ? (
-          <div className="h-[calc(100dvh-12rem)]">
+          <div className={embedded ? "h-[640px]" : "h-[calc(100dvh-12rem)]"}>
             <JsonInspector showSource
               data={definition ?? {}}
               label="Agent Definition"

@@ -39,6 +39,9 @@ export interface ProtectedRegion {
 export type CleanupOperationId =
   | "normalize-line-endings"
   | "remove-invisibles"
+  | "decode-escape-sequences"
+  | "decode-html-entities"
+  | "unescape-markdown"
   | "normalize-unicode-whitespace"
   | "normalize-quotes"
   | "normalize-bullets"

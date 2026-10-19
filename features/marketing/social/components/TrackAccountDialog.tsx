@@ -131,9 +131,13 @@ export function TrackAccountDialog({
           opts,
         );
         await invalidate();
-        const loaded = result.posts_received != null ? ` · ${formatCount(result.posts_received, { locale: "en-US" })} posts` : "";
-        const stopped = result.stopped_reason === "points_limit" ? " · stopped early: points limit" : "";
-        const cut = result.limit_applied ? ` · capped at ${formatCount(result.limit_applied.value, { locale: "en-US" })}` : "";
+        // Tracking the profile the lookup just fetched loads no posts itself: the lookup's walk is what was loaded.
+        const walk = fetched?.walk && result.posts_received == null
+          ? { posts_received: fetched.walk.postsReceived, limit_applied: fetched.walk.limitApplied, stopped_reason: fetched.walk.stoppedReason }
+          : result;
+        const loaded = walk.posts_received != null ? ` · ${formatCount(walk.posts_received, { locale: "en-US" })} posts` : "";
+        const stopped = walk.stopped_reason === "points_limit" ? " · stopped early: points limit" : "";
+        const cut = walk.limit_applied ? ` · capped at ${formatCount(walk.limit_applied.value, { locale: "en-US" })}` : "";
         toast.success(`${result.created ? "Account tracked" : "Already tracked"}${loaded}${cut}${stopped}`);
         onOpenChange(false);
       }
