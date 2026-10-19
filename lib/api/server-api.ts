@@ -57,6 +57,7 @@ import { getStore } from "@/lib/redux/store-singleton";
 import { selectAccessToken, selectFingerprintId } from "@/lib/redux/slices/userSlice";
 import { getCachedFingerprint } from "@/lib/services/fingerprint-service";
 import { supabase } from "@/utils/supabase/client";
+import { startSessionTokenSync } from "@/lib/api/session-token-sync";
 import type { RootState } from "@/lib/redux/store";
 
 /** Bounded wait for the browser's auth hydration before a credential is read. */
@@ -81,6 +82,8 @@ export const serverApiCredentials: CredentialsPort = {
     await waitForAuthReady(() => (getStore()?.getState() ?? {}) as RootState, SERVER_API_AUTH_READY_MS);
   },
   get: async (): Promise<MatrxCredential | null> => {
+    // The token below follows an in-tab sign-in ("Confirm it's you") and refreshes, not only the page load.
+    startSessionTokenSync({ auth: supabase.auth, getStore });
     const state = currentState();
     if (!state) return null;
     const accessToken = selectAccessToken(state);
