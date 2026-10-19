@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { closeShellMobileMenu } from "@/features/shell/utils/closeShellMobileMenu";
 import { useNavActions } from "@/features/shell/navigation/navActions";
-import { useNavPanelActions } from "@/features/shell/navigation/navPanelActions";
+import { useNavPanelActions, useRunNavTile } from "@/features/shell/navigation/navPanelActions";
 import ShellIcon from "../ShellIcon";
 import MobileRouteMenuSlot from "./MobileRouteMenuSlot";
 import MobileSheetNavLink from "./MobileSheetNavLink";
@@ -54,7 +54,7 @@ function navItemIdentity(item: ShellNavItem): string {
 }
 
 function navChildIdentity(child: ShellNavChild): string {
-  return `${child.panelAction ?? child.action ?? child.href}::${child.label}`;
+  return `${child.panelAction ?? child.action ?? child.tileId ?? child.href}::${child.label}`;
 }
 
 /** A menu row that both navigates (its name) and drills in (its chevron). */
@@ -138,6 +138,7 @@ export default function MobileNavigationDrawer({
   const [query, setQuery] = useState("");
   const navActions = useNavActions();
   const navPanelActions = useNavPanelActions();
+  const runTile = useRunNavTile();
   const pathname = usePathname() ?? "";
   // Gated destinations (Make, Records) appear where their switch is on.
   const settingsRoute = isUserSettingsPath(pathname);
@@ -202,11 +203,14 @@ export default function MobileNavigationDrawer({
   };
 
   const renderChild = (child: ShellNavChild, active?: boolean) => {
+    const tileId = child.tileId;
     const handler = child.panelAction
       ? navPanelActions[child.panelAction]
       : child.action
         ? navActions[child.action]
-        : undefined;
+        : tileId
+          ? () => runTile(tileId)
+          : undefined;
     if (handler) {
       return (
         <button
@@ -258,6 +262,9 @@ export default function MobileNavigationDrawer({
               setActiveGroupId(navItemIdentity(item));
             }}
           />
+        ) : item.tileId ? (
+          // A custom layout's Tools-grid tile: runs in place, never navigates.
+          renderChild({ id: item.id, label: item.label, href: item.href, iconName: item.iconName, tileId: item.tileId })
         ) : (
           <MobileSheetNavLink
             key={navItemIdentity(item)}

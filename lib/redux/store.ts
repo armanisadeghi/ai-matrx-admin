@@ -215,6 +215,7 @@ export function resolveStoreBootstrapState(
     userPreferences: resolveUserPreferencesForBootstrap(input, {
       userPreferences: baseUserPreferences,
     }),
+    ...(input.shellLayout ? { shellLayout: input.shellLayout } : {}),
   };
 
   return out;

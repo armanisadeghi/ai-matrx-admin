@@ -7,7 +7,7 @@
 //
 // Usage (default):
 //   <MobileDockShell>
-//     <MobileDockItems />
+//     <ShellDockItems />
 //   </MobileDockShell>
 //
 // Usage (custom route dock — identical shell, different items):

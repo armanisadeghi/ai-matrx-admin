@@ -19,6 +19,7 @@ import { userProfilePolicy } from "@/lib/redux/slices/userProfileSlice";
 import { appContextPolicy } from "@/lib/redux/slices/appContextSlice";
 import { wizardDraftPolicy } from "@/lib/redux/slices/wizardDraftSlice";
 import { scopesTreePolicy } from "@/features/scopes/redux/scopesSlice";
+import { shellLayoutPolicy } from "@/features/shell/shell-layout/shellLayoutSlice";
 
 // MATRX-EXCEPTION: `Policy<any>` instead of `Policy<unknown>` because `partialize:
 // readonly (keyof TState)[]` makes TState invariant — `Policy<{ mode: "dark" }>`
@@ -33,4 +34,5 @@ export const syncPolicies: readonly Policy<any>[] = [
   appContextPolicy,
   wizardDraftPolicy,
   scopesTreePolicy,
+  shellLayoutPolicy,
 ] as const;

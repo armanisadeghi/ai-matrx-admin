@@ -15,8 +15,7 @@
 
 import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import { PrepaintScript } from "@/components/ssr/PrepaintScript";
-import NavItem from "./NavItem";
-import PrimaryNavFlyoutGroup from "./PrimaryNavFlyoutGroup";
+import ShellSidebarNav from "./ShellSidebarNav";
 import FavoritesNavGroup from "./FavoritesNavGroup";
 import SidebarMenuSearch from "./SidebarMenuSearch";
 import AdminSidebarSection from "./admin-menu/AdminSidebarSection";
@@ -27,10 +26,6 @@ import { DOMAIN_PANEL_PREPAINT_SCRIPT } from "./domain-panel-width";
 import ShellIcon from "../ShellIcon";
 import SidebarWindowToggleIsland from "./SidebarWindowToggleIsland";
 import SidebarChatToggle from "./SidebarChatToggle";
-import {
-  navItemsForViewer,
-  primaryNavItems,
-} from "../../constants/nav-data";
 import { initialSidebarView } from "./sidebar-initial-view";
 import { ADMIN_FOOTER_PREPAINT_SCRIPT } from "./admin-menu/admin-footer-reserve";
 
@@ -43,7 +38,6 @@ interface SidebarProps {
 
 export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: SidebarProps) {
   const initialView = initialSidebarView(pathname);
-  const visibleItems = navItemsForViewer(primaryNavItems, isAuthenticated);
   return (
     // `data-title-side="right"`: every `title` in the rail shows as the fleet
     // tooltip (the design-system title takeover), opening beside the rail —
@@ -91,17 +85,9 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
           {/* Favorites — client island; reads pins from Redux (no fetch). Authed
               users only (favorites are per-user). */}
           {isAuthenticated && <FavoritesNavGroup />}
-          {visibleItems.map((item) =>
-            item.children ? (
-              <PrimaryNavFlyoutGroup
-                key={item.label}
-                label={item.label}
-                isAuthenticated={isAuthenticated}
-              />
-            ) : (
-              <NavItem key={item.label} item={item} />
-            ),
-          )}
+          {/* THE LAYOUT's rows (custom-experience): the default menu, or the person's / her
+              organization's saved one — chosen on the server, rendered live (ShellSidebarNav). */}
+          <ShellSidebarNav isAuthenticated={isAuthenticated} />
         </div>
 
         {/* Route menu — populated by RouteMenuSlot client island */}

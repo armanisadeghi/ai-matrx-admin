@@ -32,3 +32,16 @@ export function useNavPanelActions(): ShellNavPanelActionHandlers {
   }
   return handlers;
 }
+
+/**
+ * Runs a Tools-grid tile in place — the row of a custom layout that carries `tileId` (its `href` is a
+ * `#tile.*` anchor that must never navigate). Same activation path as the Tools grid and `panelAction`.
+ */
+export function useRunNavTile(): (tileId: string) => void {
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  const router = useRouter();
+  return (tileId: string) => {
+    activateToolsGridTile(tileId, { dispatch, getState: store.getState, router });
+  };
+}

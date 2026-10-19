@@ -54,6 +54,12 @@ function PresentedColumn() {
 }
 
 // The AI test-mode row reads the store and the server; its own suite covers it.
+// THE LAYOUT's custom header rows: none here (the default header carries only the five built-ins).
+jest.mock("@/features/shell/shell-layout/useResolvedShellLayout", () => ({
+  useResolvedShellLayout: () => ({ header: [] }),
+}));
+jest.mock("./ShellHeaderButtons", () => ({ useRunHeaderButton: () => () => undefined }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ push: () => undefined }), usePathname: () => "/" }));
 jest.mock("@/features/ai-test-mode/AiTestModeDock", () => ({
   AiTestModeSheetRow: () => null,
 }));
