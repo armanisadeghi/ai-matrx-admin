@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0456",
-  "version": 5,
+  "version": 6,
   "title": "Architecture Firm Studio",
-  "description": "Clients, design phases, drawing sets, RFIs and submittals for an architecture firm.",
+  "description": "For architects: projects by phase, fees and hours, drawing sets, RFIs and submittals.",
   "forWho": "Small and mid-sized architecture practices",
   "icon": {
     "emoji": "📐"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "architecture",
-    "phases",
+    "architect",
+    "architecture firm",
+    "project architect",
     "rfi",
-    "submittals"
+    "submittals",
+    "fee tracking"
   ],
   "spec": {
     "specVersion": 1,
@@ -429,6 +431,59 @@
             ]
           },
           {
+            "key": "fee_basis",
+            "label": "Fee basis",
+            "parityType": "select",
+            "choices": [
+              "Fixed fee",
+              "Percent of construction",
+              "Hourly"
+            ],
+            "choiceColors": {
+              "Fixed fee": "blue",
+              "Percent of construction": "green",
+              "Hourly": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "construction",
+            "label": "Construction budget",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billed_pct",
+            "label": "Fee billed so far (%)",
+            "parityType": "percent",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "hours_budget",
             "label": "Hours budgeted",
             "parityType": "number",
@@ -480,6 +535,13 @@
             "format": "date"
           },
           {
+            "key": "permit_no",
+            "label": "Permit number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "complete_on",
             "label": "Planned finish",
             "parityType": "datetime",
@@ -517,6 +579,22 @@
             }
           },
           {
+            "key": "rfi_unclosed",
+            "label": "RFIs not closed",
+            "parityType": "rollup",
+            "via": "rfis",
+            "pick": "question",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Open",
+                "Answered"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "subs_waiting",
             "label": "Submittals waiting",
             "parityType": "rollup",
@@ -544,6 +622,23 @@
             "filter": {
               "status": "Issued"
             }
+          },
+          {
+            "key": "sets_open",
+            "label": "Sets not issued",
+            "parityType": "rollup",
+            "via": "drawing_sets",
+            "pick": "set_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Issued"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -742,11 +837,14 @@
               "fee": 68000,
               "hours_budget": 820,
               "starts_on": "@today-210d",
-              "permit_on": "@today+25d",
+              "permit_on": "@today",
               "complete_on": "@today+380d",
               "client": "client-1",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fee_basis": "Percent of construction",
+              "construction": 620000,
+              "billed_pct": 55
             }
           },
           {
@@ -762,7 +860,10 @@
               "permit_on": "@today+120d",
               "complete_on": "@today+700d",
               "client": "client-2",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "fee_basis": "Fixed fee",
+              "construction": 4800000,
+              "billed_pct": 40
             }
           },
           {
@@ -779,7 +880,11 @@
               "complete_on": "@today+30d",
               "client": "client-3",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fee_basis": "Fixed fee",
+              "construction": 310000,
+              "billed_pct": 85,
+              "permit_no": "TI-24-1187"
             }
           },
           {
@@ -795,7 +900,11 @@
               "permit_on": "@today-12d",
               "complete_on": "@today+420d",
               "client": "client-4",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "fee_basis": "Percent of construction",
+              "construction": 1900000,
+              "billed_pct": 70,
+              "permit_no": "BP-24-0562"
             }
           },
           {
@@ -813,7 +922,11 @@
               "client": "client-5",
               "lead": "tm-3",
               "owner_me": "@installer",
-              "handed_over_on": "@today-700d"
+              "handed_over_on": "@today-700d",
+              "fee_basis": "Hourly",
+              "construction": 180000,
+              "billed_pct": 100,
+              "permit_no": "BP-21-3390"
             }
           },
           {
@@ -829,7 +942,9 @@
               "permit_on": "@today+90d",
               "complete_on": "@today+300d",
               "client": "client-6",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "fee_basis": "Hourly",
+              "billed_pct": 10
             }
           }
         ]
@@ -903,6 +1018,30 @@
               "Bid": "violet",
               "Construction": "teal"
             }
+          },
+          {
+            "key": "sheets",
+            "label": "Sheets",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "revision",
+            "label": "Revision",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1045,10 +1184,12 @@
               "set_name": "Carrow addition: permit set",
               "status": "Drafting",
               "stage": "Permit",
-              "due_on": "@today+20d",
+              "due_on": "@today-3d",
               "project": "project-1",
               "drafter": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sheets": 42,
+              "revision": "Rev 0"
             }
           },
           {
@@ -1060,7 +1201,9 @@
               "due_on": "@today-30d",
               "issued_on": "@today-28d",
               "project": "project-1",
-              "drafter": "tm-5"
+              "drafter": "tm-5",
+              "sheets": 28,
+              "revision": "Rev 0"
             }
           },
           {
@@ -1072,7 +1215,9 @@
               "due_on": "@today+5d",
               "project": "project-2",
               "drafter": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sheets": 64,
+              "revision": "Rev 1"
             }
           },
           {
@@ -1084,7 +1229,9 @@
               "due_on": "@today-35d",
               "issued_on": "@today-34d",
               "project": "project-3",
-              "drafter": "tm-5"
+              "drafter": "tm-5",
+              "sheets": 12,
+              "revision": "Rev 2"
             }
           },
           {
@@ -1096,7 +1243,9 @@
               "due_on": "@mon+3d",
               "project": "project-4",
               "drafter": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sheets": 51,
+              "revision": "Rev 1"
             }
           },
           {
@@ -1107,7 +1256,9 @@
               "stage": "Bid",
               "due_on": "@today+60d",
               "project": "project-4",
-              "drafter": "tm-5"
+              "drafter": "tm-5",
+              "sheets": 58,
+              "revision": "Rev 0"
             }
           },
           {
@@ -1119,7 +1270,9 @@
               "due_on": "@today+12d",
               "project": "project-6",
               "drafter": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "sheets": 6,
+              "revision": "Rev 0"
             }
           },
           {
@@ -1131,7 +1284,9 @@
               "due_on": "@today-790d",
               "issued_on": "@today-785d",
               "project": "project-5",
-              "drafter": "tm-5"
+              "drafter": "tm-5",
+              "sheets": 18,
+              "revision": "Rev 0"
             }
           }
         ]
@@ -1181,6 +1336,39 @@
               "Answered": "in_progress",
               "Closed": "done"
             }
+          },
+          {
+            "key": "from_who",
+            "label": "Asked by",
+            "parityType": "select",
+            "choices": [
+              "Contractor",
+              "Consultant",
+              "Client",
+              "Building department"
+            ],
+            "choiceColors": {
+              "Contractor": "blue",
+              "Consultant": "green",
+              "Client": "amber",
+              "Building department": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "May change cost",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "schedule",
+            "label": "May change schedule",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "raised_on",
@@ -1342,7 +1530,10 @@
               "answer_due": "@today+2d",
               "project": "project-3",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_who": "Contractor",
+              "cost": false,
+              "schedule": true
             }
           },
           {
@@ -1353,7 +1544,10 @@
               "raised_on": "@today-9d",
               "answer_due": "@today-2d",
               "project": "project-3",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "from_who": "Contractor",
+              "cost": true,
+              "schedule": true
             }
           },
           {
@@ -1365,7 +1559,10 @@
               "answer_due": "@today-17d",
               "project": "project-3",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_who": "Contractor",
+              "cost": false,
+              "schedule": false
             }
           },
           {
@@ -1377,7 +1574,10 @@
               "answer_due": "@today-40d",
               "project": "project-3",
               "owner": "tm-4",
-              "closed_on": "@today-40d"
+              "closed_on": "@today-40d",
+              "from_who": "Client",
+              "cost": true,
+              "schedule": false
             }
           },
           {
@@ -1389,7 +1589,10 @@
               "answer_due": "@today+4d",
               "project": "project-4",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_who": "Building department",
+              "cost": true,
+              "schedule": true
             }
           },
           {
@@ -1400,7 +1603,10 @@
               "raised_on": "@today-1d",
               "answer_due": "@today+6d",
               "project": "project-4",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "from_who": "Consultant",
+              "cost": false,
+              "schedule": false
             }
           },
           {
@@ -1412,7 +1618,10 @@
               "answer_due": "@today-10d",
               "project": "project-1",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_who": "Contractor",
+              "cost": false,
+              "schedule": false
             }
           },
           {
@@ -1423,7 +1632,10 @@
               "raised_on": "@today-6d",
               "answer_due": "@today+1d",
               "project": "project-2",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "from_who": "Contractor",
+              "cost": true,
+              "schedule": true
             }
           }
         ]
@@ -1480,6 +1692,13 @@
           {
             "key": "spec_section",
             "label": "Spec section",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "from_sub",
+            "label": "Submitted by",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1615,10 +1834,11 @@
               "status": "In review",
               "spec_section": "11400",
               "received_on": "@today-4d",
-              "review_due": "@today+3d",
+              "review_due": "@today-3d",
               "project": "project-3",
               "reviewer": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_sub": "Brightline Kitchen Systems"
             }
           },
           {
@@ -1630,7 +1850,8 @@
               "received_on": "@today-1d",
               "review_due": "@today+6d",
               "project": "project-3",
-              "reviewer": "tm-4"
+              "reviewer": "tm-4",
+              "from_sub": "Clearview Glass and Metal"
             }
           },
           {
@@ -1644,7 +1865,8 @@
               "project": "project-3",
               "reviewer": "tm-4",
               "owner_me": "@installer",
-              "approved_on": "@today-18d"
+              "approved_on": "@today-18d",
+              "from_sub": "Elmwood flooring installer"
             }
           },
           {
@@ -1656,7 +1878,8 @@
               "received_on": "@today-12d",
               "review_due": "@today-5d",
               "project": "project-3",
-              "reviewer": "tm-4"
+              "reviewer": "tm-4",
+              "from_sub": "Lumen Electrical"
             }
           },
           {
@@ -1669,7 +1892,8 @@
               "review_due": "@today+5d",
               "project": "project-4",
               "reviewer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "from_sub": "Summit Roofing"
             }
           },
           {
@@ -1681,7 +1905,8 @@
               "received_on": "@today-8d",
               "review_due": "@mon+1d",
               "project": "project-2",
-              "reviewer": "tm-2"
+              "reviewer": "tm-2",
+              "from_sub": "Ironside Steel"
             }
           },
           {
@@ -1695,7 +1920,8 @@
               "project": "project-1",
               "reviewer": "tm-2",
               "owner_me": "@installer",
-              "approved_on": "@today-33d"
+              "approved_on": "@today-33d",
+              "from_sub": "Northlight Windows"
             }
           }
         ]
@@ -1746,6 +1972,38 @@
                 "value": 24
               }
             ]
+          },
+          {
+            "key": "phase",
+            "label": "Phase",
+            "parityType": "select",
+            "choices": [
+              "Pre-design",
+              "Schematic design",
+              "Design development",
+              "Construction documents",
+              "Permitting",
+              "Construction administration",
+              "Business development"
+            ],
+            "choiceColors": {
+              "Pre-design": "blue",
+              "Schematic design": "green",
+              "Design development": "amber",
+              "Construction documents": "violet",
+              "Permitting": "teal",
+              "Construction administration": "red",
+              "Business development": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billable",
+            "label": "Billable",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "project",
@@ -1816,10 +2074,12 @@
             "key": "time_entry-1",
             "values": {
               "entry": "Permit set coordination",
-              "worked_on": "@today-1d",
+              "worked_on": "@today",
               "hours": 6,
               "project": "project-1",
-              "person": "tm-2"
+              "person": "tm-2",
+              "phase": "Construction documents",
+              "billable": true
             }
           },
           {
@@ -1829,7 +2089,9 @@
               "worked_on": "@today-2d",
               "hours": 7,
               "project": "project-1",
-              "person": "tm-5"
+              "person": "tm-5",
+              "phase": "Construction documents",
+              "billable": true
             }
           },
           {
@@ -1839,7 +2101,9 @@
               "worked_on": "@today-1d",
               "hours": 6.5,
               "project": "project-2",
-              "person": "tm-3"
+              "person": "tm-3",
+              "phase": "Design development",
+              "billable": true
             }
           },
           {
@@ -1849,7 +2113,9 @@
               "worked_on": "@today-2d",
               "hours": 5,
               "project": "project-3",
-              "person": "tm-4"
+              "person": "tm-4",
+              "phase": "Construction administration",
+              "billable": true
             }
           },
           {
@@ -1859,7 +2125,9 @@
               "worked_on": "@today-3d",
               "hours": 4.5,
               "project": "project-4",
-              "person": "tm-2"
+              "person": "tm-2",
+              "phase": "Permitting",
+              "billable": true
             }
           },
           {
@@ -1869,7 +2137,9 @@
               "worked_on": "@today-3d",
               "hours": 7,
               "project": "project-4",
-              "person": "tm-5"
+              "person": "tm-5",
+              "phase": "Permitting",
+              "billable": true
             }
           },
           {
@@ -1879,7 +2149,9 @@
               "worked_on": "@today-4d",
               "hours": 5,
               "project": "project-6",
-              "person": "tm-3"
+              "person": "tm-3",
+              "phase": "Pre-design",
+              "billable": true
             }
           },
           {
@@ -1889,7 +2161,9 @@
               "worked_on": "@today-5d",
               "hours": 2,
               "project": "project-2",
-              "person": "tm-1"
+              "person": "tm-1",
+              "phase": "Design development",
+              "billable": true
             }
           },
           {
@@ -1899,7 +2173,9 @@
               "worked_on": "@today-1d",
               "hours": 3,
               "project": "project-3",
-              "person": "tm-4"
+              "person": "tm-4",
+              "phase": "Construction administration",
+              "billable": true
             }
           },
           {
@@ -1909,7 +2185,9 @@
               "worked_on": "@today-6d",
               "hours": 3,
               "project": "project-6",
-              "person": "tm-1"
+              "person": "tm-1",
+              "phase": "Business development",
+              "billable": false
             }
           }
         ]
@@ -2657,7 +2935,7 @@
         "Quarry Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2696,6 +2974,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -3342,6 +3626,380 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "architecture-firm-studio",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs the office of a small architecture practice: clients and projects by phase, fees and hours against budget, the drawing sets you issue, and the RFIs and submittals that arrive once construction starts. Drawings stay in your design software; this is where the practice sees what is due, what is waiting and whether each fee is holding."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A person or organization you design for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kind, projects"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Projects"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One commission"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, fee basis, construction budget, hours budgeted and logged, fee billed so far, permit date and number"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Drawing sets"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One issue of drawings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stage, sheets, revision, due date, status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "RFIs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One question from the contractor or a consultant"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Asked by, may change cost or schedule, answer due"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Submittals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One product or shop drawing to review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Spec section, submitted by, review due, status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Time entries"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours on one project"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, billable"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hours used (%)",
+              "bold": true
+            },
+            {
+              "text": " against "
+            },
+            {
+              "text": "Fee billed so far (%)",
+              "bold": true
+            },
+            {
+              "text": ": if hours run well ahead of billing, the fee is at risk."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "RFIs not closed",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Submittals waiting",
+              "bold": true
+            },
+            {
+              "text": " show what the contractor is waiting on you for."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sets not issued",
+              "bold": true
+            },
+            {
+              "text": " shows drawing work still ahead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter current projects with fee, fee basis, construction budget and hours budgeted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add drawing sets due in the next two months."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open RFIs and submittals for projects in construction."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask everyone to log time daily, by project and phase."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Studio meeting: sets due, permits, deadlines"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Daily"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "RFIs and submittals checked; anything due in two days assigned"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Hours against budget by project; billing for the month prepared"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Carrow lakehouse permit set is three days late and the permit submission is planned for this week. The project architect moves the drafter onto the wall sections today and tells the client the submission slips by two days."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "architecture-firm-studio",
       "title": "Dashboard",
@@ -3775,19 +4433,30 @@
       "parent": "architecture-firm-studio",
       "title": "Phases and exit checks",
       "icon": {
-        "emoji": "🧱"
+        "emoji": "📐"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Every phase ends with a decision the client has signed. Writing the exit check down stops scope creeping backward."
+              "text": "Architectural work moves through standard phases. Each one ends with a client decision, and a phase is only finished when its exit check is done. That protects the schedule and the fee."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The phases"
+            }
+          ],
+          "props": {
+            "level": 2
           }
         },
         {
@@ -3805,12 +4474,12 @@
                   ],
                   [
                     {
-                      "text": "Exit check"
+                      "text": "Work"
                     }
                   ],
                   [
                     {
-                      "text": "Signed by"
+                      "text": "Exit check"
                     }
                   ]
                 ]
@@ -3824,12 +4493,12 @@
                   ],
                   [
                     {
-                      "text": "Program, budget range and site facts agreed"
+                      "text": "Program, site analysis, budget, feasibility"
                     }
                   ],
                   [
                     {
-                      "text": "Client"
+                      "text": "Client approves program and budget"
                     }
                   ]
                 ]
@@ -3843,12 +4512,12 @@
                   ],
                   [
                     {
-                      "text": "Plans and massing approved"
+                      "text": "Massing, plans, early cost check"
                     }
                   ],
                   [
                     {
-                      "text": "Client"
+                      "text": "Client signs off the scheme"
                     }
                   ]
                 ]
@@ -3862,12 +4531,12 @@
                   ],
                   [
                     {
-                      "text": "Materials and systems chosen; cost check done"
+                      "text": "Systems, materials, consultants coordinated"
                     }
                   ],
                   [
                     {
-                      "text": "Client and principal"
+                      "text": "Pricing set issued; cost confirmed"
                     }
                   ]
                 ]
@@ -3881,12 +4550,12 @@
                   ],
                   [
                     {
-                      "text": "Set coordinated and checked against code"
+                      "text": "Full drawings and specifications"
                     }
                   ],
                   [
                     {
-                      "text": "Principal"
+                      "text": "Permit and bid sets issued"
                     }
                   ]
                 ]
@@ -3900,12 +4569,12 @@
                   ],
                   [
                     {
-                      "text": "Permit issued or comments answered"
+                      "text": "Submission, comments, resubmission"
                     }
                   ],
                   [
                     {
-                      "text": "Project architect"
+                      "text": "Permit issued"
                     }
                   ]
                 ]
@@ -3919,12 +4588,31 @@
                   ],
                   [
                     {
-                      "text": "Final inspection and punch list closed"
+                      "text": "RFIs, submittals, site visits, pay applications"
                     }
                   ],
                   [
                     {
-                      "text": "Construction administrator"
+                      "text": "Substantial completion"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Handed over"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Close-out documents, as-builts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final fee billed"
                     }
                   ]
                 ]
@@ -3936,7 +4624,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Moving a project forward"
+              "text": "Moving a project"
             }
           ],
           "props": {
@@ -3947,7 +4635,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm the exit check in the project page."
+              "text": "When the exit check is met, get the client's sign-off in writing."
             }
           ]
         },
@@ -3955,7 +4643,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Change the phase on the project row."
+              "text": "Move the project to the next phase and bill the fee for the phase just finished."
             }
           ]
         },
@@ -3963,7 +4651,149 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create the drawing sets for the next phase with due dates."
+              "text": "Update "
+            },
+            {
+              "text": "Fee billed so far",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scope changes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A change after a sign-off is extra work. Write it down, estimate hours, and agree an additional fee before the drawings change. Small changes add up; a running list kept on the project keeps the conversation calm."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cost checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check construction cost at the end of schematic design and design development. If the scheme is over budget, adjust now; redesign during construction documents is the most expensive kind."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Greenmount Lofts Building B is in design development with the steel shop drawings already coming in for review. The team issues the design development set this week and asks the developer for written sign-off before construction documents start."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Permitting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Permit submission",
+              "bold": true
+            },
+            {
+              "text": " and, once issued, the "
+            },
+            {
+              "text": "Permit number",
+              "bold": true
+            },
+            {
+              "text": ". Respond to building department comments within a week; slow responses are the most common cause of permitting delays."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Consultants by phase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bring structural, mechanical and electrical consultants in by design development at the latest. Coordination problems found on paper cost hours; the same problems found on site cost the client money."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hand-over"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At hand-over, issue as-built drawings, warranties and the close-out binder, then set the project to "
+            },
+            {
+              "text": "Handed over",
+              "bold": true
+            },
+            {
+              "text": " and bill the final fee."
             }
           ]
         }
@@ -3974,9 +4804,21 @@
       "parent": "architecture-firm-studio",
       "title": "Handling RFIs and submittals",
       "icon": {
-        "emoji": "📬"
+        "emoji": "📨"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "During construction, the contractor's questions and product submissions come to the architect. Fast, clear answers keep the job moving; slow ones become delay claims."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3992,7 +4834,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log it the day it arrives with the raised date and who must answer."
+              "text": "Log each RFI the day it arrives with the question, who asked it, and the date an answer is due (usually five working days)."
             }
           ]
         },
@@ -4000,7 +4842,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Answer within five working days; if it needs a consultant, tell the contractor the date you expect."
+              "text": "Tick "
+            },
+            {
+              "text": "May change cost",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "May change schedule",
+              "bold": true
+            },
+            {
+              "text": " if it could. Those go to the project architect and the client immediately."
             }
           ]
         },
@@ -4008,7 +4864,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If the answer changes drawings, issue a sketch or revised sheet and note it in the RFI."
+              "text": "Answer with a sketch or a reference to the drawings, not just words."
             }
           ]
         },
@@ -4016,7 +4872,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Close the RFI when the contractor confirms."
+              "text": "Set "
+            },
+            {
+              "text": "Answered",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Closed",
+              "bold": true
+            },
+            {
+              "text": " once the contractor confirms."
             }
           ]
         },
@@ -4025,90 +4895,6 @@
           "text": [
             {
               "text": "Submittals"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check against the specification section, not just the drawings."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mark Approved only when nothing needs changing; otherwise Revise and resubmit with marked-up notes."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Keep a clear line between approval of product data and responsibility for means and methods."
-            }
-          ]
-        },
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A late answer costs the contractor money. They will remember it at final payment."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        }
-      ]
-    },
-    {
-      "key": "time-and-fee-tracking",
-      "parent": "architecture-firm-studio",
-      "title": "Time and fee tracking",
-      "icon": {
-        "emoji": "⏱️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Logging time"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Log hours the same day against a project, never against a client alone."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Use plain task names that the principal can read in a fee review."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Reading the numbers"
             }
           ],
           "props": {
@@ -4125,17 +4911,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Hours used (%)"
+                      "text": "Status"
                     }
                   ],
                   [
                     {
-                      "text": "Meaning"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Action"
+                      "text": "Means"
                     }
                   ]
                 ]
@@ -4144,17 +4925,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Under 70"
+                      "text": "Logged"
                     }
                   ],
                   [
                     {
-                      "text": "On plan"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Nothing"
+                      "text": "Received; not yet reviewed"
                     }
                   ]
                 ]
@@ -4163,17 +4939,12 @@
                 "cells": [
                   [
                     {
-                      "text": "70 to 90"
+                      "text": "In review"
                     }
                   ],
                   [
                     {
-                      "text": "Watch"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check the remaining deliverables for the phase"
+                      "text": "With the architect or a consultant"
                     }
                   ]
                 ]
@@ -4182,17 +4953,26 @@
                 "cells": [
                   [
                     {
-                      "text": "Over 90"
+                      "text": "Approved"
                     }
                   ],
                   [
                     {
-                      "text": "Pressure"
+                      "text": "Matches the design intent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Revise and resubmit"
                     }
                   ],
                   [
                     {
-                      "text": "Talk to the client about scope before more work"
+                      "text": "Does not match; comments returned"
                     }
                   ]
                 ]
@@ -4201,10 +4981,405 @@
           }
         },
         {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check each submittal against the specification section and drawings. Stamp it, write comments clearly, and return it by the review due date."
+            }
+          ]
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "At each phase end"
+              "text": "The daily check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "RFIs and submittals due in two days assigned to a person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anything overdue answered today, or the contractor told when"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cost or schedule items raised with the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Consultants"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Structural, mechanical and electrical items go to the right consultant the same day. Track their reply date too; their delay is still your delay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing good answers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Answer the question asked, and only that."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Refer to sheet and detail numbers."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the answer changes the drawings, issue a revised sheet."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The bakery's exhaust hood submittal was due back three days ago. The architect reviews it this morning, approves with comments on clearances, and calls the kitchen supplier so the order is not held up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Records"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every RFI and submittal stays in the workspace with its dates. If a dispute comes up later, this record shows what was asked, when, and what you answered."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Volume as a warning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Many RFIs on one detail usually mean the drawing is unclear. Fix the drawing for the next project."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "time-and-fee-tracking",
+      "parent": "architecture-firm-studio",
+      "title": "Time and fee tracking",
+      "icon": {
+        "emoji": "⏱️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Architecture fees are earned by the hour, even when billed as a fixed fee. Tracking hours by phase shows early when a project is losing money."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Logging time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Everyone logs time daily: project, phase, hours and a short description."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Billable",
+              "bold": true
+            },
+            {
+              "text": " for time on client work; business development and admin are not billable."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Round to the half hour."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly check (Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Compare"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours used (%) with fee billed so far (%)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Within ten points of each other"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours this week with plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Close to plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billable share of all hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Most hours billable"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When hours run well ahead of the fee billed, look for the cause: scope creep, redesign, slow decisions or a hard detail."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fee basis"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Basis"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How it is billed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fixed fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "By phase as each finishes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Percent of construction"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Percent of the construction budget, adjusted when the budget changes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hourly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Monthly from logged hours"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record the basis and the construction budget on each project."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Billing each month"
             }
           ],
           "props": {
@@ -4215,7 +5390,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Compare hours logged with the hours budgeted for that phase."
+              "text": "Check each project's phase and the share of the fee earned."
             }
           ]
         },
@@ -4223,7 +5398,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Note why you were over or under in the project page."
+              "text": "Prepare invoices for completed phases or monthly progress."
             }
           ]
         },
@@ -4231,7 +5406,98 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Use the lesson when pricing the next project."
+              "text": "Update "
+            },
+            {
+              "text": "Fee billed so far",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a project is over"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Talk to the client early if the overrun comes from their changes, and agree an additional fee."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If it comes from inside the studio, learn from it: note what took longer than planned for the next fee proposal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Elmwood fit-out is 85 percent billed and in construction administration, but hours are close to budget. The partner checks the RFI log, finds most hours went on the oven pad and duct conflict, and raises an additional services fee for the extra site visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unbilled time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Time logged but not yet billed is money the practice has earned and not collected. Review it monthly, and bill hourly work the month it happens."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fee proposals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use logged hours from past projects of the same kind to price the next one. Real numbers beat guesses every time."
             }
           ]
         }
@@ -4245,6 +5511,18 @@
         "emoji": "🦺"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Site visits during construction let the architect see whether the work follows the drawings. A short, consistent routine and a written report after each visit protect the client and the practice."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -4260,7 +5538,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Latest drawing set, RFI list and open submittals"
+              "text": "Latest drawings, open RFIs and submittals on your tablet"
             }
           ],
           "props": {
@@ -4271,7 +5549,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Camera, tape, level, boots and safety gear"
+              "text": "Last visit's report and its open items"
             }
           ],
           "props": {
@@ -4282,7 +5560,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Contractor told the time and who is coming"
+              "text": "Hard hat, boots, high-visibility vest and eye protection"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contractor told the time; site supervisor available"
             }
           ],
           "props": {
@@ -4301,26 +5590,42 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Walk the work against the drawings, area by area."
+              "text": "Sign in and follow the site safety rules."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Photograph each area and name the file with the date and grid reference."
+              "text": "Walk the whole site with the supervisor, starting with last visit's open items."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Write each issue as a sentence with a location and a number."
+              "text": "Compare the work with the drawings: dimensions, materials, details."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Photograph each issue with a reference: grid line, room or detail number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note anything that needs an RFI answer or a revised drawing."
             }
           ]
         },
@@ -4328,7 +5633,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Afterwards"
+              "text": "What to look at, by stage"
             }
           ],
           "props": {
@@ -4336,26 +5641,192 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Focus"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Foundations"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Footing sizes, reinforcement, waterproofing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Framing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Openings, structure as drawn, fire separations"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Before drywall"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Services in walls, insulation, blocking for fixtures"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Finishes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Materials match approved submittals; quality"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Send a field report within two working days."
+              "text": "After the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write a short report within two days: date, who was there, progress, issues with photos, and actions with owners and dates."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Log new questions as RFIs."
+              "text": "Add any new questions as RFIs."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Update the project's phase and hours."
+              "text": "Log the visit time against the project in construction administration."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep your role clear"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The architect observes and reports; the contractor directs the work and is responsible for site safety. Do not instruct workers directly; raise issues with the supervisor."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "At the bakery fit-out, the duct run still clashes with the beam at gridline C. The architect photographs it, adds it to the report, and follows up on the open RFI with the mechanical engineer the same afternoon."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visit frequency"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Agree the number of visits in the fee proposal, such as every two weeks during construction. Extra visits caused by contractor problems are additional services; track them so they can be billed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Close-out visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Near completion, walk the site with the contractor and client to build the punch list, and return to check it is done before hand-over."
             }
           ]
         }
