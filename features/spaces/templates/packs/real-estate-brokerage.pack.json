@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 4,
+  "version": 5,
   "title": "Real Estate Brokerage",
   "description": "For realtors and brokers: leads, listings, contracts, contingency dates and commissions.",
   "forWho": "Real estate agents, brokers and transaction coordinators",
@@ -1263,7 +1263,7 @@
               "accepted_on": "@today-14d",
               "closing_on": "@today+16d",
               "coordinator": "tm-bertrand",
-              "contract_price": 862000,
+              "contract_price": 829000,
               "earnest": 15000,
               "financing": "Conventional"
             }
@@ -1280,7 +1280,7 @@
               "accepted_on": "@today-6d",
               "closing_on": "@today+27d",
               "coordinator": "tm-bertrand",
-              "contract_price": 471500,
+              "contract_price": 489000,
               "earnest": 8000,
               "financing": "FHA"
             }
@@ -1298,7 +1298,7 @@
               "closing_on": "@today-40d",
               "coordinator": "tm-bertrand",
               "closed_on": "@today-40d",
-              "contract_price": 380000,
+              "contract_price": 361000,
               "earnest": 5000,
               "financing": "Cash"
             }
@@ -1315,7 +1315,7 @@
               "accepted_on": "@today-10d",
               "closing_on": "@mon+4d",
               "coordinator": "tm-bertrand",
-              "contract_price": 640000,
+              "contract_price": 612000,
               "earnest": 12000,
               "financing": "Conventional"
             }
@@ -1332,7 +1332,7 @@
               "accepted_on": "@today-1d",
               "closing_on": "@today+35d",
               "coordinator": "tm-bertrand",
-              "contract_price": 745000,
+              "contract_price": 771000,
               "earnest": 20000,
               "financing": "VA"
             }
@@ -1349,7 +1349,7 @@
               "accepted_on": "@today-45d",
               "closing_on": "@today-15d",
               "coordinator": "tm-bertrand",
-              "contract_price": 548000,
+              "contract_price": 529000,
               "earnest": 10000,
               "financing": "Conventional"
             }
@@ -2395,7 +2395,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3979,6 +3979,25 @@
           "type": "heading",
           "text": [
             {
+              "text": "Pricing conversations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Show the seller the three to five closest sales from the last few months, the active competition and the homes that did not sell. Agree a price and a review date together. Sellers who choose a high price against advice should agree in writing to revisit it at 14 days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
               "text": "When offers arrive"
             }
           ],
@@ -4272,6 +4291,96 @@
           "type": "heading",
           "text": [
             {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Milestones and reminders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Transaction coordinator"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Negotiation and client advice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Agent"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lender and escrow follow-up"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Coordinator, with the agent copied"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Commission check on the closing statement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Broker"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
               "text": "If a deal falls through"
             }
           ],
@@ -4547,6 +4656,44 @@
             },
             {
               "text": " on leads to see which channels produce closings, not just inquiries."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Referrals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a past client sends a friend, thank them the same week, personally, whether or not the friend buys. Note the referral on both lead rows so the source report gives past clients credit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviews"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for a review only after the day-7 call shows they are happy, and make it easy with one direct link."
             }
           ]
         },
@@ -4962,5 +5109,10 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [
+    {
+      "at": "spec.tables (listing).fields (price)",
+      "because": "List price and contract price are separate facts: the contract price is negotiated from the list price and the list price must stay as advertised."
+    }
+  ]
 }
