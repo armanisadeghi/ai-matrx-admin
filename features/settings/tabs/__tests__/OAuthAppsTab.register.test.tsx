@@ -61,8 +61,9 @@ jest.mock("@/components/official/settings/primitives/SettingsButton", () => ({
     </button>
   ),
 }));
+let mockOrgs: { id: string; name: string }[] = [{ id: "org-1", name: "Clinic" }];
 jest.mock("@/features/organizations/hooks", () => ({
-  useUserOrganizations: () => ({ organizations: [{ id: "org-1", name: "Clinic" }], loading: false, error: null }),
+  useUserOrganizations: () => ({ organizations: mockOrgs, loading: false, error: null }),
 }));
 jest.mock("@/components/ui/checkbox", () => ({
   Checkbox: (p: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) => (
@@ -74,7 +75,13 @@ jest.mock("@/components/ui/textarea", () => ({
     <textarea aria-label={p["aria-label"]} value={p.value} onChange={(e) => p.onChange(e)} />
   ),
 }));
-jest.mock("@/features/organizations/components/OrganizationChooser", () => ({ OrganizationChooser: () => null }));
+jest.mock("@/features/organizations/components/OrganizationChooser", () => ({
+  OrganizationChooser: (p: { onChange: (o: { id: string; name: string; slug: string }) => void }) => (
+    <button type="button" onClick={() => p.onChange({ id: "org-active", name: "admin's Workspace", slug: "w" })}>
+      pick-active-org
+    </button>
+  ),
+}));
 
 const registerOAuthApp = jest.fn();
 const listOAuthApps = jest.fn(async () => [] as unknown[]);
@@ -135,6 +142,27 @@ it("registers an app in the chosen organization and shows the secret exactly onc
   expect(container.querySelector("[data-secret=oauth-client-secret]")?.textContent).toBe("secret-shown-once");
   await act(async () => button("Done").click());
   expect(container.textContent).not.toContain("secret-shown-once");
+});
+
+it("picking an organization (even the active one) enables Register and registers there", async () => {
+  mockOrgs = [{ id: "org-1", name: "Clinic" }, { id: "org-active", name: "admin's Workspace" }];
+  registerOAuthApp.mockResolvedValue({
+    id: "a2", client_id: "c2", client_secret: "s2", name: "X", redirect_uris: ["https://a.example.com/cb"],
+    scopes: ["data.records:read"], authorize_url: "u", token_url: "t",
+  });
+  try {
+    await act(async () => root.render(<OAuthAppsTab />));
+    await act(async () => button("New app").click());
+    await act(async () => type(container.querySelector<HTMLInputElement>("input[aria-label=Name]")!, "X"));
+    await act(async () => type(container.querySelector<HTMLTextAreaElement>("textarea")!, "https://a.example.com/cb"));
+    await act(async () => button("Register").click());
+    expect(registerOAuthApp).not.toHaveBeenCalled();
+    await act(async () => button("pick-active-org").click());
+    await act(async () => button("Register").click());
+    expect(registerOAuthApp).toHaveBeenCalledWith("org-active", expect.objectContaining({ name: "X" }));
+  } finally {
+    mockOrgs = [{ id: "org-1", name: "Clinic" }];
+  }
 });
 
 it("names the data scopes in fixed order and drops unknown ones", () => {
