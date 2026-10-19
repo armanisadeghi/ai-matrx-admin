@@ -40,7 +40,6 @@ function TranscriptPicker({ onPick, onCancel }: PickerProps) {
   const [again, setAgain] = useState(0);
   useEffect(() => {
     let alive = true;
-    setRead({ phase: "reading" });
     fetchTranscripts(everyOrganization, null)
       .then((rows) => alive && setRead({ phase: "read", rows }))
       .catch((e: unknown) => alive && setRead({ phase: "failed", why: e instanceof Error ? e.message : String(e) }));
@@ -54,7 +53,10 @@ function TranscriptPicker({ onPick, onCancel }: PickerProps) {
         rows={read.phase === "read" ? read.rows : []}
         read={readOf(
           { loading: read.phase === "reading", error: read.phase === "failed" ? new Error(read.why) : null },
-          { what: "your transcripts", onRetry: () => setAgain((n) => n + 1) },
+          { what: "your transcripts", onRetry: () => {
+            setRead({ phase: "reading" });
+            setAgain((n) => n + 1);
+          } },
         )}
         rowKey={(t) => t.id}
         rowText={(t) => `${t.title} ${t.description}`}
