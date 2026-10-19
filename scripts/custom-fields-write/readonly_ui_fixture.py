@@ -65,7 +65,7 @@ elif cmd == 'down':
     st = json.load(open(STATE))
     tx(ADMIN, "select custom.entity_row_write(%s,'workflow',%s,'{}'::jsonb,%s::jsonb)", (ORG, st['row'], json.dumps({'cfw3_caption_field': None})))
     tx(ADMIN, "select custom.entity_field_retire(%s,%s)", (ORG, st['field']))
-    c.execute("update workflow.definition set deleted_at=now() where id=%s", (st['row'],))
+    tx(ADMIN, "select custom.entity_row_write(%s,'workflow',%s,'{}'::jsonb,'{}'::jsonb,null,true)", (ORG, st['row']))   # archive, as the owner
     if st.get('added_member'):
         c.execute("update iam.memberships set status='departed', deleted_at=now() where id=%s", (st['membership'],))
     print('down; workflow archived, field retired, value cleared; membership removed =', bool(st.get('added_member')))
