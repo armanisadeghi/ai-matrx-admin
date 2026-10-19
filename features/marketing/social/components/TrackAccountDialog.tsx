@@ -116,8 +116,11 @@ export function TrackAccountDialog({
         onOpenChange(false);
         router.push(`/marketing/${brandSeg}/socials/post/${result.post_id}`);
       } else {
+        // Leaving the field to press Track starts the paid lookup: wait for it and track what it fetched.
+        const fetched = await input.fetchedAccount();
         const result = await trackAccount(
           {
+            profileId: fetched?.profileId,
             handleOrUrl: parsed.status === "ok" ? parsed.url : text.trim(),
             platform: effectivePlatform ?? undefined,
             role,
