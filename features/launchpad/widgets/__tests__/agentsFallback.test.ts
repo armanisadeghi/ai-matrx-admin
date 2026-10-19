@@ -2,7 +2,8 @@ jest.mock("@/components/favorites/usePinned", () => ({ usePinned: () => ({}), fa
 jest.mock("@/components/favorites/PinButton", () => ({ PinButton: () => null }));
 jest.mock("@/features/access-gate/hooks/useAccessStates", () => ({ useAccessStates: () => ({}) }));
 jest.mock("@/features/board/tools/search-items", () => ({ searchItemsAsPerson: () => null }));
-import { openableRecentAgents } from "../bodies/AgentsWidget";
+jest.mock("@/utils/supabase/client", () => ({ createClient: () => null }));
+import { idsNeedingAnAnswer, openableRecentAgents } from "../bodies/AgentsWidget";
 import { LAUNCHPAD_WIDGET_CATALOG } from "../catalog";
 
 it("lists only recent agents this person can open, and tells same-named ones apart", () => {
@@ -22,4 +23,11 @@ it("files Favorites and Recent under Work in the Add picker", () => {
   const section = (k: string) => LAUNCHPAD_WIDGET_CATALOG.find((s) => s.type === k)?.section;
   expect(section("favorites")).toBe("work");
   expect(section("recent")).toBe("work");
+});
+
+it("asks the access gate only about agents the person's own read did not return", () => {
+  // The gate's resolver is one round trip per id: a launchpad load used to ask it 18 times.
+  expect(idsNeedingAnAnswer(["a1", "a2", "a3"], undefined)).toEqual([]);
+  expect(idsNeedingAnAnswer(["a1", "a2", "a3"], new Set(["a1", "a3"]))).toEqual(["a2"]);
+  expect(idsNeedingAnAnswer(["a1", "a2"], new Set(["a1", "a2"]))).toEqual([]);
 });

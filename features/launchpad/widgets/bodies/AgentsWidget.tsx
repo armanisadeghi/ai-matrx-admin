@@ -18,6 +18,7 @@ import { searchItemsAsPerson } from "@/features/board/tools/search-items";
 import { configText, type LaunchpadWidgetBodyProps } from "../types";
 import { WidgetList, type WidgetRow } from "../frame";
 import { displayId } from "@ai-matrx/design-system";
+import { createClient } from "@/utils/supabase/client";
 
 const agentIdOf = (id: string) => (id.startsWith("agent:") ? id.slice(6) : id);
 
@@ -27,6 +28,25 @@ function chatAction(id: string, label: string) {
       <Link href={`/chat/a/${encodeURIComponent(id)}`} />
     </Button>
   );
+}
+
+/** The agents among `ids` this person reads as live rows: ONE select (row security answers it). Only the
+ *  rest go to the access gate, whose resolver is one round trip PER id — asking it about every agent on the
+ *  card cost 18 calls on each launchpad load. */
+export function idsNeedingAnAnswer(ids: readonly string[], readable: ReadonlySet<string> | undefined): string[] {
+  return readable ? ids.filter((id) => !readable.has(id)) : [];
+}
+
+async function readableAgentIds(ids: readonly string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  const { data, error } = await createClient()
+    .schema("agent")
+    .from("definition")
+    .select("id")
+    .in("id", [...ids])
+    .is("deleted_at", null);
+  if (error) throw new Error(error.message);
+  return new Set((data ?? []).map((r) => r.id));
 }
 
 /** Recent agents this person can open, with a tell-apart line for rows that share a name. */
@@ -55,10 +75,21 @@ export function AgentsWidget({ capacity }: LaunchpadWidgetBodyProps) {
     queryFn: () => searchItemsAsPerson({ query: "", tokens: ["agent"], limit }),
   });
   const ids = pinned.length > 0 ? pinned.map((f) => agentIdOf(f.id)) : (recent.data ?? []).map((r) => r.entity_id);
-  const access = useAccessStates("agent", ids);
+  const sortedIds = [...new Set(ids)].sort();
+  const readable = useQuery({
+    queryKey: ["start-readable-agents", sortedIds],
+    enabled: sortedIds.length > 0,
+    staleTime: 60_000,
+    queryFn: () => readableAgentIds(sortedIds),
+  });
+  // The select failing is not an answer: every id then goes to the access gate, as before.
+  const known = readable.isError ? new Set<string>() : readable.data;
+  const access = useAccessStates("agent", idsNeedingAnAnswer(sortedIds, known));
+  const statusOf = (id: string): string | undefined =>
+    known?.has(id) ? "ok" : known ? access.states.get(id)?.status : undefined;
 
   if (pinned.length === 0) {
-    const rows: WidgetRow[] = openableRecentAgents(recent.data ?? [], (id) => access.states.get(id)?.status).map((r) => ({
+    const rows: WidgetRow[] = openableRecentAgents(recent.data ?? [], statusOf).map((r) => ({
       key: r.entity_id,
       title: r.label,
       href: `/agents/${encodeURIComponent(r.entity_id)}`,
@@ -74,7 +105,7 @@ export function AgentsWidget({ capacity }: LaunchpadWidgetBodyProps) {
     return (
       <WidgetList
         capacity={capacity}
-        loading={recent.isLoading || (ids.length > 0 && access.isLoading)}
+        loading={recent.isLoading || (ids.length > 0 && (readable.isLoading || access.isLoading))}
         error={recent.error ? recent.error.message : null}
         empty="No agents yet"
         rows={rows}
@@ -89,7 +120,7 @@ export function AgentsWidget({ capacity }: LaunchpadWidgetBodyProps) {
       empty="No pinned agents"
       rows={pinned.map((f) => {
         const id = agentIdOf(f.id);
-        const status = access.states.get(id)?.status;
+        const status = statusOf(id);
         const gone = status === "deleted" || status === "missing";
         const denied = status === "denied";
         return {
