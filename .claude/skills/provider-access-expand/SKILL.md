@@ -12,6 +12,18 @@ description: "Discovery batch that grows the Provider Access Launch queue. Use w
 
 # Expand Provider Access
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/integrations/provider-access/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Free or cheap provider APIs are activated in batches per company, Google first,** through the
+   expand, scout and submit skills (Google Fact Check Tools and PageSpeed are the model). Enabling
+   one is a prompt for Codex, so dozens for one company are one prompt. A discovery agent goes through
+   each company and lists every such tool worth having; leaving them undiscovered is a defect
+   ("crazy", Arman, 2026-09-12). The Verification Desk trial proved it: one such API unlocked a whole
+   step of a real method for ten minutes of enabling.
+2. **An activation ends with a platform tool registered** for users and agents, not just a key.
+<!-- rules:stamp-end -->
+
 Add a researched, deduplicated batch to the normal AI Matrx `Provider Access Launch` Project. This
 skill discovers work; it does not create a parallel spreadsheet, register external accounts, request
 permissions, or claim that a provider is easy before scouting.

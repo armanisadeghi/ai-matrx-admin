@@ -630,6 +630,7 @@ export default function TaskDetailsPanel({
                       : "text-foreground"
                   }`}
                   onClick={() => setIsEditingTitle(true)}
+                  data-user-content
                 >
                   {task.title}
                 </h2>
@@ -818,6 +819,7 @@ export default function TaskDetailsPanel({
                 />
                 <span
                   className={`text-sm flex-1 ${subtask.completed ? "line-through text-muted-foreground" : "text-foreground"}`}
+                  data-user-content
                 >
                   {subtask.title}
                 </span>

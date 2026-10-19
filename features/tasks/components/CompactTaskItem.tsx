@@ -310,6 +310,7 @@ function CompactTaskItemCard({
               : "text-foreground",
           )}
           title={task.title}
+          data-user-content
         >
           {task.title}
         </h3>
@@ -361,6 +362,7 @@ function CompactTaskItemStacked({
               : "text-foreground",
           )}
           title={task.title}
+          data-user-content
         >
           {task.title}
         </h3>

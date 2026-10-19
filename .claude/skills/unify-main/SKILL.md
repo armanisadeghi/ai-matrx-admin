@@ -12,6 +12,37 @@ description: The standing order for local git state in every AI Matrx repo — z
 
 # unify-main — one tree, one branch, nothing lost
 
+<!-- rules:stamp -->
+> Rules from `common-docs/policies/shared-checkout.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Commit your own paths, locally and often, by pathspec** (`git commit -m "<message>" -- <your paths>`) as
+   soon as your code won't crash the app. Never `git add -A` / `git commit -a`: a stale index put the app
+   version back on 2026-09-24. Whatever you leave uncommitted is not lost; the sync commits and ships it.
+   Push is constant (Arman, 2026-10-03): `./ship.sh` pushes for everyone, and changed `@ai-matrx` packages
+   are published at once.
+2. **Never run tree-wide destructive or stashing git in a shared checkout:** any `git stash`,
+   `pull --rebase --autostash`, `checkout -- .`, `reset --hard`, `clean`, dirty `pull --rebase`. Other
+   sessions' uncommitted work rides the stash and is lost. Pathspec-scope every such operation to your own
+   files. If a file you need vanished, find the stash commit (`git log --all -- <path>`, "index on main")
+   and restore it with `git show <sha>:<path>`, never `git stash pop`.
+3. **No local worktrees and no local branches, ever; remote branches are fine** (Arman, 2026-09-20). Edit the
+   single shared checkout on main. To protect a live feature, build the replacement beside it and swap. Never
+   request your own PR, branch or worktree, and never spend output complaining about other agents editing
+   the tree.
+4. **Attribution is not the goal; live code is.** (Arman, 2026-09-10 and 2026-09-24.) The sync commits your
+   uncommitted files under its own message and pushes them; do not fight, re-scope or report it. A feature
+   split across several pushes, or live half-done for a few minutes, is fine. We are not in production.
+5. **When `git push` is rejected, integrate:** never stash, never rebase a dirty tree, never force (procedure
+   below). **Every merge conflict, blocked pull or failed push is yours to resolve and push in the same
+   turn; never list one as pending for Arman** (Arman, 2026-10-10).
+6. **Never revert or delete another lane's guard, gate or forcing test to clear an error.** Fix the cause, or
+   record it and leave it. A shared-identity revert cannot be attributed, so answer with state, not blame.
+7. **A plumbing or private-index commit is proven against what is pushed.** Before committing a shared file,
+   `git diff HEAD -- <file>` and confirm every hunk is yours; before reporting done, prove every symbol the
+   commit imports exists in the pushed tree (`git archive <commit>` into scratch, then import-test or
+   type-check the touched files).
+<!-- rules:stamp-end -->
+
 Arman, 2026-09-20: *"There is no reason for ever having a worktree. Updates should always be made to the single source of truth that is pushed live every 30 minutes or less. Everyone sees the same thing. Branches are ok for remote but not for local. They're forbidden."* Two full days of programming were lost when one release was missed and worktrees piled up. This skill exists so that never happens again, and so an agent with no way to reach Arman still knows exactly what to do.
 
 ## The end state, every repo, always

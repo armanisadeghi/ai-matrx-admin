@@ -2,7 +2,13 @@
 -- inverse of 20261019051500_adv3_owner_bound_app_doors_dig_markers_formula_rounds.sql
 -- lane: FIX-ADV3
 -- lock: custom,platform
-BASED_ON_LINES
+-- based-on: custom._automation_app_cursor_merge(jsonb, jsonb) 75390caf06968315eded6f9fe01e1513c9b869a10a2ad53b32b53bdb9e3da1f5
+-- based-on: custom.automation_app_event(uuid, jsonb, jsonb) a2a6808621945ecd34d3cbfe82c53b8897cb6d7d872e46d9818166f208cc6715
+-- based-on: custom.automation_app_note(uuid, text, jsonb) f27195355fc342868ee06d10e40d4b51677fe1d7af401844e5e280bebdd303cf
+-- based-on: custom.automation_app_stop(uuid, text) 09fe486bc9ac5e6b2bd7f4e4d9387598852e148aae77ab32e9471dfd9e91a593
+-- based-on: custom._fxp_formula_type(text, jsonb) d7ee7c33f593e7f47dacc037bdbc41a81549c68177a1b9f090848f8c13a89a41
+-- based-on: custom.formula_parse(uuid, uuid, text) b79528bcd727adfa1bfdfb858d04ffbde2eb0c62877d4a1aaf700942ed062141
+-- based-on: custom._view_field_key(uuid, uuid, text, text, jsonb, text[]) 4761233cc52df699aa8213d3f15c1fc334c3073c42768e44ec4d73da0c0bcb9d
 
 set local lock_timeout = '2s';
 set local statement_timeout = '60s';

@@ -11,7 +11,8 @@ description: "Admin debug system wiring for the floating AdminIndicator's live d
 
 1. **No AI integration starts without a Builder feed.** The same change that adds a data step to a
    surface publishes its inputs, findings, workflow step outputs, AI runs and provision snapshots, so
-   Arman can see every value the page has, in real time, from the first minute.
+   Arman can see every value the page has, in real time, from the first minute. Tell him exactly what
+   to click: one click to open the panel is fine, not knowing it exists is not.
 2. **The panel shows the truth, unmodified.** Every exact request and response (client calls and the
    server's external calls), an Activity timeline, and derived values only in a separate group that
    links to its raw source. Values render through the canonical multi-format JSON component; copy is

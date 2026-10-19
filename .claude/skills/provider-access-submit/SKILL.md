@@ -12,6 +12,18 @@ description: "End-to-end execution of a scouted third-party provider access camp
 
 # Submit Provider Access
 
+<!-- rules:stamp -->
+> Rules from `common-docs/systems/integrations/provider-access/FEATURE.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Free or cheap provider APIs are activated in batches per company, Google first,** through the
+   expand, scout and submit skills (Google Fact Check Tools and PageSpeed are the model). Enabling
+   one is a prompt for Codex, so dozens for one company are one prompt. A discovery agent goes through
+   each company and lists every such tool worth having; leaving them undiscovered is a defect
+   ("crazy", Arman, 2026-09-12). The Verification Desk trial proved it: one such API unlocked a whole
+   step of a real method for ten minutes of enabling.
+2. **An activation ends with a platform tool registered** for users and agents, not just a key.
+<!-- rules:stamp-end -->
+
 Execute one campaign or a small related batch without scope creep. The scouting record is the
 submission brief; stop and rescout if the live portal materially disagrees.
 

@@ -275,7 +275,7 @@ export default function TasksTableView() {
               {/* THE DOOR LAW. The row already selects the task into the
                   detail pane; the name keeps cmd/middle-click to /tasks/{id}
                   and the hover peek. */}
-              <span className="min-w-0" {...{ [TASK_TITLE_DOM_ATTR]: task.id }}>
+              <span className="min-w-0" data-user-content {...{ [TASK_TITLE_DOM_ATTR]: task.id }}>
                 <EntityRef
                   token="task"
                   id={task.id}
