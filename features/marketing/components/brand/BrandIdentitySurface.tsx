@@ -14,7 +14,8 @@
  * `getScope` never fetches: a section that has not loaded yet is omitted.
  */
 
-import { useCallback, type ReactNode } from "react";
+import { createContext, useCallback, useContext, type ReactNode } from "react";
+import type { SurfaceScopePayload } from "@ai-matrx/chat/surfaces/types";
 import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 import { createMarketingBrandScope } from "@/features/surfaces/manifests/marketing-brand.manifest";
 import {
@@ -31,6 +32,26 @@ import {
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { buildBrandContextXml } from "@/features/marketing/lib/surface-context";
 import { parseBrandProfile } from "@/features/marketing/types";
+
+/**
+ * The brand scope every Identity room inherits. A room's own surface
+ * (`matrx-user/marketing-brand-<room>`) declares `inheritsFrom:
+ * "matrx-user/marketing-brand"`; its `getScope` spreads THIS first so the
+ * room never rebuilds the brand dossier and the brand values stay one
+ * declaration. Null outside the Identity layout.
+ */
+const BrandIdentityScopeContext = createContext<(() => SurfaceScopePayload) | null>(null);
+
+/** The inherited brand scope reader for an Identity room; throws outside the layout. */
+export function useBrandIdentityBaseScope(): () => SurfaceScopePayload {
+  const read = useContext(BrandIdentityScopeContext);
+  if (!read) {
+    throw new Error(
+      "useBrandIdentityBaseScope: an Identity room surface must render inside BrandIdentitySurface (the identity layout).",
+    );
+  }
+  return read;
+}
 
 export function BrandIdentitySurface({
   brandId,
@@ -82,7 +103,9 @@ export function BrandIdentitySurface({
       getScope={getScope}
     >
       {current ? <MarketingBrandWriteTargets brand={current} /> : null}
-      {children}
+      <BrandIdentityScopeContext.Provider value={getScope}>
+        {children}
+      </BrandIdentityScopeContext.Provider>
     </SurfaceRuntimeProvider>
   );
 }
