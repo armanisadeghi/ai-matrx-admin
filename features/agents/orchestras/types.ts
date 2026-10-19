@@ -5,6 +5,7 @@
 
 import type { Json } from "@/types/database.types";
 import type { OrchestraAccent, OrchestraMode, OrchestraResultMode } from "./constants";
+import type { MemberContext } from "./memberContext";
 
 /** A saved 2D position on the builder canvas. */
 export interface CanvasPos {
@@ -92,6 +93,17 @@ export interface OrchestraMember {
   required: boolean;
   /** How its result comes back (D-40). Always resolved — "inline" by default. */
   resultMode: OrchestraResultMode;
+  /** The connection setting (context passthrough): what it receives from the Conductor. */
+  context: MemberContext;
+  /** The setting's payload version the next save names (0 = never saved). */
+  contextVersion: number;
+  /** Set when the stored setting cannot be read (the server refuses to run it too). */
+  contextError: string | null;
+  /**
+   * Every edge-metadata key the builder does not edit (`mandate_key`, dag `depends_on` / `when`,
+   * …). Carried back on every save: an edge's metadata is replaced whole, so a key left out is lost.
+   */
+  extraMeta: Record<string, Json>;
 }
 
 /**

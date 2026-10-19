@@ -6,6 +6,7 @@
 // mutates optimistically (thunks reconcile on error). Mounted as `orchestras`.
 
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { MemberContext } from "@/features/agents/orchestras/memberContext";
 import type {
   OrchestraConfig,
   OrchestraDetail,
@@ -183,6 +184,18 @@ const slice = createSlice({
       if (pos !== undefined) m.pos = pos;
       if (required !== undefined) m.required = required;
       if (resultMode !== undefined) m.resultMode = resultMode;
+    },
+    memberContextSet(
+      state,
+      action: PayloadAction<{ conductorId: string; agentId: string; context: MemberContext; version: number }>,
+    ) {
+      const m = state.byId[action.payload.conductorId]?.members.find(
+        (x) => x.agentId === action.payload.agentId,
+      );
+      if (!m) return;
+      m.context = action.payload.context;
+      m.contextVersion = action.payload.version;
+      m.contextError = null;
     },
     configSet(
       state,

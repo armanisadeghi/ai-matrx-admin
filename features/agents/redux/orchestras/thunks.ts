@@ -17,6 +17,10 @@ import type {
 } from "@/features/agents/orchestras/types";
 import { DEFAULT_ORCHESTRA_RESULT_MODE } from "@/features/agents/orchestras/constants";
 import {
+  DEFAULT_MEMBER_CONTEXT,
+  type MemberContext,
+} from "@/features/agents/orchestras/memberContext";
+import {
   fetchFullAgent,
 } from "@/features/agents/redux/fetch-full-agent.thunk";
 import { purposeService, type GroundingTag } from "@/features/purpose/service";
@@ -197,6 +201,10 @@ export function addAgentToOrchestra(args: {
       pos: args.meta?.pos ?? null,
       required: args.meta?.required === true,
       resultMode: args.meta?.resultMode ?? DEFAULT_ORCHESTRA_RESULT_MODE,
+      context: DEFAULT_MEMBER_CONTEXT,
+      contextVersion: 0,
+      contextError: null,
+      extraMeta: {},
     };
     dispatch(
       orchestrasActions.memberAdded({
@@ -268,6 +276,7 @@ export function reorderOrchestraMembers(args: {
             required: m.required === true,
             resultMode: m.resultMode ?? DEFAULT_ORCHESTRA_RESULT_MODE,
           },
+          extraMeta: m.extraMeta,
         }),
       ),
     );
@@ -330,6 +339,9 @@ export function saveMemberMeta(args: {
           required: m?.required === true,
           resultMode: m?.resultMode ?? DEFAULT_ORCHESTRA_RESULT_MODE,
         },
+        // A job link (`mandate_key`), dag wiring and any other key the builder does not edit
+        // ride back unchanged — the edge's metadata is replaced whole on every save.
+        extraMeta: m?.extraMeta,
       },
     );
     if (isRecordsErr(res)) {
@@ -362,6 +374,39 @@ export function saveMemberMeta(args: {
 }
 
 /** Delete a set (optimistic removal; restores list on error). */
+/**
+ * Save one member's connection setting (context passthrough). Optimistic; the save names the
+ * version it read, and a stale save (someone else saved since) reloads — never overwrites.
+ * The setting lives in the edge's typed payload, so the metadata writers above never touch it.
+ */
+export function saveMemberContext(args: {
+  conductorId: string;
+  agentId: string;
+  context: MemberContext;
+}): AppThunk<Promise<OrchestraWriteResult & { stale?: boolean }>> {
+  return async (dispatch, getState) => {
+    const m = getState().orchestras.byId[args.conductorId]?.members.find(
+      (x) => x.agentId === args.agentId,
+    );
+    if (!m || m.edgeId.startsWith("optimistic:")) {
+      return { ok: false, error: "Not saved yet" };
+    }
+    const previous = { context: m.context, version: m.contextVersion };
+    dispatch(orchestrasActions.memberContextSet({ ...args, version: m.contextVersion }));
+    const res = await orchestrasService.saveMemberContext(m.edgeId, args.context, m.contextVersion);
+    if (isRecordsErr(res)) {
+      if (res.error.code === "stale_write") {
+        await dispatch(loadOrchestra(args.conductorId, { force: true }));
+        return { ok: false, stale: true, error: "Changed elsewhere — reloaded" };
+      }
+      dispatch(orchestrasActions.memberContextSet({ ...args, ...previous }));
+      return { ok: false, error: res.error.message };
+    }
+    dispatch(orchestrasActions.memberContextSet({ ...args, version: res.data.version }));
+    return { ok: true };
+  };
+}
+
 export function deleteOrchestra(args: {
   conductorId: string;
 }): AppThunk<Promise<OrchestraWriteResult>> {

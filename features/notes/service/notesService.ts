@@ -605,8 +605,12 @@ export async function persistNoteUpdate(
     Object.keys(databaseUpdates).length > 0 ? "saved" : "unchanged";
   if (Object.keys(databaseUpdates).length > 0) {
     if (options?.expectedVersion !== undefined) {
-      const result = await guardedUpdate<NoteRow>({
-        expectedVersion: options.expectedVersion,
+      const expectedVersion = options.expectedVersion;
+      // A PERSON's edits follow the simultaneous-edit rule: while an agent holds this note for
+      // its turn the database refuses the save (PT423); wait for the hold to clear, then save —
+      // a CAS miss then is the ordinary conflict below (re-read, merge, save again).
+      const result = await whileAgentHoldsTheNote(organizationId, () => guardedUpdate<NoteRow>({
+        expectedVersion,
         applyUpdate: ({ expectedVersion, nextVersion }) =>
           supabase
             .schema("workbench")
@@ -641,7 +645,7 @@ export async function persistNoteUpdate(
               },
             }
           : {}),
-      });
+      }));
       if (result.status === "conflict") {
         throw new NoteUpdateConflictError({
           expectedVersion: options.expectedVersion,
@@ -909,4 +913,50 @@ export async function fetchTags(scope?: ListScopeWord): Promise<string[]> {
   const allTags = data.flatMap((n) => n.tags || []);
   const uniqueTags = Array.from(new Set(allTags));
   return uniqueTags.sort();
+}
+
+/** The database's answer while an agent holds a note for its turn (simultaneous edits). */
+function isEditHeld(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return code === "PT423";
+}
+
+/**
+ * Run a note save; while an agent holds the note (PT423), wait and try again — for at most the
+ * `agents.context` / `edit_hold_wait_seconds` knob, looking every `edit_hold_poll_ms` (the same
+ * knobs the server's agents wait by). Past the limit the refusal stands, in words.
+ */
+async function whileAgentHoldsTheNote<T>(organizationId: string, save: () => Promise<T>): Promise<T> {
+  let deadline: number | null = null;
+  let pollMs = 0;
+  for (;;) {
+    try {
+      return await save();
+    } catch (error) {
+      if (!isEditHeld(error)) throw error;
+      if (deadline === null) {
+        const [wait, poll] = await Promise.all([
+          supabase.schema("platform").rpc("knob_resolve", {
+            p_feature: "agents.context",
+            p_key: "edit_hold_wait_seconds",
+            p_organization_id: organizationId,
+          }),
+          supabase.schema("platform").rpc("knob_resolve", {
+            p_feature: "agents.context",
+            p_key: "edit_hold_poll_ms",
+            p_organization_id: organizationId,
+          }),
+        ]);
+        if (wait.error || poll.error || typeof wait.data !== "number" || typeof poll.data !== "number") {
+          throw error;
+        }
+        deadline = Date.now() + wait.data * 1000;
+        pollMs = poll.data;
+      }
+      if (Date.now() >= deadline) {
+        throw operationFailed("save this note — an agent is still editing it; try again in a moment");
+      }
+      await new Promise((resolve) => setTimeout(resolve, pollMs));
+    }
+  }
 }
