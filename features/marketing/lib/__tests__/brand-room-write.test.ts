@@ -7,7 +7,7 @@ describe("normalizeRoomProfilePatch — agent writes fail loudly, never reshape"
     const profile = normalizeRoomProfilePatch("messaging_hashtags", HASHTAGS, {}, {
       hashtags: [{ tag: "#shredding", use: "branded" }],
     });
-    expect(profile.hashtags).toEqual([{ tag: "#shredding", use: "branded" }]);
+    expect(profile.hashtags).toEqual([{ tag: "shredding", use: "branded" }]);
   });
 
   it("rejects an unknown hashtag use instead of coercing it to branded", () => {

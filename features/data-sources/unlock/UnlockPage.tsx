@@ -69,9 +69,6 @@ export function UnlockPage() {
   const [tally, setTally] = useState<Tally>(EMPTY_TALLY);
   const [pasted, setPasted] = useState("");
   const price = usePriceText();
-  const [unit, setUnit] = useState<{ points: number; usd: number } | null>(null);
-  // The advanced reader's price is quoted before a try once one try has shown it.
-  const unitCost = unit ? `Up to ${price({ pointsPerRecord: unit.points, usd_per_record: unit.usd }, 1)}` : null;
 
   const run = useCallback(
     async (url: string) => {
@@ -81,7 +78,6 @@ export function UnlockPage() {
         const result = await compareUrl({ organizationId, url });
         setTries((t) => ({ ...t, [url]: { state: "done", result } }));
         setTally((t) => addToTally(t, result));
-        if (result.unlocker?.points) setUnit({ points: result.unlocker.points, usd: result.unlocker.cost_usd ?? 0 });
       } catch (e) {
         setTries((t) => ({ ...t, [url]: { state: "failed", message: e instanceof Error ? e.message : "The try failed." } }));
       }
@@ -127,13 +123,13 @@ export function UnlockPage() {
                   data-field="unlock-url"
                 />
               </div>
-              <Button type="submit" disabled={!pastedUrl || !organizationId} meta={unitCost ?? undefined} data-action="unlock-try-pasted">
+              <Button type="submit" disabled={!pastedUrl || !organizationId} data-action="unlock-try-pasted">
                 Try both
               </Button>
             </form>
 
             {extra.map((url) => (
-              <TryRow key={url} url={url} reason={null} attempt={tries[url]} onTry={run} cost={unitCost} />
+              <TryRow key={url} url={url} reason={null} attempt={tries[url]} onTry={run} />
             ))}
 
             {!organizationId || blocked.isLoading ? (
@@ -145,7 +141,7 @@ export function UnlockPage() {
             ) : (
               <div className="flex flex-col gap-3">
                 {(blocked.data ?? []).map((b) => (
-                  <TryRow key={b.id} url={b.url} reason={b.reason} attempt={tries[b.url]} onTry={run} cost={unitCost} />
+                  <TryRow key={b.id} url={b.url} reason={b.reason} attempt={tries[b.url]} onTry={run} />
                 ))}
               </div>
             )}
@@ -156,7 +152,7 @@ export function UnlockPage() {
   );
 }
 
-function TryRow({ url, reason, attempt, onTry, cost }: { url: string; reason: string | null; attempt?: Try; onTry: (url: string) => void; cost: string | null }) {
+function TryRow({ url, reason, attempt, onTry }: { url: string; reason: string | null; attempt?: Try; onTry: (url: string) => void }) {
   const running = attempt?.state === "running";
   return (
     <div className="rounded-lg border border-border bg-card p-3" data-unlock-row={url}>
@@ -165,7 +161,7 @@ function TryRow({ url, reason, attempt, onTry, cost }: { url: string; reason: st
         <span className="min-w-0 flex-1 truncate text-sm" title={url}>
           {url}
         </span>
-        <Button type="button" onClick={() => onTry(url)} disabled={running} meta={attempt ? undefined : (cost ?? undefined)} data-action="unlock-try">
+        <Button type="button" onClick={() => onTry(url)} disabled={running} data-action="unlock-try">
           {running ? "Trying" : attempt ? "Try again" : "Try both"}
         </Button>
       </div>

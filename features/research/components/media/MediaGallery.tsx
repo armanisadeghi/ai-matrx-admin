@@ -39,7 +39,7 @@ import { useTopicContext } from "../../context/ResearchContext";
 import { useResearchMedia } from "../../hooks/useResearchState";
 import { useYouTubeChannelIdentityIndex, useYouTubeVideoIdentityIndex } from "../../hooks/useResearchState";
 import type { YouTubeChannelIdentity, YouTubeVideoIdentity } from "../../service";
-import { saveChannelIdentity, savedChannelIdentity } from "../../service";
+import { saveChannelIdentity, savedChannelIdentity, youTubeChannelKey, youTubeChannelKeyString } from "../../service";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { resolveMediaInput } from "@/features/source-library/api";
 import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
@@ -1035,39 +1035,58 @@ function YouTubeVideoCard({
   );
 }
 
-/** One YouTube lookup (1 unit), saved on the media row so it is never asked again. */
-async function lookUpChannel(dispatch: ReturnType<typeof useAppDispatch>, item: ResearchMedia) {
-  const resolved = await resolveMediaInput(dispatch, item.url, "youtube");
-  await saveChannelIdentity(item.id, item.metadata as Record<string, unknown> | null, {
+/** One YouTube lookup, saved on every row that links the same channel so it
+ * is never paid for twice. Lookup and save fail with different messages. */
+async function lookUpChannel(
+  dispatch: ReturnType<typeof useAppDispatch>,
+  rows: ResearchMedia[],
+): Promise<void> {
+  let resolved;
+  try {
+    resolved = await resolveMediaInput(dispatch, rows[0].url, "youtube");
+  } catch (caught) {
+    throw new Error(`YouTube lookup failed: ${extractErrorMessage(caught)}`);
+  }
+  const identity: YouTubeChannelIdentity = {
     title: resolved.title,
     handle: resolved.handle,
     avatar: resolved.thumbnail_url,
     subscribers: resolved.subscriber_count,
     videos: resolved.item_count,
     description: resolved.description,
-  });
+  };
+  try {
+    for (const row of rows) await saveChannelIdentity(row.id, identity);
+  } catch (caught) {
+    throw new Error(`Found it, but saving failed: ${extractErrorMessage(caught)}`);
+  }
 }
 
-/** YouTube channel/profile — avatar, name, subscribers; opens on YouTube (not
- * embeddable). Details come from what we already hold, else one lookup on click. */
+/** YouTube channel/profile — avatar, name, subscribers; the whole card opens
+ * it on YouTube (not embeddable). Details come from what we already hold, else
+ * one lookup on click. */
 function YouTubeChannelCard({
   item,
   known,
+  sameChannel,
   onToggleRelevance,
   onEnriched,
 }: {
   item: ResearchMedia;
   known?: YouTubeChannelIdentity;
+  /** Every row linking this channel (this one included) — one lookup fills all. */
+  sameChannel: ResearchMedia[];
   onToggleRelevance: (item: ResearchMedia) => void;
   onEnriched: () => void;
 }) {
   const dispatch = useAppDispatch();
   const [looking, setLooking] = useState(false);
   const identity = savedChannelIdentity(item) ?? known ?? null;
+  const isChannel = youTubeChannelKey(item.url) !== null;
   const handle = youTubeChannelLabel(item.url);
-  const title = identity?.title ?? ((item.alt_text || item.caption || "").trim() || handle);
-  const facts = [
-    identity?.handle ?? handle,
+  const title = identity?.title ?? (isChannel ? handle : "YouTube home page");
+  const subtitle = identity?.handle ?? (isChannel && handle !== title ? handle : null);
+  const counts = [
     identity?.subscribers != null ? `${formatYouTubeCount(identity.subscribers)} subscribers` : null,
     identity?.videos != null ? `${formatYouTubeCount(identity.videos)} videos` : null,
   ].filter(Boolean);
@@ -1075,10 +1094,10 @@ function YouTubeChannelCard({
   const lookUp = async () => {
     setLooking(true);
     try {
-      await lookUpChannel(dispatch, item);
+      await lookUpChannel(dispatch, sameChannel);
       onEnriched();
     } catch (caught) {
-      toast.error(`Could not get channel details: ${extractErrorMessage(caught)}`);
+      toast.error(extractErrorMessage(caught));
     } finally {
       setLooking(false);
     }
@@ -1107,21 +1126,15 @@ function YouTubeChannelCard({
         )}
         <div className="min-w-0 flex-1">
           <p className="type-secondary font-medium text-foreground line-clamp-1">{title}</p>
-          <p className="type-meta text-muted-foreground line-clamp-1">{facts.join(" · ")}</p>
+          {subtitle && <p className="type-meta text-muted-foreground line-clamp-1">{subtitle}</p>}
+          {counts.length > 0 && <p className="type-meta text-muted-foreground">{counts.join(" · ")}</p>}
           {identity?.description && (
             <p className="type-meta mt-1 text-muted-foreground line-clamp-2">{identity.description}</p>
           )}
         </div>
       </OutboundLink>
-      <div className="flex items-center justify-between gap-2 border-t border-border/40 px-3 py-1.5">
-        <OutboundLink
-          href={item.url}
-          className="inline-flex items-center gap-1 type-meta text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ExternalLink className="h-3 w-3" />
-          Open on YouTube
-        </OutboundLink>
-        {!identity && (
+      {!identity && isChannel && (
+        <div className="border-t border-border/40 px-3 py-1">
           <ControlButton
             variant="link"
             type="button"
@@ -1131,8 +1144,8 @@ function YouTubeChannelCard({
           >
             Get details
           </ControlButton>
-        )}
-      </div>
+        </div>
+      )}
       <Button
         variant={item.is_relevant ? "default" : "outline"}
         size="icon"
@@ -1158,21 +1171,38 @@ function YouTubeChannelsSection({
   const { identityForUrl, refresh, isLoading, error } = useYouTubeChannelIdentityIndex(
     items.map((item) => item.url),
   );
+  const groups = new Map<string, ResearchMedia[]>();
+  for (const item of items) {
+    const key = youTubeChannelKeyString(item.url);
+    if (key) groups.set(key, [...(groups.get(key) ?? []), item]);
+  }
   // Until our own channel read answers, "missing" would count every channel.
   const known = !isLoading && !error;
-  const missing = items.filter((item) => !savedChannelIdentity(item) && !identityForUrl(item.url));
-  const [lookingUp, setLookingUp] = useState(false);
+  const missing = [...groups.values()].filter(
+    (rows) => !rows.some((row) => savedChannelIdentity(row) || identityForUrl(row.url)),
+  );
+  const [stage, setStage] = useState<"idle" | "confirm" | "running">("idle");
   const lookUpAll = async () => {
-    setLookingUp(true);
-    const results = await runWithConcurrency(missing, 4, (item) => lookUpChannel(dispatch, item));
-    setLookingUp(false);
-    if (results.failed > 0) toast.error(`${results.failed} of ${missing.length} channels could not be found on YouTube.`);
+    setStage("running");
+    const failures: string[] = [];
+    await runWithConcurrency(missing, 4, async (rows) => {
+      try {
+        await lookUpChannel(dispatch, rows);
+      } catch (caught) {
+        failures.push(extractErrorMessage(caught));
+        throw caught;
+      }
+    });
+    setStage("idle");
+    if (failures.length > 0) {
+      toast.error(`${failures.length} of ${missing.length} channels failed. ${failures[0]}`);
+    }
     onEnriched();
     refresh();
   };
   return (
     <section className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <SectionHeader
           icon={Users}
           title="YouTube Channels"
@@ -1180,31 +1210,50 @@ function YouTubeChannelsSection({
           description="Creator pages linked from sources"
         />
         {known && missing.length > 1 && (
-          <ControlButton
-            variant="link"
-            type="button"
-            disabled={lookingUp}
-            icon={lookingUp ? <Loader2 className="animate-spin" /> : undefined}
-            onClick={() => void lookUpAll()}
-          >
-            {/* read-gate-exempt: rendered only once the channel read succeeded (`known`) */}
-            {`Get details for ${missing.length}`}
-          </ControlButton>
+          <div className="flex items-center gap-1">
+            {stage === "confirm" ? (
+              <>
+                {/* read-gate-exempt: rendered only once the channel read succeeded (`known`) */}
+                <span className="type-meta text-muted-foreground">{`${missing.length} YouTube lookups`}</span>
+                <ControlButton variant="primary" type="button" onClick={() => void lookUpAll()}>
+                  Look up
+                </ControlButton>
+                <ControlButton variant="quiet" type="button" onClick={() => setStage("idle")}>
+                  Cancel
+                </ControlButton>
+              </>
+            ) : (
+              <ControlButton
+                variant="link"
+                type="button"
+                disabled={stage === "running"}
+                icon={stage === "running" ? <Loader2 className="animate-spin" /> : undefined}
+                onClick={() => setStage("confirm")}
+              >
+                {/* read-gate-exempt: rendered only once the channel read succeeded (`known`) */}
+                {`Get details for ${missing.length}`}
+              </ControlButton>
+            )}
+          </div>
         )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-        {items.map((item) => (
-          <YouTubeChannelCard
-            key={item.id}
-            item={item}
-            known={identityForUrl(item.url)}
-            onToggleRelevance={onToggleRelevance}
-            onEnriched={() => {
-              onEnriched();
-              refresh();
-            }}
-          />
-        ))}
+        {items.map((item) => {
+          const key = youTubeChannelKeyString(item.url);
+          return (
+            <YouTubeChannelCard
+              key={item.id}
+              item={item}
+              known={identityForUrl(item.url)}
+              sameChannel={(key && groups.get(key)) || [item]}
+              onToggleRelevance={onToggleRelevance}
+              onEnriched={() => {
+                onEnriched();
+                refresh();
+              }}
+            />
+          );
+        })}
       </div>
     </section>
   );

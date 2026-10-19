@@ -954,9 +954,10 @@ export async function saveChannelIdentity(
   identity: YouTubeChannelIdentity,
 ): Promise<void> {
   const columns = "id,version,metadata,thumbnail_url";
-  const result = await mergeJsonColumn({
+  type ChannelRow = { id: string; version: number; metadata: unknown; thumbnail_url: string | null };
+  const result = await mergeJsonColumn<ChannelRow>({
     fetchCurrent: () =>
-      supabase.schema("research").from("rs_media").select(columns).eq("id", mediaId).maybeSingle(),
+      supabase.schema("research").from("rs_media").select(columns).eq("id", mediaId).maybeSingle() as never,
     readColumn: (row) => row.metadata,
     merge: (current) => ({ ...current, youtube_channel: identity }),
     applyUpdate: ({ value, expectedVersion, nextVersion }) =>
@@ -967,7 +968,7 @@ export async function saveChannelIdentity(
         .eq("id", mediaId)
         .eq("version", expectedVersion)
         .select(columns)
-        .maybeSingle(),
+        .maybeSingle() as never,
   });
   if (result.status === "saved") return;
   if (result.status === "not_found") throw new Error("That channel row no longer exists.");
