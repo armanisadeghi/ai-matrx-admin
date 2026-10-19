@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 3,
+  "version": 4,
   "title": "Web Design Studio HQ",
   "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
   "forWho": "Web design and development studios",
@@ -2619,7 +2619,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
