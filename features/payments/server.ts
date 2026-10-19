@@ -278,6 +278,22 @@ async function formAsks(formId: string, fieldKey: string): Promise<boolean> {
   return Array.isArray(keys) && keys.includes(fieldKey);
 }
 
+/**
+ * True when an open (not archived) portal on this table lets its client change this field
+ * (PAYMENTS-FINAL: the payer would set her own price). Mirrors billing.payment_ask_set's save-time refusal.
+ */
+async function portalEdits(tableId: string, fieldKey: string): Promise<boolean> {
+  const { data, error } = await createAdminClient().schema("custom").from("portal_table")
+    .select("portal_id").eq("table_id", tableId).contains("editable_field_keys", JSON.stringify([fieldKey])); // jsonb wants JSON text, not a Postgres array
+  if (error) throw new Error(`Reading the portals on this table failed: ${error.message}`);
+  const portalIds = ((data as { portal_id: string }[] | null) ?? []).map((r) => r.portal_id);
+  if (portalIds.length === 0) return false;
+  const { data: open, error: openError } = await createAdminClient().schema("custom").from("portal")
+    .select("id").in("id", portalIds).is("archived_at", null);
+  if (openError) throw new Error(`Reading the portals on this table failed: ${openError.message}`);
+  return ((open as unknown[] | null) ?? []).length > 0;
+}
+
 /** Every check before money is asked for; throws PaymentRefusal with the sentence the payer sees. */
 async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ account: OrgPaymentAccount; amount: { ok: true; cents: number } }> {
   const account = await readOrgAccount(ask.organization_id);
@@ -290,6 +306,10 @@ async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ accou
   if (ask.amount_mode === "field" && ask.subject_kind === "form" && ask.amount_field && (await formAsks(ask.subject_id, ask.amount_field))) {
     // REVIEW-PAYMENTS-2 M3: the form now asks the amount question itself, so the payer would set the price.
     throw new PaymentRefusal("This form lets the payer type the amount, so it cannot take payment.", 400);
+  }
+  if (ask.amount_mode === "field" && ask.amount_field && (await portalEdits(ask.table_id, ask.amount_field))) {
+    // PAYMENTS-FINAL: a portal client can change the amount field, so she would set her own price.
+    throw new PaymentRefusal("A portal lets the payer change the amount, so this cannot take payment.", 400);
   }
   const amount = resolveAmountCents(ask, record.data);
   if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
