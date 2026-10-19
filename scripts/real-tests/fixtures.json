@@ -8,7 +8,8 @@
  "not_in_manifest": [
   "PB-01 skill 'Compass dispatch ref' (not built yet)",
   "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
-  "test@test.com seat (a person, not a fixture)"
+  "test@test.com seat (a person, not a fixture)",
+  "UI-QUICK 2026-10-19: spare column 'Dock lane' e55d5573-9a7e-4586-8492-3237b7065df5 on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built"
  ],
  "playbooks": {
   "PB-01": [
@@ -116,6 +117,31 @@
    "tool_list_agents",
    "tool_schedule_wakeup",
    "tool_time_in_zone"
+  ],
+  "UI-QUICK": [
+   "card_desk_q16",
+   "note_summary_desk",
+   "title_desk",
+   "canvas_desk",
+   "rates_reply",
+   "binding_desk",
+   "files_desk",
+   "count_desk",
+   "board_helper",
+   "plumbing_copy",
+   "note_bayview",
+   "note_rate_sheet",
+   "board_copy",
+   "conv_ledger_share",
+   "conv_mexico_city",
+   "binding_count_desk_notes",
+   "binding_title_desk_notes",
+   "binding_files_desk",
+   "shortcut_note_digest",
+   "shortcut_summary_mandate",
+   "shortcut_hub_modal",
+   "shortcut_hub_replace",
+   "shortcut_hub_manual"
   ]
  },
  "fixtures": {
@@ -1203,6 +1229,412 @@
    "name": "current_time_in_zone",
    "is_active": true,
    "deleted": false
+  },
+  "card_desk_q16": {
+   "kind": "agent",
+   "id": "fc450717-deb3-48b0-bcec-a3f22ea9aae0",
+   "name": "Compass Card Desk",
+   "live_version": 1,
+   "live_version_id": "c3ad6b6c-ab34-41f9-a294-8995a5d7f1eb",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "515e78be552e52054900c9caffd3ab47a31e7d2b1fc519b3ae7a21cde9bd0043",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "1b6314332cdfc195228988468dcae11ddb6dca6aecf75a4b9405cbfa996543bd",
+   "tools": [
+    "memory",
+    "web"
+   ],
+   "reasoning_effort": "low"
+  },
+  "note_summary_desk": {
+   "kind": "agent",
+   "id": "18465eb3-9dfa-40e5-a454-41f67cb0fea8",
+   "name": "Compass Note Summary Desk",
+   "live_version": 1,
+   "live_version_id": "662d9a31-18d5-40b5-9af4-86f90afec312",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "095afa7a7bcc33ac2203e1b4634a00af0db908a7ca7b608e7dea7837682b009b",
+   "definition_sha256": "0aa61fba435cde44966879fdcc80f6180332a5f7f051a8a40262c97ffd77c34f",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "title_desk": {
+   "kind": "agent",
+   "id": "8e27f3f8-467f-4421-8b39-0122914b3cd4",
+   "name": "Compass Title Desk",
+   "live_version": 1,
+   "live_version_id": "8fa9c9a9-fe85-4f62-a814-fd33e25654c8",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "56855c46a6fb27c67da72975b644e692148a2fa0d84b10dcb388a4585a12fc61",
+   "definition_sha256": "9354268eb593eba8df938a6a94cffab836a6b9fd1d8315666d28f0d2b04eaeed",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "canvas_desk": {
+   "kind": "agent",
+   "id": "6df4e632-61a4-466c-b7a0-b2831ef8792f",
+   "name": "Compass Canvas Desk",
+   "live_version": 1,
+   "live_version_id": "d723ac4e-c8fc-4f44-ab94-f16ca9997feb",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "e1c2e14518ddde5dcf36350028a677fae04dcccbae48d1ca1e54db1557157b88",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "rates_reply": {
+   "kind": "agent",
+   "id": "b8f8f05e-fa8a-40e1-9357-ad4fd3ec7a4c",
+   "name": "Compass Rates Reply",
+   "live_version": 1,
+   "live_version_id": "17bd3e4d-d26b-4288-af47-2c7979f985e0",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "21e1dbcfea4c76ff919dabfa61a89d8732463b413b2752809f24ab32894479e0",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "binding_desk": {
+   "kind": "agent",
+   "id": "8fc565a1-ecdf-43a0-a84a-860ac4e2987e",
+   "name": "Compass Binding Desk",
+   "live_version": 1,
+   "live_version_id": "c275c11b-f1f0-40fa-a4b7-f6d908ea4623",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "5242ffc38cce56590700236da4f571d763632693a2f40f298d0c1790a5465881",
+   "definition_sha256": "69600ad58dc27141e63750223a13579febc06f0be1f2587d0aa0149cc44284e8",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "files_desk": {
+   "kind": "agent",
+   "id": "1a20d293-6e7c-4dfe-9b18-e7de0d2d8efe",
+   "name": "Compass Files Desk",
+   "live_version": 1,
+   "live_version_id": "c18bbeaf-33a1-4364-9491-3f3095b17475",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "b12986939e8114d263bee94ba162d2f03a7c41eaae3e03b3022f869253e14ec8",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "a4f7813d805f4f90d6d3a67a1e993932b9da3b6c184396caef015d4978b6c740",
+   "tools": [],
+   "reasoning_effort": "low"
+  },
+  "count_desk": {
+   "kind": "agent",
+   "id": "432526c3-028d-438c-ae6f-e164aed103a6",
+   "name": "Compass Count Desk",
+   "live_version": 1,
+   "live_version_id": "776cb274-aaf1-48c3-aef6-ec55b179d880",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "1809218cb4bc74307a8a104b1f422bda15cc02aa4b243c2e27ed354774a2d1b9",
+   "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "fd7fcce29960e290506a53a4864f557871fd5fc0728eddd64b7dca2f97e31a7b",
+   "tools": [],
+   "reasoning_effort": null
+  },
+  "board_helper": {
+   "kind": "agent",
+   "id": "c834a037-3cee-44c2-87fc-73222362afc0",
+   "name": "Compass Board Helper",
+   "note": "v2 adds the tool ask_person (2026-10-19, for Q-22)",
+   "live_version": 2,
+   "live_version_id": "496362e5-9d55-4b57-9c20-aa311da9c74c",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "cf8db77a15bbcc48ba1b0836d18c5875053b7f036993b5ef66d2f1ec8150dd3a",
+   "tools_sha256": "c3c80f0156581b8a8ccfead8106291069def3a4ecdd6d60d2bb855a645e8afc4",
+   "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "definition_sha256": "6f6b962122b050f5febe9c16cd48404251e1b88f882125174c52a570bec3eb66",
+   "tools": [
+    "ask_person"
+   ],
+   "reasoning_effort": null
+  },
+  "plumbing_copy": {
+   "kind": "agent",
+   "id": "68c8dc32-70ac-4423-89e8-7283ffa4a1ac",
+   "name": "Chat Plumbing Test Agent (real tests) copy",
+   "note": "v3 adds a TIMELINE mode (2026-10-19, for Q-15)",
+   "live_version": 3,
+   "live_version_id": "79783a28-90a3-4ed7-a9d9-c473992d0ddd",
+   "model_id": "c5a1f7e3-6d28-4b9c-8e47-2f3a9d0b6c21",
+   "settings_sha256": "418a3e62c8e85416c3f92ad7bf275be3b3841ab2f88902a1b9bc6ce3c4172738",
+   "tools_sha256": "aa21b06a6aed4af646b851f8c1502cf68293f21d28d6359f4f9e0da54ec35c34",
+   "variables_sha256": "d222517e73d6b33fd640d8c4305b1d8c7934dfc231a26aeef998bd523308fac3",
+   "definition_sha256": "7b65838549e810fa40083b691db3f1c15a7a01fad1bdb2c227671147b21daada",
+   "tools": [
+    "math_calculate"
+   ],
+   "reasoning_effort": "none"
+  },
+  "note_bayview": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "f123aaaf-c26f-4b27-b16a-109fff3c4b3c",
+   "name": "note Bayview clinic schedule",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "cec823ddc4380447c404b5a14e5895182897840e38bd567cb9b4d5d3be3dbd5d",
+   "version": 2
+  },
+  "note_rate_sheet": {
+   "kind": "row",
+   "schema": "workbench",
+   "table": "notes",
+   "id": "1f45d439-23c8-4f36-ac47-7cd0a7784f3c",
+   "name": "note Compass rate sheet",
+   "fields": [
+    "label",
+    "content",
+    "deleted_at",
+    "published_to_web",
+    "organization_id"
+   ],
+   "sha256": "d116a81ef8ad4ef0a389765e5b032ed703ad7888b36818ad58b6b92618bdbb11",
+   "version": 1
+  },
+  "board_copy": {
+   "kind": "row",
+   "schema": "projects",
+   "table": "boards",
+   "id": "d590342a-dcbf-4478-8f12-613c8532cca5",
+   "name": "board Compass lane board (copy)",
+   "fields": [
+    "title",
+    "nodes",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "43179fa3b7dd3d88723d61b9c266aa6a4931d9e5850944ea3e75f0aeab52c321",
+   "version": 1
+  },
+  "conv_ledger_share": {
+   "kind": "row",
+   "schema": "chat",
+   "table": "conversation",
+   "id": "db757256-bc40-4dd8-b254-3cec15257a21",
+   "name": "conversation Compass ledger share check",
+   "fields": [
+    "title",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "bfe2c9665aa20c3e048ed14e06c49ac02577f7cbfbaadfd7b13c6d764b202b6f",
+   "has_version": false,
+   "version": null
+  },
+  "conv_mexico_city": {
+   "kind": "row",
+   "schema": "chat",
+   "table": "conversation",
+   "id": "26951884-b5f1-4f83-bfed-8ac4230985c7",
+   "name": "conversation holding Mexico City (timeline run)",
+   "fields": [
+    "deleted_at",
+    "organization_id"
+   ],
+   "note": "title is generated and may change; the reply holds Mexico City",
+   "sha256": "068228800d5812da0cd8f3be546f941f1bd1a3b36ce2557a60bab3b4ea5c77a2",
+   "has_version": false,
+   "version": null
+  },
+  "binding_count_desk_notes": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "associations",
+   "id": "201a883b-2853-4979-8d59-0dba611e62e6",
+   "name": "Notes binding of Compass Count Desk",
+   "fields": [
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "payload_kind",
+    "payload",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "eae8e6e20418a85e93d5878a1c819bd733ffc9d96ea87bdb99307e008c0f27cb",
+   "has_version": false,
+   "version": null
+  },
+  "binding_title_desk_notes": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "associations",
+   "id": "0b51713b-9b9f-4b3b-b75e-635ed08ffd58",
+   "name": "Notes binding of Compass Title Desk (note_title -> current_note_title)",
+   "fields": [
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "payload_kind",
+    "payload",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "9a1eb7270934235b91d05dda5be2aacbca08b7ae456f5ef65d3e3c712f5dcf51",
+   "has_version": false,
+   "version": null
+  },
+  "binding_files_desk": {
+   "kind": "row",
+   "schema": "platform",
+   "table": "associations",
+   "id": "3aaaaea2-4b35-4301-9ec3-4bd108a6ad2f",
+   "name": "Files binding of Compass Files Desk",
+   "fields": [
+    "source_type",
+    "source_id",
+    "target_type",
+    "target_id",
+    "payload_kind",
+    "payload",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "c62575c91dde23b86cf2a2dd7051a587b7701ab3d34171e74c8b4af065c26160",
+   "has_version": false,
+   "version": null
+  },
+  "shortcut_note_digest": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "vw_shortcut",
+   "id": "54316077-99d4-4aba-867f-4d38912977fd",
+   "name": "shortcut Compass note digest",
+   "fields": [
+    "label",
+    "mandate_key",
+    "display_mode",
+    "auto_run",
+    "show_pre_execution_gate",
+    "keyboard_shortcut",
+    "agent_id",
+    "agent_version_id",
+    "use_latest",
+    "scope_mappings",
+    "surface_name",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "312d3677973fa85bd72960a09a8400a2388aace5cb66495e713e60c7a79c7d58",
+   "version": 1
+  },
+  "shortcut_summary_mandate": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "vw_shortcut",
+   "id": "7c510ef9-2f81-475f-9058-7d90b8426e8f",
+   "name": "shortcut Compass summary (mandate)",
+   "fields": [
+    "label",
+    "mandate_key",
+    "display_mode",
+    "auto_run",
+    "show_pre_execution_gate",
+    "keyboard_shortcut",
+    "agent_id",
+    "agent_version_id",
+    "use_latest",
+    "scope_mappings",
+    "surface_name",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "265b543a0e2901b7e9bcabe7ea33cc25a5713d1c10cda00d81fa635e737d29d4",
+   "version": 1
+  },
+  "shortcut_hub_modal": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "vw_shortcut",
+   "id": "e981afb8-0b8d-409c-a29a-4e681968b162",
+   "name": "shortcut Hub lookup (modal)",
+   "fields": [
+    "label",
+    "mandate_key",
+    "display_mode",
+    "auto_run",
+    "show_pre_execution_gate",
+    "keyboard_shortcut",
+    "agent_id",
+    "agent_version_id",
+    "use_latest",
+    "scope_mappings",
+    "surface_name",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "d9983255e259f5bf25ede56760b1390cd322133ec675c4df1285717fa14be304",
+   "version": 1
+  },
+  "shortcut_hub_replace": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "vw_shortcut",
+   "id": "5c3b366b-b021-4780-af56-ee34f8cb5ba0",
+   "name": "shortcut Hub lookup (replace)",
+   "fields": [
+    "label",
+    "mandate_key",
+    "display_mode",
+    "auto_run",
+    "show_pre_execution_gate",
+    "keyboard_shortcut",
+    "agent_id",
+    "agent_version_id",
+    "use_latest",
+    "scope_mappings",
+    "surface_name",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "0fff2f1e0a2fba03160398569d64cce9c099e4421b9ffd77992eb8e53f6e6d90",
+   "version": 1
+  },
+  "shortcut_hub_manual": {
+   "kind": "row",
+   "schema": "mandate",
+   "table": "vw_shortcut",
+   "id": "274c52d3-65a3-43e5-83ee-4f3d091b8b51",
+   "name": "shortcut Hub lookup (manual)",
+   "fields": [
+    "label",
+    "mandate_key",
+    "display_mode",
+    "auto_run",
+    "show_pre_execution_gate",
+    "keyboard_shortcut",
+    "agent_id",
+    "agent_version_id",
+    "use_latest",
+    "scope_mappings",
+    "surface_name",
+    "deleted_at",
+    "organization_id"
+   ],
+   "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
+   "version": 1
   }
  }
 }
