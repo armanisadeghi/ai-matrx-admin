@@ -34,7 +34,7 @@
  * `__tests__/ApprovalQueue.decision-lifecycle.test.tsx`).
  */
 
-import { isValidElement, useEffect, useState, type ReactNode } from "react";
+import { isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Check,
   ChevronDown,
@@ -360,12 +360,12 @@ function ApprovalTable({
 
   // A deep link (`?item=`) opens its row's window once — the table already pages
   // to and rings it (`focusRowId`). Written to the URL the table reads.
-  const [openedFor, setOpenedFor] = useState<string | null>(null);
+  const openedForRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!focusedKey || focusedKey === openedFor || !URL_TABLE_ID.test(tableId)) return;
-    setOpenedFor(focusedKey);
+    if (!focusedKey || focusedKey === openedForRef.current || !URL_TABLE_ID.test(tableId)) return;
+    openedForRef.current = focusedKey;
     commitUrlParams({ [`table.${tableId}.window`]: focusedKey }, "replace");
-  }, [focusedKey, openedFor, tableId]);
+  }, [focusedKey, tableId]);
 
   const columns: MatrxColumnDef<ApprovalItem>[] = [
     {
@@ -880,9 +880,7 @@ export function ApprovalQueue({
   // were drawn first and pushed away by the rows. The body below the header draws once, when every
   // mounted kind has answered the first time; later refetches keep what is on screen.
   const [firstSettled, setFirstSettled] = useState(false);
-  useEffect(() => {
-    if (!loading) setFirstSettled(true);
-  }, [loading]);
+  if (!loading && !firstSettled) setFirstSettled(true);
   const bodyReady = firstSettled || !loading;
 
   const summarySignature = `${count}|${loading}|${failed.length}`;
@@ -1058,9 +1056,11 @@ export function ApprovalQueue({
   // A deep link into a collapsed list expands it FIRST. Rows exist in the DOM
   // only once `expanded` is true, so the scroll cannot ride in this same turn
   // (Bugbot LOW #3, 2026-09-17).
-  useEffect(() => {
-    if (focusedKey && !expanded) setExpanded(true);
-  }, [focusedKey]);
+  const [expandedFor, setExpandedFor] = useState<string | null>(null);
+  if (focusedKey && focusedKey !== expandedFor) {
+    setExpandedFor(focusedKey);
+    if (!expanded) setExpanded(true);
+  }
 
   // The table pages to, scrolls to and rings the focused row itself (`focusRowId`).
 
