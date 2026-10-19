@@ -330,10 +330,6 @@ export const createAgent = createAsyncThunk<
     // want this agent's derivatives to outrank raw extracts in Knowledge.
     defaultRagBoost: partial.defaultRagBoost ?? 0,
     ragAwarenessMode: partial.ragAwarenessMode ?? "none",
-    // Agent memory v1 defaults (chat 0.8.207): not a chat agent, reads and adds to memory.
-    isChatAgent: partial.isChatAgent ?? false,
-    readsMemory: partial.readsMemory ?? true,
-    addsToMemory: partial.addsToMemory ?? true,
   };
 
   const { data, error } = await supabase

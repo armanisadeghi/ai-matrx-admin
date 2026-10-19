@@ -19,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { toast } from "@/lib/toast";
 import { extractErrorMessage } from "@/utils/errors";
 
-import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAutoRefresh } from "./service";
+import { OUTSIDE_DATABASE_PROVIDER, refreshAnySyncedTable, sourceTakesEdits, syncedFromLabel, type SyncAnswer, type SyncAutoRefresh } from "./service";
 import { SyncedBadge } from "./SyncedBadge";
 import { HeldArchiveLine } from "@/features/unified-data/table-page/HeldArchiveLine";
 import { answerHold, openHold, type HeldArchive } from "@/features/unified-data/table-page/heldArchive";
@@ -47,6 +47,14 @@ function agoText(iso: string | null | undefined): string {
   if (!Number.isFinite(new Date(iso).getTime())) return "never";
   return formatRelativeTime(iso, { style: "intl" });
 }
+
+/** Who "no longer lists" the held rows, per provider. */
+const HELD_SOURCE: Record<string, string> = {
+  [OUTSIDE_DATABASE_PROVIDER]: "The outside database",
+  google_sheets: "The sheet",
+  csv_url: "The CSV link",
+  matrx_view: "The source table",
+};
 
 const INTERVALS: Record<string, { value: SyncAutoRefresh; label: string }[]> = {
   matrx_view: [
@@ -79,8 +87,8 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
 
   const again = useRef<() => void>(() => {});
   const refresh = useCallback(
-    async (quiet: boolean) => {
-      if (!orgId) return;
+    async (quiet: boolean): Promise<SyncAnswer | null> => {
+      if (!orgId) return null;
       setBusy(true);
       try {
         const answer = await refreshAnySyncedTable(orgId, tableId);
@@ -89,9 +97,11 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
                              archive_kept: prev?.archive_kept ?? source?.archive_kept ?? null }));
         tableShapeChanged(tableId);
         if (!quiet && answer.warnings?.length) toast.warning(answer.warnings.join(" "));
+        return answer;
       } catch (err) {
         if (!quiet) toast.error(sayError(err, "The refresh did not run."), { action: { label: "Try again", onClick: () => void again.current() } });
         else console.warn("[synced table] refresh on open did not run:", extractErrorMessage(err));
+        return null;
       } finally {
         setBusy(false);
       }
@@ -132,12 +142,9 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
         setHold((prev) => ({ ...(prev ?? source ?? {}), archive_kept: token }));
         return;
       }
-      await refresh(false);
+      const done = await refresh(false);
       // the refresh spent the yes; a different hold now means the rows changed under the click
-      setHold((prev) => {
-        setWas(prev?.archive_held && prev.archive_confirm !== token ? Number(token.split(":")[0]) : null);
-        return prev;
-      });
+      setWas(done?.rows_held && done.archive_confirm !== token ? Number(token.split(":")[0]) : null);
     } catch (err) {
       toast.error(sayError(err, kind === "keep" ? "Keep was not saved." : "The archive did not run."));
     }
@@ -149,7 +156,7 @@ export function SyncedTableBar({ tableId, organizationId }: { tableId: string; o
     <div className="flex shrink-0 items-center gap-1" data-synced-table-bar={source.provider}>
       <SyncedBadge provider={source.provider} />
       {held ? (
-        <HeldArchiveLine source={syncedFromLabel(source.provider).replace(/^an? /, (m) => m.toUpperCase()).replace(/^outside/, "Outside").replace(/^another/, "Another")}
+        <HeldArchiveLine source={HELD_SOURCE[source.provider] ?? "The source"}
           held={held.held} was={was} busy={busy}
           onArchive={() => void answer("archive", held.confirm)} onKeep={() => void answer("keep", held.confirm)} />
       ) : (

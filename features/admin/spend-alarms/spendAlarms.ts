@@ -76,7 +76,13 @@ export type AlarmRefs = Partial<
     | "scope"
     | "window"
     | "subject_kind"
-    | "subject_ref",
+    | "subject_ref"
+    | "caller"
+    | "approval_ids"
+    | "approval_count"
+    | "expires_on"
+    | "extend_to"
+    | "approvals_list",
     string
   >
 >;
@@ -560,6 +566,12 @@ const REF_LABEL: Record<keyof AlarmRefs, string> = {
   window: "Window",
   subject_kind: "Subject kind",
   subject_ref: "Subject",
+  caller: "Caller",
+  approval_ids: "Spend approvals",
+  approval_count: "Approvals",
+  expires_on: "Expires",
+  extend_to: "Extend to",
+  approvals_list: "Approvals list",
 };
 
 /** The page each ref opens. Values are the blocked thing's own ids. */
