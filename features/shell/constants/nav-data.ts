@@ -924,9 +924,9 @@ export const primaryNavItems: ShellNavItem[] = [
       },
       {
         id: "workspace.start-page",
-        // features/start: the person's own start page — a Page built from tables they chose.
+        // The person's start launchpad (Start moved into launchpads; /start redirects here).
         label: "Start Page",
-        href: "/start",
+        href: "/launchpad/start",
         iconName: "Compass",
         description: "Your own start page, built from your tables",
         color: "sky",
