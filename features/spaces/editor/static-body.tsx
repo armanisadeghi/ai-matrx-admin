@@ -23,11 +23,12 @@ import type { SpaceBlock } from "../contract";
 import { CalloutGlyph } from "./callout-block";
 import { AppletFrame, appletBlockHeight } from "./applet-frame";
 import { toEngine, type EngineBlock } from "./convert";
-import { PAINTED_WIDTH_SLACK, activeLayout, paintedSizesOf } from "./database-host";
+import { staticPaintedCss } from "./database-host";
 import { columnCss, useDarkMode } from "./SpaceEditor";
 import { PageRow } from "./schema";
 import { readData } from "./stored-blocks";
 import { ServerDrawnDatabase } from "./server-drawn-database";
+import { useHeightKnown } from "../page/space-seed-context";
 
 type Inline = { type: string; text?: string; styles?: Record<string, unknown>; href?: string; content?: Inline[]; props?: Record<string, unknown> };
 
@@ -236,38 +237,14 @@ function Group({ blocks, numDepth = 0 }: { blocks: EngineBlock[]; numDepth?: num
   );
 }
 
-/**
- * Each database block's stored painted height, held by CSS per window width (the server knows no width):
- * the same sizes the editor's first frame holds (`pickPainted` by window width), as media rules.
- */
-function paintedCss(blocks: EngineBlock[]): string {
-  const rules: string[] = [];
-  const walk = (list: EngineBlock[]) => {
-    for (const b of list) {
-      if (b.type === "database") {
-        const sizes = paintedSizesOf(readData(b.props?.data));
-        for (const size of sizes) {
-          if (!size.vw) continue;
-          const id = b.id.replace(/["\\]/g, "\\$&");
-          // A chart tile's height does not follow the window: a width nobody saved at holds the first stored size.
-          if (size === sizes[0] && activeLayout(readData(b.props?.data)) === "chart") rules.push(`.spaces-static-body .bn-block-outer[data-id="${id}"] .spaces-db-host{min-height:${size.h}px}`);
-          rules.push(`@media (min-width:${size.vw - PAINTED_WIDTH_SLACK}px) and (max-width:${size.vw + PAINTED_WIDTH_SLACK}px){.spaces-static-body .bn-block-outer[data-id="${id}"] .spaces-db-host{min-height:${size.h}px}}`);
-        }
-      }
-      if (b.children?.length) walk(b.children);
-    }
-  };
-  walk(blocks);
-  return rules.join("\n");
-}
-
 /** The page's stored blocks, read-only, as the editor will draw them. */
 export function StaticSpaceBody({ blocks }: { blocks: SpaceBlock[] }) {
   const dark = useDarkMode();
+  const known = useHeightKnown();
   const engine = toEngine(blocks) as unknown as EngineBlock[];
   return (
     <div className="spaces-static-body">
-      <style>{`${columnCss(engine)}\n${paintedCss(engine)}`}</style>
+      <style>{`${columnCss(engine)}\n${staticPaintedCss(engine, readData, known)}`}</style>
       <div className={`bn-root bn-container ${dark ? "dark" : "light"} bn-shadcn spaces-editor`} data-color-scheme={dark ? "dark" : "light"}>
         <div className="ProseMirror bn-editor bn-default-styles" translate="no">
           <Group blocks={engine} />

@@ -160,6 +160,7 @@ export function SpacePage({
   seeds,
   expectedRows,
   expectedGroups,
+  expectedNotes,
   links,
   backlinks,
 }: {
@@ -168,6 +169,7 @@ export function SpacePage({
   seeds?: SpaceBlockSeeds;
   expectedRows?: Record<string, number>;
   expectedGroups?: Record<string, number[]>;
+  expectedNotes?: Record<string, string>;
   links?: SpaceLinks;
   backlinks?: { spaceId: string; rows: SeededBacklink[] };
 }) {
@@ -178,7 +180,7 @@ export function SpacePage({
   const [servedKey] = useState(key);
   const served = key === servedKey && initialDoc?.id === spaceId ? initialDoc : undefined;
   return (
-    <SpaceSeedProvider seeds={key === servedKey ? seeds : undefined} {...(key === servedKey && expectedRows ? { expectedRows } : {})} {...(key === servedKey && expectedGroups ? { expectedGroups } : {})}>
+    <SpaceSeedProvider seeds={key === servedKey ? seeds : undefined} {...(key === servedKey && expectedRows ? { expectedRows } : {})} {...(key === servedKey && expectedGroups ? { expectedGroups } : {})} {...(key === servedKey && expectedNotes ? { expectedNotes } : {})}>
       <SpaceLinksProvider links={key === servedKey ? links : undefined} backlinks={key === servedKey ? backlinks : undefined}>
         <SpacePageScreen key={key} spaceId={spaceId} initialDoc={served} />
       </SpaceLinksProvider>

@@ -101,7 +101,37 @@ export function useBlockExpectedGroups(blockId: string): number[] | null {
   return useContext(ExpectedGroupsContext)?.[blockId] ?? null;
 }
 
-export function SpaceSeedProvider({ seeds, expectedRows, expectedGroups, children }: { seeds?: SpaceBlockSeeds; expectedRows?: Record<string, number>; expectedGroups?: Record<string, number[]>; children: ReactNode }) {
+/** Per database block whose table does not open for this person: the opens state its note is drawn from. */
+const ExpectedNotesContext = createContext<Record<string, string> | null>(null);
+
+/** The opens state of a block whose table the server found does not open (null = it opens, or not known). */
+export function useBlockExpectedNote(blockId: string): string | null {
+  return useContext(ExpectedNotesContext)?.[blockId] ?? null;
+}
+
+/**
+ * Whether the server's live answers give this block's first-paint height (DB-BLOCK-CHROME-2): it will draw its
+ * "doesn't open" note, or its rows / cards per column are known and its open view draws them (a chart's tile is
+ * its own fixed geometry and keeps its stored size). Then nothing holds it at a size it was painted at before.
+ */
+export function useBlockHeightKnown(blockId: string, layout: string | undefined): boolean {
+  return useHeightKnown()(blockId, layout);
+}
+
+/** `useBlockHeightKnown` for many blocks at once (the static first paint's per-block CSS). */
+export function useHeightKnown(): (blockId: string, layout: string | undefined) => boolean {
+  const notes = useContext(ExpectedNotesContext);
+  const rows = useContext(ExpectedRowsContext);
+  const groups = useContext(ExpectedGroupsContext);
+  return (blockId, layout) => {
+    if (notes?.[blockId] != null) return true;
+    if (layout === "chart") return false;
+    const n = rows?.[blockId];
+    return groups?.[blockId] != null || (typeof n === "number" && n > 0);
+  };
+}
+
+export function SpaceSeedProvider({ seeds, expectedRows, expectedGroups, expectedNotes, children }: { seeds?: SpaceBlockSeeds; expectedRows?: Record<string, number>; expectedGroups?: Record<string, number[]>; expectedNotes?: Record<string, string>; children: ReactNode }) {
   // The first state is this page's, from the first render: nothing is set by the effect on mount.
   const [state, setState] = useState<{ seeds: SpaceBlockSeeds | undefined; landed: Record<string, BlockSeed | null>; waited: boolean }>(() => ({ seeds, landed: {}, waited: false }));
   useEffect(() => {
@@ -126,7 +156,9 @@ export function SpaceSeedProvider({ seeds, expectedRows, expectedGroups, childre
     <SeedPromisesContext value={seeds ?? null}>
       <ExpectedRowsContext value={expectedRows ?? null}>
         <ExpectedGroupsContext value={expectedGroups ?? null}>
-          <SeedLandedContext value={{ landed: mine?.landed ?? NOTHING_LANDED, settled }}>{children}</SeedLandedContext>
+          <ExpectedNotesContext value={expectedNotes ?? null}>
+            <SeedLandedContext value={{ landed: mine?.landed ?? NOTHING_LANDED, settled }}>{children}</SeedLandedContext>
+          </ExpectedNotesContext>
         </ExpectedGroupsContext>
       </ExpectedRowsContext>
     </SeedPromisesContext>
