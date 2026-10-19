@@ -12,13 +12,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightLeft, Loader2 } from "lucide-react";
 import { createRecordsClient } from "@ai-matrx/records/core";
+import { recordsDataSource } from "@ai-matrx/records-ui/data-source";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import { useRecordsClient } from "@ai-matrx/records/react";
 import { Button, Select } from "@ai-matrx/design-system/controls";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
+import { createClient } from "@/utils/supabase/client";
+import { ensureWorkspaceHome } from "./ensureWorkspaceHome";
 
 const WHOLE_TABLE = "__whole_table__";
 
@@ -30,6 +35,9 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
   const [view, setView] = useState(WHOLE_TABLE);
   const [dest, setDest] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  // The destination has no data home: said IN the dialog (a toast leaves and the dialog gives no hint what to do), and the
+  // dialog stays ready for a retry the moment the person has opened that workspace's Data page once.
+  const [noHome, setNoHome] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -50,14 +58,29 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
   async function sync() {
     if (!destination || !sourceOrg) return;
     setBusy(true);
+    setNoHome(null);
     const there = createRecordsClient({ ...client.config, organizationId: destination });
-    const done = await there.tableCopySync({
-      source_organization_id: sourceOrg,
-      source_table_id: tableId,
-      view_id: view === WHOLE_TABLE ? null : view,
-    });
+    const copy = () =>
+      there.tableCopySync({
+        source_organization_id: sourceOrg,
+        source_table_id: tableId,
+        view_id: view === WHOLE_TABLE ? null : view,
+      });
+    let done = await copy();
+    // A workspace that never opened Data has no data home: make it in place (the same Home the store's own
+    // ensure_home makes), then sync. The store's own checks decide who may; its refusal is shown as said.
+    if (!done.ok && /data home/i.test(done.error.message)) {
+      const made = await ensureWorkspaceHome(there, recordsDataSource(createClient()));
+      if (!made.ok) {
+        setBusy(false);
+        setNoHome(made.message);
+        return;
+      }
+      done = await copy();
+    }
     setBusy(false);
     if (!done.ok) {
+      if (/data home/i.test(done.error.message)) setNoHome(done.error.message);
       toast.error(done.error.message);
       return;
     }
@@ -86,8 +109,17 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
             </label>
             <label className="flex flex-col gap-1 text-sm">
               Workspace
-              <OrganizationChooser value={destination || null} placeholder="Pick a workspace" onChange={(org) => setDest(org.id)} className="w-full justify-start" />
+              <OrganizationChooser value={destination || null} placeholder="Pick a workspace" onChange={(org) => {
+                  setDest(org.id);
+                  setNoHome(null);
+                }} className="w-full justify-start" />
             </label>
+            {noHome ? (
+              <div role="alert" data-sync-into-workspace-no-home="">
+                <ErrorNotice title="The workspace could not be set up for data" message={noHome} code="sync_workspace_home" />
+                <ErrorAlchemyMenu error={noHome} />
+              </div>
+            ) : null}
             <p className="text-xs text-muted-foreground">A read-only copy that follows this view</p>
             <div className="flex justify-end">
               <Button

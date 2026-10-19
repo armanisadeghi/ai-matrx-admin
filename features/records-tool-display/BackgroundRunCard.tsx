@@ -58,7 +58,8 @@ import {
 } from "./backgroundRun";
 
 /** More steps than this and the strip would crowd the card: the bar and the live step say it alone. */
-const STAGE_STRIP_MAX = 8;
+/** At most this many marks in the stage row; longer paths fold into "+N". */
+const STAGE_STRIP_MAX = 7;
 import { tableHref } from "./readRecordsAnswer";
 
 const BADGE_TONE: Record<BackgroundRunPhase, BadgeTone> = {
@@ -153,7 +154,9 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
   // Generic stages for a workflow with no named stage list: one per step it has started.
   const steps = isWorkflow ? workflowStages(run) : [];
   const stages = isImport ? IMPORT_STAGES : steps;
-  const staged = stages.length > 0 && stages.length <= (isImport ? IMPORT_STAGES.length : STAGE_STRIP_MAX);
+  // Any length: a long workflow folds its middle steps into "+N" (StageSteps maxVisible) and the
+  // row never runs past the card; on a phone only the current step keeps its label.
+  const staged = stages.length > 0;
   const metered = isImport || isWorkflow;
 
   // THE RATCHET: the stage never steps back and the fill never shrinks (adjusted during render,
@@ -247,7 +250,8 @@ export function BackgroundRunCard({ runId, hint, name, conversationId, requestId
               steps={stages}
               current={view.phase === "finished" ? stages.length : Math.max(0, ratchet.stageIndex)}
               aria-label={isImport ? "Import stages" : "Workflow steps"}
-              className="overflow-hidden"
+              maxVisible={STAGE_STRIP_MAX}
+              labels="auto"
             />
           ) : null}
         </div>

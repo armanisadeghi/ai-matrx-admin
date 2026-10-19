@@ -189,7 +189,7 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-new-base="">
         <DialogTitle>New base</DialogTitle>
         <Field autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name of the base" aria-label="Name of the base" />
-        {problem ? <ErrorNotice message={problem} operation="Make a base" size="inline" /> : null}
+        {problem ? <ErrorNotice message={problem} operation="Make a base" size="inline" actions={<Button variant="quiet" disabled={busy || !name.trim()} onClick={() => void makeEmpty()} data-new-base-retry="">Try again</Button>} /> : null}
         <div className="flex flex-col gap-2">
           <Button variant="primary" disabled={busy || !name.trim()} onClick={() => void makeEmpty()} data-new-base-empty="">Start empty</Button>
           <div className="flex gap-2">
@@ -319,15 +319,28 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   );
 }
 
-function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: boolean; onClose: () => void; current: BaseIdentity | null; fallbackName: string; onSave: (v: { name: string; icon: string; color: string; description: string }) => Promise<void> }) {
+export function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: boolean; onClose: () => void; current: BaseIdentity | null; fallbackName: string; onSave: (v: { name: string; icon: string; color: string; description: string }) => Promise<void> }) {
   const [v, setV] = useState({ name: fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" });
   const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState<unknown>(null);
+  // Saving again after a refusal is the same press: saveBase updates the base row the first save may have made.
+  const save = async () => {
+    setBusy(true);
+    setFailed(null);
+    try {
+      await onSave(v);
+    } catch (e) {
+      setFailed(e);
+    }
+    setBusy(false);
+  };
   // Reset the form each time the dialog opens (or what it edits changes) — derived during render, not in an effect.
   const sig = open ? JSON.stringify([current?.name, current?.icon, current?.color, current?.description, fallbackName]) : null;
   const [seenSig, setSeenSig] = useState<string | null>(sig);
   if (sig !== seenSig) {
     setSeenSig(sig);
     if (sig !== null) setV({ name: current?.name ?? fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" });
+    setFailed(null);
   }
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && !busy ? onClose() : undefined)}>
@@ -342,9 +355,10 @@ function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: bo
           ))}
         </div>
         <Field value={v.description} onChange={(e) => setV({ ...v, description: e.target.value })} aria-label="Description" placeholder="Description" />
+        {failed ? <div data-base-edit-refused=""><ErrorNotice error={failed} operation="Save the base" size="inline" onRetry={() => void save()} /></div> : null}
         <div className="flex justify-end gap-2">
           <Button variant="quiet" onClick={onClose} disabled={busy}>Cancel</Button>
-          <Button variant="primary" disabled={busy || !v.name.trim()} onClick={async () => { setBusy(true); try { await onSave(v); } finally { setBusy(false); } }}>Save</Button>
+          <Button variant="primary" disabled={busy || !v.name.trim()} onClick={() => void save()}>Save</Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -354,16 +368,16 @@ function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: bo
 // ── duplicate ───────────────────────────────────────────────────────────────────────────────
 
 /** Moves the whole base (its Home, every table with its pages and automations) into another workspace the person belongs to: `custom.base_move`. */
-function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number }) {
+export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number }) {
   const client = useRecordsClient();
   const router = useRouter();
   const destinations = useAppSelector(selectOrganizationsList).filter((o) => o.id !== organizationId);
   const [to, setTo] = useState<string>("");
-  const [phase, setPhase] = useState<{ kind: "ask" } | { kind: "moving" } | { kind: "refused"; text: string }>({ kind: "ask" });
+  const [phase, setPhase] = useState<{ kind: "ask" } | { kind: "moving" } | { kind: "refused"; text: string; error: unknown }>({ kind: "ask" });
   const go = async () => {
     setPhase({ kind: "moving" });
     const res = await client.baseMove({ home_id: homeId, to_organization_id: to });
-    if (!res.ok) { setPhase({ kind: "refused", text: res.error.message }); return; }
+    if (!res.ok) { setPhase({ kind: "refused", text: res.error.message, error: res.error }); return; }
     // The base now answers in the other workspace: reload so its page resolves there.
     router.refresh();
     window.location.assign(`/data/bases/${homeId}`);
@@ -386,7 +400,7 @@ function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCoun
               </span>
             </label>
             <Words>{`${tableCount} tables, with their records, pages and automations, move together.`}</Words>
-            {phase.kind === "refused" ? <div data-base-move-refused=""><ErrorNotice message={phase.text} size="inline" /></div> : null}
+            {phase.kind === "refused" ? <div data-base-move-refused=""><ErrorNotice message={phase.text} error={phase.error} size="inline" onRetry={() => void go()} /></div> : null}
             <div className="flex justify-end gap-2"><Button variant="quiet" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!to} onClick={() => void go()} data-base-move-go="">Move base</Button></div>
           </>
         )}

@@ -706,6 +706,7 @@ export function ShareWithUserTab({
             "Share with Organization" tab, which granted an organization. */}
         <AddEveryoneInOrg
           level={permissionLevel}
+          whyNotLevel={whyNotLevel}
           grantPerson={
             grantEveryonePerson ??
             ((person, level) => onShare(person.userId, level))

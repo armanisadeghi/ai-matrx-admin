@@ -105,6 +105,11 @@ export function tableKernelId(dataSource: RecordsDataSource): Promise<DoorAnswer
   return call<string>(dataSource, "table_kernel_id", {});
 }
 
+/** The Organization kernel. A workspace's data home is a record in it (`custom.organization_home_id`). */
+export function organizationKernelId(dataSource: RecordsDataSource): Promise<DoorAnswer<string>> {
+  return call<string>(dataSource, "organization_kernel_id", {});
+}
+
 export interface PipelineRow {
   table_id: string;
   table_name: string;

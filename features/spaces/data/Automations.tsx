@@ -50,7 +50,7 @@ type Draft =
   | { kind: "flow"; step: Step };
 
 /** The step kinds the visual flow editor owns. */
-const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message"]);
+const FLOW_DO = new Set(["add_row", "find", "update", "archive", "if", "for_each", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "slack_post"]);
 
 /** AT-AUTO3: the starting shape of each flow step (the editor fills the rest by choosing). */
 const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
@@ -68,6 +68,7 @@ const FLOW_BUTTONS: Array<[string, (tableId: string) => Step]> = [
   ["Send Outlook email", () => ({ do: "outlook_mail", to: "", subject: "", body: "" })],
   ["Outlook calendar event", () => ({ do: "outlook_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" })],
   ["Teams message", () => ({ do: "teams_message", channel_link: "", message: "" })],
+  ["Post in Slack", () => ({ do: "slack_post", channel: "", message: "" })],
 ];
 
 function scriptInputs(lines: string): Record<string, string> {
@@ -226,6 +227,8 @@ function describeTrigger(t: AutomationTrigger, fields: Field[], say: Say = space
       return t.when === "created" ? "Calendar event created" : `Calendar event starts${t.minutes_before ? `, ${t.minutes_before} min before` : ""}`;
     case "slack_message":
       return `Slack message in ${t.channel}${t.contains ? ` with "${t.contains}"` : ""}`;
+    case "outlook_received":
+      return t.query ? `New Outlook email: ${t.query}` : "New Outlook email";
     case "schedule":
       if (t.every === "minutes") return `Every ${t.minutes} minutes`;
       if (t.every === "hour") return `Every ${(t.hours ?? 1) === 1 ? "hour" : `${t.hours} hours`} at :${String(t.minute ?? 0).padStart(2, "0")}`;
@@ -292,6 +295,7 @@ const RUN_TRIGGER: Record<string, string> = {
   gmail_received: "Gmail",
   calendar_event: "Calendar",
   slack_message: "Slack",
+  outlook_received: "Outlook",
   test: "Test",
 };
 
@@ -666,7 +670,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
     setDateDays(String(Math.abs(n)));
     setAt(t.on === "date_arrives" || (t.on === "schedule" && "at" in t) ? clock(t.at) : "09:00");
     setEvery(t.on === "schedule" ? t.every : "week");
-    setGmailQuery(t.on === "gmail_received" ? (t.query ?? "") : "");
+    setGmailQuery(t.on === "gmail_received" || t.on === "outlook_received" ? (t.query ?? "") : "");
     setCalWhen(t.on === "calendar_event" ? (t.when ?? "starts") : "starts");
     setCalLead(t.on === "calendar_event" ? String(t.minutes_before ?? 0) : "0");
     setSlackChannel(t.on === "slack_message" ? t.channel : "");
@@ -699,7 +703,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
       return { on, field: trigField, offset_days: dateWhen === "before" ? -n : dateWhen === "after" ? n : 0, at };
     }
     if (on === "webhook") return { on };
-    if (on === "gmail_received") return gmailQuery.trim() ? { on, query: gmailQuery.trim() } : { on };
+    if (on === "gmail_received" || on === "outlook_received") return gmailQuery.trim() ? { on, query: gmailQuery.trim() } : { on };
     if (on === "calendar_event") return calWhen === "created" ? { on, when: "created" } : { on, when: "starts", minutes_before: Math.max(0, Math.trunc(Number(calLead) || 0)) };
     if (on === "slack_message") return { on, channel: slackChannel.trim(), ...(slackContains.trim() ? { contains: slackContains.trim() } : {}) };
     if (on === "schedule" && every === "minutes") return { on, every, minutes: minutesN };
@@ -753,9 +757,13 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
             <Pill on={on === "gmail_received"} onClick={() => pickTrigger("gmail_received")}>New Gmail email</Pill>
             <Pill on={on === "calendar_event"} onClick={() => pickTrigger("calendar_event")}>Calendar event</Pill>
             <Pill on={on === "slack_message"} onClick={() => pickTrigger("slack_message")}>Slack message</Pill>
+            <Pill on={on === "outlook_received"} onClick={() => pickTrigger("outlook_received")}>New Outlook email</Pill>
           </div>
           {on === "gmail_received" ? (
             <Input aria-label="Gmail search" placeholder="Gmail search, e.g. from:orders@shop.com" value={gmailQuery} onChange={(e) => setGmailQuery(e.target.value)} />
+          ) : null}
+          {on === "outlook_received" ? (
+            <Input aria-label="Outlook search" placeholder="from:orders@shop.com subject:invoice" value={gmailQuery} onChange={(e) => setGmailQuery(e.target.value)} />
           ) : null}
           {on === "calendar_event" ? (
             <div className="flex flex-wrap items-center gap-1" data-testid="spaces-automation-calendar-trigger">

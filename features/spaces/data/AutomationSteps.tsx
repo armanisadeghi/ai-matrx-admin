@@ -446,6 +446,7 @@ const KIND_TITLE: Record<string, string> = {
   outlook_mail: "Send Outlook email",
   outlook_calendar_event: "Outlook calendar event",
   teams_message: "Teams message",
+  slack_post: "Post in Slack",
   add_row: "Add a record",
   email: "Send email",
   slack: "Slack message",
@@ -469,6 +470,7 @@ function newStep(kind: string, env: Env): Step {
     case "outlook_mail": return { do: "outlook_mail", to: "", subject: "", body: "" };
     case "outlook_calendar_event": return { do: "outlook_calendar_event", action: "create", title: "", starts_at: "", ends_at: "", attendees: "", description: "" };
     case "teams_message": return { do: "teams_message", channel_link: "", message: "" };
+    case "slack_post": return { do: "slack_post", channel: "", message: "" };
     case "add_row": return { do: "add_row", table_id: env.tableId, values: {} };
     case "email": return { do: "email", to: { address: "" }, subject: "", body: "" };
     case "slack": return { do: "slack", url: "", text: "" };
@@ -477,7 +479,7 @@ function newStep(kind: string, env: Env): Step {
   }
 }
 
-const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "email", "slack", "webhook"] as const;
+const STEP_KINDS = ["find", "update", "archive", "if", "for_each", "add_row", "script", "run_mandate", "gmail", "sms", "google_calendar_event", "github_issue", "outlook_mail", "outlook_calendar_event", "teams_message", "slack_post", "email", "slack", "webhook"] as const;
 
 function AddStep({ onAdd, kinds = STEP_KINDS }: { onAdd: (kind: string) => void; kinds?: readonly string[] }) {
   const [open, setOpen] = useState(false);
@@ -624,7 +626,13 @@ function StepCard({ n, step, onChange, onRemove, onMove, scope }: { n: number; s
       ) : null}
       {step.do === "teams_message" ? (
         <div className="flex flex-col gap-1">
-          <TokenText label="Channel link" value={str(step.channel_link)} onChange={(v) => set({ channel_link: v })} sources={sources} placeholder="Teams channel link (Get link to channel)" />
+          <TokenText label="Channel or chat link" value={str(step.channel_link)} onChange={(v) => set({ channel_link: v })} sources={sources} placeholder="Teams channel or chat link" />
+          <TokenText label="Message" value={str(step.message)} onChange={(v) => set({ message: v })} sources={sources} placeholder="Message" />
+        </div>
+      ) : null}
+      {step.do === "slack_post" ? (
+        <div className="flex flex-col gap-1">
+          <TokenText label="Channel" value={str(step.channel)} onChange={(v) => set({ channel: v })} sources={sources} placeholder="Channel name or ID" />
           <TokenText label="Message" value={str(step.message)} onChange={(v) => set({ message: v })} sources={sources} placeholder="Message" />
         </div>
       ) : null}
