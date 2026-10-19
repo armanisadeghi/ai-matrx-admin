@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1561,
+  "routeCount": 1562,
   "routes": [
     {
       "pattern": "/",
@@ -4353,6 +4353,11 @@
       "pattern": "/launchpad",
       "status": "live",
       "source": "app/(core)/launchpad/page.tsx"
+    },
+    {
+      "pattern": "/launchpad/[key]",
+      "status": "live",
+      "source": "app/(core)/launchpad/[key]/page.tsx"
     },
     {
       "pattern": "/launchpad/speed-test",

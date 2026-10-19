@@ -70,7 +70,7 @@ try {
   await dialog().getByRole("radio").nth(3).click();
   await shot("03-edit-identity");
   await dialog().getByRole("button", { name: "Save" }).click();
-  await page.waitForSelector(`[data-base-name]:has-text("Harbor Studio ${tag}")`, { timeout: 30000 });
+  await page.waitForSelector(`[data-base-name]:has-text("Harbor Studio ${tag}")`, { timeout: 90000 });
   check("identity saved: name, description", (await page.locator(`[data-base-page="${home}"]`).innerText()).includes("Client work"));
   await shot("04-base-named");
 

@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
 # matrx-agent-traffic: exempt grader-only; saves one new version of one test-fixture agent's settings through the agent save door; no model call
-"""GRADER ONLY: plant and restore the PB-03 fault. Never named in, or given to, a runner sheet; the runner is never told.
+"""GRADER ONLY: plant and restore the PB-03 fault on a DISPOSABLE agent. Never named in, or given to, a runner sheet.
 
-  plant-pb03.py --agent ID --plant   on the run's DISPOSABLE agent ONLY (never a Settings Desk agent: refused), changes tool_choice "auto" -> "none"
-                             through the agent save door (PATCH /agent-service/agents/<id>, settings block with every
-                             other key identical), reads the saved settings back and prints them, then writes the
-                             grader plant record (fixture settings_o; fixture_check accepts exactly this change for
-                             2 hours and says only "N difference(s) accepted (grader record)"). Refuses (exit 1) if
-                             the pre-state is not the manifest state, if the saved tool_choice is not "none", or if
-                             any other key changed.
-  plant-pb03.py --restore    saves tool_choice "auto" again, reads back, requires the settings to equal the manifest
-                             state, deletes the plant record and runs fixture_check for PB-03, which must print MATCH.
+  plant-pb03.py --agent ID --plant    on the run's own disposable agent ONLY, changes settings tool_choice "auto" -> "none"
+                                      through the agent save door (PATCH /agent-service/agents/<id>, settings block with
+                                      every other key identical), reads the saved settings back and prints them. Refuses
+                                      (exit 1) if the pre-state tool_choice is not "auto", if the saved tool_choice is not
+                                      "none", or if any other key changed.
+  plant-pb03.py --agent ID --restore  saves tool_choice "auto" again and reads back.
 
-Each save adds an agent version; the manifest entry settings_o carries version_may_advance, so the version number
-may move but every content hash must still match. Touches only Settings Desk O in the Safety Net Real Tests
-organization; A and G are never written.
+Arman's ruling 2026-10-19: the Settings Desk agents (A, O, G) are shared live agents and are never written by a test;
+this script refuses any agent the fixture manifest names (fixture_check.refuse_shared_agent_write). Send to the
+disposable agent with `pb03-send.py --agent O=<id>`.
 """
 from __future__ import annotations
 

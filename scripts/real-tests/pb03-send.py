@@ -203,8 +203,15 @@ def main() -> None:
     ap.add_argument("--out", help="directory for the response files (default: a new temp dir)")
     ap.add_argument("--dry-run", action="store_true",
                     help="no model call: each copy goes with dry_run true (nothing stored, so no snapshot is read)")
+    ap.add_argument("--agent", action="append", default=[], metavar="LETTER=ID",
+                    help="send letter A, O or G to this agent instead of the shared Settings Desk one (a disposable agent made for the run)")
     add_accept_drift_arg(ap)
     args = ap.parse_args()
+    for pair in args.agent:
+        letter, _, agent_id = pair.partition("=")
+        if letter not in COPIES or not agent_id:
+            ap.error(f"--agent wants LETTER=ID with LETTER one of {sorted(COPIES)}")
+        COPIES[letter] = agent_id
     fx = require_fixtures("PB-03", args.accept_drift)
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb03-"))
     out.mkdir(parents=True, exist_ok=True)

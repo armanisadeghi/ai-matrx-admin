@@ -57,6 +57,8 @@ export default function OrgPaymentsPage() {
   const orgId = params.orgId as string;
   const { organization, organizationId, loading, error, refresh } = useResolvedOrganization(orgId);
   const [status, setStatus] = useState<PaymentsStatus | null>(null);
+  // false until the first status read answers (either way) - the badge never announces a state we have not read.
+  const [statusRead, setStatusRead] = useState(false);
   const [asks, setAsks] = useState<Ask[]>([]);
   const [forms, setForms] = useState<FormRow[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
@@ -72,6 +74,7 @@ export default function OrgPaymentsPage() {
     ]);
     if (s.error) toast.error(s.error.message);
     else setStatus(s.data as unknown as PaymentsStatus);
+    setStatusRead(true);
     if (!a.error) setAsks((a.data as unknown as Ask[]) ?? []);
     if (!f.error) setForms(((f.data as unknown as FormRow[]) ?? []).filter((row) => row.form_id));
   }, [organizationId]);
@@ -154,10 +157,14 @@ export default function OrgPaymentsPage() {
         <section className="space-y-4 rounded-lg border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-foreground">Stripe account</h2>
-            {status?.connected ? (
+            {!statusRead ? (
+              <span aria-hidden className="h-5 w-24 animate-pulse rounded-full bg-muted" />
+            ) : status?.connected ? (
               <Badge tone={ready ? "success" : "warning"}>{ready ? "Taking payments" : "Setup not finished"}</Badge>
-            ) : (
+            ) : status ? (
               <Badge>Not connected</Badge>
+            ) : (
+              <Badge tone="warning">Status unavailable</Badge>
             )}
           </div>
           {status?.connected ? (
@@ -168,7 +175,7 @@ export default function OrgPaymentsPage() {
             </div>
           ) : null}
           <p className="text-sm text-muted-foreground">Payments go straight to your Stripe account. No platform fee.</p>
-          {canManage ? (
+          {!statusRead ? null : canManage ? (
             <div className="flex flex-wrap gap-2">
               <Button variant="primary" onClick={startConnect} disabled={busy !== null}>
                 {status?.connected ? (ready ? "Open Stripe setup" : "Finish setup") : "Connect Stripe"}

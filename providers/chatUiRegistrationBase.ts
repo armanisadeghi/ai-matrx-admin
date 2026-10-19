@@ -125,6 +125,7 @@ const GmailReviewCard = lazySlot("GmailReviewCard", SlotLoadingBlock);
 const ShareButton = lazySlot("ShareButton", SlotLoadingGlyph);
 const ReviewAnswersLink = lazySlot("ReviewAnswersLink");
 const RecordChangeApprovalCard = lazySlot("RecordChangeApprovalCard", SlotLoadingBlock);
+const BackgroundRunCard = lazySlot("BackgroundRunCard", SlotLoadingBlock);
 const SystemInstructionModal = lazySlot("SystemInstructionModal");
 const FileRagBadge = lazySlot("FileRagBadge");
 const MediaAttachmentThumbnail = lazySlot("MediaAttachmentThumbnail", SlotLoadingGlyph);
@@ -238,6 +239,7 @@ registerChatUi({
   ShareModal,
   ReviewAnswersLink,
   RecordChangeApprovalCard,
+  BackgroundRunCard,
   CopyButtons,
   InfoHint,
   AnswerValueView: AnswerValueSlot,

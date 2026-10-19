@@ -104,6 +104,8 @@ import { useRealtimeManager } from "@ai-matrx/data/realtime/react";
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux/hooks";
+import { selectDisplayName } from "@/lib/redux/selectors/userSelectors";
+import { RemoteDocCarets } from "@/features/documents/components/RemoteDocCarets";
 import { Button } from "@ai-matrx/design-system";
 import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
@@ -433,7 +435,7 @@ export default function DocumentEditor({
         booted = kept;
         setUnitId(kept.unitId);
         setBootState("ready");
-        if (collabRef.current) void startDocumentRoom(model, documentId);
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()));
       } catch (err) {
         kept.host.remove();
         disposeUniverInstance(kept.univer);
@@ -544,7 +546,7 @@ export default function DocumentEditor({
         booted = kept;
         setBootState("ready");
 
-        if (collabRef.current) void startDocumentRoom(model, documentId);
+        if (collabRef.current) void startDocumentRoom(model, documentId, selectDisplayName(store.getState()));
       } catch (err) {
         if (cancelled) return;
         setLoadError(err instanceof Error ? err.message : String(err));
@@ -931,6 +933,7 @@ export default function DocumentEditor({
               ) : null}
               <div className="relative min-h-0 min-w-0 flex-1">
                 <div ref={containerRef} className="absolute inset-0" />
+                <RemoteDocCarets univer={univerRef.current} unitId={unitId} carets={awareness?.carets ?? NO_CARETS} />
               </div>
             </div>
           </div>
@@ -1021,6 +1024,7 @@ export default function DocumentEditor({
       <WorkingCopyAlert kind={documentWorkingCopy} id={documentId} />
       <div className="relative min-h-0 flex-1">
         <div ref={containerRef} className="absolute inset-0" />
+        <RemoteDocCarets univer={univerRef.current} unitId={unitId} carets={awareness?.carets ?? NO_CARETS} />
       </div>
 
       {/* Hidden — documentName is reserved for the parent shell label. */}
@@ -1028,6 +1032,8 @@ export default function DocumentEditor({
     </div>
   );
 }
+
+const NO_CARETS: NonNullable<DocumentAwareness["carets"]> = [];
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -1118,7 +1124,7 @@ function showCollabNotice(n: DocsOtNotice): void {
  * `collab.ot_rooms` opens one, otherwise the 0.6 relay. A document already on the ordered log never falls back
  * to the relay (a relay seat's saves would never reach the room); a failed start says so.
  */
-async function startDocumentRoom(model: DocumentModel, documentId: string): Promise<void> {
+async function startDocumentRoom(model: DocumentModel, documentId: string, displayName: string | null): Promise<void> {
   let ordered = false;
   try {
     const { documentUsesOrderedRoom, documentOtFactory } = await import("@ai-matrx/office/univer/collab");
@@ -1141,6 +1147,7 @@ async function startDocumentRoom(model: DocumentModel, documentId: string): Prom
         documentId,
         uid,
         clientId,
+        ...(displayName ? { displayName } : {}),
         readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
         onNotice: showCollabNotice,
         onIncident: (i) => console.warn(`[document] co-editing incident ${i.kind} at rev ${i.rev}`, i.detail ?? ""),

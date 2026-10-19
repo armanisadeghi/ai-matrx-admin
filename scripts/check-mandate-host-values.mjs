@@ -245,6 +245,15 @@ export function sentByMandate(files, keys) {
   const out = {};
   for (const [key, set] of refs) {
     const callers = [...set].filter((f) => SENDS.some((re) => re.test(f.source)));
+    // A file that names the key but sends nothing we can read may still call it (a launcher hook, a
+    // context push) or hand the key to a caller that names it through a registry constant: then what is
+    // sent is unknowable, and "never sent" is not judged. Only keys whose every reference is a readable
+    // caller are judged.
+    const opaque = [...set].some((f) => !callers.includes(f));
+    if (opaque) {
+      out[key] = { sent: null, values: {}, files: [...set].map((f) => f.file) };
+      continue;
+    }
     if (!callers.length) continue;
     let sent = new Set();
     const values = {};
