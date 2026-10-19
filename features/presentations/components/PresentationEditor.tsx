@@ -64,7 +64,7 @@ import { historyReducer, initialHistory } from "../deck-history";
 import { buildDeckMenus, buildDeckToolbar, deckPageSetupRow, type DeckChromeHost, type DeckPanel } from "../deck-commands";
 import { isSkipped, slideTextStyleOf } from "../deck-slide-ops";
 import { getDeckA11y, setDeckA11y, useDeckA11y } from "../deck-a11y";
-import { plainTextOf } from "../deck-slide-ops";
+import { pastePlainText } from "../paste-plain";
 import { createDeckSaver, listenToDeckPage, type DeckSaver } from "../deck-autosave";
 import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { AccessibilityDialog, BackgroundDialog, CommentsDialog, FindReplaceDialog, ImportSlidesDialog, MotionDialog, SpecialCharsDialog, ThemeBuilderDialog } from "./DeckPanels";
@@ -263,22 +263,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     document.execCommand("insertText", false, text);
   };
   const pastePlain = async () => {
-    try {
-      const { readText } = await import("@ai-matrx/kit/clipboard");
-      const text = await readText();
-      // null = the browser would not let the page read the clipboard (not the same as an empty one): say so.
-      if (text === null) {
-        toast.error("The browser would not let this page read the clipboard", { description: "Press Cmd/Ctrl+Shift+V in the text instead." });
-        return;
-      }
-      if (text === "") {
-        toast.error("The clipboard is empty");
-        return;
-      }
-      insertAtCaret(plainTextOf({ text }));
-    } catch (err) {
-      toast.error("Could not read the clipboard", { description: err instanceof Error ? err.message : String(err) });
-    }
+    await pastePlainText({ readText: async () => (await import("@ai-matrx/kit/clipboard")).readText(), insert: insertAtCaret, error: (t, o) => toast.error(t, o) });
   };
 
   const host: DeckChromeHost = {
@@ -307,13 +292,20 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     slideNumbers: Boolean(deck.showSlideNumbers),
     gridShown,
     spellcheck: a11y.spellcheck,
-    voiceTyping: false,
+    // the notes box's real recorder state, read when the menu row is drawn (the box exposes no change event)
+    get voiceTyping() {
+      return Boolean(notesRef.current?.isDictating?.());
+    },
     slideTextStyle: slideTextStyleOf(slide),
     openPanel: (p) => setPanel(p),
     pastePlain: () => void pastePlain(),
     toggleGrid: () => setGridShown((v) => !v),
     toggleSpellcheck: () => setDeckA11y({ ...getDeckA11y(), spellcheck: !getDeckA11y().spellcheck }),
     toggleVoiceTyping: () => {
+      if (notesRef.current?.isDictating?.()) {
+        notesRef.current.stopDictation?.();
+        return;
+      }
       setNotesShown(true);
       setTimeout(() => void notesRef.current?.startDictation?.(), 50);
     },
