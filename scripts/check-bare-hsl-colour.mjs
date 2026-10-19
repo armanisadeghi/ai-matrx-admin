@@ -26,9 +26,13 @@ const CUSTOM_PROP_VALUE = /--[\w-]+\s*:\s*$/;
 /** Offending [line, snippet] pairs in one file's text. */
 export function findBareHslColours(text) {
   const out = [];
-  text.split("\n").forEach((line, i) => {
+  const lines = text.split("\n");
+  lines.forEach((line, i) => {
     const t = line.trim();
     if (t.startsWith("//") || t.startsWith("*") || t.startsWith("/*")) return;
+    // Opt-out for a line that is NOT themed with the app's bare triples (a sample frame whose :root holds full
+    // colours): a `bare-hsl-ok: <why>` comment on the line above or the same line.
+    if (line.includes("bare-hsl-ok") || (lines[i - 1] ?? "").includes("bare-hsl-ok")) return;
     for (const m of line.matchAll(BARE)) {
       const before = line.slice(0, m.index);
       if (OK_BEFORE.test(before) || CUSTOM_PROP_VALUE.test(before)) continue;
@@ -76,6 +80,7 @@ function selfTest() {
     'fill="hsl(var(--background, 0 0% 100%))"',
     "--glow: var(--primary);",
     "// var(--border) is no color",
+    "// bare-hsl-ok: frame root holds full colours\nbackground: var(--primary);",
     'className="shadow-md bg-elevation-2" style={{ background: "hsl(var(--elevation-1))" }}',
   ];
   for (const p of planted) if (!findBareHslColours(p).length) throw new Error(`self-test: planted bare var not caught: ${p}`);
