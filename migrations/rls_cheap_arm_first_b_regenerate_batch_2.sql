@@ -1,4 +1,3 @@
--- draft: cheap-arm-first proof running (owner: deep lane, 2026-10-19)
 -- CHEAP-ARM-FIRST b (2026-10-19): regenerates the next tables whose parent arms change order under
 -- rls_cheap_arm_first_a_generator_and_six_tables.sql (container arm first, iam.containment_depth). Order only; same
 -- readers. Proof and timings: accessible-entity-ids-perf-2026-10-19.md, section "Generator: cheap arm first".
