@@ -15,6 +15,7 @@ import { useRecord, useRecordsClient, useTable } from "@ai-matrx/records/react";
 import { Eye, FileText, Table2 } from "lucide-react";
 import { TieredBreadcrumb } from "@/components/official/tiered-breadcrumb/TieredBreadcrumb";
 import { recordPageHref } from "@/features/unified-data/table-page/recordPageHref";
+import { storeError } from "@/features/unified-data/base/baseStore";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { NO_ADDRESS, UnifiedTableBody, useUnifiedTable } from "@/features/unified-data/table-page/UnifiedTable";
@@ -57,7 +58,7 @@ function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string
                 href: tableHref,
                 siblings: async () => {
                   const res = await client.tableList();
-                  if (!res.ok) throw new Error(res.error.message);
+                  if (!res.ok) throw storeError(res.error);
                   return {
                     heading: "Other tables",
                     items: res.data.map((t) => ({ id: t.id, label: t.name?.trim() || "Untitled", icon: <Table2 size={15} />, href: `/data/${encodeURIComponent(t.id)}`, current: t.id === tableId })),
@@ -70,7 +71,7 @@ function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string
                 href: recordPageHref(tableId, recordId),
                 siblings: async () => {
                   const res = await client.list({ table_id: tableId, limit: RECORD_SIBLINGS_READ });
-                  if (!res.ok) throw new Error(res.error.message);
+                  if (!res.ok) throw storeError(res.error);
                   return {
                     heading: `Other records in ${tableName}`,
                     items: res.data.rows.map((row) => ({
@@ -88,7 +89,7 @@ function RecordCrumbs({ tableId, recordId }: { tableId: string; recordId: string
             loadChildren={async (item) => {
               // A table's views (tier 2 under "Other tables"), each opening the table on that view.
               const res = await client.views({ table_id: item.id });
-              if (!res.ok) throw new Error(res.error.message);
+              if (!res.ok) throw storeError(res.error);
               return res.data.map((v) => ({ id: v.view_id, label: v.name?.trim() || "Untitled view", icon: <Eye size={15} />, href: `/data/${encodeURIComponent(item.id)}?view=${encodeURIComponent(v.view_id)}`, expandable: false }));
             }}
           />

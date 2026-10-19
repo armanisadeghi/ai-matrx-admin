@@ -8,7 +8,7 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { formatRelativeTime } from "@ai-matrx/kit/format";
 import { tableShapeChanged } from "@ai-matrx/records/react";
 import { RefreshCw } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { postJson } from "@/lib/python-client";
@@ -17,6 +17,7 @@ import { extractErrorMessage } from "@/utils/errors";
 import { supabase } from "@/utils/supabase/client";
 
 import { SYNC_SOURCES, syncSentence, type SyncReport } from "./sourceSync";
+import { sayError } from "@/features/unified-data/base/sayError";
 
 interface SourceRow { source_kind: string; synced_at: string | null }
 
@@ -33,6 +34,7 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
     return () => { live = false; };
   }, [tableId]);
 
+  const again = useRef<() => void>(() => {});
   const syncNow = useCallback(async () => {
     if (!source) return;
     const kind = SYNC_SOURCES[source.source_kind]!;
@@ -43,11 +45,13 @@ export function SourceSyncBar({ tableId, organizationId }: { tableId: string; or
       tableShapeChanged(tableId);
       toast.success(syncSentence(kind.name, data));
     } catch (err) {
-      toast.error(extractErrorMessage(err));
+      toast.error(sayError(err, "The sync did not run."), { action: { label: "Try again", onClick: () => void again.current() } });
     } finally {
       setBusy(false);
     }
   }, [source, tableId, organizationId]);
+
+  useEffect(() => { again.current = () => void syncNow(); }, [syncNow]);
 
   if (!source) return null;
   const kind = SYNC_SOURCES[source.source_kind]!;
