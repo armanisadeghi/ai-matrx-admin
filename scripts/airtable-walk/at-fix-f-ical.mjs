@@ -1,0 +1,24 @@
+// AT-FIX-F item 3 live: default view switched to Calendar -> Table menu "Subscribe in your calendar..." must be enabled and open its dialog.
+import { start, open, out } from "./lib.mjs";
+const T = process.argv[2];
+const { browser, page, who } = await start();
+out("who", who);
+await open(page, T);
+await page.waitForTimeout(3000);
+const dd = page.locator("[data-table-toolbar] button", { hasText: /^Grid$/ }).first();
+out("layout btn", await dd.count());
+await dd.click(); await page.waitForTimeout(800);
+out("opts", JSON.stringify(await page.evaluate(() => [...document.querySelectorAll("[role]")].filter((e) => /calendar/i.test(e.innerText || "") && (e.innerText || "").length < 40).map((e) => e.getAttribute("role") + ":" + e.innerText.trim()))));
+await page.getByText("Calendar", { exact: true }).first().click();
+await page.waitForTimeout(5000);
+out("dates from", await page.getByText("Dates from", { exact: false }).count());
+await page.locator('button[aria-label="Table menu"], button[aria-label*="able actions" i], button[aria-label="More"]').first().click().catch((e) => out("menu err", e.message.slice(0, 80)));
+await page.waitForTimeout(1200);
+const item = page.locator("[role=menuitem]", { hasText: "Subscribe in your calendar" }).first();
+out("subscribe item", await item.count(), "disabled:", await item.getAttribute("aria-disabled"), "text:", (await item.innerText()).replace(/\s+/g, " "));
+await page.screenshot({ path: "/tmp/atff/ical1.png" });
+await item.click({ force: true }).catch(() => {});
+await page.waitForTimeout(5000);
+out("dialog", JSON.stringify(await page.evaluate(() => [...document.querySelectorAll("[role=dialog]")].map((d) => d.innerText.slice(0, 200)))));
+await page.screenshot({ path: "/tmp/atff/ical2.png" });
+await browser.close();
