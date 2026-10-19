@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 3,
+  "version": 4,
   "title": "Property Management",
-  "description": "Properties, units, leases, rent payments and maintenance requests in one place.",
-  "forWho": "Property managers and landlords",
+  "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
+  "forWho": "Landlords, property managers and leasing staff",
   "icon": {
     "emoji": "🏢"
   },
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "property management",
-    "tenants",
-    "rent",
-    "maintenance"
+    "property manager",
+    "landlord",
+    "rent roll",
+    "leases",
+    "maintenance",
+    "tenants"
   ],
   "spec": {
     "specVersion": 1,
@@ -134,6 +136,25 @@
             ]
           },
           {
+            "key": "late_fee",
+            "label": "Late fee",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -195,7 +216,7 @@
           {
             "key": "y01",
             "values": {
-              "pay_title": "Rent - Delacroix, this month",
+              "pay_title": "Alderwood 1E rent",
               "lease": "t01",
               "due_on": "@today-2d",
               "amount": 1450,
@@ -207,18 +228,19 @@
           {
             "key": "y02",
             "values": {
-              "pay_title": "Rent - Abara, this month",
+              "pay_title": "Alderwood 1W rent",
               "lease": "t02",
               "due_on": "@today-2d",
               "amount": 1700,
               "received": 0,
-              "status": "Late"
+              "status": "Late",
+              "late_fee": 75
             }
           },
           {
             "key": "y03",
             "values": {
-              "pay_title": "Rent - Ortega-Lund, this month",
+              "pay_title": "Alderwood 2E rent",
               "lease": "t03",
               "due_on": "@today-2d",
               "amount": 1475,
@@ -230,18 +252,19 @@
           {
             "key": "y04",
             "values": {
-              "pay_title": "Rent - Pillai, this month",
+              "pay_title": "Millrace upstairs rent",
               "lease": "t04",
               "due_on": "@today-2d",
               "amount": 1600,
               "received": 800,
-              "status": "Partial"
+              "status": "Partial",
+              "late_fee": 50
             }
           },
           {
             "key": "y05",
             "values": {
-              "pay_title": "Rent - Okonkwo, this month",
+              "pay_title": "Thistle Hill end rent",
               "lease": "t05",
               "due_on": "@today",
               "amount": 2300,
@@ -252,7 +275,7 @@
           {
             "key": "y06",
             "values": {
-              "pay_title": "Rent - Haldane, this month",
+              "pay_title": "Thistle Hill middle rent",
               "lease": "t06",
               "due_on": "@mon+4d",
               "amount": 2200,
@@ -263,7 +286,7 @@
           {
             "key": "y07",
             "values": {
-              "pay_title": "Rent - Dubois, this month",
+              "pay_title": "Brambleton Cottage rent",
               "lease": "t07",
               "due_on": "@today+3d",
               "amount": 1925,
@@ -274,7 +297,7 @@
           {
             "key": "y08",
             "values": {
-              "pay_title": "Rent - Abara, last month",
+              "pay_title": "Alderwood 1W rent, prior cycle",
               "lease": "t02",
               "due_on": "@today-32d",
               "amount": 1700,
@@ -286,7 +309,7 @@
           {
             "key": "y09",
             "values": {
-              "pay_title": "Rent - Pillai, last month",
+              "pay_title": "Millrace upstairs rent, prior cycle",
               "lease": "t04",
               "due_on": "@today-32d",
               "amount": 1600,
@@ -493,6 +516,41 @@
             ]
           },
           {
+            "key": "unpaid",
+            "label": "Rent unpaid",
+            "parityType": "rollup",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Late",
+                "Partial"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "renewal_rent",
+            "label": "Renewal rent offered",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -576,7 +634,8 @@
               "end_on": "@today+65d",
               "deposit": 1000,
               "status": "Renewal offered",
-              "owner": "@installer"
+              "owner": "@installer",
+              "renewal_rent": 1545
             }
           },
           {
@@ -643,7 +702,8 @@
               "start_on": "@today-400d",
               "end_on": "@mon+5d",
               "deposit": 1500,
-              "status": "Renewal offered"
+              "status": "Renewal offered",
+              "renewal_rent": 1960
             }
           },
           {
@@ -879,6 +939,13 @@
             }
           },
           {
+            "key": "entry_ok",
+            "label": "Permission to enter",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "vendor",
             "label": "Vendor",
             "parityType": "text",
@@ -927,6 +994,13 @@
                 "value": 20000
               }
             ]
+          },
+          {
+            "key": "tenant_charge",
+            "label": "Charge to tenant",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "status",
@@ -1000,20 +1074,21 @@
           {
             "key": "q01",
             "values": {
-              "req_title": "Kitchen faucet dripping - Alderwood east",
+              "req_title": "Kitchen faucet dripping",
               "unit": "u01",
               "priority": "Routine",
               "trade": "Plumbing",
               "reported_on": "@today-1d",
               "cost": 0,
               "status": "New",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "entry_ok": true
             }
           },
           {
             "key": "q02",
             "values": {
-              "req_title": "No heat in bedroom - Millrace upstairs",
+              "req_title": "No heat in the back bedroom",
               "unit": "u05",
               "priority": "Urgent",
               "trade": "Heating",
@@ -1022,13 +1097,14 @@
               "scheduled_for": "@today",
               "cost": 0,
               "status": "Scheduled",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "entry_ok": true
             }
           },
           {
             "key": "q03",
             "values": {
-              "req_title": "Garbage disposal jammed - Thistle Hill end",
+              "req_title": "Garbage disposal jammed",
               "unit": "u07",
               "priority": "Routine",
               "trade": "Appliance",
@@ -1036,13 +1112,15 @@
               "reported_on": "@today-3d",
               "scheduled_for": "@today-1d",
               "cost": 0,
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "entry_ok": false,
+              "tenant_charge": true
             }
           },
           {
             "key": "q04",
             "values": {
-              "req_title": "Outlet sparking - Alderwood west",
+              "req_title": "Outlet sparking by the stove",
               "unit": "u02",
               "priority": "Emergency",
               "trade": "Electrical",
@@ -1051,13 +1129,14 @@
               "scheduled_for": "@today",
               "cost": 0,
               "status": "In progress",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "entry_ok": true
             }
           },
           {
             "key": "q05",
             "values": {
-              "req_title": "Paint touch-up - Millrace downstairs",
+              "req_title": "Paint touch-up before move-in",
               "unit": "u06",
               "priority": "Routine",
               "trade": "General",
@@ -1071,7 +1150,7 @@
           {
             "key": "q06",
             "values": {
-              "req_title": "Window latch broken - Brambleton",
+              "req_title": "Window latch broken",
               "unit": "u09",
               "priority": "Routine",
               "trade": "General",
@@ -1084,7 +1163,7 @@
           {
             "key": "q07",
             "values": {
-              "req_title": "Water heater replaced - Thistle Hill middle",
+              "req_title": "Water heater replaced",
               "unit": "u08",
               "priority": "Urgent",
               "trade": "Plumbing",
@@ -1099,7 +1178,7 @@
           {
             "key": "q08",
             "values": {
-              "req_title": "Ant treatment - Alderwood east",
+              "req_title": "Ants in the kitchen",
               "unit": "u01",
               "priority": "Routine",
               "trade": "Pest",
@@ -1342,13 +1421,20 @@
           },
           {
             "key": "lease_count",
-            "label": "Leases",
+            "label": "Current leases",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "leases",
             "pick": "tenant_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Past"
+                ]
+              }
+            }
           },
           {
             "key": "lease_btn",
@@ -1649,7 +1735,7 @@
           },
           {
             "key": "vacant",
-            "label": "Vacant units",
+            "label": "Not earning rent",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1657,7 +1743,10 @@
             "pick": "unit_title",
             "agg": "count",
             "filter": {
-              "status": "Vacant"
+              "status": [
+                "Vacant",
+                "Turnover"
+              ]
             }
           },
           {
@@ -2405,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2480,6 +2569,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-renewals"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3334,7 +3429,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Same dates every month make late rent easy to spot."
+              "text": "Rent collection is the heartbeat of the business. The same steps every month, done on the same days, keep late rent rare and fair."
             }
           ],
           "background": "blue",
@@ -3346,7 +3441,51 @@
           "type": "heading",
           "text": [
             {
-              "text": "Start of the month"
+              "text": "Before the 1st"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A rent row exists for every active lease for the coming cycle"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reminder sent three days before the due date with how to pay"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any payment plans from last month checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On and after the due date"
             }
           ],
           "props": {
@@ -3357,7 +3496,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Use Record rent due on each lease."
+              "text": "Record each payment as it arrives: "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Paid on",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3365,7 +3525,44 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send reminders three days before the due date."
+              "text": "Partial payments: record what arrived and set "
+            },
+            {
+              "text": "Partial",
+              "bold": true
+            },
+            {
+              "text": ". Agree the rest in writing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the grace period in the lease ends, mark unpaid rows "
+            },
+            {
+              "text": "Mark late",
+              "bold": true
+            },
+            {
+              "text": ", add the "
+            },
+            {
+              "text": "Late fee",
+              "bold": true
+            },
+            {
+              "text": " the lease allows, and send a friendly late notice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call every late tenant within two days. Most late rent is a timing problem, not a refusal."
             }
           ]
         },
@@ -3373,7 +3570,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the due date"
+              "text": "Escalation"
             }
           ],
           "props": {
@@ -3381,26 +3578,75 @@
           }
         },
         {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark late payments Late and send the notice the lease calls for."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days late"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After grace period"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Late notice and call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Second call; offer a written payment plan"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Per local law"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Formal notice to pay or quit, only as your state's process requires"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Call tenants who are more than three days late."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Record partial payments and any payment plan in the notes."
+              "text": "Never lock out a tenant, remove belongings or cut utilities. Follow the legal process only."
             }
           ]
         },
@@ -3408,7 +3654,65 @@
           "type": "heading",
           "text": [
             {
-              "text": "Month end"
+              "text": "Rent roll check (month end)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Total due versus total received for the cycle."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rent unpaid",
+              "bold": true
+            },
+            {
+              "text": " on each lease; anything carried more than one cycle gets a plan."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Deposits held match the ledger."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Quentin's rent is two days late and he has given notice. The manager calls, learns his paycheck lands Friday, notes a promise to pay and checks again Monday."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Talking to a late tenant"
             }
           ],
           "props": {
@@ -3419,7 +3723,26 @@
           "type": "text",
           "text": [
             {
-              "text": "Total Received against Amount and review Still owed."
+              "text": "Start with a question, not a demand: \"Your rent hasn't arrived yet. Is everything all right?\" Write down what they promise and when, then follow up on that exact day. Being consistent matters more than being strict; tenants talk to each other, and a landlord who treats everyone the same gets fewer disputes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payment methods"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer at least one electronic method and record which one each tenant uses. Cash payments always get a written receipt."
             }
           ]
         }
@@ -3434,10 +3757,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every vacant day costs rent. A tight turnover gets the unit rented within two to three weeks of move-out."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Notice given"
+              "text": "When notice is given"
             }
           ],
           "props": {
@@ -3448,7 +3783,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the lease Notice given and the unit Notice given."
+              "text": "Press "
+            },
+            {
+              "text": "Notice given",
+              "bold": true
+            },
+            {
+              "text": " on the lease and confirm the move-out date in writing."
             }
           ]
         },
@@ -3456,7 +3798,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Schedule a pre-move-out inspection."
+              "text": "Mark the unit "
+            },
+            {
+              "text": "Notice given",
+              "bold": true
+            },
+            {
+              "text": ". Start marketing with photos taken before the tenant leaves, with permission."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Schedule a pre-move-out walk-through so the tenant can fix small things and get more of the deposit back."
             }
           ]
         },
@@ -3464,7 +3821,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Move-out"
+              "text": "Move-out day"
             }
           ],
           "props": {
@@ -3472,26 +3829,54 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Mark the unit Turnover and log requests for cleaning and repairs."
+              "text": "Keys collected; codes changed"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Compare move-in and move-out condition and record any deposit deductions."
+              "text": "Move-out inspection with photos, compared with the move-in report"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Meter readings recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Forwarding address collected for the deposit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Ready to rent"
+              "text": "The turnover (unit status Turnover)"
             }
           ],
           "props": {
@@ -3502,7 +3887,153 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Update photos, mark the unit Vacant and list it."
+              "text": "Clean, paint, repairs, carpet or floor work, smoke and carbon monoxide detectors tested."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add each job as a maintenance request so cost and vendor are tracked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Aim for a finished unit within seven days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposit return"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Return the deposit with an itemized list of deductions within the time your state requires. Deductions are for damage beyond normal wear, with photos and receipts. Record the return on the old lease."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Marketing the unit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Photos of every room in daylight, plus the outside and parking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A clear rent, deposit, pet policy and move-in date in every ad."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Answer every inquiry the same day and offer two showing times."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Price from comparable rentals nearby; a unit still empty after two weeks of showings is usually priced too high."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leasing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Screen every applicant the same way with written criteria."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sign the lease, collect the deposit and first month, and do a move-in inspection with photos."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Start lease",
+              "bold": true
+            },
+            {
+              "text": " on the unit; then "
+            },
+            {
+              "text": "Mark occupied",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Millrace downstairs is in turnover with a paint touch-up scheduled. Showings start this weekend so a new lease can begin the week the paint dries."
             }
           ]
         }
@@ -3520,7 +4051,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Decide priority first, then who and when."
+              "text": "Fast, fair repairs keep good tenants. Triage tells you what to do now, what this week, and what can wait."
             }
           ],
           "background": "blue",
@@ -3540,26 +4071,95 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Emergency: safety or major damage. Call the vendor immediately."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Respond"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Emergency"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No heat in winter, gas smell, flooding, sparking outlet, no water, lock-out from a broken lock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Same hour; vendor out today"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Urgent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Broken appliance, slow leak, pests, no hot water"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Within 24 to 48 hours"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Routine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Paint, sticking doors, cosmetic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Within a week or at turnover"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Urgent: no heat or water, security. Same or next day."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Routine: schedule within a week."
+              "text": "Tell tenants to call 911 or the gas company first for gas smells and fires."
             }
           ]
         },
@@ -3567,7 +4167,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every request"
+              "text": "When a request comes in"
             }
           ],
           "props": {
@@ -3578,7 +4178,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log it under the unit."
+              "text": "Log it with unit, priority, trade and a clear title."
             }
           ]
         },
@@ -3586,7 +4186,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Choose a vendor, schedule and tell the tenant."
+              "text": "Ask for photos. Record whether you have "
+            },
+            {
+              "text": "Permission to enter",
+              "bold": true
+            },
+            {
+              "text": "; otherwise give the notice your local law requires."
             }
           ]
         },
@@ -3594,7 +4201,165 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark Done only after the tenant confirms."
+              "text": "Assign a vendor and "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": " with the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the tenant when to expect them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vendor's invoice matches the quote; "
+            },
+            {
+              "text": "Cost",
+              "bold": true
+            },
+            {
+              "text": " entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tenant confirms it is fixed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Charge to tenant",
+              "bold": true
+            },
+            {
+              "text": " ticked only for damage the tenant caused, with photos"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Preventive work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Twice a year: furnace and air conditioning service, smoke and CO detector tests, gutter cleaning, water heater check. Log each as a routine request so the history is kept per unit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The sparking outlet at Alderwood was logged as an emergency; the electrician was there the same day. The jammed disposal was caused by a utensil, so it is marked to charge to the tenant with the vendor's note."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tenant communication"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell the tenant three things: when the vendor is coming, roughly how long it will take, and who to call if nobody shows. Follow up the day after to confirm it is fixed. Requests that sit without an update are the biggest source of tenant complaints, even when the repair itself is quick."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vendors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep two vendors per trade with their insurance on file, and note response times. Use the faster one for emergencies."
             }
           ]
         }
@@ -3609,10 +4374,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Keeping a good tenant is almost always cheaper than finding a new one. Start renewals early and price them fairly."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Ninety days out"
+              "text": "90 days before the lease ends"
             }
           ],
           "props": {
@@ -3623,7 +4400,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Leases, Next 30 days view, and look further ahead on All leases."
+              "text": "Filter leases ending in the next 90 days."
             }
           ]
         },
@@ -3631,7 +4408,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check rent against the market and decide the offer."
+              "text": "Look at the tenant's payment history and any maintenance issues."
             }
           ]
         },
@@ -3639,7 +4416,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the renewal offer and mark Renewal offered."
+              "text": "Check market rent for similar units nearby."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Decide the offer: renew at the same rent, a modest increase, or not renew (follow your local law on notice and reasons)."
             }
           ]
         },
@@ -3647,7 +4432,104 @@
           "type": "heading",
           "text": [
             {
-              "text": "If they decline"
+              "text": "The offer"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send it in writing with the new rent in "
+            },
+            {
+              "text": "Renewal rent offered",
+              "bold": true
+            },
+            {
+              "text": ", the term and a reply-by date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Offer renewal",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mention any upgrades you will make on renewal; small improvements help good tenants stay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "60 days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reply received; if not, call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed renewal stored; lease end date and rent updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status back to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If they are leaving"
             }
           ],
           "props": {
@@ -3658,7 +4540,551 @@
           "type": "text",
           "text": [
             {
-              "text": "Mark Notice given and start the turnover steps."
+              "text": "Press "
+            },
+            {
+              "text": "Notice given",
+              "bold": true
+            },
+            {
+              "text": " and start the turnover routine. Ask why they are leaving and note it; patterns tell you about pricing and maintenance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rent increases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Follow local rules on notice periods and caps. Keep increases predictable; a tenant who can plan is more likely to stay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Beatrix's lease ends this week and her renewal was offered at 1,960 dollars. She has not replied. The manager calls today; if she stays, the signed renewal goes in before the end date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Good tenants are worth keeping"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a tenant pays on time and looks after the unit, say so. A short thank-you with the renewal offer, a fair increase and a small upgrade such as a new faucet or fresh paint costs far less than a vacant month, cleaning, and the risk of a worse tenant next."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Month-end check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No lease ends in the next 30 days without a decision"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every renewal offer has a reply-by date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "property-management",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The office of a small landlord or management company: buildings and units, who lives where on what lease, the rent roll each month, repair requests, and leases coming up for renewal. Your bank and accounting software remain the books."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Properties",
+              "bold": true
+            },
+            {
+              "text": ": address, kind, manager, units and units not earning rent (vacant or in turnover)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Units",
+              "bold": true
+            },
+            {
+              "text": ": property, bedrooms, asking rent, status and current leases."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leases",
+              "bold": true
+            },
+            {
+              "text": ": tenant, unit, start and end, monthly rent, deposit, rent unpaid, renewal rent offered and status."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rent payments",
+              "bold": true
+            },
+            {
+              "text": ": one row per lease per rent cycle with amount, received, late fee and status."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Maintenance requests",
+              "bold": true
+            },
+            {
+              "text": ": priority, trade, vendor, permission to enter, dates, cost and whether it is charged to the tenant."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Still owed (payment)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Amount minus received"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rent unpaid (lease)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Late and partial payments on that lease"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Not earning rent (property)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vacant and turnover units"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter properties and units with asking rent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter current leases with end dates and deposits; copy deposits from your ledger."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add this cycle's rent due for every active lease (the "
+            },
+            {
+              "text": "Record rent due",
+              "bold": true
+            },
+            {
+              "text": " button on a lease does it)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open repair requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1st"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rent due rows exist for every active lease"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After grace period"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Late rows marked; late fees applied per lease; notices as the law allows"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mid-month"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Leases ending in 90 days get renewal offers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Month end"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner statements; vacancies reviewed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record rent due",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Offer renewal",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Notice given",
+              "bold": true
+            },
+            {
+              "text": " on leases; "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark late",
+              "bold": true
+            },
+            {
+              "text": " on payments; "
+            },
+            {
+              "text": "Start lease",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Log request",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark vacant",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark occupied",
+              "bold": true
+            },
+            {
+              "text": " on units; "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " on requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A word on the law"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Late fees, notice periods, entry notice and deposit returns are set by state and local law. Put your local rules on this page so everyone follows the same ones."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ravindra's lease ended five days ago and his rent is part paid. The manager calls today to agree the balance and sign a renewal or set a move-out date."
             }
           ]
         }
