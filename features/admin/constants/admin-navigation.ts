@@ -280,6 +280,11 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         ],
       },
       {
+        name: "System processes",
+        iconName: "ListChecks",
+        destinations: [destination("/administration/intelligence/system-processes")],
+      },
+      {
         // SUPPORT, not management (Arman, 2026-09-26): its own entry, never
         // the main mandates page. Its literal `support` segment also matches
         // the `[mandateKey]` pattern above; findAdminNavigationLocation prefers
