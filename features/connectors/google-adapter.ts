@@ -186,7 +186,7 @@ export const GOOGLE_FAILURE_LANGUAGE: Record<string, string> = {
  * health rows.
  */
 export const GOOGLE_GENERIC_FAILURE_SENTENCE =
-  "Google did not finish connecting this. Part of it may already have been recorded, so check this account's health below before you try again — and if it keeps happening, open the details and send them to us.";
+  "Google did not finish connecting. Changes may have been saved; check this account before retrying.";
 
 /** What a consent surface shows after a failed press. */
 export interface ConsentFailureAnswer {
@@ -206,7 +206,9 @@ export interface ConsentFailureAnswer {
  */
 function readsAsASentence(text: string): boolean {
   const trimmed = text.trim();
-  if (trimmed.length === 0) return false;
+  // A provider can return pages of perfectly ordinary prose. It is still
+  // diagnostic detail, not a safe inline summary for a consent dialog.
+  if (trimmed.length === 0 || trimmed.length > 140) return false;
   if (/[a-z0-9]_[a-z0-9]/i.test(trimmed)) return false;
   if (/https?:\/\//.test(trimmed)) return false;
   if (/\b[A-Z]{3,}[0-9]*\b/.test(trimmed)) return false;

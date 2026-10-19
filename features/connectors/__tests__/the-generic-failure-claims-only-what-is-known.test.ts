@@ -32,6 +32,19 @@ const PERSIST_FAILED = new BackendApiError({
 });
 
 describe("the generic failure sentence", () => {
+  it("keeps long provider prose out of the summary without losing the details", () => {
+    const raw = "Google could not complete this request because ".repeat(100) + "try again.";
+    const answer = consentFailureAnswer(new Error(raw));
+    expect(answer.sentence.length).toBeLessThanOrEqual(140);
+    expect(answer.sentence).not.toBe(raw);
+    expect(answer.details).toBe(raw);
+  });
+
+  it("preserves a short actionable failure instead of replacing every answer", () => {
+    const answer = consentFailureAnswer(new Error("Choose an account before connecting."));
+    expect(answer).toEqual({ sentence: "Choose an account before connecting.", details: null });
+  });
+
   it("does not claim that nothing was changed", () => {
     expect(GOOGLE_GENERIC_FAILURE_SENTENCE).not.toMatch(/nothing was changed/i);
     expect(GOOGLE_GENERIC_FAILURE_SENTENCE).not.toMatch(/nothing changed/i);
