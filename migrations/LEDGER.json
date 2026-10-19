@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T18:11:39.095Z",
+  "generated_at": "2026-10-19T18:07:55.592Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -115,12 +115,6 @@
       "filename": "20261019212000_readspeed_c_a_back_link_reader_predicate_is_asked_once_per_statement.sql",
       "checksum": "14997ce7a25b2ebb18e37e1807fae37674e7261aeb0f54c9be5783c89f63dcf9",
       "applied_at": "2026-10-19 18:07:54.307446+00"
-    },
-    "migrations/campaign/20261019213000_readspeed_d_a_far_column_is_looked_up_once_per_statement.sql": {
-      "source": "matrx-frontend",
-      "filename": "20261019213000_readspeed_d_a_far_column_is_looked_up_once_per_statement.sql",
-      "checksum": "b3e780f3d356b073faf4829c72737a64fc8d449272e884e7aae9cf7f01790d94",
-      "applied_at": "2026-10-19 18:11:37.902395+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
