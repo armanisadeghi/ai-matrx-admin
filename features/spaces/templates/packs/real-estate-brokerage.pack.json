@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 2,
+  "version": 3,
   "title": "Real Estate Brokerage",
   "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
   "forWho": "Real estate brokerages and teams",
@@ -2218,7 +2218,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0100",
-  "version": 5,
+  "version": 6,
   "title": "Projects, Tasks & Sprints",
   "description": "Product teams that plan by project: tasks, two-week sprints and a live sprint dashboard.",
   "forWho": "Software and product teams working in sprints",
@@ -1525,7 +1525,7 @@
         "Fennimore Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

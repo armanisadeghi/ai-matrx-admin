@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "formerSlugs": [
-    "spaces-sp0160"
-  ],
-  "version": 5,
+  "version": 6,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -1171,7 +1168,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1822,5 +1819,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0160"
+  ]
 }
