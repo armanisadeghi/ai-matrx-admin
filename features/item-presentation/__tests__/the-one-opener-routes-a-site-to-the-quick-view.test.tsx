@@ -23,7 +23,7 @@ const openSiteQuickView = jest.fn();
 const openDetail = jest.fn();
 
 jest.mock("@/features/overlays/definitions/siteQuickViewWindow.overlay", () => ({
-  useOpenSiteQuickViewWindow: () => openSiteQuickView,
+  createSiteQuickViewWindowOpener: () => openSiteQuickView,
 }));
 jest.mock("@ai-matrx/detail/react", () => ({
   ...jest.requireActual("@ai-matrx/detail/react"),
@@ -36,7 +36,7 @@ jest.mock("@ai-matrx/chat/host/window-openers", () => ({
   useOpenPickListManagerWindow: () => jest.fn(),
 }));
 jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
-  useOpenFilePreviewWindow: () => jest.fn(),
+  createFilePreviewWindowOpener: () => jest.fn(),
 }));
 
 import { useOpenItemPresentation } from "../useOpenItemPresentation";

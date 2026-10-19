@@ -13,8 +13,8 @@
  */
 
 import { useEffect, useMemo } from "react";
-import { useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -45,7 +45,7 @@ export interface SourceInspectorWindowHandle {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createSourceInspectorWindowOpener(store: Pick<AppStore, "dispatch">) {
+export function createSourceInspectorWindowOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (opts: OpenSourceInspectorWindowOptions): SourceInspectorWindowHandle => {
     dispatch(
@@ -74,8 +74,8 @@ export function createSourceInspectorWindowOpener(store: Pick<AppStore, "dispatc
 }
 
 export function useOpenSourceInspectorWindow() {
-  const store = useAppStore();
-  return useMemo(() => createSourceInspectorWindowOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createSourceInspectorWindowOpener({ dispatch }), [dispatch]);
 }
 
 /**

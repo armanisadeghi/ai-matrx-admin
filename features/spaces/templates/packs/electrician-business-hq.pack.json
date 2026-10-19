@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 3,
+  "version": 4,
   "title": "Electrician Business HQ",
-  "description": "Quote electrical jobs, track permits and inspections, parts stock, margins and invoices.",
+  "description": "For electrical contractors: estimates, jobs, permits and inspections, materials, invoices.",
   "forWho": "Electrical contractors and electricians",
   "icon": {
     "emoji": "⚡"
@@ -15,9 +15,11 @@
   "category": "trades",
   "tags": [
     "electrician",
+    "electrical contractor",
     "permits",
-    "jobs",
-    "estimates"
+    "inspections",
+    "ev charger",
+    "trades"
   ],
   "spec": {
     "specVersion": 1,
@@ -130,6 +132,46 @@
             "contextPolicy": "include"
           },
           {
+            "key": "service_amps",
+            "label": "Service size",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "60 A",
+              "100 A",
+              "150 A",
+              "200 A",
+              "400 A",
+              "Commercial 3-phase"
+            ],
+            "choiceColors": {
+              "60 A": "blue",
+              "100 A": "green",
+              "150 A": "amber",
+              "200 A": "violet",
+              "400 A": "teal",
+              "Commercial 3-phase": "orange"
+            }
+          },
+          {
+            "key": "built_year",
+            "label": "Building built (year)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1850
+              },
+              {
+                "kind": "max",
+                "value": 2100
+              }
+            ]
+          },
+          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -151,6 +193,24 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Open jobs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Completed",
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +220,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +238,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -313,7 +381,9 @@
               "phone": "(253) 555-0122",
               "email": "yara.sandoval@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-40d"
+              "since": "@today-40d",
+              "service_amps": "100 A",
+              "built_year": 1962
             }
           },
           {
@@ -325,7 +395,9 @@
               "phone": "(253) 555-0159",
               "email": "teodor.abernathy@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-95d"
+              "since": "@today-95d",
+              "service_amps": "200 A",
+              "built_year": 2024
             }
           },
           {
@@ -337,7 +409,9 @@
               "phone": "(253) 555-0196",
               "email": "odette.halvorsen@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-150d"
+              "since": "@today-150d",
+              "service_amps": "100 A",
+              "built_year": 1948
             }
           },
           {
@@ -349,7 +423,9 @@
               "phone": "(253) 555-0133",
               "email": "rafael.prescott@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-205d"
+              "since": "@today-205d",
+              "service_amps": "Commercial 3-phase",
+              "built_year": 1979
             }
           },
           {
@@ -361,7 +437,9 @@
               "phone": "(253) 555-0170",
               "email": "saoirse.zuberi@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-260d"
+              "since": "@today-260d",
+              "service_amps": "150 A",
+              "built_year": 1994
             }
           },
           {
@@ -373,7 +451,9 @@
               "phone": "(253) 555-0107",
               "email": "ravi.galloway@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-315d"
+              "since": "@today-315d",
+              "service_amps": "200 A",
+              "built_year": 2025
             }
           },
           {
@@ -385,7 +465,9 @@
               "phone": "(253) 555-0144",
               "email": "zainab.okafor@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-370d"
+              "since": "@today-370d",
+              "service_amps": "60 A",
+              "built_year": 1931
             }
           },
           {
@@ -397,7 +479,9 @@
               "phone": "(253) 555-0181",
               "email": "jamal.vasquez@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-425d"
+              "since": "@today-425d",
+              "service_amps": "Commercial 3-phase",
+              "built_year": 2001
             }
           },
           {
@@ -409,7 +493,9 @@
               "phone": "(253) 555-0118",
               "email": "liesel.delacroix@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-13d"
+              "since": "@today-13d",
+              "service_amps": "100 A",
+              "built_year": 1956
             }
           },
           {
@@ -421,7 +507,9 @@
               "phone": "(253) 555-0155",
               "email": "okonkwo.lowry@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-14d"
+              "since": "@today-14d",
+              "service_amps": "200 A",
+              "built_year": 2023
             }
           },
           {
@@ -433,7 +521,9 @@
               "phone": "(253) 555-0192",
               "email": "ingrid.tennant@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-15d"
+              "since": "@today-15d",
+              "service_amps": "100 A",
+              "built_year": 1971
             }
           },
           {
@@ -445,7 +535,9 @@
               "phone": "(253) 555-0129",
               "email": "basil.castellanos@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-16d"
+              "since": "@today-16d",
+              "service_amps": "Commercial 3-phase",
+              "built_year": 1988
             }
           }
         ]
@@ -573,6 +665,14 @@
               "Emergency": "amber"
             },
             "default": "Routine"
+          },
+          {
+            "key": "callback",
+            "label": "Callback",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "A return trip to fix our own work, not billed."
           },
           {
             "key": "tech",
@@ -903,67 +1003,67 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Panel upgrade - Halvorsen",
+              "job_name": "Fuse box to 200 A panel, 1962 ranch",
               "status": "Completed",
-              "customer": "custom-3",
+              "customer": "custom-1",
               "job_type": "Panel upgrade",
               "priority": "Routine",
-              "tech": "tm-1",
+              "tech": "tm-3",
               "scheduled_on": "@today-21d",
-              "quote": 2665,
-              "parts_cost": 1200,
-              "labor_cost": 865,
-              "hours": 12,
+              "quote": 3850,
+              "parts_cost": 1240,
+              "labor_cost": 1310,
+              "hours": 16,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "EV charger install - Vasquez",
+              "job_name": "Spec home: 12 rough-in circuits",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "EV charger install",
+              "customer": "custom-2",
+              "job_type": "Whole-room rewire",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
               "scheduled_on": "@today-16d",
-              "quote": 1290,
-              "parts_cost": 620,
-              "labor_cost": 360,
-              "hours": 5,
+              "quote": 4600,
+              "parts_cost": 1580,
+              "labor_cost": 1900,
+              "hours": 24,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Whole-room rewire - Sandoval",
+              "job_name": "Half the kitchen outlets dead",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Whole-room rewire",
-              "priority": "Routine",
-              "tech": "tm-4",
+              "customer": "custom-3",
+              "job_type": "Troubleshooting call",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today-12d",
-              "quote": 3865,
-              "parts_cost": 1355,
-              "labor_cost": 1150,
-              "hours": 16,
+              "quote": 285,
+              "parts_cost": 12,
+              "labor_cost": 120,
+              "hours": 1.5,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Recessed lighting - Galloway",
+              "job_name": "Level 2 charger in detached garage",
               "status": "Completed",
-              "customer": "custom-6",
-              "job_type": "Recessed lighting",
+              "customer": "custom-5",
+              "job_type": "EV charger install",
               "priority": "Routine",
-              "tech": "tm-5",
+              "tech": "tm-4",
               "scheduled_on": "@today-9d",
-              "quote": 845,
-              "parts_cost": 255,
-              "labor_cost": 430,
+              "quote": 1890,
+              "parts_cost": 690,
+              "labor_cost": 520,
               "hours": 6,
               "completed_on": "@today-9d"
             }
@@ -971,33 +1071,33 @@
           {
             "key": "job-5",
             "values": {
-              "job_name": "Troubleshooting call - Tennant",
+              "job_name": "Six recessed lights + dimmer, living room",
               "status": "Completed",
-              "customer": "custom-11",
-              "job_type": "Troubleshooting call",
-              "priority": "Urgent",
-              "tech": "tm-1",
+              "customer": "custom-9",
+              "job_type": "Recessed lighting",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today-6d",
-              "quote": 290,
-              "parts_cost": 25,
-              "labor_cost": 145,
-              "hours": 2,
+              "quote": 1240,
+              "parts_cost": 265,
+              "labor_cost": 480,
+              "hours": 6,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Ceiling fan install - Prescott",
+              "job_name": "Bathroom GFCI trips when the dryer runs",
               "status": "Completed",
-              "customer": "custom-4",
-              "job_type": "Ceiling fan install",
-              "priority": "Routine",
+              "customer": "custom-7",
+              "job_type": "Outlet and GFCI upgrade",
+              "priority": "Urgent",
               "tech": "tm-3",
               "scheduled_on": "@today-4d",
-              "quote": 395,
-              "parts_cost": 140,
-              "labor_cost": 145,
+              "quote": 340,
+              "parts_cost": 46,
+              "labor_cost": 150,
               "hours": 2,
               "completed_on": "@today-4d"
             }
@@ -1005,246 +1105,247 @@
           {
             "key": "job-7",
             "values": {
-              "job_name": "Outlet and GFCI upgrade - Delacroix",
+              "job_name": "Sign lighting on its own circuit",
               "status": "Cancelled",
-              "customer": "custom-9",
-              "job_type": "Outlet and GFCI upgrade",
+              "customer": "custom-4",
+              "job_type": "Troubleshooting call",
               "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-6",
               "scheduled_on": "@today-8d",
-              "quote": 365,
-              "parts_cost": 90,
-              "labor_cost": 215,
-              "hours": 3
+              "quote": 650,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Generator hookup - Abernathy",
+              "job_name": "Knob-and-tube removal, 1931 bungalow",
               "status": "On hold",
-              "customer": "custom-2",
-              "job_type": "Generator hookup",
-              "priority": "Emergency",
-              "tech": "tm-5",
+              "customer": "custom-7",
+              "job_type": "Whole-room rewire",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@today-5d",
-              "quote": 2435,
-              "parts_cost": 1220,
-              "labor_cost": 575,
-              "hours": 8
+              "quote": 9800,
+              "parts_cost": 2350,
+              "labor_cost": 4900,
+              "hours": 60
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Panel upgrade - Okafor",
+              "job_name": "Breaker still tripping: recheck our work",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Panel upgrade",
-              "priority": "Routine",
-              "tech": "tm-1",
+              "customer": "custom-3",
+              "job_type": "Troubleshooting call",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today-2d",
-              "quote": 2575,
-              "parts_cost": 1160,
-              "labor_cost": 865,
-              "hours": 12
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 80,
+              "hours": 1,
+              "callback": true
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "EV charger install - Castellanos",
+              "job_name": "Transfer switch for portable generator",
               "status": "In progress",
-              "customer": "custom-12",
-              "job_type": "EV charger install",
-              "priority": "Urgent",
-              "tech": "tm-3",
+              "customer": "custom-11",
+              "job_type": "Generator hookup",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@mon",
-              "quote": 1260,
-              "parts_cost": 605,
-              "labor_cost": 360,
-              "hours": 5,
+              "quote": 1650,
+              "parts_cost": 540,
+              "labor_cost": 520,
+              "hours": 6,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Whole-room rewire - Zuberi",
+              "job_name": "Dental office: dedicated circuits for chairs",
               "status": "In progress",
-              "customer": "custom-5",
-              "job_type": "Whole-room rewire",
+              "customer": "custom-8",
+              "job_type": "Outlet and GFCI upgrade",
               "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-3",
               "scheduled_on": "@tue",
-              "quote": 3770,
-              "parts_cost": 1320,
-              "labor_cost": 1150,
-              "hours": 16
+              "quote": 2780,
+              "parts_cost": 610,
+              "labor_cost": 1140,
+              "hours": 14
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Recessed lighting - Lowry",
+              "job_name": "Spec home 2: service and meter base",
               "status": "Scheduled",
-              "customer": "custom-10",
-              "job_type": "Recessed lighting",
+              "customer": "custom-6",
+              "job_type": "Panel upgrade",
               "priority": "Routine",
-              "tech": "tm-5",
+              "tech": "tm-4",
               "scheduled_on": "@wed",
-              "quote": 810,
-              "parts_cost": 245,
-              "labor_cost": 430,
-              "hours": 6,
+              "quote": 4100,
+              "parts_cost": 1490,
+              "labor_cost": 1350,
+              "hours": 15,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Troubleshooting call - Halvorsen",
+              "job_name": "Two ceiling fans, kids' rooms",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Troubleshooting call",
+              "customer": "custom-1",
+              "job_type": "Ceiling fan install",
               "priority": "Routine",
-              "tech": "tm-1",
+              "tech": "tm-5",
               "scheduled_on": "@thu",
-              "quote": 280,
-              "parts_cost": 20,
-              "labor_cost": 145,
-              "hours": 2
+              "quote": 520,
+              "parts_cost": 0,
+              "labor_cost": 240,
+              "hours": 3
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Ceiling fan install - Vasquez",
+              "job_name": "Restaurant hood and walk-in cooler circuits",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Ceiling fan install",
+              "customer": "custom-12",
+              "job_type": "Outlet and GFCI upgrade",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@fri",
-              "quote": 385,
-              "parts_cost": 135,
-              "labor_cost": 145,
-              "hours": 2,
+              "quote": 3350,
+              "parts_cost": 940,
+              "labor_cost": 1220,
+              "hours": 14,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Outlet and GFCI upgrade - Sandoval",
+              "job_name": "Flickering lights whole house",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Outlet and GFCI upgrade",
-              "priority": "Emergency",
-              "tech": "tm-4",
+              "customer": "custom-9",
+              "job_type": "Troubleshooting call",
+              "priority": "Urgent",
+              "tech": "tm-6",
               "scheduled_on": "@sat",
-              "quote": 345,
-              "parts_cost": 85,
-              "labor_cost": 215,
-              "hours": 3,
+              "quote": 195,
+              "parts_cost": 0,
+              "labor_cost": 80,
+              "hours": 1,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Generator hookup - Galloway",
+              "job_name": "EV charger quote, 2-car garage",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Generator hookup",
+              "customer": "custom-10",
+              "job_type": "EV charger install",
               "priority": "Routine",
-              "tech": "tm-5",
+              "tech": "tm-6",
               "scheduled_on": "@sun",
-              "quote": 2370,
-              "parts_cost": 1185,
-              "labor_cost": 575,
-              "hours": 8
+              "quote": 2150,
+              "parts_cost": 780,
+              "labor_cost": 560,
+              "hours": 6
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Panel upgrade - Tennant",
+              "job_name": "Patio lighting and outdoor GFCI",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Panel upgrade",
+              "customer": "custom-5",
+              "job_type": "Recessed lighting",
               "priority": "Routine",
-              "tech": "tm-1",
+              "tech": "tm-5",
               "scheduled_on": "@tue+1w",
-              "quote": 2490,
-              "parts_cost": 1120,
-              "labor_cost": 865,
-              "hours": 12
+              "quote": 980,
+              "parts_cost": 310,
+              "labor_cost": 360,
+              "hours": 4.5
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "EV charger install - Prescott",
+              "job_name": "Office LED retrofit, 40 troffers",
               "status": "New request",
               "customer": "custom-4",
-              "job_type": "EV charger install",
+              "job_type": "Recessed lighting",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-6",
               "scheduled_on": "@thu+1w",
-              "quote": 1230,
-              "parts_cost": 590,
-              "labor_cost": 360,
-              "hours": 5
+              "quote": 6400,
+              "parts_cost": 2700,
+              "labor_cost": 1800,
+              "hours": 22
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Whole-room rewire - Delacroix",
+              "job_name": "Burning smell at the panel",
               "status": "Scheduled",
-              "customer": "custom-9",
-              "job_type": "Whole-room rewire",
-              "priority": "Routine",
-              "tech": "tm-4",
+              "customer": "custom-11",
+              "job_type": "Troubleshooting call",
+              "priority": "Emergency",
+              "tech": "tm-3",
               "scheduled_on": "@today",
-              "quote": 3670,
-              "parts_cost": 1285,
-              "labor_cost": 1150,
-              "hours": 16,
+              "quote": 310,
+              "parts_cost": 38,
+              "labor_cost": 120,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Recessed lighting - Abernathy",
+              "job_name": "Rough-in inspection walk, spec home 2",
               "status": "Scheduled",
-              "customer": "custom-2",
-              "job_type": "Recessed lighting",
-              "priority": "Urgent",
-              "tech": "tm-5",
+              "customer": "custom-6",
+              "job_type": "Panel upgrade",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@today+2d",
-              "quote": 780,
-              "parts_cost": 235,
-              "labor_cost": 430,
-              "hours": 6
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 80,
+              "hours": 1
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Troubleshooting call - Okafor",
+              "job_name": "Hot tub disconnect and 50 A circuit",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Troubleshooting call",
+              "customer": "custom-5",
+              "job_type": "EV charger install",
               "priority": "Routine",
-              "tech": "tm-1",
+              "tech": "tm-5",
               "scheduled_on": "@today+4d",
-              "quote": 270,
-              "parts_cost": 20,
-              "labor_cost": 145,
-              "hours": 2
+              "quote": 1180,
+              "parts_cost": 330,
+              "labor_cost": 410,
+              "hours": 5
             }
           }
         ],
@@ -1708,11 +1809,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-1040",
+              "invoice_name": "V-3301",
               "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-3",
-              "amount": 2984.8,
+              "customer": "custom-1",
+              "amount": 4243.5,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1720,65 +1821,303 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-1041",
+              "invoice_name": "V-3302",
               "status": "Paid",
               "job": "job-2",
-              "customer": "custom-8",
-              "amount": 1547.2,
+              "customer": "custom-2",
+              "amount": 2300.0,
               "issued_on": "@today-16d",
               "due_on": "@today-2d",
-              "paid_on": "@today-12d",
-              "method": "Check"
+              "paid_on": "@today-10d",
+              "method": "Bank transfer"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-1042",
-              "status": "Paid",
-              "job": "job-3",
-              "customer": "custom-1",
-              "amount": 4792.6,
-              "issued_on": "@today-12d",
-              "due_on": "@today+2d",
-              "paid_on": "@today-8d",
-              "method": "Bank transfer"
+              "invoice_name": "V-3303",
+              "status": "Sent",
+              "job": "job-2",
+              "customer": "custom-2",
+              "amount": 2769.2,
+              "issued_on": "@today-6d",
+              "due_on": "@today+8d"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-1043",
-              "status": "Sent",
-              "job": "job-4",
-              "customer": "custom-6",
-              "amount": 971.4,
-              "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "invoice_name": "V-3304",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-3",
+              "amount": 314.1,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-9d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-1044",
+              "invoice_name": "V-3305",
               "status": "Sent",
-              "job": "job-5",
-              "customer": "custom-11",
-              "amount": 342.2,
-              "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "job": "job-4",
+              "customer": "custom-5",
+              "amount": 2082.8,
+              "issued_on": "@today-9d",
+              "due_on": "@today"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-1045",
+              "invoice_name": "V-3306",
+              "status": "Overdue",
+              "job": "job-5",
+              "customer": "custom-9",
+              "amount": 1366.5,
+              "issued_on": "@today-6d",
+              "due_on": "@today-1d"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "V-3307",
               "status": "Draft",
               "job": "job-6",
-              "customer": "custom-4",
-              "amount": 514.8,
-              "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "customer": "custom-7",
+              "amount": 374.7,
+              "issued_on": "@today-3d",
+              "due_on": "@today+11d"
+            }
+          },
+          {
+            "key": "invoic-8",
+            "values": {
+              "invoice_name": "V-3308",
+              "status": "Paid",
+              "job": "job-8",
+              "customer": "custom-7",
+              "amount": 3000.0,
+              "issued_on": "@today-25d",
+              "due_on": "@today-11d",
+              "paid_on": "@today-20d",
+              "method": "Check"
+            }
+          }
+        ]
+      },
+      {
+        "token": "permit",
+        "name": "Permits and inspections",
+        "labelSingular": "Permit",
+        "labelPlural": "Permits",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "stamp",
+        "titleField": "permit_no",
+        "describes": "Every permit you pull and every inspection it needs, with dates and what the inspector said.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "datesIndependent": "An inspection is booked after filing, but a re-inspection can be booked before the old filing date is updated.",
+        "fields": [
+          {
+            "key": "permit_no",
+            "label": "Permit number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "job",
+            "label": "Job",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Electrical permit",
+              "Service change",
+              "New construction",
+              "Tenant improvement"
+            ],
+            "choiceColors": {
+              "Electrical permit": "blue",
+              "Service change": "green",
+              "New construction": "amber",
+              "Tenant improvement": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "To file",
+              "Filed",
+              "Issued",
+              "Rough-in passed",
+              "Correction needed",
+              "Final passed"
+            ],
+            "choiceColors": {
+              "To file": "slate",
+              "Filed": "blue",
+              "Issued": "violet",
+              "Rough-in passed": "teal",
+              "Correction needed": "red",
+              "Final passed": "green"
+            }
+          },
+          {
+            "key": "filed_on",
+            "label": "Filed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "inspection_on",
+            "label": "Inspection",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "inspector_note",
+            "label": "Inspector notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pm-1",
+            "values": {
+              "permit_no": "EL-24-08812",
+              "job": "job-1",
+              "kind": "Service change",
+              "status": "Final passed",
+              "filed_on": "@today-30d",
+              "inspection_on": "@today-20d",
+              "inspector_note": "Grounding electrode verified."
+            }
+          },
+          {
+            "key": "pm-2",
+            "values": {
+              "permit_no": "EL-24-08990",
+              "job": "job-2",
+              "kind": "New construction",
+              "status": "Rough-in passed",
+              "filed_on": "@today-35d",
+              "inspection_on": "@today-17d",
+              "inspector_note": "Nail plates missing at two studs; fixed on site."
+            }
+          },
+          {
+            "key": "pm-3",
+            "values": {
+              "permit_no": "EL-24-09107",
+              "job": "job-4",
+              "kind": "Electrical permit",
+              "status": "Final passed",
+              "filed_on": "@today-14d",
+              "inspection_on": "@today-8d"
+            }
+          },
+          {
+            "key": "pm-4",
+            "values": {
+              "permit_no": "EL-24-09233",
+              "job": "job-8",
+              "kind": "Electrical permit",
+              "status": "Issued",
+              "filed_on": "@today-12d",
+              "inspection_on": "@today+9d"
+            }
+          },
+          {
+            "key": "pm-5",
+            "values": {
+              "permit_no": "EL-24-09310",
+              "job": "job-11",
+              "kind": "Tenant improvement",
+              "status": "Filed",
+              "filed_on": "@today-6d",
+              "inspection_on": "@today+3d"
+            }
+          },
+          {
+            "key": "pm-6",
+            "values": {
+              "permit_no": "EL-24-09344",
+              "job": "job-12",
+              "kind": "Service change",
+              "status": "Issued",
+              "filed_on": "@today-9d",
+              "inspection_on": "@today"
+            }
+          },
+          {
+            "key": "pm-7",
+            "values": {
+              "permit_no": "EL-24-09390",
+              "job": "job-14",
+              "kind": "Tenant improvement",
+              "status": "Correction needed",
+              "filed_on": "@today-15d",
+              "inspection_on": "@today-1d",
+              "inspector_note": "Cooler circuit needs its own disconnect within sight."
+            }
+          },
+          {
+            "key": "pm-8",
+            "values": {
+              "permit_no": "EL-24-09412",
+              "job": "job-20",
+              "kind": "New construction",
+              "status": "Filed",
+              "filed_on": "@today-4d",
+              "inspection_on": "@today+2d"
+            }
+          },
+          {
+            "key": "pm-9",
+            "values": {
+              "permit_no": "EL-24-09455",
+              "job": "job-21",
+              "kind": "Electrical permit",
+              "status": "To file",
+              "filed_on": "@today-1d",
+              "inspection_on": "@today+6d"
             }
           }
         ]
@@ -1824,6 +2163,16 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each permit covers one job.",
+        "fromTable": "permit",
+        "fromField": "job",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "permits"
       }
     ],
     "sharedBlocks": [
@@ -2165,6 +2514,48 @@
             "Overdue"
           ]
         }
+      },
+      {
+        "token": "all_permit",
+        "name": "All permits",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "permit"
+      },
+      {
+        "token": "permit_board",
+        "name": "Permits by status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "permit"
+      },
+      {
+        "token": "permit_cal",
+        "name": "Inspection calendar",
+        "kind": "calendar",
+        "dateField": "inspection_on",
+        "allDay": true,
+        "table": "permit"
+      },
+      {
+        "token": "permit_next7",
+        "name": "Inspections in the next 7 days",
+        "kind": "grid",
+        "within": {
+          "inspection_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Filed",
+            "Issued",
+            "Rough-in passed",
+            "Correction needed"
+          ]
+        },
+        "table": "permit"
       }
     ],
     "agent": {
@@ -2237,6 +2628,18 @@
           "surface": "part_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open permits and inspections.",
+        "action": {
+          "kind": "open",
+          "surface": "permit_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "permit_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2254,7 +2657,7 @@
         "Anvil Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2276,12 +2679,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the electrical business from one page. Estimates become Jobs, jobs get a lead electrician, and Mark done closes them after inspection. Materials shows what to restock, and Invoices shows what is still unpaid. Start with the Dashboard."
+              "text": "Run the business from here. A call or estimate becomes a Job; the job gets a lead electrician and, when it needs one, a permit. Permits and inspections shows every inspection coming up. Mark done closes a job after the final passes. Sent and overdue invoices both count in a customer's Awaiting payment."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2674,6 +3083,347 @@
             ],
             "activeViewId": "inv-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Permits and inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every permit and inspection, so nothing is covered up before the inspector has seen it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "permit",
+              "view": "permit_board"
+            },
+            "inline": true,
+            "title": "Permits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pm-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pm-c",
+                "name": "Inspection calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "inspection_on"
+              },
+              {
+                "id": "pm-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "inspection_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Filed",
+                    "Issued",
+                    "Rough-in passed",
+                    "Correction needed"
+                  ]
+                }
+              },
+              {
+                "id": "pm-t",
+                "name": "All permits",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pm-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "electrician-business-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the office manager, the estimator and every electrician."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": homeowners, builders, landlords and businesses, with their service size and building age, what they owe, and how many jobs are open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Jobs",
+              "bold": true
+            },
+            {
+              "text": ": every estimate and job, with the lead electrician, date, price, materials and labor cost, and margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Permits and inspections",
+              "bold": true
+            },
+            {
+              "text": ": each permit, its status, the inspection date, and the inspector's notes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Materials",
+              "bold": true
+            },
+            {
+              "text": ": wire, devices, breakers and panels on the trucks and shelves, and what needs ordering."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": deposits, progress bills and final bills: sent, paid and late."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A job from first call to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The estimator walks the job and adds it as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": " with the quote and costs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the customer says yes, set the date and lead electrician and move it to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": ". An electrician can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " to take it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it needs a permit, add one in Permits and inspections and file it before work starts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Rough-in, inspection, finish, final inspection. Update the permit each step."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " after the final passes; it stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the invoice. Past due becomes "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "; the customer's Awaiting payment counts sent and overdue together. "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the payment date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, overdue jobs, inspections this week, corrections"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: inspections in the next 7 days, confirm with the customer that someone will be home"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: truck and shelf count in Materials"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: thin margins and callbacks with the team"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename work types and permit kinds to match your city, add your suppliers, and delete the sample customers once you have entered a dozen of your own. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
         }
       ]
     },
@@ -2936,6 +3686,122 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections this week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "permit",
+              "view": "all_permit"
+            },
+            "inline": true,
+            "title": "Permits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "This week",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "inspection_on": {
+                    "relative": "this_week"
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Corrections to fix"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "permit",
+              "view": "all_permit"
+            },
+            "inline": true,
+            "title": "Permits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l5",
+                "name": "Corrections",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "status": "Correction needed"
+                }
+              }
+            ],
+            "activeViewId": "view-l5"
+          }
         }
       ]
     },
@@ -2951,7 +3817,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A good estimate counts materials, labor, permit fees and the risk of what is behind the wall."
+              "text": "An estimate is a promise. Price it from what you saw in the building, not what you hope is behind the drywall, and write down what is not included."
             }
           ],
           "background": "blue",
@@ -2963,7 +3829,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Walk the job first"
             }
           ],
           "props": {
@@ -2974,7 +3840,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Visit the site and photograph the panel, meter and work area."
+              "text": "Look up the customer. "
+            },
+            {
+              "text": "Service size",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Building built (year)",
+              "bold": true
+            },
+            {
+              "text": " tell you a lot before you arrive: a 1940s house on 60 amps will need more than the customer thinks."
             }
           ]
         },
@@ -2982,7 +3862,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count devices, wire runs and breakers."
+              "text": "Open the panel. Note make, condition, available spaces, double taps, aluminum branch wiring, and signs of heat."
             }
           ]
         },
@@ -2990,7 +3870,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Price materials, then labor hours at the shop rate."
+              "text": "Measure the runs. For an EV charger or hot tub, measure panel to load, count the walls and floors you go through, and note whether the run is finished or open."
             }
           ]
         },
@@ -2998,7 +3878,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add permit and inspection fees as their own line."
+              "text": "Do the load math for anything big. If the new load does not fit, the estimate includes a service upgrade or a load management device, and you explain why."
             }
           ]
         },
@@ -3006,7 +3886,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add overhead and a contingency for older buildings."
+              "text": "Take photos of the panel, the meter and every wall you will open."
             }
           ]
         },
@@ -3014,7 +3894,159 @@
           "type": "heading",
           "text": [
             {
-              "text": "Presenting it"
+              "text": "Build the price"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Materials",
+              "bold": true
+            },
+            {
+              "text": ": from the Materials list at your real cost, plus your markup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Labor",
+              "bold": true
+            },
+            {
+              "text": ": hours for each person, apprentice and journeyman priced separately."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Permit and inspection",
+              "bold": true
+            },
+            {
+              "text": " fees, and a trip for every inspection."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patch and paint",
+              "bold": true
+            },
+            {
+              "text": ": say whether you do it or the customer does. This is where most disputes start."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Contingency",
+              "bold": true
+            },
+            {
+              "text": " on old houses: plaster, hidden splices, ungrounded circuits."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the quote, materials cost, labor cost and hours on the job. The "
+            },
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": " column shows what you will keep; under twenty percent shows as Thin and should be repriced before it goes out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to write on every estimate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scope in plain words: what you will install, where, and to what code"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "What is not included: drywall finishing, utility fees, trenching, furniture moving"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "How long the power will be off, and on which day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Permit and inspection dates as best you know them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payment terms: deposit, progress payment, balance on final inspection"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
@@ -3025,7 +4057,26 @@
           "type": "text",
           "text": [
             {
-              "text": "Send the estimate within a day. Offer good, better and best when there is a real choice, and state how long the price is valid."
+              "text": "A homeowner wants a 48-amp charger in a detached garage. The house has a 150 A panel with three spaces and gas heat. The load calculation leaves room for a 60 A circuit. The run is 70 feet, half of it buried. The estimator prices wire, conduit, a trench, the charger circuit, the permit and two inspections; labor is six hours for a journeyman and apprentice. The quote goes out with the trench restoration listed as not included, and the customer approves the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the job"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare actual parts and hours with the estimate. If a kind of job keeps coming in over, change your price for it, not just the next quote."
             }
           ]
         }
@@ -3043,7 +4094,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Never energize new work before it is inspected where the law requires it."
+              "text": "Work that fails inspection costs twice. Work done without a permit can cost the customer their insurance claim. Treat the permit as part of the job, not paperwork after it."
             }
           ],
           "background": "blue",
@@ -3055,50 +4106,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check whether the job needs a permit with the local office."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "File with the address, scope and license number."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Book the rough-in inspection when the wiring is open, and the final when it is complete."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark the job On hold if an inspection fails and fix the notes the same day."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Records"
+              "text": "When you need a permit"
             }
           ],
           "props": {
@@ -3109,7 +4117,280 @@
           "type": "text",
           "text": [
             {
-              "text": "Save the inspection sign-off in the job notes. It is the proof of work if the customer sells the home."
+              "text": "Most places require one for new circuits, panel and service changes, EV chargers, generators, hot tubs, and any rewiring. Small like-for-like swaps (a switch, an outlet, a light fixture on an existing box) usually do not. When in doubt, call the permit office and write down who you spoke to."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Filing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the permit in "
+            },
+            {
+              "text": "Permits and inspections",
+              "bold": true
+            },
+            {
+              "text": ", link it to the job, and set status "
+            },
+            {
+              "text": "To file",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "File it, enter the number and "
+            },
+            {
+              "text": "Filed on",
+              "bold": true
+            },
+            {
+              "text": ", and set status "
+            },
+            {
+              "text": "Filed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When it is issued, set "
+            },
+            {
+              "text": "Issued",
+              "bold": true
+            },
+            {
+              "text": " and book the first inspection date. The inspection calendar and the Next 7 days list show what is coming."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Post the permit card on site where the inspector can see it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the rough-in inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Boxes secured, at the right height, with room for devices"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cables stapled within 12 inches of boxes and every 4.5 feet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Nail plates where cable passes within 1 1/4 inches of a stud face"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Grounds made up in every box"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Panel labeled with the new circuits"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Drywall stays off until the inspection passes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the final"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every device and cover plate on, every circuit labeled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "GFCI and AFCI protection tested where required"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Torque on lugs and breakers checked and written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Smoke and CO alarms working where the work triggers them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Customer walked through the panel and any new equipment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When it fails"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the permit to "
+            },
+            {
+              "text": "Correction needed",
+              "bold": true
+            },
+            {
+              "text": " and write the inspector's exact words in "
+            },
+            {
+              "text": "Inspector notes",
+              "bold": true
+            },
+            {
+              "text": ". Fix it within two working days, book the re-inspection, and tell the customer what changed. Corrections show on the Dashboard until they pass. If the same correction comes up twice in a quarter, it is a training topic for the next team meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A restaurant's kitchen circuits fail the final: the walk-in cooler needs a disconnect within sight of the unit. Casimir adds the disconnect the next morning, the office books the re-inspection, and the permit moves to Final passed two days later. The job is then marked done and the balance invoice goes out."
             }
           ]
         }
@@ -3127,7 +4408,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The same four steps before every job."
+              "text": "Every electrician knows the rules. Accidents happen when someone is rushed, tired, or sure the circuit is dead. This page is the habit we keep on every job, no matter how small."
             }
           ],
           "background": "blue",
@@ -3139,7 +4420,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Checklist"
+              "text": "Before you touch anything"
             }
           ],
           "props": {
@@ -3150,7 +4431,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Verify power is off with a tester at the panel and at the device."
+              "text": "Identify every source: the panel, a sub-panel, a generator, solar, a UPS in an office."
             }
           ]
         },
@@ -3158,7 +4439,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Lock out and tag the breaker."
+              "text": "Turn it off and lock it out with your own lock and tag. One person, one lock. Nobody removes another person's lock."
             }
           ]
         },
@@ -3166,7 +4447,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Wear the right gloves and eye protection for the task."
+              "text": "Test your meter on a known live source, test the circuit, then test the meter again (live-dead-live)."
             }
           ]
         },
@@ -3174,7 +4455,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Tell the customer which circuits are off and for how long."
+              "text": "Treat neutrals as live until proven otherwise, especially on shared neutrals in older homes."
             }
           ]
         },
@@ -3182,7 +4463,84 @@
           "type": "heading",
           "text": [
             {
-              "text": "If something looks wrong"
+              "text": "Daily checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Meter, leads and non-contact tester checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gloves and eye protection rated for the work"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ladders inspected, fiberglass only near electrical work"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lock and tag kit on the truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fire extinguisher and first aid kit on the truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Customer told which rooms will lose power and for how long"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working live"
             }
           ],
           "props": {
@@ -3193,7 +4551,107 @@
           "type": "text",
           "text": [
             {
-              "text": "Stop, photograph it, and call the owner before touching it. Aluminum wiring, scorched panels and double-tapped breakers get a written recommendation."
+              "text": "Live work is the exception, never the plan. If a job truly needs it (troubleshooting with a meter, for example), the lead electrician decides, uses the right PPE for the energy level, and keeps a second person nearby."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Apprentices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An apprentice never works alone on a panel or service. The journeyman checks every termination before covers go back on, and explains why. Short daily lessons on site are how the next journeyman is made."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Old houses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Expect anything in buildings older than about 1970: knob-and-tube spliced to modern cable, ungrounded outlets that look grounded, and aluminum branch wiring. Mark what you find on the customer's record so the next person is not surprised."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If something goes wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make the area safe. Do not touch a person in contact with a live conductor; cut the power first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call emergency services for any shock with symptoms, burns or a fall."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the owner, then write down what happened the same day, with photos."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Review it at the next team meeting: what made it possible, and what we change."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On a troubleshooting call in a 1950s duplex, Faye locks out the breaker for the kitchen circuit and tests: the outlet is still live. A second circuit shares the box. She finds it, locks it out too, and notes the shared box on the customer's record before closing up."
             }
           ]
         }

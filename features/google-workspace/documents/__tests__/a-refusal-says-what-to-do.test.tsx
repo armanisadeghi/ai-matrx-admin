@@ -140,7 +140,7 @@ jest.mock("@/features/marketing/google/service", () => ({
 /** The connector window the strip's own Reconnect opens — a callback, in place. */
 const openGoogleConnect = jest.fn();
 jest.mock("@/features/overlays/definitions/googleConnectWindow.overlay", () => ({
-  useOpenGoogleConnectWindow: () => openGoogleConnect,
+  createGoogleConnectWindowOpener: () => openGoogleConnect,
 }));
 
 /** The ONE Google Picker (lib/googlePicker), opened in place. */

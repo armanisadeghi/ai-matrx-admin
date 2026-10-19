@@ -33,10 +33,10 @@ jest.mock("@ai-matrx/chat/host/window-openers", () => ({
   useOpenPickListManagerWindow: () => jest.fn(),
 }));
 jest.mock("@/features/overlays/definitions/filePreviewWindow.overlay", () => ({
-  useOpenFilePreviewWindow: () => openFile,
+  createFilePreviewWindowOpener: () => openFile,
 }));
 jest.mock("@/features/overlays/definitions/siteQuickViewWindow.overlay", () => ({
-  useOpenSiteQuickViewWindow: () => jest.fn(),
+  createSiteQuickViewWindowOpener: () => jest.fn(),
 }));
 jest.mock("@ai-matrx/detail/react", () => ({
   ...jest.requireActual("@ai-matrx/detail/react"),

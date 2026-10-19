@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0501",
-  "version": 3,
+  "version": 4,
   "title": "Plumbing Company HQ",
-  "description": "Dispatch plumbing calls, quote and cost jobs, track van stock and chase unpaid invoices.",
+  "description": "For plumbing shops: dispatch calls, price jobs, stock vans and collect what is owed.",
   "forWho": "Plumbing companies and drain and pipe contractors",
   "icon": {
     "emoji": "🚰"
@@ -14,9 +14,11 @@
   },
   "category": "trades",
   "tags": [
+    "plumber",
     "plumbing",
+    "drain",
     "dispatch",
-    "jobs",
+    "service calls",
     "trades"
   ],
   "spec": {
@@ -130,6 +132,48 @@
             "contextPolicy": "include"
           },
           {
+            "key": "shutoff",
+            "label": "Main shutoff location",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "heater_year",
+            "label": "Water heater installed (year)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1980
+              },
+              {
+                "kind": "max",
+                "value": 2100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "plan",
+            "label": "Maintenance plan",
+            "parityType": "select",
+            "choices": [
+              "None",
+              "Annual drain care",
+              "Water heater flush"
+            ],
+            "choiceColors": {
+              "None": "slate",
+              "Annual drain care": "teal",
+              "Water heater flush": "orange"
+            },
+            "default": "None",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -151,6 +195,24 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Open jobs",
+            "parityType": "rollup",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Completed",
+                  "Cancelled"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +222,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +240,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -313,7 +383,10 @@
               "phone": "(509) 555-0174",
               "email": "tamsin.galloway@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-40d"
+              "since": "@today-40d",
+              "shutoff": "Basement, behind the furnace",
+              "heater_year": 2013,
+              "plan": "Water heater flush"
             }
           },
           {
@@ -325,7 +398,10 @@
               "phone": "(509) 555-0111",
               "email": "desmond.nakamura@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-95d"
+              "since": "@today-95d",
+              "shutoff": "Each unit: under kitchen sink; building main in alley meter box",
+              "heater_year": 2009,
+              "plan": "Annual drain care"
             }
           },
           {
@@ -337,7 +413,10 @@
               "phone": "(509) 555-0148",
               "email": "noor.underhill@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-150d"
+              "since": "@today-150d",
+              "shutoff": "Back hallway by the grease trap",
+              "heater_year": 2017,
+              "plan": "Annual drain care"
             }
           },
           {
@@ -349,7 +428,8 @@
               "phone": "(509) 555-0185",
               "email": "silas.delacroix@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-205d"
+              "since": "@today-205d",
+              "shutoff": "Ask site manager"
             }
           },
           {
@@ -361,7 +441,10 @@
               "phone": "(509) 555-0122",
               "email": "kasia.kellerman@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-260d"
+              "since": "@today-260d",
+              "shutoff": "Garage, left wall",
+              "heater_year": 2011,
+              "plan": "None"
             }
           },
           {
@@ -373,7 +456,10 @@
               "phone": "(509) 555-0159",
               "email": "tobias.salazar@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-315d"
+              "since": "@today-315d",
+              "shutoff": "Crawlspace hatch, front porch",
+              "heater_year": 2008,
+              "plan": "None"
             }
           },
           {
@@ -385,7 +471,10 @@
               "phone": "(509) 555-0196",
               "email": "greta.castellanos@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-370d"
+              "since": "@today-370d",
+              "shutoff": "Mop room, red handle",
+              "heater_year": 2019,
+              "plan": "Annual drain care"
             }
           },
           {
@@ -397,7 +486,10 @@
               "phone": "(509) 555-0133",
               "email": "percival.jankowski@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-425d"
+              "since": "@today-425d",
+              "shutoff": "Utility room off the lobby",
+              "heater_year": 2015,
+              "plan": "Annual drain care"
             }
           },
           {
@@ -409,7 +501,10 @@
               "phone": "(509) 555-0170",
               "email": "bronwyn.quillan@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-13d"
+              "since": "@today-13d",
+              "shutoff": "Under the stairs",
+              "heater_year": 2006,
+              "plan": "Water heater flush"
             }
           },
           {
@@ -421,7 +516,8 @@
               "phone": "(509) 555-0107",
               "email": "idris.zielinski@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-14d"
+              "since": "@today-14d",
+              "shutoff": "Laundry closet"
             }
           },
           {
@@ -433,7 +529,10 @@
               "phone": "(509) 555-0144",
               "email": "priyanka.grayson@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-15d"
+              "since": "@today-15d",
+              "shutoff": "Dry storage, low on the right",
+              "heater_year": 2020,
+              "plan": "None"
             }
           },
           {
@@ -445,7 +544,10 @@
               "phone": "(509) 555-0181",
               "email": "hamza.navarro@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-16d"
+              "since": "@today-16d",
+              "shutoff": "Boiler room, key with the super",
+              "heater_year": 2012,
+              "plan": "None"
             }
           }
         ]
@@ -573,6 +675,53 @@
               "Emergency": "amber"
             },
             "default": "Routine"
+          },
+          {
+            "key": "source",
+            "label": "How they found us",
+            "parityType": "select",
+            "choices": [
+              "Repeat customer",
+              "Referral",
+              "Web search",
+              "Home warranty company"
+            ],
+            "choiceColors": {
+              "Repeat customer": "green",
+              "Referral": "blue",
+              "Web search": "violet",
+              "Home warranty company": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "permit",
+            "label": "Permit",
+            "parityType": "select",
+            "choices": [
+              "Not needed",
+              "Applied",
+              "Approved",
+              "Inspected"
+            ],
+            "choiceColors": {
+              "Not needed": "slate",
+              "Applied": "amber",
+              "Approved": "blue",
+              "Inspected": "green"
+            },
+            "default": "Not needed",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "callback",
+            "label": "Callback",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "A return trip to fix our own work, not billed."
           },
           {
             "key": "tech",
@@ -892,348 +1041,391 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Leak repair - Underhill",
+              "job_name": "Dripping shower valve, upstairs bath",
               "status": "Completed",
               "customer": "custom-3",
               "job_type": "Leak repair",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@today-21d",
-              "quote": 250,
-              "parts_cost": 55,
-              "labor_cost": 130,
-              "hours": 2,
+              "quote": 265,
+              "parts_cost": 38,
+              "labor_cost": 120,
+              "hours": 1.75,
+              "source": "Repeat customer",
+              "permit": "Not needed",
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Drain clearing - Jankowski",
+              "job_name": "Main line backup, units 2 and 4",
               "status": "Completed",
               "customer": "custom-8",
               "job_type": "Drain clearing",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-4",
               "scheduled_on": "@today-16d",
-              "quote": 260,
-              "parts_cost": 15,
-              "labor_cost": 95,
-              "hours": 1.5,
+              "quote": 395,
+              "parts_cost": 0,
+              "labor_cost": 140,
+              "hours": 2,
+              "source": "Repeat customer",
+              "permit": "Not needed",
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Water heater replacement - Galloway",
+              "job_name": "50 gal gas heater swap, failed anode",
               "status": "Completed",
               "customer": "custom-1",
               "job_type": "Water heater replacement",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@today-12d",
-              "quote": 2430,
-              "parts_cost": 1460,
-              "labor_cost": 320,
-              "hours": 5,
+              "quote": 2480,
+              "parts_cost": 1310,
+              "labor_cost": 380,
+              "hours": 5.5,
+              "source": "Web search",
+              "permit": "Inspected",
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Toilet repair - Salazar",
+              "job_name": "Running toilet, hall bath",
               "status": "Completed",
               "customer": "custom-6",
               "job_type": "Toilet repair",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@today-9d",
-              "quote": 160,
-              "parts_cost": 50,
-              "labor_cost": 75,
-              "hours": 1.2,
+              "quote": 185,
+              "parts_cost": 22,
+              "labor_cost": 70,
+              "hours": 1,
+              "source": "Referral",
+              "permit": "Not needed",
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Burst pipe emergency - Grayson",
+              "job_name": "Frozen line split in crawlspace",
               "status": "Completed",
               "customer": "custom-11",
               "job_type": "Burst pipe emergency",
-              "priority": "Urgent",
+              "priority": "Emergency",
               "tech": "tm-4",
               "scheduled_on": "@today-6d",
-              "quote": 790,
-              "parts_cost": 235,
-              "labor_cost": 225,
-              "hours": 3.5,
+              "quote": 840,
+              "parts_cost": 96,
+              "labor_cost": 310,
+              "hours": 4,
+              "source": "Web search",
+              "permit": "Not needed",
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Faucet and fixture install - Delacroix",
+              "job_name": "Pull-down kitchen faucet + new supply lines",
               "status": "Completed",
               "customer": "custom-4",
               "job_type": "Faucet and fixture install",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@today-4d",
-              "quote": 440,
-              "parts_cost": 200,
-              "labor_cost": 95,
+              "quote": 465,
+              "parts_cost": 182,
+              "labor_cost": 90,
               "hours": 1.5,
+              "source": "Referral",
+              "permit": "Not needed",
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Sewer camera inspection - Quillan",
+              "job_name": "Camera the lateral before closing",
               "status": "Cancelled",
               "customer": "custom-9",
               "job_type": "Sewer camera inspection",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@today-8d",
-              "quote": 310,
-              "parts_cost": 15,
-              "labor_cost": 95,
-              "hours": 1.5
+              "quote": 325,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0,
+              "source": "Web search",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Bathroom rough-in - Nakamura",
+              "job_name": "Two-bath remodel rough-in, 3rd floor",
               "status": "On hold",
               "customer": "custom-2",
               "job_type": "Bathroom rough-in",
-              "priority": "Emergency",
+              "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-5d",
-              "quote": 4505,
-              "parts_cost": 1800,
-              "labor_cost": 1025,
-              "hours": 16
+              "quote": 6250,
+              "parts_cost": 1940,
+              "labor_cost": 2100,
+              "hours": 28,
+              "source": "Repeat customer",
+              "permit": "Applied"
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Leak repair - Castellanos",
+              "job_name": "Same shower valve still weeping",
               "status": "Scheduled",
-              "customer": "custom-7",
+              "customer": "custom-3",
               "job_type": "Leak repair",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-5",
               "scheduled_on": "@today-2d",
-              "quote": 250,
-              "parts_cost": 55,
-              "labor_cost": 130,
-              "hours": 2
+              "quote": 0,
+              "parts_cost": 12,
+              "labor_cost": 60,
+              "hours": 1,
+              "source": "Repeat customer",
+              "permit": "Not needed",
+              "callback": true
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Drain clearing - Navarro",
+              "job_name": "Floor drain slow by the dish pit",
               "status": "In progress",
               "customer": "custom-12",
               "job_type": "Drain clearing",
               "priority": "Urgent",
               "tech": "tm-3",
               "scheduled_on": "@mon",
-              "quote": 250,
-              "parts_cost": 10,
+              "quote": 275,
+              "parts_cost": 0,
               "labor_cost": 95,
               "hours": 1.5,
+              "source": "Home warranty company",
+              "permit": "Not needed",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Water heater replacement - Kellerman",
+              "job_name": "Tankless descale + new isolation valves",
               "status": "In progress",
               "customer": "custom-5",
               "job_type": "Water heater replacement",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@tue",
-              "quote": 2385,
-              "parts_cost": 1430,
-              "labor_cost": 320,
-              "hours": 5
+              "quote": 620,
+              "parts_cost": 145,
+              "labor_cost": 190,
+              "hours": 2.5,
+              "source": "Repeat customer",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Toilet repair - Zielinski",
+              "job_name": "Toilet rocking, wax seal and flange",
               "status": "Scheduled",
               "customer": "custom-10",
               "job_type": "Toilet repair",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@wed",
-              "quote": 150,
-              "parts_cost": 45,
-              "labor_cost": 75,
-              "hours": 1.2,
+              "quote": 240,
+              "parts_cost": 31,
+              "labor_cost": 85,
+              "hours": 1.25,
+              "source": "Referral",
+              "permit": "Not needed",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Burst pipe emergency - Underhill",
+              "job_name": "Hose bib replacement before first frost",
               "status": "Scheduled",
               "customer": "custom-3",
-              "job_type": "Burst pipe emergency",
+              "job_type": "Leak repair",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@thu",
-              "quote": 755,
-              "parts_cost": 225,
-              "labor_cost": 225,
-              "hours": 3.5
+              "quote": 210,
+              "parts_cost": 41,
+              "labor_cost": 70,
+              "hours": 1,
+              "source": "Repeat customer",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Faucet and fixture install - Jankowski",
+              "job_name": "Lav faucets in two lobby restrooms",
               "status": "Scheduled",
               "customer": "custom-8",
               "job_type": "Faucet and fixture install",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@fri",
-              "quote": 430,
-              "parts_cost": 195,
-              "labor_cost": 95,
-              "hours": 1.5,
+              "quote": 780,
+              "parts_cost": 356,
+              "labor_cost": 190,
+              "hours": 3,
+              "source": "Repeat customer",
+              "permit": "Not needed",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Sewer camera inspection - Galloway",
+              "job_name": "Roots in the lateral? Camera first",
               "status": "New request",
               "customer": "custom-1",
               "job_type": "Sewer camera inspection",
-              "priority": "Emergency",
+              "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@sat",
-              "quote": 300,
-              "parts_cost": 15,
+              "quote": 325,
+              "parts_cost": 0,
               "labor_cost": 95,
-              "hours": 1.5,
+              "hours": 1.25,
+              "source": "Repeat customer",
+              "permit": "Not needed",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Bathroom rough-in - Salazar",
+              "job_name": "Basement half-bath rough-in quote",
               "status": "New request",
               "customer": "custom-6",
               "job_type": "Bathroom rough-in",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@sun",
-              "quote": 4410,
-              "parts_cost": 1765,
-              "labor_cost": 1025,
-              "hours": 16
+              "quote": 3900,
+              "parts_cost": 1120,
+              "labor_cost": 1360,
+              "hours": 18,
+              "source": "Referral",
+              "permit": "Applied"
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Leak repair - Grayson",
+              "job_name": "Ceiling stain under the kitchen",
               "status": "Scheduled",
               "customer": "custom-11",
               "job_type": "Leak repair",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-4",
               "scheduled_on": "@tue+1w",
-              "quote": 245,
-              "parts_cost": 50,
-              "labor_cost": 130,
-              "hours": 2
+              "quote": 295,
+              "parts_cost": 40,
+              "labor_cost": 120,
+              "hours": 1.75,
+              "source": "Repeat customer",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Drain clearing - Delacroix",
+              "job_name": "Grease trap line jetting, quarterly",
               "status": "New request",
               "customer": "custom-4",
               "job_type": "Drain clearing",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@thu+1w",
-              "quote": 240,
-              "parts_cost": 10,
-              "labor_cost": 95,
-              "hours": 1.5
+              "quote": 450,
+              "parts_cost": 0,
+              "labor_cost": 170,
+              "hours": 2.5,
+              "source": "Repeat customer",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Water heater replacement - Quillan",
+              "job_name": "40 gal electric heater, leaking at base",
               "status": "Scheduled",
               "customer": "custom-9",
               "job_type": "Water heater replacement",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-3",
               "scheduled_on": "@today",
-              "quote": 2335,
-              "parts_cost": 1400,
-              "labor_cost": 320,
-              "hours": 5,
+              "quote": 1985,
+              "parts_cost": 860,
+              "labor_cost": 330,
+              "hours": 4.5,
+              "source": "Repeat customer",
+              "permit": "Approved",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Toilet repair - Nakamura",
+              "job_name": "Ghost-flushing toilet, unit 6",
               "status": "Scheduled",
               "customer": "custom-2",
               "job_type": "Toilet repair",
-              "priority": "Urgent",
+              "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today+2d",
-              "quote": 145,
-              "parts_cost": 45,
-              "labor_cost": 75,
-              "hours": 1.2
+              "quote": 165,
+              "parts_cost": 18,
+              "labor_cost": 70,
+              "hours": 1,
+              "source": "Repeat customer",
+              "permit": "Not needed"
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Burst pipe emergency - Castellanos",
+              "job_name": "Gas smell near the range: check and repair",
               "status": "Scheduled",
               "customer": "custom-7",
-              "job_type": "Burst pipe emergency",
-              "priority": "Routine",
+              "job_type": "Leak repair",
+              "priority": "Emergency",
               "tech": "tm-5",
               "scheduled_on": "@today+4d",
-              "quote": 725,
-              "parts_cost": 220,
-              "labor_cost": 225,
-              "hours": 3.5
+              "quote": 380,
+              "parts_cost": 25,
+              "labor_cost": 140,
+              "hours": 2,
+              "source": "Web search",
+              "permit": "Not needed"
             }
           }
         ],
@@ -1284,6 +1476,25 @@
               "Fixtures": "teal",
               "Consumables": "orange"
             }
+          },
+          {
+            "key": "kept_on",
+            "label": "Kept on",
+            "parityType": "select",
+            "choices": [
+              "Van 1",
+              "Van 2",
+              "Van 3",
+              "Shop shelf"
+            ],
+            "choiceColors": {
+              "Van 1": "blue",
+              "Van 2": "teal",
+              "Van 3": "violet",
+              "Shop shelf": "slate"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "unit",
@@ -1396,7 +1607,8 @@
               "on_hand": 22,
               "reorder_at": 8,
               "supplier": "Cascade Plumbing Supply",
-              "counted_on": "@today-3d"
+              "counted_on": "@today-3d",
+              "kept_on": "Van 1"
             }
           },
           {
@@ -1409,7 +1621,8 @@
               "on_hand": 14,
               "reorder_at": 6,
               "supplier": "Cascade Plumbing Supply",
-              "counted_on": "@today-5d"
+              "counted_on": "@today-5d",
+              "kept_on": "Van 2"
             }
           },
           {
@@ -1422,7 +1635,8 @@
               "on_hand": 40,
               "reorder_at": 15,
               "supplier": "Cascade Plumbing Supply",
-              "counted_on": "@today-7d"
+              "counted_on": "@today-7d",
+              "kept_on": "Van 3"
             }
           },
           {
@@ -1432,10 +1646,11 @@
               "category": "Fittings",
               "unit": "each",
               "unit_cost": 3,
-              "on_hand": 35,
+              "on_hand": 14,
               "reorder_at": 20,
               "supplier": "Inland Pipe and Fitting",
-              "counted_on": "@today-9d"
+              "counted_on": "@today-9d",
+              "kept_on": "Van 1"
             }
           },
           {
@@ -1448,7 +1663,8 @@
               "on_hand": 5,
               "reorder_at": 4,
               "supplier": "Inland Pipe and Fitting",
-              "counted_on": "@today-11d"
+              "counted_on": "@today-11d",
+              "kept_on": "Shop shelf"
             }
           },
           {
@@ -1461,7 +1677,8 @@
               "on_hand": 2,
               "reorder_at": 2,
               "supplier": "Evergreen Appliance Wholesale",
-              "counted_on": "@today-13d"
+              "counted_on": "@today-13d",
+              "kept_on": "Shop shelf"
             }
           },
           {
@@ -1474,7 +1691,8 @@
               "on_hand": 3,
               "reorder_at": 3,
               "supplier": "Evergreen Appliance Wholesale",
-              "counted_on": "@today-15d"
+              "counted_on": "@today-15d",
+              "kept_on": "Shop shelf"
             }
           },
           {
@@ -1487,7 +1705,8 @@
               "on_hand": 2,
               "reorder_at": 1,
               "supplier": "Cascade Plumbing Supply",
-              "counted_on": "@today-17d"
+              "counted_on": "@today-17d",
+              "kept_on": "Van 2"
             }
           },
           {
@@ -1500,7 +1719,8 @@
               "on_hand": 4,
               "reorder_at": 3,
               "supplier": "Evergreen Appliance Wholesale",
-              "counted_on": "@today-19d"
+              "counted_on": "@today-19d",
+              "kept_on": "Shop shelf"
             }
           },
           {
@@ -1513,7 +1733,36 @@
               "on_hand": 60,
               "reorder_at": 25,
               "supplier": "Inland Pipe and Fitting",
-              "counted_on": "@today-21d"
+              "counted_on": "@today-21d",
+              "kept_on": "Van 3"
+            }
+          },
+          {
+            "key": "part-11",
+            "values": {
+              "part_name": "SharkBite-style 1/2 in push coupling",
+              "category": "Fittings",
+              "kept_on": "Van 2",
+              "unit": "each",
+              "unit_cost": 7,
+              "on_hand": 6,
+              "reorder_at": 10,
+              "supplier": "Inland Pipe and Fitting",
+              "counted_on": "@today-2d"
+            }
+          },
+          {
+            "key": "part-12",
+            "values": {
+              "part_name": "Toilet flange repair ring",
+              "category": "Toilet",
+              "kept_on": "Van 3",
+              "unit": "each",
+              "unit_cost": 11,
+              "on_hand": 5,
+              "reorder_at": 3,
+              "supplier": "Cascade Plumbing Supply",
+              "counted_on": "@today-4d"
             }
           }
         ]
@@ -1699,7 +1948,7 @@
               "status": "Overdue",
               "job": "job-1",
               "customer": "custom-3",
-              "amount": 280.0,
+              "amount": 318.45,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1711,7 +1960,7 @@
               "status": "Paid",
               "job": "job-2",
               "customer": "custom-8",
-              "amount": 331.8,
+              "amount": 468.2,
               "issued_on": "@today-16d",
               "due_on": "@today-2d",
               "paid_on": "@today-12d",
@@ -1725,11 +1974,11 @@
               "status": "Paid",
               "job": "job-3",
               "customer": "custom-1",
-              "amount": 3013.2,
+              "amount": 1240.0,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
               "paid_on": "@today-8d",
-              "method": "Bank transfer"
+              "method": "Card"
             }
           },
           {
@@ -1739,33 +1988,71 @@
               "status": "Sent",
               "job": "job-4",
               "customer": "custom-6",
-              "amount": 204.2,
+              "amount": 226.3,
               "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "due_on": "@today"
             }
           },
           {
             "key": "invoic-5",
             "values": {
               "invoice_name": "INV-1044",
-              "status": "Sent",
+              "status": "Overdue",
               "job": "job-5",
               "customer": "custom-11",
-              "amount": 932.2,
+              "amount": 1012.75,
               "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "due_on": "@today-1d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
               "invoice_name": "INV-1045",
-              "status": "Draft",
+              "status": "Sent",
               "job": "job-6",
               "customer": "custom-4",
-              "amount": 570.6,
+              "amount": 552.6,
               "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "due_on": "@today+3d"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "INV-1046",
+              "status": "Void",
+              "job": "job-7",
+              "customer": "custom-9",
+              "amount": 95.0,
+              "issued_on": "@today-9d",
+              "due_on": "@today+5d"
+            }
+          },
+          {
+            "key": "invoic-8",
+            "values": {
+              "invoice_name": "INV-1047",
+              "status": "Draft",
+              "job": "job-8",
+              "customer": "custom-2",
+              "amount": 3125.0,
+              "issued_on": "@today-3d",
+              "due_on": "@today+11d"
+            }
+          },
+          {
+            "key": "invoic-9",
+            "values": {
+              "invoice_name": "INV-1048",
+              "status": "Paid",
+              "job": "job-11",
+              "customer": "custom-5",
+              "amount": 310.0,
+              "issued_on": "@today-2d",
+              "due_on": "@today+12d",
+              "paid_on": "@today-1d",
+              "method": "Bank transfer"
             }
           }
         ]
@@ -2241,7 +2528,7 @@
         "Kettle Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2263,12 +2550,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the shop from one page. Emergency calls land on the Jobs board, the dispatcher assigns a plumber, and Mark done closes the job. Parts shows what to restock on each van; Invoices shows who still owes you. Open the Dashboard first thing each morning."
+              "text": "Start each morning on the Dashboard: what is late, who is on which van, and who still owes you. New calls go on the Jobs board as New request; the dispatcher gives each one a plumber and a time. Mark done stamps the finish date. Invoices that pass their due date move to Overdue, and the customer's Awaiting payment total includes them."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2665,6 +2958,280 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "plumbing-company-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This page explains, in ten minutes, how the shop's work flows through this workspace. Read it once, then share it with the dispatcher and each plumber."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": every home, landlord, restaurant and property manager you serve, with where the main shutoff is, how old their water heater is, and whether they are on a maintenance plan. Each card adds up what you have billed them, what they still owe, and how many jobs are open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Jobs",
+              "bold": true
+            },
+            {
+              "text": ": every call, from a running toilet to a two-bath rough-in. A job carries the plumber, the date, the price, parts and labor cost, and the margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Parts and van stock",
+              "bold": true
+            },
+            {
+              "text": ": what is on each van and on the shop shelf, its cost, and when it needs reordering."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": what you billed, what has been paid, and what is late."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A job from first call to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The call comes in. The dispatcher adds a job on the Jobs board (or the customer uses the Request a job form) and it lands as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The dispatcher picks the lead plumber, sets the date and moves it to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": ". The plumber can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " to take it, and it then shows in their own Mine list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the day, the plumber opens the job sheet, works the checklist, and enters parts cost and hours before leaving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " closes the job and stamps today's date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The office raises the invoice and sets it to "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": ". If the due date passes, set it to "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": ". The customer's "
+            },
+            {
+              "text": "Awaiting payment",
+              "bold": true
+            },
+            {
+              "text": " counts both, so nothing late hides."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When money arrives, "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard. Clear overdue jobs first, then call anyone on the Awaiting payment list who is past due"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: check tomorrow on the Jobs calendar and confirm with customers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: van restock, see the restock page"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: look at Callbacks and Thin margins with the team"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the work types, priorities and neighborhoods to match your area. Add your real vans in "
+            },
+            {
+              "text": "Kept on",
+              "bold": true
+            },
+            {
+              "text": ". Delete the sample customers once you have entered ten of your own. Nothing here needs special setup: type into any cell, drag cards between columns, and every total updates by itself."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "plumbing-company-hq",
       "title": "Dashboard",
@@ -2679,12 +3246,12 @@
           "type": "callout",
           "text": [
             {
-              "text": "Open jobs, money in and money owed. Overdue jobs and invoices need a call today."
+              "text": "The three numbers that run a plumbing shop: jobs still open, money still owed (sent and overdue invoices together), and callbacks, the return trips you do not get paid for."
             }
           ],
           "background": "gray",
           "props": {
-            "icon": "ChartBar"
+            "icon": "Lightbulb"
           }
         },
         {
@@ -2923,6 +3490,83 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Callbacks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "Callbacks",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "callback": true
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
         }
       ]
     },
@@ -2938,7 +3582,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Water damage grows by the hour. The first five minutes on the phone decide how bad the day gets."
+              "text": "Water damage grows by the hour, and so does the customer's panic. A calm, complete first call saves the house and wins a customer for twenty years."
             }
           ],
           "background": "blue",
@@ -2950,7 +3594,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On the phone"
+              "text": "The first two minutes on the phone"
             }
           ],
           "props": {
@@ -2961,7 +3605,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask first if anyone is hurt or if water is near electrical outlets."
+              "text": "Ask if anyone is hurt and whether water is near outlets, a panel or light fixtures. If yes, tell them to stay out of that room and to shut the breaker only if they can reach the panel from a dry floor."
             }
           ]
         },
@@ -2969,7 +3613,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk the caller to the main shutoff and have them close it."
+              "text": "Get them to the main shutoff. Look up the customer: if they are already in Customers, read them the "
+            },
+            {
+              "text": "Main shutoff location",
+              "bold": true
+            },
+            {
+              "text": " you saved last time. If not, the usual spots are the basement wall facing the street, a crawlspace near the front, a garage wall, or the meter box at the curb."
             }
           ]
         },
@@ -2977,7 +3628,23 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Take the address, a callback number and two photos if they can send them."
+              "text": "If the leak is on the hot side only, the valve on the cold inlet at the top of the water heater will stop it without shutting off the whole house."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get the address, a callback number, gate or lockbox codes, and ask for two photos by text: the leak and the area under it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell them what happens next and when. Never promise an arrival time you cannot keep."
             }
           ]
         },
@@ -2996,7 +3663,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pick the nearest plumber with a loaded van."
+              "text": "Add the call on the Jobs board as New request with priority "
+            },
+            {
+              "text": "Emergency",
+              "bold": true
+            },
+            {
+              "text": ", then set Scheduled for today."
             }
           ]
         },
@@ -3004,7 +3678,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Text the customer the plumber name and a 30 minute window."
+              "text": "Pick the plumber, not the van: the nearest person who can solder copper and crimp PEX, with a dry-vac and a moisture meter on board."
             }
           ]
         },
@@ -3012,7 +3686,100 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the job Emergency priority and Scheduled for today."
+              "text": "Text the customer the plumber's name and a 30-minute window. If the window slips, the dispatcher calls, not the plumber."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If a second emergency lands, move the routine job, never the emergency. Call that routine customer yourself to rebook."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Water off and confirmed off at a fixture"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos before any wall or ceiling is opened"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Moisture readings written on the job sheet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Temporary repair or permanent repair agreed with the customer, with the price, before work starts"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Old pipe kept for the customer if they want to show their insurer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example: a split line in a crawlspace"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A customer calls at 6:40 on a January morning: water in the basement, no idea where it comes from. The dispatcher talks her to the shutoff in the crawlspace hatch, books Keisha for 7:30, and texts the window. Keisha finds a frozen split on the cold line, replaces two feet with PEX and a pair of couplings, and insulates the run. Parts were under a hundred dollars; the job was four hours with drying. The invoice goes out from the van before she leaves."
             }
           ]
         },
@@ -3031,7 +3798,14 @@
           "type": "text",
           "text": [
             {
-              "text": "If the damage is large, tell the customer to call their insurer and give them a written list of what was found. Do not guess at coverage."
+              "text": "If the damage is large, tell the customer to call their insurer and give them a written list of what was found and what was replaced. Do not guess what their policy covers. Note the cause on the job so the next plumber knows the history of that house. If the same leak brings you back within thirty days, tick "
+            },
+            {
+              "text": "Callback",
+              "bold": true
+            },
+            {
+              "text": " on the new job: the Dashboard counts them, and a rising count usually points to a training or parts problem, not bad luck."
             }
           ]
         }
@@ -3049,7 +3823,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A standard swap takes four to five hours. Plan the truck and the permit before the day."
+              "text": "A standard tank swap is a half-day job that goes wrong in the same three places: the wrong size heater on the van, no permit, and venting or gas lines that are not to code. Sort all three before the day."
             }
           ],
           "background": "blue",
@@ -3061,7 +3835,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The day before"
+              "text": "Before the day"
             }
           ],
           "props": {
@@ -3072,7 +3846,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm the heater size and fuel type."
+              "text": "Look up the house in Customers. "
+            },
+            {
+              "text": "Water heater installed (year)",
+              "bold": true
+            },
+            {
+              "text": " tells you the age; most tanks give out between 8 and 12 years."
             }
           ]
         },
@@ -3080,7 +3861,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the permit is filed with the city."
+              "text": "Confirm fuel (gas or electric), capacity, height, and venting. A photo of the data plate answers most of it."
             }
           ]
         },
@@ -3088,7 +3869,30 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Load the heater, expansion tank, new supply lines and venting."
+              "text": "Check the permit. In most places a replacement needs one. Set "
+            },
+            {
+              "text": "Permit",
+              "bold": true
+            },
+            {
+              "text": " on the job to Applied the day you file, and to Approved when it comes back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reserve the heater. Parts shows how many are on the shelf; if the count is at or under the reorder point, call the supplier the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Load the van: expansion tank, gas flex connector, dielectric unions, a new drain pan, seismic straps where they are required, and a dolly."
             }
           ]
         },
@@ -3096,7 +3900,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On site"
+              "text": "On the day"
             }
           ],
           "props": {
@@ -3104,34 +3908,87 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Shut off water and gas or power and drain the old tank."
+              "text": "Shut off gas or the breaker, then the cold supply"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Set the new unit, connect, test for leaks and light it."
+              "text": "Drain the old tank to the floor drain or outside, never into the yard next to the foundation"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Set the temperature with the customer and show the shutoffs."
+              "text": "Set the new tank in a pan, strap it, and connect water lines with unions"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fit or replace the expansion tank and check the pressure matches the house pressure"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gas: leak-test every joint with solution. Electric: fill the tank completely before power is turned back on"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the draft hood or the power vent, then the relief valve discharge line runs down to within six inches of the floor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Run a hot tap until the water is hot, and show the customer the temperature setting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Wrap up"
+              "text": "Pricing it"
             }
           ],
           "props": {
@@ -3142,7 +3999,75 @@
           "type": "text",
           "text": [
             {
-              "text": "Haul the old tank, photograph the installed unit and its label, and enter parts and hours before you leave."
+              "text": "Price the swap as one flat amount the customer can say yes to: heater, standard parts, haul-away, permit and labor. Put the real parts cost and hours on the job so the "
+            },
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": " column tells the truth. A good swap should leave at least thirty percent margin; the Margin check marks anything under twenty percent as Thin. Add-ons such as a new gas shutoff, an expansion tank or a code-required pan are quoted separately and written on the job sheet."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A family's 50-gallon gas tank fails at eleven years with rust at the base. The office quotes a flat price on the phone from the data-plate photo, files the permit that afternoon, and Bram swaps it the next morning in five and a half hours. Parts were about half the price; margin lands above forty percent. After the inspection passes, the office sets Permit to Inspected and offers the yearly "
+            },
+            {
+              "text": "Water heater flush",
+              "bold": true
+            },
+            {
+              "text": " plan, which shows on the customer's card from then on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the swap"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update the customer's water heater year so the next call starts with the right facts."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book the inspection and be there for it if the inspector asks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Haul the old tank to the recycler; scrap steel often pays for the trip."
             }
           ]
         }
@@ -3160,7 +4085,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plumbers lose more time to a missing fitting than to any hard repair. Restock every Friday."
+              "text": "A plumber who drives to the supply house in the middle of the day loses an hour of billable time and often the next job. Ten minutes on Friday afternoon fixes that."
             }
           ],
           "background": "blue",
@@ -3172,7 +4097,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Every Friday, before the vans go home"
             }
           ],
           "props": {
@@ -3183,7 +4108,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count each van against its par list."
+              "text": "Each plumber opens Parts, filters to their own van with "
+            },
+            {
+              "text": "Kept on",
+              "bold": true
+            },
+            {
+              "text": ", and counts the bins. Type the real count over the old one and set Last counted to the day."
             }
           ]
         },
@@ -3191,7 +4123,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Update On hand on the Parts list."
+              "text": "Anything that shows "
+            },
+            {
+              "text": "Reorder",
+              "bold": true
+            },
+            {
+              "text": " goes on one order per supplier. The office sends the orders before 4 pm so they are on the will-call shelf by 7 am Monday."
             }
           ]
         },
@@ -3199,15 +4138,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Put every Reorder row on the supplier call."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Load fresh stock before the weekend on-call plumber leaves."
+              "text": "Shop-shelf items, such as water heaters and expansion tanks, are counted by the office. Never let water heaters drop below two: they are the jobs that pay for the week."
             }
           ]
         },
@@ -3215,7 +4146,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Par levels"
+              "text": "What every van carries"
             }
           ],
           "props": {
@@ -3223,108 +4154,137 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Toilet: wax rings, fill valves, flappers, closet bolts, a flange repair ring"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Water: 1/2 and 3/4 in copper and PEX fittings, push couplings, ball valves, supply lines in three lengths"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Drain: a hand auger and a 50 ft cable machine, trap kits, test balls"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Consumables: thread tape, pipe dope, flux, solder, shop rags, floor covers and shoe covers"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Safety: gas leak detector, moisture meter, a first aid kit and a fire extinguisher"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting reorder points"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Item"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Keep per van"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Reorder at"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Supply lines"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "10"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "4"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Copper elbows"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "12"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "6"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Wax rings"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "4"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "2"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Teflon tape"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "10"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "4"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Start with how many you use in two weeks, then add what one bad day eats. If you use six fill valves a fortnight and a big apartment call can use four, set the reorder point at ten. Review the points every quarter: the Stock value column shows how much money is sitting on shelves, and a shelf full of slow parts is cash you cannot spend."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something runs out on a job"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tell the dispatcher before leaving the job"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check whether another van has it nearby before driving to the supplier"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write the part on the job so its cost lands in the margin"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Raise the reorder point if it happens twice in a month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Friday Keisha counts Van 2 and finds six push couplings against a reorder point of ten. The row shows Reorder, and the office adds a box to the Inland Pipe order. On Monday a burst pipe call needs four; she has them, and the job is done in one trip."
+            }
+          ]
         }
       ]
     }

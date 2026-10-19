@@ -35,6 +35,7 @@ export function ConversationsColumn({
   busy,
   runningId,
   hasReviewer,
+  archived,
   onReview,
   onReviewMany,
   onCapture,
@@ -45,6 +46,7 @@ export function ConversationsColumn({
   busy: boolean;
   runningId: string | null;
   hasReviewer: boolean;
+  archived: boolean;
   onReview: (id: string) => void;
   onReviewMany: (ids: string[]) => void;
   onCapture: (id: string) => void;
@@ -55,6 +57,8 @@ export function ConversationsColumn({
   const reviewed = reviewState(steps);
   const all = conversations ?? [];
   const shown = filter === "chat" ? all.filter((c) => c.isChat) : all;
+  // Why Review is off, in one short reason (archived wins over a missing reviewer).
+  const blocked = archived ? "Archived: restore the trial to run reviews" : hasReviewer ? null : "Choose a reviewer agent first";
   const next = shown.filter((c) => !reviewed.has(c.id)).slice(0, count);
 
   return (
@@ -79,14 +83,15 @@ export function ConversationsColumn({
           <Button
             variant="primary"
             icon={<Play />}
-            disabled={!hasReviewer || next.length === 0}
-            title={hasReviewer ? undefined : "Choose a reviewer agent first"}
+            disabled={Boolean(blocked) || next.length === 0}
+            title={blocked ?? undefined}
             onClick={() => onReviewMany(next.map((c) => c.id))}
           >
             Review next {next.length}
           </Button>
         )}
       </div>
+      {archived ? <span className="type-caption text-muted-foreground">{blocked}</span> : null}
       {conversations === null ? <RegionSkeleton shape="rows" count={6} twoLine aria-label="Reading conversations" /> : null}
       {conversations !== null && shown.length === 0 ? (
         <EmptyState icon={<MessagesSquare />} title="No conversations" line="This person has no chats of this kind." />
@@ -124,8 +129,8 @@ export function ConversationsColumn({
                 />
                 <Button
                   variant="quiet"
-                  disabled={busy || !hasReviewer}
-                  title={hasReviewer ? undefined : "Choose a reviewer agent first"}
+                  disabled={busy || Boolean(blocked)}
+                  title={blocked ?? undefined}
                   onClick={() => onReview(c.id)}
                 >
                   Review

@@ -32,12 +32,12 @@ jest.mock("@/lib/toast", () => ({
 
 const openBar = jest.fn();
 jest.mock("@/features/overlays/definitions/knowledgeCommandBar.overlay", () => ({
-  useOpenKnowledgeCommandBar: () => openBar,
+  createKnowledgeCommandBarOpener: () => openBar,
 }));
 
 const openPickerWindow = jest.fn();
 jest.mock("@/features/overlays/definitions/resourcePickerWindow.overlay", () => ({
-  useOpenResourcePickerWindow: () => openPickerWindow,
+  createResourcePickerWindowOpener: () => openPickerWindow,
 }));
 
 const note = { id: "note-1", label: "Grant budget assumptions", content: "…" };
@@ -64,12 +64,20 @@ afterEach(() => {
   container.remove();
 });
 
-function clickSearchRow() {
+/** The bar and picker openers load their modules on first use (useLazyAppOpener); let that import settle. */
+async function settleLazyOpeners() {
+  await act(async () => {
+    for (let i = 0; i < 10; i += 1) await Promise.resolve();
+  });
+}
+
+async function clickSearchRow() {
   const row = container.querySelector<HTMLButtonElement>(
     '[data-testid="picker-knowledge-search"]',
   );
   expect(row).not.toBeNull();
   act(() => row!.click());
+  await settleLazyOpeners();
 }
 
 it("opens the ⌘K bar with attach-here as the primary action and the picker's own commands", async () => {
@@ -86,7 +94,7 @@ it("opens the ⌘K bar with attach-here as the primary action and the picker's o
     );
   });
 
-  clickSearchRow();
+  await clickSearchRow();
 
   expect(onClose).toHaveBeenCalledTimes(1);
   expect(openBar).toHaveBeenCalledTimes(1);
@@ -113,7 +121,7 @@ it("opens the ⌘K bar with attach-here as the primary action and the picker's o
   expect(onResourceSelected).toHaveBeenCalledWith({ type: "note", data: note });
 });
 
-it("every host keeps Upload / URL / Voice / Tools as commands wired to ITS OWN handlers", () => {
+it("every host keeps Upload / URL / Voice / Tools as commands wired to ITS OWN handlers", async () => {
   const onResourceSelected = jest.fn();
   const onResourceDeselected = jest.fn();
   act(() => {
@@ -127,13 +135,14 @@ it("every host keeps Upload / URL / Voice / Tools as commands wired to ITS OWN h
       />,
     );
   });
-  clickSearchRow();
+  await clickSearchRow();
   const opts = openBar.mock.calls[0][0] as OpenKnowledgeCommandBarOptions;
   const labels = (opts.commands ?? []).map((c) => c.label);
   for (const label of ["Upload or browse files", "Web page", "YouTube", "Voice Pad", "Tools"]) {
     expect(labels).toContain(label);
   }
   opts.commands!.find((c) => c.label === "Voice Pad")!.run();
+  await settleLazyOpeners();
   expect(openPickerWindow).toHaveBeenCalledWith(
     expect.objectContaining({
       initialView: "audio",
@@ -144,7 +153,7 @@ it("every host keeps Upload / URL / Voice / Tools as commands wired to ITS OWN h
   );
 });
 
-it("does not offer kinds the host cannot take", () => {
+it("does not offer kinds the host cannot take", async () => {
   act(() => {
     root.render(
       <ResourcePickerMenu
@@ -154,7 +163,7 @@ it("does not offer kinds the host cannot take", () => {
       />,
     );
   });
-  clickSearchRow();
+  await clickSearchRow();
   const opts = openBar.mock.calls[0][0] as OpenKnowledgeCommandBarOptions;
   expect(opts.attach!.accepts({ entity: "note", id: "n", title: "x" })).toBe(false);
   expect(opts.attach!.accepts({ entity: "file", id: "f", title: "x.pdf" })).toBe(true);

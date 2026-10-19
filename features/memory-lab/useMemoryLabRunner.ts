@@ -177,17 +177,22 @@ export function useMemoryLabRunner(args: {
     return finish(pending);
   }
 
-  async function guarded<T>(work: () => Promise<T>): Promise<T | null> {
+  // Promise chaining, not try…finally: the React Compiler skips a component that uses `finally`.
+  function guarded<T>(work: () => Promise<T>): Promise<T | null> {
     setError(null);
     stopRef.current = false;
-    try {
-      return await work();
-    } catch (e) {
-      setError(extractErrorMessage(e));
-      return null;
-    } finally {
-      setPhase(null);
-    }
+    return work()
+      .then(
+        (value): T | null => value,
+        (e: unknown): T | null => {
+          setError(extractErrorMessage(e));
+          return null;
+        },
+      )
+      .then((value) => {
+        setPhase(null);
+        return value;
+      });
   }
 
   return {

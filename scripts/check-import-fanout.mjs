@@ -172,7 +172,7 @@ function selfTest() {
   const boot = {
     "app/layout.tsx": 'import type { OverlayRenderProps } from "@ai-matrx/summon/react";\nimport { SummonRoot } from "@ai-matrx/summon/root";',
     "providers/Store.tsx": 'import { openOverlay } from "@ai-matrx/summon/open";\nimport { defineOverlay } from "@ai-matrx/summon/define";',
-    "lib/redux/rootReducer.ts": 'import type { SummonState } from "@ai-matrx/summon";',
+    "lib/redux/rootReducer.ts": 'import type { OverlayRegistry } from "@ai-matrx/summon";',
     "features/notes/NotesPage.tsx": 'import { WindowPanel } from "@ai-matrx/summon/window";',
   };
   const bootRd = (f) => boot[f];

@@ -35,22 +35,18 @@ function NewTrial({ onCreated }: { onCreated: (trial: MemoryTrial) => void }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const create = async () => {
+  // Promise chaining, not try…finally: the React Compiler skips a component that uses `finally`.
+  const create = () => {
     if (!person) return;
     setSaving(true);
     setError(null);
-    try {
-      const trial = await createTrial({
-        title: title.trim() || `${person.displayName ?? person.email ?? "Person"} — trial`,
-        subjectUserId: person.id,
-        subjectLabel: personLabel(person),
-      });
-      onCreated(trial);
-    } catch (e) {
-      setError(extractErrorMessage(e));
-    } finally {
-      setSaving(false);
-    }
+    createTrial({
+      title: title.trim() || `${person.displayName ?? person.email ?? "Person"} — trial`,
+      subjectUserId: person.id,
+      subjectLabel: personLabel(person),
+    })
+      .then(onCreated, (e: unknown) => setError(extractErrorMessage(e)))
+      .then(() => setSaving(false));
   };
 
   return (

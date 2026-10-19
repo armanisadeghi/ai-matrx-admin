@@ -22,8 +22,8 @@ import { useEffect } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsOverlayOpen } from "@ai-matrx/summon/open";
 import { isSearchKeyClaimed } from "@/features/shell/hooks/searchKeyClaim";
-import { useOpenKnowledgeCommandBar } from "@/features/overlays/definitions/knowledgeCommandBar.overlay";
 import { editorOwnsKeyEvent } from "@ai-matrx/rich-content/editor/format/editor-keys";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 export function isCommandBarHotkey(e: KeyboardEvent): boolean {
   return (
@@ -35,7 +35,9 @@ export function isCommandBarHotkey(e: KeyboardEvent): boolean {
 }
 
 export default function CommandBarHotkey() {
-  const openBar = useOpenKnowledgeCommandBar();
+  const openBar = useLazyAppOpener("knowledgeCommandBar", () =>
+    import("@/features/overlays/definitions/knowledgeCommandBar.overlay").then((m) => m.createKnowledgeCommandBarOpener),
+  );
   const isOpen = useAppSelector((s) => selectIsOverlayOpen(s, "knowledgeCommandBar"));
 
   useEffect(() => {

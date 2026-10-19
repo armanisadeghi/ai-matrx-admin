@@ -53,7 +53,7 @@ jest.mock("@/features/organizations/organizationsIAmIn", () => ({
   liveOrganizationIdsAmong: (ids: readonly string[]) => mockLiveOrganizationIdsAmong(ids),
 }));
 jest.mock("@/features/overlays/definitions/connectorConsentDialog.overlay", () => ({
-  useOpenConnectorConsentDialog: () => mockOpenConsent,
+  createConnectorConsentDialogOpener: () => mockOpenConsent,
 }));
 // The adapter's other imports (consent runner) are not under test.
 jest.mock("@/features/connectors/google-adapter", () => {

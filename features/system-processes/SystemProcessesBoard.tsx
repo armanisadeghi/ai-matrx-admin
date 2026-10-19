@@ -6,8 +6,8 @@ import { RefreshCw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table";
-import { readOf } from "@ai-matrx/design-system";
-import Link from "@/components/navigation/AppLink";
+import { readOf, RecordId } from "@ai-matrx/design-system";
+import { formatCount } from "@ai-matrx/kit/format";
 import { KpiGrid, KpiTile, type KpiTone } from "@/components/official/kpi/KpiTile";
 import { fetchQueue, STATES, type QueueItem, type QueueState } from "./systemProcesses";
 
@@ -57,9 +57,7 @@ const COLUMNS: MatrxColumnDef<QueueItem>[] = [
     filter: "text",
     cell: (r) =>
       r.subjectId ? (
-        <Link href={`/chat/${r.subjectId}`} className="underline" target="_blank">
-          {r.subjectId}
-        </Link>
+        <RecordId value={r.subjectId} label="Conversation" token="conversation" />
       ) : (
         "—"
       ),
@@ -109,7 +107,7 @@ export function SystemProcessesBoard() {
           <KpiTile
             key={s}
             label={STATE_LABEL[s]}
-            value={isLoading || error ? null : (counts[s] ?? 0).toLocaleString("en-US")}
+            value={isLoading || error ? null : formatCount(counts[s] ?? 0)}
             hint={STATE_HINT[s]}
             tone={(counts[s] ?? 0) > 0 ? STATE_TONE[s] : "neutral"}
             loading={isLoading}
@@ -128,7 +126,7 @@ export function SystemProcessesBoard() {
                 <Badge tone={on === null ? "neutral" : on && globalOn !== false ? "success" : "warning"}>
                   {on === null ? "Knob unknown" : on && globalOn !== false ? "On" : "Off"}
                 </Badge>
-                <span className="ml-auto type-meta">{p.total.toLocaleString("en-US")} items</span>
+                <span className="ml-auto type-meta">{formatCount(p.total)} items</span>
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {[...p.outcomes.entries()]

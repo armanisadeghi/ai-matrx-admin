@@ -9,8 +9,8 @@
  */
 
 import { useEffect, useMemo } from "react";
-import { useAppDispatch, useAppStore } from "@/lib/redux/hooks";
-import type { AppStore } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import type { AppDispatch } from "@/lib/redux/store";
 import { closeOverlay, openOverlay } from "@ai-matrx/summon/open";
 import type { OverlayWire } from "./overlay-types";
 
@@ -24,7 +24,7 @@ export interface OpenConnectorConsentOptions {
 }
 
 /** The opener as a plain function of the store (no hook): what the lazy chat opener set calls. */
-export function createConnectorConsentDialogOpener(store: Pick<AppStore, "dispatch">) {
+export function createConnectorConsentDialogOpener(store: { dispatch: AppDispatch }) {
   const dispatch = store.dispatch;
   return (options?: OpenConnectorConsentOptions) => {
     dispatch(
@@ -45,8 +45,8 @@ export function createConnectorConsentDialogOpener(store: Pick<AppStore, "dispat
 }
 
 export function useOpenConnectorConsentDialog() {
-  const store = useAppStore();
-  return useMemo(() => createConnectorConsentDialogOpener(store), [store]);
+  const dispatch = useAppDispatch();
+  return useMemo(() => createConnectorConsentDialogOpener({ dispatch }), [dispatch]);
 }
 
 export function ConnectorConsentDialogController({

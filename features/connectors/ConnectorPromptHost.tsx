@@ -22,7 +22,7 @@ import { useGoogleConnectorState } from "./google-adapter";
 import { GOOGLE_CONNECTOR_PROVIDER } from "./provider-config";
 import { readConnectorHint, rememberConnectorHint } from "./connectedHint";
 import { useShellCounts } from "@/lib/boot/shellCounts";
-import { useOpenConnectorConsentDialog } from "@/features/overlays/definitions/connectorConsentDialog.overlay";
+import { useLazyAppOpener } from "@/features/overlays/useLazyAppOpener";
 
 /**
  * ZERO READS UNTIL THE CARD ITSELF IS ENGAGED (owner ruling 2026-10-17: "There is no need to read
@@ -70,7 +70,9 @@ export function ConnectorPromptHost({
     setHint(next);
   }, [provider.id, userId, shellGoogleConnected]);
   const state = useGoogleConnectorState({ enabled: engaged });
-  const openConsent = useOpenConnectorConsentDialog();
+  const openConsent = useLazyAppOpener("connectorConsentDialog", () =>
+    import("@/features/overlays/definitions/connectorConsentDialog.overlay").then((m) => m.createConnectorConsentDialogOpener),
+  );
 
   const known = engaged && !state.isLoading && !state.isError;
   const connected = known
