@@ -31,9 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-025710/pnpm-lock.yaml.held — LOCAL latest 2026-10-19 02:55; GITHUB latest 2026-10-19 02:51; LOCAL lacks 6 of GITHUB's 26 new lines; GITHUB lacks 17 of LOCAL's 37 new lines; recover: git show a45a2e9fe6:'pnpm-lock.yaml' / ba251b7649:'pnpm-lock.yaml'
 
 ## Resolution log
+
+- 2026-10-19 PDT — Resolved `pnpm-lock.yaml.held`: kept live (== origin/main). The sides differed only in @ai-matrx/chat 0.8.217→0.8.218 and @ai-matrx/records 0.99.77→0.99.78 version bumps; live carries the newer install and `check:matrx-packages` reports the graph at npm latest, exactly once; owner: none found.
 - 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).
 - 2026-10-18 12:15 PDT — Resolved `_conflicts/2026-10-18-115923/` `features/agent-tests/service.ts` + `components/AgentTestTables.tsx`: took LOCAL. Each side differed by one line; LOCAL's is a coherent refinement on top of GITHUB's battle-on-reload work (a canceled run is never restored as the latest battle; a cancelled/failed unsettled battle shows "—", not "Judging"); GITHUB lacked nothing else; owner: none found (commit 101469e747c carries no session).
 - 2026-10-14 21:03 PDT — Codex agent `/root/frontend_conflict` resolved `_conflicts/2026-10-14-204506/pnpm-lock.yaml.held`: retained the live lockfile because it supersedes both recorded inputs, including `@ai-matrx/alchemy` 0.23.50 and `@ai-matrx/design-system` 0.86.141; preserved the active owner’s later `@ai-matrx/chat` 0.8.97 update. Verified with `check-matrx-packages.mjs --duplicates` and `check-lockfile-keys.py`.
