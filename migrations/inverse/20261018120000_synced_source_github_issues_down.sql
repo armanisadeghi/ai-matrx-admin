@@ -7,4 +7,5 @@ set local statement_timeout = '60s';
 delete from custom.synced_source where source_kind = 'github_issues';
 alter table custom.synced_source drop constraint synced_source_source_kind_check;
 alter table custom.synced_source add constraint synced_source_source_kind_check check (source_kind = any (array[
-  'notion_database','notion_page','notion_mapped','gmail','search','scraper','connector','airtable_base','google_sheets']::text[]));
+  'notion_database','notion_page','notion_mapped','gmail','search','scraper','connector','airtable_base','google_sheets',
+  'notion_view_of']::text[]));  -- a later kind (notion_view_of) stays: this inverse withdraws github_issues only
