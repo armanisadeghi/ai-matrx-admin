@@ -436,7 +436,9 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
       api: appChatServerApi,
       // AI WATCH (@ai-matrx/chat/host/ai-watch): admin feature `ai.watch` AND debug mode — the
       // package's AI streams then carry `?debug_view=1`; the server still decides who may watch.
-      aiWatch: () => selectCanWatchAi(store.getState()),
+      // Spread through an untyped object until the adopted @ai-matrx/chat declares `aiWatch`
+      // (published after 0.8.235); then write it as a plain member.
+      ...({ aiWatch: () => selectCanWatchAi(store.getState()) } as Record<string, unknown>),
     },
     notify: appNotify,
     prefs,
