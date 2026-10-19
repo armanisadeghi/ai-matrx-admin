@@ -19,6 +19,8 @@ import {
 import { primeKnobSnapshot } from "@/lib/scoped-config/effectiveKnobs";
 import { parseCoreBootSeed, type CoreBootSeed, type KnobSnapshotSeed } from "./coreBootSeedShape";
 import { registerBootSeedDrain, STREAMED_CORE_SEED_GLOBAL, STREAMED_KNOB_SEED_GLOBAL } from "./bootSeedSlot";
+import { getStoreSingleton } from "@/lib/redux/store-singleton";
+import { shellLayoutLoaded } from "@/features/shell/shell-layout/shellLayoutSlice";
 
 export function primeCoreBootSeed(seed: CoreBootSeed | null | undefined): void {
   if (!seed || typeof window === "undefined") return;
@@ -59,7 +61,16 @@ if (typeof window !== "undefined") {
   registerBootSeedDrain(() => {
     const core = takeGlobal(STREAMED_CORE_SEED_GLOBAL) as CoreBootSeed | undefined;
     // Already parsed on the server; re-checked so a malformed global never seeds.
-    if (core) primeCoreBootSeed(parseCoreBootSeed(toRaw(core), core.userId));
+    if (core) {
+      const parsed = parseCoreBootSeed(toRaw(core), core.userId);
+      primeCoreBootSeed(parsed);
+      // The layout the server could not wait for: the shell (reserved or default) takes it now.
+      const store = getStoreSingleton();
+      const slice = (store?.getState() as { shellLayout?: { enabled: boolean; status: string } } | undefined)?.shellLayout;
+      if (parsed && store && slice?.enabled && slice.status === "unknown") {
+        store.dispatch(shellLayoutLoaded(parsed.shell));
+      }
+    }
     const knobs = takeGlobal(STREAMED_KNOB_SEED_GLOBAL) as KnobSnapshotSeed[] | undefined;
     if (Array.isArray(knobs)) for (const knob of knobs) primeKnobSnapshot(knob);
   });
@@ -75,5 +86,6 @@ function toRaw(seed: CoreBootSeed): Record<string, unknown> {
     organizations_has_more: seed.organizationsHasMore,
     organizations_next_cursor: seed.organizationsNextCursor,
     preferences_row: seed.preferencesRow,
+    shell: seed.shell,
   };
 }

@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/loaders/Spinner";
 import { Button } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/lib/toast";
-import { DataTablePicker } from "@/features/start/widgets/DataPagePicker";
+import { DataTablePicker } from "@/features/launchpad/widgets/DataPagePicker";
 import { StartTile } from "@/features/file-actions/home/StartBand";
 import { openTableAsWorkbook } from "@/features/workbooks/table-link/link-service";
 

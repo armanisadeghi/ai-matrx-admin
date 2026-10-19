@@ -2,7 +2,7 @@
 // Active state driven by CSS via .shell-root[data-pathname] + data-nav-href.
 
 import MobileDockShell from "./MobileDockShell";
-import MobileDockItems from "./MobileDockItems";
+import ShellDockItems from "./ShellDockItems";
 import MobileDockVoiceButton from "./MobileDockVoiceButton";
 import { CommandBarDockButton } from "@/features/knowledge/command-bar/OpenCommandBarButtons";
 
@@ -14,7 +14,7 @@ export default function MobileDock({
   return (
     <MobileDockShell>
       <CommandBarDockButton isAuthenticated={isAuthenticated} />
-      <MobileDockItems isAuthenticated={isAuthenticated} />
+      <ShellDockItems isAuthenticated={isAuthenticated} />
       <MobileDockVoiceButton />
     </MobileDockShell>
   );

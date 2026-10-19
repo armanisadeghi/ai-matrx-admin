@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 4,
+  "version": 5,
   "title": "Print on Demand Shop HQ",
-  "description": "Track designs, print partners, orders, quality issues and returns.",
+  "description": "For print-on-demand shops: designs, listings, print partners, production, reprints.",
   "forWho": "Print-on-demand store owners and merch creators",
   "icon": {
     "emoji": "👕"
@@ -15,15 +15,17 @@
   "category": "retail",
   "tags": [
     "print on demand",
+    "merch creator",
     "designs",
-    "merch",
-    "orders"
+    "print partners",
+    "reprints",
+    "online store"
   ],
   "spec": {
     "specVersion": 1,
     "id": "spaces-print-on-demand-shop-hq",
     "catalogueId": "SP0520",
-    "useCase": "The owner of Wildgrain Print Co uses this to see what is booked, what is owed and what needs ordering.",
+    "useCase": "The owner of Wildgrain Print Co uses this to see which designs earn, which orders are stuck in production, which print partner is slipping and which reprint claims are open.",
     "industry": "retail_ecommerce",
     "vertical": "Print on demand shop",
     "job": "inventory",
@@ -33,7 +35,7 @@
     "requires": [],
     "business": {
       "name": "Wildgrain Print Co",
-      "describes": "A solo-run print-on-demand shop selling original illustrated shirts, mugs and posters through its own website and two marketplaces, with three print partners.",
+      "describes": "A one-person print-on-demand shop in Austin selling original illustrated shirts, mugs, posters and stickers on its own website and one marketplace, printed and shipped by three print partners.",
       "address": {
         "line1": "5 Inkwell Alley",
         "city": "Austin",
@@ -57,11 +59,12 @@
         "display": "board",
         "weight": "light",
         "ordered": false,
-        "icon": "truck",
+        "icon": "printer",
         "titleField": "supplier_name",
-        "describes": "The print services that make and ship your products, with their production times.",
+        "describes": "The partners who print and ship your orders: what they print, how long it takes, how they bill, quality and issues.",
         "subject": "thing",
         "statusImplies": [],
+        "rowTemplates": [],
         "fields": [
           {
             "key": "supplier_name",
@@ -70,6 +73,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "email",
@@ -86,8 +96,15 @@
             "contextPolicy": "include"
           },
           {
+            "key": "prints",
+            "label": "What they print",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "lead_days",
-            "label": "Lead time (days)",
+            "label": "Production time (days)",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -98,30 +115,64 @@
               },
               {
                 "kind": "max",
-                "value": 120
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "ship_days",
+            "label": "Shipping time (days)",
+            "parityType": "number",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
               }
             ]
           },
           {
             "key": "terms",
-            "label": "Terms",
+            "label": "Billing",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Net 30",
-              "Prepaid",
-              "Net 15"
+              "Charged per order",
+              "Monthly invoice",
+              "Prepaid wallet"
             ],
             "choiceColors": {
-              "Net 30": "slate",
-              "Prepaid": "blue",
-              "Net 15": "amber"
+              "Charged per order": "slate",
+              "Monthly invoice": "blue",
+              "Prepaid wallet": "amber"
+            }
+          },
+          {
+            "key": "quality",
+            "label": "Print quality",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Excellent",
+              "Good",
+              "Uneven"
+            ],
+            "choiceColors": {
+              "Excellent": "slate",
+              "Good": "blue",
+              "Uneven": "amber"
             }
           },
           {
             "key": "product_n",
-            "label": "Designs and products active",
+            "label": "Live listings",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -129,21 +180,18 @@
             "pick": "product_name",
             "agg": "count",
             "filter": {
-              "status": "Active"
+              "status": "Live"
             }
           },
           {
-            "key": "draft_n",
-            "label": "Designs and products in draft",
+            "key": "issue_n",
+            "label": "Print issues",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "products",
-            "pick": "product_name",
-            "agg": "count",
-            "filter": {
-              "status": "Draft"
-            }
+            "via": "issues_logged",
+            "pick": "issue_name",
+            "agg": "count"
           },
           {
             "key": "added_at",
@@ -153,60 +201,72 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [],
         "rows": [
           {
             "key": "suppli-1",
             "values": {
               "supplier_name": "Harborview Print Works",
-              "email": "teodor.vasquez@wildgrainprint.net",
-              "phone": "(512) 555-0197",
-              "lead_days": 5,
-              "terms": "Net 30"
+              "contact": "Joaquin Ferrante",
+              "email": "support@harborviewprint.net",
+              "phone": "(512) 555-0141",
+              "prints": "Tees, hoodies, totes",
+              "lead_days": 3,
+              "ship_days": 4,
+              "terms": "Charged per order",
+              "quality": "Good"
             }
           },
           {
             "key": "suppli-2",
             "values": {
               "supplier_name": "Lantern Press Mugs",
-              "email": "kwame.boateng@wildgrainprint.net",
-              "phone": "(512) 555-0134",
-              "lead_days": 6,
-              "terms": "Prepaid"
+              "contact": "Mina Okoye",
+              "email": "help@lanternpressmugs.net",
+              "phone": "(512) 555-0152",
+              "prints": "Mugs",
+              "lead_days": 2,
+              "ship_days": 4,
+              "terms": "Prepaid wallet",
+              "quality": "Excellent"
             }
           },
           {
             "key": "suppli-3",
             "values": {
               "supplier_name": "Northlight Poster Lab",
-              "email": "ingrid.grayson@wildgrainprint.net",
-              "phone": "(512) 555-0171",
+              "contact": "Theo Lindgren",
+              "email": "studio@northlightposter.net",
+              "phone": "(512) 555-0163",
+              "prints": "Posters, art prints, stickers",
               "lead_days": 4,
-              "terms": "Net 15"
+              "ship_days": 5,
+              "terms": "Monthly invoice",
+              "quality": "Uneven"
             }
           }
         ]
       },
       {
-        "token": "product",
-        "name": "Designs and products",
+        "token": "design",
+        "name": "Designs",
         "labelSingular": "Design",
-        "labelPlural": "Designs and products",
+        "labelPlural": "Designs",
         "type": "entity",
         "display": "board",
         "weight": "light",
         "ordered": false,
-        "icon": "package",
-        "titleField": "product_name",
-        "describes": "Every design and product, with price, print cost, margin and any stock you hold yourself.",
+        "icon": "palette",
+        "titleField": "design_name",
+        "describes": "Your artwork: who drew it, the collection, whether it is print-ready, the rights and when it launches.",
         "subject": "thing",
-        "independentOf": {
-          "supplier_rel": "Either record can be created or change status before the other."
-        },
         "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "artist": "Either record can be created or change status before the other."
+        },
         "fields": [
           {
-            "key": "product_name",
+            "key": "design_name",
             "label": "Design",
             "parityType": "text",
             "sensitivity": "internal",
@@ -214,15 +274,331 @@
             "required": true
           },
           {
-            "key": "sku",
-            "label": "SKU",
+            "key": "artist",
+            "label": "Drawn by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "theme",
+            "label": "Collection",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Woodland",
+              "Coast",
+              "Night sky",
+              "Field guide"
+            ],
+            "choiceColors": {
+              "Woodland": "slate",
+              "Coast": "blue",
+              "Night sky": "amber",
+              "Field guide": "violet"
+            }
+          },
+          {
+            "key": "file_status",
+            "label": "Artwork",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sketch",
+              "Final art",
+              "Print-ready",
+              "Retired"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Sketch": "todo",
+              "Final art": "in_progress",
+              "Print-ready": "done",
+              "Retired": "done"
+            },
+            "choiceColors": {
+              "Sketch": "slate",
+              "Final art": "amber",
+              "Print-ready": "green",
+              "Retired": "gray"
+            },
+            "default": "Sketch"
+          },
+          {
+            "key": "rights",
+            "label": "Rights",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Own work",
+              "Commissioned, full rights",
+              "Licensed"
+            ],
+            "choiceColors": {
+              "Own work": "slate",
+              "Commissioned, full rights": "blue",
+              "Licensed": "amber"
+            }
+          },
+          {
+            "key": "launch_on",
+            "label": "Launch date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "colours",
+            "label": "Ink colours",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
+            "key": "listings_n",
+            "label": "Listings",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "listings",
+            "pick": "product_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "des-1",
+            "values": {
+              "design_name": "Fox in Fern",
+              "artist": "tm-1",
+              "theme": "Woodland",
+              "file_status": "Print-ready",
+              "rights": "Own work",
+              "launch_on": "@today-10m",
+              "colours": "Rust, moss, cream"
+            }
+          },
+          {
+            "key": "des-2",
+            "values": {
+              "design_name": "Heron Marsh",
+              "artist": "tm-2",
+              "theme": "Coast",
+              "file_status": "Print-ready",
+              "rights": "Commissioned, full rights",
+              "launch_on": "@today-7m",
+              "colours": "Slate blue, reed green"
+            }
+          },
+          {
+            "key": "des-3",
+            "values": {
+              "design_name": "Mountain Dawn",
+              "artist": "tm-1",
+              "theme": "Field guide",
+              "file_status": "Print-ready",
+              "rights": "Own work",
+              "launch_on": "@today-5m",
+              "colours": "Peach, plum, charcoal"
+            }
+          },
+          {
+            "key": "des-4",
+            "values": {
+              "design_name": "Lantern Moth",
+              "artist": "tm-2",
+              "theme": "Night sky",
+              "file_status": "Print-ready",
+              "rights": "Commissioned, full rights",
+              "launch_on": "@today-3m",
+              "colours": "Gold, indigo"
+            }
+          },
+          {
+            "key": "des-5",
+            "values": {
+              "design_name": "Tide Pool",
+              "artist": "tm-1",
+              "theme": "Coast",
+              "file_status": "Print-ready",
+              "rights": "Own work",
+              "launch_on": "@today-6w",
+              "colours": "Teal, coral, sand"
+            }
+          },
+          {
+            "key": "des-6",
+            "values": {
+              "design_name": "Aurora Wolf",
+              "artist": "tm-2",
+              "theme": "Night sky",
+              "file_status": "Final art",
+              "rights": "Commissioned, full rights",
+              "launch_on": "@today+2w",
+              "colours": "Green, violet, white"
+            }
+          },
+          {
+            "key": "des-7",
+            "values": {
+              "design_name": "Botanical Trio",
+              "artist": "tm-1",
+              "theme": "Field guide",
+              "file_status": "Sketch",
+              "rights": "Own work",
+              "launch_on": "@today+6w",
+              "colours": "Sage, ochre"
+            }
+          }
+        ]
+      },
+      {
+        "token": "product",
+        "name": "Designs and products",
+        "labelSingular": "Listing",
+        "labelPlural": "Listings",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shirt",
+        "titleField": "product_name",
+        "describes": "Each design on each product: print partner, base cost, price, margin, sample check, units sold and sales.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Listing",
+            "values": {
+              "status": "Draft"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Listing copy"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Title, description, sizes, care."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before it goes live"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sample ordered and checked in daylight"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Mockups match the sample"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Base cost plus shipping checked against the price"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Size chart from the partner added"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other.",
+          "design": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Listing",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "sku",
+            "label": "Listing code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "design",
+            "label": "Design",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "design",
+            "relationMax": 1
+          },
+          {
             "key": "category",
-            "label": "Category",
+            "label": "Product type",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -230,14 +606,64 @@
               "Apparel",
               "Posters",
               "Mugs",
-              "Stickers"
+              "Stickers",
+              "Totes"
             ],
             "choiceColors": {
               "Apparel": "slate",
               "Posters": "blue",
               "Mugs": "amber",
-              "Stickers": "violet"
+              "Stickers": "violet",
+              "Totes": "green"
             }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Live",
+              "Sample ordered",
+              "Draft",
+              "Retired"
+            ],
+            "default": "Draft",
+            "choiceColors": {
+              "Live": "slate",
+              "Sample ordered": "blue",
+              "Draft": "amber",
+              "Retired": "violet"
+            }
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Print partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "cost",
+            "label": "Partner base cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
           },
           {
             "key": "price",
@@ -254,117 +680,35 @@
               },
               {
                 "kind": "max",
-                "value": 5000
+                "value": 500
               }
             ]
           },
           {
-            "key": "cost",
-            "label": "Cost (USD)",
-            "parityType": "currency",
-            "sensitivity": "confidential",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
+            "key": "sample_ok",
+            "label": "Sample approved",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
-            "key": "on_hand",
-            "label": "On hand",
-            "parityType": "number",
+            "key": "mockup",
+            "label": "Mockup link",
+            "parityType": "url",
             "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 50000
-              }
-            ]
-          },
-          {
-            "key": "reorder_at",
-            "label": "Reorder at",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 50000
-              }
-            ]
-          },
-          {
-            "key": "supplier_rel",
-            "label": "Print partner",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "supplier",
-            "relationMax": 1
-          },
-          {
-            "key": "status",
-            "label": "Status",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Active",
-              "Draft",
-              "Discontinued"
-            ],
-            "choiceColors": {
-              "Active": "slate",
-              "Draft": "blue",
-              "Discontinued": "amber"
-            },
-            "default": "Active"
+            "contextPolicy": "include"
           },
           {
             "key": "margin_pct",
-            "label": "Margin (%)",
+            "label": "Margin before fees (%)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
-          },
-          {
-            "key": "reorder_flag",
-            "label": "Reorder?",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
-          },
-          {
-            "key": "stock_value",
-            "label": "Stock value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{On hand} * {Cost (USD)}"
+            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Partner base cost (USD)}) / {Price (USD)} * 100, 0), 0)"
           },
           {
             "key": "sold",
-            "label": "Units delivered",
+            "label": "Units sold",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -372,12 +716,17 @@
             "pick": "quantity",
             "agg": "sum",
             "filter": {
-              "status": "Delivered"
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "Refunded"
+                ]
+              }
             }
           },
           {
             "key": "revenue",
-            "label": "Revenue (USD)",
+            "label": "Sales (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -385,7 +734,13 @@
             "pick": "total",
             "agg": "sum",
             "filter": {
-              "status": "Delivered"
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "Refunded",
+                  "New"
+                ]
+              }
             }
           },
           {
@@ -396,222 +751,153 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Design",
-            "values": {
-              "status": "Draft"
-            },
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Artwork"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "File name, size, color profile and mockups."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Quality"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Sample ordered and checked"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Print cost entered"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Size chart added"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "produc-1",
             "values": {
               "product_name": "Fox in Fern tee",
-              "sku": "WG-101",
+              "sku": "FOX-TEE",
+              "design": "des-1",
               "category": "Apparel",
-              "price": 29,
-              "cost": 13.5,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Live",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "cost": 13.4,
+              "price": 32,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/fox-tee"
             }
           },
           {
             "key": "produc-2",
             "values": {
               "product_name": "Heron Marsh poster 18x24",
-              "sku": "WG-108",
+              "sku": "HERON-1824",
+              "design": "des-2",
               "category": "Posters",
-              "price": 32,
-              "cost": 11,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Live",
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "cost": 11.2,
+              "price": 38,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/heron-poster"
             }
           },
           {
             "key": "produc-3",
             "values": {
               "product_name": "Mountain Dawn mug",
-              "sku": "WG-115",
+              "sku": "DAWN-MUG",
+              "design": "des-3",
               "category": "Mugs",
-              "price": 19,
-              "cost": 7.5,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Live",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "cost": 7.9,
+              "price": 22,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/dawn-mug"
             }
           },
           {
             "key": "produc-4",
             "values": {
               "product_name": "Lantern Moth tee",
-              "sku": "WG-122",
+              "sku": "MOTH-TEE",
+              "design": "des-4",
               "category": "Apparel",
-              "price": 29,
-              "cost": 13.5,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Live",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "cost": 13.4,
+              "price": 32,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/moth-tee"
             }
           },
           {
             "key": "produc-5",
             "values": {
               "product_name": "Tide Pool tote",
-              "sku": "WG-129",
-              "category": "Apparel",
-              "price": 24,
-              "cost": 10,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "sku": "TIDE-TOTE",
+              "design": "des-5",
+              "category": "Totes",
+              "status": "Live",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "cost": 12.1,
+              "price": 28,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/tide-tote"
             }
           },
           {
             "key": "produc-6",
             "values": {
               "product_name": "Field Notes sticker pack",
-              "sku": "WG-136",
+              "sku": "FIELD-STK",
+              "design": "des-3",
               "category": "Stickers",
-              "price": 8,
-              "cost": 2.5,
-              "on_hand": 25,
-              "reorder_at": 10,
+              "status": "Live",
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "cost": 3.1,
+              "price": 12,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/sticker-pack"
             }
           },
           {
             "key": "produc-7",
             "values": {
               "product_name": "Heron Marsh mug",
-              "sku": "WG-143",
+              "sku": "HERON-MUG",
+              "design": "des-2",
               "category": "Mugs",
-              "price": 19,
-              "cost": 7.5,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Live",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "cost": 7.9,
+              "price": 22,
+              "sample_ok": true,
+              "mockup": "https://wildgrainprint.net/mockups/heron-mug"
             }
           },
           {
             "key": "produc-8",
             "values": {
               "product_name": "Aurora Wolf hoodie",
-              "sku": "WG-150",
+              "sku": "WOLF-HOOD",
+              "design": "des-6",
               "category": "Apparel",
-              "price": 54,
-              "cost": 27,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Sample ordered",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "cost": 27.5,
+              "price": 58,
+              "sample_ok": false,
+              "mockup": "https://wildgrainprint.net/mockups/wolf-hoodie"
             }
           },
           {
             "key": "produc-9",
             "values": {
               "product_name": "Botanical set poster trio",
-              "sku": "WG-157",
+              "sku": "BOTAN-TRIO",
+              "design": "des-7",
               "category": "Posters",
-              "price": 68,
-              "cost": 26,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Draft",
               "supplier_rel": "suppli-3",
-              "status": "Draft"
+              "cost": 26.0,
+              "price": 74,
+              "sample_ok": false
             }
           },
           {
             "key": "produc-10",
             "values": {
               "product_name": "Retired spring tee",
-              "sku": "WG-164",
+              "sku": "SPRING-TEE",
+              "design": "des-1",
               "category": "Apparel",
-              "price": 27,
-              "cost": 13,
-              "on_hand": 0,
-              "reorder_at": 0,
+              "status": "Retired",
               "supplier_rel": "suppli-1",
-              "status": "Discontinued"
+              "cost": 13.4,
+              "price": 30,
+              "sample_ok": true
             }
           }
         ]
@@ -627,9 +913,40 @@
         "ordered": false,
         "icon": "users",
         "titleField": "customer_name",
-        "describes": "Buyers with spend, returns and a tier.",
+        "describes": "Everyone who has bought: orders, spend and print issues.",
         "subject": "thing",
         "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Customer record",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Favourite designs, sizes, past issues."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
         "fields": [
           {
             "key": "customer_name",
@@ -646,16 +963,16 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Retail",
+              "New",
               "Repeat buyer",
               "Gift buyer",
-              "Wholesale"
+              "Shop owner"
             ],
             "choiceColors": {
-              "Retail": "slate",
+              "New": "slate",
               "Repeat buyer": "blue",
               "Gift buyer": "amber",
-              "Wholesale": "violet"
+              "Shop owner": "violet"
             }
           },
           {
@@ -674,22 +991,29 @@
           },
           {
             "key": "first_order",
-            "label": "Customer since",
+            "label": "First order",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
           },
           {
-            "key": "area",
-            "label": "Neighborhood",
+            "key": "ship_state",
+            "label": "Ships to",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
+            "key": "emails_ok",
+            "label": "Emails OK",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "order_n",
-            "label": "Orders delivered",
+            "label": "Orders",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -697,12 +1021,16 @@
             "pick": "order_name",
             "agg": "count",
             "filter": {
-              "status": "Delivered"
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
             }
           },
           {
             "key": "spent",
-            "label": "Spent to date",
+            "label": "Spent to date (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -710,21 +1038,24 @@
             "pick": "total",
             "agg": "sum",
             "filter": {
-              "status": "Delivered"
+              "status": {
+                "not": [
+                  "Cancelled",
+                  "Refunded",
+                  "New"
+                ]
+              }
             }
           },
           {
             "key": "returns_n",
-            "label": "Returns",
+            "label": "Print issues",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "orders",
-            "pick": "order_name",
-            "agg": "count",
-            "filter": {
-              "status": "Returned"
-            }
+            "via": "customer_issues",
+            "pick": "issue_name",
+            "agg": "count"
           },
           {
             "key": "tier",
@@ -732,7 +1063,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Spent to date} >= 150, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
+            "formula": "IF({Spent to date (USD)} >= 150, \"Best\", IF({Spent to date (USD)} > 0, \"Regular\", \"New\"))"
           },
           {
             "key": "add_order_btn",
@@ -757,66 +1088,17 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Customer record",
-            "values": {},
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "About this customer"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "How they found you and what they bought."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Notes"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Gift messages, issues and favourite designs."
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "custom-1",
             "values": {
               "customer_name": "Amara Zielinski",
-              "segment": "Retail",
+              "segment": "New",
               "email": "amara.zielinski@inbox-mail.net",
               "phone": "(512) 555-0147",
               "first_order": "@today-20d",
-              "area": "Willow Creek"
+              "ship_state": "TX",
+              "emails_ok": true
             }
           },
           {
@@ -827,7 +1109,8 @@
               "email": "cormac.grayson@inbox-mail.net",
               "phone": "(512) 555-0184",
               "first_order": "@today-63d",
-              "area": "North Ridge"
+              "ship_state": "CA",
+              "emails_ok": true
             }
           },
           {
@@ -838,29 +1121,32 @@
               "email": "delphine.navarro@inbox-mail.net",
               "phone": "(512) 555-0121",
               "first_order": "@today-106d",
-              "area": "Sunset Flats"
+              "ship_state": "NY",
+              "emails_ok": false
             }
           },
           {
             "key": "custom-4",
             "values": {
               "customer_name": "Mateus Yoshida",
-              "segment": "Wholesale",
+              "segment": "Shop owner",
               "email": "mateus.yoshida@inbox-mail.net",
               "phone": "(512) 555-0158",
               "first_order": "@today-149d",
-              "area": "Maple Hollow"
+              "ship_state": "OR",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-5",
             "values": {
               "customer_name": "Farah Fairbairn",
-              "segment": "Retail",
+              "segment": "New",
               "email": "farah.fairbairn@inbox-mail.net",
               "phone": "(512) 555-0195",
               "first_order": "@today-192d",
-              "area": "Eastgate"
+              "ship_state": "TX",
+              "emails_ok": true
             }
           },
           {
@@ -871,7 +1157,8 @@
               "email": "dennis.mbeki@inbox-mail.net",
               "phone": "(512) 555-0132",
               "first_order": "@today-235d",
-              "area": "Riverbend"
+              "ship_state": "CO",
+              "emails_ok": true
             }
           },
           {
@@ -882,40 +1169,44 @@
               "email": "yara.underhill@inbox-mail.net",
               "phone": "(512) 555-0169",
               "first_order": "@today-278d",
-              "area": "Old Mill"
+              "ship_state": "WA",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-8",
             "values": {
               "customer_name": "Teodor Carrow",
-              "segment": "Wholesale",
+              "segment": "Shop owner",
               "email": "teodor.carrow@inbox-mail.net",
               "phone": "(512) 555-0106",
               "first_order": "@today-321d",
-              "area": "Cedar Park"
+              "ship_state": "TX",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-9",
             "values": {
               "customer_name": "Odette Jessup",
-              "segment": "Retail",
+              "segment": "Repeat buyer",
               "email": "odette.jessup@inbox-mail.net",
               "phone": "(512) 555-0143",
               "first_order": "@today-364d",
-              "area": "Lakeview"
+              "ship_state": "Ontario, Canada",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-10",
             "values": {
               "customer_name": "Rafael Salazar",
-              "segment": "Repeat buyer",
+              "segment": "New",
               "email": "rafael.salazar@inbox-mail.net",
               "phone": "(512) 555-0180",
               "first_order": "@today-407d",
-              "area": "Foxglove Court"
+              "ship_state": "FL",
+              "emails_ok": false
             }
           },
           {
@@ -926,18 +1217,20 @@
               "email": "saoirse.brannigan@inbox-mail.net",
               "phone": "(512) 555-0117",
               "first_order": "@today-450d",
-              "area": "Stonebridge"
+              "ship_state": "IL",
+              "emails_ok": true
             }
           },
           {
             "key": "custom-12",
             "values": {
               "customer_name": "Ravi Iyer",
-              "segment": "Wholesale",
+              "segment": "Repeat buyer",
               "email": "ravi.iyer@inbox-mail.net",
               "phone": "(512) 555-0154",
               "first_order": "@today-493d",
-              "area": "Harbor Heights"
+              "ship_state": "TX",
+              "emails_ok": true
             }
           }
         ]
@@ -953,24 +1246,105 @@
         "ordered": false,
         "icon": "shopping-bag",
         "titleField": "order_name",
-        "describes": "Every order from payment to delivery, with who is handling it.",
+        "describes": "Every order through the print partner: what was paid, what the partner charged, profit, status and tracking.",
         "subject": "thing",
-        "independentOf": {
-          "customer": "Either record can be created or change status before the other.",
-          "product": "Either record can be created or change status before the other.",
-          "handler": "Either record can be created or change status before the other."
-        },
         "statusImplies": [
           {
             "field": "status",
             "when": [
-              "Shipped"
+              "Shipped",
+              "Delivered"
             ],
             "filled": [
               "shipped_on"
             ]
           }
         ],
+        "rowTemplates": [
+          {
+            "name": "Order sheet",
+            "values": {
+              "status": "New",
+              "order_name": "New order"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Order"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Listing, size, colour, gift note."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Checks"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Address looks complete"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Sent to the right partner"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Tracking received and sent to the customer"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "partner": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The due-to-ship date comes from the partner's production time; the shipped date is stamped when tracking arrives.",
         "fields": [
           {
             "key": "order_name",
@@ -988,33 +1362,33 @@
             "contextPolicy": "include",
             "choices": [
               "New",
-              "Paid",
-              "Packing",
+              "Sent to partner",
+              "In production",
               "Shipped",
               "Delivered",
-              "Returned",
+              "Refunded",
               "Cancelled"
             ],
-            "choiceColors": {
-              "New": "slate",
-              "Paid": "blue",
-              "Packing": "amber",
-              "Shipped": "violet",
-              "Delivered": "teal",
-              "Returned": "red",
-              "Cancelled": "pink"
-            },
             "required": true,
-            "default": "New",
             "statusGroups": {
               "New": "todo",
-              "Paid": "todo",
-              "Packing": "in_progress",
+              "Sent to partner": "in_progress",
+              "In production": "in_progress",
               "Shipped": "in_progress",
               "Delivered": "done",
-              "Returned": "done",
+              "Refunded": "done",
               "Cancelled": "done"
-            }
+            },
+            "choiceColors": {
+              "New": "slate",
+              "Sent to partner": "blue",
+              "In production": "amber",
+              "Shipped": "violet",
+              "Delivered": "green",
+              "Refunded": "orange",
+              "Cancelled": "gray"
+            },
+            "default": "New"
           },
           {
             "key": "customer",
@@ -1027,7 +1401,7 @@
           },
           {
             "key": "product",
-            "label": "Design",
+            "label": "Listing",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1035,8 +1409,17 @@
             "relationMax": 1
           },
           {
+            "key": "partner",
+            "label": "Print partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
             "key": "handler",
-            "label": "Order handler (staff)",
+            "label": "Handled by",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1046,7 +1429,7 @@
           {
             "key": "quantity",
             "label": "Quantity",
-            "parityType": "number",
+            "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "rules": [
@@ -1056,13 +1439,20 @@
               },
               {
                 "kind": "max",
-                "value": 5000
+                "value": 200
               }
             ]
           },
           {
+            "key": "variant",
+            "label": "Size and colour",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "total",
-            "label": "Total (USD)",
+            "label": "Customer paid (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -1075,9 +1465,36 @@
               },
               {
                 "kind": "max",
-                "value": 100000
+                "value": 5000
               }
             ]
+          },
+          {
+            "key": "partner_cost",
+            "label": "Partner charged (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "profit",
+            "label": "Profit before fees (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Customer paid (USD)} - {Partner charged (USD)}"
           },
           {
             "key": "channel",
@@ -1100,7 +1517,7 @@
           },
           {
             "key": "ship_by",
-            "label": "Ship by",
+            "label": "Due to ship",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1115,8 +1532,15 @@
             "format": "date"
           },
           {
+            "key": "tracking",
+            "label": "Tracking number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "packer",
-            "label": "Order handler",
+            "label": "Watching (signed-in)",
             "parityType": "member",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -1151,95 +1575,6 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Order sheet",
-            "values": {
-              "status": "New",
-              "order_name": "New order"
-            },
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Order check"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Product, size and shipping address."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Before it goes to the partner"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Artwork matches the listing"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Address checked"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Order sent to the print partner"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Tracking added when it ships"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "order-1",
@@ -1248,11 +1583,16 @@
               "status": "Delivered",
               "customer": "custom-2",
               "product": "produc-2",
+              "partner": "suppli-3",
               "handler": "tm-3",
               "quantity": 1,
-              "total": 30,
+              "variant": "18x24 matte",
+              "total": 44.5,
+              "partner_cost": 17.8,
               "channel": "Website",
-              "ship_by": "@today-17d"
+              "ship_by": "@today-17d",
+              "shipped_on": "@today-18d",
+              "tracking": "1Z 88A 401 0322"
             }
           },
           {
@@ -1262,11 +1602,16 @@
               "status": "Delivered",
               "customer": "custom-7",
               "product": "produc-5",
-              "handler": "tm-4",
+              "partner": "suppli-1",
+              "handler": "tm-3",
               "quantity": 2,
-              "total": 50,
+              "variant": "Natural",
+              "total": 56,
+              "partner_cost": 30.6,
               "channel": "Marketplace",
-              "ship_by": "@today-13d"
+              "ship_by": "@today-13d",
+              "shipped_on": "@today-13d",
+              "tracking": "9405 5110 9921 3301"
             }
           },
           {
@@ -1275,12 +1620,16 @@
               "order_name": "WG-4106",
               "status": "Delivered",
               "customer": "custom-12",
-              "product": "produc-8",
-              "handler": "tm-1",
+              "product": "produc-6",
+              "partner": "suppli-3",
+              "handler": "tm-4",
               "quantity": 3,
-              "total": 160,
+              "variant": "Pack of 6",
+              "total": 36,
+              "partner_cost": 12.9,
               "channel": "Pop-up market",
-              "ship_by": "@today-10d"
+              "ship_by": "@today-10d",
+              "shipped_on": "@today-10d"
             }
           },
           {
@@ -1290,11 +1639,16 @@
               "status": "Delivered",
               "customer": "custom-5",
               "product": "produc-1",
-              "handler": "tm-2",
+              "partner": "suppli-1",
+              "handler": "tm-3",
               "quantity": 1,
-              "total": 30,
-              "channel": "Social",
-              "ship_by": "@today-7d"
+              "variant": "M, forest green",
+              "total": 37.5,
+              "partner_cost": 18.9,
+              "channel": "Website",
+              "ship_by": "@today-7d",
+              "shipped_on": "@today-8d",
+              "tracking": "9405 5110 9921 3388"
             }
           },
           {
@@ -1303,26 +1657,36 @@
               "order_name": "WG-4112",
               "status": "Delivered",
               "customer": "custom-10",
-              "product": "produc-4",
+              "product": "produc-3",
+              "partner": "suppli-2",
               "handler": "tm-3",
               "quantity": 2,
-              "total": 60,
-              "channel": "Website",
-              "ship_by": "@today-5d"
+              "variant": "11 oz",
+              "total": 49.5,
+              "partner_cost": 21.3,
+              "channel": "Marketplace",
+              "ship_by": "@today-5d",
+              "shipped_on": "@today-6d",
+              "tracking": "9405 5110 9921 3412"
             }
           },
           {
             "key": "order-6",
             "values": {
               "order_name": "WG-4115",
-              "status": "Returned",
+              "status": "Refunded",
               "customer": "custom-3",
-              "product": "produc-7",
-              "handler": "tm-4",
-              "quantity": 3,
-              "total": 57,
-              "channel": "Marketplace",
-              "ship_by": "@today-6d"
+              "product": "produc-4",
+              "partner": "suppli-1",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "L, black",
+              "total": 37.5,
+              "partner_cost": 18.9,
+              "channel": "Website",
+              "ship_by": "@today-12d",
+              "shipped_on": "@today-12d",
+              "tracking": "9405 5110 9921 3440"
             }
           },
           {
@@ -1332,23 +1696,30 @@
               "status": "Cancelled",
               "customer": "custom-8",
               "product": "produc-10",
-              "handler": "tm-1",
-              "quantity": 1,
-              "total": 25,
-              "channel": "Pop-up market"
+              "partner": "suppli-1",
+              "handler": "tm-4",
+              "quantity": 12,
+              "variant": "Mixed sizes",
+              "total": 300,
+              "partner_cost": 0,
+              "channel": "Social",
+              "ship_by": "@today-9d"
             }
           },
           {
             "key": "order-8",
             "values": {
               "order_name": "WG-4121",
-              "status": "Packing",
+              "status": "In production",
               "customer": "custom-1",
               "product": "produc-3",
-              "handler": "tm-2",
-              "quantity": 2,
-              "total": 38,
-              "channel": "Social",
+              "partner": "suppli-2",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "15 oz",
+              "total": 27.5,
+              "partner_cost": 10.6,
+              "channel": "Website",
               "ship_by": "@today-1d"
             }
           },
@@ -1356,12 +1727,15 @@
             "key": "order-9",
             "values": {
               "order_name": "WG-4124",
-              "status": "Paid",
+              "status": "In production",
               "customer": "custom-6",
-              "product": "produc-6",
+              "product": "produc-4",
+              "partner": "suppli-1",
               "handler": "tm-3",
-              "quantity": 3,
-              "total": 24,
+              "quantity": 2,
+              "variant": "S and M, black",
+              "total": 69.5,
+              "partner_cost": 37.8,
               "channel": "Website",
               "ship_by": "@today",
               "packer": "@installer"
@@ -1373,26 +1747,33 @@
               "order_name": "WG-4127",
               "status": "Shipped",
               "customer": "custom-11",
-              "product": "produc-9",
-              "handler": "tm-4",
+              "product": "produc-7",
+              "partner": "suppli-2",
+              "handler": "tm-3",
               "quantity": 1,
-              "total": 70,
+              "variant": "11 oz",
+              "total": 27.5,
+              "partner_cost": 12.4,
               "channel": "Marketplace",
-              "ship_by": "@today",
-              "shipped_on": "@today-7d"
+              "ship_by": "@today-3d",
+              "shipped_on": "@today-3d",
+              "tracking": "9405 5110 9921 3501"
             }
           },
           {
             "key": "order-11",
             "values": {
               "order_name": "WG-4130",
-              "status": "Packing",
+              "status": "Sent to partner",
               "customer": "custom-4",
               "product": "produc-2",
+              "partner": "suppli-3",
               "handler": "tm-1",
-              "quantity": 2,
-              "total": 65,
-              "channel": "Pop-up market",
+              "quantity": 6,
+              "variant": "18x24 matte",
+              "total": 150,
+              "partner_cost": 67.2,
+              "channel": "Social",
               "ship_by": "@mon",
               "packer": "@installer"
             }
@@ -1401,13 +1782,16 @@
             "key": "order-12",
             "values": {
               "order_name": "WG-4133",
-              "status": "Paid",
+              "status": "Sent to partner",
               "customer": "custom-9",
               "product": "produc-5",
-              "handler": "tm-2",
-              "quantity": 3,
-              "total": 70,
-              "channel": "Social",
+              "partner": "suppli-1",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "Natural",
+              "total": 36.9,
+              "partner_cost": 19.2,
+              "channel": "Website",
               "ship_by": "@tue"
             }
           },
@@ -1417,10 +1801,13 @@
               "order_name": "WG-4136",
               "status": "New",
               "customer": "custom-2",
-              "product": "produc-8",
+              "product": "produc-6",
+              "partner": "suppli-3",
               "handler": "tm-3",
               "quantity": 1,
-              "total": 55,
+              "variant": "Pack of 6",
+              "total": 17.5,
+              "partner_cost": 5.4,
               "channel": "Website",
               "ship_by": "@wed",
               "packer": "@installer"
@@ -1430,12 +1817,15 @@
             "key": "order-14",
             "values": {
               "order_name": "WG-4139",
-              "status": "Paid",
+              "status": "Sent to partner",
               "customer": "custom-7",
               "product": "produc-1",
-              "handler": "tm-4",
-              "quantity": 2,
-              "total": 60,
+              "partner": "suppli-1",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "L, rust",
+              "total": 37.5,
+              "partner_cost": 18.9,
               "channel": "Marketplace",
               "ship_by": "@thu"
             }
@@ -1446,11 +1836,14 @@
               "order_name": "WG-4142",
               "status": "New",
               "customer": "custom-12",
-              "product": "produc-4",
-              "handler": "tm-1",
-              "quantity": 3,
-              "total": 85,
-              "channel": "Pop-up market",
+              "product": "produc-3",
+              "partner": "suppli-2",
+              "handler": "tm-3",
+              "quantity": 2,
+              "variant": "11 oz",
+              "total": 49.5,
+              "partner_cost": 21.3,
+              "channel": "Website",
               "ship_by": "@fri",
               "packer": "@installer"
             }
@@ -1459,13 +1852,16 @@
             "key": "order-16",
             "values": {
               "order_name": "WG-4145",
-              "status": "Paid",
+              "status": "In production",
               "customer": "custom-5",
-              "product": "produc-7",
-              "handler": "tm-2",
+              "product": "produc-4",
+              "partner": "suppli-1",
+              "handler": "tm-3",
               "quantity": 1,
-              "total": 19,
-              "channel": "Social",
+              "variant": "XL, black",
+              "total": 37.5,
+              "partner_cost": 19.6,
+              "channel": "Website",
               "ship_by": "@sat"
             }
           },
@@ -1475,11 +1871,14 @@
               "order_name": "WG-4148",
               "status": "New",
               "customer": "custom-10",
-              "product": "produc-10",
+              "product": "produc-1",
+              "partner": "suppli-1",
               "handler": "tm-3",
-              "quantity": 2,
-              "total": 55,
-              "channel": "Website",
+              "quantity": 1,
+              "variant": "S, forest green",
+              "total": 37.5,
+              "partner_cost": 18.9,
+              "channel": "Marketplace",
               "ship_by": "@sun"
             }
           },
@@ -1487,13 +1886,16 @@
             "key": "order-18",
             "values": {
               "order_name": "WG-4151",
-              "status": "Paid",
+              "status": "New",
               "customer": "custom-3",
-              "product": "produc-3",
-              "handler": "tm-4",
-              "quantity": 3,
-              "total": 57,
-              "channel": "Marketplace",
+              "product": "produc-2",
+              "partner": "suppli-3",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "18x24 matte",
+              "total": 44.5,
+              "partner_cost": 17.8,
+              "channel": "Website",
               "ship_by": "@tue+1w"
             }
           },
@@ -1503,11 +1905,14 @@
               "order_name": "WG-4154",
               "status": "New",
               "customer": "custom-8",
-              "product": "produc-6",
+              "product": "produc-5",
+              "partner": "suppli-1",
               "handler": "tm-1",
-              "quantity": 1,
-              "total": 8,
-              "channel": "Pop-up market",
+              "quantity": 10,
+              "variant": "Natural",
+              "total": 210,
+              "partner_cost": 121,
+              "channel": "Social",
               "ship_by": "@thu+1w"
             }
           },
@@ -1515,13 +1920,16 @@
             "key": "order-20",
             "values": {
               "order_name": "WG-4157",
-              "status": "Paid",
+              "status": "Sent to partner",
               "customer": "custom-1",
-              "product": "produc-9",
-              "handler": "tm-2",
-              "quantity": 2,
-              "total": 135,
-              "channel": "Social",
+              "product": "produc-7",
+              "partner": "suppli-2",
+              "handler": "tm-3",
+              "quantity": 1,
+              "variant": "11 oz",
+              "total": 27.5,
+              "partner_cost": 12.4,
+              "channel": "Website",
               "ship_by": "@today+1d",
               "packer": "@installer"
             }
@@ -1532,10 +1940,13 @@
               "order_name": "WG-4160",
               "status": "New",
               "customer": "custom-6",
-              "product": "produc-2",
+              "product": "produc-6",
+              "partner": "suppli-3",
               "handler": "tm-3",
-              "quantity": 3,
-              "total": 95,
+              "quantity": 2,
+              "variant": "Pack of 6",
+              "total": 29,
+              "partner_cost": 10.8,
               "channel": "Website",
               "ship_by": "@today+3d"
             }
@@ -1546,21 +1957,299 @@
               "order_name": "WG-4163",
               "status": "New",
               "customer": "custom-11",
-              "product": "produc-5",
-              "handler": "tm-4",
+              "product": "produc-1",
+              "partner": "suppli-1",
+              "handler": "tm-3",
               "quantity": 1,
-              "total": 25,
+              "variant": "M, rust",
+              "total": 37.5,
+              "partner_cost": 18.9,
               "channel": "Marketplace",
               "ship_by": "@today+4d"
             }
           }
+        ]
+      },
+      {
+        "token": "issue",
+        "name": "Print issues and reprints",
+        "labelSingular": "Issue",
+        "labelPlural": "Print issues",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "triangle-alert",
+        "titleField": "issue_name",
+        "describes": "Every misprint, damage, loss or wrong item: what you did, the claim to the partner and what it cost.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "reported_on",
+            "claim_by"
+          ]
         ],
-        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+        "independentOf": {
+          "order": "Either record can be created or change status before the other.",
+          "partner": "Either record can be created or change status before the other.",
+          "customer": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "issue_name",
+            "label": "Issue",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "order",
+            "label": "Order",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "order",
+            "relationMax": 1
+          },
+          {
+            "key": "partner",
+            "label": "Print partner",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "customer",
+            "label": "Customer",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "problem",
+            "label": "Problem",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Misprint",
+              "Wrong size or colour",
+              "Damaged in transit",
+              "Lost in transit",
+              "Colour looks off",
+              "Customer changed mind"
+            ],
+            "choiceColors": {
+              "Misprint": "slate",
+              "Wrong size or colour": "blue",
+              "Damaged in transit": "amber",
+              "Lost in transit": "violet",
+              "Colour looks off": "green",
+              "Customer changed mind": "teal"
+            }
+          },
+          {
+            "key": "fix",
+            "label": "Fix",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reprint",
+              "Refund",
+              "Partial refund",
+              "No action"
+            ],
+            "choiceColors": {
+              "Reprint": "slate",
+              "Refund": "blue",
+              "Partial refund": "amber",
+              "No action": "violet"
+            }
+          },
+          {
+            "key": "issue_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Claim filed",
+              "Reprinting",
+              "Resolved"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Open": "todo",
+              "Claim filed": "in_progress",
+              "Reprinting": "in_progress",
+              "Resolved": "done"
+            },
+            "choiceColors": {
+              "Open": "slate",
+              "Claim filed": "blue",
+              "Reprinting": "amber",
+              "Resolved": "violet"
+            },
+            "default": "Open"
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "claim_by",
+            "label": "Claim deadline",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "cost",
+            "label": "Cost to us (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "partner_paid",
+            "label": "Partner covered it",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "issue_notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "iss-1",
+            "values": {
+              "issue_name": "Moth tee - print cracked after one wash",
+              "order": "order-6",
+              "partner": "suppli-1",
+              "customer": "custom-3",
+              "problem": "Misprint",
+              "fix": "Refund",
+              "issue_status": "Resolved",
+              "reported_on": "@today-9d",
+              "claim_by": "@today+21d",
+              "cost": 0,
+              "partner_paid": true,
+              "issue_notes": "Photo sent; partner credited the base cost"
+            }
+          },
+          {
+            "key": "iss-2",
+            "values": {
+              "issue_name": "Heron poster - corner crushed",
+              "order": "order-1",
+              "partner": "suppli-3",
+              "customer": "custom-2",
+              "problem": "Damaged in transit",
+              "fix": "Reprint",
+              "issue_status": "Reprinting",
+              "reported_on": "@today-5d",
+              "claim_by": "@today+25d",
+              "cost": 0,
+              "partner_paid": true,
+              "issue_notes": "Partner reprinting with a stiffer tube"
+            }
+          },
+          {
+            "key": "iss-3",
+            "values": {
+              "issue_name": "Tide tote - wrong colour sent",
+              "order": "order-2",
+              "partner": "suppli-1",
+              "customer": "custom-7",
+              "problem": "Wrong size or colour",
+              "fix": "Reprint",
+              "issue_status": "Claim filed",
+              "reported_on": "@today-3d",
+              "claim_by": "@today+27d",
+              "cost": 0,
+              "partner_paid": false,
+              "issue_notes": "Ordered natural, got black"
+            }
+          },
+          {
+            "key": "iss-4",
+            "values": {
+              "issue_name": "Sticker pack - colours dull",
+              "order": "order-3",
+              "partner": "suppli-3",
+              "customer": "custom-12",
+              "problem": "Colour looks off",
+              "fix": "Partial refund",
+              "issue_status": "Open",
+              "reported_on": "@today-1d",
+              "claim_by": "@today+29d",
+              "cost": 4,
+              "partner_paid": false,
+              "issue_notes": "Third colour complaint on Northlight this month"
+            }
+          },
+          {
+            "key": "iss-5",
+            "values": {
+              "issue_name": "Dawn mug - lost in transit",
+              "order": "order-5",
+              "partner": "suppli-2",
+              "customer": "custom-10",
+              "problem": "Lost in transit",
+              "fix": "Reprint",
+              "issue_status": "Open",
+              "reported_on": "@today",
+              "claim_by": "@today+13d",
+              "cost": 0,
+              "partner_paid": false,
+              "issue_notes": "Tracking stopped five days ago"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
       {
-        "describes": "Each design belongs to one print partner.",
+        "describes": "Each listing is printed by one partner.",
         "fromTable": "product",
         "fromField": "supplier_rel",
         "toTable": "supplier",
@@ -1570,17 +2259,37 @@
         "inverseKey": "products"
       },
       {
+        "describes": "Each listing uses one design.",
+        "fromTable": "product",
+        "fromField": "design",
+        "toTable": "design",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "listings"
+      },
+      {
+        "describes": "One person draws each design.",
+        "fromTable": "design",
+        "fromField": "artist",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "designs_drawn"
+      },
+      {
         "describes": "Each order belongs to one customer.",
         "fromTable": "order",
         "fromField": "customer",
         "toTable": "customer",
         "flavor": "referenced",
         "cardinality": "one",
-        "onDelete": "restrict",
+        "onDelete": "set_null",
         "inverseKey": "orders"
       },
       {
-        "describes": "Each order belongs to one design.",
+        "describes": "Each order is for one listing.",
         "fromTable": "order",
         "fromField": "product",
         "toTable": "product",
@@ -1590,7 +2299,17 @@
         "inverseKey": "orders"
       },
       {
-        "describes": "Each order belongs to one order handler (staff).",
+        "describes": "Each order is printed by one partner.",
+        "fromTable": "order",
+        "fromField": "partner",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "partner_orders"
+      },
+      {
+        "describes": "One person looks after each order.",
         "fromTable": "order",
         "fromField": "handler",
         "toTable": "team_member",
@@ -1598,6 +2317,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "orders_handled"
+      },
+      {
+        "describes": "Each issue is about one order.",
+        "fromTable": "issue",
+        "fromField": "order",
+        "toTable": "order",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "issues"
+      },
+      {
+        "describes": "Each issue is with one print partner.",
+        "fromTable": "issue",
+        "fromField": "partner",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "issues_logged"
+      },
+      {
+        "describes": "Each issue affects one customer.",
+        "fromTable": "issue",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "customer_issues"
       }
     ],
     "sharedBlocks": [
@@ -1649,33 +2398,32 @@
     ],
     "forms": [
       {
-        "token": "order_request",
-        "name": "Place an order",
-        "describes": "How a customer or the team enters a new order.",
+        "token": "intake",
+        "name": "Report a print problem",
+        "describes": "What support fills in when a customer reports a problem with an order.",
         "audience": "staff",
-        "table": "order",
+        "table": "issue",
         "fields": [
           {
-            "fieldKey": "order_name",
-            "ask": "Order reference?",
+            "fieldKey": "issue_name",
+            "ask": "What is wrong, in a few words?",
             "required": true
           },
           {
-            "fieldKey": "customer",
-            "ask": "Who is it for?",
-            "required": true
+            "fieldKey": "order",
+            "ask": "Which order is it?"
           },
           {
-            "fieldKey": "product",
-            "ask": "Which item?"
+            "fieldKey": "problem",
+            "ask": "What kind of problem is it?"
           },
           {
-            "fieldKey": "quantity",
-            "ask": "How many?"
+            "fieldKey": "fix",
+            "ask": "What does the customer want: reprint or refund?"
           }
         ],
-        "submitLabel": "Send the order",
-        "confirmation": "Thanks. The order is on the board as New."
+        "submitLabel": "Log it",
+        "confirmation": "Logged. File the partner claim with the photo today."
       }
     ],
     "dimensions": [],
@@ -1724,24 +2472,38 @@
       },
       {
         "token": "supplier_board",
-        "name": "Print partners board",
+        "name": "Partners by quality",
         "table": "supplier",
         "kind": "kanban",
-        "groupBy": "terms"
+        "groupBy": "quality"
+      },
+      {
+        "token": "all_design",
+        "name": "All designs",
+        "table": "design",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "design_board",
+        "name": "Designs by artwork stage",
+        "table": "design",
+        "kind": "kanban",
+        "groupBy": "file_status"
       },
       {
         "token": "all_product",
-        "name": "All designs and products",
+        "name": "All listings",
         "table": "product",
         "kind": "grid",
         "isDefault": true
       },
       {
         "token": "product_board",
-        "name": "Designs and products board",
+        "name": "Listings by status",
         "table": "product",
         "kind": "kanban",
-        "groupBy": "category"
+        "groupBy": "status"
       },
       {
         "token": "all_customer",
@@ -1752,7 +2514,7 @@
       },
       {
         "token": "customer_board",
-        "name": "Customers board",
+        "name": "Customers by segment",
         "table": "customer",
         "kind": "kanban",
         "groupBy": "segment"
@@ -1773,7 +2535,7 @@
       },
       {
         "token": "order_cal",
-        "name": "Orders calendar",
+        "name": "Due-to-ship calendar",
         "table": "order",
         "kind": "calendar",
         "dateField": "ship_by",
@@ -1781,7 +2543,7 @@
       },
       {
         "token": "order_over",
-        "name": "Overdue",
+        "name": "Stuck in production",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1792,14 +2554,14 @@
         "anyOf": {
           "status": [
             "New",
-            "Paid",
-            "Packing"
+            "Sent to partner",
+            "In production"
           ]
         }
       },
       {
         "token": "order_week",
-        "name": "Due this week",
+        "name": "Due to ship this week",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1810,14 +2572,14 @@
         "anyOf": {
           "status": [
             "New",
-            "Paid",
-            "Packing"
+            "Sent to partner",
+            "In production"
           ]
         }
       },
       {
         "token": "order_next7",
-        "name": "Next 7 days",
+        "name": "Due to ship in 7 days",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1829,19 +2591,52 @@
         "anyOf": {
           "status": [
             "New",
-            "Paid",
-            "Packing"
+            "Sent to partner",
+            "In production"
           ]
         }
       },
       {
         "token": "order_mine",
-        "name": "My orders",
+        "name": "Orders I am watching",
         "table": "order",
         "kind": "grid",
         "me": [
           "packer"
         ]
+      },
+      {
+        "token": "all_issue",
+        "name": "All print issues",
+        "table": "issue",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "issue_board",
+        "name": "Print issues board",
+        "table": "issue",
+        "kind": "kanban",
+        "groupBy": "issue_status"
+      },
+      {
+        "token": "issue_claim",
+        "name": "Claims closing in 14 days",
+        "table": "issue",
+        "kind": "grid",
+        "within": {
+          "claim_by": {
+            "relative": "next_days",
+            "n": 14
+          }
+        },
+        "anyOf": {
+          "issue_status": [
+            "Open",
+            "Claim filed",
+            "Reprinting"
+          ]
+        }
       }
     ],
     "agent": {
@@ -1853,46 +2648,61 @@
       "variables": [
         {
           "name": "primary_table",
-          "table": "product",
-          "describes": "Every design and product, with price, print cost, margin and any stock you hold yourself."
+          "table": "order",
+          "describes": "Orders with listing, partner, status, what the customer paid and what the partner charged."
         },
         {
           "name": "related_tables",
-          "table": "supplier",
-          "describes": "The records the first table connects to."
+          "table": "product",
+          "describes": "Listings with design, partner, cost, price and margin."
         }
       ],
       "question": {
-        "ask": "How many orders are still waiting to be packed?",
-        "whyItMatters": "The packer starts each day with these.",
+        "ask": "How many orders are still with the print partners?",
+        "whyItMatters": "The owner checks every morning for orders stuck in production before customers start asking.",
         "expect": {
           "table": "order",
           "measure": {
             "op": "count"
           },
           "filter": {
-            "status": "Packing"
+            "status": [
+              "Sent to partner",
+              "In production"
+            ]
           },
-          "answer": 2,
+          "answer": 7,
           "unit": "orders"
         }
       }
     },
     "walk": [
       {
-        "says": "Open print partners.",
+        "says": "Open orders.",
         "action": {
           "kind": "open",
-          "surface": "supplier_board"
+          "surface": "order_board"
         },
         "expect": {
           "kind": "renders",
-          "surface": "supplier_board",
+          "surface": "order_board",
           "minItems": 3
         }
       },
       {
-        "says": "Open designs and products.",
+        "says": "Open designs.",
+        "action": {
+          "kind": "open",
+          "surface": "design_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "design_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open listings.",
         "action": {
           "kind": "open",
           "surface": "product_board"
@@ -1904,14 +2714,14 @@
         }
       },
       {
-        "says": "Open customers.",
+        "says": "Open print issues.",
         "action": {
           "kind": "open",
-          "surface": "customer_board"
+          "surface": "issue_board"
         },
         "expect": {
           "kind": "renders",
-          "surface": "customer_board",
+          "surface": "issue_board",
           "minItems": 3
         }
       }
@@ -1920,18 +2730,21 @@
     "provenance": {
       "kind": "synthesized",
       "authoredBy": "Spaces industry template author (Claude)",
-      "authoredOn": "2026-10-18",
+      "authoredOn": "2026-10-19",
       "noRealPeople": true,
       "sources": [],
       "fictionalDomains": [
-        "wildgrainprint.net",
-        "inbox-mail.net"
+        "harborviewprint.net",
+        "inbox-mail.net",
+        "lanternpressmugs.net",
+        "northlightposter.net",
+        "wildgrainprint.net"
       ],
       "fictionalStreets": [
         "Inkwell Alley"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1941,24 +2754,51 @@
       "icon": {
         "emoji": "👕"
       },
-      "cover": {
-        "url": "gallery:retail-t-shirts-folded-printing",
-        "offsetY": 50
-      },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Run the shop from one page. Designs, print partners, customers and orders are linked. Orders move from New to Delivered, and the order handler sees their own list under Mine. Designs show margin so you can retire the ones that do not earn."
+              "text": "Run the shop from here. "
+            },
+            {
+              "text": "Orders",
+              "bold": true
+            },
+            {
+              "text": " shows what is with each print partner and what is stuck. "
+            },
+            {
+              "text": "Designs",
+              "bold": true
+            },
+            {
+              "text": " holds your artwork, "
+            },
+            {
+              "text": "Designs and products",
+              "bold": true
+            },
+            {
+              "text": " every listing with its margin, and "
+            },
+            {
+              "text": "Print issues",
+              "bold": true
+            },
+            {
+              "text": " every misprint and reprint claim. Start with the tour below."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -1975,15 +2815,7 @@
                   "props": {
                     "spaceId": "page:dashboard"
                   }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
+                },
                 {
                   "type": "page",
                   "props": {
@@ -1991,12 +2823,7 @@
                   }
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "columnList",
-          "children": [
+            },
             {
               "type": "column",
               "props": {
@@ -2008,15 +2835,7 @@
                   "props": {
                     "spaceId": "page:samples-and-quality"
                   }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2026,153 +2845,6 @@
               ]
             }
           ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Print partners"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "The print services that make and ship your products, with their production times."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "supplier",
-              "view": "supplier_board"
-            },
-            "inline": true,
-            "title": "Print partners",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "sup-b",
-                "name": "Board",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "terms"
-              },
-              {
-                "id": "sup-t",
-                "name": "All print partners",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "sup-b"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Designs and products"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Every design and product, with price, print cost, margin and any stock you hold yourself."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "product",
-              "view": "product_board"
-            },
-            "inline": true,
-            "title": "Designs and products",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "pro-b",
-                "name": "Board",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "category"
-              },
-              {
-                "id": "pro-t",
-                "name": "All designs and products",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "pro-b"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Customers"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Buyers with spend, returns and a tier."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "customer",
-              "view": "customer_board"
-            },
-            "inline": true,
-            "title": "Customers",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "cus-b",
-                "name": "Board",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "segment"
-              },
-              {
-                "id": "cus-t",
-                "name": "All customers",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "cus-b"
-          }
         },
         {
           "type": "heading",
@@ -2189,7 +2861,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Every order from payment to delivery, with who is handling it."
+              "text": "Due to ship comes from the partner's production time. Anything past it is stuck: chase the partner before the customer asks."
             }
           ]
         },
@@ -2228,7 +2900,7 @@
               },
               {
                 "id": "ord-o",
-                "name": "Overdue",
+                "name": "Stuck in production",
                 "layout": "list",
                 "icon": "TriangleAlert",
                 "within": {
@@ -2239,14 +2911,14 @@
                 "anyOf": {
                   "status": [
                     "New",
-                    "Paid",
-                    "Packing"
+                    "Sent to partner",
+                    "In production"
                   ]
                 }
               },
               {
                 "id": "ord-w",
-                "name": "Due this week",
+                "name": "Due to ship this week",
                 "layout": "list",
                 "icon": "CalendarDays",
                 "within": {
@@ -2257,14 +2929,14 @@
                 "anyOf": {
                   "status": [
                     "New",
-                    "Paid",
-                    "Packing"
+                    "Sent to partner",
+                    "In production"
                   ]
                 }
               },
               {
                 "id": "ord-n",
-                "name": "Next 7 days",
+                "name": "Due to ship in 7 days",
                 "layout": "list",
                 "icon": "Clock",
                 "within": {
@@ -2276,14 +2948,14 @@
                 "anyOf": {
                   "status": [
                     "New",
-                    "Paid",
-                    "Packing"
+                    "Sent to partner",
+                    "In production"
                   ]
                 }
               },
               {
                 "id": "ord-m",
-                "name": "Mine",
+                "name": "Orders I am watching",
                 "layout": "list",
                 "icon": "User",
                 "me": [
@@ -2293,6 +2965,576 @@
             ],
             "activeViewId": "ord-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Print issues and reprints"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "issue",
+              "view": "issue_board"
+            },
+            "inline": true,
+            "title": "Print issues",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "iss-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "issue_status"
+              },
+              {
+                "id": "iss-t",
+                "name": "All print issues",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "iss-c",
+                "name": "Claims closing in 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "claim_by": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                },
+                "anyOf": {
+                  "issue_status": [
+                    "Open",
+                    "Claim filed",
+                    "Reprinting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "iss-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Designs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "design",
+              "view": "design_board"
+            },
+            "inline": true,
+            "title": "Designs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "des-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "file_status"
+              },
+              {
+                "id": "des-t",
+                "name": "All designs",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "des-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Designs and products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One row per design on a product. Margin is before marketplace and payment fees."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Designs and products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pro-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pro-t",
+                "name": "All listings",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pro-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Print partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "all_supplier"
+            },
+            "inline": true,
+            "title": "Print partners",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-t",
+                "name": "All print partners",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "quality"
+              }
+            ],
+            "activeViewId": "sup-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "segment"
+              },
+              {
+                "id": "cus-t",
+                "name": "All customers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        }
+      ],
+      "settings": {
+        "fullWidth": true
+      },
+      "cover": {
+        "url": "gallery:retail-t-shirts-folded-printing",
+        "offsetY": 50
+      }
+    },
+    {
+      "key": "start-here",
+      "parent": "print-on-demand-shop-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the shop runs. You never touch stock: your work is designs, listings, watching orders through production, and fixing what goes wrong."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Designs",
+              "bold": true
+            },
+            {
+              "text": ": the artwork, who drew it, which collection, whether the file is print-ready, the rights and the launch date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Designs and products",
+              "bold": true
+            },
+            {
+              "text": ": each design on each product (a tee, a mug, a poster), with its print partner, base cost, your price, margin, whether the sample passed, and units sold."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Orders",
+              "bold": true
+            },
+            {
+              "text": ": every order, what the customer paid against what the partner charged, profit, status and tracking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Print partners",
+              "bold": true
+            },
+            {
+              "text": ": who prints what, how long production and shipping take, how they bill, and their print issues."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Print issues and reprints",
+              "bold": true
+            },
+            {
+              "text": ": every misprint, damage, loss or wrong item, with the claim deadline."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": who buys, how often, and whether they have had a problem."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "An order's path"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "An order comes in from the website, the marketplace, a market or a social post. It lands as "
+            },
+            {
+              "text": "New",
+              "bold": true
+            },
+            {
+              "text": " and is sent to the partner that prints that listing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the partner accepts it, "
+            },
+            {
+              "text": "Sent to partner",
+              "bold": true
+            },
+            {
+              "text": "; when they start printing, "
+            },
+            {
+              "text": "In production",
+              "bold": true
+            },
+            {
+              "text": ". Add what the partner charged."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Due to ship is today plus the partner's production time. If an order passes it, it shows in "
+            },
+            {
+              "text": "Stuck in production",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When tracking arrives, paste it in and press "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": ". The customer gets the tracking email."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If anything goes wrong, log it with the "
+            },
+            {
+              "text": "Report a print problem",
+              "bold": true
+            },
+            {
+              "text": " form."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Owner and designer",
+              "bold": true
+            },
+            {
+              "text": ": designs, listings, partner choice, prices."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Illustrator",
+              "bold": true
+            },
+            {
+              "text": ": commissioned designs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Support",
+              "bold": true
+            },
+            {
+              "text": ": customer questions, print issues, partner claims."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Assistant",
+              "bold": true
+            },
+            {
+              "text": ": order watching, mockups, listing copy."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Stuck in production; new print issues"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: claims closing in 14 days; listings with low margin"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: units sold by design; issues by partner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every season: new designs from sketch to print-ready"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Replace the sample partners and designs with your own, then add one listing per design and product. Base cost is the partner's price for the blank plus printing; check it after every partner price change."
+            }
+          ]
         }
       ]
     },
@@ -2303,15 +3545,12 @@
       "icon": {
         "emoji": "📊"
       },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Orders by status, sales by channel and designs by category."
+              "text": "Orders, designs, partners and issues at a glance."
             }
           ],
           "background": "gray",
@@ -2325,7 +3564,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2342,19 +3581,19 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c0",
+                        "id": "d-c1",
                         "name": "Orders by status",
                         "layout": "chart",
+                        "icon": "ChartPie",
                         "chart": {
                           "type": "donut",
                           "groupBy": "status",
                           "op": "count",
                           "centerValue": true
-                        },
-                        "icon": "ChartPie"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c0"
+                    "activeViewId": "d-c1"
                   }
                 }
               ]
@@ -2362,7 +3601,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2379,27 +3618,32 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c1",
-                        "name": "Sales by channel",
+                        "id": "d-c2",
+                        "name": "Profit by channel",
                         "layout": "chart",
+                        "icon": "ChartColumn",
                         "chart": {
-                          "type": "bar",
+                          "type": "hbar",
                           "groupBy": "channel",
                           "op": "sum",
-                          "field": "total"
-                        },
-                        "icon": "ChartColumn"
+                          "field": "profit"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c1"
+                    "activeViewId": "d-c2"
                   }
                 }
               ]
-            },
+            }
+          ]
+        },
+        {
+          "type": "columnList",
+          "children": [
             {
               "type": "column",
               "props": {
-                "width": 0.34
+                "width": 0.5
               },
               "children": [
                 {
@@ -2416,19 +3660,56 @@
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c2",
-                        "name": "Designs and products by category",
+                        "id": "d-c3",
+                        "name": "Units sold by product type",
                         "layout": "chart",
+                        "icon": "ChartColumn",
                         "chart": {
-                          "type": "donut",
+                          "type": "hbar",
                           "groupBy": "category",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "icon": "ChartPie"
+                          "op": "sum",
+                          "field": "sold"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c2"
+                    "activeViewId": "d-c3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "issue",
+                      "view": "all_issue"
+                    },
+                    "inline": true,
+                    "title": "Print issues",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d-c4",
+                        "name": "Issues by problem",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "problem",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d-c4"
                   }
                 }
               ]
@@ -2439,7 +3720,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Late to ship"
+              "text": "Stuck in production"
             }
           ],
           "props": {
@@ -2460,10 +3741,10 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-l0",
-                "name": "Late to ship",
+                "id": "d-l1",
+                "name": "Stuck in production",
                 "layout": "list",
-                "icon": "Table",
+                "icon": "TriangleAlert",
                 "within": {
                   "ship_by": {
                     "relative": "before_today"
@@ -2472,20 +3753,20 @@
                 "anyOf": {
                   "status": [
                     "New",
-                    "Paid",
-                    "Packing"
+                    "Sent to partner",
+                    "In production"
                   ]
                 }
               }
             ],
-            "activeViewId": "view-l0"
+            "activeViewId": "d-l1"
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "My orders"
+              "text": "Open print issues"
             }
           ],
           "props": {
@@ -2497,65 +3778,75 @@
           "props": {
             "source": {
               "kind": "template",
-              "table": "order",
-              "view": "all_order"
+              "table": "issue",
+              "view": "all_issue"
             },
             "inline": true,
-            "title": "Orders",
+            "title": "Print issues",
             "linked": true,
             "showTitle": false,
             "views": [
               {
-                "id": "view-l1",
-                "name": "My orders",
+                "id": "d-l2",
+                "name": "Open issues",
                 "layout": "list",
-                "icon": "Table",
-                "me": [
-                  "packer"
-                ]
-              }
-            ],
-            "activeViewId": "view-l1"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Returns"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "order",
-              "view": "all_order"
-            },
-            "inline": true,
-            "title": "Orders",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l2",
-                "name": "Returns",
-                "layout": "list",
-                "icon": "Table",
-                "filters": {
-                  "status": "Returned"
+                "icon": "TriangleAlert",
+                "anyOf": {
+                  "issue_status": [
+                    "Open",
+                    "Claim filed",
+                    "Reprinting"
+                  ]
                 }
               }
             ],
-            "activeViewId": "view-l2"
+            "activeViewId": "d-l2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Designs in progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "design",
+              "view": "all_design"
+            },
+            "inline": true,
+            "title": "Designs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l3",
+                "name": "Not yet print-ready",
+                "layout": "list",
+                "icon": "Palette",
+                "anyOf": {
+                  "file_status": [
+                    "Sketch",
+                    "Final art"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-l3"
           }
         }
-      ]
+      ],
+      "settings": {
+        "fullWidth": true
+      }
     },
     {
       "key": "order-flow",
@@ -2569,7 +3860,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Most orders pass through on their own. Check them anyway for the first minute."
+              "text": "You do not print or ship, but the customer does not know that. Every order is your promise, kept by someone else. Watch it."
             }
           ],
           "background": "blue",
@@ -2581,7 +3872,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When an order arrives"
             }
           ],
           "props": {
@@ -2592,7 +3883,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Review each new order for address and product errors."
+              "text": "Check the address. Missing apartment numbers and wrong postcodes cause most lost parcels; email the customer before it goes to print."
             }
           ]
         },
@@ -2600,7 +3891,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm the artwork file matches the product."
+              "text": "Make sure it went to the right partner: the one on the listing."
             }
           ]
         },
@@ -2608,7 +3899,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the order to the print partner."
+              "text": "Set "
+            },
+            {
+              "text": "Due to ship",
+              "bold": true
+            },
+            {
+              "text": ": today plus the partner's production time."
             }
           ]
         },
@@ -2616,7 +3914,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add the tracking number and Mark shipped."
+              "text": "Add what the partner charged once they confirm. "
+            },
+            {
+              "text": "Profit before fees",
+              "bold": true
+            },
+            {
+              "text": " works itself out."
             }
           ]
         },
@@ -2624,7 +3929,56 @@
           "type": "heading",
           "text": [
             {
-              "text": "Delays"
+              "text": "Every morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "Stuck in production",
+              "bold": true
+            },
+            {
+              "text": ". Any order past its due-to-ship date: message the partner's support with the order number."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it will be more than two days late, email the customer first, with a new date. People forgive a delay they are told about."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Paste tracking for anything that shipped overnight and press "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holiday deadlines"
             }
           ],
           "props": {
@@ -2635,7 +3989,103 @@
           "type": "text",
           "text": [
             {
-              "text": "If a partner is late, message the customer once, with a new date, before they ask."
+              "text": "Each partner publishes a last order date for holiday delivery. Put those dates on the shop banner in November and add them to your calendar. Orders after the date get a clear note at checkout: printed after the holidays."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Choosing a partner for a listing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Print quality on that product, from your own sample."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Base cost, including the blank you chose."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Production and shipping time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How they handle claims: how long you have, and whether they ask for photos only or the item back."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep each product type with one partner unless there is a reason. Splitting orders across partners makes problems harder to trace."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching partners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each partner's "
+            },
+            {
+              "text": "Print issues",
+              "bold": true
+            },
+            {
+              "text": " count adds up from the issues table. Look at it every month next to their order count. A partner with more than one issue in fifty orders needs a conversation, and a second sample of the problem product. If quality stays uneven, move the listing to another partner and order a fresh sample first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Wholesale and bulk orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Orders of ten or more for a shop or an event go through the partner's bulk service, if they have one, at a lower base cost. Order one sample first, confirm sizes in writing, and allow an extra week."
             }
           ]
         }
@@ -2646,14 +4096,14 @@
       "parent": "print-on-demand-shop-hq",
       "title": "Samples and quality control",
       "icon": {
-        "emoji": "✅"
+        "emoji": "🔍"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Order a sample before listing any new product. Colors on screen are not colors on cotton."
+              "text": "Never sell something you have not held. A sample costs a few dollars; a bad print costs the customer and the review."
             }
           ],
           "background": "blue",
@@ -2665,7 +4115,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Before a listing goes live"
             }
           ],
           "props": {
@@ -2676,7 +4126,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Order one sample at the partner."
+              "text": "Finish the design as "
+            },
+            {
+              "text": "Print-ready",
+              "bold": true
+            },
+            {
+              "text": ": the right size and resolution for the product, colours checked for print."
             }
           ]
         },
@@ -2684,7 +4141,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the print position, color and fabric."
+              "text": "Create the listing as "
+            },
+            {
+              "text": "Draft",
+              "bold": true
+            },
+            {
+              "text": ", then order one sample from the partner. Set the listing to "
+            },
+            {
+              "text": "Sample ordered",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2692,7 +4163,95 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Photograph it for the listing."
+              "text": "When it arrives, check it in daylight against this list."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Colours close to the mockup; no muddy darks or washed-out brights"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Placement and size as intended; nothing cut off at seams or handles"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fine lines and small text readable"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Garment: wash it once inside out, cold; check for cracking and fading"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mug: run it through the dishwasher three times"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Poster: check the paper weight and how it arrived"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If it passes, tick "
+            },
+            {
+              "text": "Sample approved",
+              "bold": true
+            },
+            {
+              "text": ", take your own photos, and set the listing to "
+            },
+            {
+              "text": "Live",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2700,7 +4259,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the design Draft until the sample passes."
+              "text": "If it fails, adjust the file (usually colours) and order another sample."
             }
           ]
         },
@@ -2708,7 +4267,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Complaints"
+              "text": "When a partner changes"
             }
           ],
           "props": {
@@ -2719,7 +4278,71 @@
           "type": "text",
           "text": [
             {
-              "text": "Keep a list of quality issues by partner. Move a product to another partner after two bad batches."
+              "text": "Partners change blanks, inks and printers without much notice. Order a fresh sample of your best seller from each partner every six months, and whenever customers start mentioning colour or fit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Mockups"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mockups must match the real product. If your sample's colour is a little darker than the mockup, darken the mockup or adjust the file. A customer who gets what they saw does not write in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Base cost plus shipping plus marketplace and payment fees should leave at least 35 percent. The "
+            },
+            {
+              "text": "Margin before fees",
+              "bold": true
+            },
+            {
+              "text": " column shows price against base cost; take about 12 points off it for fees on the marketplace and 4 on your own site. Listings below the line need a higher price, a cheaper blank, or retiring."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rights"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Only list designs you own or have rights to print. Commissioned designs need a written agreement giving the shop full rights; record it on the design."
             }
           ]
         }
@@ -2737,7 +4360,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Partners usually only accept returns for defects. Decide your policy first."
+              "text": "Print-on-demand items are made for one customer, so the rule is simple: fix our mistakes fast, be clear about everything else."
             }
           ],
           "background": "blue",
@@ -2749,7 +4372,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Policy we use"
+              "text": "The policy, in plain words"
             }
           ],
           "props": {
@@ -2760,7 +4383,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Replace or refund when the print is defective or wrong"
+              "text": "Misprint, damage, wrong item or lost parcel: we reprint or refund. No need to send it back."
             }
           ]
         },
@@ -2768,7 +4391,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Change-of-mind returns are not accepted on custom prints"
+              "text": "Wrong size chosen or changed mind: we cannot take it back, because it was made for them. We offer 15 percent off a reorder in the right size."
             }
           ]
         },
@@ -2776,7 +4399,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask for a photo of the defect"
+              "text": "Report problems within 30 days of delivery, with a photo."
             }
           ]
         },
@@ -2784,7 +4407,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When a problem is reported"
             }
           ],
           "props": {
@@ -2795,7 +4418,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the photo."
+              "text": "Log it with "
+            },
+            {
+              "text": "Report a print problem",
+              "bold": true
+            },
+            {
+              "text": ": the order, the problem and what the customer wants."
             }
           ]
         },
@@ -2803,7 +4433,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a replacement order to the partner."
+              "text": "Ask for one clear photo, in daylight. For a lost parcel, check tracking first."
             }
           ]
         },
@@ -2811,7 +4441,129 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the original order Returned and note the reason."
+              "text": "File the claim with the partner the same day, with the photo. Set the issue to "
+            },
+            {
+              "text": "Claim filed",
+              "bold": true
+            },
+            {
+              "text": " and fill in "
+            },
+            {
+              "text": "Claim deadline",
+              "bold": true
+            },
+            {
+              "text": " from the partner's rules (usually 30 days from delivery)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do not wait for the partner to tell the customer what happens. Tell them now: a reprint is on its way, or the refund is done."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the partner reprints, set "
+            },
+            {
+              "text": "Reprinting",
+              "bold": true
+            },
+            {
+              "text": "; when done, "
+            },
+            {
+              "text": "Resolved",
+              "bold": true
+            },
+            {
+              "text": ". Tick "
+            },
+            {
+              "text": "Partner covered it",
+              "bold": true
+            },
+            {
+              "text": " if they paid, or enter what it cost you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lost parcels"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If tracking has not moved for five working days, treat it as lost. Reprint now and claim from the partner or carrier. Waiting longer costs the review, not just the parcel."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching the claim deadlines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "Claims closing in 14 days",
+              "bold": true
+            },
+            {
+              "text": " every Monday. A claim missed is money you pay that the partner should have."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Dashboard's "
+            },
+            {
+              "text": "Issues by problem",
+              "bold": true
+            },
+            {
+              "text": " chart, and each partner's issue count. Many Colour looks off issues mean the file or the mockup needs adjusting. Many Damaged in transit means the partner's packaging needs a word. Fix the cause and the issue list gets shorter."
             }
           ]
         }

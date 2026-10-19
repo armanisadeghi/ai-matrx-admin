@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0556",
-  "version": 2,
+  "version": 3,
   "title": "School Operations Office",
-  "description": "Staff, class sections, school events, substitute cover and office requests.",
+  "description": "School front office: enrollment, daily attendance, staff licenses, events, sub cover.",
   "forWho": "Principals and office managers at K-12 schools",
   "icon": {
     "emoji": "🏫"
@@ -14,11 +14,12 @@
   },
   "category": "education",
   "tags": [
-    "school",
-    "classes",
-    "events",
-    "staff",
-    "substitutes"
+    "principal",
+    "office manager",
+    "teacher",
+    "enrollment",
+    "attendance",
+    "school"
   ],
   "spec": {
     "specVersion": 1,
@@ -196,6 +197,32 @@
               "status": [
                 "Needs cover",
                 "Covered"
+              ]
+            }
+          },
+          {
+            "key": "unexcused_total",
+            "label": "Unexcused absences, recorded days",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "attendance_days",
+            "pick": "unexcused",
+            "agg": "sum"
+          },
+          {
+            "key": "joining",
+            "label": "Students joining",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "enrollments",
+            "pick": "enroll_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Paperwork pending",
+                "Enrolled"
               ]
             }
           },
@@ -1438,6 +1465,1034 @@
             }
           }
         ]
+      },
+      {
+        "token": "attendance",
+        "name": "Daily attendance",
+        "labelSingular": "Attendance day",
+        "labelPlural": "Daily attendance",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-check",
+        "titleField": "att_name",
+        "describes": "Each class, each day: present, excused, unexcused and tardy, from the teacher's morning count.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New class day",
+            "values": {
+              "att_name": "New class day"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Morning count"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Taken by 8:45. Absences with a parent call or note are excused; the office calls home for every other absence by 10:00."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Students sent home sick, early pickups, anything the office should know."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "section": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "att_name",
+            "label": "Class day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "section",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "section",
+            "relationMax": 1
+          },
+          {
+            "key": "day_on",
+            "label": "School day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "present",
+            "label": "Present",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "excused",
+            "label": "Absent, excused",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "unexcused",
+            "label": "Absent, unexcused",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "tardy",
+            "label": "Tardy",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "key": "rate",
+            "label": "Attendance rate (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Present} + {Absent, excused} + {Absent, unexcused} > 0, ROUND({Present} / ({Present} + {Absent, excused} + {Absent, unexcused}) * 100, 1), 0)"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "attendance-1",
+            "values": {
+              "att_name": "Kindergarten, Room 3, last school day",
+              "section": "section-1",
+              "day_on": "@today-1b",
+              "present": 21,
+              "excused": 1,
+              "unexcused": 0,
+              "tardy": 2
+            }
+          },
+          {
+            "key": "attendance-2",
+            "values": {
+              "att_name": "Kindergarten, Room 3, two school days ago",
+              "section": "section-1",
+              "day_on": "@today-2b",
+              "present": 19,
+              "excused": 2,
+              "unexcused": 1,
+              "tardy": 1
+            }
+          },
+          {
+            "key": "attendance-3",
+            "values": {
+              "att_name": "Kindergarten, Room 3, three school days ago",
+              "section": "section-1",
+              "day_on": "@today-3b",
+              "present": 22,
+              "excused": 0,
+              "unexcused": 0,
+              "tardy": 0
+            }
+          },
+          {
+            "key": "attendance-4",
+            "values": {
+              "att_name": "Grade 3, Room 9, last school day",
+              "section": "section-4",
+              "day_on": "@today-1b",
+              "present": 24,
+              "excused": 1,
+              "unexcused": 1,
+              "tardy": 3
+            }
+          },
+          {
+            "key": "attendance-5",
+            "values": {
+              "att_name": "Grade 3, Room 9, two school days ago",
+              "section": "section-4",
+              "day_on": "@today-2b",
+              "present": 25,
+              "excused": 1,
+              "unexcused": 0,
+              "tardy": 1
+            }
+          },
+          {
+            "key": "attendance-6",
+            "values": {
+              "att_name": "Grade 3, Room 9, three school days ago",
+              "section": "section-4",
+              "day_on": "@today-3b",
+              "present": 23,
+              "excused": 2,
+              "unexcused": 1,
+              "tardy": 2
+            }
+          },
+          {
+            "key": "attendance-7",
+            "values": {
+              "att_name": "Grade 4, Room 12, last school day",
+              "section": "section-6",
+              "day_on": "@today-1b",
+              "present": 26,
+              "excused": 1,
+              "unexcused": 0,
+              "tardy": 0
+            }
+          },
+          {
+            "key": "attendance-8",
+            "values": {
+              "att_name": "Grade 4, Room 12, two school days ago",
+              "section": "section-6",
+              "day_on": "@today-2b",
+              "present": 24,
+              "excused": 2,
+              "unexcused": 1,
+              "tardy": 4
+            }
+          },
+          {
+            "key": "attendance-9",
+            "values": {
+              "att_name": "Grade 4, Room 12, three school days ago",
+              "section": "section-6",
+              "day_on": "@today-3b",
+              "present": 25,
+              "excused": 1,
+              "unexcused": 1,
+              "tardy": 1
+            }
+          },
+          {
+            "key": "attendance-10",
+            "values": {
+              "att_name": "Grade 5, Room 14, last school day",
+              "section": "section-7",
+              "day_on": "@today-1b",
+              "present": 26,
+              "excused": 2,
+              "unexcused": 1,
+              "tardy": 2
+            }
+          },
+          {
+            "key": "attendance-11",
+            "values": {
+              "att_name": "Grade 5, Room 14, two school days ago",
+              "section": "section-7",
+              "day_on": "@today-2b",
+              "present": 28,
+              "excused": 1,
+              "unexcused": 0,
+              "tardy": 1
+            }
+          },
+          {
+            "key": "attendance-12",
+            "values": {
+              "att_name": "Grade 5, Room 14, three school days ago",
+              "section": "section-7",
+              "day_on": "@today-3b",
+              "present": 27,
+              "excused": 1,
+              "unexcused": 1,
+              "tardy": 0
+            }
+          }
+        ]
+      },
+      {
+        "token": "cert",
+        "name": "Staff certifications",
+        "labelSingular": "Certification",
+        "labelPlural": "Staff certifications",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "badge-check",
+        "titleField": "cert_name",
+        "describes": "Every license, clearance and required training for each staff member, with the date it expires.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Renewed"
+            ],
+            "filled": [
+              "renewed_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New certification",
+            "values": {
+              "cert_name": "New certification",
+              "status": "Current"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Proof on file"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Copy of the certificate or license in the staff file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Expiry date checked against the state or district record"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Renewal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the renewal needs (hours, a course, a fee) and the date to start."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "renewed_on",
+            "expires_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "cert_name",
+            "label": "Certification",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "staff",
+            "label": "Staff member",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "credential",
+            "label": "Credential",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Teaching license",
+              "Administrator license",
+              "English learner endorsement",
+              "CPR and first aid",
+              "Mandated reporter training",
+              "Fingerprint clearance"
+            ],
+            "choiceColors": {
+              "Teaching license": "blue",
+              "Administrator license": "violet",
+              "English learner endorsement": "teal",
+              "CPR and first aid": "red",
+              "Mandated reporter training": "amber",
+              "Fingerprint clearance": "slate"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Current",
+              "Renewal due",
+              "Renewed",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Current": "green",
+              "Renewal due": "amber",
+              "Renewed": "blue",
+              "Expired": "red"
+            },
+            "required": true,
+            "statusGroups": {
+              "Current": "in_progress",
+              "Renewal due": "todo",
+              "Renewed": "done",
+              "Expired": "done"
+            }
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "renewed_on",
+            "label": "Renewed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "btn_renewed",
+            "label": "Mark renewed",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cert_renewed"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "cert_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cert-1",
+            "values": {
+              "cert_name": "Teaching license, Priscilla",
+              "staff": "tm-4",
+              "credential": "Teaching license",
+              "status": "Renewal due",
+              "expires_on": "@today+3d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cert-2",
+            "values": {
+              "cert_name": "CPR and first aid, Rafael",
+              "staff": "tm-5",
+              "credential": "CPR and first aid",
+              "status": "Renewal due",
+              "expires_on": "@today-2d"
+            }
+          },
+          {
+            "key": "cert-3",
+            "values": {
+              "cert_name": "Mandated reporter training, Delphine",
+              "staff": "tm-6",
+              "credential": "Mandated reporter training",
+              "status": "Current",
+              "expires_on": "@today",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cert-4",
+            "values": {
+              "cert_name": "Fingerprint clearance, Matthias",
+              "staff": "tm-3",
+              "credential": "Fingerprint clearance",
+              "status": "Current",
+              "expires_on": "@today+300d"
+            }
+          },
+          {
+            "key": "cert-5",
+            "values": {
+              "cert_name": "ESL endorsement, Priscilla",
+              "staff": "tm-4",
+              "credential": "English learner endorsement",
+              "status": "Current",
+              "expires_on": "@today+2y"
+            }
+          },
+          {
+            "key": "cert-6",
+            "values": {
+              "cert_name": "Administrator license, Principal",
+              "staff": "tm-2",
+              "credential": "Administrator license",
+              "status": "Current",
+              "expires_on": "@today+5d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "cert-7",
+            "values": {
+              "cert_name": "CPR and first aid, Imogen",
+              "staff": "tm-1",
+              "credential": "CPR and first aid",
+              "status": "Renewed",
+              "expires_on": "@today+2y",
+              "renewed_on": "@today-15d"
+            }
+          },
+          {
+            "key": "cert-8",
+            "values": {
+              "cert_name": "Mandated reporter training, Rafael",
+              "staff": "tm-5",
+              "credential": "Mandated reporter training",
+              "status": "Expired",
+              "expires_on": "@today-40d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "enroll",
+        "name": "Enrollment",
+        "labelSingular": "Enrollment",
+        "labelPlural": "Enrollment",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "user-plus",
+        "titleField": "enroll_name",
+        "describes": "New students, transfers in, withdrawals and kindergarten round-up, from first call to first day.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New enrollment",
+            "values": {
+              "enroll_name": "New student",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Registration packet"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Proof of age and proof of address"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Immunization record"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Records request sent to the last school"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Home language survey"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Emergency contacts and pickup permissions"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "First day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Class assigned, teacher told, buddy chosen, bus or pickup confirmed."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "section": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "enroll_name",
+            "label": "Student",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "grade",
+            "label": "Grade",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Kindergarten",
+              "Grade 1",
+              "Grade 2",
+              "Grade 3",
+              "Grade 4",
+              "Grade 5"
+            ],
+            "choiceColors": {
+              "Kindergarten": "pink",
+              "Grade 1": "blue",
+              "Grade 2": "green",
+              "Grade 3": "amber",
+              "Grade 4": "violet",
+              "Grade 5": "teal"
+            }
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "New enrollment",
+              "Transfer in",
+              "Withdrawal",
+              "Kindergarten round-up"
+            ],
+            "choiceColors": {
+              "New enrollment": "blue",
+              "Transfer in": "green",
+              "Withdrawal": "slate",
+              "Kindergarten round-up": "pink"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Paperwork pending",
+              "Enrolled",
+              "Withdrawn"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Paperwork pending": "amber",
+              "Enrolled": "green",
+              "Withdrawn": "red"
+            },
+            "required": true,
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Paperwork pending": "in_progress",
+              "Enrolled": "done",
+              "Withdrawn": "done"
+            }
+          },
+          {
+            "key": "start_on",
+            "label": "First day (or last day)",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "section",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "section",
+            "relationMax": 1
+          },
+          {
+            "key": "records_in",
+            "label": "Records from the last school",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "immunizations",
+            "label": "Immunizations on file",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "language",
+            "label": "Home language",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "English",
+              "Spanish",
+              "Korean",
+              "Arabic",
+              "Other"
+            ],
+            "choiceColors": {
+              "English": "blue",
+              "Spanish": "orange",
+              "Korean": "violet",
+              "Arabic": "teal",
+              "Other": "slate"
+            }
+          },
+          {
+            "key": "btn_enrolled",
+            "label": "Mark enrolled",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "enroll_done"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "enroll_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "enroll-1",
+            "values": {
+              "enroll_name": "Amara T., new to the district",
+              "grade": "Grade 2",
+              "kind": "New enrollment",
+              "status": "Paperwork pending",
+              "start_on": "@today+2d",
+              "section": "section-3",
+              "records_in": false,
+              "immunizations": true,
+              "language": "English",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enroll-2",
+            "values": {
+              "enroll_name": "Leo M., transfer from Ridgeview",
+              "grade": "Grade 4",
+              "kind": "Transfer in",
+              "status": "Paperwork pending",
+              "start_on": "@today",
+              "records_in": false,
+              "immunizations": false,
+              "language": "Spanish"
+            }
+          },
+          {
+            "key": "enroll-3",
+            "values": {
+              "enroll_name": "Sofia R., kindergarten round-up",
+              "grade": "Kindergarten",
+              "kind": "Kindergarten round-up",
+              "status": "Inquiry",
+              "start_on": "@today+5d",
+              "records_in": false,
+              "immunizations": false,
+              "language": "Spanish",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enroll-4",
+            "values": {
+              "enroll_name": "Kenji W., moving to Oregon",
+              "grade": "Grade 5",
+              "kind": "Withdrawal",
+              "status": "Withdrawn",
+              "start_on": "@today-8d",
+              "section": "section-7",
+              "records_in": true,
+              "immunizations": true,
+              "language": "English"
+            }
+          },
+          {
+            "key": "enroll-5",
+            "values": {
+              "enroll_name": "Hana P., transfer from out of state",
+              "grade": "Grade 3",
+              "kind": "Transfer in",
+              "status": "Enrolled",
+              "start_on": "@today-12d",
+              "section": "section-5",
+              "records_in": true,
+              "immunizations": true,
+              "language": "Korean"
+            }
+          },
+          {
+            "key": "enroll-6",
+            "values": {
+              "enroll_name": "Mateo G., new to the district",
+              "grade": "Grade 1",
+              "kind": "New enrollment",
+              "status": "Paperwork pending",
+              "start_on": "@today-2d",
+              "section": "section-2",
+              "records_in": true,
+              "immunizations": false,
+              "language": "Spanish",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "enroll-7",
+            "values": {
+              "enroll_name": "Zoe A., kindergarten round-up",
+              "grade": "Kindergarten",
+              "kind": "Kindergarten round-up",
+              "status": "Inquiry",
+              "start_on": "@today+30d",
+              "records_in": false,
+              "immunizations": false,
+              "language": "Arabic"
+            }
+          },
+          {
+            "key": "enroll-8",
+            "values": {
+              "enroll_name": "Elijah B., returning after a year abroad",
+              "grade": "Grade 4",
+              "kind": "New enrollment",
+              "status": "Enrolled",
+              "start_on": "@today-20d",
+              "section": "section-6",
+              "records_in": true,
+              "immunizations": true,
+              "language": "English"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1480,6 +2535,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "request_by_requester"
+      },
+      {
+        "describes": "Each attendance count belongs to one class.",
+        "fromTable": "attendance",
+        "fromField": "section",
+        "toTable": "section",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "attendance_days"
+      },
+      {
+        "describes": "Each certification belongs to one staff member.",
+        "fromTable": "cert",
+        "fromField": "staff",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "certifications"
+      },
+      {
+        "describes": "Each enrollment is placed in one class.",
+        "fromTable": "enroll",
+        "fromField": "section",
+        "toTable": "section",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "enrollments"
       }
     ],
     "sharedBlocks": [
@@ -1697,6 +2782,67 @@
         "kind": "row_action",
         "token": "request_claim",
         "table": "request",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cert_renewed",
+        "table": "cert",
+        "name": "Mark renewed",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Renewed"
+          },
+          {
+            "field": "renewed_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "cert_claim",
+        "table": "cert",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "enroll_done",
+        "table": "enroll",
+        "name": "Mark enrolled",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Enrolled"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "enroll_claim",
+        "table": "enroll",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -1988,6 +3134,187 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_attendance",
+        "name": "All class days",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "attendance"
+      },
+      {
+        "token": "attendance_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "day_on",
+        "allDay": true,
+        "table": "attendance"
+      },
+      {
+        "token": "all_cert",
+        "name": "All certifications",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "cert"
+      },
+      {
+        "token": "cert_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "cert"
+      },
+      {
+        "token": "cert_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "expires_on",
+        "allDay": true,
+        "table": "cert"
+      },
+      {
+        "token": "cert_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Current",
+            "Renewal due"
+          ]
+        },
+        "table": "cert"
+      },
+      {
+        "token": "cert_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Current",
+            "Renewal due"
+          ]
+        },
+        "table": "cert"
+      },
+      {
+        "token": "cert_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "expires_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Current",
+            "Renewal due"
+          ]
+        },
+        "table": "cert"
+      },
+      {
+        "token": "cert_mine",
+        "name": "My certifications",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "cert"
+      },
+      {
+        "token": "all_enroll",
+        "name": "All enrollments",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "start_on",
+        "allDay": true,
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "start_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Paperwork pending"
+          ]
+        },
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "start_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Paperwork pending"
+          ]
+        },
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "start_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Paperwork pending"
+          ]
+        },
+        "table": "enroll"
+      },
+      {
+        "token": "enroll_mine",
+        "name": "My enrollments",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "enroll"
       }
     ],
     "agent": {
@@ -2060,6 +3387,42 @@
           "surface": "absences_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open daily attendance.",
+        "action": {
+          "kind": "open",
+          "surface": "attendance_cal"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "attendance_cal",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open staff certifications.",
+        "action": {
+          "kind": "open",
+          "surface": "cert_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "cert_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open enrollment.",
+        "action": {
+          "kind": "open",
+          "surface": "enroll_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "enroll_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2076,7 +3439,7 @@
         "Sycamore Drive"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2098,12 +3461,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The school office in one place: class sections and rooms, school events, teacher absences that need cover, and the requests staff send to the front office. Start each morning with the Dashboard and the Needs cover view. Keep student names out of this workspace; it is for staff and logistics only."
+              "text": "The front office in one place. Enrollment takes each new family from first call to first day; Daily attendance is the morning count; Absences and cover finds a sub for every empty classroom; Staff certifications warns before a license lapses; School events and Office requests keep the building running. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2588,6 +3957,567 @@
             ],
             "activeViewId": "req-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Enrollment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "New students, transfers and withdrawals, from first call to first day."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "enroll",
+              "view": "enroll_board"
+            },
+            "inline": true,
+            "title": "Enrollment",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "en-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "en-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "start_on"
+              },
+              {
+                "id": "en-t",
+                "name": "All enrollments",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "en-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "start_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Paperwork pending"
+                  ]
+                }
+              },
+              {
+                "id": "en-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "start_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Paperwork pending"
+                  ]
+                }
+              },
+              {
+                "id": "en-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "start_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Paperwork pending"
+                  ]
+                }
+              },
+              {
+                "id": "en-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "en-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily attendance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The morning count for each class."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendance",
+              "view": "all_attendance"
+            },
+            "inline": true,
+            "title": "Daily attendance",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "at-t",
+                "name": "All class days",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "day_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "at-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "day_on"
+              }
+            ],
+            "activeViewId": "at-t"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Staff certifications"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Licenses, clearances and required training, with their expiry dates."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cert",
+              "view": "cert_board"
+            },
+            "inline": true,
+            "title": "Staff certifications",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ce-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "ce-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "expires_on"
+              },
+              {
+                "id": "ce-t",
+                "name": "All certifications",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "ce-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Current",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "ce-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "expires_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Current",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "ce-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Current",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "ce-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "ce-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "school-operations-office",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the school office in this workspace. Share it with the principal, the office manager, the facilities lead and teachers who plan events."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Class sections",
+              "bold": true
+            },
+            {
+              "text": ": each class with its teacher, room, size, limit, seats left, absences and students joining."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enrollment",
+              "bold": true
+            },
+            {
+              "text": ": new students, transfers and withdrawals, with records, immunizations, home language and the class they join."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily attendance",
+              "bold": true
+            },
+            {
+              "text": ": each class's morning count of present, excused, unexcused and tardy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Absences and cover",
+              "bold": true
+            },
+            {
+              "text": ": staff absences and who is covering."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Staff certifications",
+              "bold": true
+            },
+            {
+              "text": ": licenses, clearances and required training with expiry dates."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "School events",
+              "bold": true
+            },
+            {
+              "text": ": trips, family nights, assemblies and testing windows."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Office requests",
+              "bold": true
+            },
+            {
+              "text": ": repairs, supplies, technology and safety."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every morning: cover, the attendance call, urgent requests."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: events for the next two weeks and notices to send."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: enrollment paperwork chased; new students placed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the principal reviews the Dashboard: chronic absence, licenses expiring, open requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: absences needing cover, the attendance count, calls home"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: enrollment pending, events this week and next"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: certifications expiring in 60 days, attendance patterns by class"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every spring: kindergarten round-up and next year's class sections"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The office manager runs cover, the attendance call and enrollment paperwork. The principal approves events, reads attendance patterns and owns certifications. Teachers report absences early and keep sub folders ready. The facilities lead owns requests and event set-up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Students' privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Children appear here by first name and last initial only. Health details, custody papers and records stay in your student information system, not here. Share this workspace with staff only."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename grades, rooms, credentials and event kinds to match your school and delete the sample rows once your own are in. Edit any cell in place; every count and rate updates on its own."
+            }
+          ]
         }
       ]
     },
@@ -2989,6 +4919,138 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Attendance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendance",
+              "view": "all_attendance"
+            },
+            "inline": true,
+            "title": "Unexcused absences by class",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "da-1",
+                "name": "Unexcused by class",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "section",
+                  "op": "sum",
+                  "field": "unexcused"
+                }
+              }
+            ],
+            "activeViewId": "da-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Licenses expiring in 60 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cert",
+              "view": "all_cert"
+            },
+            "inline": true,
+            "title": "Licenses expiring",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dc-1",
+                "name": "Expiring in 60 days",
+                "layout": "list",
+                "icon": "BadgeAlert",
+                "within": {
+                  "expires_on": {
+                    "relative": "next_days",
+                    "n": 60
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Current",
+                    "Renewal due"
+                  ]
+                }
+              },
+              {
+                "id": "dc-2",
+                "name": "Expired",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Expired"
+                }
+              }
+            ],
+            "activeViewId": "dc-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Enrollment in progress"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "enroll",
+              "view": "all_enroll"
+            },
+            "inline": true,
+            "title": "Enrollment in progress",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "de-1",
+                "name": "Paperwork pending",
+                "layout": "list",
+                "icon": "FileText",
+                "filters": {
+                  "status": "Paperwork pending"
+                }
+              }
+            ],
+            "activeViewId": "de-1"
+          }
         }
       ]
     },
@@ -3007,7 +5069,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The first hour sets the day. Doing the same things in the same order means nothing is missed."
+              "text": "The first hour decides the school day. By 9:30 every classroom has an adult, every absent child's family has been reached, and the principal knows anything unusual."
             }
           ],
           "background": "blue",
@@ -3019,7 +5081,70 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the bell"
+              "text": "7:15 to 7:45, before the bell"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "Absences and cover",
+              "bold": true
+            },
+            {
+              "text": ". Any absence marked "
+            },
+            {
+              "text": "Needs cover",
+              "bold": true
+            },
+            {
+              "text": " for today gets a substitute now: call the sub list in order, then ask a specialist or the instructional coach."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check today's "
+            },
+            {
+              "text": "School events",
+              "bold": true
+            },
+            {
+              "text": " for room changes, visitors and buses."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at "
+            },
+            {
+              "text": "Office requests",
+              "bold": true
+            },
+            {
+              "text": " marked Urgent: a leaking sink or a broken lock is handled before children arrive."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "7:45 to 8:15, arrival"
             }
           ],
           "props": {
@@ -3030,7 +5155,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Open Absences and cover and book substitutes for every row marked Needs cover"
+              "text": "Front door staffed; visitors sign in and wear a badge"
             }
           ],
           "props": {
@@ -3041,7 +5166,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check Office requests for anything Urgent"
+              "text": "Late arrivals sign in at the office and get a tardy slip"
             }
           ],
           "props": {
@@ -3052,18 +5177,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Read the day's events and confirm rooms and staff"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Put the day's changes on the staff board"
+              "text": "Medications handed to the nurse, never left in backpacks"
             }
           ],
           "props": {
@@ -3074,7 +5188,75 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the bell"
+              "text": "8:15 to 9:30, the attendance call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Teachers take the morning count by 8:45. The office enters each class's numbers in "
+            },
+            {
+              "text": "Daily attendance",
+              "bold": true
+            },
+            {
+              "text": ": present, excused, unexcused and tardy."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For every absence without a parent call, phone home by 10:00. A child who is missing and unexplained is a safety matter, not paperwork."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Excused absences are those reported by a parent with a reason your district accepts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching patterns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Missing ten percent of school days, about two days a month, is chronic absence and hurts reading. "
+            },
+            {
+              "text": "Unexcused absences, recorded days",
+              "bold": true
+            },
+            {
+              "text": " on each class and the Dashboard chart show where to look. The principal and teacher call the family together; ask what is getting in the way and offer help, not blame."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Through the day"
             }
           ],
           "props": {
@@ -3085,7 +5267,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Reconcile attendance with the student information system."
+              "text": "Enrollment calls and walk-ins are logged in "
+            },
+            {
+              "text": "Enrollment",
+              "bold": true
+            },
+            {
+              "text": " straight away."
             }
           ]
         },
@@ -3093,15 +5282,70 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Call families of students absent without notice, following school policy."
+              "text": "Early pickups only to adults on the pickup list, with ID."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Log any new requests that arrive at the desk."
+              "text": "End of day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's absences have cover"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Office requests updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notes for the principal: anything unusual"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At 7:20 the Grade 4 teacher texts that she is sick. The office manager logs it as needing cover, calls the first sub on the list who accepts by 7:35, and marks it covered with the sub's name. At 8:50 the Grade 3 count shows one unexcused absence; a call home finds the child has a fever and the absence becomes excused."
             }
           ]
         }
@@ -3122,7 +5366,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Events go well when families hear early and staff know their role. Start six weeks ahead for anything with buses or food."
+              "text": "Every event at school affects teaching time, families and the building. Plan it once in "
+            },
+            {
+              "text": "School events",
+              "bold": true
+            },
+            {
+              "text": ", tell everyone in good time, and nobody is surprised."
             }
           ],
           "background": "blue",
@@ -3134,7 +5385,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Timeline"
+              "text": "Six weeks ahead"
             }
           ],
           "props": {
@@ -3142,103 +5393,151 @@
           }
         },
         {
-          "type": "table",
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the event as "
+            },
+            {
+              "text": "Planned",
+              "bold": true
+            },
+            {
+              "text": " with its kind, date and time, place and expected count."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The principal approves it against the testing calendar and other events."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the room and any set-up through "
+            },
+            {
+              "text": "Office requests",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Field trips"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "When"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Six weeks ahead"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Add the event, pick a lead and book the space or bus"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Four weeks ahead"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Confirm staff cover and permission slips"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Two weeks ahead"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Send the family notice and tick the box on the event"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "The week of"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check supplies, walk the route and brief staff"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "The day after"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Mark done and note what to change next time"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Board or district approval if your district requires it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Permission slips home three weeks ahead, back one week ahead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Buses booked; chaperones screened under district rules (one adult for every 10 students, fewer for kindergarten)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Medications, allergy plans and a first aid kit packed by the nurse"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A list of every student and every phone number with the lead teacher"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Students who cannot go have a supervised plan at school"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Always check"
+              "text": "Family nights"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pick a time working parents can make, usually 6:00 pm. Offer interpreters for the languages your families speak (see "
+            },
+            {
+              "text": "Home language",
+              "bold": true
+            },
+            {
+              "text": " in Enrollment). Food helps attendance more than anything else."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two weeks ahead"
             }
           ],
           "props": {
@@ -3249,7 +5548,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Accessibility for every family and student."
+              "text": "Set the event to "
+            },
+            {
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3257,7 +5563,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Allergies and dietary needs for any food."
+              "text": "Send the notice to families in their language, then tick "
+            },
+            {
+              "text": "Notice sent",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3265,7 +5578,115 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "A rain plan for outdoor events."
+              "text": "Remind staff at the staff meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Testing windows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "State testing and reading assessments are events too. Block the window, keep assemblies and trips out of it, and plan quiet halls."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set-up checked an hour ahead by the facilities lead"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sign-in for every visitor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Someone with a radio at the front door"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the event to "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": ". Write a two-line note: how many came, what to change next year. Next year's planner will thank you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Grade 3 science museum trip is planned six weeks out. Slips go home in English and Spanish, five chaperones complete screening, two students with allergy plans travel with the nurse's kit, and the bus is booked. The trip leaves at 8:30 with all 52 students and returns before dismissal."
             }
           ]
         }
@@ -3286,7 +5707,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A substitute walking into a prepared room has a good day. One walking into a surprise does not."
+              "text": "An uncovered classroom costs children a day of learning and stretches every other teacher. A simple, practiced cover routine keeps the school calm when people are out."
             }
           ],
           "background": "blue",
@@ -3298,7 +5719,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What every teacher leaves"
+              "text": "When a teacher will be out"
             }
           ],
           "props": {
@@ -3306,34 +5727,40 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "A seating chart and bell schedule."
+              "text": "Teachers report planned absences (training, family, jury duty) in "
+            },
+            {
+              "text": "Absences and cover",
+              "bold": true
+            },
+            {
+              "text": " as soon as they know, with the reason."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Lesson plans for each period and where materials are."
+              "text": "Sudden illness: a text or call to the office by 6:45 am."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Names of two nearby teachers who can help."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "The teacher leaves sub plans in the shared folder and ticks "
+            },
             {
-              "text": "Notes on students who need support, kept private and brief."
+              "text": "Plans in",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3341,7 +5768,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What the office does"
+              "text": "Finding cover, in order"
             }
           ],
           "props": {
@@ -3352,7 +5779,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the substitute and press Mark covered."
+              "text": "The district substitute system, or your own sub list, starting with subs who know the school."
             }
           ]
         },
@@ -3360,7 +5787,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Tell the front desk who is in which room."
+              "text": "A specialist teacher or coach whose schedule allows."
             }
           ]
         },
@@ -3368,7 +5795,182 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Collect feedback from the substitute at the end of the day."
+              "text": "Combining classes, only for a short time and never above the room's safe limit. Mark the class "
+            },
+            {
+              "text": "Combined",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The principal or assistant principal teaches."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write who is covering in "
+            },
+            {
+              "text": "Cover",
+              "bold": true
+            },
+            {
+              "text": " and set the absence to "
+            },
+            {
+              "text": "Covered",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The sub folder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every classroom keeps one, up to date:"
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Class list with photos and any allergies or medical plans"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Daily schedule, specials and lunch times"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Emergency procedures and the room's exit route"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Two or three students who can help and a buddy teacher next door"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Simple lessons that work for any day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Welcoming subs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A sub who has a good day comes back. Greet them, give them a badge and the sub folder, introduce the buddy teacher, and ask how it went at the end of the day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Absences",
+              "bold": true
+            },
+            {
+              "text": " count on each class and the Dashboard show which weeks need more subs booked ahead: training days, flu season, the week before winter break."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Monday three teachers are out: one sick, one at training, one on jury duty. Two are covered by subs from the list before 7:30; the third class is taken by the reading coach, whose small groups move to the afternoon. Every absence shows covered by 7:45."
             }
           ]
         }

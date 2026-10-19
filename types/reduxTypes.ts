@@ -22,6 +22,7 @@ import type { UsageSnapshot } from "@/features/entitlements/usage-gate/usageStat
  * `globalCache` and no entity slices.
  */
 import type { CoreBootSeed } from "@/lib/boot/coreBootSeedShape";
+import type { ShellLayoutState } from "@/features/shell/shell-layout/shellLayoutSlice";
 
 export interface BaseReduxState {
   user: UserData;
@@ -46,6 +47,11 @@ export interface BaseReduxState {
    * Absent (a slow or failed read) → the boot reads run as before.
    */
   coreBootSeed?: CoreBootSeed | null;
+  /**
+   * THE LAYOUT the server picked (custom-experience §5.3): seeded only by the (core) layout, from the
+   * boot seed's `shell` key. Absent (every other route group) → the built-in default.
+   */
+  shellLayout?: ShellLayoutState;
   // Preferences are no longer fetched server-side; the
   // `userPreferencesPolicy` warm-cache cold-boot path (IDB → LS → remote.fetch)
   // owns hydration entirely on the client. `resolveStoreBootstrapState` falls

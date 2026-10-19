@@ -4,6 +4,7 @@ import { InboxHeaderButton } from "@/features/notifications/components/InboxHead
 import { MessagesHeaderButton } from "@/features/messaging/components/shell/MessagesHeaderButton";
 import { CommandBarHeaderButton } from "@/features/knowledge/command-bar/OpenCommandBarButtons";
 import { HeaderPhoneOverflow } from "./HeaderPhoneOverflow";
+import { ShellHeaderButtons } from "./ShellHeaderButtons";
 
 /**
  * THE HEADER CONTROL SET — the shell's permanent header icons, ONE copy for
@@ -24,13 +25,18 @@ export function HeaderControlSet({ isAuthenticated }: { isAuthenticated: boolean
   return (
     <>
       <div className="shell-header-secondary" data-header-control-set>
-        <CommandBarHeaderButton isAuthenticated={isAuthenticated} />
-        <SurfaceAgentsHeaderButton isAuthenticated={isAuthenticated} />
-        <MessagesHeaderButton isAuthenticated={isAuthenticated} />
-        <InboxHeaderButton isAuthenticated={isAuthenticated} />
-        {/* Right-most (owner, 2026-10-04): the canvas opens as a column on the
-            right edge, so its button sits nearest to where it opens. */}
-        <CanvasToggle variant="transparent" />
+        {/* THE LAYOUT orders these and adds the person's own buttons beside them
+            (ShellHeaderButtons). Default order — Canvas right-most (owner, 2026-10-04):
+            the canvas opens as a column on the right edge, nearest its button. */}
+        <ShellHeaderButtons
+          controls={{
+            search: <CommandBarHeaderButton isAuthenticated={isAuthenticated} />,
+            intelligence: <SurfaceAgentsHeaderButton isAuthenticated={isAuthenticated} />,
+            messages: <MessagesHeaderButton isAuthenticated={isAuthenticated} />,
+            notifications: <InboxHeaderButton isAuthenticated={isAuthenticated} />,
+            canvas: <CanvasToggle variant="transparent" />,
+          }}
+        />
       </div>
       <HeaderPhoneOverflow isAuthenticated={isAuthenticated} />
     </>

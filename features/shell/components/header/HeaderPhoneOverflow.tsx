@@ -71,6 +71,10 @@ import {
 import { ASSISTS_MANAGER_HREF } from "@/features/assists/constants";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import ShellIcon from "../ShellIcon";
+import { useResolvedShellLayout } from "@/features/shell/shell-layout/useResolvedShellLayout";
+import { useRunHeaderButton } from "./ShellHeaderButtons";
 import {
   pushPhonePageActionsHost,
   usePhonePageActions,
@@ -191,6 +195,38 @@ function MessagesRowTrailing() {
 function InboxRowTrailing() {
   const counts = useInboxCounts();
   return <CountBadge count={counts.badge} />;
+}
+
+/**
+ * THE LAYOUT's own header buttons (custom-experience): a phone carries whatever set the person chose, as
+ * rows in this sheet beside the five built-ins (which a phone always shows here).
+ */
+function CustomHeaderRows({ onDone }: { onDone: () => void }) {
+  const layout = useResolvedShellLayout();
+  const run = useRunHeaderButton();
+  const router = useRouter();
+  return (
+    <>
+      {layout.header.map((button) =>
+        button.kind === "control" ? null : (
+          <Row
+            key={button.id}
+            icon={<ShellIcon name={button.iconName} className="h-5 w-5" />}
+            label={button.label}
+            onClick={() => {
+              onDone();
+              if (button.kind === "destination" && !button.tileId) {
+                if (button.external || button.openInNewTab) window.open(button.href, "_blank", "noopener,noreferrer");
+                else router.push(button.href);
+                return;
+              }
+              run(button);
+            }}
+          />
+        ),
+      )}
+    </>
+  );
 }
 
 /**
@@ -426,6 +462,7 @@ export function HeaderPhoneOverflow({
                 }}
                 trailing={isAuthenticated ? <InboxRowTrailing /> : undefined}
               />
+              {isAuthenticated ? <CustomHeaderRows onDone={close} /> : null}
               {isAuthenticated ? <AssistsRow onDone={close} /> : null}
               {isAuthenticated ? <AiTestModeSheetRow /> : null}
               {canvas.isAvailable || !canvas.availabilityKnown ? (

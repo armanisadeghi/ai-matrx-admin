@@ -16,22 +16,26 @@ describe("user Launchpad catalog", () => {
     const items: ShellNavItem[] = [
       {
         ...baseItem,
+        id: "test.launchpad",
         label: "Launchpad",
         href: "/launchpad",
       },
       {
         ...baseItem,
+        id: "test.documents",
         label: "Documents",
         href: "/documents",
         dashboard: false,
         children: [
           {
+            id: "test.documents.notes",
             label: "Notes",
             href: "/notes",
             iconName: "NotebookPen",
             dashboard: true,
           },
           {
+            id: "test.documents.new",
             label: "New document",
             href: "/documents/new",
             iconName: "Plus",
@@ -39,6 +43,7 @@ describe("user Launchpad catalog", () => {
             dashboard: true,
           },
           {
+            id: "test.documents.window",
             label: "Documents window",
             href: "/documents",
             iconName: "AppWindow",
@@ -50,6 +55,7 @@ describe("user Launchpad catalog", () => {
     ];
     const settings: ShellNavItem = {
       ...baseItem,
+      id: "test.settings",
       label: "Settings",
       href: "/settings",
     };
@@ -71,6 +77,7 @@ describe("user Launchpad catalog", () => {
       [
         {
           ...baseItem,
+          id: "test.work",
           label: "AI Work",
           href: "/work",
           description:
@@ -79,6 +86,7 @@ describe("user Launchpad catalog", () => {
       ],
       {
         ...baseItem,
+        id: "test.settings",
         label: "Settings",
         href: "/settings",
       },

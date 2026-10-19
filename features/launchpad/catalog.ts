@@ -78,6 +78,7 @@ const LAUNCHPAD_CARD_DESCRIPTIONS: Record<string, string> = {
   Marketing: "Brands, search, and measurement",
   Communication: "Messages, email, and windows",
   "Workflow Studio": "Design workflow graphs on a canvas",
+  Data: "Tables, workbooks and pick lists",
 };
 
 export function launchpadCardDescription(

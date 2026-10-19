@@ -1,14 +1,8 @@
-// app/(core)/start/page.tsx — THE MOUNT, AND NOTHING MORE. This person's own start page (v7 APPS-ON-DATA
-// item 3); the screen is `StartPage` (features/start).
-import { createRouteMetadata } from "@/utils/route-metadata";
-import { StartPage } from "@/features/start/StartPage";
-
-export const metadata = createRouteMetadata("/start", {
-  title: "Start",
-  description: "Your own start page.",
-  letter: "ST",
-});
+// app/(core)/start/page.tsx — the Start page moved into launchpads (custom-experience §5.2): it is the person's
+// `start` launchpad now. Old links and bookmarks land there.
+import { permanentRedirect } from "next/navigation";
+import { launchpadHref } from "@/features/shell/shell-layout/resolve";
 
 export default function StartRoute() {
-  return <StartPage />;
+  permanentRedirect(launchpadHref("start"));
 }

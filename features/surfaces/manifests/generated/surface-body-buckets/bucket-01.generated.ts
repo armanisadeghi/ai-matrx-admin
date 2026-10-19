@@ -6,6 +6,7 @@ export { hrEmployerManifest as s61 } from "../../hr-employer.manifest";
 export { marketingBrandManifest as s68 } from "../../marketing-brand.manifest";
 export { marketingSiteManifest as s69 } from "../../marketing-site.manifest";
 export { marketingAuthorityManifest as s81 } from "../../marketing-authority.manifest";
+export { launchpadManifest as s112 } from "../../launchpad.manifest";
 export { agentsHubManifest as s113 } from "../../agents-hub.manifest";
 export { educationStudyGuidesManifest as s120 } from "../../education-study-guides.manifest";
 export { quickTasksManifest as s166 } from "../../quick-tasks.manifest";

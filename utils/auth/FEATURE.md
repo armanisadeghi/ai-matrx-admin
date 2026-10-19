@@ -37,6 +37,14 @@ page — the destination survives.
 — **always pass the 4th argument** on an auth surface. Omitting it is how the
 destination was being destroyed.
 
+## The saved landing (every sign-in path)
+
+`signInDestination(source, landing)` ends password sign-in (`login/actions.ts`), the OAuth callback
+(`auth/callback`) and the email-link confirm (`auth/confirm`): the page asked for wins; the platform
+default `/dashboard` (no query) counts as NO destination (`isPlatformDefaultDestination`), so the
+landing the person's layout saved (`shellLandingAfterSignIn`) applies; else `/dashboard`. Recovery
+hops are never redirected. Deep links are untouched.
+
 ## Param names — write one, read four
 
 Canonical written param: **`redirectTo`**. Also READ: `next`, `returnUrl`,
