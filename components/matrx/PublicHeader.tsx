@@ -1,28 +1,17 @@
-import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Download } from "lucide-react";
-import { PublicHeaderAuth } from "./PublicHeaderAuth";
-import { PublicHeaderFeedback } from "./PublicHeaderFeedback";
-import { PublicHeaderThemeToggle } from "./PublicHeaderThemeToggle";
 import { PublicHeaderMobileNav } from "./PublicHeaderMobileNav";
-import { CanvasToggle } from "@ai-matrx/canvas/react";
+// Feedback, theme, canvas and account: light for a signed-out visitor, the Redux islands once the
+// full tree is in (features/public-shell/publicTier.ts). Never import those islands here directly.
+import { PublicHeaderIslands } from "@/features/public-shell/PublicHeaderIslands";
 import {
   PUBLIC_HEADER_ICON_BUTTON,
   PUBLIC_HEADER_ROW,
 } from "./publicHeaderChrome";
 import { MATRX_LOCAL_DOWNLOAD_PATH } from "@/features/matrx-local-download/release";
-
-/** Holds the auth slot without claiming signed-in or signed-out. */
-function AuthFallback() {
-  return <span aria-hidden="true" className={PUBLIC_HEADER_ICON_BUTTON} />;
-}
-
-function ThemeToggleFallback() {
-  return <div className={PUBLIC_HEADER_ICON_BUTTON} aria-hidden="true" />;
-}
 
 export function PublicHeader() {
   return (
@@ -88,19 +77,7 @@ export function PublicHeader() {
 
           <PublicHeaderMobileNav />
 
-          <Suspense fallback={null}>
-            <PublicHeaderFeedback />
-          </Suspense>
-
-          <Suspense fallback={<ThemeToggleFallback />}>
-            <PublicHeaderThemeToggle />
-          </Suspense>
-
-          <CanvasToggle />
-
-          <Suspense fallback={<AuthFallback />}>
-            <PublicHeaderAuth />
-          </Suspense>
+          <PublicHeaderIslands />
         </div>
       </div>
     </header>
