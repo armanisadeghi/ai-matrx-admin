@@ -12,6 +12,8 @@ import { PropertyRow, Select, type SelectOption } from "@ai-matrx/design-system/
 import { formatCount } from "@ai-matrx/kit/format";
 import { extractErrorMessage } from "@/utils/errors";
 import { JsonInspector } from "@/components/official-candidate/json-inspector/JsonInspector";
+import { KindValueFrontDoor } from "@/components/official/structured-value/KindValueFrontDoor";
+import { valueCarriesKind } from "@/features/content-ir/surfaces/json-kind-signal";
 import {
   TRIGGER_LABEL,
   listProvisionSnapshots,
@@ -37,7 +39,11 @@ function ValueRow({ v }: { v: ProvisionValue }) {
       missing={!v.present}
       value={v.present && !structured ? text : undefined}
       data={structured ? v.value : undefined}
-      expanded={v.present ? <JsonInspector data={v.value} /> : undefined}
+      // A value that carries a kind is drawn as that kind; the raw inspector is for plain data
+      // (handing it a kind makes it file the caller as a raw-renderer leak).
+      expanded={
+        v.present ? valueCarriesKind(v.value) ? <KindValueFrontDoor value={v.value} /> : <JsonInspector data={v.value} /> : undefined
+      }
       meta={
         <>
           <code className="truncate text-[10px]">{v.name}</code>
@@ -162,8 +168,9 @@ export function ProvisionWindowBody({ snapshotId }: { snapshotId: string }) {
         ) : null}
       </div>
       <div className="min-h-0 flex-1 overflow-auto px-2">
-        {snapshot.values.map((v) => (
-          <ValueRow key={v.name} v={v} />
+        {snapshot.values.map((v, i) => (
+          // A stored snapshot can list one name twice (older captures merged two sources): the index keeps keys unique.
+          <ValueRow key={`${v.name}:${i}`} v={v} />
         ))}
         <ExpectedOutputSection expected={snapshot.expectedOutput} />
       </div>
