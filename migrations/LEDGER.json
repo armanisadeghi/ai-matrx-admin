@@ -11545,6 +11545,12 @@
       "filename": "20261019190000_atslack_a_post_in_slack_step_as_the_owner.sql",
       "checksum": "74a41b9cb2fb80178e11b8cd4b5a9fcd82e1fc426451c3ada9d19380d27f71de",
       "applied_at": "2026-10-19 17:09:00.964806+00"
+    },
+    "migrations/campaign/20261019200000_atmsft_a_outlook_received_trigger_and_teams_chat_links.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019200000_atmsft_a_outlook_received_trigger_and_teams_chat_links.sql",
+      "checksum": "028f3cbfcc9bfa76aadebfb54265f147c5fa86fd89ec9a2d2013574808084107",
+      "applied_at": "2026-10-19 17:14:42.9146+00"
     }
   }
 }
