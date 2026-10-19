@@ -1,12 +1,12 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 3,
+  "version": 4,
   "title": "Short-Term Rental Host",
-  "description": "Bookings, turnovers, issues and revenue for a host running several rentals.",
-  "forWho": "Short-term rental hosts and co-hosts",
+  "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
+  "forWho": "Vacation rental hosts and co-hosts with a few homes",
   "icon": {
-    "emoji": "🛎️"
+    "emoji": "🏖️"
   },
   "cover": {
     "url": "gallery:photo-golden-palms",
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "short-term rental",
+    "airbnb host",
+    "vacation rental",
+    "co-host",
+    "cleanings",
     "bookings",
-    "turnovers",
-    "host"
+    "short-term rental"
   ],
   "spec": {
     "specVersion": 1,
@@ -87,6 +89,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "guests",
+            "label": "Guests",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 20
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "check_in",
             "label": "Check in",
             "parityType": "datetime",
@@ -118,13 +137,15 @@
             "contextPolicy": "include",
             "choices": [
               "Direct",
-              "Platform one",
-              "Platform two"
+              "Rental site",
+              "Travel site",
+              "Repeat guest"
             ],
             "choiceColors": {
-              "Direct": "blue",
-              "Platform one": "green",
-              "Platform two": "amber"
+              "Direct": "green",
+              "Rental site": "pink",
+              "Travel site": "blue",
+              "Repeat guest": "purple"
             }
           },
           {
@@ -175,6 +196,44 @@
                 "value": 10000
               }
             ]
+          },
+          {
+            "key": "cleaning_fee",
+            "label": "Cleaning fee",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tax",
+            "label": "Lodging tax",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
           },
           {
             "key": "host",
@@ -236,21 +295,24 @@
           {
             "key": "b01",
             "values": {
-              "booking_title": "Okafor family stay - Beach House",
+              "booking_title": "Family of five, long weekend",
               "property": "p01",
               "guest": "Chidera Okafor",
               "check_in": "@today",
               "check_out": "@today+4d",
-              "channel": "Platform one",
+              "channel": "Rental site",
               "status": "Checked in",
               "payout": 1620,
-              "host": "@installer"
+              "host": "@installer",
+              "guests": 5,
+              "cleaning_fee": 150,
+              "tax": 96
             }
           },
           {
             "key": "b02",
             "values": {
-              "booking_title": "Lindqvist weekend - Cabin",
+              "booking_title": "Couple, two-night getaway",
               "property": "p02",
               "guest": "Ingrid Lindqvist",
               "check_in": "@today",
@@ -258,112 +320,137 @@
               "channel": "Direct",
               "status": "Confirmed",
               "payout": 430,
-              "host": "@installer"
+              "host": "@installer",
+              "guests": 2,
+              "cleaning_fee": 95,
+              "tax": 38
             }
           },
           {
             "key": "b03",
             "values": {
-              "booking_title": "Tanaka couple - Condo",
+              "booking_title": "Couple, anniversary trip",
               "property": "p03",
               "guest": "Kenji Tanaka",
               "check_in": "@mon+3d",
               "check_out": "@mon+6d",
-              "channel": "Platform two",
+              "channel": "Travel site",
               "status": "Confirmed",
               "payout": 510,
-              "host": "@installer"
+              "host": "@installer",
+              "guests": 2,
+              "cleaning_fee": 110,
+              "tax": 52
             }
           },
           {
             "key": "b04",
             "values": {
-              "booking_title": "Delgado reunion - Beach House",
+              "booking_title": "Reunion, three generations",
               "property": "p01",
               "guest": "Marisol Delgado",
               "check_in": "@today+7d",
               "check_out": "@today+12d",
-              "channel": "Platform one",
+              "channel": "Rental site",
               "status": "Confirmed",
-              "payout": 2050
+              "payout": 2050,
+              "guests": 8,
+              "cleaning_fee": 150,
+              "tax": 141
             }
           },
           {
             "key": "b05",
             "values": {
-              "booking_title": "Whitfield retreat - Cabin",
+              "booking_title": "Writing retreat, three nights",
               "property": "p02",
               "guest": "Percival Whitfield",
               "check_in": "@today+3d",
               "check_out": "@today+6d",
               "channel": "Direct",
               "status": "Inquiry",
-              "payout": 650
+              "payout": 650,
+              "guests": 1,
+              "cleaning_fee": 95
             }
           },
           {
             "key": "b06",
             "values": {
-              "booking_title": "Nwosu stay - Condo",
+              "booking_title": "Business traveler, four nights",
               "property": "p03",
               "guest": "Obiageli Nwosu",
               "check_in": "@today-9d",
               "check_out": "@today-5d",
-              "channel": "Platform one",
+              "channel": "Rental site",
               "status": "Checked out",
-              "payout": 660
+              "payout": 660,
+              "guests": 1,
+              "cleaning_fee": 110,
+              "tax": 61
             }
           },
           {
             "key": "b07",
             "values": {
-              "booking_title": "Brandt family - Beach House",
+              "booking_title": "Family with a dog, six nights",
               "property": "p01",
               "guest": "Henrik Brandt",
               "check_in": "@today-20d",
               "check_out": "@today-14d",
-              "channel": "Platform two",
+              "channel": "Travel site",
               "status": "Checked out",
-              "payout": 2300
+              "payout": 2300,
+              "guests": 4,
+              "cleaning_fee": 150,
+              "tax": 118
             }
           },
           {
             "key": "b08",
             "values": {
-              "booking_title": "Castellanos weekend - Cabin",
+              "booking_title": "Friends, ski weekend",
               "property": "p02",
               "guest": "Rosalba Castellanos",
               "check_in": "@today-12d",
               "check_out": "@today-10d",
               "channel": "Direct",
               "status": "Checked out",
-              "payout": 420
+              "payout": 420,
+              "guests": 4,
+              "cleaning_fee": 95,
+              "tax": 40
             }
           },
           {
             "key": "b09",
             "values": {
-              "booking_title": "Ashworth cancelled - Condo",
+              "booking_title": "Couple, cancelled with refund",
               "property": "p03",
               "guest": "Desmond Ashworth",
               "check_in": "@today-3d",
               "check_out": "@today",
-              "channel": "Platform one",
+              "channel": "Rental site",
               "status": "Cancelled",
-              "payout": 0
+              "payout": 0,
+              "guests": 2,
+              "cleaning_fee": 110
             }
           },
           {
             "key": "b10",
             "values": {
-              "booking_title": "Maeda week - Beach House",
+              "booking_title": "Remote worker, one week",
               "property": "p01",
               "guest": "Haruka Maeda",
               "check_in": "@today-40d",
               "check_out": "@today-33d",
               "channel": "Direct",
               "status": "Checked out",
-              "payout": 2680
+              "payout": 2680,
+              "guests": 1,
+              "cleaning_fee": 150,
+              "tax": 130
             }
           }
         ],
@@ -602,6 +689,20 @@
             "default": "To schedule"
           },
           {
+            "key": "restocked",
+            "label": "Supplies restocked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "damage",
+            "label": "Damage found",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner",
             "label": "Checked by",
             "parityType": "member",
@@ -646,7 +747,7 @@
           {
             "key": "t01",
             "values": {
-              "turn_title": "Clean after Okafor stay",
+              "turn_title": "Clean after the family weekend",
               "booking": "b01",
               "property": "p01",
               "cleaner": "tm-dolores",
@@ -658,7 +759,7 @@
           {
             "key": "t02",
             "values": {
-              "turn_title": "Clean after Lindqvist weekend",
+              "turn_title": "Clean after the getaway",
               "booking": "b02",
               "property": "p02",
               "cleaner": "tm-dolores",
@@ -670,7 +771,7 @@
           {
             "key": "t03",
             "values": {
-              "turn_title": "Clean before Tanaka arrival",
+              "turn_title": "Ready the condo for the anniversary",
               "booking": "b03",
               "property": "p03",
               "cleaner": "tm-dolores",
@@ -681,7 +782,7 @@
           {
             "key": "t04",
             "values": {
-              "turn_title": "Clean after Delgado reunion",
+              "turn_title": "Clean after the reunion",
               "booking": "b04",
               "property": "p01",
               "cleaner": "tm-dolores",
@@ -692,7 +793,7 @@
           {
             "key": "t10",
             "values": {
-              "turn_title": "Clean before Lindqvist arrival",
+              "turn_title": "Ready the cabin for the getaway",
               "booking": "b02",
               "property": "p02",
               "cleaner": "tm-dolores",
@@ -703,43 +804,47 @@
           {
             "key": "t05",
             "values": {
-              "turn_title": "Clean after Nwosu stay",
+              "turn_title": "Clean after the business stay",
               "booking": "b06",
               "property": "p03",
               "cleaner": "tm-dolores",
               "clean_on": "@today-5d",
               "status": "Cleaned",
-              "cleaned_on": "@today-5d"
+              "cleaned_on": "@today-5d",
+              "restocked": true
             }
           },
           {
             "key": "t06",
             "values": {
-              "turn_title": "Clean after Brandt family",
+              "turn_title": "Clean after the family with a dog",
               "booking": "b07",
               "property": "p01",
               "cleaner": "tm-dolores",
               "clean_on": "@today-14d",
               "status": "Cleaned",
-              "cleaned_on": "@today-14d"
+              "cleaned_on": "@today-14d",
+              "restocked": true
             }
           },
           {
             "key": "t07",
             "values": {
-              "turn_title": "Clean after Castellanos weekend",
+              "turn_title": "Clean after the ski weekend",
               "booking": "b08",
               "property": "p02",
               "cleaner": "tm-dolores",
               "clean_on": "@today-10d",
               "status": "Needs fix",
-              "owner": "@installer"
+              "owner": "@installer",
+              "restocked": false,
+              "damage": "Wine stain on the sofa cushion"
             }
           },
           {
             "key": "t08",
             "values": {
-              "turn_title": "Clean before Whitfield retreat",
+              "turn_title": "Ready the cabin for the retreat",
               "booking": "b05",
               "property": "p02",
               "cleaner": "tm-dolores",
@@ -750,13 +855,14 @@
           {
             "key": "t09",
             "values": {
-              "turn_title": "Deep clean after Maeda week",
+              "turn_title": "Deep clean after the long stay",
               "booking": "b10",
               "property": "p01",
               "cleaner": "tm-dolores",
               "clean_on": "@today-33d",
               "status": "Cleaned",
-              "cleaned_on": "@today-33d"
+              "cleaned_on": "@today-33d",
+              "restocked": true
             }
           }
         ],
@@ -1275,6 +1381,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "permit",
+            "label": "Rental permit number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "kind",
             "label": "Kind",
             "parityType": "select",
@@ -1313,6 +1426,23 @@
             ]
           },
           {
+            "key": "min_nights",
+            "label": "Minimum nights",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1347,7 +1477,7 @@
           },
           {
             "key": "stays",
-            "label": "Stays booked",
+            "label": "Upcoming and current stays",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1355,12 +1485,15 @@
             "pick": "booking_title",
             "agg": "count",
             "filter": {
-              "status": "Confirmed"
+              "status": [
+                "Confirmed",
+                "Checked in"
+              ]
             }
           },
           {
             "key": "revenue",
-            "label": "Payouts received",
+            "label": "Payouts earned",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1368,7 +1501,10 @@
             "pick": "payout",
             "agg": "sum",
             "filter": {
-              "status": "Checked out"
+              "status": [
+                "Checked in",
+                "Checked out"
+              ]
             }
           },
           {
@@ -1442,7 +1578,9 @@
               "nightly": 385,
               "status": "Live",
               "cleaner": "tm-dolores",
-              "live_on": "@today-2d"
+              "live_on": "@today-2d",
+              "min_nights": 3,
+              "permit": "STR-2024-0418"
             }
           },
           {
@@ -1454,7 +1592,9 @@
               "nightly": 210,
               "status": "Live",
               "cleaner": "tm-dolores",
-              "live_on": "@today-5d"
+              "live_on": "@today-5d",
+              "min_nights": 2,
+              "permit": "STR-2024-0377"
             }
           },
           {
@@ -1466,7 +1606,9 @@
               "nightly": 165,
               "status": "Live",
               "cleaner": "tm-dolores",
-              "live_on": "@today-8d"
+              "live_on": "@today-8d",
+              "min_nights": 2,
+              "permit": "STR-2024-0512"
             }
           },
           {
@@ -1477,7 +1619,9 @@
               "kind": "Guest suite",
               "nightly": 120,
               "status": "Maintenance",
-              "cleaner": "tm-dolores"
+              "cleaner": "tm-dolores",
+              "min_nights": 1,
+              "permit": "STR-2024-0629"
             }
           }
         ],
@@ -2188,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2196,7 +2340,7 @@
       "parent": null,
       "title": "Short-Term Rental Host",
       "icon": {
-        "emoji": "🛎️"
+        "emoji": "🏖️"
       },
       "cover": {
         "url": "gallery:photo-golden-palms",
@@ -2263,6 +2407,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-season"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3068,7 +3218,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Reliable turnovers are what guests and reviews depend on."
+              "text": "The cleaning between guests decides the next review. A written routine and a photo check make every home look the same every time."
             }
           ],
           "background": "blue",
@@ -3080,7 +3230,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When a booking is confirmed"
+              "text": "Scheduling"
             }
           ],
           "props": {
@@ -3091,7 +3241,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Add turnover on the booking."
+              "text": "Every check-out gets a turnover the moment the booking is confirmed ("
+            },
+            {
+              "text": "Add turnover",
+              "bold": true
+            },
+            {
+              "text": ")."
             }
           ]
         },
@@ -3099,7 +3256,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pick the cleaner and the clean date: the check-out day."
+              "text": "Same-day turns (one guest leaves at 10, the next arrives at 4) go to your most reliable cleaner first."
             }
           ]
         },
@@ -3107,7 +3264,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Share the booking details and any special requests."
+              "text": "Confirm with the cleaner 48 hours ahead and press "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3115,7 +3279,110 @@
           "type": "heading",
           "text": [
             {
-              "text": "After cleaning"
+              "text": "The cleaner's checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Strip and wash all linens and towels; make beds with fresh sets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kitchen: dishes done, fridge emptied, counters and appliances wiped"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bathrooms scrubbed; hair checked on every surface"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors vacuumed and mopped; under beds checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Trash out, recycling sorted, bins back"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Restock: toilet paper, soap, shampoo, coffee, dish soap, trash bags; tick "
+            },
+            {
+              "text": "Supplies restocked",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Thermostat set, lights off, doors and windows locked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos of every room sent to the host"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Damage and lost items"
             }
           ],
           "props": {
@@ -3126,7 +3393,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Cleaner uploads photos and marks the turnover Cleaned."
+              "text": "Anything broken or stained goes in "
+            },
+            {
+              "text": "Damage found",
+              "bold": true
+            },
+            {
+              "text": " with photos, and becomes an issue if it needs fixing."
             }
           ]
         },
@@ -3134,7 +3408,72 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Anything broken becomes an Issue before the next guest arrives."
+              "text": "Lost items are bagged and labeled with the booking. Message the guest the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Damage claims through booking sites have short deadlines, often 14 days. Log it today."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once a month, the host visits right after a clean and compares it with the photos. Feedback goes to the cleaner kindly and specifically."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paying cleaners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pay per turnover at an agreed rate, with extra for deep cleans and same-day turns. Record the cost on the turnover page so you know the true cost of each stay."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The family with a dog left six days ago. The cleaner restocked the house and noted extra dog hair in the living room, so the host adds a lint-roller to the supply list and a pet fee to the listing."
             }
           ]
         }
@@ -3149,10 +3488,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clear, warm messages at the right moments prevent most problems and most bad reviews. Write them once, then adjust for each guest."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Messages to send"
+              "text": "The message schedule"
             }
           ],
           "props": {
@@ -3160,42 +3511,159 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Message"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "At booking"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thank you, what to expect, ask the purpose of the trip"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Three days before"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Directions, parking, check-in time, house rules highlights"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day of arrival"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Door code, Wi-Fi, one tip that makes the stay better"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Morning after arrival"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "\"Is everything as you hoped?\""
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day before departure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check-out time and the short check-out list"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After departure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Thanks and a request for a review"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "On booking: welcome and house rules."
+              "text": "What to ask at booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How many guests, including children and pets?"
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Three days before: check-in instructions and local tips."
+              "text": "Arrival time, so the home is ready and the code works."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Day of arrival: confirmation that the place is ready."
+              "text": "Anything special: a birthday, a work trip, mobility needs."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Mid-stay: short check-in."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Record the party size in "
+            },
             {
-              "text": "After checkout: thanks and a review request."
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": ". A party larger than the listing allows is a no."
             }
           ]
         },
@@ -3203,7 +3671,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Tone"
+              "text": "House rules that matter"
             }
           ],
           "props": {
@@ -3214,7 +3682,115 @@
           "type": "text",
           "text": [
             {
-              "text": "Keep messages short, warm and specific to the guest."
+              "text": "Quiet hours, no parties, smoking, pets, maximum guests, parking. Keep them short and say why (\"our neighbors are early risers\"). Point to local rules where your permit requires it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something goes wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reply within 15 minutes during the day, one hour at night."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Say what you will do and when: \"Wade will be there by 2 pm to fix the shower.\""
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log the issue as Guest-impacting and follow up after the fix."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Offer a fair gesture if the problem affected the stay; it often saves the review."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Direct and repeat guests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Guests who booked directly or have stayed before are your most valuable. Send them a personal note and, when you can, first choice of dates for next season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The anniversary couple arrives at the condo this week. The host's three-day message mentions the sunset view from the balcony and offers to leave a bottle of sparkling water in the fridge."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never move a conversation or payment off a booking site's system when its rules forbid it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never share door codes before the guest's identity and booking are confirmed."
             }
           ]
         }
@@ -3225,14 +3801,26 @@
       "parent": "short-term-rental-host",
       "title": "Handling issues",
       "icon": {
-        "emoji": "🔧"
+        "emoji": "🛠️"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Things break in rentals more often than in homes, because so many people use them. Triage by whether a guest is affected, fix fast, and keep the history."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Triage"
+              "text": "Priorities"
             }
           ],
           "props": {
@@ -3240,26 +3828,95 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Guest-impacting: fix or offer an alternative the same day."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix by"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Guest-impacting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "No hot water, no Wi-Fi, lock or code trouble, heating or cooling down, leaks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Same day; before the next arrival at the latest"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Soon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loose railing, slow drain, a broken appliance with a workaround"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Before the next stay or two"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Routine"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Paint, touch-ups, replacing worn linens"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Between bookings or in the off-season"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Soon: schedule within a week."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Routine: batch with the next visit."
+              "text": "Safety items, such as railings, smoke detectors and carbon monoxide detectors, are never routine."
             }
           ]
         },
@@ -3267,7 +3924,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every issue"
+              "text": "Logging"
             }
           ],
           "props": {
@@ -3278,7 +3935,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Take a photo and log it."
+              "text": "Add the issue with the rental, priority, the date reported and who is fixing it."
             }
           ]
         },
@@ -3286,7 +3943,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Assign the handyman."
+              "text": "Attach the guest's or cleaner's photos."
             }
           ]
         },
@@ -3294,7 +3951,120 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark Fixed and record the cost."
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": " with the date; "
+            },
+            {
+              "text": "Mark fixed",
+              "bold": true
+            },
+            {
+              "text": " with the cost when done."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A small toolkit in every home"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Spare batteries, light bulbs, a plunger, a basic tool set, router reset instructions, the breaker panel labeled, and the water shut-off tagged. Most guest-impacting issues can be solved in minutes with these."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Local helpers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep a handyman, a plumber, an electrician and a locksmith for each area, with after-hours numbers. Note on each rental page who to call first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Cost",
+              "bold": true
+            },
+            {
+              "text": " on every issue. At year end, issues by rental show which home is wearing out and what to budget for."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The beach house's outdoor shower runs hot only and was reported yesterday. It is not inside the house, but the family staying there uses it every day, so it is marked Guest-impacting and Wade is booked for this afternoon."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After a fix"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell the guest it is fixed and thank them for reporting it. Guests who see a quick fix often mention it in their review."
             }
           ]
         }
@@ -3305,14 +4075,26 @@
       "parent": "short-term-rental-host",
       "title": "Seasonal checklist",
       "icon": {
-        "emoji": "🌞"
+        "emoji": "🍂"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Twice a year, each home gets a deeper look. It keeps reviews high, prevents expensive repairs, and sets prices for the season ahead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Before peak season"
+              "text": "Before the busy season"
             }
           ],
           "props": {
@@ -3323,7 +4105,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Refresh listing photos"
+              "text": "Deep clean: windows, upholstery, carpets, behind appliances"
             }
           ],
           "props": {
@@ -3334,7 +4116,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review nightly rates"
+              "text": "Replace worn towels, sheets and pillows; count sets (three per bed is a good minimum)"
             }
           ],
           "props": {
@@ -3345,7 +4127,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Service heating and cooling"
+              "text": "Test smoke and carbon monoxide detectors; replace batteries"
             }
           ],
           "props": {
@@ -3356,7 +4138,40 @@
           "type": "todo",
           "text": [
             {
-              "text": "Restock supplies"
+              "text": "Service heating or cooling; clean filters"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the outdoor areas: deck boards, railings, grill, outdoor furniture"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Refresh listing photos if anything changed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rental permit and insurance renewal dates checked"
             }
           ],
           "props": {
@@ -3367,7 +4182,64 @@
           "type": "heading",
           "text": [
             {
-              "text": "After peak season"
+              "text": "Pricing for the season"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Look at last year's bookings by month: nights booked, average nightly rate and payout."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Raise prices for dates that booked far ahead last year; lower them where gaps stayed open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set minimum nights higher on weekends and holidays, lower in shoulder weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Update "
+            },
+            {
+              "text": "Nightly rate",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Minimum nights",
+              "bold": true
+            },
+            {
+              "text": " on each rental."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the quiet season"
             }
           ],
           "props": {
@@ -3378,7 +4250,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Deep clean every rental"
+              "text": "Winterize what needs it: outdoor taps, hoses, pool or hot tub"
             }
           ],
           "props": {
@@ -3389,12 +4261,503 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review payouts by channel and rental"
+              "text": "Plan bigger repairs and upgrades for the empty weeks"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review the year: payouts earned per home, cleaning and repair costs, reviews"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paperwork"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lodging taxes filed for each period your area requires; totals come from "
+            },
+            {
+              "text": "Lodging tax",
+              "bold": true
+            },
+            {
+              "text": " on bookings."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep receipts for repairs and supplies for your accountant."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The garden guest suite is paused for maintenance while the ceiling is repainted. The host uses the quiet weeks to refresh the photos and raise the summer rate before taking it live again."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A note to yourself"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At the end of each season, write three lines on this page: what guests loved, what they complained about, and one change for next season."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "short-term-rental-host",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The back office for a host with a few homes: who is arriving and leaving, which cleanings are booked, what is broken, and what each home earned. The booking sites stay where guests book; this is where you run the operation across all of them."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rentals",
+              "bold": true
+            },
+            {
+              "text": ": each home with permit number, nightly rate, minimum nights, status, usual cleaner, upcoming and current stays, and payouts earned."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bookings",
+              "bold": true
+            },
+            {
+              "text": ": guest party, size, check-in and check-out, nights, channel, status, payout, cleaning fee and lodging tax."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Turnovers",
+              "bold": true
+            },
+            {
+              "text": ": every cleaning between stays, the cleaner, the date, whether supplies were restocked and any damage found."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Issues",
+              "bold": true
+            },
+            {
+              "text": ": repairs and problems, with priority, cost and who is fixing them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the money columns work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Payouts earned"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Payouts from stays checked in or checked out"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Upcoming and current stays"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirmed and checked-in bookings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cleaning fee and lodging tax"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the guest paid on top of the nightly rate"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your homes with permit numbers and minimum nights."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every booking for the next 60 days from all channels, so one calendar shows everything."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create a turnover for each check-out and each same-day arrival."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add open repairs under Issues."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning",
+              "bold": true
+            },
+            {
+              "text": ": today's check-outs and arrivals; every arrival has a cleaned turnover."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Midday",
+              "bold": true
+            },
+            {
+              "text": ": cleaner reports in; damage logged with photos the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Evening",
+              "bold": true
+            },
+            {
+              "text": ": arrival messages sent; tomorrow's turnovers confirmed with the cleaner."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Calendars and rates checked for the next 90 days; gaps priced to fill."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Issues marked Guest-impacting fixed before the next arrival."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payouts reconciled against bookings that checked out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Confirm booking",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark arrived",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark departed",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Add turnover",
+              "bold": true
+            },
+            {
+              "text": " on bookings; "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark cleaned",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " on turnovers; "
+            },
+            {
+              "text": "Mark scheduled",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark fixed",
+              "bold": true
+            },
+            {
+              "text": " on issues; "
+            },
+            {
+              "text": "Add booking",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Log issue",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Pause listing",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Go live",
+              "bold": true
+            },
+            {
+              "text": " on rentals."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The cabin has a getaway checking in today and the cleaning before it is scheduled. The ski weekend's turnover found a stained cushion, so the host files a damage claim within the booking site's deadline and books a cleaner for the cushion."
+            }
+          ]
         }
       ]
     }
