@@ -55,6 +55,7 @@ import {
 } from "@ai-matrx/associations/react";
 import type { AuthorDisplayPort } from "@ai-matrx/associations";
 import { toast } from "@/lib/toast";
+import { openSignInAgain } from "@/features/rich-document/annotations/signed-out";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {
   selectActiveUserAvatarUrl,
@@ -105,6 +106,8 @@ function CommentBodyImpl({ body, className }: { body: string; className?: string
 
 const UI_PORTS: AssociationsUiPorts = {
   commentBody: CommentBodyImpl,
+  // A signed-out comment read or write: sign in again in a NEW tab, so the words typed here stay.
+  signIn: openSignInAgain,
   notifier: {
     success: (msg) => toast.success(msg),
     error: (msg, opts) => toast.error(msg, opts),
