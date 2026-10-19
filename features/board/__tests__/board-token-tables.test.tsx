@@ -40,14 +40,14 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { BoardTokenTablesContext, boardTokenTableIds } from "../items/board-token-tables";
 import { BoardTokensMount, SectionWithBoardTokens } from "../items/data-items";
-import { TABLE_ENTITY } from "../items/table-tile";
+import { TABLE_ENTITY, entityTableOf } from "../items/table-tile";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const table = (id: string, tableId: string, y: number, look?: string, token?: string) => ({
   id,
   rect: { x: 0, y, w: 1000, h: 200 },
-  source: { kind: "entity", entity: TABLE_ENTITY, id: tableId, meta: { layout: "section", ...(look ? { look } : {}), ...(token ? { token } : {}) } },
+  source: { kind: "entity", entity: TABLE_ENTITY, id: tableId, meta: { layout: "section", ...(look ? { look } : {}), ...(token ? { table_token: token } : {}) } },
 });
 
 describe("a board's design tokens", () => {
@@ -95,5 +95,15 @@ describe("a board's design tokens", () => {
     expect(host.querySelector("[data-stub='TableTokensProvider']")).toBeNull();
     expect(host.querySelector("[data-stub='SectionCard']")).not.toBeNull();
     act(() => root.unmount());
+  });
+
+  it("a custom Table tile carrying a pack token is still its own table, never a missing schema table", () => {
+    // Regression 2026-10-19: a stamped `meta.token` beside the table id made every fresh board's table read
+    // "There is no table called color".
+    expect(entityTableOf({ kind: "entity", entity: TABLE_ENTITY, id: "tbl-1", meta: { token: "color" } } as never)).toBeNull();
+    expect(entityTableOf({ kind: "entity", entity: TABLE_ENTITY, id: "tbl-1", meta: { table_token: "color" } } as never)).toBeNull();
+    expect(entityTableOf({ kind: "entity", entity: TABLE_ENTITY, id: null, meta: { token: "web_brand_choice" } } as never)).toEqual({ token: "web_brand_choice" });
+    // Boards made on 2026-10-19 (token beside an id) still feed their token tables.
+    expect(boardTokenTableIds([{ id: "k", rect: { x: 0, y: 0, w: 1, h: 1 }, source: { kind: "entity", entity: TABLE_ENTITY, id: "colors", meta: { token: "color" } } }])).toEqual(["colors"]);
   });
 });

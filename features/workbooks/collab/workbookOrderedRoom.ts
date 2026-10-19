@@ -6,11 +6,13 @@
  */
 import { ICommandService, IResourceLoaderService, IUndoRedoService, IUniverInstanceService, type Univer } from "@univerjs/core";
 import { IDefinedNamesService } from "@univerjs/engine-formula";
+import { SelectionMoveType, SheetsSelectionsService } from "@univerjs/preset-sheets-core";
 import type { AwarenessState, OpSessionIncident } from "@ai-matrx/data/realtime/collab";
 import {
   startWorkbookOtRoom,
   univerSheetsOtPort,
   type SheetsCommandService,
+  type SheetSelection,
   type SheetsOtNotice,
   type SheetsWorkbookLike,
   type WorkbookOtRoomHandle,
@@ -70,6 +72,12 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
   const undo = injector.get(IUndoRedoService);
   const loader = injector.get(IResourceLoaderService);
   const definedNames = injector.get(IDefinedNamesService);
+  const selections = injector.get(SheetsSelectionsService);
+  const activeSheetId = () => {
+    const id = a.unitId();
+    const wb = id ? (instances.getUnit(id) as unknown as { getActiveSheet?: () => { getSheetId(): string } | null } | undefined) : undefined;
+    return wb?.getActiveSheet?.()?.getSheetId() ?? null;
+  };
   const port = univerSheetsOtPort({
     commandService,
     workbook: () => {
@@ -79,6 +87,20 @@ export async function startWorkbookOrderedRoom(a: WorkbookOrderedRoomArgs): Prom
     definedNames: (unitId) => definedNames.getDefinedNameMap(unitId) as Record<string, { name?: string }> | undefined,
     saveUnit: (unitId) => loader.saveUnit(unitId),
     undoRedo: () => undo,
+    // a peer's row/column change carries this seat's selection along, never past the sheet's edge
+    selections: {
+      sheetId: activeSheetId,
+      get: () => {
+        const id = a.unitId();
+        const sheet = activeSheetId();
+        return id && sheet ? (selections.getWorkbookSelections(id).getSelectionsOfWorksheet(sheet) as unknown as SheetSelection[]) : null;
+      },
+      set: (next) => {
+        const id = a.unitId();
+        const sheet = activeSheetId();
+        if (id && sheet) selections.getWorkbookSelections(id).setSelections(sheet, next as never, SelectionMoveType.ONLY_SET);
+      },
+    },
     load: a.load,
     markDirty: a.markDirty,
   });
