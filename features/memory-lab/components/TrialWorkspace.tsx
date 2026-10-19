@@ -15,6 +15,7 @@ import { Button, PropertyRow, RegionSkeleton } from "@ai-matrx/design-system/con
 import { ProTextarea } from "@/components/official/ProTextarea";
 import { useOpenProvisionWindow } from "@/features/overlays/definitions/provisionWindow.overlay";
 import { useWatchAiRun } from "@/features/overlays/definitions/aiWatchWindow.overlay";
+import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import type { ProvisionSnapshot } from "@/features/provision-window/data";
 import { extractErrorMessage } from "@/utils/errors";
@@ -40,7 +41,7 @@ const STAGE_LABEL = { capturing: "Capturing provision", running: "Agent running"
 
 export function TrialWorkspace({ trialId }: { trialId: string }) {
   const [trial, setTrial] = useState<MemoryTrial | null>(null);
-  const [missing, setMissing] = useState(false);
+  const [gateError, setGateError] = useState<unknown>(null);
   const [steps, setSteps] = useState<MemoryTrialStep[]>([]);
   const [conversations, setConversations] = useState<CandidateConversation[] | null>(null);
   const [agents, setAgents] = useState<Map<string, LabAgent>>(new Map());
@@ -58,12 +59,14 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
     let live = true;
     (async () => {
       try {
-        const t = await loadTrial(trialId);
-        if (!live) return;
-        if (!t) {
-          setMissing(true);
+        let t: MemoryTrial;
+        try {
+          t = await loadTrial(trialId);
+        } catch (e) {
+          if (live) setGateError(e);
           return;
         }
+        if (!live) return;
         setTrial(t);
         const [s, c] = await Promise.all([listSteps(trialId), listPersonConversations(t.subjectUserId)]);
         if (!live) return;
@@ -128,13 +131,17 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
     if (first) openProvision(first.id, `${ROLE_LABEL[role]} provision`);
   };
 
-  if (missing) {
+  if (gateError) {
     return (
       <>
         <RecordPageHeader backHref={LAB_HREF} parents={[{ label: "Memory Lab", href: LAB_HREF }]} record={{ name: "Trial" }} />
-        <div className="p-3">
-          <ErrorNotice title="This trial does not exist" message="It was deleted, or the link is wrong." />
-        </div>
+        <AccessGate
+          token="memory_trial"
+          id={trialId}
+          error={gateError}
+          fallbackHref={LAB_HREF}
+          fallbackLabel="Memory Lab"
+        />
       </>
     );
   }

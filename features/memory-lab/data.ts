@@ -6,6 +6,7 @@
  */
 import { mergeJsonColumn, readAllRows } from "@ai-matrx/data/db";
 import { extractErrorMessage } from "@/utils/errors";
+import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -94,10 +95,20 @@ export async function listTrials(): Promise<MemoryTrial[]> {
   return rows.map(toTrial);
 }
 
-export async function loadTrial(id: string): Promise<MemoryTrial | null> {
+/** One trial; a zero-row read throws the shared record-unavailable error (never a guessed reason). */
+export async function loadTrial(id: string): Promise<MemoryTrial> {
   const { data, error } = await chat().from("memory_trial").select(TRIAL_COLUMNS).eq("id", id).maybeSingle();
-  if (error) throw new Error(error.message);
-  return data ? toTrial(data) : null;
+  if (error) throw error;
+  if (!data) {
+    throw recordUnavailable({
+      entity: "memory trial",
+      reason: "unknown",
+      recordId: id,
+      token: "memory_trial",
+      relation: "chat.memory_trial",
+    });
+  }
+  return toTrial(data);
 }
 
 export async function createTrial(input: {
@@ -117,7 +128,7 @@ export async function createTrial(input: {
     })
     .select(TRIAL_COLUMNS)
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return toTrial(data);
 }
 
@@ -155,7 +166,7 @@ export async function updateTrial(trial: MemoryTrial, patch: TrialPatch): Promis
     .eq("id", trial.id)
     .select(TRIAL_COLUMNS)
     .single();
-  if (error) throw new Error(error.message);
+  if (error) throw error;
   return toTrial(data);
 }
 
@@ -282,7 +293,7 @@ export async function loadAgents(ids: string[]): Promise<Map<string, LabAgent>> 
       .from("definition")
       .select("id, name, agent_type, is_chat_agent, variable_definitions")
       .in("id", batch);
-    if (error) throw new Error(error.message);
+    if (error) throw error;
     for (const row of data ?? []) out.set(row.id, toAgent(row));
   }
   return out;
