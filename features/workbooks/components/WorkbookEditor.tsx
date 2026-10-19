@@ -92,9 +92,6 @@ import { UniverActionRecorderPlugin } from "@univerjs/action-recorder";
 import "@univerjs/action-recorder/lib/index.css";
 import sheetsNoteEnUS from "@univerjs/preset-sheets-note/locales/en-US";
 import "@univerjs/preset-sheets-note/lib/index.css";
-import { UniverSheetsThreadCommentPreset } from "@univerjs/preset-sheets-thread-comment";
-import sheetsCommentEnUS from "@univerjs/preset-sheets-thread-comment/locales/en-US";
-import "@univerjs/preset-sheets-thread-comment/lib/index.css";
 
 import { supabase } from "@/utils/supabase/client";
 import { useThemeMode } from "@/styles/themes/useThemeMode";
@@ -122,6 +119,8 @@ import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { WorkbookCursorOverlay } from "@/features/workbooks/components/WorkbookCursorOverlay";
+import { useSheetComments } from "@/features/workbooks/components/useSheetComments";
+import { installSheetCommentAnchors } from "@ai-matrx/office/sheets/comment-anchors";
 import { getLatestSnapshot, saveSnapshot } from "@ai-matrx/office/sheets";
 import { useWorkbookGoogleLink, useLiveGoogleAdapter } from "@/features/google-workspace/linked/EditorGoogleLinks";
 import { registerWorkbookScopeSource } from "@ai-matrx/office/sheets";
@@ -132,6 +131,7 @@ import { resolveExportImage } from "@ai-matrx/office/univer";
 import { workbookHistoryToggleInput } from "@ai-matrx/office/univer/history";
 import { copyActiveSheetReference } from "@/features/workbooks/components/WorkbookSheetReferenceCopyButton";
 import { useWorkbookTableLink } from "@/features/workbooks/table-link/WorkbookTableLink";
+import type { OpOfflineState } from "@ai-matrx/data/realtime/collab";
 import { swapContentGuarded, registerOpenEditorContent, type SavedEditorSnapshot } from "@ai-matrx/office/univer";
 import { stampCovered, takeCovered } from "@ai-matrx/office/univer";
 
@@ -228,6 +228,8 @@ export default function WorkbookEditor({
   >("booting");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  /** C10: the ordered room's offline state (unsent edits kept on this device, syncing); null on the relay. */
+  const [collabOffline, setCollabOffline] = useState<OpOfflineState | null>(null);
   // Snapshot history is a canvas tab beside the editor; the button toggles it.
   const snapshotHistory = useToolToggle(workbookHistoryToggleInput(workbookId, editable, workbookName));
   const router = useRouter();
@@ -349,7 +351,7 @@ export default function WorkbookEditor({
         const { univer, univerAPI } = createUniver({
           locale: LocaleType.EN_US,
           locales: {
-            [LocaleType.EN_US]: merge({}, sheetsCoreEnUS, sheetsSortEnUS, sheetsFilterEnUS, sheetsTableEnUS, sheetsDVEnUS, sheetsCFEnUS, sheetsFREnUS, sheetsLinkEnUS, sheetsDrawingEnUS, sheetsNoteEnUS, sheetsCommentEnUS, actionRecorderEnUS),
+            [LocaleType.EN_US]: merge({}, sheetsCoreEnUS, sheetsSortEnUS, sheetsFilterEnUS, sheetsTableEnUS, sheetsDVEnUS, sheetsCFEnUS, sheetsFREnUS, sheetsLinkEnUS, sheetsDrawingEnUS, sheetsNoteEnUS, actionRecorderEnUS),
           },
           theme: defaultTheme,
           darkMode: darkModeRef.current,
@@ -376,7 +378,6 @@ export default function WorkbookEditor({
             UniverSheetsHyperLinkPreset(),
             UniverSheetsDrawingPreset(),
             UniverSheetsNotePreset(),
-            UniverSheetsThreadCommentPreset(),
           ],
         });
         if (cancelled) {
@@ -384,6 +385,8 @@ export default function WorkbookEditor({
           return;
         }
         univer.registerPlugin(UniverActionRecorderPlugin);
+        // Cell comment anchors: registered before the workbook unit so its saved anchors load with it (C9).
+        installSheetCommentAnchors(univer);
         univerRef.current = univer;
         apiRef.current = univerAPI;
         // ONE toaster per page: Univer's notices ride the app's toast path, and
@@ -573,6 +576,7 @@ export default function WorkbookEditor({
       load: swapInPlace,
       markDirty: scheduleSave,
       readAntiEntropyIntervalMs: readCollabAntiEntropyMs,
+      onOffline: setCollabOffline,
       onAwareness: (states) => {
         setRemoteAwareness(states);
         setCollabIsHost(otRoomRef.current?.isSaver() ?? true);
@@ -1081,6 +1085,15 @@ export default function WorkbookEditor({
   // File → Import: a spreadsheet file becomes a NEW spreadsheet (the home's one import path).
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const canvasWrapperRef = useRef<HTMLDivElement | null>(null);
+  const sheetComments = useSheetComments({
+    univer: univerRef.current,
+    api: apiRef.current,
+    workbookId,
+    ready: bootState === "ready",
+    editable,
+    wrapperRef: canvasWrapperRef,
+  });
   const importFile = async (file: File) => {
     const reason = unsupportedFileReason(file);
     if (reason) {
@@ -1370,7 +1383,7 @@ export default function WorkbookEditor({
           {ready ? googleLink.mark : null}
           {ready ? tableLink.mark : null}
           {bootState === "ready" ? (
-            <EditorSaveStatus state={saveState} {...(editable ? { onSaveNow: handleSaveNow } : {})} />
+            <EditorSaveStatus state={saveState} offline={collabOffline} {...(editable ? { onSaveNow: handleSaveNow } : {})} />
           ) : (
             <span className="flex size-7 items-center justify-center">
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
@@ -1407,9 +1420,10 @@ export default function WorkbookEditor({
             icon={<MessageSquare />}
             aria-label="Comments"
             title="Comments"
-            className="hidden sm:inline-flex"
+            className="hidden aria-pressed:bg-accent sm:inline-flex"
             disabled={bootState !== "ready"}
-            onClick={() => runUniverCommand("sheet.operation.toggle-comment-panel")}
+            aria-pressed={sheetComments.open}
+            onClick={sheetComments.toggle}
           />
           {chrome.actions}
         </>
@@ -1473,7 +1487,8 @@ export default function WorkbookEditor({
         {/* Relative wrapper so the absolute cursor overlay layers inside it
             (not over the whole viewport) and the Univer canvas keeps its own
             flex sizing. */}
-        <div className="relative min-h-0 flex-1">
+        <div className="flex min-h-0 flex-1">
+        <div ref={canvasWrapperRef} className="relative min-h-0 min-w-0 flex-1">
           <div ref={containerRef} className="absolute inset-0" />
           {bootState === "load_error" || firstPaint ? null : <EditorBootCover label="Loading workbook" />}
           {collab && bootState === "ready" && (
@@ -1484,6 +1499,9 @@ export default function WorkbookEditor({
               selfUid={collabSelfUid}
             />
           )}
+          {sheetComments.layer}
+        </div>
+        {sheetComments.rail}
         </div>
       </div>
     </EditorDocumentHeader>
