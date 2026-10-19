@@ -954,7 +954,8 @@ export async function saveChannelIdentity(
   identity: YouTubeChannelIdentity,
 ): Promise<void> {
   const columns = "id,version,metadata,thumbnail_url";
-  const result = await mergeJsonColumn({
+  type ChannelRow = { id: string; version: number; metadata: unknown; thumbnail_url: string | null };
+  const result = await mergeJsonColumn<ChannelRow>({
     fetchCurrent: () =>
       supabase.schema("research").from("rs_media").select(columns).eq("id", mediaId).maybeSingle(),
     readColumn: (row) => row.metadata,
