@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 2,
+  "version": 3,
   "title": "Online Academy Operations Desk",
-  "description": "Courses, cohorts, enrollments and learner support for an online academy.",
+  "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
   "icon": {
     "emoji": "🎓"
@@ -14,10 +14,12 @@
   },
   "category": "education",
   "tags": [
+    "academy director",
+    "program manager",
+    "instructor",
+    "learner success",
     "online courses",
-    "cohorts",
-    "enrollment",
-    "learner support"
+    "cohorts"
   ],
   "spec": {
     "specVersion": 1,
@@ -140,6 +142,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "lessons",
+            "label": "Lessons",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
             "key": "price",
             "label": "Price (USD)",
             "parityType": "currency",
@@ -157,6 +176,24 @@
               }
             ],
             "contextPolicy": "include"
+          },
+          {
+            "key": "refund_window",
+            "label": "Refund window (days)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 90
+              }
+            ],
+            "description": "Days after the cohort starts in which a learner can ask for a full refund."
           },
           {
             "key": "launch_on",
@@ -185,12 +222,11 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "filter": {
-              "status": [
-                "Planned",
-                "Enrolling",
-                "Running",
-                "Finished"
-              ]
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
             }
           },
           {
@@ -388,7 +424,9 @@
               "price": 490,
               "launch_on": "@today-300d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "lessons": 24,
+              "refund_window": 14
             }
           },
           {
@@ -400,7 +438,9 @@
               "format": "Live cohort",
               "price": 390,
               "launch_on": "@today-200d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "lessons": 18,
+              "refund_window": 14
             }
           },
           {
@@ -413,7 +453,9 @@
               "price": 290,
               "launch_on": "@today-400d",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "lessons": 30,
+              "refund_window": 30
             }
           },
           {
@@ -425,7 +467,9 @@
               "format": "Workshop",
               "price": 149,
               "launch_on": "@today-150d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "lessons": 4,
+              "refund_window": 0
             }
           },
           {
@@ -438,7 +482,9 @@
               "price": 450,
               "launch_on": "@today+6d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "lessons": 20,
+              "refund_window": 14
             }
           },
           {
@@ -450,7 +496,9 @@
               "format": "Self-paced",
               "price": 250,
               "launch_on": "@today",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "lessons": 16,
+              "refund_window": 30
             }
           },
           {
@@ -463,7 +511,9 @@
               "price": 199,
               "launch_on": "@today-4d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "lessons": 6,
+              "refund_window": 0
             }
           },
           {
@@ -475,7 +525,9 @@
               "format": "Self-paced",
               "price": 199,
               "launch_on": "@today-700d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "lessons": 12,
+              "refund_window": 30
             }
           }
         ]
@@ -645,6 +697,99 @@
             "contextPolicy": "include",
             "filter": {
               "status": "Refunded"
+            }
+          },
+          {
+            "key": "completed",
+            "label": "Learners completed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "enrollments",
+            "pick": "learner_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "started",
+            "label": "Learners who started",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "enrollments",
+            "pick": "learner_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Applied"
+                ]
+              }
+            }
+          },
+          {
+            "key": "left_early",
+            "label": "Dropped or refunded",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "enrollments",
+            "pick": "learner_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Dropped",
+                "Refunded"
+              ]
+            }
+          },
+          {
+            "key": "completion",
+            "label": "Completion rate (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Learners who started} > 0, ROUND({Learners completed} / {Learners who started} * 100, 0), 0)"
+          },
+          {
+            "key": "refunded_usd",
+            "label": "Refunded (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_refunds",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Refunded"
+            }
+          },
+          {
+            "key": "sessions_held",
+            "label": "Live sessions held",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_sessions",
+            "pick": "session_name",
+            "agg": "count",
+            "filter": {
+              "status": "Held"
+            }
+          },
+          {
+            "key": "avg_attended",
+            "label": "Average live attendance",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "cohort_sessions",
+            "pick": "attended",
+            "agg": "avg",
+            "filter": {
+              "status": "Held"
             }
           },
           {
@@ -1027,6 +1172,46 @@
             "contextPolicy": "include"
           },
           {
+            "key": "paid_via",
+            "label": "Paid by",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Card in full",
+              "Payment plan",
+              "Employer invoice",
+              "Scholarship"
+            ],
+            "choiceColors": {
+              "Card in full": "blue",
+              "Payment plan": "amber",
+              "Employer invoice": "violet",
+              "Scholarship": "green"
+            }
+          },
+          {
+            "key": "found_us",
+            "label": "Found us through",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Newsletter",
+              "Alumni referral",
+              "Partner organization",
+              "Search",
+              "Social media"
+            ],
+            "choiceColors": {
+              "Newsletter": "blue",
+              "Alumni referral": "green",
+              "Partner organization": "violet",
+              "Search": "slate",
+              "Social media": "pink"
+            }
+          },
+          {
             "key": "email",
             "label": "Email",
             "parityType": "email",
@@ -1049,6 +1234,29 @@
             ],
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "last_active",
+            "label": "Last logged in",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "certificate",
+            "label": "Certificate",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not yet",
+              "Issued"
+            ],
+            "choiceColors": {
+              "Not yet": "slate",
+              "Issued": "green"
+            }
           },
           {
             "key": "btn_accept",
@@ -1173,7 +1381,11 @@
               "paid": 490,
               "email": "amara.o@mailbox.net",
               "progress": 55,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid_via": "Card in full",
+              "found_us": "Newsletter",
+              "certificate": "Not yet",
+              "last_active": "@today-1d"
             }
           },
           {
@@ -1185,7 +1397,11 @@
               "applied_on": "@today-28d",
               "paid": 490,
               "email": "bastien.l@mailbox.net",
-              "progress": 50
+              "progress": 50,
+              "paid_via": "Payment plan",
+              "found_us": "Alumni referral",
+              "certificate": "Not yet",
+              "last_active": "@today-2d"
             }
           },
           {
@@ -1198,7 +1414,11 @@
               "paid": 490,
               "email": "camille.rh@mailbox.net",
               "progress": 60,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid_via": "Employer invoice",
+              "found_us": "Partner organization",
+              "certificate": "Not yet",
+              "last_active": "@today"
             }
           },
           {
@@ -1208,9 +1428,13 @@
               "cohort": "cohort-1",
               "status": "Refunded",
               "applied_on": "@today-26d",
-              "paid": 0,
+              "paid": 490,
               "email": "dhruv.n@mailbox.net",
-              "progress": 10
+              "progress": 10,
+              "paid_via": "Card in full",
+              "found_us": "Social media",
+              "certificate": "Not yet",
+              "last_active": "@today-24d"
             }
           },
           {
@@ -1223,7 +1447,9 @@
               "paid": 0,
               "email": "elke.s@mailbox.net",
               "progress": 0,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "found_us": "Search",
+              "certificate": "Not yet"
             }
           },
           {
@@ -1235,7 +1461,9 @@
               "applied_on": "@today-1d",
               "paid": 0,
               "email": "fela.a@mailbox.net",
-              "progress": 0
+              "progress": 0,
+              "found_us": "Newsletter",
+              "certificate": "Not yet"
             }
           },
           {
@@ -1248,7 +1476,11 @@
               "paid": 390,
               "email": "gwen.m@mailbox.net",
               "progress": 35,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid_via": "Card in full",
+              "found_us": "Alumni referral",
+              "certificate": "Not yet",
+              "last_active": "@today-1d"
             }
           },
           {
@@ -1260,7 +1492,11 @@
               "applied_on": "@today-14d",
               "paid": 390,
               "email": "hamid.r@mailbox.net",
-              "progress": 30
+              "progress": 30,
+              "paid_via": "Employer invoice",
+              "found_us": "Partner organization",
+              "certificate": "Not yet",
+              "last_active": "@today-9d"
             }
           },
           {
@@ -1273,7 +1509,9 @@
               "paid": 0,
               "email": "ingrid.f@mailbox.net",
               "progress": 0,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "found_us": "Search",
+              "certificate": "Not yet"
             }
           },
           {
@@ -1285,7 +1523,11 @@
               "applied_on": "@today-170d",
               "paid": 490,
               "email": "jorge.q@mailbox.net",
-              "progress": 100
+              "progress": 100,
+              "paid_via": "Card in full",
+              "found_us": "Newsletter",
+              "certificate": "Issued",
+              "last_active": "@today-101d"
             }
           },
           {
@@ -1295,10 +1537,14 @@
               "cohort": "cohort-7",
               "status": "Completed",
               "applied_on": "@today-168d",
-              "paid": 490,
+              "paid": 0,
               "email": "kamala.i@mailbox.net",
               "progress": 100,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid_via": "Scholarship",
+              "found_us": "Partner organization",
+              "certificate": "Issued",
+              "last_active": "@today-100d"
             }
           },
           {
@@ -1310,7 +1556,11 @@
               "applied_on": "@today-3d",
               "paid": 290,
               "email": "leopold.b@mailbox.net",
-              "progress": 8
+              "progress": 8,
+              "paid_via": "Payment plan",
+              "found_us": "Search",
+              "certificate": "Not yet",
+              "last_active": "@today-1d"
             }
           },
           {
@@ -1323,9 +1573,131 @@
               "paid": 390,
               "email": "mirembe.k@mailbox.net",
               "progress": 15,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "paid_via": "Card in full",
+              "found_us": "Social media",
+              "certificate": "Not yet",
+              "last_active": "@today-8d"
+            }
+          },
+          {
+            "key": "enrollment-14",
+            "values": {
+              "learner_name": "Nadia Haddad",
+              "cohort": "cohort-7",
+              "status": "Completed",
+              "applied_on": "@today-171d",
+              "paid": 490,
+              "email": "nadia.h@mailbox.net",
+              "progress": 100,
+              "paid_via": "Payment plan",
+              "found_us": "Alumni referral",
+              "last_active": "@today-103d",
+              "certificate": "Issued"
+            }
+          },
+          {
+            "key": "enrollment-15",
+            "values": {
+              "learner_name": "Oskar Lindqvist",
+              "cohort": "cohort-7",
+              "status": "Dropped",
+              "applied_on": "@today-166d",
+              "paid": 490,
+              "email": "oskar.l@mailbox.net",
+              "progress": 40,
+              "paid_via": "Card in full",
+              "found_us": "Search",
+              "last_active": "@today-130d",
+              "certificate": "Not yet"
+            }
+          },
+          {
+            "key": "enrollment-16",
+            "values": {
+              "learner_name": "Priyanka Desai",
+              "cohort": "cohort-7",
+              "status": "Completed",
+              "applied_on": "@today-165d",
+              "paid": 440,
+              "email": "priyanka.d@mailbox.net",
+              "progress": 100,
+              "paid_via": "Card in full",
+              "found_us": "Newsletter",
+              "last_active": "@today-100d",
+              "certificate": "Issued"
+            }
+          },
+          {
+            "key": "enrollment-17",
+            "values": {
+              "learner_name": "Quentin Abara",
+              "cohort": "cohort-1",
+              "status": "Active",
+              "applied_on": "@today-25d",
+              "paid": 490,
+              "email": "quentin.a@mailbox.net",
+              "progress": 15,
+              "paid_via": "Card in full",
+              "found_us": "Social media",
+              "last_active": "@today-12d",
+              "certificate": "Not yet"
+            }
+          },
+          {
+            "key": "enrollment-18",
+            "values": {
+              "learner_name": "Rosalind Achebe",
+              "cohort": "cohort-5",
+              "status": "Active",
+              "applied_on": "@today-6d",
+              "paid": 149,
+              "email": "rosalind.a@mailbox.net",
+              "progress": 0,
+              "paid_via": "Employer invoice",
+              "found_us": "Partner organization",
+              "last_active": "@today-5d",
+              "certificate": "Not yet"
+            }
+          },
+          {
+            "key": "enrollment-19",
+            "values": {
+              "learner_name": "Sven Halvorsen",
+              "cohort": "cohort-8",
+              "status": "Active",
+              "applied_on": "@today-2d",
+              "paid": 290,
+              "email": "sven.h@mailbox.net",
+              "progress": 5,
+              "paid_via": "Card in full",
+              "found_us": "Search",
+              "last_active": "@today",
+              "certificate": "Not yet"
+            }
+          },
+          {
+            "key": "enrollment-20",
+            "values": {
+              "learner_name": "Teodora Vasquez",
+              "cohort": "cohort-3",
+              "status": "Active",
+              "applied_on": "@today-13d",
+              "paid": 195,
+              "email": "teodora.v@mailbox.net",
+              "progress": 45,
+              "paid_via": "Payment plan",
+              "found_us": "Alumni referral",
+              "last_active": "@today-1d",
+              "certificate": "Not yet"
             }
           }
+        ],
+        "before": [
+          [
+            "applied_on",
+            "last_active"
+          ]
         ]
       },
       {
@@ -1599,6 +1971,636 @@
             }
           }
         ]
+      },
+      {
+        "token": "refund",
+        "name": "Refund requests",
+        "labelSingular": "Refund request",
+        "labelPlural": "Refund requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "refund_title",
+        "describes": "Every refund a learner asks for: why, whether it falls inside the window, the amount and the decision.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New refund request",
+            "values": {
+              "refund_title": "New refund request",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the learner said"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Copy their words, and note how far into the course they are."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Our policy says"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Inside or outside the refund window, and whether a partial refund or a move to a later cohort fits better."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Decision"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What we decided, who decided, and when the money went back."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "requested_on",
+            "decide_by"
+          ]
+        ],
+        "independentOf": {
+          "enrollment": "Either record can be created or change status before the other.",
+          "cohort": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "refund_title",
+            "label": "Refund request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "enrollment",
+            "label": "Enrollment",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "enrollment",
+            "relationMax": 1
+          },
+          {
+            "key": "cohort",
+            "label": "Cohort",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "cohort",
+            "relationMax": 1
+          },
+          {
+            "key": "reason",
+            "label": "Reason",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Schedule conflict",
+              "Course not a fit",
+              "Duplicate charge",
+              "Employer withdrew funding",
+              "Technical problems"
+            ],
+            "choiceColors": {
+              "Schedule conflict": "amber",
+              "Course not a fit": "violet",
+              "Duplicate charge": "red",
+              "Employer withdrew funding": "slate",
+              "Technical problems": "orange"
+            }
+          },
+          {
+            "key": "window",
+            "label": "Refund window",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inside the window",
+              "Outside the window"
+            ],
+            "choiceColors": {
+              "Inside the window": "green",
+              "Outside the window": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Approved",
+              "Refunded",
+              "Declined"
+            ],
+            "choiceColors": {
+              "Requested": "amber",
+              "Approved": "blue",
+              "Refunded": "violet",
+              "Declined": "slate"
+            }
+          },
+          {
+            "key": "requested_on",
+            "label": "Requested on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decide_by",
+            "label": "Decide by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Refund amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "handler",
+            "label": "Handled by",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "btn_refunded",
+            "label": "Mark refunded",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "refund_paid"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "refund_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "refund-1",
+            "values": {
+              "refund_title": "Dhruv Nair, spring Marketing run",
+              "enrollment": "enrollment-4",
+              "cohort": "cohort-1",
+              "reason": "Schedule conflict",
+              "window": "Inside the window",
+              "status": "Refunded",
+              "requested_on": "@today-24d",
+              "decide_by": "@today-22d",
+              "amount": 490,
+              "handler": "tm-3"
+            }
+          },
+          {
+            "key": "refund-2",
+            "values": {
+              "refund_title": "Mirembe Kato, part refund",
+              "enrollment": "enrollment-13",
+              "cohort": "cohort-3",
+              "reason": "Course not a fit",
+              "window": "Outside the window",
+              "status": "Approved",
+              "requested_on": "@today-7d",
+              "decide_by": "@today-2d",
+              "amount": 195,
+              "handler": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "refund-3",
+            "values": {
+              "refund_title": "Hamid Rostami, employer pulled funding",
+              "enrollment": "enrollment-8",
+              "cohort": "cohort-3",
+              "reason": "Employer withdrew funding",
+              "window": "Inside the window",
+              "status": "Requested",
+              "requested_on": "@today-1d",
+              "decide_by": "@today",
+              "amount": 390,
+              "handler": "tm-3"
+            }
+          },
+          {
+            "key": "refund-4",
+            "values": {
+              "refund_title": "Bastien Lefèvre, charged twice",
+              "enrollment": "enrollment-2",
+              "cohort": "cohort-1",
+              "reason": "Duplicate charge",
+              "window": "Inside the window",
+              "status": "Requested",
+              "requested_on": "@today",
+              "decide_by": "@today+2d",
+              "amount": 490,
+              "handler": "tm-3",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "refund-5",
+            "values": {
+              "refund_title": "Leopold Brandt, video will not play",
+              "enrollment": "enrollment-12",
+              "cohort": "cohort-8",
+              "reason": "Technical problems",
+              "window": "Inside the window",
+              "status": "Requested",
+              "requested_on": "@today-1d",
+              "decide_by": "@today+4d",
+              "amount": 145,
+              "handler": "tm-1"
+            }
+          },
+          {
+            "key": "refund-6",
+            "values": {
+              "refund_title": "Kamala Iyer, after finishing",
+              "enrollment": "enrollment-11",
+              "cohort": "cohort-7",
+              "reason": "Course not a fit",
+              "window": "Outside the window",
+              "status": "Declined",
+              "requested_on": "@today-120d",
+              "decide_by": "@today-115d",
+              "amount": 245,
+              "handler": "tm-3"
+            }
+          }
+        ]
+      },
+      {
+        "token": "session",
+        "name": "Live sessions",
+        "labelSingular": "Live session",
+        "labelPlural": "Live sessions",
+        "type": "entity",
+        "display": "calendar",
+        "weight": "light",
+        "ordered": false,
+        "icon": "video",
+        "titleField": "session_name",
+        "describes": "Every live class, office hour, guest talk and demo day, with attendance and whether the recording is up.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "cohort": "Either record can be created or change status before the other.",
+          "host": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "session_name",
+            "label": "Live session",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "cohort",
+            "label": "Cohort",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "cohort",
+            "relationMax": 1
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Live class",
+              "Office hours",
+              "Guest speaker",
+              "Demo day"
+            ],
+            "choiceColors": {
+              "Live class": "blue",
+              "Office hours": "teal",
+              "Guest speaker": "violet",
+              "Demo day": "green"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Held",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Scheduled": "amber",
+              "Held": "green",
+              "Cancelled": "slate"
+            }
+          },
+          {
+            "key": "starts_at",
+            "label": "Starts at",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "attended",
+            "label": "Attended live",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "recording",
+            "label": "Recording",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not yet",
+              "Posted"
+            ],
+            "choiceColors": {
+              "Not yet": "amber",
+              "Posted": "green"
+            }
+          },
+          {
+            "key": "host",
+            "label": "Host",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "btn_held",
+            "label": "Mark held",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "session_held"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "session_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "session-1",
+            "values": {
+              "session_name": "Week 4 live class: email campaigns",
+              "cohort": "cohort-1",
+              "kind": "Live class",
+              "status": "Scheduled",
+              "starts_at": "@today 18:00",
+              "recording": "Not yet",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "session-2",
+            "values": {
+              "session_name": "Office hours: campaign reviews",
+              "cohort": "cohort-1",
+              "kind": "Office hours",
+              "status": "Scheduled",
+              "starts_at": "@today+2d 12:00",
+              "recording": "Not yet",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "session-3",
+            "values": {
+              "session_name": "Week 3 live class: audiences",
+              "cohort": "cohort-1",
+              "kind": "Live class",
+              "status": "Held",
+              "starts_at": "@today-7d 18:00",
+              "attended": 31,
+              "recording": "Posted",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "session-4",
+            "values": {
+              "session_name": "Week 2 live class: cash flow",
+              "cohort": "cohort-3",
+              "kind": "Live class",
+              "status": "Held",
+              "starts_at": "@today-5d 17:00",
+              "attended": 24,
+              "recording": "Posted",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "session-5",
+            "values": {
+              "session_name": "Guest talk: a finance director's month end",
+              "cohort": "cohort-3",
+              "kind": "Guest speaker",
+              "status": "Scheduled",
+              "starts_at": "@today+4d 17:00",
+              "recording": "Not yet",
+              "host": "tm-2",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "session-6",
+            "values": {
+              "session_name": "Office hours: budget templates",
+              "cohort": "cohort-3",
+              "kind": "Office hours",
+              "status": "Scheduled",
+              "starts_at": "@today-2d 12:00",
+              "recording": "Not yet",
+              "host": "tm-2"
+            }
+          },
+          {
+            "key": "session-7",
+            "values": {
+              "session_name": "Welcome call",
+              "cohort": "cohort-8",
+              "kind": "Live class",
+              "status": "Scheduled",
+              "starts_at": "@today+1d 16:00",
+              "recording": "Not yet",
+              "host": "tm-1"
+            }
+          },
+          {
+            "key": "session-8",
+            "values": {
+              "session_name": "Workshop day: pivot tables",
+              "cohort": "cohort-5",
+              "kind": "Live class",
+              "status": "Scheduled",
+              "starts_at": "@today+5d 10:00",
+              "recording": "Not yet",
+              "host": "tm-4"
+            }
+          },
+          {
+            "key": "session-9",
+            "values": {
+              "session_name": "Demo day: final campaigns",
+              "cohort": "cohort-7",
+              "kind": "Demo day",
+              "status": "Held",
+              "starts_at": "@today-101d 18:00",
+              "attended": 27,
+              "recording": "Posted",
+              "host": "tm-2"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1661,6 +2663,56 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "help_by_owner"
+      },
+      {
+        "describes": "A refund request is for one enrollment.",
+        "fromTable": "refund",
+        "fromField": "enrollment",
+        "toTable": "enrollment",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "refund_requests"
+      },
+      {
+        "describes": "A refund request belongs to one cohort.",
+        "fromTable": "refund",
+        "fromField": "cohort",
+        "toTable": "cohort",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "cohort_refunds"
+      },
+      {
+        "describes": "One person handles each refund request.",
+        "fromTable": "refund",
+        "fromField": "handler",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "refund_by_handler"
+      },
+      {
+        "describes": "A live session belongs to one cohort.",
+        "fromTable": "session",
+        "fromField": "cohort",
+        "toTable": "cohort",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "cohort_sessions"
+      },
+      {
+        "describes": "One person hosts each live session.",
+        "fromTable": "session",
+        "fromField": "host",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "session_by_host"
       }
     ],
     "sharedBlocks": [
@@ -1884,6 +2936,62 @@
         "kind": "row_action",
         "token": "help_request_claim",
         "table": "help_request",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "refund_paid",
+        "table": "refund",
+        "name": "Mark refunded",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Refunded"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "refund_claim",
+        "table": "refund",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "session_held",
+        "table": "session",
+        "name": "Mark held",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Held"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "session_claim",
+        "table": "session",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2170,6 +3278,163 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_refund",
+        "name": "All refund requests",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "refund"
+      },
+      {
+        "token": "refund_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "refund"
+      },
+      {
+        "token": "refund_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "decide_by",
+        "allDay": true,
+        "table": "refund"
+      },
+      {
+        "token": "refund_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "refund"
+      },
+      {
+        "token": "refund_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "refund"
+      },
+      {
+        "token": "refund_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Approved"
+          ]
+        },
+        "table": "refund"
+      },
+      {
+        "token": "refund_mine",
+        "name": "My refund requests",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "refund"
+      },
+      {
+        "token": "all_session",
+        "name": "All live sessions",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "session"
+      },
+      {
+        "token": "session_board",
+        "name": "By kind",
+        "kind": "kanban",
+        "groupBy": "kind",
+        "table": "session"
+      },
+      {
+        "token": "session_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "starts_at",
+        "allDay": false,
+        "table": "session"
+      },
+      {
+        "token": "session_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "session"
+      },
+      {
+        "token": "session_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "session"
+      },
+      {
+        "token": "session_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "starts_at": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Scheduled"
+        },
+        "table": "session"
+      },
+      {
+        "token": "session_mine",
+        "name": "My live sessions",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "session"
       }
     ],
     "agent": {
@@ -2242,6 +3507,30 @@
           "surface": "enrollment_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open refund requests.",
+        "action": {
+          "kind": "open",
+          "surface": "refund_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "refund_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open live sessions.",
+        "action": {
+          "kind": "open",
+          "surface": "session_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "session_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2258,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2280,12 +3569,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Courses, cohorts, learners and support in one place. Start with the Dashboard each Monday. Keep seats and revenue honest by moving enrollments through Applied, Active and Completed, and answer every help request before its reply-by date."
+              "text": "The academy in one place. Courses holds what you teach; Cohorts is each run with seats, completion and refunds; Enrollments is every learner; Live sessions is the class calendar; Refund requests and Learner help requests are the two queues to clear each day. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2765,6 +4060,509 @@
             ],
             "activeViewId": "hel-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Live sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Classes, office hours and guest talks, with attendance and recordings."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "session",
+              "view": "all_session"
+            },
+            "inline": true,
+            "title": "Live sessions",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "se-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "kind"
+              },
+              {
+                "id": "se-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "starts_at"
+              },
+              {
+                "id": "se-t",
+                "name": "All live sessions",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "se-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "starts_at": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "se-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "starts_at": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "se-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "starts_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Scheduled"
+                }
+              },
+              {
+                "id": "se-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "se-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Refund requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every refund asked for, inside or outside the window, and the decision."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "refund",
+              "view": "all_refund"
+            },
+            "inline": true,
+            "title": "Refund requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rf-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rf-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "decide_by"
+              },
+              {
+                "id": "rf-t",
+                "name": "All refund requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rf-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "decide_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rf-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "decide_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rf-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rf-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rf-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "online-academy-operations",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the academy in this workspace. Share it with course owners, instructors and learner support."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Courses",
+              "bold": true
+            },
+            {
+              "text": ": what you teach or are building, with track, format, lessons, price and refund window."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cohorts",
+              "bold": true
+            },
+            {
+              "text": ": each run of a course with dates, seats, learners, completion rate, refunds and live attendance."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enrollments",
+              "bold": true
+            },
+            {
+              "text": ": each learner in each cohort, how they paid, where they found you, progress, last login and certificate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Live sessions",
+              "bold": true
+            },
+            {
+              "text": ": the class calendar, with attendance and recordings."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Refund requests",
+              "bold": true
+            },
+            {
+              "text": ": every refund asked for and the decision."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Learner help requests",
+              "bold": true
+            },
+            {
+              "text": ": questions about access, payment, content, deadlines and certificates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the dashboard. Seats left on cohorts that are enrolling, refunds to decide, help requests due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: support clears help requests and refunds; instructors mark sessions held and post recordings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thursday: course owners review courses in production."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each cohort: completion, refunds and what to change."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: help requests and refunds due today"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: quiet learners contacted, seats checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every cohort: launch countdown, finish review"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: which courses to build, refresh or retire"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Course owners own content, price and launch dates. Instructors own live sessions and learner progress. Learner support owns help requests and refunds. The academy director reads completion and refunds across all cohorts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Completion rate",
+              "bold": true
+            },
+            {
+              "text": " is learners who completed divided by everyone who started, so applicants who never paid do not count. "
+            },
+            {
+              "text": "Dropped or refunded",
+              "bold": true
+            },
+            {
+              "text": " counts learners who left. "
+            },
+            {
+              "text": "Refunded",
+              "bold": true
+            },
+            {
+              "text": " is money returned on that cohort."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename tracks, formats and refund reasons to fit your academy, set your own refund windows, and delete the sample rows once your first real cohort is in. Start small: enter your live courses and the next cohort of each, then add learners as they enroll. The counts, completion rates and seats left fill in by themselves as you go."
+            }
+          ]
         }
       ]
     },
@@ -3168,6 +4966,136 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Completion and refunds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "cohort",
+              "view": "all_cohort"
+            },
+            "inline": true,
+            "title": "Completion by cohort",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dc-1",
+                "name": "Completion rate by cohort",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "cohort_name",
+                  "op": "sum",
+                  "field": "completion"
+                }
+              },
+              {
+                "id": "dc-2",
+                "name": "Finished cohorts",
+                "layout": "list",
+                "icon": "List",
+                "filters": {
+                  "status": "Finished"
+                }
+              }
+            ],
+            "activeViewId": "dc-1"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "refund",
+              "view": "all_refund"
+            },
+            "inline": true,
+            "title": "Refunds to decide",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dc-3",
+                "name": "Refunds to decide",
+                "layout": "list",
+                "icon": "Clock",
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "dc-4",
+                "name": "Refunds by reason",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "reason",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dc-3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Where learners come from"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "enrollment",
+              "view": "all_enrollment"
+            },
+            "inline": true,
+            "title": "Where learners come from",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dc-5",
+                "name": "Enrollments by source",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "found_us",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dc-5"
+          }
         }
       ]
     },
@@ -3186,7 +5114,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A cohort launches well when learners know what they are getting, when it starts and how to ask for help."
+              "text": "A cohort is won or lost in the six weeks before it starts. This is the countdown we run for every live cohort, so seats fill, learners show up on day one and nobody asks where the link is."
             }
           ],
           "background": "blue",
@@ -3198,7 +5126,113 @@
           "type": "heading",
           "text": [
             {
-              "text": "Four weeks before"
+              "text": "Six weeks out: open enrollment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create the cohort under its course with start and end dates, seats and a lead instructor."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Open enrollment",
+              "bold": true
+            },
+            {
+              "text": ". The cohort moves to Enrolling and the sales page goes live."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book every "
+            },
+            {
+              "text": "Live session",
+              "bold": true
+            },
+            {
+              "text": " for the run in the class calendar: weekly classes, office hours, any guest talk and the demo day. Learners decide to buy when they can see the times."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the newsletter and past learners first. Alumni referrals convert better than any ad."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Four weeks out: fill the seats"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Watch "
+            },
+            {
+              "text": "Seats left",
+              "bold": true
+            },
+            {
+              "text": " every Monday. Under half full four weeks out means one more email and a personal note to partner organizations."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Accept applications within a day. Waiting learners buy somewhere else."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Paid by",
+              "bold": true
+            },
+            {
+              "text": " for each learner. Employer invoices take the longest; chase them now, not in week two."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One week out: get people ready"
             }
           ],
           "props": {
@@ -3209,7 +5243,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Set dates, seats and the lead instructor on the cohort row"
+              "text": "Welcome email with the calendar, the first lesson and how to get help"
             }
           ],
           "props": {
@@ -3220,7 +5254,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Open enrollment and publish the course page"
+              "text": "Every learner has logged in at least once (check "
+            },
+            {
+              "text": "Last logged in",
+              "bold": true
+            },
+            {
+              "text": ")"
             }
           ],
           "props": {
@@ -3231,7 +5272,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Write the welcome email and the first week's plan"
+              "text": "The lead instructor has run through week one's materials"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recording settings checked for every live session"
             }
           ],
           "props": {
@@ -3242,7 +5294,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "One week before"
+              "text": "Week one: start the cohort"
             }
           ],
           "props": {
@@ -3250,43 +5302,32 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Email accepted learners their access details"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
+              "text": "Press "
+            },
             {
-              "text": "Test the live room and recording"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
+              "text": "Start cohort",
+              "bold": true
+            },
             {
-              "text": "Post office hours and support hours"
+              "text": " on day one. Run the welcome call even if numbers are low; it sets the tone for the whole run. After each class, press "
+            },
+            {
+              "text": "Mark held",
+              "bold": true
+            },
+            {
+              "text": ", write how many attended and post the recording the same day."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "First week"
+              "text": "During the run"
             }
           ],
           "props": {
@@ -3297,7 +5338,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check who has not logged in by day three and send a friendly nudge."
+              "text": "Anyone who has not logged in for ten days gets a personal message from the instructor, not an automated one."
             }
           ]
         },
@@ -3305,7 +5346,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Answer every help request within a working day."
+              "text": "Refund requests inside the window are approved without argument. Outside the window, offer a move to the next cohort first."
             }
           ]
         },
@@ -3313,7 +5354,80 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask for a one-line goal from each learner to use later in feedback."
+              "text": "Watch "
+            },
+            {
+              "text": "Average live attendance",
+              "bold": true
+            },
+            {
+              "text": ". A falling number in week three is normal; a drop by half needs a change in format."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Finishing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Finish cohort",
+              "bold": true
+            },
+            {
+              "text": " after demo day. Then look at "
+            },
+            {
+              "text": "Completion rate",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Dropped or refunded",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Refunded",
+              "bold": true
+            },
+            {
+              "text": ", and write three lines on what to change next time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The spring Marketing Foundations run opened with 40 seats. Four weeks out it had 14 learners, so the course owner emailed alumni and two partner organizations. It started with 31. By week four, two learners had gone quiet for twelve days; a short call brought one back and the other moved to the summer run instead of asking for a refund."
             }
           ]
         }
@@ -3334,7 +5448,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Most support requests are about access and deadlines. Fast, kind answers keep people in the course."
+              "text": "Learners judge the academy by how fast and how kindly we answer them. This is how support works, from the first message to a refund."
             }
           ],
           "background": "blue",
@@ -3346,122 +5460,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reply times"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Topic"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Reply by"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Login or access"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Same day"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Learner support"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Payment or refund"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "One working day"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Head of operations"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Content question"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Two working days"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Lead instructor"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Extension request"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "One working day"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Lead instructor"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Refund rule of thumb"
+              "text": "Where requests come in"
             }
           ],
           "props": {
@@ -3472,7 +5471,280 @@
           "type": "text",
           "text": [
             {
-              "text": "Refund within the published window without questions. Press Refunded on the enrollment so revenue is correct and the seat opens."
+              "text": "Every email, chat or comment that needs an answer becomes a "
+            },
+            {
+              "text": "Learner help request",
+              "bold": true
+            },
+            {
+              "text": ", linked to the learner's enrollment, with a "
+            },
+            {
+              "text": "Reply by",
+              "bold": true
+            },
+            {
+              "text": " date. One working day is the standard; access problems during a live week are answered the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open help requests due today and the "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": " list. Clear access problems first: a learner who cannot reach the lesson cannot learn."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Content questions go to the instructor for that cohort. Do not guess an answer about the material."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Extension requests: a few days is fine for anyone who asks politely. Note the new date in the request."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Certificates: check the name exactly as the learner wants it printed before it is issued."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the learner confirms it is fixed, press "
+            },
+            {
+              "text": "Mark solved",
+              "bold": true
+            },
+            {
+              "text": ". If you are waiting on them, set "
+            },
+            {
+              "text": "Waiting on learner",
+              "bold": true
+            },
+            {
+              "text": " and a new reply-by date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Refunds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Refunds have their own queue so none get lost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Open a "
+            },
+            {
+              "text": "Refund request",
+              "bold": true
+            },
+            {
+              "text": " with the reason in the learner's own words, the amount and whether it is inside the course's "
+            },
+            {
+              "text": "Refund window",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inside the window: approve the full amount. It costs less than a bad review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Outside the window: offer a move to the next cohort first, then a partial refund for the lessons not yet started."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Duplicate charges are refunded the same day, always, with an apology."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Decide by",
+              "bold": true
+            },
+            {
+              "text": " two working days out. When the money has gone back, press "
+            },
+            {
+              "text": "Mark refunded",
+              "bold": true
+            },
+            {
+              "text": " and set the enrollment to Refunded."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learners who go quiet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sort active enrollments by "
+            },
+            {
+              "text": "Last logged in",
+              "bold": true
+            },
+            {
+              "text": ". Anyone away for ten days gets a short personal note: what they missed, the recording link and an offer to talk. Most come back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No help request older than two working days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every refund request decided by its date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Quiet learners contacted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Common questions added to the course's welcome email"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bastien was charged twice for Marketing Foundations. Support opened a refund request for $490 marked Duplicate charge, the payment provider returned it within an hour, and Bastien got a reply with the receipt the same morning. His help request and refund were both closed before lunch."
             }
           ]
         }
@@ -3493,7 +5765,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A course is built in passes. Finishing each pass before the next saves most of the rework."
+              "text": "A new course takes three to four months from idea to first cohort. This workflow keeps the work visible so launch dates are honest."
             }
           ],
           "background": "blue",
@@ -3505,7 +5777,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Passes"
+              "text": "Idea"
             }
           ],
           "props": {
@@ -3513,42 +5785,17 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Outline and learning goals, approved by the lead instructor."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Add the course as "
+            },
             {
-              "text": "Scripts and slide drafts reviewed by one learner from the target group."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Idea",
+              "bold": true
+            },
             {
-              "text": "Recording and editing in batches."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Worksheets and assessments."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Pilot with a small group and fix what confuses them."
+              "text": " with its track, format and a rough price. Before any recording, write a one-page outline: who it is for, what they can do at the end, and the lessons that get them there. Ask ten past learners whether they would pay for it. If fewer than three say yes, rethink it."
             }
           ]
         },
@@ -3556,7 +5803,221 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before it goes live"
+              "text": "In production"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the "
+            },
+            {
+              "text": "Lessons",
+              "bold": true
+            },
+            {
+              "text": " count and a "
+            },
+            {
+              "text": "Launch date",
+              "bold": true
+            },
+            {
+              "text": " the course owner believes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write each lesson's script and exercises before filming. Scripts are easier to fix than video."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record in batches of four or five lessons; edit and caption each batch before the next."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Build the workbook, templates and quizzes alongside the lessons, not after."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the first two lessons past three testers and fix what confused them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing and refunds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the "
+            },
+            {
+              "text": "Price",
+              "bold": true
+            },
+            {
+              "text": " against what similar courses charge and how much live time is included. Set the "
+            },
+            {
+              "text": "Refund window",
+              "bold": true
+            },
+            {
+              "text": " in days; 14 days from the cohort start is common for live cohorts, 30 days for self-paced courses. Write it on the sales page in plain words."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Going live"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every lesson has captions and a transcript."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The welcome email, calendar and first week are ready."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The first cohort or open enrollment exists under the course."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Go live",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the first run"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read the finished cohort's "
+            },
+            {
+              "text": "Completion rate",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Dropped or refunded",
+              "bold": true
+            },
+            {
+              "text": ". The lesson where most people stopped (look at "
+            },
+            {
+              "text": "Lessons finished",
+              "bold": true
+            },
+            {
+              "text": " for those who dropped) is the first thing to rewrite. Refund reasons tell you whether the course or the sales page needs work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retiring a course"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A course that has not filled half its seats for two runs, or whose material is out of date, moves to "
+            },
+            {
+              "text": "Retired",
+              "bold": true
+            },
+            {
+              "text": ". Keep it visible for past learners' certificates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
             }
           ],
           "props": {
@@ -3567,7 +6028,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "All lessons play and captions are correct"
+              "text": "Every course in production has a launch date the owner still believes"
             }
           ],
           "props": {
@@ -3578,7 +6039,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Pricing, refund window and certificate are set"
+              "text": "Ideas older than a month have an outline or are deleted"
             }
           ],
           "props": {
@@ -3589,7 +6050,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "The course page has an honest outline"
+              "text": "Live courses reviewed after each cohort"
             }
           ],
           "props": {
@@ -3597,15 +6058,23 @@
           }
         },
         {
-          "type": "todo",
+          "type": "heading",
           "text": [
             {
-              "text": "Press Go live on the course row"
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Brand Design for Beginners started as an idea in spring. Seven of ten past learners said they would pay. The owner scripted twenty lessons, filmed them in four batches and tested the first two with three learners, who found the exercises too long. They were cut in half, and the pilot cohort opened with a 14-day refund window."
+            }
+          ]
         }
       ]
     }

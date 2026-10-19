@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 5,
+  "version": 6,
   "title": "Event Venue Desk",
-  "description": "Spaces, inquiries and tours, bookings with deposits, and setup checklists for a venue.",
+  "description": "For venue managers: tours, date holds, contracts, deposits, floor plans and event days.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
   "icon": {
     "emoji": "🏛️"
@@ -14,9 +14,11 @@
   },
   "category": "hospitality",
   "tags": [
-    "venue",
-    "bookings",
-    "tours",
+    "venue manager",
+    "venue owner",
+    "wedding venue",
+    "date holds",
+    "floor plans",
     "deposits"
   ],
   "spec": {
@@ -161,7 +163,7 @@
           },
           {
             "key": "nights_held",
-            "label": "Dates held",
+            "label": "Dates on hold",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -171,6 +173,40 @@
             "filter": {
               "status": "Hold"
             }
+          },
+          {
+            "key": "booked_revenue",
+            "label": "Rental fees booked (USD)",
+            "parityType": "rollup",
+            "via": "bookings",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Contracted",
+                "Deposit paid",
+                "Completed"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "upcoming",
+            "label": "Upcoming bookings",
+            "parityType": "rollup",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Completed"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -790,6 +826,21 @@
             }
           },
           {
+            "key": "hold_rank",
+            "label": "Hold",
+            "parityType": "select",
+            "choices": [
+              "First hold",
+              "Second hold"
+            ],
+            "choiceColors": {
+              "First hold": "green",
+              "Second hold": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "event_on",
             "label": "Event date",
             "parityType": "datetime",
@@ -804,6 +855,22 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "deposit_due",
+            "label": "Deposit due",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "balance_due",
+            "label": "Balance due on",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "deposit_paid_on",
@@ -837,6 +904,20 @@
                 "value": 1000
               }
             ]
+          },
+          {
+            "key": "caterer",
+            "label": "Caterer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "coi",
+            "label": "Vendor insurance certificates in",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "fee",
@@ -875,6 +956,25 @@
                 "value": 1000000
               }
             ]
+          },
+          {
+            "key": "damage_deposit",
+            "label": "Refundable damage deposit (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ],
+            "contextPolicy": "include"
           },
           {
             "key": "balance",
@@ -916,6 +1016,15 @@
             "contextPolicy": "include",
             "relationTarget": "space",
             "relationMax": 1
+          },
+          {
+            "key": "floor_plan",
+            "label": "Floor plan",
+            "parityType": "relation",
+            "relationTarget": "floor_plan",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "inquiry",
@@ -990,7 +1099,8 @@
         "independentOf": {
           "space": "Either record can be created or change status before the other.",
           "inquiry": "Either record can be created or change status before the other.",
-          "manager": "Either record can be created or change status before the other."
+          "manager": "Either record can be created or change status before the other.",
+          "floor_plan": "Either record can be created or change status before the other."
         },
         "statusImplies": [
           {
@@ -1024,6 +1134,10 @@
         "before": [
           [
             "hold_expires",
+            "event_on"
+          ],
+          [
+            "balance_due",
             "event_on"
           ]
         ],
@@ -1113,7 +1227,12 @@
               "inquiry": "inquiry-4",
               "manager": "tm-3",
               "owner_me": "@installer",
-              "deposit_paid_on": "@today-2d"
+              "deposit_paid_on": "@today-2d",
+              "balance_due": "@today+66d",
+              "damage_deposit": 500,
+              "coi": false,
+              "floor_plan": "plan-4",
+              "caterer": "Saltwater Table Catering"
             }
           },
           {
@@ -1127,7 +1246,13 @@
               "deposit": 0,
               "space": "space-5",
               "inquiry": "inquiry-6",
-              "manager": "tm-3"
+              "manager": "tm-3",
+              "deposit_due": "@today+10d",
+              "balance_due": "@today+286d",
+              "damage_deposit": 1000,
+              "coi": false,
+              "floor_plan": "plan-7",
+              "caterer": "Saltwater Table Catering"
             }
           },
           {
@@ -1143,7 +1268,11 @@
               "space": "space-5",
               "inquiry": "inquiry-5",
               "manager": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "hold_rank": "First hold",
+              "damage_deposit": 1000,
+              "coi": false,
+              "floor_plan": "plan-7"
             }
           },
           {
@@ -1158,7 +1287,12 @@
               "deposit": 0,
               "space": "space-1",
               "inquiry": "inquiry-9",
-              "manager": "tm-3"
+              "manager": "tm-3",
+              "hold_rank": "Second hold",
+              "damage_deposit": 750,
+              "coi": false,
+              "floor_plan": "plan-3",
+              "caterer": "Juniper & Rye Kitchen"
             }
           },
           {
@@ -1173,7 +1307,12 @@
               "space": "space-2",
               "manager": "tm-3",
               "owner_me": "@installer",
-              "deposit_paid_on": "@today-3d"
+              "deposit_paid_on": "@today-3d",
+              "balance_due": "@today-9d",
+              "damage_deposit": 500,
+              "coi": true,
+              "floor_plan": "plan-4",
+              "caterer": "Juniper & Rye Kitchen"
             }
           },
           {
@@ -1187,7 +1326,12 @@
               "deposit": 775,
               "space": "space-3",
               "manager": "tm-3",
-              "deposit_paid_on": "@today-6d"
+              "deposit_paid_on": "@today-6d",
+              "balance_due": "@today-10d",
+              "damage_deposit": 250,
+              "coi": true,
+              "floor_plan": "plan-6",
+              "caterer": "Boxed lunches, Corner Table Deli"
             }
           },
           {
@@ -1202,7 +1346,12 @@
               "space": "space-2",
               "manager": "tm-3",
               "owner_me": "@installer",
-              "completed_on": "@today-18d"
+              "completed_on": "@today-18d",
+              "balance_due": "@today-32d",
+              "damage_deposit": 500,
+              "coi": true,
+              "floor_plan": "plan-4",
+              "caterer": "Saltwater Table Catering"
             }
           },
           {
@@ -1216,7 +1365,12 @@
               "deposit": 4800,
               "space": "space-1",
               "manager": "tm-3",
-              "completed_on": "@today-45d"
+              "completed_on": "@today-45d",
+              "balance_due": "@today-59d",
+              "damage_deposit": 750,
+              "coi": true,
+              "floor_plan": "plan-1",
+              "caterer": "Juniper & Rye Kitchen"
             }
           },
           {
@@ -1231,7 +1385,31 @@
               "space": "space-5",
               "manager": "tm-3",
               "owner_me": "@installer",
-              "completed_on": "@today-90d"
+              "completed_on": "@today-90d",
+              "balance_due": "@today-104d",
+              "damage_deposit": 1000,
+              "coi": true,
+              "floor_plan": "plan-7",
+              "caterer": "Saltwater Table Catering"
+            }
+          },
+          {
+            "key": "booking-10",
+            "values": {
+              "booking_name": "Fairbanks fiftieth birthday brunch",
+              "status": "Deposit paid",
+              "event_on": "@today-2d",
+              "balance_due": "@today-16d",
+              "deposit_paid_on": "@today-60d",
+              "guests": 40,
+              "fee": 1550,
+              "deposit": 775,
+              "damage_deposit": 250,
+              "caterer": "Juniper & Rye Kitchen",
+              "coi": true,
+              "space": "space-3",
+              "floor_plan": "plan-6",
+              "manager": "tm-3"
             }
           }
         ]
@@ -1527,9 +1705,234 @@
               "owner_me": "@installer",
               "completed_on": "@today-40d"
             }
+          },
+          {
+            "key": "task-10",
+            "values": {
+              "task_name": "Return the reunion damage deposit",
+              "status": "To do",
+              "kind": "Teardown",
+              "due_on": "@today-3d",
+              "booking": "booking-7",
+              "owner": "tm-5"
+            }
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "floor_plan",
+        "name": "Floor plans",
+        "labelSingular": "Floor plan",
+        "labelPlural": "Floor plans",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "layout-grid",
+        "titleField": "plan_name",
+        "describes": "Each saved layout of a space, with how many guests it seats and how many tables it needs.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "plan_name",
+            "label": "Floor plan",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "layout",
+            "label": "Layout",
+            "parityType": "select",
+            "choices": [
+              "Rounds of eight",
+              "Long banquet tables",
+              "Theater",
+              "Classroom",
+              "Boardroom",
+              "Cocktail",
+              "Ceremony",
+              "Ceremony and reception"
+            ],
+            "choiceColors": {
+              "Rounds of eight": "blue",
+              "Long banquet tables": "green",
+              "Theater": "orange",
+              "Classroom": "violet",
+              "Boardroom": "teal",
+              "Cocktail": "pink",
+              "Ceremony": "amber",
+              "Ceremony and reception": "slate"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "capacity",
+            "label": "Guests it holds",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "tables",
+            "label": "Tables needed",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "setup_minutes",
+            "label": "Setup time (minutes)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 600
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notes",
+            "label": "Notes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "space",
+            "label": "Space",
+            "parityType": "relation",
+            "relationTarget": "space",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "plan-1",
+            "values": {
+              "plan_name": "Main Hall, rounds of eight",
+              "space": "space-1",
+              "layout": "Rounds of eight",
+              "capacity": 160,
+              "tables": 20,
+              "setup_minutes": 90,
+              "notes": "Dance floor in front of the stage; bar on the east wall"
+            }
+          },
+          {
+            "key": "plan-2",
+            "values": {
+              "plan_name": "Main Hall, theater",
+              "space": "space-1",
+              "layout": "Theater",
+              "capacity": 200,
+              "tables": 0,
+              "setup_minutes": 75,
+              "notes": "Rows of 14 with a center aisle; stage lit"
+            }
+          },
+          {
+            "key": "plan-3",
+            "values": {
+              "plan_name": "Main Hall, cocktail",
+              "space": "space-1",
+              "layout": "Cocktail",
+              "capacity": 220,
+              "tables": 14,
+              "setup_minutes": 60,
+              "notes": "High-top tables; buffet stations along the windows"
+            }
+          },
+          {
+            "key": "plan-4",
+            "values": {
+              "plan_name": "Garden Terrace, long tables",
+              "space": "space-2",
+              "layout": "Long banquet tables",
+              "capacity": 72,
+              "tables": 6,
+              "setup_minutes": 60,
+              "notes": "Six tables of twelve under the string lights"
+            }
+          },
+          {
+            "key": "plan-5",
+            "values": {
+              "plan_name": "Garden Terrace, ceremony",
+              "space": "space-2",
+              "layout": "Ceremony",
+              "capacity": 120,
+              "tables": 0,
+              "setup_minutes": 45,
+              "notes": "Two blocks of chairs facing the oak tree"
+            }
+          },
+          {
+            "key": "plan-6",
+            "values": {
+              "plan_name": "Gallery Room, boardroom",
+              "space": "space-3",
+              "layout": "Boardroom",
+              "capacity": 22,
+              "tables": 1,
+              "setup_minutes": 20,
+              "notes": "One long table; screen on the north wall"
+            }
+          },
+          {
+            "key": "plan-7",
+            "values": {
+              "plan_name": "Entire Mill, ceremony and reception",
+              "space": "space-5",
+              "layout": "Ceremony and reception",
+              "capacity": 180,
+              "tables": 18,
+              "setup_minutes": 180,
+              "notes": "Ceremony on the terrace, dinner in the hall, lounge in the loft"
+            }
+          }
+        ],
+        "independentOf": {
+          "space": "Either record can be created or change status before the other."
+        }
       }
     ],
     "relationships": [
@@ -1602,6 +2005,26 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "task_by_owner"
+      },
+      {
+        "describes": "Each floor plan belongs to one space.",
+        "fromTable": "floor_plan",
+        "fromField": "space",
+        "toTable": "space",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "floor_plans"
+      },
+      {
+        "describes": "Each booking uses one floor plan.",
+        "fromTable": "booking",
+        "fromField": "floor_plan",
+        "toTable": "floor_plan",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "bookings_using"
       }
     ],
     "sharedBlocks": [
@@ -2069,6 +2492,13 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_floor_plan",
+        "name": "All floor plans",
+        "table": "floor_plan",
+        "kind": "grid",
+        "isDefault": true
       }
     ],
     "agent": {
@@ -2157,7 +2587,7 @@
         "Weir Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2179,7 +2609,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the venue from one page: spaces and day rates, inquiries from first message through tour and proposal, bookings with deposits, and the setup tasks that make the day work. Start on the Dashboard, then clear Follow ups due and holds about to expire. Never promise a date that is not on the calendar."
+              "text": "The sales and events office of a converted mill: the spaces and their floor plans, inquiries from first contact through tours and proposals, bookings with holds, deposits, balances and damage deposits, and the setup tasks for each event. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2200,6 +2637,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2675,6 +3118,48 @@
             ],
             "activeViewId": "tas-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Floor plans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Saved layouts for each space, with capacity, tables and setup time."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "floor_plan",
+              "view": "all_floor_plan"
+            },
+            "inline": true,
+            "title": "Floor plans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "floor_-t",
+                "name": "All floor plans",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "floor_-t"
+          }
         }
       ]
     },
@@ -3097,6 +3582,52 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holds and deposits to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Holds and deposits to chase",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vhd",
+                "name": "Holds and contracts",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Hold",
+                    "Contracted"
+                  ]
+                },
+                "sorts": [
+                  {
+                    "field": "hold_expires",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "vhd"
+          }
         }
       ]
     },
@@ -3112,7 +3643,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A tour is a sales meeting in disguise. Let people imagine their day before you talk about price."
+              "text": "A tour is where most venues are chosen. Show the place as it will feel on their day, answer the money questions plainly, and book the next step before they leave."
             }
           ],
           "background": "blue",
@@ -3124,7 +3655,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before they arrive"
+              "text": "Before the tour"
             }
           ],
           "props": {
@@ -3135,7 +3666,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Room set up the way they want to see it"
+              "text": "Inquiry details read: event type, guests, date wanted, budget"
             }
           ],
           "props": {
@@ -3146,7 +3677,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Lights, music and heating on"
+              "text": "Right floor plan set up, or photos of it ready"
             }
           ],
           "props": {
@@ -3157,7 +3688,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "A one-page price guide and the calendar for their dates"
+              "text": "Space clean, lights on, music low"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Availability for their date and two alternatives checked"
             }
           ],
           "props": {
@@ -3168,7 +3710,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "During the tour"
+              "text": "The route"
             }
           ],
           "props": {
@@ -3179,7 +3721,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask what they picture: arrival, ceremony, dinner, dancing."
+              "text": "Start where guests arrive: parking, entrance, coat area."
             }
           ]
         },
@@ -3187,7 +3729,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk the route a guest would take, and stop where they will stand."
+              "text": "Walk the event in order: ceremony or welcome, drinks, dinner, dancing."
             }
           ]
         },
@@ -3195,7 +3737,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mention what is included, and what needs a vendor."
+              "text": "Show the practical places: restrooms, step-free access, caterer's kitchen, loading door."
             }
           ]
         },
@@ -3203,7 +3745,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Answer questions honestly, including noise and finish times."
+              "text": "End somewhere quiet to talk about dates and price."
             }
           ]
         },
@@ -3211,7 +3753,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Afterwards"
+              "text": "Questions to ask them"
             }
           ],
           "props": {
@@ -3222,7 +3764,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Offer a hold on the date for a set number of days."
+              "text": "What matters most about the day?"
             }
           ]
         },
@@ -3230,7 +3772,210 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Log the tour notes and set a follow-up for the next working day."
+              "text": "Who else is deciding, and when?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Do they have a planner or caterer in mind?"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How many guests, and how firm is that number?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Answer before they ask"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Topic"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Say"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Price"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rental fee, what is included, deposit and balance dates"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Caterers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Approved list, or outside caterers with insurance"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Timing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Access hours, end time, cleanup time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rain plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where an outdoor ceremony moves"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Damage deposit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How much, and when it is returned"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the tour"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Offer a hold: a first hold for five days if the date is free, or a second hold if someone else holds it. Set the follow-up date before they leave, and move the inquiry to "
+            },
+            {
+              "text": "Proposal sent",
+              "bold": true
+            },
+            {
+              "text": " once the written proposal goes out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Virtual tours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Couples who live far away often choose from a video call. Walk the same route with a phone on a stabilizer, show the floor plan on screen, and send the same follow-up as an in-person tour."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the tour"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send photos of the layout they liked, the proposal and the hold expiry date the same day. Note what they said mattered most on the inquiry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Okoye-Brandt couple tours this week. They want 130 guests and an outdoor ceremony, so the terrace ceremony layout and the full-mill plan are both ready to show."
             }
           ]
         }
@@ -3241,9 +3986,21 @@
       "parent": "event-venue-desk",
       "title": "Date holds, contracts and deposits",
       "icon": {
-        "emoji": "📅"
+        "emoji": "📝"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Holds and deposits are how a venue protects its calendar. Clear rules, applied the same way to everyone, avoid awkward calls."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3259,7 +4016,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "A hold lasts seven days unless the director approves more."
+              "text": "A "
+            },
+            {
+              "text": "first hold",
+              "bold": true
+            },
+            {
+              "text": " lasts five working days. Before it expires, the client signs or lets it go."
             }
           ]
         },
@@ -3267,7 +4031,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Every hold has an expiry date; the Dashboard lists them."
+              "text": "A "
+            },
+            {
+              "text": "second hold",
+              "bold": true
+            },
+            {
+              "text": " waits behind a first. If the first lets go, call the second the same day."
             }
           ]
         },
@@ -3275,7 +4046,22 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Never hold two dates in the same space for the same day."
+              "text": "Never give two first holds on the same space and date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter "
+            },
+            {
+              "text": "Hold expires",
+              "bold": true
+            },
+            {
+              "text": " on every hold; the dashboard lists holds by expiry."
             }
           ]
         },
@@ -3283,7 +4069,125 @@
           "type": "heading",
           "text": [
             {
-              "text": "Contracts"
+              "text": "The contract"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it says"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Date, times, spaces"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Access from, event end, out by"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fee and payments"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rental fee, deposit and date, balance and date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Damage deposit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Amount, what it covers, return within 14 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Guests"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Maximum numbers seated and standing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vendors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Caterer rules, insurance certificates, load-in times"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cancellation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What is refunded and when"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Payment schedule, as a starting point"
             }
           ],
           "props": {
@@ -3294,7 +4198,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the contract with the fee, deposit, balance date and rules."
+              "text": "Deposit of 50 percent within 10 days of signing."
             }
           ]
         },
@@ -3302,7 +4206,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Move the booking to Contracted when signed."
+              "text": "Balance 14 to 30 days before the event."
             }
           ]
         },
@@ -3310,7 +4214,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Record deposit when payment arrives."
+              "text": "Damage deposit with the balance, returned after the post-event check."
             }
           ]
         },
@@ -3318,7 +4222,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Cancellations"
+              "text": "When a payment is late"
             }
           ],
           "props": {
@@ -3329,7 +4233,126 @@
           "type": "text",
           "text": [
             {
-              "text": "Follow the contract terms. Note the date of any cancellation request and who received it."
+              "text": "Call the client on the day after the due date, then email a summary. After 14 days, tell them in writing the date may be released. Note every call on the booking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Balances and the event"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A booking whose event date has passed but is not marked Completed shows under Overdue: usually the balance or the damage deposit has not been settled. Close it within the week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Second holds and waiting lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep the second hold's contact details and the date they asked for. Ask them if they would accept another date while they wait."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist when a booking is signed"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status "
+            },
+            {
+              "text": "Contracted",
+              "bold": true
+            },
+            {
+              "text": "; deposit due date entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance due date entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Space and floor plan linked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome email with the planning timeline and vendor rules"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Adeyemi-Cooper wedding weekend is contracted for the whole mill but the deposit is not in yet; it is due in ten days, and the manager has a reminder set for the day after."
             }
           ]
         }
@@ -3338,16 +4361,28 @@
     {
       "key": "event-day-checklist",
       "parent": "event-venue-desk",
-      "title": "Event day checklist",
+      "title": "Setup, floor plans and event day",
       "icon": {
-        "emoji": "✅"
+        "emoji": "📋"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The event day goes well when the room is set right, every vendor knows the rules, and someone owns each hour."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Two hours before"
+              "text": "Two weeks before"
             }
           ],
           "props": {
@@ -3358,7 +4393,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Doors unlocked, heating or cooling set"
+              "text": "Final walkthrough with the client or planner"
             }
           ],
           "props": {
@@ -3369,7 +4404,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Restrooms stocked and checked"
+              "text": "Floor plan chosen and linked to the booking; table count confirmed"
             }
           ],
           "props": {
@@ -3380,7 +4415,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Layout matches the diagram"
+              "text": "Caterer, rentals, florist, music: arrival and load-in times agreed"
             }
           ],
           "props": {
@@ -3391,7 +4426,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Vendors arriving per the schedule"
+              "text": "Vendor insurance certificates received; tick the box"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance paid; damage deposit received"
             }
           ],
           "props": {
@@ -3402,7 +4448,192 @@
           "type": "heading",
           "text": [
             {
-              "text": "During"
+              "text": "Floor plans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Layout"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good for"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan on"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rounds of eight"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Weddings, galas, awards"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "About 10 square feet per seated guest"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Long banquet tables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Family-style dinners"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Narrow aisles; good for terraces"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Theater"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Talks and ceremonies"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Leave a center aisle and clear exits"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cocktail"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Receptions, launches"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "High-tops for a third of guests"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Boardroom"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meetings up to 22"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Screen and power at the head"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never set more guests than the floor plan holds; the fire limit is the limit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setup day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tables and chairs set to the floor plan; count against the plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Linens, lighting, sound checked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the exits; nothing blocks them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Restrooms stocked; trash points set."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During the event"
             }
           ],
           "props": {
@@ -3413,7 +4644,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Event manager is on site from first vendor to last guest."
+              "text": "The venue manager is on site from vendor arrival to last vendor out."
             }
           ]
         },
@@ -3421,7 +4652,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Keep a phone number for the host and caterer at hand."
+              "text": "Watch the end time, noise and occupancy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note anything broken, with photos, for the damage deposit check."
             }
           ]
         },
@@ -3429,7 +4668,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "The run of the day"
             }
           ],
           "props": {
@@ -3437,26 +4676,91 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Walk the space and photograph any damage."
+              "text": "The venue manager carries the timeline: vendor arrivals, doors, dinner, speeches, last music, last guest out. Share it with the client's planner or point person and agree who calls each moment."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Count rentals and clear waste."
+              "text": "Teardown"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Press Close out and collect the balance if due."
+              "text": "Vendors out by the agreed time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors swept, trash out, lights off, doors locked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Damage check with photos within a day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Booking set to "
+            },
+            {
+              "text": "Completed",
+              "bold": true
+            },
+            {
+              "text": "; damage deposit returned or partly kept, in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Caldwell retirement lunch on the terrace uses the long-table plan for 48 guests. Setup is set for the day before, the caterer's arrival is being confirmed, and teardown follows straight after."
             }
           ]
         }
@@ -3471,10 +4775,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "House rules protect guests, the building and the neighbors. Written plainly and shared early, they prevent arguments on the day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "What every client hears"
+              "text": "Times"
             }
           ],
           "props": {
@@ -3485,7 +4801,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Music must end by the time in the contract; the hall closes thirty minutes later."
+              "text": "Access from the time in the contract; nobody sets up earlier without agreement."
             }
           ]
         },
@@ -3493,7 +4809,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Open flames are not allowed except in the candle holders we supply."
+              "text": "Music off at 11 pm; guests out by 11:30 pm; vendors out by midnight."
             }
           ]
         },
@@ -3501,15 +4817,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Decorations may be taped only to the boards we provide."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Outside caterers must be approved and insured."
+              "text": "Overtime is charged by the hour and must be agreed with the venue manager."
             }
           ]
         },
@@ -3517,7 +4825,175 @@
           "type": "heading",
           "text": [
             {
-              "text": "Why we say it"
+              "text": "Food and drink"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Caterers from the approved list, or others with insurance and a food license."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Alcohol served only by licensed bartenders; no self-service bars."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No serving to anyone under the legal drinking age or visibly drunk."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decorations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Allowed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Not allowed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Freestanding decor, table pieces"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nails, tape or glue on walls and beams"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Battery candles; real candles in glass"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Open flames near curtains"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Biodegradable petals outdoors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confetti, glitter, rice"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Our string lights"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fog machines without our approval"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fire exits stay clear at all times."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Guest numbers never above the floor plan's limit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Children supervised near the mill race and the pond."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "First aid kit at the bar; the manager knows where the defibrillator is."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Neighbors"
             }
           ],
           "props": {
@@ -3528,7 +5004,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Rules are easier to follow when the reason is clear: neighbors, floors, safety and the next booking."
+              "text": "Guests leave quietly after 11 pm, buses wait on the drive, not on the lane, and fireworks are not allowed. Good relations with neighbors keep the license."
             }
           ]
         },
@@ -3536,7 +5012,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Exceptions"
+              "text": "Damage deposit"
             }
           ],
           "props": {
@@ -3547,7 +5023,353 @@
           "type": "text",
           "text": [
             {
-              "text": "Anything unusual goes in the booking page and is approved by the director before the contract is signed."
+              "text": "Returned within 14 days when the venue is left as found. Deductions are listed with photos and costs. Common ones are wall marks, broken glass outside the bar area, and extra cleanup."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sharing the rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send them with the contract, again with the final walkthrough notes, and to every vendor with their load-in time. Ask vendors to confirm they have read them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The art fund gala wants a fog effect for the dance floor. The manager agrees a haze machine the venue has tested, and the lighting vendor's power plan is due well before the event."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "event-venue-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A venue sells dates, and each date can only be sold once. This workspace keeps every inquiry, hold and booking in one place, so two couples never hear yes for the same Saturday and no deposit goes unchased."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spaces"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Capacity seated and standing, day rate, what is included, dates on hold, rental fees booked, upcoming bookings"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Floor plans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Saved layouts per space: guests, tables, setup time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inquiries"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Event type, guests, date wanted, how they heard about us, tour and follow-up dates, owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bookings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, first or second hold, hold expiry, deposit and balance dates, rental fee, deposit, damage deposit, caterer, floor plan, setup tasks left"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Setup tasks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Walkthroughs, vendor calls, setup and teardown for each booking"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The booking stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Hold",
+              "bold": true
+            },
+            {
+              "text": ": a date is pencilled in for a few days while the client decides. A "
+            },
+            {
+              "text": "first hold",
+              "bold": true
+            },
+            {
+              "text": " has priority; a "
+            },
+            {
+              "text": "second hold",
+              "bold": true
+            },
+            {
+              "text": " moves up if the first lets go."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Contracted",
+              "bold": true
+            },
+            {
+              "text": ": the contract is signed; the deposit is due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Deposit paid",
+              "bold": true
+            },
+            {
+              "text": ": the date is theirs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Completed",
+              "bold": true
+            },
+            {
+              "text": ": the event happened, the balance is paid, the damage deposit is returned or kept."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your spaces and the floor plans you set most often."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every booked date for the next 18 months with fee, deposit and balance dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open inquiries with their next follow-up date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add setup tasks for events in the next three weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning:",
+              "bold": true
+            },
+            {
+              "text": " inquiries with a follow-up due; holds expiring this week; deposits due."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Afternoon:",
+              "bold": true
+            },
+            {
+              "text": " tours and calls."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Before every event:",
+              "bold": true
+            },
+            {
+              "text": " setup tasks done, floor plan set, vendor certificates in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Hudson Valley Art Fund holds the whole mill as a first hold that expires in five days, and Corvid Labs holds the hall as a second hold. If the gala signs, Corvid's date is unaffected; if it lets go, nothing changes for Corvid either, because they want a different date."
             }
           ]
         }
