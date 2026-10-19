@@ -312,7 +312,7 @@ export function ImportWizard() {
   return (
     // The (core) shell header is transparent glass floating OVER the body, so
     // static top chrome must clear it — same offset CrmListPage uses.
-    <div className="mx-auto flex h-full w-full max-w-5xl flex-col overflow-hidden px-3 pt-[calc(var(--shell-header-h)+0.375rem)]">
+    <div className={cn("mx-auto flex h-full w-full flex-col overflow-hidden px-3 pt-[calc(var(--shell-header-h)+0.375rem)]", step === "preview" ? "max-w-7xl" : "max-w-5xl")}>
       {/* Step rail */}
       <div className="flex shrink-0 items-center gap-1 pb-2 text-xs text-muted-foreground">
         <ChevronLeftTapButton
