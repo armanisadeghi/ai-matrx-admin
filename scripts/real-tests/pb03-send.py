@@ -25,7 +25,11 @@ Usage:
   pb03-send.py --only O        send one copy only
   pb03-send.py --out DIR       write the response files to DIR
   pb03-send.py --dry-run       no model call: each copy goes with dry_run true; no snapshot is read
-  --accept-drift REASON        send although the fixture check found differences (printed and recorded)
+  --agent LETTER=ID            REQUIRED for every copy sent: the disposable agent made for the run (pb03-disposables.py create);
+                               before sending, pb03_gate.py reads it and refuses unless its settings equal the sealed block,
+                               its definition equals source copy A/O/G, and it is in Safety Net Real Tests and not a shared agent
+  --accept-drift REASON        send although the FIXTURE check (shared A/O/G vs the manifest) found differences (printed and
+                               recorded); it never bypasses the disposable gate
 
 Sign-in: a one-time magic-link token for admin@admin.com minted with the live project's secret key
 (matrx-frontend/.env.local, never printed), the same way signin.py and pb02-send.py do.
@@ -46,7 +50,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
-from fixture_check import add_accept_drift_arg, require_fixtures  # noqa: E402
+from fixture_check import Reader, add_accept_drift_arg, require_fixtures  # noqa: E402
+from pb03_gate import gate  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -212,14 +217,32 @@ def main() -> None:
         if letter not in COPIES or not agent_id:
             ap.error(f"--agent wants LETTER=ID with LETTER one of {sorted(COPIES)}")
         COPIES[letter] = agent_id
-    fx = require_fixtures("PB-03", args.accept_drift)
+    copies = [args.only] if args.only else ["A", "O", "G"]
+    given = {pair.partition("=")[0] for pair in args.agent}
+    if sorted(set(copies) - given):
+        # Arman's ruling 2026-10-19: Settings Desk A, O and G are shared live agents at reasoning_effort low; PB-03 sends
+        # only to disposable agents made for the run (pb03-disposables.py create).
+        sys.exit(f"REFUSED: no --agent for copy {', '.join(sorted(set(copies) - given))}: PB-03 sends only to disposable agents "
+                 "(--agent A=<id> --agent O=<id> --agent G=<id>), never the shared Settings Desk agents")
+    reader = Reader()  # one sign-in serves the fixture check, the disposable gate and every send
+    fx = require_fixtures("PB-03", args.accept_drift, reader)  # the shared A/O/G still equal the manifest
+    # Disposable gate, before any send: settings = the sealed block, definition = source copy, org + not shared.
+    # --accept-drift does not reach it.
+    if args.accept_drift:
+        print("disposable gate: --accept-drift covers the fixture check only; it does NOT bypass this gate")
+    diffs = gate(reader, {c: COPIES[c] for c in copies})
+    for d in diffs:
+        print(f"disposable gate: DIFF {d}")
+    if diffs:
+        sys.exit(f"disposable gate: REFUSED to send, {len(diffs)} difference(s)")
+    print(f"disposable gate: PASS for {', '.join(f'{c}={COPIES[c]}' for c in copies)}")
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb03-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb03-send --dry-run" if args.dry_run else "pb03-send", SERVER,
                         {"organization": ORG, "scope": PORT_OF_OAKLAND_LANE, **{f"copy_{k}": v for k, v in COPIES.items()}},
                         out, fixture_check=fx)
-    token = admin_token()
-    for copy in [args.only] if args.only else ["A", "O", "G"]:
+    token = reader.token
+    for copy in copies:
         cid = str(uuid.uuid4())
         path = f"/ai/agents/{COPIES[copy]}"
         body = {"conversation_id": cid, "is_new": True, "store": True, "organization_id": ORG,
