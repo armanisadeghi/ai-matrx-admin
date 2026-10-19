@@ -79,10 +79,13 @@ async function probeInPage() {
 }
 
 async function openLongNote(page) {
+  await page.waitForSelector("[data-note-id]", { timeout: 60000 }).catch(() => undefined);
   const ids = await page.$$eval("[data-note-id]", (els) => [...new Set(els.map((e) => e.getAttribute("data-note-id")))].slice(0, 12));
+  console.log(`       /notes: trying ${ids.length} notes for one long enough to scroll`);
   for (const id of ids) {
     await page.goto(`${ORIGIN}/notes?tabs=${id}&active=${id}`, { waitUntil: "domcontentloaded", timeout: 120000 });
-    await sleep(3500);
+    await page.waitForSelector("[data-matrx-page-runway]", { timeout: 60000 }).catch(() => undefined);
+    await sleep(2500);
     const scrolls = await page.evaluate(() => {
       const root = document.querySelector("[data-matrx-page-runway]");
       return !!root && [...root.querySelectorAll("*")].some((el) => el.scrollHeight > el.clientHeight + 4 && /(auto|scroll)/.test(getComputedStyle(el).overflowY) && el.getBoundingClientRect().height > 200);
