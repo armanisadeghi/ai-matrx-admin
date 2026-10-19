@@ -1189,6 +1189,7 @@ export function DiscoveryInbox({ brandId }: { brandId: string }) {
             </div>
           ) : (
             <MatrxDataTable<DiscoveredItem>
+              look="mac"
               data={rows}
               columns={columns}
               getRowId={(item) => item.id}

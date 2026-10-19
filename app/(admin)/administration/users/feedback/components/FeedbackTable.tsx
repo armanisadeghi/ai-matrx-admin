@@ -23,7 +23,7 @@ import {
   KeyRound,
   ScrollText,
 } from "lucide-react";
-import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import { MatrxDataTable, TABLE_STYLE_VERSION, type MatrxDataTableStyleConfig } from "@ai-matrx/design-system/data-table";
 import { filterAndSortRows } from "@ai-matrx/design-system/data-table/filter-engine";
 import type {
   MatrxColumnDef,
@@ -81,6 +81,17 @@ import type { EntityBulkAction } from "@/lib/entity-list/selection";
 
 const TABLE_ID = "admin-feedback";
 const DONE: FeedbackStatus[] = ["resolved", "closed", "wont_fix", "deferred"];
+
+/** Approved but not yet done: a quiet green row, through the table's own tint so every look shows it. */
+const APPROVED_OPEN_TINT: MatrxDataTableStyleConfig<UserFeedback> = {
+  style: {
+    version: TABLE_STYLE_VERSION,
+    rules: [{ id: "approved-open", field: "approved_open", op: "is_true", color: "green", target: "row" }],
+  },
+  documentOf: (r) => ({
+    approved_open: r.admin_decision === "approved" && !DONE.includes(r.status),
+  }),
+};
 const statuses: Array<{ value: FeedbackStatus; label: string; color: string }> =
   [
     { value: "new", label: "New", color: "bg-blue-100 text-blue-800" },
@@ -882,6 +893,7 @@ export default function FeedbackTable() {
       ) : null}
       <Card className="p-3">
         <MatrxDataTable<UserFeedback>
+          look="mac"
           data={rows}
           columns={columns}
           getRowId={(r) => r.id}
@@ -1033,13 +1045,9 @@ export default function FeedbackTable() {
               ],
             }),
           }}
+          tableStyle={APPROVED_OPEN_TINT}
           rowClassName={(r) =>
-            cn(
-              r.admin_decision === "approved" &&
-                !DONE.includes(r.status) &&
-                "bg-green-500/5",
-              r.parent_id && "border-l-2 border-l-primary/20",
-            )
+            r.parent_id ? "border-l-2 border-l-primary/20" : undefined
           }
           getRowHref={(r) => feedbackHref(r.id)}
           selection={bulk.selection}

@@ -1038,6 +1038,7 @@ function AccountsRoster() {
           ]}
         >
         <MatrxDataTable
+          look="mac"
           selection={accountBulk.selection}
           data={visibleRows}
           columns={[...(columns), { id: "custom-actions", header: "Manage", sortable: false, filter: false, customActions: (row) => (

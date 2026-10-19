@@ -1283,6 +1283,7 @@ function CanonicalAiModelTable(props: AiModelTableProps) {
 
   return (
     <MatrxDataTable<AiModel>
+      look="mac"
       tableId="ai/models-canonical"
       viewTabs={false}
       data={tierModels}

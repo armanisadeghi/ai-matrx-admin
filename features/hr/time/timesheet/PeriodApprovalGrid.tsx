@@ -274,6 +274,7 @@ export function PeriodApprovalGrid({ payPeriodId }: { payPeriodId: string | null
                 extraSections={[periodGridRowMenuSection]}
               >
               <MatrxDataTable<PeriodGridRow>
+                look="mac"
                 data={rows}
                 columns={columns(setRawFor, orgRef)}
                 getRowId={(row) => row.employmentId}

@@ -1152,6 +1152,7 @@ function ProjectsTable({
 
   return (
     <MatrxDataTable<ProjectWithRole>
+      look="mac"
       drill={PROJECTS_DRILL}
       tableId="projects-hub"
       data={projects}

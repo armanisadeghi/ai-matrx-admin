@@ -731,6 +731,7 @@ function TableLayout({
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
       <MatrxDataTable<KnowledgeHit>
+        look="mac"
         tableId="knowledge-hub"
         data={hits}
         columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: handlers.rowMenu ? (h) => rowActions(h) : undefined }]}

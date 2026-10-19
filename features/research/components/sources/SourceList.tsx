@@ -33,7 +33,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
+import {
+  MatrxDataTable,
+  TABLE_STYLE_VERSION,
+  type MatrxDataTableStyleConfig,
+} from "@ai-matrx/design-system/data-table";
 import type {
   ColumnFilterValue,
   ColumnFiltersState,
@@ -639,6 +643,14 @@ export default function SourceList() {
     totalCount === 0 ? 0 : Math.floor((totalCount - 1) / pageSize) * pageSize;
   const pageOffset = Math.min(filters.offset, maxOffset);
   const pageNumber = Math.floor(pageOffset / pageSize) + 1;
+  // The row being opened, through the table's own tint so every look shows it.
+  const navigatingTint = useMemo<MatrxDataTableStyleConfig<ResearchSource> | undefined>(
+    () =>
+      navigatingId
+        ? { style: { version: TABLE_STYLE_VERSION, rows: { [navigatingId]: "gray" } } }
+        : undefined,
+    [navigatingId],
+  );
   const pageSizeOptions = useMemo(
     () => [...new Set([...PAGE_SIZE_CHOICES, pageSize])].sort((a, b) => a - b),
     [pageSize],
@@ -1668,6 +1680,7 @@ export default function SourceList() {
       />
 
       <MatrxDataTable<ResearchSource>
+        look="mac"
         tableId={`research/topic-sources/${topicId}`}
         data={sourceList}
         columns={columns}
@@ -1697,10 +1710,10 @@ export default function SourceList() {
           if (!anyNavigating) handleNavigate(s.id);
         }}
         getRowHref={(s) => sourceHref(s.id)}
+        tableStyle={navigatingTint}
         rowClassName={(s) =>
           cn(
             !s.is_included && "opacity-50",
-            navigatingId === s.id && "bg-muted/60",
             anyNavigating && navigatingId !== s.id && "opacity-70",
           )
         }

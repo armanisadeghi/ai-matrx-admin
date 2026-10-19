@@ -482,6 +482,7 @@ function ApprovalTable({
 
   return (
     <MatrxDataTable<ApprovalItem>
+      look="mac"
       tableId={tableId}
       data={rows}
       columns={columns}
