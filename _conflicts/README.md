@@ -31,8 +31,6 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-061336/features/documents/components/useDocComments.tsx.held — LOCAL latest 2026-10-19 06:08; GITHUB latest 2026-10-19 06:05; LOCAL lacks 1 of GITHUB's 219 new lines; GITHUB lacks 1 of LOCAL's 219 new lines; recover: git show 6477f7e160:'features/documents/components/useDocComments.tsx' / 3c3c2f5e93:'features/documents/components/useDocComments.tsx' — owner: 9bebd132-b256-460e-938e-501370a8709a, notified 2026-10-19 06:27
-- _conflicts/2026-10-19-061336/features/workbooks/components/useSheetComments.tsx.held — LOCAL latest 2026-10-19 06:08; GITHUB latest 2026-10-19 06:05; LOCAL lacks 1 of GITHUB's 221 new lines; GITHUB lacks 1 of LOCAL's 221 new lines; recover: git show 6477f7e160:'features/workbooks/components/useSheetComments.tsx' / 3c3c2f5e93:'features/workbooks/components/useSheetComments.tsx' — owner: 9bebd132-b256-460e-938e-501370a8709a, notified 2026-10-19 06:27
 
 ## Resolution log
 
