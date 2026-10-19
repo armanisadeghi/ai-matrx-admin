@@ -36,8 +36,14 @@ const ledger = {
   contains: jest.fn(),
   order: jest.fn(),
   limit,
+  abortSignal: jest.fn(),
 };
-const parent = { select: jest.fn(), eq: jest.fn(), maybeSingle };
+const parent = {
+  select: jest.fn(),
+  eq: jest.fn(),
+  abortSignal: jest.fn(),
+  maybeSingle,
+};
 const schema = jest.fn();
 beforeEach(() => {
   jest.clearAllMocks();
@@ -46,8 +52,10 @@ beforeEach(() => {
     ledger.eq,
     ledger.contains,
     ledger.order,
+    ledger.abortSignal,
   ])
     method.mockReturnValue(ledger);
+  parent.abortSignal.mockReturnValue(parent);
   parent.select.mockReturnValue(parent);
   parent.eq.mockReturnValue(parent);
   limit.mockResolvedValue({ data: [row], error: null, count: 1 });

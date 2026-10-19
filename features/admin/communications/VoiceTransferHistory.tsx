@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { VoiceTransferReceipt } from "./VoiceTransferReceipt";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@ai-matrx/design-system";
@@ -93,6 +94,11 @@ export function VoiceTransferHistory() {
                     Context unavailable
                   </span>
                 )}
+                <VoiceTransferReceipt
+                  key={item.eventId}
+                  eventId={item.eventId}
+                  callId={item.callId}
+                />
               </li>
             );
           })}
