@@ -18,13 +18,15 @@ type Post = (endpoint: string, body: unknown) => Promise<Response>;
  * run carries a fresh `watch_id`, the server stamps it on every row's AI call, and the run is registered as followed
  * work (`ai_column_run`) BEFORE the request goes, so Watch AI lists each row's exact request as it lands.
  */
-export type WatchRun = (watchId: string, label: string) => void;
+export type WatchRun = (watchId: string, label: string) => WatchEnd | void;
+/** Told how the request ended, so a run that failed before any AI call closes as failed with the reason. */
+export type WatchEnd = (outcome: { ok: boolean; reason?: string }) => void;
 
-function watchBody(watch: WatchRun | undefined, label: string): { watch_id?: string } {
-  if (!watch) return {};
+function watchBody(watch: WatchRun | undefined, label: string): { body: { watch_id?: string }; end: WatchEnd } {
+  if (!watch) return { body: {}, end: () => undefined };
   const watchId = typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-  watch(watchId, label);
-  return { watch_id: watchId };
+  const end = watch(watchId, label);
+  return { body: { watch_id: watchId }, end: end ?? (() => undefined) };
 }
 
 interface AiColumnRun {
@@ -57,6 +59,7 @@ export async function runAiColumn(
   args: { tableId: string; fieldId: string; rows: number; preview: boolean; recordIds?: readonly string[] },
   watch?: WatchRun,
 ): Promise<{ ok: true; run: unknown } | { ok: false; message: string }> {
+  const watched = watchBody(watch, args.preview ? "AI column preview" : "AI column fill");
   try {
     const response = await post(
       `/v1/tables/${encodeURIComponent(args.tableId)}/ai-columns/${encodeURIComponent(args.fieldId)}/run`,
@@ -64,28 +67,41 @@ export async function runAiColumn(
         rows: Math.max(1, Math.min(50, args.rows)),
         preview: args.preview,
         ...(args.recordIds && args.recordIds.length > 0 ? { record_ids: [...args.recordIds] } : {}),
-        ...watchBody(watch, args.preview ? "AI column preview" : "AI column fill"),
+        ...watched.body,
       },
     );
-    if (!response.ok) return { ok: false, message: await refusalSentence(response) };
+    if (!response.ok) {
+      const message = await refusalSentence(response);
+      watched.end({ ok: false, reason: message });
+      return { ok: false, message };
+    }
+    watched.end({ ok: true });
     return { ok: true, run: await response.json() };
   } catch (thrown) {
-    return { ok: false, message: thrown instanceof Error && thrown.message ? thrown.message : "The column could not be filled" };
+    const message = thrown instanceof Error && thrown.message ? thrown.message : "The column could not be filled";
+    watched.end({ ok: false, reason: message });
+    return { ok: false, message };
   }
 }
 
 /** Run the AI column once for `ask`, as the person. */
 export async function enrichByRunner(post: Post, ask: EnrichAsk, watch?: WatchRun): Promise<EnrichOutcome> {
+  const watched = watchBody(watch, ask.previewOnly ? "AI column preview" : "AI column fill");
   try {
     const response = await post(
       `/v1/tables/${encodeURIComponent(ask.tableId)}/ai-columns/${encodeURIComponent(ask.fieldId)}/run`,
       {
         rows: Math.max(1, Math.min(50, ask.rows)),
         preview: ask.previewOnly,
-        ...watchBody(watch, ask.previewOnly ? "AI column preview" : "AI column fill"),
+        ...watched.body,
       },
     );
-    if (!response.ok) return { ok: false, message: await refusalSentence(response) };
+    if (!response.ok) {
+      const message = await refusalSentence(response);
+      watched.end({ ok: false, reason: message });
+      return { ok: false, message };
+    }
+    watched.end({ ok: true });
     const run = (await response.json()) as AiColumnRun;
     return {
       ok: true,
@@ -97,6 +113,8 @@ export async function enrichByRunner(post: Post, ask: EnrichAsk, watch?: WatchRu
       ...(run.would_write ? { wouldWrite: run.would_write } : {}),
     };
   } catch (thrown) {
-    return { ok: false, message: thrown instanceof Error && thrown.message ? thrown.message : "The column could not be filled" };
+    const message = thrown instanceof Error && thrown.message ? thrown.message : "The column could not be filled";
+    watched.end({ ok: false, reason: message });
+    return { ok: false, message };
   }
 }

@@ -28,6 +28,11 @@ export interface FollowedWork {
   source: string;
   /** Epoch ms of the first registration. */
   at: number;
+  /**
+   * How the request that started the work ended, when the tab knows (`endServerWork`). A run that failed before any
+   * AI call (the store busy, a refusal) is over with this reason instead of "running" forever.
+   */
+  ended?: { ok: boolean; reason?: string; at: number };
 }
 
 const STORAGE_KEY = "matrx:ai-watch:followed";
@@ -68,6 +73,14 @@ export function followServerWork(input: { kind: FollowedKind; id: string; label:
   const key = followKey(input.kind, input.id);
   if (items.some((w) => w.key === key)) return;
   commit([...items, { key, kind: input.kind, id: input.id, label: input.label, source: input.source, at: Date.now() }].slice(-MAX_FOLLOWED));
+}
+
+/** Say how the request behind followed work ended; the item is then over even if no AI call was ever recorded. */
+export function endServerWork(kind: FollowedKind, id: string, outcome: { ok: boolean; reason?: string }): void {
+  const key = followKey(kind, id);
+  if (!items.some((w) => w.key === key)) return;
+  const ended = { ok: outcome.ok, at: Date.now(), ...(outcome.reason ? { reason: outcome.reason } : {}) };
+  commit(items.map((w) => (w.key === key ? { ...w, ended } : w)));
 }
 
 export function getFollowedWork(): readonly FollowedWork[] {

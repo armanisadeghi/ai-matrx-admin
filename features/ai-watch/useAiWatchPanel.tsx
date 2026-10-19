@@ -276,7 +276,12 @@ export function useAiWatchPanel({
           .filter((w) => !groups.some((g) => g.followKey === w.key))
           .map((w) => (
             <div key={w.key} className="border-b border-border px-2 py-1.5 text-muted-foreground" data-testid="ai-watch-followed-pending">
-              {w.label} · {followedState[w.key]?.done ? "no AI call recorded" : "running, no AI call recorded yet"}
+              {w.label} ·{" "}
+              {followedState[w.key]?.status === "failed"
+                ? `failed: ${followedState[w.key]?.error ?? "no reason given"}`
+                : followedState[w.key]?.done
+                  ? "no AI call recorded"
+                  : "running, no AI call recorded yet"}
             </div>
           ))}
         {newestRun && !groups.some((g) => g.workflowRunId === newestRun || g.id === UNRECORDED_GROUP) ? (

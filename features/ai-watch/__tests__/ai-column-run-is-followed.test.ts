@@ -31,3 +31,20 @@ describe("resolveAiColumnRun", () => {
     expect(resolveAiColumnRun(work, [row("a", "completed", "1"), row("b", "failed", "2")]).done).toBe(true);
   });
 });
+
+describe("a run whose request ended (lane SERVER-STORE, 2026-10-19)", () => {
+  it("closes as failed with the reason when the request failed before any AI call", () => {
+    const r = resolveAiColumnRun({ ...work, ended: { ok: false, reason: "The data store is busy, try again.", at: 1 } }, []);
+    expect(r.done).toBe(true);
+    expect(r.status).toBe("failed");
+    expect(r.error).toBe("The data store is busy, try again.");
+  });
+
+  it("is over with no call when the request succeeded and nothing was due", () => {
+    expect(resolveAiColumnRun({ ...work, ended: { ok: true, at: 1 } }, []).done).toBe(true);
+  });
+
+  it("keeps waiting on calls still pending after a successful request", () => {
+    expect(resolveAiColumnRun({ ...work, ended: { ok: true, at: 1 } }, [row("a", "pending", "1")]).done).toBe(false);
+  });
+});

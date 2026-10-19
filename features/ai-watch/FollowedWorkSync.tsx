@@ -31,7 +31,8 @@ export default function FollowedWorkSync() {
   const runFeed = useBuilderFeed(PAGE_RUNS_SURFACE);
 
   // 1. Poll. Work that is over is read once more on registration, then left alone.
-  const workSig = work.map((w) => w.key).join(",");
+  // An ending (`endServerWork`) changes the signature, so a run that failed before any AI call is read once more and closes.
+  const workSig = work.map((w) => `${w.key}${w.ended ? "!" : ""}`).join(",");
   const done = useRef(new Set<string>());
   useEffect(() => {
     if (!canWatch || !work.length) return undefined;
