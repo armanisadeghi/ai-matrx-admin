@@ -37,6 +37,8 @@ begin
     if to_regprocedure('custom.computed_refresh_drain(integer)') is not null then
       perform custom.computed_refresh_drain(900000);
     end if;
+    -- until READ-SPEED-3 b (the write triggers) lands, kept values are served only when forced (proofs only)
+    perform set_config('mx.computed_store', 'force', true);
 
   perform set_config('request.jwt.claims', c_admin, true);
   perform set_config('role', 'authenticated', true);

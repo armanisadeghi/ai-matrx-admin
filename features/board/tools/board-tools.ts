@@ -30,6 +30,7 @@ export const BOARD_ADDABLE_ITEM_KEYS = [
   "note",
   "file",
   "udt_document",
+  "workbook",
   "data-table",
   "list",
   "task",
@@ -54,6 +55,7 @@ export const BOARD_FINDABLE_ITEM_KEYS = [
   "note",
   "file",
   "udt_document",
+  "workbook",
   "data-table",
   "list",
   "task",
@@ -121,7 +123,7 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
     name: "board_add_items",
     label: "Add items",
     description:
-      "Puts the person's REAL records on the board as live tiles, several at once, as one undoable step: an existing record by `id` (a note, file, chat, document, table, picklist, task, War Room, meeting, workflow run, research topic, project, flashcard deck, scope… — ids from board_find_records or knowledge_search), or a NEW one with `new: true` (a blank note, task, table, document… the person fills in). Each tile is the feature itself, exactly as when the person brings it in from the Add menu. A record already on this board is not added twice: its entry answers `already_on_board` with that tile's id. A type whose new one needs the person's choice first (a meeting, a workflow run, a chat with an agent) answers `needs_person`. Placement: per entry `near_tile_id` or `x`/`y`, else the items fill free space in reading order near what the person is looking at. Returns one result per entry, in order, with each new tile's id. To gather a topic: board_find_records → board_add_items → board_group (a frame named for the topic, tidy: true).",
+      "Puts the person's REAL records on the board as live tiles, several at once, as one undoable step: an existing record by `id` (a note, file, chat, document, table, picklist, task, War Room, meeting, workflow run, research topic, project, flashcard deck, scope… — ids from board_find_records or knowledge_search), or a NEW one with `new: true` (a blank note, task, table, document… the person fills in). Each tile is the feature itself, exactly as when the person brings it in from the Add menu. A record already on this board is not added twice: its entry answers `already_on_board` with that tile's id. To put an agent's form on the board pass `{type: \"agent-form\", agent: \"<name or id>\"}` (or `chat` with `agent`). A type whose new one needs the person's choice first (a meeting, a workflow run) answers `needs_person`. Placement: per entry `near_tile_id` or `x`/`y`, else the items fill free space in reading order near what the person is looking at. Returns one result per entry, in order, with each new tile's id. To gather a topic: board_find_records → board_add_items → board_group (a frame named for the topic, tidy: true).",
     inputSchema: {
       type: "object",
       properties: {
@@ -134,6 +136,11 @@ export const BOARD_CLIENT_TOOLS: SurfaceClientTool[] = [
               type: { type: "string", enum: [...BOARD_ADDABLE_ITEM_KEYS], description: "The item type (as board_find_records returns it)." },
               id: { type: "string", description: "The existing record's id. Omit with new: true." },
               new: { type: "boolean", description: "Start a new, blank one of this type instead." },
+              agent: {
+                type: "string",
+                description:
+                  "For `agent-form` (the agent's inputs as a form, ONE Run) or `chat`: the agent's NAME or id; starts a new tile for that agent at once. Resolved through the agent catalog; an ambiguous or unknown name is refused with the candidates.",
+              },
               title: { type: "string", description: "Tile title (default: the record's name)." },
               near_tile_id: { type: "string", description: "Place beside this tile." },
               x: { type: "number", description: "Left edge in board pixels (with y)." },

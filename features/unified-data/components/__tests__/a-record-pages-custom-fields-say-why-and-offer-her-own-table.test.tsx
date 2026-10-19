@@ -22,6 +22,8 @@ const ELM_STREET = "5b1d7c2e-3f40-4a8b-9c6d-7e8f9a0b1c2d";
 const MARISOL = "82a25af4-27cb-4e94-a2de-155eae7c8992";
 
 let activeOrganization: string | null = ELM_STREET;
+// What the store says about the ladder for this record (`may_edit` in custom.entity_record_read); absent = an older door.
+let keptMayEdit: boolean | undefined;
 const dispatched: unknown[] = [];
 const sectionProps: Array<Record<string, unknown>> = [];
 // The page's agent doors (the platform registry's shape): the real section registers through `agentDoor`.
@@ -60,7 +62,7 @@ jest.mock("@ai-matrx/records-ui", () => ({
 jest.mock("@/features/unified-data/components/EntityBackLinks", () => ({ EntityBackLinks: () => null }));
 jest.mock("@/features/unified-data/hub/doors", () => ({
   entityRecordHome: async () => ({ ok: true, data: { organization_id: CEDAR_RIDGE } }),
-  entityRecordReadable: async () => ({ ok: true, data: KEPT_RECORD }),
+  entityRecordReadable: async () => ({ ok: true, data: keptMayEdit === undefined ? KEPT_RECORD : { ...KEPT_RECORD, may_edit: keptMayEdit } }),
 }));
 // The section's own reads are kept in Redux by record (`useStoreRead`); this page's cases are about
 // what the answers SAY, so a plain one-read stand-in carries them (the read-once law has its own
@@ -149,6 +151,7 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     // The switch's answer is kept per organization for the session; each case is a new session.
     forgetAllKeptAnswers();
     activeOrganization = ELM_STREET;
+    keptMayEdit = undefined;
     dispatched.length = 0;
     sectionProps.length = 0;
     doors.length = 0;
@@ -237,5 +240,29 @@ describe("a record page's custom fields say why, and offer her own table", () =>
     // The stand-in leaves once the real door is there: one door per record.
     expect(doors).toHaveLength(1);
     expect(doors[0]).not.toBe(stand);
+  });
+
+  // CF-WRITE-2: a record the access ladder does not let her edit shows its values read-only with the shared reason,
+  // never an enabled control that then refuses. The fact is the store's (`may_edit`), read with the record.
+  it("CF-WRITE-2: when the ladder says she may not edit, the section is disabled and says 'Needs Edit access'", async () => {
+    keptMayEdit = false;
+    await show();
+    const section = host.querySelector('[data-section="custom-fields"][data-state="ready"]');
+    expect(section?.getAttribute("data-read-only")).toBe("true");
+    expect(section?.querySelector("fieldset")?.disabled).toBe(true);
+    expect(section?.querySelector('[data-custom-fields-reason="needs-edit-access"]')?.textContent).toBe("Needs Edit access");
+  });
+
+  it("CF-WRITE-2: when the ladder says she may edit (or an older door does not say), nothing is disabled and no reason shows", async () => {
+    for (const mayEdit of [true, undefined]) {
+      keptMayEdit = mayEdit;
+      forgetAllKeptAnswers();
+      await show();
+      const section = host.querySelector('[data-section="custom-fields"][data-state="ready"]');
+      expect(section).not.toBeNull();
+      expect(section?.getAttribute("data-read-only")).toBeNull();
+      expect(section?.querySelector("fieldset")?.disabled).toBe(false);
+      expect(section?.querySelector("[data-custom-fields-reason]")).toBeNull();
+    }
   });
 });

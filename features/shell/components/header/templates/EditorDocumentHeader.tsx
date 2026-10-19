@@ -53,6 +53,11 @@ export type EditorDocumentHeaderProps = {
   ribbon?: ReactNode;
   children: ReactNode;
   className?: string;
+  /**
+   * The editor lives inside something else (a board tile): the shell is left as it is (no canvas
+   * chrome, no navigation button) and the product mark is a plain mark, not a link away.
+   */
+  embedded?: boolean;
 };
 
 const OFFICE_KIND = { sheets: "workbook", docs: "document", slides: "presentation" } as const;
@@ -76,11 +81,12 @@ export function EditorDocumentHeader({
   ribbon,
   children,
   className,
+  embedded = false,
 }: EditorDocumentHeaderProps) {
   const [look, , settled] = useOfficeLook();
   const office = look === "microsoft" && !!ribbon;
   const accent = OFFICE_ACCENT[OFFICE_KIND[productTone]];
-  const navButton = (
+  const navButton = embedded ? null : (
     <Button
       variant="quiet"
       icon={<Menu />}
@@ -89,6 +95,16 @@ export function EditorDocumentHeader({
       className="shrink-0 lg:hidden"
     />
   );
+  const mark = (markClass: string) =>
+    embedded ? (
+      <span className={markClass} title={backLabel}>
+        {productIcon}
+      </span>
+    ) : (
+      <NavLink href={backHref} aria-label={backLabel} title={backLabel} className={markClass}>
+        {productIcon}
+      </NavLink>
+    );
   const titleRow = (
     <>
       {title}
@@ -110,7 +126,7 @@ export function EditorDocumentHeader({
       data-editor-document-header=""
       data-office-look={office ? "microsoft" : "google"}
     >
-      <ShellChromeMode mode="canvas" />
+      {embedded ? null : <ShellChromeMode mode="canvas" />}
       {office ? (
         <header
           className={cn(
@@ -120,14 +136,7 @@ export function EditorDocumentHeader({
         >
           <div className="flex min-w-0 items-center gap-1.5">
             {navButton}
-            <NavLink
-              href={backHref}
-              aria-label={backLabel}
-              title={backLabel}
-              className="flex size-8 shrink-0 items-center justify-center rounded-md bg-[var(--office-accent)] text-white [&_svg]:size-5"
-            >
-              {productIcon}
-            </NavLink>
+            {mark("flex size-8 shrink-0 items-center justify-center rounded-md bg-[var(--office-accent)] text-white [&_svg]:size-5")}
           </div>
           <div className="flex h-7 min-w-0 items-center justify-start gap-0.5 sm:justify-center">{titleRow}</div>
           {actions ? <div className="flex min-w-0 items-center justify-end gap-1">{actions}</div> : <span />}
@@ -135,17 +144,7 @@ export function EditorDocumentHeader({
       ) : (
         <header className={cn("canvas-workspace-header flex h-[3.75rem] shrink-0 items-center gap-1.5 pl-2 pr-3", !settled && "invisible")}>
           {navButton}
-          <NavLink
-            href={backHref}
-            aria-label={backLabel}
-            title={backLabel}
-            className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-md [&_svg]:size-5",
-              TONE[productTone],
-            )}
-          >
-            {productIcon}
-          </NavLink>
+          {mark(cn("flex size-9 shrink-0 items-center justify-center rounded-md [&_svg]:size-5", TONE[productTone]))}
           <div className="flex min-w-0 flex-1 flex-col justify-center">
             <div className="flex h-7 min-w-0 items-center gap-0.5">{titleRow}</div>
             {menuBar ? <div className="flex h-6 min-w-0 items-center">{menuBar}</div> : null}

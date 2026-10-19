@@ -24,6 +24,8 @@ export interface AddItemEntry {
   id?: unknown;
   new?: unknown;
   title?: unknown;
+  /** An agent's id or name: start a NEW tile for that agent (agent form, chat). */
+  agent?: unknown;
 }
 
 export type ResolvedEntry =
@@ -32,16 +34,32 @@ export type ResolvedEntry =
 
 const text = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : undefined);
 
-export function resolveAddEntry(entry: AddItemEntry, types: readonly BoardItemType[]): ResolvedEntry {
+/** The agents `entry.agent` named, already resolved through the catalog (`resolveAgentRef`), by entry. */
+export type ResolvedAgents = ReadonlyMap<AddItemEntry, { id: string; name: string | null }>;
+
+export function resolveAddEntry(
+  entry: AddItemEntry,
+  types: readonly BoardItemType[],
+  agents?: ResolvedAgents,
+): ResolvedEntry {
   const key = text(entry.type);
   const type = key ? types.find((t) => t.key === key) : undefined;
   if (!type) return { ok: false, status: "refused", error: `Unknown item type "${String(entry.type)}".` };
   const id = text(entry.id);
   const title = text(entry.title);
+  const named = text(entry.agent) ? agents?.get(entry) : undefined;
   const sized = (item: PlacedItem) => ({
     ok: true as const,
     item: { ...item, ...(title ? { title } : {}), size: item.size ?? type.defaultSize },
   });
+  if (text(entry.agent)) {
+    if (!type.startWithAgent) {
+      return { ok: false, status: "refused", error: `A ${type.label.toLowerCase()} has no agent to choose; leave \`agent\` out.` };
+    }
+    if (id) return { ok: false, status: "refused", error: "`agent` starts a NEW tile; pass `agent` without `id`." };
+    if (!named) return { ok: false, status: "refused", error: "The agent could not be resolved." };
+    return sized(type.startWithAgent(named));
+  }
   if (id) {
     if (!type.record) {
       return {

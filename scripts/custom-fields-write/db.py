@@ -8,9 +8,11 @@ ADMIN = '87a6e699-3622-4869-8843-d0867456c0dd'  # admin@admin.com
 
 
 def conn(autocommit=True):
-    return psycopg.connect(host=os.environ['SUPABASE_MATRIX_HOST'], port=os.environ['SUPABASE_MATRIX_PORT'],
+    c = psycopg.connect(host=os.environ['SUPABASE_MATRIX_HOST'], port=os.environ['SUPABASE_MATRIX_PORT'],
                            dbname=os.environ['SUPABASE_MATRIX_DATABASE_NAME'], user=os.environ['SUPABASE_MATRIX_USER'],
                            password=os.environ['SUPABASE_MATRIX_PASSWORD'], autocommit=autocommit)
+    c.prepare_threshold = None  # the pooler cannot keep prepared statements
+    return c
 
 
 def as_person(c, uid=ADMIN):

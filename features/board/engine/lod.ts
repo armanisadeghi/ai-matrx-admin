@@ -127,7 +127,7 @@ export function detailLevelFor(size: { w: number; h: number }, z: number): Detai
   if (BODY_FONT_PX * z >= READABLE_PX) return "full";
   const w = size.w * z;
   const h = size.h * z;
-  if (w >= STRUCTURE_MIN_SCREEN_W && h >= STRUCTURE_MIN_SCREEN_H) return "structure";
+  if (z < 0) return "structure";
   if (w >= CARD_MIN_SCREEN_W && h >= CARD_MIN_SCREEN_H) return "card";
   return "label";
 }

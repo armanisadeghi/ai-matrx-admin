@@ -33,6 +33,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Button as ControlButton } from "@ai-matrx/design-system/controls";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1195,12 +1196,12 @@ function AccountsRoster() {
                   },
                 ],
             actions: (
-              <Button
+              <ControlButton
                 variant="outline"
                 onClick={() => setRefreshKey((current) => current + 1)}
               >
                 Refresh
-              </Button>
+              </ControlButton>
             ),
           }}
           copy={{

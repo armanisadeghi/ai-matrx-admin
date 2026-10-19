@@ -397,6 +397,8 @@ workbook_snapshot is the whole workbook and can be very large — it is bindable
     pickBaseline("selection", "context"),
     surfaceSpecific,
   ),
+  // Which workbook, at a glance (a board tile that is not live).
+  briefValues: ["workbook_name", "workbook_description", "active_sheet_name"],
   writeTargets,
 };
 

@@ -73,8 +73,19 @@ describe("the answer reader", () => {
 describe("the progress line", () => {
   it("names the importer's stage and keeps its detail", () => {
     expect(readProgressMessage("import", "reading: FULFILLMENT WORKFLOW")).toEqual({ stageIndex: 0, detail: "FULFILLMENT WORKFLOW" });
-    expect(readProgressMessage("import", "columns: Players · Team")).toEqual({ stageIndex: 2, detail: "Players · Team" });
-    expect(readProgressMessage("import", "report: 1")).toEqual({ stageIndex: 5, detail: "1" });
+    expect(readProgressMessage("import", "columns: Players · Team")).toEqual({ stageIndex: 3, detail: "Players · Team" });
+    expect(readProgressMessage("import", "report: 1")).toEqual({ stageIndex: 6, detail: "1" });
+  });
+
+  it("the file stage sits between reading and tables, and moves the bar only within its own share", () => {
+    // aidream mcp_walker.fetch_files: "files: Fetching files: N of M" (live, 2026-10-19: unknown, it filled the bar to 99%)
+    expect(readProgressMessage("import", "files: Fetching files: 30 of 40")).toEqual({ stageIndex: 1, detail: "Fetching files: 30 of 40" });
+    const sample = { ...readProgressMessage("import", "files: Fetching files: 40 of 40"), current: 40, total: 40 };
+    const at = advanceRatchet(RATCHET_START, sample, false);
+    expect(at.stageIndex).toBe(1);
+    expect(at.fraction).toBeCloseTo(2 / IMPORT_STAGES.length);
+    const tables = advanceRatchet(at, { ...readProgressMessage("import", "tables: Players"), current: 1, total: 4 }, false);
+    expect(tables.fraction).toBeGreaterThan(at.fraction);
   });
 
   it("a copy's slice line is all detail", () => {
@@ -106,8 +117,8 @@ describe("the ratchet", () => {
   });
 
   it("a late columns pass after rows keeps the strip on rows", () => {
-    const steps = walk([sample(3, 10, 10), sample(2, 1, 4)]);
-    expect(steps[1].stageIndex).toBe(3);
+    const steps = walk([sample(4, 10, 10), sample(3, 1, 4)]);
+    expect(steps[1].stageIndex).toBe(4);
     expect(steps[1].fraction).toBe(steps[0].fraction);
   });
 
@@ -119,7 +130,7 @@ describe("the ratchet", () => {
   });
 
   it("the bar never claims done before the run says so", () => {
-    expect(advanceRatchet(RATCHET_START, sample(5, 1, 1), false).fraction).toBeLessThan(1);
+    expect(advanceRatchet(RATCHET_START, sample(IMPORT_STAGES.length - 1, 1, 1), false).fraction).toBeLessThan(1);
   });
 });
 
@@ -166,7 +177,7 @@ describe("the card's view of a real run", () => {
     expect(view.kind).toBe("import");
     expect(view.phase).toBe("working");
     expect(view.name).toBe("Players");
-    expect(view.sample).toEqual({ stageIndex: 3, detail: "Players", current: 47, total: 431 });
+    expect(view.sample).toEqual({ stageIndex: 4, detail: "Players", current: 47, total: 431 });
     expect(view.lastMovedAt).toBe("2026-10-17T10:01:30Z");
   });
 

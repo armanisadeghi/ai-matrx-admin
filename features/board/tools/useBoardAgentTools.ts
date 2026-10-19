@@ -70,7 +70,8 @@ import {
 import { settleFrames } from "./settle-frames";
 import { makeText } from "../engine/canvas-text";
 import type { BoardItemType, PlacedItem } from "../items/types";
-import { findBoardRecords, resolveAddEntry } from "./board-records";
+import { findBoardRecords, resolveAddEntry, type AddItemEntry } from "./board-records";
+import { resolveAgentRef, type AgentLookup } from "./board-agent-resolve";
 import { BOARD_ADD_ITEMS_MAX } from "./board-tools";
 import { searchItemsAsPerson } from "./search-items";
 import { commentsService } from "@/features/scopes/service/commentsService";
@@ -185,6 +186,8 @@ export interface BoardToolHost<T extends BoardTileBase & { title: string }> {
    * `board_add_items` / `board_find_records`. Absent = those tools are refused.
    */
   itemTypes?: readonly BoardItemType[];
+  /** The agent catalog `board_add_items`' `agent` resolves through; absent = the app's own catalog. */
+  agentLookup?: AgentLookup;
   /**
    * Places records through the host's ONE placement path (UserBoard `place()`):
    * `at` is a world point to land nearest to, else the items fill the view.
@@ -524,7 +527,7 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
   };
 
   /** board_add_items — the person's real records (or new ones) as tiles, one undoable step. */
-  const addItems = (input: unknown) => {
+  const addItems = async (input: unknown) => {
     const types = host.itemTypes;
     const placeItems = host.placeItems;
     if (!types || !placeItems) {
@@ -535,8 +538,23 @@ export function useBoardAgentTools<T extends BoardTileBase & { title: string }>(
     if (entries.length > BOARD_ADD_ITEMS_MAX) return fail(`At most ${BOARD_ADD_ITEMS_MAX} items per call; send the rest in another call.`);
     const results: Record<string, unknown>[] = entries.map((e) => ({ type: e.type, ...(str(e.id) ? { id: e.id } : {}) }));
     const batch: { item: PlacedItem; at?: { x: number; y: number }; index: number }[] = [];
+    // `agent` (a name or an id) is resolved through the agent catalog BEFORE anything is placed.
+    const agents = new Map<AddItemEntry, { id: string; name: string | null }>();
+    const named = entries.filter((e) => str(e.agent));
+    if (named.length > 0) {
+      const lookup = host.agentLookup ?? (await import("./board-agent-lookup")).catalogAgentLookup();
+      const answers = new Map<string, Awaited<ReturnType<typeof resolveAgentRef>>>();
+      for (const e of named) {
+        const ref = String(e.agent).trim();
+        if (!answers.has(ref)) answers.set(ref, await resolveAgentRef(ref, lookup));
+        const a = answers.get(ref)!;
+        if (a.ok) agents.set(e, { id: a.id, name: a.name });
+        else Object.assign(results[entries.indexOf(e)], { status: "refused", error: a.error });
+      }
+    }
     entries.forEach((e, index) => {
-      const resolved = resolveAddEntry(e, types);
+      if (results[index].status === "refused") return;
+      const resolved = resolveAddEntry(e, types, agents);
       if (!resolved.ok) {
         Object.assign(results[index], { status: resolved.status, error: resolved.error });
         return;

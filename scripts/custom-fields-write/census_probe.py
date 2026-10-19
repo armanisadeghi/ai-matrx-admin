@@ -26,24 +26,33 @@ for tok, sch, tab in toks:
         res[tok] = ('NO_COLS', ''); continue
     c.execute("savepoint s")
     try:
-        # a row in an organization the reader is in (found as the superuser, so a row she cannot read is still tried)
-        row = c.execute(f'select id, organization_id from "{sch}"."{tab}" where organization_id in '
-                        '(select organization_id from iam.organization_member where user_id=%s) limit 1', (ADMIN,)).fetchone()
-        if not row:
-            res[tok] = ('NO_ROW', ''); continue
+        # up to 8 rows, one per organization the reader is in, read AS the reader (a row she cannot open is no row for her);
+        # the first one the read door opens (an archived organization or a row hidden from her is skipped)
         as_person(c)
-        try:
-            ans = c.execute("select custom.entity_record_read(%s,%s,%s)", (row[1], tok, row[0])).fetchone()[0]
-            may = ans.get('may_edit')
-        except Exception as e:
-            res[tok] = ('NOT_READABLE', str(e).splitlines()[0][:140]); continue
+        cands = c.execute(f'select distinct on (organization_id) id, organization_id from "{sch}"."{tab}" where organization_id in '
+                          '(select organization_id from iam.organization_member where user_id=%s) limit 8', (ADMIN,)).fetchall()
+        if not cands:
+            res[tok] = ('NO_ROW', 'none she can open'); continue
+        row = may = None
+        last = ''
+        for cand in cands:
+            c.execute("savepoint r")
+            try:
+                ans = c.execute("select custom.entity_record_read(%s,%s,%s)", (cand[1], tok, cand[0])).fetchone()[0]
+                row, may = cand, ans.get('may_edit')
+                break
+            except Exception as e:
+                last = str(e).splitlines()[0][:140]
+                c.execute("rollback to savepoint r")
+        if row is None:
+            res[tok] = ('NOT_READABLE', last); continue
         c.execute("savepoint w")
         try:
             c.execute("select custom.entity_row_write(%s,%s,%s,'{}'::jsonb,%s::jsonb)", (row[1], tok, row[0], '{"zz_probe":"x"}'))
             res[tok] = ('SAVED', f'may_edit={may}')
         except Exception as e:
             msg = str(e).splitlines()[0]
-            if may is False and 'edit access' in msg:
+            if may is False and ('edit access' in msg or 'not yours to change' in msg):
                 res[tok] = ('READ_ONLY', msg[:140])
             else:
                 res[tok] = ('REFUSED', f'may_edit={may}: {msg[:140]}')

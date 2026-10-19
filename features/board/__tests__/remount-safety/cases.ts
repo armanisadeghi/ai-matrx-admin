@@ -42,6 +42,8 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "udt_document": { status: "passing" },
   "udt_document:quiet": { status: "passing" },
   "udt_document:undo": { status: "passing" },
+  "workbook": { status: "passing" },
+  "workbook:quiet": { status: "passing" },
   "data-table": { status: "passing" },
   "data-table:quiet": { status: "passing" },
   "record": { status: "passing" },

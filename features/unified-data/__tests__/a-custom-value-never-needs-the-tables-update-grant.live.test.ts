@@ -1,0 +1,181 @@
+/**
+ * @jest-environment node
+ */
+// CF-WRITE-2 — A CUSTOM VALUE IS THE PERSON'S OWN ADDITION TO A RECORD, NOT ONE OF ITS COLUMNS.
+//
+// Live (the one database), always ROLLED BACK. As admin@admin.com, through the door the Custom fields section
+// uses (custom.entity_row_write):
+//   1. a custom value SAVES on kinds whose table gives `authenticated` no UPDATE grant at all (team, rulebook,
+//      category, the usage ledger, an API key) - the ladder (admin of the row's organization) is the only thing asked;
+//   2. a plain UPDATE of one of those tables' OWN column is still REFUSED (the definer step writes custom_fields only);
+//   3. a person the ladder does not let edit (admin demoted to member inside the rolled-back transaction, on a row she
+//      did not create) is told so in words, and custom.entity_record_read answers may_edit = false - the fact the
+//      section reads to show the values read-only with "Needs Edit access" instead of an enabled control;
+//   4. the same person's value is NOT written (nothing reaches the table).
+// RED before cfwrite_b_a_custom_value_never_needs_the_tables_update_grant.sql, GREEN after.
+import { readFileSync } from "node:fs";
+import { Client } from "pg";
+
+const ADMIN_ID = "87a6e699-3622-4869-8843-d0867456c0dd";
+
+function dbEnv(): Record<string, string> {
+  const text = readFileSync("/Users/armanisadeghi/code/aidream/.env", "utf8");
+  const out: Record<string, string> = {};
+  for (const line of text.split("\n")) {
+    const m = line.match(/^(SUPABASE_MATRIX_(?:HOST|PORT|USER|PASSWORD|DATABASE_NAME))=(.*)$/);
+    if (m) out[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+  return out;
+}
+
+let client: Client;
+
+beforeAll(async () => {
+  const e = dbEnv();
+  client = new Client({
+    host: e.SUPABASE_MATRIX_HOST,
+    port: Number(e.SUPABASE_MATRIX_PORT),
+    user: e.SUPABASE_MATRIX_USER,
+    password: e.SUPABASE_MATRIX_PASSWORD,
+    database: e.SUPABASE_MATRIX_DATABASE_NAME,
+    ssl: { rejectUnauthorized: false },
+  });
+  await client.connect();
+});
+afterAll(async () => {
+  await client.end();
+});
+
+async function asAdmin(): Promise<void> {
+  await client.query("select set_config('request.jwt.claims', $1, true), set_config('request.jwt.claim.sub', $2, true)", [
+    JSON.stringify({ sub: ADMIN_ID, role: "authenticated", email: "admin@admin.com" }),
+    ADMIN_ID,
+  ]);
+  await client.query("set local role authenticated");
+}
+
+/** A row in an organization the admin is in, as the superuser (so a table she cannot update is still found). */
+async function aRow(schema: string, table: string, notCreatedByHer = false): Promise<{ id: string; organization_id: string }> {
+  await client.query("reset role");
+  const { rows } = await client.query(
+    `select id, organization_id from ${schema}.${table}
+      where organization_id in (select organization_id from iam.organization_member where user_id = $1)
+        ${notCreatedByHer ? "and created_by is distinct from $1" : ""}
+      order by id limit 1`,
+    [ADMIN_ID],
+  );
+  if (rows.length === 0) throw new Error(`admin@admin.com has no ${schema}.${table} row in her organizations; the proof needs one`);
+  return rows[0];
+}
+
+const NO_UPDATE_GRANT: Array<[string, string, string]> = [
+  ["team", "iam", "team"],
+  ["rulebook", "platform", "rulebook"],
+  ["category", "platform", "categories"],
+  ["billing_usage_ledger", "billing", "usage_ledger"],
+  ["iam_api_key", "iam", "api_keys"],
+];
+
+describe.each(NO_UPDATE_GRANT)("a custom value on %s (the table gives authenticated no UPDATE grant)", (token, schema, table) => {
+  it("saves for a person the ladder lets edit, and writes only custom_fields", async () => {
+    await client.query("begin");
+    try {
+      const row = await aRow(schema, table);
+      await client.query("reset role");
+      const before = await client.query(`select to_jsonb(x) - 'custom_fields' as cols from ${schema}.${table} x where id = $1`, [row.id]);
+      await asAdmin();
+      await client.query("select custom.entity_row_write($1, $2, $3, '{}'::jsonb, $4::jsonb)", [
+        row.organization_id,
+        token,
+        row.id,
+        JSON.stringify({ zz_cfwrite2_probe: "saved" }),
+      ]);
+      await client.query("reset role");
+      const after = await client.query(
+        `select custom_fields ->> 'zz_cfwrite2_probe' as v, to_jsonb(x) - 'custom_fields' as cols from ${schema}.${table} x where id = $1`,
+        [row.id],
+      );
+      expect(after.rows[0].v).toBe("saved");
+      // the record's own columns are exactly what they were (updated_at etc. are the table's own triggers' business
+      // and are allowed to move; every other column must be unchanged)
+      const strip = (o: Record<string, unknown>) => {
+        const { updated_at: _u, updated_by: _b, version: _v, ...rest } = o;
+        return rest;
+      };
+      expect(strip(after.rows[0].cols)).toEqual(strip(before.rows[0].cols));
+    } finally {
+      await client.query("rollback");
+    }
+  });
+});
+
+describe("the table's own rule for its own columns stands", () => {
+  it.each(["billing_usage_ledger", "iam_api_key"])("a plain UPDATE of a %s own column is still refused", async (token) => {
+    const [, schema, table] = NO_UPDATE_GRANT.find((t) => t[0] === token)!;
+    await client.query("begin");
+    try {
+      const row = await aRow(schema, table);
+      await asAdmin();
+      await expect(
+        client.query(`update ${schema}.${table} set organization_id = organization_id where id = $1`, [row.id]),
+      ).rejects.toThrow(/permission denied/);
+    } finally {
+      await client.query("rollback");
+    }
+  });
+
+  it("a plain UPDATE of custom_fields itself is still refused too (only the door's inner step writes it)", async () => {
+    await client.query("begin");
+    try {
+      const row = await aRow("billing", "usage_ledger");
+      await asAdmin();
+      await expect(
+        client.query("update billing.usage_ledger set custom_fields = '{}'::jsonb where id = $1", [row.id]),
+      ).rejects.toThrow(/permission denied/);
+    } finally {
+      await client.query("rollback");
+    }
+  });
+});
+
+describe("a person the ladder does not let edit is read-only, with the reason", () => {
+  it("is refused in words, is told may_edit = false, and nothing is written (a workflow run she is only a member for)", async () => {
+    await client.query("begin");
+    try {
+      await asAdmin();
+      // one run per organization she is in; the first she may open but not edit (member, not its creator, no editor share)
+      const cands = await client.query(
+        `select distinct on (organization_id) id, organization_id from workflow.run
+          where organization_id in (select organization_id from iam.organization_member where user_id = $1)`,
+        [ADMIN_ID],
+      );
+      let found: { id: string; organization_id: string } | null = null;
+      for (const cand of cands.rows) {
+        await client.query("savepoint r");
+        try {
+          const read = await client.query("select custom.entity_record_read($1, 'workflow_run', $2) as r", [cand.organization_id, cand.id]);
+          if (read.rows[0].r.may_edit === false) {
+            found = cand;
+            break;
+          }
+        } catch {
+          await client.query("rollback to savepoint r");
+        }
+      }
+      if (!found) throw new Error("admin@admin.com has no workflow run she may open but not edit; the proof needs one");
+      await expect(
+        client.query("select custom.entity_row_write($1, 'workflow_run', $2, '{}'::jsonb, $3::jsonb)", [
+          found.organization_id,
+          found.id,
+          JSON.stringify({ zz_cfwrite2_probe: "nope" }),
+        ]),
+      ).rejects.toThrow(/edit access/);
+      await client.query("rollback");
+      await client.query("begin");
+      const back = await client.query("select custom_fields ->> 'zz_cfwrite2_probe' as v from workflow.run where id = $1", [found.id]);
+      expect(back.rows[0].v).toBeNull();
+    } finally {
+      await client.query("rollback");
+    }
+  });
+});

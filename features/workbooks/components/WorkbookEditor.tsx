@@ -185,6 +185,8 @@ type Props = {
   record?: Workbook | null;
   /** Called after "Move to project" so the page can refresh its copy of the row. */
   onProjectMoved?: (projectId: string | null) => void;
+  /** Inside a board tile: the header leaves the shell alone and its product mark is not a link. */
+  embedded?: boolean;
 };
 
 export default function WorkbookEditor({
@@ -195,6 +197,7 @@ export default function WorkbookEditor({
   chrome,
   record = null,
   onProjectMoved,
+  embedded = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<FUniver | null>(null);
@@ -1413,6 +1416,7 @@ export default function WorkbookEditor({
     // (useUniverDarkModeSync); we do NOT pin a colorScheme here — that fought
     // Univer's portals and broke dark mode.
     <EditorDocumentHeader
+      embedded={embedded}
       backHref={chrome.backHref}
       backLabel="Back to workbooks"
       productTone="sheets"
