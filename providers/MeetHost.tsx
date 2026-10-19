@@ -65,7 +65,7 @@
 // publishes the live host through `onHost`.
 //
 // Doctrine: the package's README (eleven rules) + `common-docs`
-// /systems/communications/meet/HANDOFF.md.
+// /systems/communications/meet/FEATURE.md.
 
 "use client";
 
