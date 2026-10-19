@@ -89,8 +89,10 @@ export async function saveBase(
   organizationId: string,
   homeId: string,
   identity: { name: string; icon?: string | null; color?: string | null; description?: string | null; template?: string | null },
+  /** The base row's id when the screen already holds it: the save is then ONE statement (no read first). */
+  knownId?: string | null,
 ): Promise<BaseIdentity> {
-  const existing = await readBase(organizationId, homeId);
+  const existing = knownId ? { id: knownId } : await readBase(organizationId, homeId);
   const row = { name: identity.name.trim(), icon: identity.icon || null, color: identity.color ?? null, description: identity.description || null };
   if (existing) {
     const { data, error } = await from("base").update(row).eq("id", existing.id).select("*").limit(1);

@@ -335,7 +335,7 @@ begin
     -- lane TAILS 2026-09-21: the shared ladder refusal now names the rung HELD as well as
     -- the rung needed, because "you do not have access to this table" was said to people
     -- who plainly do. She holds viewer on this Table, so that is what it says.
-    if v_msg not like '%viewer level on this table%' or v_msg not like '%needs the admin level%' then
+    if v_msg not like '%View access on this table%' or v_msg not like '%needs Full access%' then
       raise exception '7: she was refused, but not for the right reason: %', v_msg;
     end if;
     raise notice 'PART 7a — "%"', v_msg;

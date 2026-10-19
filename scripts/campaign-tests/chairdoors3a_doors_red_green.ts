@@ -220,8 +220,8 @@ async function main() {
         [ORG, scopeType, JSON.stringify({ name: `Aquatic therapy ${phase.toLowerCase()}` })]);
       // Until the final switch, a scope type's Table is written only through lane 9's scope doors (the
       // custom._context_copy_fence trigger, AFTER the add rung is asked); so a member's direct write now
-      // reaches the fence instead of being refused "needs the editor level" at the rung.
-      const pastTheRung = scope.ok || (scope.code === "42501" && !/needs the editor level/.test(scope.message));
+      // reaches the fence instead of being refused "needs Edit access" at the rung.
+      const pastTheRung = scope.ok || (scope.code === "42501" && !/needs Edit access/.test(scope.message));
       const rung = must(await ask(null, "select custom.table_add_rung($1::uuid, $2::uuid)::text as r", [ORG, scopeType]), "the rung")[0].r;
       check(phase, "C1", pastTheRung && rung === "viewer", `a member adding a scope to a scope type's Table (rung ${rung}): ${say(scope)}${scope.ok ? "" : ` (${scope.message.slice(0, 60)}…)`}`);
       const edit = await ask(TEST, "select custom.record_update($1::uuid, $2::uuid, $3::jsonb, null)", [ORG, othersScope, JSON.stringify({ name: "Renamed by a member" })]);

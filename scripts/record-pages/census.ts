@@ -213,7 +213,9 @@ export function buildCensus(opts: CensusOptions): Census {
       const tokens = marker.split(/[,\s]+/).filter(Boolean);
       for (const token of tokens) {
         judgeToken(key, token);
-        const re = new RegExp(`<(?:EntityCustomFields\\b[^>]*?entityToken|StandardRecordForm\\b[^>]*?\\btoken)=["'](?:entity:)?${token}["']`, "s");
+        // A marker is prose until proven a token: its words go into the patterns as LITERALS (a stray "+" crashed the guard).
+        const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`<(?:EntityCustomFields\\b[^>]*?entityToken|StandardRecordForm\\b[^>]*?\\btoken)=["'](?:entity:)?${escaped}["']`, "s");
         // A Next.js page may render nothing itself while its LAYOUT renders the record (/notes/[id]):
         // the route's own layout.tsx files (this folder up to the route group) count as what it renders.
         const layouts: string[] = [];
@@ -228,9 +230,9 @@ export function buildCensus(opts: CensusOptions): Census {
         }
         // LINKED RECORDS (AP-4): a record view that carries its fields through a StandardRecordForm
         // (not <EntityCustomFields>, which renders <EntityBackLinks> itself) must mount the section.
-        const formRe = new RegExp(`<StandardRecordForm\\b[^>]*?\\btoken=["'](?:entity:)?${token}["']`, "s");
+        const formRe = new RegExp(`<StandardRecordForm\\b[^>]*?\\btoken=["'](?:entity:)?${escaped}["']`, "s");
         if ([rel, ...layouts].some((f) => reaches(f, (t) => formRe.test(t)))) {
-          const backRe = new RegExp(`<EntityBackLinks\\b[^>]*?entityToken=["']${token}["']`, "s");
+          const backRe = new RegExp(`<EntityBackLinks\\b[^>]*?entityToken=["']${escaped}["']`, "s");
           if (![rel, ...layouts].some((f) => reaches(f, (t) => backRe.test(t))))
             problems.push(`${key}: record view without Linked records — "${token}" renders no <EntityBackLinks entityToken="${token}"> (${rel} and what it imports).`);
         }
