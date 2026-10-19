@@ -240,6 +240,8 @@ export interface SpacePageReads {
   expectedGroups?: Record<string, number[]>;
   /** Per database block id whose table does not open for this person: the state its note is drawn from. */
   expectedNotes?: Record<string, string>;
+  /** The server's clock when the page was read (ms): the page's relative times hydrate as the server drew them. */
+  servedAt?: number;
   /** Round 40: every page the blocks link to (null = cannot open); undefined = not read, the browser asks. */
   links?: SpaceLinks;
   /** Round 40: the pages mentioning this one (`content.space_backlinks`); undefined = the browser asks. */
@@ -303,6 +305,7 @@ export async function readSpacePage(spaceId: string): Promise<SpacePageReads> {
     ...(expected ? { expectedRows: expected.rows } : {}),
     ...(expected && Object.keys(expected.groups).length ? { expectedGroups: expected.groups } : {}),
     ...(expected && Object.keys(expected.notes).length ? { expectedNotes: expected.notes } : {}),
+    servedAt: Date.now(),
     links,
     backlinks,
   };
