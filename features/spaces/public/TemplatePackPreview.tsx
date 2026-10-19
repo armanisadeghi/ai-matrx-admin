@@ -18,6 +18,7 @@
 // outline and says so in the console.
 
 import { FileText } from "lucide-react";
+import { useFullPublicTierWhen } from "@/features/public-shell/publicTier";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { loadPublicPackTemplate } from "@/features/make/gallery/templatePage";
@@ -73,6 +74,8 @@ export function TemplatePackPreview({
   const [live, setLive] = useState<Live | null>(null);
   const [failed, setFailed] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
+  // On a light public page the live screens need the app tree first (store, query client, hosts).
+  const appReady = useFullPublicTierWhen(wanted);
 
   // Reached = the preview scrolls into view (or a pointer or focus enters it, below).
   useEffect(() => {
@@ -86,7 +89,7 @@ export function TemplatePackPreview({
   }, [wanted]);
 
   useEffect(() => {
-    if (!wanted) return;
+    if (!wanted || !appReady) return;
     let gone = false;
     void Promise.all([loadPublicPackTemplate(templateKey), import("../editor/SpaceEditor"), import("../templates/use-pack")]).then(
       ([template, editor, pack]) => {
@@ -103,7 +106,7 @@ export function TemplatePackPreview({
     return () => {
       gone = true;
     };
-  }, [wanted, templateKey]);
+  }, [wanted, appReady, templateKey]);
 
   // Opens at the top with the title and cover in view, on load, when the editor replaces the outline and on every
   // page click — and the page around it stays put (ADVERSARIAL-2 #4: it opened 595px down).

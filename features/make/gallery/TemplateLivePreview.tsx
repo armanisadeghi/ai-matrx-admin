@@ -13,6 +13,7 @@
 // first paint shows — and it is swapped for the live screens only once their code has loaded, in a box
 // that keeps its height, so nothing jumps.
 
+import { useFullPublicTierWhen } from "@/features/public-shell/publicTier";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
@@ -26,6 +27,8 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
   const [wanted, setWanted] = useState(false);
   const [Live, setLive] = useState<LiveScreens | null>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+  // On a light public page the live screens need the app tree first (store, query client, hosts).
+  const appReady = useFullPublicTierWhen(wanted);
   useEffect(() => {
     const box = boxRef.current;
     if (wanted || !box || typeof IntersectionObserver === "undefined") return;
@@ -36,7 +39,7 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
     return () => seen.disconnect();
   }, [wanted]);
   useEffect(() => {
-    if (!wanted) return;
+    if (!wanted || !appReady) return;
     let gone = false;
     void import("./TemplateLivePreviewImpl")
       .then((m) => m.loadLiveScreens())
@@ -51,7 +54,7 @@ export function TemplateLivePreview({ spec, today, children }: { spec: TemplateS
     return () => {
       gone = true;
     };
-  }, [wanted]);
+  }, [wanted, appReady]);
   const want = () => setWanted(true);
   return (
     <div
