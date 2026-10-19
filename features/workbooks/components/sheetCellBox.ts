@@ -4,7 +4,7 @@
  * (cell - the main viewport's scroll) x zoom, plus the canvas's place on the page.
  */
 import { IRenderManagerService } from "@univerjs/engine-render";
-import { SheetSkeletonManagerService } from "@univerjs/sheets-ui";
+import { SheetSkeletonManagerService } from "@univerjs/preset-sheets-core";
 
 export type CellBox = { left: number; right: number; top: number; bottom: number };
 type Injector = { get<T>(token: unknown): T };

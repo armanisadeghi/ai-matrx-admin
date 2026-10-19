@@ -4,7 +4,7 @@
  * scroll. cellBox applies (cell - main viewport scroll) x zoom + the canvas position; scrolling moves the box with the cell.
  */
 import { IRenderManagerService } from "@univerjs/engine-render";
-import { SheetSkeletonManagerService } from "@univerjs/sheets-ui";
+import { SheetSkeletonManagerService } from "@univerjs/preset-sheets-core";
 
 import { cellBox } from "../sheetCellBox";
 
