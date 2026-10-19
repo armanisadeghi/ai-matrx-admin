@@ -43,3 +43,14 @@ describe("payments return route stays on this site", () => {
     expect(safeReturnPath("/%2e%2e//evil.com", ORIGIN)).toBe("/");
   });
 });
+
+describe("payments return route lands on the host the payer came from (portal walk 2026-10-19)", () => {
+  it("uses the browser-facing host, not Next's own origin", async () => {
+    const req = new NextRequest(`${ORIGIN}/api/payments/return?cancelled=1&back=%2Fportal%2Fc%2Fx%2Fr%2Fy`, {
+      headers: { host: "s1.localhost:3001", "x-forwarded-proto": "http" },
+    });
+    const loc = new URL((await GET(req)).headers.get("location") ?? "");
+    expect(loc.origin).toBe("http://s1.localhost:3001");
+    expect(loc.pathname).toBe("/portal/c/x/r/y");
+  });
+});

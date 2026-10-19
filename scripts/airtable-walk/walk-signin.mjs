@@ -43,7 +43,13 @@ export async function walkSignIn(page, origin, { member = false, who = member ? 
     if (parked(page) || /preview was paused/i.test(await page.locator("body").innerText({ timeout: 5000 }).catch(() => ""))) {
       await resumeIfParked(page, who);
     }
-    const email = await page.evaluate(async () => { try { return (await (await fetch("/api/whoami")).json())?.email ?? null; } catch { return null; } });
+    // the nonce page redirects after domcontentloaded; a slow server destroys the context mid-evaluate — settle, then retry
+    let email = null;
+    for (let t = 0; t < 6 && !email; t += 1) {
+      await page.waitForLoadState("load", { timeout: 60000 }).catch(() => {});
+      email = await page.evaluate(async () => { try { return (await (await fetch("/api/whoami")).json())?.email ?? null; } catch { return null; } }).catch(() => null);
+      if (!email) await sleep(3000);
+    }
     if (email) return email;
     console.log(`[walk-signin] ${who}: attempt ${attempt} not signed in yet (url ${page.url().slice(0, 80)}) — retrying`);
     await sleep(10_000);

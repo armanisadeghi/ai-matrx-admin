@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
+  "formerSlugs": [
+    "spaces-sp0157"
+  ],
   "version": 5,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0157",
+    "id": "spaces-seo-hub",
     "catalogueId": "SP0157",
     "useCase": "Theodora Nwosu leads search for an outdoor retailer and uses this to choose phrases, track articles and watch rankings.",
     "industry": "cross_industry",

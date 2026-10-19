@@ -107,6 +107,25 @@ const SCENARIOS: Scenario[] = [
     expect: "Partially refunded 10.00 USD",
   },
   {
+    name: "M3  an amount taken from a question the payer answers is refused at save",
+    run: async (db) => {
+      // As the admin who owns the Ashford Labs form ask; the form asks "usage_note".
+      await db.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: "87a6e699-3622-4869-8843-d0867456c0dd", role: "authenticated" })]);
+      await db.query("savepoint m3");
+      try {
+        await db.query(
+          "select billing.payment_ask_set('c19a81b7-f65f-4c01-b04c-00f97f8b7e4d', 'form', '15c126ea-f561-4c7c-98ed-925a517612cd', $1::jsonb)",
+          [JSON.stringify({ enabled: false, amount_mode: "field", amount_field: "usage_note", currency: "usd" })],
+        );
+        return "accepted";
+      } catch (thrown) {
+        await db.query("rollback to savepoint m3");
+        return (thrown as { code?: string }).code === "22023" ? "refused" : `error ${(thrown as Error).message}`;
+      }
+    },
+    expect: "refused",
+  },
+  {
     name: "I2  a second pending payment for one record is refused",
     run: async (db, pay) => {
       await pay("cs_rule_a", "pending", 2);

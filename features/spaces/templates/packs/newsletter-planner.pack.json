@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0156",
+  "formerSlugs": [
+    "spaces-sp0156"
+  ],
   "version": 4,
   "title": "Newsletter Planner",
   "description": "Newsletter editors: keep an idea bank and a send calendar for every issue.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0156",
+    "id": "spaces-newsletter-planner",
     "catalogueId": "SP0156",
     "useCase": "Philippa Aldous edits a weekly newsletter and uses this to track issues from idea to send and keep sponsors lined up.",
     "industry": "cross_industry",

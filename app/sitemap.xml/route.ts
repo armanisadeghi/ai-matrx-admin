@@ -6,7 +6,7 @@ import { MARKETING_PUBLIC_TOOLS } from '@/features/marketing/lib/marketing-nav'
 import { listSearchEngineIndexedRecords } from '@/lib/seo/search-engine-indexed.server'
 import { getScriptSupabaseClient } from '@/utils/supabase/getScriptClient'
 import { readPublicCatalogue } from '@/features/make/gallery/publicCatalogue.server'
-import { industryHref, jobHref, PUBLIC_GALLERY_PATH, publicTemplateHref, spaceCategories, workspacesHref } from '@/features/make/gallery/publicGallery'
+import { industryHref, jobHref, PUBLIC_GALLERY_PATH, publicTemplateHref, galleryCategories, workspacesHref } from '@/features/make/gallery/publicGallery'
 import { facetValues, isSpaceCard } from '@/features/make/gallery/catalogue'
 import { readPublicApplets } from '@/features/marketing/applets/publicApplets.server'
 import { APPLET_TEMPLATES_PATH, appletHref } from '@/features/marketing/applets/types'
@@ -65,7 +65,7 @@ async function getIndexedRecordUrls(baseUrl: string) {
 }
 
 // Revalidate hourly; a learn-doc publish busts the education reads via tag.
-export const revalidate = 3600
+export const revalidate = 60
 
 // The sitemap includes live database-backed education content. Keep that read
 // out of the production build so a temporary database or network outage cannot
@@ -148,7 +148,7 @@ export async function GET() {
     ...facetValues(templateCards, 'job').map((v) => ({ loc: `${baseUrl}${jobHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     // Workspaces: the Space templates and each Space category (every category the catalog holds).
     ...(templateCards.some(isSpaceCard) ? [{ loc: `${baseUrl}${workspacesHref()}`, changefreq: 'weekly', priority: '0.8' }] : []),
-    ...spaceCategories(templateCards.filter(isSpaceCard)).map((v) => ({ loc: `${baseUrl}${workspacesHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
+    ...galleryCategories(templateCards).map(({ key: v }) => ({ loc: `${baseUrl}${workspacesHref(v)}`, changefreq: 'weekly', priority: '0.7' })),
     ...templateCards.map((c) => ({
       loc: `${baseUrl}${publicTemplateHref(c)}`,
       changefreq: 'weekly',

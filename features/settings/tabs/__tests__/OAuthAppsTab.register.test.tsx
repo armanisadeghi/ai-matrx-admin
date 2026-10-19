@@ -63,6 +63,7 @@ jest.mock("@/components/official/settings/primitives/SettingsButton", () => ({
 }));
 jest.mock("@/features/organizations/hooks", () => ({
   useUserOrganizations: () => ({ organizations: [{ id: "org-1", name: "Clinic" }], loading: false, error: null }),
+}));
 jest.mock("@/components/ui/checkbox", () => ({
   Checkbox: (p: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) => (
     <input type="checkbox" checked={!!p.checked} onChange={(e) => p.onCheckedChange?.(e.target.checked)} />

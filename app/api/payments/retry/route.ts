@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isUuidShape } from "@ai-matrx/kit/uuid";
 import { PaymentRefusal, readAsk, startCheckout } from "@/features/payments/server";
 import { safeReturnPath } from "@/features/payments/amount";
+import { requestOrigin } from "@/utils/auth/request-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
   const form = await request.formData();
   const subject = String(form.get("subject") ?? "");
   const record = String(form.get("record") ?? "");
-  const origin = request.nextUrl.origin;
+  const origin = requestOrigin(request.headers) ?? request.nextUrl.origin;
   const back = safeReturnPath(String(form.get("back") ?? "/"), origin);
   const refused = () => {
     const url = new URL(back, origin);

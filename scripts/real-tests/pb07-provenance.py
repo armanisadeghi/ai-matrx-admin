@@ -11,8 +11,8 @@ Usage:
   pb07-provenance.py --run DIR                 every door the sender wrote to DIR (manifest.json), plus
                                                each door's dry-run capture and the preview/real parity
   pb07-provenance.py <conversation id> ...     those conversations only (door shown as "conversation")
-  --model-view FILE                            the Builder Model view capture to check the allow-list
-                                               against (default: DIR/builder-run.dry.json)
+  --model-view FILE                            conversation mode only: a dry-run capture to use as the
+                                               declared list (--run uses each door's own <door>.dry.json)
   --typed TEXT                                 the person's typed text (default: the sender's)
   --self-test                                  feed one planted request per blind spot through the checks
                                                (no database); prints caught/MISSED per case, exit 1 on a miss
@@ -24,7 +24,10 @@ conversation-titler side job, a child conversation whose mandate is conversation
 
 A segment is attributed when it is (a) the canary's authored text, (b) a declared value (variable,
 context value, prompt block, the context policy's own label and description), (c) the person's typed
-text, byte-identical, alone in its content part, or (d) a block on the PLATFORM ALLOW-LIST. Every
+text, byte-identical, alone in its content part, or (d) a platform block that the SAME DOOR's own dry run
+(`POST .../ai/agents/{id}` with `dry_run` and `preview_door`, saved by pb07-send.py as <door>.dry.json) lists in
+`platform_parts[]` (by label, or word for word inside a part's text) and, for a tool, in `tools[]` with a source.
+Nothing is matched against another door's dry run. Blocks are found by the PLATFORM ALLOW-LIST patterns. Every
 allow-list block whose content varies (KIND rows) is opened and each value inside it is attributed: the
 date and live-time lines to their fixed sentence, catalog and active-context lines to the organization and
 scope records in the database, the ambient user object to the signed-in person, the client object to a
@@ -32,8 +35,10 @@ surface slug and a timestamp; frame sentences are pinned word for word below. An
 prints as `unattributed inside AL-xx`. Every content part type is read: non-text parts and tool results
 print as findings (the canary declares no attachment and no tool output). Every authored and declared
 string is counted: absent prints `missing …`, more than once prints `duplicated …`.
-Fail closed: with no Builder Model view every platform block prints as `unattributed platform block, no
-Builder Model view to verify it`; any `missing declared value` or `unparsed payload shape` line makes the
+Fail closed: a door with no dry run prints every platform block as `unattributed platform block, no dry run
+for this door to verify it` and every tool as `tool not declared by the canary (no dry run ...)`; a block its dry
+run does not list prints `<row> not in this door's dry run platform_parts`, a tool `tool not declared and not in this
+door's dry run tools`; any `missing declared value` or `unparsed payload shape` line makes the
 exit status 2. The agent-call child is graded against the FIRST caller's agent call (the root conversation
 the person typed into), and a relay through intermediate callers prints its own line.
 The titler side job is graded on its own lines (`<door> side job: conversation titler`), never mixed with
@@ -718,6 +723,16 @@ class Declared:
         return any(nb in t for t in self.texts)
 
 
+def _holds(self: "Declared", segment: str) -> bool:
+    """A leftover segment of at least 20 characters that sits word for word inside one of this door's dry-run
+    platform_parts (for example a note inside the per-turn context) is the part the dry run showed."""
+    n = norm(segment)
+    return len(n) >= 20 and any(n in t for t in self.texts)
+
+
+Declared.holds = _holds  # type: ignore[attr-defined]
+
+
 def dry_declared(path: Optional[Path]) -> Optional[Declared]:
     """The door's dry-run response as a Declared, or None when the door has no usable dry run."""
     if not path or not path.exists():
@@ -751,6 +766,8 @@ def consume(text: str, declared: Optional[Declared], report: List[str], where: s
     for frag in AUTHORED:
         rest = rest.replace(frag, "\n")
     for seg in [s.strip() for s in re.split(r"\n\s*\n", rest) if s.strip()]:
+        if declared is not None and declared.holds(seg):  # type: ignore[attr-defined]
+            continue
         report.append(f"{door} | {where} | unattributed | {seg}")
 
 
@@ -1082,10 +1099,15 @@ def _st_client_obj(extra: str = "") -> str:
             '  "now": "2026-10-18T06:40:11.491302+00:00"' + extra + "\n}\n    </object>\n")
 
 
+_ST_NOTE = ("This chat turns two tags into controls the person clicks. Write them as plain text, never inside a code "
+            "fence. Their picks and answers arrive with their next message.")
+
+
 def _st_turn_context(active: str = "", user_extra: str = "", client_extra: str = "", live: str = _ST_LIVE,
-                     earlier: str = "") -> str:
+                     earlier: str = "", note: str = "") -> str:
     return (
         _ST_FRAME + "\n\n" + _ST_ACTIVE.replace("%ACTIVE_EXTRA%", active) + "\n\n"
+        + (note + "\n\n" if note else "")
         + (earlier + "\n\n" if earlier else "")
         + live + "\n\n"
         + '<available_context>\n  <inline note="Values are provided directly below. Do NOT call the context tool for these.">\n'
@@ -1136,11 +1158,11 @@ _ST_TOOL = {"name": "scope_system", "description": "Reads the organizations and 
 
 
 def _st_declared(skills: str | None = None, tools: tuple = (), drop: tuple = (), source: str = "context",
-                 wire: tuple | None = None) -> Declared:
+                 wire: tuple | None = None, note: str = "") -> Declared:
     """The dry-run response of the clean canary request, as the product returns it: `platform_parts[]` (label,
     verbatim text) and `tools[]` (name, source); ``drop`` removes a part by label, ``skills`` adds a Skills part."""
     sys_text = _st_system()
-    tc = _st_turn_context()
+    tc = _st_turn_context(note=note)
     date_block = re.search(r"<!--matrx:current_date-->.*?<!--matrx:/current_date-->", sys_text, re.S)
     catalog = re.search(r"<org_catalog\b.*?</org_catalog>", sys_text, re.S)
     assert date_block and catalog
@@ -1256,6 +1278,14 @@ def _self_test_cases() -> list:
         ("forbidden look-alike: the listed tool with a rewritten description", "tool definition differs",
          req({**_st_body(), "tools": [{**_ST_TOOL, "description": _ST_TOOL["description"] + " " + injected}]},
              _st_declared(tools=(_ST_TOOL,)))),
+    ])
+    rows.extend([
+        ("allowed part: a note inside the per-turn context that this door's dry run shows prints nothing", None,
+         req(_st_body(turn_context=_st_turn_context(note=_ST_NOTE)), _st_declared(note=_ST_NOTE))),
+        ("forbidden look-alike: the same note reworded in the real request, the dry run shows the original", "unattributed",
+         req(_st_body(turn_context=_st_turn_context(note=_ST_NOTE + " " + injected)), _st_declared(note=_ST_NOTE))),
+        ("forbidden: the note in the real request, this door's dry run shows no such note", "unattributed",
+         req(_st_body(turn_context=_st_turn_context(note=_ST_NOTE)), _st_declared())),
     ])
     side = globals().get("check_side_job")
     rows.append(("titler side job, clean, prints only side-job lines", "side job",

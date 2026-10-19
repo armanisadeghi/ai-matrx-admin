@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
+  "formerSlugs": [
+    "spaces-sp0163"
+  ],
   "version": 4,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0163",
+    "id": "spaces-marketing-os",
     "catalogueId": "SP0163",
     "useCase": "Marguerite Salazar leads a small marketing team and uses this as the home page for every campaign, post, keyword and lead.",
     "industry": "cross_industry",

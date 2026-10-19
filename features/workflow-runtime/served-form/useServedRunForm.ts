@@ -22,6 +22,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationId } from "@/lib/redux/slices/appContextSlice";
 import { callApi, type ApiCallConfig } from "@/lib/api/call-api";
 import { toast } from "@/lib/toast";
+import { readRunScopeBody } from "../runScopeBody";
 
 import { describeRunFormFailure } from "./run-form-refusal";
 import {
@@ -189,6 +190,8 @@ export function useServedRunStart(): ServedRunStart {
             // only when this attestation reaches it on a witnessed request.
             initiation: "user",
             mode: "inline",
+            // The person's current scope selection, as the chat sends it.
+            ...dispatch(readRunScopeBody()),
           },
           stream: true,
           consumeStream: async (response: Response) => {

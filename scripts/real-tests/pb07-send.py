@@ -17,9 +17,9 @@ and the captured provider request is saved beside it, so the grader can compare 
   builder-run       POST /ai/manual, the canary's definition inline, surface
                     matrx-user/agent-builder (the Builder's Test run)             same + dry_run = the Model view
   mandate-client    POST /ai/mandates/realtests.pb07_canary                       same + dry_run
-  mandate-try       POST /mandates/realtests.pb07_canary/try                      (none)
-  workflow          POST /workflows/<PB-07 canary via workflow>/runs              (none)
-  agent-call        POST /ai/agents/<Canary Caller> (it calls the canary)         (none)
+  mandate-try       POST /mandates/realtests.pb07_canary/try                      canary agent call, preview_door=agent_call
+  workflow          POST /workflows/<PB-07 canary via workflow>/runs              canary agent call, preview_door=api
+  agent-call        POST /ai/agents/<Canary Caller> (it calls the canary)         canary agent call, preview_door=agent_call
   together          POST /ai/agents/<Canary (Together)>, surface matrx-user/chat  same + dry_run
 
 Not sent (the grader records them as not run): the connector `agent_run` (an AI Dream MCP tool signed in
@@ -80,10 +80,15 @@ VARIABLE_DEFINITIONS = [{
 # The door each dry run previews (`preview_door`, aidream api/utils/preview_doors.py): its surface and its turn-assembly
 # family. The dry run's platform_parts[] and tools[] are then what THAT door's real run is graded against.
 PREVIEW_DOOR = {"chat": "chat", "agent-run": "agent_run", "agent-api": "api", "builder-run": "builder",
-                "mandate-client": "api", "together": "chat"}
+                "mandate-client": "api", "together": "chat",
+                "workflow": "api", "mandate-try": "agent_call", "agent-call": "agent_call"}
+# Doors with no endpoint of their own that dry-runs: the live dry run's `door.covers` list says which preview door
+# covers them (api: "workflow agent step"; agent_call: "agent_call child ... /mandates/{key}/try"). Their dry run is the
+# canary's own agent call (bare API body) previewed as that door, so it is graded as the canary the door ends at.
+DRY_BODY_OF = {"workflow": "agent-api", "mandate-try": "agent-api", "agent-call": "agent-api"}
 
 DOORS = ["chat", "agent-run", "agent-api", "builder-run", "mandate-client", "mandate-try", "workflow", "agent-call", "together"]
-HAS_DRY = {"chat", "agent-run", "agent-api", "builder-run", "mandate-client", "together"}
+HAS_DRY = {"chat", "agent-run", "agent-api", "builder-run", "mandate-client", "together", "workflow", "mandate-try", "agent-call"}
 
 
 def _env() -> dict:
@@ -176,7 +181,9 @@ def build(door: str) -> tuple[str, dict, str, str | None]:
 
 
 def record(out: Path, manifest: dict, door: str, kind: str, token: str) -> None:
-    path, body, agent, cid = build(door)
+    path, body, agent, cid = build(DRY_BODY_OF[door] if kind == "dry" and door in DRY_BODY_OF else door)
+    if kind == "dry" and door in DRY_BODY_OF:
+        agent = CANARY
     body = with_scope(SERVER, "POST", path, body, SCOPE, door) or body
     if kind == "dry":
         body = {**body, "dry_run": True, "preview_door": PREVIEW_DOOR[door]}

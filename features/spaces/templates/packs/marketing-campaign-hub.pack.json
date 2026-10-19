@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0152",
+  "formerSlugs": [
+    "spaces-sp0152"
+  ],
   "version": 4,
   "title": "Marketing Campaign Hub",
   "description": "Campaign managers: track each campaign's content, budget and results in one place.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0152",
+    "id": "spaces-marketing-campaign-hub",
     "catalogueId": "SP0152",
     "useCase": "Odette Marchetti leads marketing and uses this to see each campaign's content, spend and results in one view.",
     "industry": "cross_industry",

@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0153",
+  "formerSlugs": [
+    "spaces-sp0153"
+  ],
   "version": 4,
   "title": "Social Media Planner",
   "description": "Social managers and small brands: schedule posts on one calendar, with hashtag sets.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0153",
+    "id": "spaces-social-media-planner",
     "catalogueId": "SP0153",
     "useCase": "Camille Dupont-Ng runs a four-person creative studio and uses this to plan posts for every platform and see which ones perform.",
     "industry": "cross_industry",

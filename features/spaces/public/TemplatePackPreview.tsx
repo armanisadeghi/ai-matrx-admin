@@ -13,7 +13,7 @@
 // — what a crawler reads — and the browser swaps the outline for the editor. The box has a fixed height and scrolls inside, so the swap moves nothing around it.
 
 import { FileText } from "lucide-react";
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import type { TemplateSpec } from "@ai-matrx/records/templates";
 import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
@@ -22,6 +22,7 @@ import type { SpaceSummary } from "../contract";
 import { SpaceEditor } from "../editor/SpaceEditor";
 import { Cover } from "../page/Cover";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
+import { usePinnedTop } from "../page/usePinnedTop";
 import { readOnlySpacesValue } from "../state/read-only-value";
 import { StaticSpacesProvider } from "../state/SpacesProvider";
 import { previewPages, type SpaceTemplateFull } from "../templates/use-pack";
@@ -54,6 +55,10 @@ export function TemplatePackPreview({ template, outlines }: { template: PublicPa
   const pages = previewPages(template as unknown as SpaceTemplateFull);
   const [pageKey, setPageKey] = useState<string | null>(null);
   const current = pages.find((p) => p.key === pageKey) ?? pages[0];
+  // Opens at the top with the title and cover in view, on load, when the editor replaces the outline and on every
+  // page click — and the page around it stays put (ADVERSARIAL-2 #4: it opened 595px down).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  usePinnedTop(scrollRef, `${template.id}:${current?.key ?? ""}:${inBrowser ? "live" : "outline"}`, { pinWindow: true });
   const summaries: SpaceSummary[] = pages.map((p) => ({
     id: idOf(p.key),
     parentId: null,
@@ -98,7 +103,7 @@ export function TemplatePackPreview({ template, outlines }: { template: PublicPa
           </button>
         ))}
       </nav>
-      <div className="spaces-tg-page min-h-0 flex-1">
+      <div ref={scrollRef} className="spaces-tg-page min-h-0 flex-1" data-space-template-preview-page="">
         <StaticSpacesProvider value={value}>
           <div
             className="spaces-page"

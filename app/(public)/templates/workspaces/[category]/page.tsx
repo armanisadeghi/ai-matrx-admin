@@ -1,36 +1,52 @@
-// app/(public)/templates/workspaces/[category]/page.tsx — the Space templates of one Space category.
-// Categories come from the catalog itself, so a category the template library adds later gets its page.
+// app/(public)/templates/workspaces/[category]/page.tsx — ONE CATEGORY: its workspaces and the single-table
+// templates of the industries filed under it (publicGallery.ts INDUSTRY_CATEGORY: one category system).
+// Categories come from the catalog itself, so a category the template library adds later gets its page. A category
+// the library names is never a 404 (an empty one says so); an unknown key 404s only after a fresh catalog read
+// finds nothing in it (ADVERSARIAL-2 #11: /templates/workspaces/manufacturing 404'd while its packs were live).
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
 import { createRouteMetadata } from "@/utils/route-metadata";
-import { isSpaceCard } from "@/features/make/gallery/catalogue";
 import { PublicGalleryPage } from "@/features/make/gallery/PublicGalleryPage";
-import { spaceCategoryLabel, workspacesHref } from "@/features/make/gallery/publicGallery";
-import { readPublicCatalogue } from "@/features/make/gallery/publicCatalogue.server";
+import { cardCategory, spaceCategoryLabel, workspacesHref } from "@/features/make/gallery/publicGallery";
+import { readPublicCatalogue, readPublicCatalogueFresh } from "@/features/make/gallery/publicCatalogue.server";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
-type Props = { params: Promise<{ category: string }> };
+type Props = { params: Promise<{ category: string }>; searchParams: Promise<{ q?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = decodeURIComponent((await params).category);
   const word = spaceCategoryLabel(category);
   return createRouteMetadata(workspacesHref(category), {
-    title: `${word} workspace templates`,
-    description: `Ready-made ${word.toLowerCase()} workspaces: pages, tables, boards and calendars filled with sample data. Preview every page, then make it yours.`,
+    title: `${word} templates`,
+    description: `Ready-made ${word.toLowerCase()} workspaces and tables, filled with sample data. Preview every page, then make it yours.`,
     canonicalPath: workspacesHref(category),
   });
 }
 
-export default async function WorkspaceCategoryPage({ params }: Props) {
+export default async function WorkspaceCategoryPage({ params, searchParams }: Props) {
   const category = decodeURIComponent((await params).category);
-  const read = await readPublicCatalogue();
+  const { q } = await searchParams;
+  const named = SPACE_TEMPLATE_CATEGORIES.some((c) => c.key === category);
+  let read = await readPublicCatalogue();
+  const inCategory = (r: typeof read) => (r.state === "open" ? r.cards.filter((c) => cardCategory(c) === category) : []);
+  if (read.state === "open" && !named && !inCategory(read).length) {
+    read = await readPublicCatalogueFresh();
+    if (read.state === "open" && !inCategory(read).length) notFound();
+  }
   const all = read.state === "open" ? read.cards : [];
-  const cards = all.filter((c) => isSpaceCard(c) && c.space?.category === category);
-  if (read.state === "open" && !cards.length) notFound();
   return (
-    <PublicGalleryPage title={`${spaceCategoryLabel(category)} workspaces`} cards={cards} all={all} active={{ space: category }} workspaces state={read.state} />
+    <PublicGalleryPage
+      title={`${spaceCategoryLabel(category)} templates`}
+      cards={inCategory(read)}
+      all={all}
+      path={workspacesHref(category)}
+      query={q ?? ""}
+      active={category}
+      state={read.state}
+    />
   );
 }

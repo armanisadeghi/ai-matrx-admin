@@ -141,6 +141,7 @@ async function mockRpc(fn: string, args: Record<string, unknown>) {
         ? { data: { id: VISIT, patient: "Robert Chen", status: "Scheduled" }, error: null }
         : { data: null, error: null };
     case "work_approval_decide":
+      console.log("DECIDE", JSON.stringify(args));
       decideCalls.push(args);
       pending = pending.filter((id) => id !== args.p_approval_id);
       return {
@@ -266,7 +267,7 @@ async function settle(times = 30) {
 async function until(what: string, ok: () => boolean, timeoutMs = 10_000) {
   const start = Date.now();
   while (!ok()) {
-    if (Date.now() - start > timeoutMs) throw new Error(`never happened: ${what}`);
+    if (Date.now() - start > timeoutMs) { console.log("DUMP", decideCalls.length, pending.join(","), (container?.textContent ?? "").slice(0,500), "BODY", document.body.textContent?.slice(0,400)); throw new Error(`never happened: ${what}`); }
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
     });

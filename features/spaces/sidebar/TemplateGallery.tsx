@@ -19,11 +19,9 @@ import { ErrorNotice } from "@ai-matrx/design-system";
 import { ArrowLeft, FileText, LayoutGrid, LayoutTemplate } from "lucide-react";
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
-  type RefObject,
 } from "react";
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -37,6 +35,7 @@ import { SpaceEditor } from "../editor/SpaceEditor";
 import { Cover } from "../page/Cover";
 import { Preview } from "../page/PageHistory";
 import { SpaceIcon, isImageMedia } from "../page/SpaceIcon";
+import { usePinnedTop } from "../page/usePinnedTop";
 import { StaticSpacesProvider, useSpaces } from "../state/SpacesProvider";
 import { DATABASE_HOST_CLASS } from "../editor/database-host";
 import {
@@ -346,39 +345,6 @@ function measurePreview(
   return Object.keys(blocks).length
     ? { page: pageKey, vw: window.innerWidth, blocks }
     : null;
-}
-
-/** How long a freshly opened preview page stays at its top against scrolls the person did not make. */
-const PIN_TOP_MS = 2500;
-
-/**
- * A PREVIEW OPENS AT ITS TOP, EVERY TIME (ADVERSARIAL-1 #6: Weekly Agenda opened at Wednesday, Invoices at
- * Expenses). Blocks that mount late scroll themselves into view (a calendar finding today, a grid focusing a
- * cell) and drag the preview pane with them. So each time `key` changes the pane goes to its top and stays
- * there for PIN_TOP_MS — until the person scrolls, presses or types, which ends the pin at once.
- */
-function usePinnedTop(ref: RefObject<HTMLDivElement | null>, key: string) {
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.scrollTop = 0;
-    let pinned = true;
-    const release = () => {
-      pinned = false;
-    };
-    const onScroll = () => {
-      if (pinned && el.scrollTop !== 0) el.scrollTop = 0;
-    };
-    const user = ["wheel", "touchstart", "pointerdown", "keydown"] as const;
-    for (const t of user) el.addEventListener(t, release, { passive: true });
-    el.addEventListener("scroll", onScroll);
-    const timer = window.setTimeout(release, PIN_TOP_MS);
-    return () => {
-      window.clearTimeout(timer);
-      el.removeEventListener("scroll", onScroll);
-      for (const t of user) el.removeEventListener(t, release);
-    };
-  }, [ref, key]);
 }
 
 /** A pack's real pages, read-only, over its tables in memory; page links walk the preview. */

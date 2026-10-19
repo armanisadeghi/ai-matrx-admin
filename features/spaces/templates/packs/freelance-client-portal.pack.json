@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
+  "formerSlugs": [
+    "spaces-client-portal"
+  ],
   "version": 6,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-client-portal",
+    "id": "spaces-freelance-client-portal",
     "catalogueId": "SP0302",
     "useCase": "Mira Dalgaard runs client delivery at a web studio and uses this so every client can see their open tasks, approved files and latest update without chasing emails.",
     "industry": "cross_industry",

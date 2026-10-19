@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0158",
+  "formerSlugs": [
+    "spaces-sp0158"
+  ],
   "version": 4,
   "title": "Lead Tracker",
   "description": "Small sales teams: capture leads, follow up on time and turn the best into deals.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0158",
+    "id": "spaces-lead-tracker",
     "catalogueId": "SP0158",
     "useCase": "Rashida Cole leads sales at a commercial services company and uses this to follow up with every lead on time.",
     "industry": "cross_industry",

@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
+  "formerSlugs": [
+    "spaces-sp0150"
+  ],
   "version": 7,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0150",
+    "id": "spaces-sales-crm",
     "catalogueId": "SP0150",
     "useCase": "Dana Okonkwo-Reyes runs a four-person sales team and uses this to see every open deal, who to call next, and what the pipeline is worth.",
     "industry": "cross_industry",

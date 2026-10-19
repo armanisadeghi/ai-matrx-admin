@@ -96,7 +96,7 @@ async function html(node: Promise<React.ReactElement>) {
   return renderToStaticMarkup(await node);
 }
 const index = () => html(PublicTemplatesPage({ searchParams: Promise.resolve({}) }));
-const industryPage = (industry: string) => html(IndustryTemplatesPage({ params: Promise.resolve({ industry }) }));
+const industryPage = (industry: string) => html(IndustryTemplatesPage({ params: Promise.resolve({ industry }), searchParams: Promise.resolve({}) }));
 const detail = (slug: string) => html(PublicTemplatePage({ params: Promise.resolve({ slug }), searchParams: Promise.resolve({}) }));
 
 beforeEach(() => {

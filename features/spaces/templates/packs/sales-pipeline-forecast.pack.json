@@ -1,6 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
+  "formerSlugs": [
+    "spaces-sp0154"
+  ],
   "version": 5,
   "title": "Sales Pipeline Forecast",
   "description": "Sales managers: forecast revenue from deal stages and weighted value.",
@@ -23,7 +26,7 @@
   ],
   "spec": {
     "specVersion": 1,
-    "id": "spaces-sp0154",
+    "id": "spaces-sales-pipeline-forecast",
     "catalogueId": "SP0154",
     "useCase": "Everett Nakamura manages four sellers and uses this to forecast revenue from open deals and spot deals that have gone quiet.",
     "industry": "cross_industry",

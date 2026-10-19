@@ -42,6 +42,7 @@ import type { YouTubeChannelIdentity, YouTubeVideoIdentity } from "../../service
 import { saveChannelIdentity, savedChannelIdentity } from "../../service";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { resolveMediaInput } from "@/features/source-library/api";
+import { runWithConcurrency } from "@ai-matrx/kit/concurrency";
 import { updateMedia } from "../../service";
 import type { ResearchMedia } from "../../types";
 import { idMatchesQuery } from "@ai-matrx/kit/search-scoring";
@@ -980,6 +981,19 @@ function YouTubeVideoCard({
   );
 }
 
+/** One YouTube lookup (1 unit), saved on the media row so it is never asked again. */
+async function lookUpChannel(dispatch: ReturnType<typeof useAppDispatch>, item: ResearchMedia) {
+  const resolved = await resolveMediaInput(dispatch, item.url, "youtube");
+  await saveChannelIdentity(item.id, item.metadata as Record<string, unknown> | null, {
+    title: resolved.title,
+    handle: resolved.handle,
+    avatar: resolved.thumbnail_url,
+    subscribers: resolved.subscriber_count,
+    videos: resolved.item_count,
+    description: resolved.description,
+  });
+}
+
 /** YouTube channel/profile — avatar, name, subscribers; opens on YouTube (not
  * embeddable). Details come from what we already hold, else one lookup on click. */
 function YouTubeChannelCard({
@@ -1007,15 +1021,7 @@ function YouTubeChannelCard({
   const lookUp = async () => {
     setLooking(true);
     try {
-      const resolved = await resolveMediaInput(dispatch, item.url, "youtube");
-      await saveChannelIdentity(item.id, item.metadata as Record<string, unknown> | null, {
-        title: resolved.title,
-        handle: resolved.handle,
-        avatar: resolved.thumbnail_url,
-        subscribers: resolved.subscriber_count,
-        videos: resolved.item_count,
-        description: resolved.description,
-      });
+      await lookUpChannel(dispatch, item);
       onEnriched();
     } catch (caught) {
       toast.error(`Could not get channel details: ${extractErrorMessage(caught)}`);
@@ -1094,15 +1100,44 @@ function YouTubeChannelsSection({
   onToggleRelevance,
   onEnriched,
 }: SectionProps & { onEnriched: () => void }) {
-  const { identityForUrl, refresh } = useYouTubeChannelIdentityIndex(items.map((item) => item.url));
+  const dispatch = useAppDispatch();
+  const { identityForUrl, refresh, isLoading, error } = useYouTubeChannelIdentityIndex(
+    items.map((item) => item.url),
+  );
+  // Until our own channel read answers, "missing" would count every channel.
+  const known = !isLoading && !error;
+  const missing = items.filter((item) => !savedChannelIdentity(item) && !identityForUrl(item.url));
+  const [lookingUp, setLookingUp] = useState(false);
+  const lookUpAll = async () => {
+    setLookingUp(true);
+    const results = await runWithConcurrency(missing, 4, (item) => lookUpChannel(dispatch, item));
+    setLookingUp(false);
+    if (results.failed > 0) toast.error(`${results.failed} of ${missing.length} channels could not be found on YouTube.`);
+    onEnriched();
+    refresh();
+  };
   return (
     <section className="space-y-2">
-      <SectionHeader
-        icon={Users}
-        title="YouTube Channels"
-        count={items.length}
-        description="Creator pages linked from sources"
-      />
+      <div className="flex items-center justify-between gap-2">
+        <SectionHeader
+          icon={Users}
+          title="YouTube Channels"
+          count={items.length}
+          description="Creator pages linked from sources"
+        />
+        {known && missing.length > 1 && (
+          <ControlButton
+            variant="link"
+            type="button"
+            disabled={lookingUp}
+            icon={lookingUp ? <Loader2 className="animate-spin" /> : undefined}
+            onClick={() => void lookUpAll()}
+          >
+            {/* read-gate-exempt: rendered only once the channel read succeeded (`known`) */}
+            {`Get details for ${missing.length}`}
+          </ControlButton>
+        )}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {items.map((item) => (
           <YouTubeChannelCard
