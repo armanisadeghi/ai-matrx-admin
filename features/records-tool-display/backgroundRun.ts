@@ -8,7 +8,7 @@
  * drawn again when the conversation is reopened, from the `run_id` in the persisted answer.
  *
  *  - Progress arrives as `node_progress` (`message` "<step>: <detail>", `current`, `total`).
- *    An import walks six named stages; `total` GROWS while reading discovers pages, and a late
+ *    An import walks seven named stages; `total` GROWS while reading discovers pages, and a late
  *    "columns" pass follows "rows". So the bar is a RATCHET: the stage never steps back and the
  *    fill never shrinks (streamed shapes only move forward).
  *  - A mapped copy reports "Slice N: X added, Y updated so far" with no total: the bar is the
@@ -25,6 +25,7 @@ export type BackgroundRunKind = "import" | "copy" | "workflow";
 /** The import's stages, in the order the importer walks them (aidream `notion_import.progress`). */
 export const IMPORT_STAGES = [
   { id: "reading", label: "Reading" },
+  { id: "files", label: "Files" },
   { id: "tables", label: "Tables" },
   { id: "columns", label: "Columns" },
   { id: "rows", label: "Rows" },

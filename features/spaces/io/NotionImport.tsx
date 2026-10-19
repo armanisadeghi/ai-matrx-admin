@@ -58,6 +58,7 @@ type Stage =
 
 const STEPS: Record<string, string> = {
   reading: "Reading",
+  files: "Files",
   tables: "Tables",
   columns: "Columns",
   rows: "Rows",
