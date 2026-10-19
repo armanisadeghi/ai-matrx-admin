@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "check:dnd-context-id": "node scripts/check-dnd-context-id.mjs",
+    "check:wired-features": "node scripts/check-wired-features.mjs",
+    "check:wired-features:self-test": "node scripts/check-wired-features.mjs --self-test",
     "check:rich-document-action-ratchet": "node scripts/check-rich-document-action-ratchet.mjs",
     "check:dnd-context-id:self-test": "node scripts/check-dnd-context-id.mjs --self-test",
     "check:session-handover": "node scripts/check-session-handover.mjs",
