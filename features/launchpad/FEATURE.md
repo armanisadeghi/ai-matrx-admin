@@ -117,6 +117,9 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-19` — Lane J: "New launchpad" templates wait for the person's list (a key chosen against an empty list
+  could reuse an existing key and overwrite that launchpad); a signed-out or thrown write now says so instead of
+  doing nothing or sticking on "Creating…".
 - `2026-10-19` — Lane I (custom-experience, cold load): a cold `/launchpad/start` took ~11–13 s to draw its saved
   layout live — ~4.6 MB / 230 chunks of shell JavaScript (the same set every `(core)` route loads; the launchpad
   adds 10) had to arrive before the browser even asked for the doc, then find-or-make and the list ran in

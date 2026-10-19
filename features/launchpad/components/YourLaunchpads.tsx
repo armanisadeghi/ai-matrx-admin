@@ -36,11 +36,17 @@ function Strip({ serverLaunchpads }: { serverLaunchpads: Promise<ServerLaunchpad
   const [creating, setCreating] = useState<string | null>(null);
 
   const create = async (template: LaunchpadTemplate) => {
-    if (!pads.userId) return;
+    // Never while the list is still loading: the new key is chosen against the person's existing keys, and an
+    // empty list would reuse one and overwrite that launchpad. The buttons wait for the list (below).
+    if (pads.loading) return void toast.info("Your launchpads are still loading");
+    if (!pads.userId) return void toast.error("Sign in to create a launchpad");
     setCreating(template.id);
     const title = template.id === "blank" ? "My launchpad" : template.title;
     const key = keyFromTitle(title, pads.entries.map((e) => e.key));
-    const result = await pads.save({ key, title, doc: template.doc(), owner: personOwner(pads.userId) }, `From the ${template.title} template`);
+    // A thrown write is an answer too, never a button stuck on "Creating…".
+    const result = await pads
+      .save({ key, title, doc: template.doc(), owner: personOwner(pads.userId) }, `From the ${template.title} template`)
+      .catch((thrown: unknown) => ({ ok: false as const, error: thrown instanceof Error ? thrown.message : String(thrown) }));
     setCreating(null);
     if (!result.ok) return void toast.error(result.error);
     setChoosing(false);
@@ -81,7 +87,7 @@ function Strip({ serverLaunchpads }: { serverLaunchpads: Promise<ServerLaunchpad
                   <button
                     type="button"
                     data-clickable
-                    disabled={creating !== null}
+                    disabled={creating !== null || pads.loading}
                     onClick={() => void create(t)}
                     className="flex w-full items-center gap-3 rounded-lg border border-border bg-card p-3 text-left hover:bg-muted"
                   >
