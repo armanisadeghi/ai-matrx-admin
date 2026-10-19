@@ -17,6 +17,8 @@ import { primeObjectOrganization, readObjectOrganizationAnswer, useObjectOrganiz
 
 import { useSeededWhere } from "../page/space-seed-context";
 
+import { opensNoteLine } from "./opens-note";
+
 import { createRowOpener, openRecordPort, RowOpenerContext } from "./row-opener";
 
 import { usePublishedRows } from "./published-rows";
@@ -86,7 +88,7 @@ function LiveMount({ tableId, children, held }: { tableId: string; children: Rea
   const opens = asked.state === "resolving" && seeded ? { ...readObjectOrganizationAnswer(seeded, tableId), retry: asked.retry } : asked;
   if (opens.state === "found") return <LiveBound organizationId={opens.organizationId}>{children}</LiveBound>;
   if (opens.state === "resolving") return <>{held("")}</>;
-  return <>{held(opens.state === "unavailable" ? "This database can’t be opened right now." : "This database isn’t shared with you.", opens.retry)}</>;
+  return <>{held(opensNoteLine(opens.state) ?? "", opens.retry)}</>;
 }
 
 export function DataMount({

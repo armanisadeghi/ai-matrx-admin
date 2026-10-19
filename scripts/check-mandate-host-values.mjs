@@ -100,13 +100,14 @@ function trackedSources() {
 }
 
 
-/** files: [{file, source}] → {failing: [{key, provision, files}], passing: Set} */
-export function evaluate(files) {
-  const byIdent = new Map(Object.keys(MAPPED).map((k) => [k.replace(/\./g, "__"), k]));
+/** files: [{file, source}], keys: mandate keys → Map key → Set of files that reference it. */
+export function referencesByKey(files, keys) {
+  const known = new Set(keys);
+  const byIdent = new Map([...known].map((k) => [k.replace(/\./g, "__"), k]));
   const refRe = /MANDATE_KEYS\.([A-Za-z0-9_]+)|["'`]([a-z0-9_]+(?:\.[a-z0-9_]+)+)["'`]/g;
   const aliasRe =
     /(?:const|let)\s+([A-Z][A-Z0-9_]*)\s*(?::[^=]+)?=\s*(?:MANDATE_KEYS\.([A-Za-z0-9_]+)|["'`]([a-z0-9_]+(?:\.[a-z0-9_]+)+)["'`])/g;
-  const toKey = (ident, literal) => (ident ? byIdent.get(ident) : MAPPED[literal] ? literal : undefined);
+  const toKey = (ident, literal) => (ident ? byIdent.get(ident) : known.has(literal) ? literal : undefined);
   const refsByKey = new Map();
   const aliasToKey = new Map();
   const add = (key, file) => {
@@ -131,6 +132,12 @@ export function evaluate(files) {
       for (const m of f.source.matchAll(names)) add(aliasToKey.get(m[1]), f);
     }
   }
+  return refsByKey;
+}
+
+/** files: [{file, source}] → {failing: [{key, provision, files}], passing: Set} */
+export function evaluate(files) {
+  const refsByKey = referencesByKey(files, Object.keys(MAPPED));
   const failing = [];
   const passing = new Set();
   for (const [key, refs] of refsByKey) {
@@ -171,11 +178,117 @@ function report(files) {
   return { fresh, healed, passing };
 }
 
+/**
+ * The top level of one object literal starting at `open` (the index of its "{"): property names, and
+ * the string literal each one carries (null = not a literal). `spread` is true on any `...x`.
+ */
+function objectLiteral(source, open) {
+  const keys = new Map();
+  let spread = false;
+  let depth = 0;
+  let i = open;
+  let segment = "";
+  const flush = () => {
+    const t = segment.trim();
+    segment = "";
+    if (!t) return;
+    if (t.startsWith("...")) {
+      spread = true;
+      return;
+    }
+    const m = /^(?:["'`]?)([A-Za-z_$][\w$]*)(?:["'`]?)\s*(?::\s*([\s\S]*))?$/.exec(t);
+    if (!m) {
+      spread = true; // a computed key: the set is not fully readable
+      return;
+    }
+    const value = m[2] === undefined ? undefined : m[2].trim();
+    const lit = value && /^(["'`])([^"'`$]*)\1$/.exec(value);
+    keys.set(m[1], lit ? lit[2] : null);
+  };
+  for (; i < source.length; i++) {
+    const c = source[i];
+    if (c === '"' || c === "'" || c === "`") {
+      const end = source.indexOf(c, i + 1);
+      if (depth === 1) segment += source.slice(i, end + 1);
+      i = end;
+      continue;
+    }
+    if (c === "{" || c === "[" || c === "(") {
+      depth++;
+      if (depth === 1) continue;
+    } else if (c === "}" || c === "]" || c === ")") {
+      depth--;
+      if (depth === 0) {
+        flush();
+        return { keys, spread, end: i };
+      }
+    } else if (c === "," && depth === 1) {
+      flush();
+      continue;
+    }
+    if (depth >= 1) segment += depth === 1 ? c : " ";
+  }
+  return null;
+}
+
+/**
+ * WHAT THE FRONTEND SENDS, per mandate key (2026-10-19, for aidream's `check_provision_offers.py --wiring`).
+ * A file is a caller when it references the key and matches SENDS. Each `variables: {…}` /
+ * `variables={{…}}` literal in a caller that references ONE key is that key's offer: its property names,
+ * and the literal string each carries. `sent: null` = some caller's offer is not a readable literal (a
+ * variable, a spread, a file naming several keys), so "never sent" cannot be judged.
+ */
+export function sentByMandate(files, keys) {
+  const refs = referencesByKey(files, keys);
+  const keysPerFile = new Map();
+  for (const [key, set] of refs) for (const f of set) keysPerFile.set(f.file, (keysPerFile.get(f.file) ?? 0) + 1);
+  const out = {};
+  for (const [key, set] of refs) {
+    const callers = [...set].filter((f) => SENDS.some((re) => re.test(f.source)));
+    if (!callers.length) continue;
+    let sent = new Set();
+    const values = {};
+    for (const f of callers) {
+      const opens = [...f.source.matchAll(/\bvariables\s*[:=]\s*\{?\s*(?=\{)/g)].map((m) => m.index + m[0].length);
+      if (keysPerFile.get(f.file) > 1 || !opens.length || /\b(hostValues|provideHostValues\(|useMandateHostValues\(|initialVariableValues|contextItems=)/.test(f.source)) {
+        sent = null;
+        break;
+      }
+      for (const at of opens) {
+        const lit = objectLiteral(f.source, at);
+        if (!lit || lit.spread) {
+          sent = null;
+          break;
+        }
+        for (const [name, value] of lit.keys) {
+          sent.add(name);
+          if (value === null) values[name] = null;
+          else if (values[name] !== null) (values[name] ??= new Set()).add(value);
+        }
+      }
+      if (sent === null) break;
+    }
+    out[key] = sent === null
+      ? { sent: null, values: {}, files: callers.map((f) => f.file) }
+      : {
+          sent: [...sent].sort(),
+          values: Object.fromEntries(Object.entries(values).map(([k, v]) => [k, v === null ? null : [...v].sort()])),
+          files: callers.map((f) => f.file),
+        };
+  }
+  return out;
+}
+
 function load(list) {
   return list.map((file) => ({ file, source: readFileSync(path.join(ROOT, file), "utf8") }));
 }
 
-if (process.argv.includes("--self-test")) {
+const sentJsonAt = process.argv.indexOf("--sent-json");
+if (sentJsonAt !== -1) {
+  // node scripts/check-mandate-host-values.mjs --sent-json <keys.json> — read by aidream's --wiring leg.
+  const keys = JSON.parse(readFileSync(process.argv[sentJsonAt + 1], "utf8"));
+  process.stdout.write(JSON.stringify(sentByMandate(load(trackedSources()), keys)));
+} else if (process.argv.includes("--self-test")) {
   const files = load(trackedSources());
   const green = report(files);
   const planted = [

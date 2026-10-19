@@ -28,6 +28,7 @@ import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree"
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
+import { makeEmptyBase } from "./makeEmptyBase";
 import { GithubImportDialog } from "./GithubImportDialog";
 import { SheetsImportDialog } from "./SheetsImportDialog";
 import {
@@ -163,23 +164,24 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
   const makeEmpty = async () => {
     setBusy(true);
     setProblem(null);
-    // A table born without a Home makes its own: that Home is the new base.
-    const made = await ensureTable(client, { name: `${name.trim()} — Table 1`.slice(0, 80), fields: [{ key: "name", label: "Name", type: "text" }] });
-    if (!made.ok) {
-      setBusy(false);
-      setProblem(made.error.message);
-      return;
-    }
-    try {
-      const mine = (await homeTables(client)).find((t) => t.id === made.data);
-      const home = mine?.home_id ?? made.homeId;
-      await saveBase(mine?.organization_id ?? "", home, { name, template: "blank" });
-      onMade(home);
-    } catch (e) {
-      setProblem(e instanceof Error ? e.message : "The base could not be named.");
-    } finally {
-      setBusy(false);
-    }
+    // A table born without a Home makes its own: that Home is the new base. A database timeout is never shown as the answer:
+    // the base is read back, and a create that completed is a success (makeEmptyBase).
+    const result = await makeEmptyBase(name, {
+      ensure: async (tableName) => {
+        const made = await ensureTable(client, { name: tableName, fields: [{ key: "name", label: "Name", type: "text" }] });
+        return made.ok ? { ok: true, tableId: made.data, homeId: made.homeId } : { ok: false, message: made.error.message };
+      },
+      findTable: async (tableName) => {
+        const mine = (await homeTables(client)).find((t) => t.name === tableName && t.home_id);
+        return mine ? { tableId: mine.id, homeId: mine.home_id as string, organizationId: mine.organization_id } : null;
+      },
+      save: async (organizationId, homeId, baseName) => {
+        await saveBase(organizationId, homeId, { name: baseName, template: "blank" });
+      },
+    });
+    setBusy(false);
+    if (result.ok) onMade(result.homeId);
+    else setProblem(result.sentence);
   };
 
   return (
@@ -187,7 +189,7 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-new-base="">
         <DialogTitle>New base</DialogTitle>
         <Field autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name of the base" aria-label="Name of the base" />
-        {problem ? <ErrorNotice message={problem} size="inline" /> : null}
+        {problem ? <ErrorNotice message={problem} operation="Make a base" size="inline" /> : null}
         <div className="flex flex-col gap-2">
           <Button variant="primary" disabled={busy || !name.trim()} onClick={() => void makeEmpty()} data-new-base-empty="">Start empty</Button>
           <div className="flex gap-2">

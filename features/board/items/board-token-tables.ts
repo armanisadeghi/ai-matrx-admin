@@ -30,6 +30,9 @@ interface TileLike {
   source: { kind: string; entity?: string; id?: string | null; meta?: Record<string, unknown> | null };
 }
 
+/** Pack table tokens (`meta.token`, stamped at install) that are design-token tables, before any look is adopted. */
+export const TOKEN_TABLE_TOKENS: ReadonlySet<string> = new Set(["color", "type_style", "spacing", "radius", "size", "shadow", "opacity", "motion"]);
+
 /** The board's token tables, by table id, in reading order (a later table wins a shared name), each once. */
 export function boardTokenTableIds(tiles: readonly TileLike[]): string[] {
   const out: string[] = [];
@@ -38,7 +41,9 @@ export function boardTokenTableIds(tiles: readonly TileLike[]): string[] {
     const s = byId.get(p.id)?.source;
     if (!s) continue;
     const look = s.meta?.look;
-    if (s.kind !== "entity" || s.entity !== TABLE_ENTITY || !s.id || typeof look !== "string" || !TOKEN_LOOKS.has(look)) continue;
+    const token = s.meta?.token;
+    const isTokens = (typeof look === "string" && TOKEN_LOOKS.has(look)) || (typeof token === "string" && TOKEN_TABLE_TOKENS.has(token));
+    if (s.kind !== "entity" || s.entity !== TABLE_ENTITY || !s.id || !isTokens) continue;
     if (!out.includes(s.id)) out.push(s.id);
   }
   return out;

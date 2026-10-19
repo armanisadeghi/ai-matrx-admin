@@ -4,7 +4,7 @@
 // (static-body.tsx): drawn with its rows on the server, kept exactly as served in the browser.
 
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
+import { Suspense, useState, useSyncExternalStore } from "react";
 
 import { ResolvedBlockSeed, useAwaitedBlockSeed } from "../page/space-seed-context";
 import { DatabaseChunkLoading, DatabaseLoadingBox, DatabaseLoadingSlot, WithExpectedRows } from "./database-loading-box";
@@ -45,10 +45,34 @@ const KEPT_AS_SERVED = { __html: "" };
  * still lands through React's own streaming script). The editor's live block, built behind it, is the one
  * people use; nothing here asks for rows in the browser.
  */
+const never = () => () => undefined;
+
+/**
+ * Whether this render is hydrating the server's HTML (true on the server, and in the browser's hydrating pass),
+ * fixed at the block's first render. A first paint the browser draws ITSELF — the page's streamed boundary was
+ * thrown away before it hydrated (on slow 4G the page segment lands after a context above it changed), so React
+ * client-renders the static body — has no server HTML to keep: "kept as served" there drew every database block
+ * EMPTY (0 px, the first paint without its tables, DB-BLOCK-CHROME-2).
+ */
+function useHydratingFirstRender(): boolean {
+  const hydrating = useSyncExternalStore(never, () => false, () => true);
+  const [first] = useState(hydrating);
+  return first;
+}
+
 export function ServerDrawnDatabase({ blockId, p }: { blockId: string; p: Record<string, unknown> }) {
   const layout = activeLayout(p);
-  if (typeof window !== "undefined")
+  const hydrating = useHydratingFirstRender();
+  if (typeof window !== "undefined" && hydrating)
     return <div className={DATABASE_HOST_CLASS} contentEditable={false} data-layout={layout} data-block-id={blockId} suppressHydrationWarning dangerouslySetInnerHTML={KEPT_AS_SERVED} />;
+  if (typeof window !== "undefined")
+    // Drawn by the browser: the block's frame at the height the server's live answers give (rows, cards, its
+    // note), read-only and asking nothing — the editor's live block takes its place on reveal.
+    return (
+      <DatabaseHost blockId={blockId} layout={layout} painted={paintedSizesOf(p)} serverDrawn>
+        <DatabaseLoadingBox blockId={blockId} p={p} />
+      </DatabaseHost>
+    );
   return (
     <DatabaseHost blockId={blockId} layout={layout} painted={paintedSizesOf(p)} serverDrawn>
       <DatabaseLoadingSlot box={<DatabaseLoadingBox blockId={blockId} p={p} />}>

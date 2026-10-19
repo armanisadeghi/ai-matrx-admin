@@ -9,7 +9,6 @@
 "use client";
 
 import { formatRelativeTime } from "@/utils/datetime";
-import { showSavedSnapshot } from "@ai-matrx/office/univer";
 import { useCallback, useEffect, useState } from "react";
 import {
   Clock,
@@ -27,10 +26,7 @@ import { toast } from "@/components/ui/use-toast";
 import { operationFailed } from "@/utils/errors";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 
-import {
-  listDocumentSnapshots,
-  saveDocumentSnapshot,
-} from "@ai-matrx/office/docs";
+import { listDocumentSnapshots } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
 import { type DocumentSnapshot } from "@ai-matrx/office/core";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -98,36 +94,26 @@ export function DocumentHistoryViewer({ documentId, editable = true }: Props) {
         return;
       }
 
-      const saved = await saveDocumentSnapshot({
-        documentId,
-        snapshot: full.snapshot,
-        origin: "restored",
-        label: restoredLabel(full.label, full.created_at),
-      });
-      setRestoringId(null);
-
-      if (isServiceFailure(saved)) {
+      // THE one restore (office `restoreDocumentSnapshot`): open here, the editor takes it; not open here but the
+      // document has a co-editing room, `collab_replace` reloads every open seat; no room, a saved row.
+      try {
+        const { restoreDocumentSnapshot } = await import("@ai-matrx/office/univer/collab");
+        await restoreDocumentSnapshot({
+          documentId,
+          snapshot: full.snapshot,
+          label: restoredLabel(full.label, full.created_at),
+        });
+      } catch (err) {
+        setRestoringId(null);
         toast({
           title: "Could not restore",
-          description: saved.error,
-          variant: "destructive",
-        });
-        return;
-      }
-      // Show it in the open editor (and its collab peers) — saving alone
-      // left the canvas on the old content until a reload, and its next
-      // autosave wrote the old content back over the restore.
-      try {
-        await showSavedSnapshot("document", documentId, { id: saved.data.id, snapshot: full.snapshot });
-      } catch (err) {
-        toast({
-          title: "Restored, but the open editor still shows the old version",
           description: err instanceof Error ? err.message : String(err),
           variant: "destructive",
         });
         void reload();
         return;
       }
+      setRestoringId(null);
       toast({ title: "Restored snapshot", variant: "success" });
       void reload();
     },
@@ -275,6 +261,7 @@ function OriginBadge({ origin }: { origin: string }) {
           <Upload className="size-3" /> Imported
         </Badge>
       );
+    case "restore":
     case "restored":
       return (
         <Badge variant="secondary" className="gap-1">

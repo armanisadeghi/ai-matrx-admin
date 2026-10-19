@@ -11,7 +11,10 @@ import { SKELETON_EMBEDDED_PAGE_ROWS, embeddedGridBodyPx, skeletonRowsFor, Expec
 import { createContext, useContext, type ReactNode } from "react";
 
 import { DatabaseFrameShape } from "../data/database-frame-shape";
-import { useBlockExpectedGroups, useBlockExpectedRows } from "../page/space-seed-context";
+import { Button } from "@ai-matrx/design-system/controls";
+
+import { opensNoteLine, opensNoteRetries } from "../data/opens-note";
+import { useBlockExpectedGroups, useBlockExpectedNote, useBlockExpectedRows } from "../page/space-seed-context";
 import { useStructureEdit } from "../page/structure";
 import { activeLayout, paintedSizesOf, pickPainted } from "./database-host";
 
@@ -47,15 +50,34 @@ export function databaseFramePx(p: Record<string, unknown>, rows: number | null)
 export function DatabaseLoadingBox({ blockId, p, editable = false, published = false }: { blockId: string; p: Record<string, unknown>; editable?: boolean; published?: boolean }) {
   const rows = useBlockExpectedRows(blockId);
   const groups = useBlockExpectedGroups(blockId);
+  const note = useBlockExpectedNote(blockId);
   const structure = useStructureEdit();
-  const painted = pickPainted(paintedSizesOf(p), {}, true)?.h;
-  const held = rows === null && painted ? Math.max(0, painted - 2 * FRAME_MARGIN_PX) : null;
   const source = p["source"] as { kind?: unknown } | undefined;
+  // The server found the table does not open: the block's first paint IS its note (DataMount's own), never the
+  // rows it had the last time it painted (DB-BLOCK-CHROME-2).
+  if (note !== null && source?.kind === "table") return <DatabaseOpensNote state={note} />;
+  // A stored painted size only while the live answers say nothing (rows / cards per column unknown).
+  const painted = rows === null && groups === null ? pickPainted(paintedSizesOf(p), {}, true)?.h : undefined;
+  const held = painted ? Math.max(0, painted - 2 * FRAME_MARGIN_PX) : null;
   if (source?.kind === "table")
     return <DatabaseFrameShape p={p} role={{ shape: editable && structure, published }} rows={rows} groups={groups} minHeight={held} />;
   const framePx = databaseFramePx(p, rows) ?? held;
   if (framePx === null) return <div className="spaces-db-loading" />;
   return <div className="spaces-db-loading" style={{ minHeight: framePx, margin: `${FRAME_MARGIN_PX}px 0` }} data-expected-frame={framePx} />;
+}
+
+/** DataMount's "doesn't open" note, as the live block draws it ("Try again" inert until the live block takes over). */
+export function DatabaseOpensNote({ state }: { state: string }) {
+  return (
+    <div className="spaces-db-frame spaces-db-note" data-opens-note={state}>
+      {opensNoteLine(state)}
+      {opensNoteRetries(state) ? (
+        <Button variant="quiet" tabIndex={-1}>
+          Try again
+        </Button>
+      ) : null}
+    </div>
+  );
 }
 
 /** The block's content, told how many rows its table shows the person: its own loading frames paint that many. */

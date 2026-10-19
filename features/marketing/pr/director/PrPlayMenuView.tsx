@@ -15,9 +15,9 @@
  * buttons only.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Compass, Play } from "lucide-react";
+import { ArrowRight, Compass, Lightbulb, Play } from "lucide-react";
 
 import { Button } from "@ai-matrx/design-system";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setUserInputText } from "@ai-matrx/chat/agents/redux/execution-system/instance-user-input/instance-user-input.slice";
 import { smartExecute } from "@ai-matrx/chat/agents/redux/execution-system/thunks/smart-execute.thunk";
 import { selectIsExecuting } from "@ai-matrx/chat/agents/redux/execution-system/selectors/aggregate.selectors";
-import type { PrPlayView } from "@/features/content-ir/kinds/pr-play-menu";
+import type { PrPegView, PrPlayView } from "@/features/content-ir/kinds/pr-play-menu";
+import { PrDirectorBrandContext, findPegAngles, type PegAnglesResult } from "./peg-angles";
 
 const EFFORT_LABEL: Record<"one_or_two_moves" | "program", string> = {
   one_or_two_moves: "One or two moves",
@@ -45,14 +46,79 @@ export function surfaceHref(target: string): string | null {
   return null;
 }
 
+type PegState = "idle" | "running" | { result: PegAnglesResult } | { error: string };
+
+/**
+ * The Director's checked peg, with the one control that hands it to the Angle writer in peg mode
+ * (`news.angles`, mode "peg"). Answers outside the Director panel have no brand, so no button.
+ */
+export function PrPegRow({ peg }: { peg: PrPegView }) {
+  const dispatch = useAppDispatch();
+  const brand = useContext(PrDirectorBrandContext);
+  const [state, setState] = useState<PegState>("idle");
+
+  const run = useCallback(async () => {
+    if (!brand) return;
+    setState("running");
+    const done = await dispatch(findPegAngles({ peg, brand }));
+    setState(done.ok ? { result: done.result } : { error: done.error });
+  }, [brand, dispatch, peg]);
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-3" data-testid="pr-peg-row">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-sm">
+          <span className="font-semibold">Peg: </span>
+          {peg.text}
+        </p>
+        {brand ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            disabled={state === "running"}
+            onClick={() => void run()}
+          >
+            <Lightbulb className="mr-1 size-3.5" aria-hidden />
+            {state === "running" ? "Finding angles…" : "Find angles"}
+          </Button>
+        ) : null}
+      </div>
+      {typeof state === "object" && "error" in state ? (
+        <p role="alert" className="mt-1.5 text-xs text-destructive">
+          {state.error}
+        </p>
+      ) : null}
+      {typeof state === "object" && "result" in state ? (
+        state.result.angles.length > 0 ? (
+          <ul className="mt-1.5 flex flex-col gap-1" data-testid="pr-peg-angles">
+            {state.result.angles.map((angle, i) => (
+              <li key={`${angle.headline}-${i}`} className="text-xs">
+                <span className="font-medium">{angle.headline}</span>
+                {angle.whyNow ? <span className="text-muted-foreground"> — {angle.whyNow}</span> : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            {state.result.nextStep || "No honest angle on this peg."}
+          </p>
+        )
+      ) : null}
+    </div>
+  );
+}
+
 export interface PrPlayMenuViewProps {
   plays: PrPlayView[];
   nextMove: string;
+  /** The peg the Director checked, when it named one. */
+  peg?: PrPegView | null;
   /** The conversation the menu was answered in; the next turn goes there. */
   conversationId: string | null;
 }
 
-export function PrPlayMenuView({ plays, nextMove, conversationId }: PrPlayMenuViewProps) {
+export function PrPlayMenuView({ plays, nextMove, peg = null, conversationId }: PrPlayMenuViewProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const executing = useAppSelector((state) =>
@@ -71,11 +137,20 @@ export function PrPlayMenuView({ plays, nextMove, conversationId }: PrPlayMenuVi
   );
 
   if (plays.length === 0) {
+    if (peg) {
+      return (
+        <div className="my-2 flex flex-col gap-2" data-testid="pr-play-menu">
+          <PrPegRow peg={peg} />
+          {nextMove ? <p className="text-sm font-medium">{nextMove}</p> : null}
+        </div>
+      );
+    }
     return nextMove ? <p className="text-sm font-medium">{nextMove}</p> : null;
   }
 
   return (
     <div className="my-2 flex flex-col gap-2" data-testid="pr-play-menu">
+      {peg ? <PrPegRow peg={peg} /> : null}
       {plays.map((play, i) => {
         const action = play.action;
         const href = action?.type === "open_surface" ? surfaceHref(action.target) : null;
