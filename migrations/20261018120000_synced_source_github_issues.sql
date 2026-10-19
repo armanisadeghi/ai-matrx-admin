@@ -10,4 +10,7 @@ set local statement_timeout = '60s';
 
 alter table custom.synced_source drop constraint synced_source_source_kind_check;
 alter table custom.synced_source add constraint synced_source_source_kind_check check (source_kind = any (array[
-  'notion_database','notion_page','notion_mapped','gmail','search','scraper','connector','airtable_base','google_sheets','github_issues']::text[]));
+  'notion_database','notion_page','notion_mapped','gmail','search','scraper','connector','airtable_base','google_sheets','github_issues',
+  'notion_view_of']::text[]));
+-- 'notion_view_of' (aidream 20261019230000_synced_source_kind_notion_view_of.sql, live 2026-10-19) is kept here so the next
+-- source kind, copied from this list, never drops it. The NEXT kind change copies this whole list.
