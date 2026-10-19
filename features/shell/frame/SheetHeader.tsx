@@ -85,8 +85,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {destructive.map((a) => {
           const Icon = a.icon;
           return (
-            // The package's DropdownMenuItem has no destructive option yet (reported).
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect} data-destructive="">
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} tone="danger">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>

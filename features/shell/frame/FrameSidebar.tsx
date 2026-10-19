@@ -67,6 +67,7 @@ export function FrameSidebar({
                       icon={<Icon aria-hidden />}
                       title={item.label}
                       selected={item.id === activeItemId}
+                      selectedStyle="fill"
                       aria-current={item.id === activeItemId ? "page" : undefined}
                       end={
                         item.external ? (
