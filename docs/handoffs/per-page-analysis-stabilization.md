@@ -17,7 +17,7 @@ repos: [matrx-frontend, aidream]
 > loader 20+ min → seconds) and per-loader timings are now instrumented (`analysis.py:2908-2927
 > _timed`), but there is **no perf regression test** and no artifact proving the stated target of a
 > 500-page site in low single-digit minutes. **Bug 4 (FE progress/failure invisibility) is still
-> open.** The check count below should read **68**, not ~63 — 42 catalogd page + 17 cross-page +
+> open.** The check count below should read **68**, not ~63 — 42 cataloged page + 17 cross-page +
 > 5 site + 4 crawlability.
 > Cluster state: [`common-docs/systems/marketing/seo/STATE.md`](/Users/armanisadeghi/code/common-docs/systems/marketing/seo/STATE.md).
 

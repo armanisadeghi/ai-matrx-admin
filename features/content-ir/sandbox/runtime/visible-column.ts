@@ -15,7 +15,7 @@
  *     flips and shifts against `visualViewport.width` — so a tooltip on a
  *     button at the column's right edge happily overhangs into the clipped
  *     region and is cut in half;
- *   - a centerd overlay (`fixed left-1/2`, a dialog) centers on the window,
+ *   - a centered overlay (`fixed left-1/2`, a dialog) centers on the window,
  *     i.e. half of it lands past the column;
  *   - a script-placed overlay (the design-system title takeover clamps to
  *     `innerWidth`) overhangs exactly like the first.

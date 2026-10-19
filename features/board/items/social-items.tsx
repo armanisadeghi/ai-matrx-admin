@@ -506,7 +506,7 @@ function linkItem(kind: "post" | "profile", link: SocialLink) {
 
 /**
  * The link box a picker and an empty tile (a template's) share. In a tile it is compact: one clear label and
- * one row (the field and its button), vertically centerd in a tile sized to it; in the Add menu's picker it
+ * one row (the field and its button), vertically centered in a tile sized to it; in the Add menu's picker it
  * stacks with Cancel.
  */
 function LinkForm({ kind, onLink, onCancel }: { kind: "post" | "profile"; onLink: (link: SocialLink) => void; onCancel?: () => void }) {

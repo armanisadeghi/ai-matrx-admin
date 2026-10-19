@@ -94,7 +94,7 @@ agent builder. Do not re-add chips, bars, or strips to any run surface.
   print `[{"id":"","text":"","type":"thinking",…}]` where the answer belongs.
 - **Load sample data from a Library** —
   `components/samples/LoadFromLibraryDialog.tsx`, opened from the Candidates
-  header. Pick one of your media Libraries, pick the catalogd items that
+  header. Pick one of your media Libraries, pick the cataloged items that
   already have a transcript, and the MEDIA CATALOG writes the test cases: the
   dialog POSTs the server-declared per-item action `use_as_agent_test_cases`
   through `createJob` (`features/source-library/api.ts`) with

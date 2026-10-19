@@ -897,7 +897,7 @@ button.shell-nav-item {
   font-weight: 400;
 }
 
-/* The palette's dialog close button: centerd on its 48px input row. */
+/* The palette's dialog close button: centered on its 48px input row. */
 [role="dialog"]:has([data-menu-search-palette]) > button.absolute {
   top: 0.75rem;
 }

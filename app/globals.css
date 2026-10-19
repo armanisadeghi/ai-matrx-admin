@@ -1984,7 +1984,7 @@
 }
 /* In a truncating cell the menu holds the cell's right end (absolute). There it
    keeps its full tap-target width so the icon sits INSIDE the cell — a 1lh-wide
-   box centerd its 32px button half past the edge, where the cell's overflow
+   box centered its 32px button half past the edge, where the cell's overflow
    clipped it (check-findings "Why broken", RC-B12 round 7). */
 [data-error-alchemy-menu][data-placement="truncated"] {
   width: auto;

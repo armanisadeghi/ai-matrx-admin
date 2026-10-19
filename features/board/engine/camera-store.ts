@@ -226,7 +226,7 @@ export class BoardCameraStore {
 
   /**
    * Lock the camera to a page: zoom fixed so the column fits the view width (never above 100%),
-   * the column centerd, and only vertical movement, clamped to the content. Every way the camera
+   * the column centered, and only vertical movement, clamped to the content. Every way the camera
    * moves (wheel, drag, keys, fit, fly-to) passes through `setCamera`, so all of them obey it.
    */
   setPageLock(lock: PageLock | null): void {

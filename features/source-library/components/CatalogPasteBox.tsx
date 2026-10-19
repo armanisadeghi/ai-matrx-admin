@@ -60,7 +60,7 @@ const RESOLVED_FROM_WORDS: Record<ResolveResult["resolved_from"], string> = {
     legacy_user: "read as an old-style user page",
     custom_url: "read as a custom channel address",
     playlist_id: "read as a playlist",
-    video_id: "read as a video — we catalogd the channel it belongs to",
+    video_id: "read as a video — we cataloged the channel it belongs to",
 };
 
 export function CatalogPasteBox({ autoFocus = true }: { autoFocus?: boolean }) {

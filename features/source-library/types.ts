@@ -262,7 +262,7 @@ export interface NotYetASource {
     offered_action: string;
 }
 
-/** §4.2 — the Source row (one catalogd video today). */
+/** §4.2 — the Source row (one cataloged video today). */
 export interface VideoRow {
     id: string;
     external_id: string;
@@ -289,7 +289,7 @@ export interface VideoRow {
      * would populate it is not built yet, so EVERY row on a live channel comes
      * back `null` today — a client that types this as `string[]` and reads
      * `.length` takes the whole page down, which is exactly what happened on
-     * the one catalogd Library on 2026-09-17. Never widen this to `string[]`.
+     * the one cataloged Library on 2026-09-17. Never widen this to `string[]`.
      */
     caption_languages: string[] | null;
     /**
@@ -468,7 +468,7 @@ export const SYNC_TERMINAL_TYPES = [
 export interface SelectionDescriptor {
     /**
      * `media.selection_item.source_row_id` and the transcript association both
-     * use the catalogd Source id. `video_ids` is a different, legacy-shaped
+     * use the cataloged Source id. `video_ids` is a different, legacy-shaped
      * name used only by the classifier endpoint; sending it here makes
      * Pydantic fall back to an empty Selection, which means the whole Library.
      */

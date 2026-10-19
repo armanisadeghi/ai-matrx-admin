@@ -326,7 +326,7 @@ export function AgentCard({
         {/* THE DOOR LAW: the card body opens a chooser modal, so the NAME
             carries the record's own door — a real anchor, which is what makes
             cmd-click, middle-click, "open in new tab" and keyboard focus work.
-            `nameClassName` keeps the tile's wrapped, centerd title. */}
+            `nameClassName` keeps the tile's wrapped, centered title. */}
         <h3
           title={name}
           className={`min-w-0 max-w-full text-md font-medium text-foreground text-center transition-colors duration-200 ${

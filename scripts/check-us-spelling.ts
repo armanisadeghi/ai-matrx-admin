@@ -41,9 +41,9 @@ export const WORDS: Record<string, [string, string[]]> = {
   summaris: ["summariz", ["e", "es", "ed", "er", "ers", "ing", "ation", "ations", "able"]],
   prioritis: ["prioritiz", ["e", "es", "ed", "ing", "ation", "ations"]],
   analys: ["analyz", ["e", "ed", "ing", "er", "ers"]],
-  catalogue: ["catalog", ["", "s", "d"]],
+  catalogue: ["catalog", ["", "s"]],
   cataloguing: ["cataloging", [""]],
-  centre: ["center", ["", "s", "d"]],
+  centre: ["center", ["", "s"]],
   centring: ["centering", [""]],
   licence: ["license", ["", "s"]],
   cancelled: ["canceled", [""]],
@@ -61,8 +61,21 @@ export const WORDS: Record<string, [string, string[]]> = {
   programme: ["program", ["", "s"]],
 };
 
+/**
+ * Whole-word forms whose American spelling is NOT `american + british ending` (stem + "d" turned "centred" into the
+ * non-word "centerd" and "catalogued" into "catalogd"). Every irregular form is spelled out in full here.
+ */
+export const IRREGULAR: Record<string, string> = {
+  centred: "centered",
+  catalogued: "cataloged",
+};
+
 const MAP = new Map<string, string>();
 const ALTS: string[] = [];
+for (const [british, american] of Object.entries(IRREGULAR)) {
+  MAP.set(british, american);
+  ALTS.push(british);
+}
 for (const [stem, [american, ends]] of Object.entries(WORDS)) {
   for (const e of ends) {
     MAP.set(stem + e, american + e);
@@ -173,7 +186,7 @@ export function scanSource(file: string, src: string): Finding[] {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SOURCE = /\.(tsx?|jsx|mts)$/;
-const SKIP = /(^|\/)(node_modules|dist|\.next|migrations|fixtures|__fixtures__|generated)\/|\.generated\.|\.d\.ts$|check-us-spelling/;
+const SKIP = /(^|\/)(node_modules|dist|\.next|migrations|fixtures|__fixtures__|generated|captured|sample_data|system-prompts)\/|\.generated\.|\.d\.ts$|check-us-spelling/;
 
 function git(root: string, args: string[]): string[] {
   try {
@@ -227,6 +240,21 @@ function selfTest(): number {
     if (g.length !== 0) {
       console.error(`SELF-TEST FAILED: the guard went red on a clean file: ${JSON.stringify(g)}`);
       failed = true;
+    }
+    // Every suggestion must be a real word: the whole-word table, never stem + ending.
+    const expected: Record<string, string> = { centred: "centered", catalogued: "cataloged", centres: "centers", Centred: "centered" };
+    for (const [word, want] of Object.entries(expected)) {
+      const hits = britishIn(`Pick a ${word} option`);
+      if (hits.length !== 1 || hits[0].use !== want) {
+        console.error(`SELF-TEST FAILED: "${word}" should map to "${want}", got ${JSON.stringify(hits)}`);
+        failed = true;
+      }
+    }
+    for (const [british, american] of MAP) {
+      if (/(erd|ogd)$/.test(american)) {
+        console.error(`SELF-TEST FAILED: "${british}" maps to the non-word "${american}".`);
+        failed = true;
+      }
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

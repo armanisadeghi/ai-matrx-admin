@@ -72,7 +72,7 @@ A 4-column live transcription workspace. Users record audio, see raw transcript 
 
 ## Admin map
 
-The full transcription ecosystem (this feature + simple `features/transcripts/`, the official-candidate transcription-cleanup + voice-pad components, audio APIs, voice-related demos, related TTS / Voice Agent / Podcasts surfaces) is catalogd on a single super-admin page:
+The full transcription ecosystem (this feature + simple `features/transcripts/`, the official-candidate transcription-cleanup + voice-pad components, audio APIs, voice-related demos, related TTS / Voice Agent / Podcasts surfaces) is cataloged on a single super-admin page:
 
 - **Live URL:** `/transcripts/admin` (super-admin gated; redirects everyone else to `/`).
 - **Config:** `app/(core)/transcripts/admin/page.tsx` — a `FeatureAdminMap` object passed to `<FeatureAdminPage>`.

@@ -4,7 +4,7 @@
 // draws comes from here, so it is unit-tested on its own.
 //
 // The core subtree-width algorithm (each subtree is as wide as its children
-// laid side by side; a parent is centerd over them) is adapted from Paperclip's
+// laid side by side; a parent is centered over them) is adapted from Paperclip's
 // org chart, ui/src/pages/OrgChart.tsx:
 //   Copyright (c) 2025 Paperclip AI — MIT License
 //   https://github.com/paperclipai/paperclip

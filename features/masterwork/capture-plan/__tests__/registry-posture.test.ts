@@ -145,7 +145,7 @@ describe("every Approach in the catalog has a plan posture (snapshot)", () => {
     const drip = METHOD_POSTURE.daily_drip;
     expect(drip.kind).toBe("excluded");
     if (drip.kind === "excluded") {
-      expect(drip.why).toMatch(/programme of its own/);
+      expect(drip.why).toMatch(/program of its own/);
     }
   });
 });

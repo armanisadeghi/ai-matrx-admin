@@ -228,7 +228,7 @@ export function ApproachCard({
 
   const body = (
     <>
-      {/* `items-center` centerd the icon against the TITLE BLOCK, so a card
+      {/* `items-center` centered the icon against the TITLE BLOCK, so a card
           whose title wrapped to two lines pushed its icon ~10px lower than its
           neighbours and the row of icons came out ragged
           (jobs-bar-2026-09-16, item 5). Icons align to the top; the title gets

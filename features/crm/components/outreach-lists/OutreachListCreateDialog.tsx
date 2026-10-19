@@ -123,6 +123,7 @@ export function OutreachListCreateDialog({
           <div className="space-y-1">
             <Label className="text-xs">Kind</Label>
             <div className="grid grid-cols-2 gap-1.5">
+              {/* list-exception: two kind choices with hints, not records */}
               {LIST_KINDS.map((k) => (
                 <button
                   key={k}

@@ -215,7 +215,7 @@ and admin/user route families are live. Remaining migration work is tracked in:
   Overview pages open at the Applet's address, a one-record page says it opens from its list, the public link is
   the whole address (M6); Settings uses the controls' Tabs (M7); Run sits below the header and changes pages in
   place (M9); a guest at a build link signs in and lands back on it (G6). Shared fixes: every module landing's
-  bottom CTA keeps its destination (G5), one sub-area card is centerd (G3), guests get brand + Sign in in the top
+  bottom CTA keeps its destination (G5), one sub-area card is centered (G3), guests get brand + Sign in in the top
   bar at every width (G7), phone-card values wrap to two lines (L5). Records 0.94 / applets 0.17 make an archived
   row restorable inside an Applet (R5). Guard: `__tests__/applets-live-audit-f5.test.tsx`.
 

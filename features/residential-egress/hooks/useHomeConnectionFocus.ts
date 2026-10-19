@@ -83,7 +83,7 @@ export function useHomeConnectionFocus(
     // person clicked "take me to this computer" and the ring — not the
     // traveling — is what tells them which one it is. Smooth also proved
     // unreliable here: the animation is deferred while the tab is in the
-    // background, so the row that was supposed to be centerd sat off-screen
+    // background, so the row that was supposed to be centered sat off-screen
     // for seconds (measured on the preview host, 2026-09-18).
     node.scrollIntoView({ block: "center" });
     setHighlighted(requested);

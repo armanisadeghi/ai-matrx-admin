@@ -345,7 +345,7 @@ Only the dark video stage is defensibly its own.
 
 **Fixed in `@ai-matrx/meet` 0.7.76:**
 - Design-system `Select`, `Checkbox` + `Label`, `SegmentedControl`, `Button` and `Alert`.
-- A 300–400px column centerd inside 1,200px.
+- A 300–400px column centered inside 1,200px.
 - A guard test, proven red on 0.7.75.
 
 The rest of meet (polls, Q&A, in-room panels, `collab.tsx`) is still bespoke and is a plan step.

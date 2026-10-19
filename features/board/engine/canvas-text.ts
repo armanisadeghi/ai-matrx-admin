@@ -21,7 +21,7 @@ export const STICKY_GAP = 24;
 
 const newId = (kind: string) => `${kind}:${Math.random().toString(36).slice(2, 10)}`;
 
-/** A new, empty sticky centerd on a world point. */
+/** A new, empty sticky centered on a world point. */
 export function makeSticky(at: { x: number; y: number }, opts: { style?: Partial<ShapeStyle>; size?: number; text?: string; id?: string } = {}): BoardShape {
   const side = opts.size ?? STICKY_SIZE;
   const x = at.x - side / 2;

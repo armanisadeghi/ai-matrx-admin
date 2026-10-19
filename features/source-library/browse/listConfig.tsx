@@ -46,9 +46,9 @@ export function libraryHref(row: LibraryRow): string {
 }
 
 const SYNC_STATUS_WORDS: Record<LibraryRow["sync_status"], string> = {
-    never_synced: "Not catalogd yet",
+    never_synced: "Not cataloged yet",
     syncing: "Cataloging now",
-    idle: "Catalogd",
+    idle: "Cataloged",
     failed: "Last catalog failed",
 };
 

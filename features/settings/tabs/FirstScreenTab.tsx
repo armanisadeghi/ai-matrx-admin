@@ -178,7 +178,7 @@ export default function FirstScreenTab() {
   });
 
   return (
-    // Two columns once there is room (page-pass 2026-09-28: one centerd
+    // Two columns once there is room (page-pass 2026-09-28: one centered
     // column left a 408px empty band and used 28% of the first screen): the
     // account basics on the left, the AI and voice defaults on the right. Each
     // column stays narrow enough that a label and its control sit together.

@@ -4,7 +4,7 @@
 //
 // /administration/intelligence/mandates/window — opening this page IS asking
 // for the mandate window, so it opens on arrival (UX punch list 2026-09-26: a
-// whole page holding one centerd button was a wasted click). The button stays,
+// whole page holding one centered button was a wasted click). The button stays,
 // small, for re-opening after the window is closed.
 
 import { useEffect, useRef } from "react";

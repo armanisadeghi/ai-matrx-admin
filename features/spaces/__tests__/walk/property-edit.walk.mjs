@@ -144,7 +144,7 @@ const readChoices = async () => {
   await dialog().waitFor({ timeout: 10_000 });
   await page.waitForTimeout(2500);
   const words = await dialog().locator("input[aria-label^='Choice ']").evaluateAll((els) => els.map((e) => e.value));
-  const colours = await dialog().locator("[aria-label^='Colour for ']").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")).filter((l) => l.includes(":")));
+  const colours = await dialog().locator("[aria-label^='Color for ']").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label")).filter((l) => l.includes(":")));
   return { words, colours };
 };
 let before;
@@ -159,13 +159,13 @@ await act(page, async () => {
   }
   // Rename "Lead" -> "New lead"; recolour "Won"; move "Won" up; remove "Call booked".
   await dialog().getByRole("textbox", { name: "Choice 1" }).fill("New lead");
-  await dialog().locator("[aria-label^='Colour for Won:']").click();
+  await dialog().locator("[aria-label^='Color for Won:']").click();
   await page.waitForTimeout(400);
   const swatches = page.getByRole("radiogroup", { name: "Color for Won" }).getByRole("radio");
   const n = await swatches.count();
   await swatches.nth(Math.max(1, n - 2)).click();
   await page.waitForTimeout(400);
-  if (await page.getByRole("radiogroup", { name: "Color for Won" }).isVisible().catch(() => false)) await page.locator("[aria-label^='Colour for Won:']").click();
+  if (await page.getByRole("radiogroup", { name: "Color for Won" }).isVisible().catch(() => false)) await page.locator("[aria-label^='Color for Won:']").click();
   await page.waitForTimeout(300);
   await page.getByRole("button", { name: "Move “Won” up" }).click();
   await page.getByRole("button", { name: "Remove “Call booked”" }).click();

@@ -134,7 +134,7 @@ const TRIGGER_LABEL = "Search, intelligence, canvas, messages and notifications"
  * 🚨 THE UNREAD MARK NEVER SITS ON THE ⋮ (page-pass shared defects,
  * 2026-09-27). A "99+" pill in the 44px button's corner covered the glyph on
  * a phone. The trigger now carries a small DOT in the button's own corner,
- * clear of the icon (the glyph is ~20px centerd; the dot sits in the outer
+ * clear of the icon (the glyph is ~20px centered; the dot sits in the outer
  * 8px ring), the number is in the button's accessible name, and the sheet's
  * Inbox row shows the full count.
  */

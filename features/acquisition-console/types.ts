@@ -52,7 +52,7 @@ export interface HaveRow {
   /**
    * THE YIELD — what this kind actually produced, as a sentence.
    *
-   * Transcripts for a catalogd Library, kept turns for a Rulebook Source. It is
+   * Transcripts for a cataloged Library, kept turns for a Rulebook Source. It is
    * the only column on this screen that answers "was any of this worth it".
    */
   yield: string;

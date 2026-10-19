@@ -19,7 +19,7 @@ it("the mode column scrolls rather than overflowing into the tools", () => {
   const column = source.match(/<div className="([^"]*min-w-0[^"]*)">\s*<NoteModeSwitch/);
   expect(column).not.toBeNull();
   expect(column?.[1]).toContain("overflow-x-auto");
-  // Centerd only while it fits.
+  // Centered only while it fits.
   expect(column?.[1]).toContain("justify-start");
   expect(column?.[1]).toContain("@[18rem]:[justify-content:safe_center]");
 });

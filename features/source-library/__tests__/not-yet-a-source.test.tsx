@@ -1,5 +1,5 @@
 /**
- * SOURCE-CONVERGENCE §1 rule 6 / §8.6 — a catalogd video is not yet a
+ * SOURCE-CONVERGENCE §1 rule 6 / §8.6 — a cataloged video is not yet a
  * Source until its words land. The row repeats the server's two facts
  * (`not_yet_a_source`, `processed_document_id`), offers Transcribe ONLY when
  * the server declared it runnable, says "Transcribing…" until the Source id
@@ -218,7 +218,7 @@ describe("SourceStateCell", () => {
     });
 });
 
-describe("web-capture Libraries list their catalogd Sources", () => {
+describe("web-capture Libraries list their cataloged Sources", () => {
     it("only web_capture lists by edge", () => {
         expect(listsCataloguedSources("web_capture")).toBe(true);
         expect(listsCataloguedSources("youtube")).toBe(false);

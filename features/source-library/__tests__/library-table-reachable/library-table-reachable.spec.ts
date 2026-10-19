@@ -4,7 +4,7 @@
  * Defect: D4, cold-walk-12
  * (common-docs/projects/masterwork-methods-census/jobs-bar-2026-09-16/
  * cold-walk-12/README.md + screenshots/45_table_in_view.png). At 1440x900 on
- * a catalogd Library (`/libraries/<id>`), the episode table was
+ * a cataloged Library (`/libraries/<id>`), the episode table was
  * unreachable: `document.scrollingElement.scrollHeight === clientHeight ===
  * 900`, the first `<tbody>` row's rect was `top: 876, bottom: 917` (24px
  * visible, rows 2-25 gone), and NO scrollable ancestor contained the

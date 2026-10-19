@@ -1,6 +1,6 @@
 /**
  * TWO DEFECTS THE KOTTKE.ORG FIXER NOTE NAMED FOR ROW A2 (FIRST-PERSON-TEST.md,
- * 2026-09-19): a "being catalogd right now" banner that outlives the run it
+ * 2026-09-19): a "being cataloged right now" banner that outlives the run it
  * describes, and a metrics-header word that flips between vocabularies while
  * the page is still deciding what kind of Source this Library holds.
  *
@@ -40,7 +40,7 @@
  *        `unavailable` / `failed` / `done` `sync.phase` checks (or delete the
  *        `if (sync.phase === "done")` branch's early return).
  *        → "a completed sync in this tab is never shadowed by a stale
- *          server row" fails: the banner reads "being catalogd right now"
+ *          server row" fails: the banner reads "being cataloged right now"
  *          over a Library this tab just finished.
  *
  *   R2 — in `SyncStrip`, delete the `STUCK_THRESHOLD_MS` branch (or hardcode
@@ -175,7 +175,7 @@ describe("A · a completed sync clears the banner", () => {
             sync: DONE_SYNC,
         });
         expect(node.textContent).toContain("Up to date");
-        expect(node.textContent).not.toContain("being catalogd right now");
+        expect(node.textContent).not.toContain("being cataloged right now");
     });
 
     it("a fresh page load with no run of its own reads the server's idle row honestly", () => {
@@ -184,7 +184,7 @@ describe("A · a completed sync clears the banner", () => {
             metrics: metrics(48258),
             sync: IDLE_SYNC,
         });
-        expect(node.textContent).not.toContain("being catalogd right now");
+        expect(node.textContent).not.toContain("being cataloged right now");
         expect(node.textContent).not.toContain("Up to date");
         expect(node.textContent).toContain("Last brought up to date");
     });
@@ -200,7 +200,7 @@ describe("B · a 'syncing' row that never moves gets a remedy instead of an unbo
             metrics: null,
             sync: IDLE_SYNC,
         });
-        expect(node.textContent).toContain("being catalogd right now");
+        expect(node.textContent).toContain("being cataloged right now");
         expect(node.textContent).not.toContain("stalled");
         expect(node.textContent).not.toContain("Try again");
     });

@@ -126,7 +126,7 @@ const groups: SurfaceValueGroup[] = [
     key: "agent_identity",
     label: "Agent identity",
     sortOrder: 100,
-    description: "Which agent is open in the window and how it is catalogd.",
+    description: "Which agent is open in the window and how it is cataloged.",
   },
   {
     key: "agent_definition",

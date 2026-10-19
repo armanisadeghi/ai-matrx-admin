@@ -51,6 +51,7 @@ export function IssueList({
 
   return (
     <ul className={cn("space-y-2", className)}>
+      {/* list-exception: issues each carry a fix control, not records */}
       {issues.map((issue) => {
         const fix = FIX_COPY[issue.fix_action] ?? FIX_COPY.none;
         const waiting = issue.transient || fix.kind === "wait";

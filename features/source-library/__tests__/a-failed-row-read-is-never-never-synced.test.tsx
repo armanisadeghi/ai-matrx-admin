@@ -9,7 +9,7 @@
  * The console recorded a CORS-blocked `GET .../media/libraries/{id}` from
  * `acquisition-frontier.localhost:3001`. On screen, the freshness banner then
  * read "This Library has never been brought up to date." directly above its
- * own stat block reading "507 Episodes / Catalogd in this Library" —
+ * own stat block reading "507 Episodes / Cataloged in this Library" —
  * computed moments earlier by a DIFFERENT, successful call
  * (`GET …/metrics`). Minutes earlier the same banner had correctly read "Last
  * brought up to date 9/19/2026, 9:12:06 PM, in 3.2s." A failed read of one
@@ -272,7 +272,7 @@ it("Try again on the gate re-runs the row read and draws the Library with its re
     expect(node.textContent).not.toContain(COULD_NOT_CHECK);
     expect(node.textContent).not.toContain(NEVER_SYNCED);
     expect(node.textContent).toContain("Last brought up to date");
-    expect(node.textContent).toContain("Catalogd in this Library");
+    expect(node.textContent).toContain("Cataloged in this Library");
 });
 
 it("a failed 'still syncing' poll is recorded, never swallowed — the held Library stays and says the read failed", async () => {

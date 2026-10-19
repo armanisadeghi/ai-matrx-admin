@@ -465,11 +465,11 @@ skill's `gap #14 of 2026-08-24` and `gap #16 of 2026-08-24` → the gate section
     counts the source ONLY when rows were actually cut; an uncountable source stays UNKNOWN
     rather than becoming a guess.)
 47. **A WIDE TABLE HIDES ITS OWN EMPTY STATE, AND EVERY `colSpan` EMPTY ROW IN THE PLATFORM HAS
-    THIS BUG.** A `<td colSpan={n}>` centerd inside a horizontally-scrolling table puts its
+    THIS BUG.** A `<td colSpan={n}>` centered inside a horizontally-scrolling table puts its
     message at the center of the FULL table width — measured on a 32-column empty result, the
     "no rows" explanation sat far off the right edge, invisible exactly when it was the only
     content. **Rule: an empty-state cell inside an `overflow-x-auto` table is `sticky left-0`
-    and left-aligned, never centerd.**
+    and left-aligned, never centered.**
 48. **THE LOCAL aidream SERVER DOES NOT HOT-RELOAD, AND THE SKILL NEVER SAYS IT.** `run.py` sets
     `reload=False`, so a Stage B fix to the Stage A service is invisible to the browser until
     the process is restarted — and the symptom is a demo that keeps rendering the OLD answer

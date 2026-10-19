@@ -71,7 +71,7 @@ import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
-import { FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerOverflow } from "../engine/tile-chrome";
+import { FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
  * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
@@ -549,8 +549,8 @@ export function BoardTile({
     };
   }, [autoHeight, id]);
 
-  // Grow to fit: the body keeps filling the tile (an editor with its own scroller), so the tile grows by
-  // whatever its scroller still hides, re-checked whenever the content changes. A growth that revealed
+  // Grow to fit: the body keeps filling the tile (an editor with its own scroller), so the tile takes the
+  // height its scroller's content needs (growing or shrinking), re-checked whenever the content changes. A growth that revealed
   // nothing (the scroller did not grow with the tile) stops there: never a runaway.
   const growToFit = chrome.growToFit && !focused && !overview;
   useEffect(() => {
@@ -565,13 +565,23 @@ export function BoardTile({
       timer = null;
       const boxes: ScrollerBox[] = [];
       for (const el of card.querySelectorAll<HTMLElement>("*")) {
-        if (el.scrollHeight - el.clientHeight <= 1) continue;
-        boxes.push({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, overflowY: getComputedStyle(el).overflowY });
+        const overflowY = getComputedStyle(el).overflowY;
+        if (overflowY !== "auto" && overflowY !== "scroll") continue;
+        if (el.clientHeight < card.clientHeight * 0.4) continue;
+        const top = el.getBoundingClientRect().top - el.scrollTop;
+        let contentBottom: number | null = null;
+        for (const kid of el.children) {
+          const r = kid.getBoundingClientRect();
+          if (r.height === 0) continue;
+          const bottom = r.bottom - top - (parseFloat(getComputedStyle(kid).paddingBottom) || 0);
+          contentBottom = contentBottom === null ? bottom : Math.max(contentBottom, bottom);
+        }
+        boxes.push({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, overflowY, contentBottom });
       }
-      const step = growStep(innerOverflow(card.clientHeight, boxes), floor, pending);
+      const step = growStep(innerSlack(card.clientHeight, boxes), floor, pending);
       floor = step.floor;
       pending = step.grow > 0 ? { hidden: step.hidden, by: step.grow } : null;
-      if (step.grow <= 0) return;
+      if (step.grow === 0) return;
       const next = autoHeightChange(rectRef.current.h, rectRef.current.h + step.grow);
       if (next !== null) onAutoHeightRef.current?.(id, next);
     };

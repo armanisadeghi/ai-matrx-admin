@@ -675,7 +675,7 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
   and the wizard draft restores the typed answers on return. It is NOT an
   Approach card: the cards stay the registry's rows. The receiving end
   (`features/source-library/components/LibrariesFrontDoor.tsx`) reads
-  `?from=rulebook` and says in one sentence that the channel is catalogd
+  `?from=rulebook` and says in one sentence that the channel is cataloged
   first and its videos can then be sent to the Rulebook, with a "Back to the
   Rulebook" door when a valid id came along.
 

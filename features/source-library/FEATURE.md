@@ -248,7 +248,7 @@ nothing moves; the claim is gone. The day the server publishes a word count,
   from the very first (pre-sync) row read and never re-asked when
   `library.sync.completed` landed rows — `serviceKey` (`catalog/listConfig.tsx`)
   now folds in `LibraryPage`'s `listGeneration`, the real fix, plus a
-  belt-and-suspenders `emptyState` override so "Nothing catalogd yet" can
+  belt-and-suspenders `emptyState` override so "Nothing cataloged yet" can
   never render while the sync banner (`sync.listed`) is reporting rows for this
   Library. D6b: podcast episodes were called "videos" throughout ("Transcribe 3
   videos", "Free, from YouTube's own captions" on a podcast job) — every

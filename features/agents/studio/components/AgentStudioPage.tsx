@@ -286,8 +286,10 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
   const [savingCase, setSavingCase] = useState(false);
   const [savedRuns, setSavedRuns] = useState<ReadonlySet<string>>(new Set());
   const shownRun = runConversation ?? state.runId;
-  /** "Run again" only once something ran: a stored run, or a conversation that has a sent message. */
-  const hasRun = useAppSelector((s) => Boolean(state.runId) || (runConversation ? selectOrderedMessageIds(runConversation)(s).length > 0 : false));
+  /** "Run again" only once something ran: the shown conversation holds a message the person sent (a blank one is not a run). */
+  const hasRun = useAppSelector((s) =>
+    shownRun ? (selectConversationMessages(shownRun)(s) as StudioMessageRecord[]).some((m) => m.role === "user") : false,
+  );
   const saveRunAsCase = async () => {
     const agentId = state.agentId;
     if (!agentId || !shownRun) return;

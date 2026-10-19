@@ -14,7 +14,7 @@
  * menus opening and title edits never move the canvas below.
  *
  * The Microsoft 365 look (the person's Office look setting, `useOfficeLook`) draws the same parts
- * the Office-on-the-web way when the page hands a `ribbon`: the title centerd in a 48px bar, then
+ * the Office-on-the-web way when the page hands a `ribbon`: the title centered in a 48px bar, then
  * the ribbon (File · Home · Insert · … over grouped buttons) in place of the menu bar + toolbar.
  * Same commands, same File menu, same actions — only the presentation differs.
  */

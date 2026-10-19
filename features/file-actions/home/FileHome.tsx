@@ -307,7 +307,7 @@ export function FileHome<Row extends { id: string; user_id: string }>(props: Fil
     {office ? <OfficeAppRail kind={kind} onCreate={scrollToCreate} onPickFile={props.onPickFile} /> : null}
     <div className="h-full min-w-0 flex-1 overflow-y-auto scrollbar-none" data-file-home={kind.kind}>
       <div className="pt-[var(--shell-header-h)]">
-        {/* Google's search: one big filled pill (48px, ~720px) centerd over the page, the Look switch
+        {/* Google's search: one big filled pill (48px, ~720px) centered over the page, the Look switch
             at the row's end. It stays here, not in the app header: the header is 44px (a 48px pill
             cannot sit in it) and its right side is the app's own icons. */}
         <div className="mx-auto flex w-full max-w-[80rem] items-center gap-3 px-3 pb-3 pt-2 sm:grid sm:grid-cols-[minmax(14rem,1fr)_minmax(0,45rem)_minmax(14rem,1fr)] sm:px-6">

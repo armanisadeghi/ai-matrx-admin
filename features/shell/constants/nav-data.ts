@@ -1399,7 +1399,7 @@ export const primaryNavItems: ShellNavItem[] = [
         dashboard: true,
       },
       {
-        // Media Source Catalog — paste a channel, get every video catalogd.
+        // Media Source Catalog — paste a channel, get every video cataloged.
         label: "Libraries",
         href: "/libraries",
         iconName: "Video",

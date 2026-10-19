@@ -3,7 +3,7 @@
 /**
  * SelectionToolbar — THE floating context toolbar over the board's current
  * selection (FigJam / Miro / tldraw). One per board, screen-space chrome in
- * the viewport's overlay: it sits centerd just above the selection's bounds
+ * the viewport's overlay: it sits centered just above the selection's bounds
  * (below them when there is no room above), follows a pan, zoom or move by
  * writing its own style (no React render per frame), and steps out of the way
  * while a press is down, the camera moves, a tile is being worked in, a tile is

@@ -57,7 +57,7 @@ export function createCatalogListConfig(options: {
     /**
      * D6's belt-and-suspenders half: while the sync banner (`sync.listed`,
      * `LibraryMetricsHeader`) is reporting rows for THIS library, the honest
-     * empty state can never be "Nothing catalogd yet" — that sentence is a
+     * empty state can never be "Nothing cataloged yet" — that sentence is a
      * flat lie one banner-height above a stat block saying otherwise. Passed
      * by `LibraryPage` from the live sync state; omitted (or `false`) uses the
      * ordinary empty state.
@@ -249,7 +249,7 @@ export function createCatalogListConfig(options: {
                       "The catalog just finished listing this Library's rows. Finishing the read for this table now — they will appear in a moment.",
               }
             : {
-                  title: "Nothing catalogd yet",
+                  title: "Nothing cataloged yet",
                   description: `Bring this Library up to date and every ${vocabulary.item.one} on the channel lists here in seconds.`,
               },
     };

@@ -86,47 +86,6 @@ export function tileChrome(
   return { headerless: own, bare: own, autoHeight: type.autoHeight === true, growToFit: type.autoHeight === "fill" };
 }
 
-/** What `innerOverflow` reads of a scroller inside a tile. */
-export interface ScrollerBox {
-  scrollHeight: number;
-  clientHeight: number;
-  /** Its computed `overflow-y`. */
-  overflowY: string;
-}
-
-/**
- * How much taller a grow-to-fit tile must be so nothing inside it scrolls: the largest hidden overflow
- * of a vertical scroller that takes most of the tile's height (it grows with the tile). A small inner
- * box with its own max height (a code block) never counts: growing the tile would not reveal it, and
- * counting it would grow the tile forever.
- */
-export function innerOverflow(tileHeight: number, scrollers: readonly ScrollerBox[]): number {
-  let most = 0;
-  for (const s of scrollers) {
-    if (s.overflowY !== "auto" && s.overflowY !== "scroll") continue;
-    if (s.clientHeight < tileHeight * 0.4) continue;
-    const hidden = s.scrollHeight - s.clientHeight;
-    if (hidden > most) most = hidden;
-  }
-  return most > 1 ? Math.ceil(most) : 0;
-}
-
-/**
- * One grow-to-fit step. `hidden` is the overflow measured now; `floor` the overflow growing does not
- * reveal; `last` the previous growth. A growth that did not reduce the overflow (by at least half of what
- * it added) raises the floor to it and stops: never a runaway. Otherwise the tile grows by what is hidden
- * above the floor (content added since — typing — still grows it).
- */
-export function growStep(
-  hidden: number,
-  floor: number,
-  last: { hidden: number; by: number } | null,
-): { grow: number; floor: number; hidden: number } {
-  if (last && hidden > last.hidden - last.by / 2) return { grow: 0, floor: hidden, hidden };
-  const above = hidden - floor;
-  return { grow: above > 1 ? above : 0, floor: Math.min(floor, hidden), hidden };
-}
-
 /**
  * The height an auto-height tile should take, or null to leave it: only a real change (≥ 1 px) of a
  * real measurement (a hidden or skipped body measures 0) moves it, so a re-measure never loops.
@@ -159,6 +118,55 @@ export function autoHeightChange(current: number, measured: number, min = 48): n
   if (!Number.isFinite(measured) || measured <= 0) return null;
   const next = Math.max(min, Math.ceil(measured));
   return Math.abs(next - current) >= 1 ? next : null;
+}
+
+/** What `innerSlack` reads of a scroller inside a tile. */
+export interface ScrollerBox {
+  scrollHeight: number;
+  clientHeight: number;
+  /** Its computed `overflow-y`. */
+  overflowY: string;
+  /**
+   * Where its content really ends (px from its scroll top): the lowest child's bottom less that child's
+   * own bottom padding (an editor's "scroll past the end" room is not content). Null when it has no
+   * child elements (a textarea): then only `scrollHeight` tells.
+   */
+  contentBottom: number | null;
+}
+
+/**
+ * How much taller (positive) or shorter (negative) a grow-to-fit tile should be so its content shows
+ * whole and nothing inside scrolls: read from the scrollers that take most of the tile's height (they
+ * grow with it). A small inner box with its own max height (a code block) never counts: growing the
+ * tile would not reveal it, and counting it would grow the tile forever. 0 = leave it.
+ */
+export function innerSlack(tileHeight: number, scrollers: readonly ScrollerBox[]): number {
+  let most: number | null = null;
+  for (const s of scrollers) {
+    if (s.overflowY !== "auto" && s.overflowY !== "scroll") continue;
+    if (s.clientHeight < tileHeight * 0.4) continue;
+    const slack = s.contentBottom !== null ? s.contentBottom - s.clientHeight : Math.max(0, s.scrollHeight - s.clientHeight);
+    if (most === null || slack > most) most = slack;
+  }
+  if (most === null || Math.abs(most) <= 1) return 0;
+  return most > 0 ? Math.ceil(most) : Math.floor(most);
+}
+
+/**
+ * One grow-to-fit step. `slack` is `innerSlack` now; `floor` the overflow growing does not reveal;
+ * `last` the previous growth. A growth that did not reduce the overflow (by at least half of what it
+ * added) raises the floor to it and stops: never a runaway. Otherwise the tile grows by what is hidden
+ * above the floor (content added since — typing — still grows it), or shrinks by what is spare.
+ */
+export function growStep(
+  slack: number,
+  floor: number,
+  last: { hidden: number; by: number } | null,
+): { grow: number; floor: number; hidden: number } {
+  if (slack < -1) return { grow: slack, floor: 0, hidden: slack };
+  if (last && slack > last.hidden - last.by / 2) return { grow: 0, floor: slack, hidden: slack };
+  const above = slack - floor;
+  return { grow: above > 1 ? above : 0, floor: Math.min(floor, Math.max(0, slack)), hidden: slack };
 }
 
 /**

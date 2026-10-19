@@ -256,12 +256,12 @@ function DataStoresGroup({ group }: { group: Group }) {
   );
 }
 
-// ─── Libraries (a whole channel or feed, catalogd) ────────────────────────
+// ─── Libraries (a whole channel or feed, cataloged) ────────────────────────
 
 const SYNC_WORDS: Record<LibraryRow["sync_status"], string> = {
-  never_synced: "Not catalogd yet",
+  never_synced: "Not cataloged yet",
   syncing: "Cataloging now",
-  idle: "Catalogd",
+  idle: "Cataloged",
   failed: "Last catalog failed",
 };
 

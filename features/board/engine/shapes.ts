@@ -92,7 +92,7 @@ export interface BoardShape {
   points: Point[];
   /** Only what differs from `DEFAULT_SHAPE_STYLE`. */
   style?: Partial<ShapeStyle>;
-  /** Centerd text inside a rectangle or oval. */
+  /** Centered text inside a rectangle or oval. */
   text?: string;
   /** Line / arrow ends attached to objects (they follow them). */
   bind?: ShapeBinding;

@@ -537,7 +537,7 @@ export function RuleRow({
           // 44px empty square — so the label carries the platform's hit-area
           // ring instead (`.matrx-tap-area`, app/globals.css): the tick stays
           // 16px and the finger gets 44. `mt-1` moves to the label so the ring
-          // is centerd on the box, not above it.
+          // is centered on the box, not above it.
           <label className="matrx-tap-area mt-1 inline-flex shrink-0">
             <input
               type="checkbox"

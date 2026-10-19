@@ -4,7 +4,7 @@
  *
  * An independent first-person walk of /libraries as `admin@admin.com` hit a
  * wall at every door: new intake refused with an organization error, the one
- * catalogd Library (Veritasium, 533 Sources) crashed the whole route, and the
+ * cataloged Library (Veritasium, 533 Sources) crashed the whole route, and the
  * Library whose catalog had failed (TED, 5,810 Sources) sat in a loading
  * skeleton with no message, no timeout and no retry. All three were the
  * client's, not the server's. These blocks hold each fix down with the SHAPE
@@ -277,7 +277,7 @@ describe("I · the metrics blob stored on a Library row is not a type", () => {
                 onBringUpToDate={() => {}}
             />,
         );
-        expect(node.textContent).toContain("Catalogd in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
         expect(node.textContent).not.toContain("Something went wrong");
         // and it never signs a timestamp it does not have
         expect(node.textContent).not.toContain("Invalid Date");

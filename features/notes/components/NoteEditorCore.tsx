@@ -599,7 +599,7 @@ export function NoteEditorCore({
             // side padding of its own (ProseMirror's is dropped above), so in a
             // host narrower than 48rem — a Board tile, the /notes column — the
             // text touched the left edge. Same formula as Plain's textarea:
-            // 1.5rem minimum, centerd 48rem column when wider.
+            // 1.5rem minimum, centered 48rem column when wider.
             // Styled through the editor's named column hook, never a child combinator on its scroller:
             // that also matched the block grip's box, which grew 48px wide and 85dvh tall,
             // sat ON the first letters and swallowed every press at the start of a line.

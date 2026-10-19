@@ -42,14 +42,14 @@ describe("Board camera", () => {
     expect(zoomAt(cam, 0, 0, 999).z).toBe(MAX_ZOOM);
   });
 
-  it("fits a rect centerd, capped at maxZ", () => {
+  it("fits a rect centered, capped at maxZ", () => {
     const size = { w: 1000, h: 800 };
     const small = fitRect({ x: 0, y: 0, w: 100, h: 100 }, size, 48, 1);
     expect(small.z).toBe(1);
     const big = { x: 1000, y: 2000, w: 4000, h: 2000 };
     const fit = fitRect(big, size, 50, 1);
     const view = visibleWorldRect(fit, size);
-    // the whole rect is visible and centerd
+    // the whole rect is visible and centered
     expect(view.x).toBeLessThanOrEqual(big.x);
     expect(view.x + view.w).toBeGreaterThanOrEqual(big.x + big.w);
     expect(view.x + view.w / 2).toBeCloseTo(big.x + big.w / 2, 6);
@@ -235,7 +235,7 @@ describe("throw gestures", () => {
 });
 
 describe("placement of a new tile", () => {
-  it("lands centerd on the point when free, and never overlaps", async () => {
+  it("lands centered on the point when free, and never overlaps", async () => {
     const { findFreeSpot } = await import("../engine/placement");
     const { rectsIntersect } = await import("../engine/camera");
     const size = { w: 400, h: 300 };

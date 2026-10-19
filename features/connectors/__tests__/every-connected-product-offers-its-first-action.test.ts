@@ -104,7 +104,7 @@ describe("every product a person can switch on offers its first useful action", 
         expect(undeclared.map((product) => product.key)).toEqual([]);
       });
 
-      it("opens a real catalogd overlay wherever the action is a window", () => {
+      it("opens a real cataloged overlay wherever the action is a window", () => {
         const overlays = provider.products.flatMap((product) =>
           product.firstAction.kind === "overlay"
             ? [{ key: product.key, action: product.firstAction }]

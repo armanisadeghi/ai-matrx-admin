@@ -56,7 +56,7 @@ function below(occupied: readonly Rect[], x: number, top: number, size: { w: num
 export function findFreeSpot(
   occupied: readonly Rect[],
   size: { w: number; h: number },
-  /** World point the new tile should be centerd on, if free. */
+  /** World point the new tile should be centered on, if free. */
   near: { x: number; y: number },
   gap = 40,
 ): Rect {
@@ -118,8 +118,8 @@ function landscapeSpan(count: number, size: { w: number; h: number }, gap: numbe
  * The first free spot in the flow in reading order: along each row left to
  * right, rows top to bottom (GRID steps), never wider than the flow (a tile
  * wider than the flow takes a row's start). When `near` is given and that
- * centerd spot is free and inside the flow, it wins (a run's first tile lands
- * centerd, as `findFreeSpot` would put it).
+ * centered spot is free and inside the flow, it wins (a run's first tile lands
+ * centered, as `findFreeSpot` would put it).
  */
 export function placeInFlow(
   occupied: readonly Rect[],

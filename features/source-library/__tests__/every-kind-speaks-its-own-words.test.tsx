@@ -209,7 +209,7 @@ describe("N · the header speaks the Library's own words", () => {
                 expect(node.textContent).not.toContain("Shorts");
                 expect(node.textContent).not.toContain("Unclassified");
             }
-            expect(node.textContent).toContain("Catalogd in this Library");
+            expect(node.textContent).toContain("Cataloged in this Library");
             act(() => root?.unmount());
             container?.remove();
         }

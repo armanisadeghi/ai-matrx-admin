@@ -68,7 +68,7 @@ describe("placing a run of adds", () => {
     }
   });
 
-  it("the first add of a run lands centerd where the person is looking", () => {
+  it("the first add of a run lands centered where the person is looking", () => {
     const start = { x: 0, y: 0, z: 0.6 };
     const { rects } = addFifteen(start);
     const view = clearView({ camera: start, size: SIZE, insets: INSETS });

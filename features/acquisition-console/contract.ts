@@ -5,7 +5,7 @@
 // 🚨 WHY A CONTRACT ON A *DATABASE* READ, not just on a server boundary.
 // Four of the five registers this screen reads carry a `jsonb` column that the
 // SERVER writes and Postgres does not type: `media.source_library.metrics` is a
-// different shape per adapter (a catalogd Library has `transcripts`, an export
+// different shape per adapter (a cataloged Library has `transcripts`, an export
 // Library has `total_items`), and it has already changed twice this month. A
 // generated database type says `Json` and checks nothing. So the same rule the
 // REST boundaries here live by applies: a component may only render a value one

@@ -4,7 +4,7 @@
 // page, the visitor's own appointment, a signing request, a crew capture sheet, a client
 // portal — can end in a refusal that is nobody's mistake: the page is closed, it is full, the
 // appointment was canceled, or the organization has switched its record store off. Before
-// this component each route drew its own centerd `<main>`, and the ones that reached
+// this component each route drew its own centered `<main>`, and the ones that reached
 // `notFound()` fell through to `app/not-found.tsx` — the PRODUCT's 404, with a "browse AI
 // Matrx" grid, shown to somebody's patient who has never heard of us.
 //

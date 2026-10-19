@@ -2,7 +2,7 @@
  * Live UI audit of Applets, 2026-10-09 (lane F5). One guard per finding fixed on the host:
  *   L4 — an Applet shared with you has its own lane (Shared), and My Orgs is a lane; no My team.
  *   L9 — nobody sorts Applets by their About.   M8 — dates read to the minute, never the second.
- *   G5 — every module landing's bottom CTA keeps the destination like its hero; G3 — one card is centerd.
+ *   G5 — every module landing's bottom CTA keeps the destination like its hero; G3 — one card is centered.
  *   G6 — a signed-out person at a build link signs in and lands back on the build.
  *   G7 — a guest's top bar carries the brand and Sign in at every width.
  *   M6 — every page on the Overview opens; M7 — Settings uses THE controls' Tabs; M9 — Run sits below
@@ -72,7 +72,7 @@ describe("module landings (G3, G5)", () => {
     expect(landing).not.toMatch(/<Link href=\{primaryCtaHref\}>/);
     expect(landing.match(/<Link href=\{primaryCtaUrl\}>/g)).toHaveLength(2);
   });
-  it("one sub-area card sits centerd at a card's width", () => {
+  it("one sub-area card sits centered at a card's width", () => {
     expect(landing).toContain('subAreas.length === 1');
     expect(landing).toContain('"mx-auto max-w-md"');
   });

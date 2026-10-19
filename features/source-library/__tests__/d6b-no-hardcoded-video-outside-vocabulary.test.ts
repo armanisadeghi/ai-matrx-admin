@@ -48,7 +48,7 @@ const ALLOWED_PROSE: string[] = [
     "YouTube channel, handle, playlist or video link; a podcast name, Apple Podcasts link or RSS feed; a blog, Substack or Medium address; or a SlideShare or Speaker Deck profile",
     // CatalogPasteBox's classification of ONE input kind it detected — a
     // pasted URL that IS a YouTube video, never a stand-in for "the Source".
-    "read as a video — we catalogd the channel it belongs to",
+    "read as a video — we cataloged the channel it belongs to",
     // SourceDetailPanel's `captionsSentence`/`captionsLabel`: `has_captions`
     // and `caption_languages` are populated by the YouTube caption probe and
     // nothing else adapter-side reaches these three sentences today. Real,

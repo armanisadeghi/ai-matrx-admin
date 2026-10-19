@@ -43,7 +43,7 @@ interface Pt {
 }
 
 // Sunflower layout: point i at radius ∝ sqrt(i), angle = i·golden. i=0 → center.
-// Elliptical (rx≠ry) so it fills the card instead of a centerd circle.
+// Elliptical (rx≠ry) so it fills the card instead of a centered circle.
 function phyllotaxis(count: number): Pt[] {
   const pts: Pt[] = [];
   for (let i = 0; i < count; i++) {

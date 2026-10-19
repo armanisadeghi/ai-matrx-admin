@@ -352,7 +352,7 @@ export function SearchLabBody({
 
   if (home) {
     // The start screen — Google's calm center: the box, and the quiet
-    // controls under it. The box sits at a fixed height (not centerd), so
+    // controls under it. The box sits at a fixed height (not centered), so
     // opening Options grows the page downward and never moves the box.
     return (
       <div className="flex-1 overflow-auto px-4">

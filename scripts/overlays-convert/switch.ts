@@ -367,7 +367,7 @@ function emitDefinitions(): void {
     const ext = openerExt.get(base)!;
     const t = fixOpenerSpecifiers(fs.readFileSync(path.join(tmp, "openers", `${base}${ext}`), "utf8"), "def");
     write(`${DEFS}/${base}${ext}`, t);
-    resolve(`opener ${base} opens no catalogd overlay id: kept as ${DEFS}/${base}${ext}`);
+    resolve(`opener ${base} opens no cataloged overlay id: kept as ${DEFS}/${base}${ext}`);
   }
   // FullScreenEditorMode lived in the app's overlaySlice (the package slice has no editor types)
   const slice = "lib/redux/slices/overlaySlice.ts";

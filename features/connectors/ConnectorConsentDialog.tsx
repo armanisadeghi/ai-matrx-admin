@@ -446,7 +446,7 @@ function resolveFirstActionData(
 
 /**
  * THE FIRST USEFUL ACTION, whatever shape the product declared it in. A route is
- * a link; a catalogd overlay is a press that opens the window IN PLACE and
+ * a link; a cataloged overlay is a press that opens the window IN PLACE and
  * then steps the dialog aside, because a window opened behind a modal is a
  * control that looks like it did nothing. A row that has nothing to offer yet
  * says so in the config and renders no control — never a dead link.

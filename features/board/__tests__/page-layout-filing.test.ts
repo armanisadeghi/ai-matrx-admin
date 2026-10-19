@@ -22,7 +22,7 @@ import { join } from "node:path";
 import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import { frameOf } from "../engine/arrange";
 import { PAGE_FRAME_PAD, planPageLayout, type PageMove, type PagePlaced } from "../engine/page-layout";
-import { autoHeightMoves, frameMembers, growStep, innerOverflow, tileChrome } from "../engine/tile-chrome";
+import { autoHeightMoves, frameMembers, growStep, innerSlack, tileChrome } from "../engine/tile-chrome";
 import { planPackBoards } from "../templates/board-pack-plan";
 import { cloneBoardContent } from "../templates/clone-content";
 import { itemTypeFor } from "../items/catalog";
@@ -230,11 +230,15 @@ describe("no tile scrolls inside itself in page layout", () => {
     expect(tileChrome("canvas", { autoHeight: "fill" })).toMatchObject({ autoHeight: false, growToFit: false });
   });
 
-  it("grows by what the tile-sized scroller hides, never by a small fixed box", () => {
-    expect(innerOverflow(280, [{ scrollHeight: 900, clientHeight: 200, overflowY: "auto" }])).toBe(700);
-    expect(innerOverflow(280, [{ scrollHeight: 900, clientHeight: 60, overflowY: "auto" }])).toBe(0); // a code block
-    expect(innerOverflow(280, [{ scrollHeight: 900, clientHeight: 200, overflowY: "hidden" }])).toBe(0);
-    expect(innerOverflow(280, [{ scrollHeight: 200.5, clientHeight: 200, overflowY: "auto" }])).toBe(0);
+  it("reads the content's own bottom: grows to hidden content, shrinks to spare room, ignores scroll-past-end padding", () => {
+    const box = (clientHeight: number, contentBottom: number | null, scrollHeight = clientHeight, overflowY = "auto") => ({ clientHeight, contentBottom, scrollHeight, overflowY });
+    expect(innerSlack(280, [box(200, 900)])).toBe(700);
+    // The rich editor's column carries pb-[40dvh]: its content bottom (padding excluded) is the truth.
+    expect(innerSlack(876, [box(768, 120, 1100)])).toBe(120 - 768);
+    expect(innerSlack(280, [box(60, 900)])).toBe(0); // a small box with its own max height (a code block)
+    expect(innerSlack(280, [box(200, 900, 900, "hidden")])).toBe(0);
+    expect(innerSlack(280, [box(200, null, 650)])).toBe(450); // a textarea: only its scroll height tells
+    expect(innerSlack(280, [box(200, 200.5)])).toBe(0);
   });
 
   it("never ratchets: an overflow growing does not reveal stops the growth for good, and later content still grows it", () => {
@@ -242,24 +246,25 @@ describe("no tile scrolls inside itself in page layout", () => {
     let floor = 0;
     let last: { hidden: number; by: number } | null = null;
     let h = 280;
-    const hiddenFor = (height: number) => Math.max(24, 700 - height); // content needs 700; 24 never clears
+    const hiddenFor = (height: number) => 24 + Math.max(0, 700 - height); // content needs 700; 24 never clears
     for (let i = 0; i < 20; i++) {
       const step = growStep(hiddenFor(h), floor, last);
       floor = step.floor;
       last = step.grow > 0 ? { hidden: step.hidden, by: step.grow } : null;
       h += step.grow;
     }
-    expect(h).toBeLessThanOrEqual(700 + 24);
-    expect(h).toBeGreaterThanOrEqual(700 - 24);
+    // At most one step past the content (the first step cannot know the floor yet).
+    expect(h).toBeGreaterThanOrEqual(700);
+    expect(h).toBeLessThanOrEqual(700 + 2 * 24);
     const settled = h;
     // Typing adds 100px of content: it grows by that, once.
     for (let i = 0; i < 20; i++) {
-      const step = growStep(Math.max(24, 800 - h), floor, last);
+      const step = growStep(24 + Math.max(0, 800 - h), floor, last);
       floor = step.floor;
       last = step.grow > 0 ? { hidden: step.hidden, by: step.grow } : null;
       h += step.grow;
     }
-    expect(h - settled).toBeGreaterThanOrEqual(76);
-    expect(h - settled).toBeLessThanOrEqual(124);
+    expect(h).toBeGreaterThanOrEqual(800);
+    expect(h - settled).toBeLessThanOrEqual(100);
   });
 });

@@ -517,7 +517,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   `createDatabaseSpacesStore(org)`), and repoints any block left on another organization's agency tables. The install is
   the gallery's whole Install: after `template_install`, `addInstalledAgent` (features/make) copies and notes the "Agency
   assistant" with the gallery's ports (`installAgencySample(org, dispatch)`). Embedded grids hand every date column
-  `presentation.formats` date `long` ("January 1, 2026"); records-ui 0.101.29's embedded look (40px centerd rows,
+  `presentation.formats` date `long` ("January 1, 2026"); records-ui 0.101.29's embedded look (40px centered rows,
   dividers, choice dots) needs nothing from the host. Rhythm: link-to-page rows 32.5px, to-dos 29px (measured).
 - 2026-10-06 — builder round 14 (phase 5, collaboration): `collab/`. Comments on the ONE comment store — `comments.ts` reads
   `cmt_list` raw and writes `cmt_add` with `part_anchor` `block:<id>` (the quoted text in `label`); edit / delete (archive) / resolve /

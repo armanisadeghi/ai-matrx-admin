@@ -59,7 +59,7 @@ Arman: an error must be copyable for AI with everything needed to act on it. One
   `ml-1` (and `pl-1` when truncating), which the design-system dev guard paints as "TAP BUTTON
   MISUSE — adds 4px around a tap button" beside every inline error (seen on the directive
   builder's failed result). The breathing room is now the slot's own width
-  (`w-[calc(1lh+0.25rem)]`, glyph centerd) — same line footprint. Guard:
+  (`w-[calc(1lh+0.25rem)]`, glyph centered) — same line footprint. Guard:
   `__tests__/menu-renders-anywhere.test.tsx` ("adds no margin or padding…", red before).
 
 - 2026-09-28 — **An error toast can be read and its Alchemy menu reached.**

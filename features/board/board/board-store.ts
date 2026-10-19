@@ -572,7 +572,7 @@ export class BoardStore<T extends BoardTileBase> {
    * frame named by `within`, where it may land among that group's tiles. With
    * `flow`, it takes the first free spot of that block in reading order (a run
    * of adds fills the view like text; `near` then only says where a run's
-   * first tile is centerd when that spot is free). */
+   * first tile is centered when that spot is free). */
   addTile = (
     tile: T,
     near?: { x: number; y: number },

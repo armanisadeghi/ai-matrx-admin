@@ -84,7 +84,7 @@ export function LibrariesFrontDoor() {
                 <div className="flex min-w-0 items-center gap-2">
                     <h1 className="truncate text-sm font-medium">Libraries</h1>
                     <span className="hidden truncate text-xs text-muted-foreground md:inline">
-                        A whole channel, catalogd
+                        A whole channel, cataloged
                     </span>
                 </div>
                 {/* THE DOOR to the Block Ledger. A Library that stopped mid-sync,

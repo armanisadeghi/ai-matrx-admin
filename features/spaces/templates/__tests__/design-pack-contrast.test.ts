@@ -64,7 +64,7 @@ describe("design packs", () => {
     setColor(p, "input", { light: "#8a8a8a", dark: "#858585" }); // ~3.4:1 on white: fine for a line
     expect(contrastFindings(p)).toEqual([]);
     setColor(p, "input", { light: "#b5b5b5", dark: "#858585" }); // ~2:1: refused
-    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a Lines colour reaches 3:1/);
+    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a Lines color reaches 3:1/);
   });
 
   it("refuses a design profile with an unknown mood or a bad color", () => {

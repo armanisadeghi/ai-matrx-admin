@@ -86,7 +86,7 @@ Every route under `app/(core)/transcripts/` stores through exactly **two record 
 
 ## Admin map
 
-The whole transcription ecosystem is catalogd at **`/transcripts/admin`** (`app/(core)/transcripts/admin/page.tsx`). Add any new transcript-related route / panel / component to that config — drift warnings catch misses.
+The whole transcription ecosystem is cataloged at **`/transcripts/admin`** (`app/(core)/transcripts/admin/page.tsx`). Add any new transcript-related route / panel / component to that config — drift warnings catch misses.
 
 ---
 

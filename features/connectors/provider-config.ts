@@ -68,7 +68,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
  * shapes and the dialog renders it; there is no fourth, and `null` is gone.
  *
  * 🚨 WHY IT IS NO LONGER A NULLABLE `{ label, href }` (lane F-51, escalated from
- * U-W2). Calendar's first useful action is OPENING THE AGENDA — a catalogd
+ * U-W2). Calendar's first useful action is OPENING THE AGENDA — a cataloged
  * window, not a page — and an href-or-nothing field left it as `firstAction:
  * null`, so the one row whose first action was already built offered nothing.
  * Four other rows were `null` too, and nothing anywhere could tell a deliberate
@@ -440,7 +440,7 @@ export const GOOGLE_CONNECTOR_PROVIDER: ConnectorProviderConfig = {
       ],
       attachableResourceTypes: [],
       stopsOnRevoke: "your agenda from showing here",
-      // The agenda is a catalogd window with no route of its own, and it is the
+      // The agenda is a cataloged window with no route of its own, and it is the
       // whole point of connecting Calendar (PLAN §4.6). No `needs`: the agenda's
       // subject is the signed-in person and their window knob, so its opener
       // (`useOpenGoogleAgenda`) dispatches `openOverlay` with no data at all —

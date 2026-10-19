@@ -5,7 +5,7 @@
  * door.
  *
  * The catalog publishes a per-item Library Action, `use_as_agent_test_cases`,
- * that turns catalogd items with transcripts into `agent.exemplar`
+ * that turns cataloged items with transcripts into `agent.exemplar`
  * candidates for one agent. Standing inside the Library you pick an agent;
  * standing inside the agent — here — you pick a Library. It is the SAME action
  * through the SAME door: `POST /media/libraries/{id}/jobs` via
@@ -77,7 +77,7 @@ export function libraryReadiness(input: {
   if (input.totalCount === 0) {
     return {
       canStart: false,
-      sentence: `${input.libraryName} has no catalogd items yet. Sync it in the Library first, then transcribe the items you want to teach this agent with.`,
+      sentence: `${input.libraryName} has no cataloged items yet. Sync it in the Library first, then transcribe the items you want to teach this agent with.`,
     };
   }
   return {
@@ -90,7 +90,7 @@ export function libraryReadiness(input: {
 const WATCH_ATTEMPTS = 6;
 const WATCH_INTERVAL_MS = 4000;
 /**
- * One page of catalogd items — the honest ceiling the copy names. How big it
+ * One page of cataloged items — the honest ceiling the copy names. How big it
  * is belongs to the organization (a large-library owner wants more), never to
  * this file: law 6, `platform.feature_knob` row `agents.samples`
  * `library_page_size`, read through the one cached register read.
@@ -302,7 +302,7 @@ export function LoadFromLibraryDialog({
         <DialogHeader>
           <DialogTitle>Load sample data from a Library</DialogTitle>
           <DialogDescription>
-            Catalogd items with transcripts become candidate samples,
+            Cataloged items with transcripts become candidate samples,
             listed under Candidates as they are written.
           </DialogDescription>
         </DialogHeader>

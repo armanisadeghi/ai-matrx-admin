@@ -169,7 +169,7 @@ function buildTilesFromMetrics(
             hint:
                 metrics && typeof metrics.total !== "number"
                     ? "The server did not send a count for this Library"
-                    : "Catalogd in this Library",
+                    : "Cataloged in this Library",
         },
         {
             key: "long",
@@ -408,7 +408,7 @@ function CadenceChart({
                     <div className="flex h-full w-full items-center justify-center rounded-md border border-dashed border-border px-4 text-center text-xs text-muted-foreground">
                         {unreadable
                             ? "The numbers behind this chart could not be read, so there is nothing honest to draw."
-                            : "Nothing has been catalogd yet, so there is no cadence to chart."}
+                            : "Nothing has been cataloged yet, so there is no cadence to chart."}
                       <ErrorAlchemyMenu />
                     </div>
                 ) : (
@@ -832,7 +832,7 @@ function SyncStrip({
                 <p className="pl-6 text-xs tabular-nums text-muted-foreground">
                     {library.item_count != null
                         ? `This Library still holds ${formatCount(library.item_count)} Sources from before that run.`
-                        : "Nothing was catalogd before that run stopped."}
+                        : "Nothing was cataloged before that run stopped."}
                 </p>
                 <div className="flex h-8 items-center pl-6">
                     <Button icon={<RefreshCw aria-hidden="true" />} variant="outline" onClick={onBringUpToDate}>
@@ -884,7 +884,7 @@ function SyncStrip({
                     <p className="pl-6 text-xs tabular-nums text-muted-foreground">
                         {library.item_count != null
                             ? `This Library still holds ${formatCount(library.item_count)} Sources from before that run.`
-                            : "Nothing was catalogd before that run stalled."}
+                            : "Nothing was cataloged before that run stalled."}
                     </p>
                     <div className="flex h-8 items-center pl-6">
                         <Button icon={<RefreshCw aria-hidden="true" />} variant="outline" onClick={onBringUpToDate}>
@@ -902,7 +902,7 @@ function SyncStrip({
                     aria-hidden="true"
                 />
                 <p className="text-sm text-foreground">
-                    This Library is being catalogd right now, started somewhere other
+                    This Library is being cataloged right now, started somewhere other
                     than this tab. Reload to see what the server has listed so far.
                 </p>
             </div>

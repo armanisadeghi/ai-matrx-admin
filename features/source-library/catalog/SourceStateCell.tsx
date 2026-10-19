@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * One catalogd item's "is it a Source yet?" cell (SOURCE-CONVERGENCE §8.6).
+ * One cataloged item's "is it a Source yet?" cell (SOURCE-CONVERGENCE §8.6).
  *
  *   Source             — Open, to the one Source screen.
  *   Transcribing…      — until the row carries its `processed_document_id`.

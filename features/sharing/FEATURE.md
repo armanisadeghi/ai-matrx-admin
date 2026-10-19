@@ -500,7 +500,7 @@ NULL`. 181 of the 192 `internal` rows sit in personal or single-member orgs wher
   - **Browser-verified on the preview server against four states**, because
     `registry.routes.test.ts` validates the PATH and is blind to every query param here: two real
     items in different orgs and scope types (`Species` / Pets / admin's Workspace, `Jurisdiction` /
-    Practice Areas / Castellano & Reyes) each centerd and highlighted; a fabricated uuid →
+    Practice Areas / Castellano & Reyes) each centered and highlighted; a fabricated uuid →
     "We couldn't find this context item"; a real item in an org the caller isn't in → "You don't
     have access to this context item · Grade Level". The fallback door drops the param and restores
     the hub.

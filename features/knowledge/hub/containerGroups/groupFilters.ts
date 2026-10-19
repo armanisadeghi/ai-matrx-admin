@@ -7,7 +7,7 @@
  *   data_store           Data stores — every store I can open, with its member
  *                        count; `g.q` narrows by words. Row → the store's
  *                        record page (members, publish, access, edit, delete).
- *   media_source_library Libraries (a whole channel / feed, catalogd) —
+ *   media_source_library Libraries (a whole channel / feed, cataloged) —
  *                        `g.lane` (mine · orgs · shared · public, the list's
  *                        four visibility lanes), `g.adapter` (the Acquisition
  *                        console's deep link), `g.q`; `g.from` + `g.rulebook_id`

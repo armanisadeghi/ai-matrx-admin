@@ -152,7 +152,7 @@ export default async function ActionRequestPage({
   );
 }
 
-/** The shape every closed answer takes: one centerd sentence, nothing else. */
+/** The shape every closed answer takes: one centered sentence, nothing else. */
 function OneSentence({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col justify-center px-5 pb-safe pt-8 text-center matrx-touch-targets">

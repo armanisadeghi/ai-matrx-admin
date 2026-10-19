@@ -219,7 +219,7 @@ describe("K · a Library opens with no organization selected, and a not-yet is n
         expect(getLibraryMetrics).toHaveBeenCalled();
         expect(store.getState().appContext.organization_id).toBeNull();
         expect(node.textContent).not.toContain(SENTENCE);
-        expect(node.textContent).toContain("Catalogd in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
     });
 
     it("the transport's own not-yet never becomes a sentence", async () => {
@@ -276,7 +276,7 @@ describe("L · three consecutive reads in one session, and the newest one wins",
         });
 
         expect(getLibraryMetrics).toHaveBeenCalledTimes(3);
-        expect(node.textContent).toContain("Catalogd in this Library");
+        expect(node.textContent).toContain("Cataloged in this Library");
         expect(node.textContent).not.toContain("arriving late");
         expect(node.textContent).not.toContain("the first read failed");
     });

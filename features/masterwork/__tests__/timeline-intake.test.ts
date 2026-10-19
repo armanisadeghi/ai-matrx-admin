@@ -86,7 +86,7 @@ describe("buildTimelineRequest — the wire shape", () => {
     expect("error" in short && short.error).toMatch(/order it happened/i);
 
     const noLicence = buildTimelineRequest({ ...GOOD, licence: "" });
-    expect("error" in noLicence && noLicence.error).toMatch(/licence/i);
+    expect("error" in noLicence && noLicence.error).toMatch(/license/i);
   });
 });
 

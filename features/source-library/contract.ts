@@ -609,7 +609,7 @@ export function parseNotYetASource(
 }
 
 /**
- * One catalogd Source.
+ * One cataloged Source.
  *
  * `caption_languages` keeps the THREE-STATE reading `types.ts` documents: a
  * list is "we probed and found these", `[]` is "we probed and found none",

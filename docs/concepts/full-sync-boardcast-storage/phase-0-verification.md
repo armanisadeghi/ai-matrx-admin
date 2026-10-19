@@ -41,7 +41,7 @@ $ git diff --name-only main...HEAD -- '*.ts' '*.tsx'
 
 ### Theme (drives Phase 1)
 
-- **21 capabilities catalogd.** Phase 1 preserves 16, gains 2 (cross-tab sync, peer hydration), drops 3 unused (`resolvedTheme`, `systemTheme`, `setTheme` updater form), deliberately regresses 1 (cookie-on-change, restored in Phase 3).
+- **21 capabilities cataloged.** Phase 1 preserves 16, gains 2 (cross-tab sync, peer hydration), drops 3 unused (`resolvedTheme`, `systemTheme`, `setTheme` updater form), deliberately regresses 1 (cookie-on-change, restored in Phase 3).
 - **Three descriptor-shape gaps in `phase-1-plan.md` §5.4** must close before Phase 1 code lands:
   - **G-1** — `classToggle` descriptor has no `systemFallback` for "use matchMedia when storage empty." Current inline script honors this.
   - **G-2** — Policy can only declare one `prePaint` descriptor; theme needs both `.dark` class toggle AND `data-theme` attribute.

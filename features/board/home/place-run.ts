@@ -3,7 +3,7 @@
  * Start panel, a picker, a paste, a drop.
  *
  * A RUN of adds fills the view in reading order (`placeInFlow`): the first
- * tile lands centerd where the person is looking, the next ones fill the row
+ * tile lands centered where the person is looking, the next ones fill the row
  * across the view, then the next row down — like text (Miro, FigJam). The run
  * continues while the person's view is where the last add left it; a pan or
  * zoom starts a new run where they now look.

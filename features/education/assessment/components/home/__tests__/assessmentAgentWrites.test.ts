@@ -52,7 +52,7 @@ describe("create_quizzes", () => {
     expect(message).toContain("create_quizzes[1]");
     expect(message).toContain("title is required");
     expect(message).toContain("depth must be one of recall, applied, exam");
-    expect(message).toContain("does not accept color");
+    expect(message).toContain("does not accept colour");
     expect(message).toContain("already has one titled");
   });
 });
@@ -131,6 +131,6 @@ describe("generate_quizzes", () => {
     expect(message).toContain("question_count must be a whole number from 1 to 30");
     expect(message).toContain("difficulty must be one of");
     expect(message).toContain("applies only to practice tests");
-    expect(message).toContain("does not accept color");
+    expect(message).toContain("does not accept colour");
   });
 });

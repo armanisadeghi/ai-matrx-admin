@@ -139,7 +139,7 @@ export function emptyMapPageFilters(): MapPageFilters {
 
 /** The graph view's own state (CONTRACTS §3). */
 export interface MapGraphState {
-  /** The topic the graph is centerd on. Null = the whole map. */
+  /** The topic the graph is centered on. Null = the whole map. */
   focusSlug: string | null;
   /** What shape and color encode: the tree, or where pages are converging. */
   encodingMode: "structure" | "convergence";
