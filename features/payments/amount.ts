@@ -137,5 +137,10 @@ export function safeReturnPath(raw: string | null, origin: string): string {
     return "/";
   }
   if (parsed.origin !== new URL(origin).origin) return "/";
-  return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  // Dot-segments normalise "/.//evil.com" to "//evil.com", which a later `new URL(path, origin)`
+  // reads as another host (REVIEW-PAYMENTS-2 N1): the RESULT must also be a plain path that stays here.
+  if (!path.startsWith("/") || path.startsWith("//") || path.startsWith("/\\")) return "/";
+  if (new URL(path, origin).origin !== new URL(origin).origin) return "/";
+  return path;
 }
