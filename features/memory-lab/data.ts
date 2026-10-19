@@ -4,7 +4,8 @@
  * notes and archives; it never writes `files` or a step — the server's apply door does.
  * Server: aidream/services/agent_memory (capture points + POST /memory-lab/trials/{id}/apply).
  */
-import { readAllRows } from "@ai-matrx/data/db";
+import { mergeJsonColumn, readAllRows } from "@ai-matrx/data/db";
+import { extractErrorMessage } from "@/utils/errors";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
@@ -158,18 +159,33 @@ export async function updateTrial(trial: MemoryTrial, patch: TrialPatch): Promis
   return toTrial(data);
 }
 
-/** Runs started and not yet applied live on `metadata.pending_runs`, so a reload can finish them. */
-export async function savePendingRuns(trial: MemoryTrial, pending: PendingRun[]): Promise<MemoryTrial> {
-  const fresh = await loadTrial(trial.id);
-  const metadata = { ...(fresh?.metadata ?? trial.metadata), pending_runs: pending } as Json;
-  const { data, error } = await chat()
-    .from("memory_trial")
-    .update({ metadata })
-    .eq("id", trial.id)
-    .select(TRIAL_COLUMNS)
-    .single();
-  if (error) throw new Error(error.message);
-  return toTrial(data);
+/**
+ * Runs started and not yet applied live on `metadata.pending_runs`, so a reload can finish them.
+ * A guarded jsonb merge: the server writes the same row (files) while a run applies.
+ */
+export async function savePendingRuns(
+  trial: MemoryTrial,
+  mutate: (pending: PendingRun[]) => PendingRun[],
+): Promise<MemoryTrial> {
+  type Versioned = TrialRow & { version: number };
+  const columns = `${TRIAL_COLUMNS}, version`;
+  const result = await mergeJsonColumn<Versioned>({
+    fetchCurrent: () => chat().from("memory_trial").select(columns).eq("id", trial.id).maybeSingle(),
+    readColumn: (row) => row.metadata,
+    merge: (current) => ({ ...current, pending_runs: mutate(parsePendingRuns(current)) }),
+    applyUpdate: ({ value, expectedVersion, nextVersion }) =>
+      chat()
+        .from("memory_trial")
+        .update({ metadata: value as Json, version: nextVersion })
+        .eq("id", trial.id)
+        .eq("version", expectedVersion)
+        .select(columns)
+        .maybeSingle(),
+  });
+  if (result.status === "saved") return toTrial(result.row);
+  if (result.status === "not_found") throw new Error("This trial no longer exists.");
+  if (result.status === "conflict") throw new Error("The trial kept changing; try again.");
+  throw new Error(extractErrorMessage(result.error));
 }
 
 const STEP_COLUMNS =

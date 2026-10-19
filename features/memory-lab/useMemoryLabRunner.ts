@@ -117,9 +117,8 @@ export function useMemoryLabRunner(args: {
       requestText: pending.requestText,
       provisionSnapshotIds: pending.provisionSnapshotIds,
     });
-    const after = await savePendingRuns(
-      current(),
-      current().pendingRuns.filter((r) => r.runConversationId !== pending.runConversationId),
+    const after = await savePendingRuns(current(), (list) =>
+      list.filter((r) => r.runConversationId !== pending.runConversationId),
     );
     adopt(after);
     args.onStep(step);
@@ -149,7 +148,7 @@ export function useMemoryLabRunner(args: {
       provisionSnapshotIds: [...snapshots.values()].map((s) => s.id),
       startedAt: new Date().toISOString(),
     };
-    adopt(await savePendingRuns(trial, [...trial.pendingRuns, pending]));
+    adopt(await savePendingRuns(trial, (list) => [...list, pending]));
 
     setPhase({ role, subjectConversationId, stage: "running", batch });
     const label =
@@ -245,9 +244,8 @@ export function useMemoryLabRunner(args: {
       guarded(async () => {
         const t = current();
         adopt(
-          await savePendingRuns(
-            t,
-            t.pendingRuns.filter((r) => r.runConversationId !== pending.runConversationId),
+          await savePendingRuns(t, (list) =>
+            list.filter((r) => r.runConversationId !== pending.runConversationId),
           ),
         );
         return null;

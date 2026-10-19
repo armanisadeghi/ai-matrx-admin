@@ -97,7 +97,12 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
       return fresh.get(agentId)?.variables ?? [];
     },
     onTrialChanged: setTrial,
-    onStep: (step) => setSteps((list) => [...list.filter((s) => s.id !== step.id), step].sort((a, b) => a.seq - b.seq)),
+    // The apply door answers with the step's outcome; the full row (its doors) is read back.
+    onStep: () => {
+      listSteps(trialId)
+        .then(setSteps)
+        .catch((e: unknown) => setLoadError(extractErrorMessage(e)));
+    },
     onSnapshots: (key, snapshots) => {
       setCaptures({ key, snapshots });
       setKnownValues((prev) => {
