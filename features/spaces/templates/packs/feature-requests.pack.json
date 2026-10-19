@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0351",
-  "version": 6,
+  "version": 7,
   "title": "Feature Requests",
   "description": "Product teams: collect requests, count votes and customers, and decide what is next.",
   "forWho": "Product and support teams",
@@ -1018,7 +1018,7 @@
         "Alder Lantern Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1116,7 +1116,19 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "votes",
+                  "customer_count",
+                  "arr_affected",
+                  "demand",
+                  "submitted_on",
+                  "submitted_by",
+                  "updated_at",
+                  "details",
+                  "review_btn",
+                  "decline_btn"
+                ]
               },
               {
                 "id": "v-v",

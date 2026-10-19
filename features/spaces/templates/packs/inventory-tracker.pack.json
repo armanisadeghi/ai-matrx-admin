@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 7,
+  "version": 8,
   "title": "Inventory Tracker",
   "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
@@ -371,7 +371,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Price} - {Unit cost}"
+            "formula": "IF({Price} > 0, {Price} - {Unit cost}, \"\")"
           },
           {
             "key": "margin_pct",
@@ -379,7 +379,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Price} > 0, ROUND(({Price} - {Unit cost}) / {Price} * 100, 0), 0)"
+            "formula": "IF({Price} > 0, ROUND(({Price} - {Unit cost}) / {Price} * 100, 0), \"\")"
           },
           {
             "key": "opening",
@@ -1853,7 +1853,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2004,14 +2004,29 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "po_number",
+                  "qty",
+                  "total",
+                  "created_at",
+                  "recv_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Expected deliveries",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expected_on"
+                "dateField": "expected_on",
+                "hiddenFields": [
+                  "po_number",
+                  "qty",
+                  "total",
+                  "supplier",
+                  "created_at",
+                  "recv_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2110,14 +2125,27 @@
                 "name": "To ship",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "qty",
+                  "revenue",
+                  "ship_btn",
+                  "deliv_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "ordered_on"
+                "dateField": "ordered_on",
+                "hiddenFields": [
+                  "qty",
+                  "revenue",
+                  "ship_btn",
+                  "deliv_btn",
+                  "created_at"
+                ]
               },
               {
                 "id": "view-tbl",

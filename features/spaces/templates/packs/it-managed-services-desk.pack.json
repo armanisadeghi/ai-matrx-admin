@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 7,
+  "version": 8,
   "title": "IT Managed Services Desk",
   "description": "For MSP owners and techs: clients, devices, patching, tickets on SLA and agreements.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -2520,7 +2520,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2672,14 +2672,47 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "seats",
+                  "included_hours",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renews_on"
+                "dateField": "renews_on",
+                "hiddenFields": [
+                  "seats",
+                  "included_hours",
+                  "days_to_renewal",
+                  "contact_email",
+                  "owner",
+                  "tickets_waiting",
+                  "device_count",
+                  "needs_attention",
+                  "behind_on_patches",
+                  "billable_hours",
+                  "owner_me",
+                  "added_at",
+                  "add_ticket",
+                  "add_asset",
+                  "btn_mail"
+                ]
               },
               {
                 "id": "cli-t",
@@ -3032,14 +3065,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "devices",
+                  "added_at",
+                  "btn_job_complete"
+                ]
               },
               {
                 "id": "mai-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "devices",
+                  "owner_me",
+                  "added_at",
+                  "btn_job_complete"
+                ]
               },
               {
                 "id": "mai-t",

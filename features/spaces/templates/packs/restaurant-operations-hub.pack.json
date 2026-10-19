@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 7,
+  "version": 8,
   "title": "Restaurant Operations Hub",
   "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -3283,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3441,7 +3441,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "lead_days",
+                  "ingredient_count",
+                  "orders_count",
+                  "added_at"
+                ]
               },
               {
                 "id": "sup-t",
@@ -3490,7 +3496,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "to_order",
+                  "counter",
+                  "added_at"
+                ]
               },
               {
                 "id": "ing-t",
@@ -3696,14 +3709,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "hours",
+                  "added_at"
+                ]
               },
               {
                 "id": "shi-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "shift_on"
+                "dateField": "shift_on",
+                "hiddenFields": [
+                  "hours",
+                  "person",
+                  "added_at"
+                ]
               },
               {
                 "id": "shi-t",
@@ -3816,7 +3838,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "par",
+                  "on_hand",
+                  "to_make",
+                  "shelf_days",
+                  "added_at"
+                ]
               },
               {
                 "id": "prep-t",
@@ -3865,7 +3894,10 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "score"
+                ]
               },
               {
                 "id": "inspec-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0254",
-  "version": 6,
+  "version": 7,
   "title": "Assignment & Exam Tracker",
   "description": "Students: deadlines, weights and grades for every course in one view.",
   "forWho": "Students tracking coursework",
@@ -1060,7 +1060,7 @@
         "Thornwick Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1300,7 +1300,13 @@
                 "name": "By term",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "term"
+                "groupField": "term",
+                "hiddenFields": [
+                  "credits",
+                  "open",
+                  "avg_grade",
+                  "target_check"
+                ]
               }
             ],
             "activeViewId": "v-c1"

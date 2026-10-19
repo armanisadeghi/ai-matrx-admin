@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 4,
+  "version": 5,
   "title": "Security Consultancy Engagement Desk",
   "description": "Security consultancy: engagements, scope, findings by severity, fixes and retests.",
   "forWho": "Cybersecurity consultancies and assessment firms",
@@ -3386,7 +3386,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3765,14 +3765,39 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "cvss",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               },
               {
                 "id": "fin-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "fix_by"
+                "dateField": "fix_by",
+                "hiddenFields": [
+                  "cvss",
+                  "status",
+                  "client_owner",
+                  "author",
+                  "btn_progress",
+                  "btn_retest",
+                  "btn_fixed",
+                  "btn_claim",
+                  "owner_me",
+                  "retests_failed",
+                  "added_at"
+                ]
               },
               {
                 "id": "fin-t",

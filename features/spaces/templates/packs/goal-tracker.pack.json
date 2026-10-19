@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0203",
-  "version": 4,
+  "version": 5,
   "title": "Personal Goal Tracker",
   "description": "Individuals: break yearly goals into steps and review progress each quarter.",
   "forWho": "Individuals planning their year",
@@ -1132,7 +1132,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1191,7 +1191,13 @@
                 "name": "By life area",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "area"
+                "groupField": "area",
+                "hiddenFields": [
+                  "steps_total",
+                  "steps_done",
+                  "progress",
+                  "avg_score"
+                ]
               },
               {
                 "id": "view-2",
@@ -1204,7 +1210,13 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "steps_total",
+                  "steps_done",
+                  "progress",
+                  "avg_score"
+                ]
               },
               {
                 "id": "view-4",

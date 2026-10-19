@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0304",
-  "version": 7,
+  "version": 8,
   "title": "Account CRM for Consultants",
   "description": "Consultants and B2B firms: companies first, then their contacts, deals and follow-ups.",
   "forWho": "Consultants and business-to-business firms",
@@ -1892,7 +1892,7 @@
         "Merriweather Avenue"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1990,14 +1990,35 @@
                 "name": "By stage",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "probability",
+                  "weighted",
+                  "contact",
+                  "activity_count",
+                  "created_at",
+                  "won_btn",
+                  "lost_btn",
+                  "add_activity_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Closing calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "close_on"
+                "dateField": "close_on",
+                "hiddenFields": [
+                  "probability",
+                  "weighted",
+                  "account",
+                  "contact",
+                  "activity_count",
+                  "created_at",
+                  "won_btn",
+                  "lost_btn",
+                  "add_activity_btn"
+                ]
               },
               {
                 "id": "view-tbl",

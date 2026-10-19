@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 6,
+  "version": 7,
   "title": "Auto Repair Shop HQ",
   "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
   "forWho": "Independent auto repair shops and garages",
@@ -756,7 +756,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Estimate (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Estimate (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -764,7 +764,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2730,7 +2730,7 @@
         "Foundry Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2918,14 +2918,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "mileage_in",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "scheduled_on"
+                "dateField": "scheduled_on",
+                "hiddenFields": [
+                  "mileage_in",
+                  "priority",
+                  "approved",
+                  "declined",
+                  "comeback",
+                  "tech",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-t",
@@ -3041,7 +3080,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

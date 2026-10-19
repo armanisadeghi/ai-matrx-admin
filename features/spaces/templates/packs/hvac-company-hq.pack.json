@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 6,
+  "version": 7,
   "title": "HVAC Company HQ",
   "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
   "forWho": "HVAC companies and heating and cooling contractors",
@@ -740,7 +740,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -748,7 +748,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -3089,7 +3089,7 @@
       ],
       "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3400,7 +3400,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",
@@ -3602,7 +3608,10 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "visits_left"
+                ]
               },
               {
                 "id": "ag-r",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 4,
+  "version": 5,
   "title": "Online Academy Operations Desk",
   "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
@@ -3547,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3686,14 +3686,37 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "lessons",
+                  "refund_window",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "launch_on"
+                "dateField": "launch_on",
+                "hiddenFields": [
+                  "lessons",
+                  "refund_window",
+                  "owner",
+                  "cohort_count",
+                  "cohorts_open",
+                  "btn_live",
+                  "btn_claim",
+                  "add_cohort",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "cou-t",
@@ -3803,14 +3826,53 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "seats",
+                  "joined",
+                  "seats_left",
+                  "refunds",
+                  "completed",
+                  "started",
+                  "left_early",
+                  "completion",
+                  "sessions_held",
+                  "avg_attended",
+                  "btn_open",
+                  "btn_start",
+                  "btn_finish",
+                  "btn_claim",
+                  "add_enroll",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "coh-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "starts_on"
+                "dateField": "starts_on",
+                "hiddenFields": [
+                  "seats",
+                  "joined",
+                  "seats_left",
+                  "refunds",
+                  "completed",
+                  "started",
+                  "left_early",
+                  "completion",
+                  "refunded_usd",
+                  "sessions_held",
+                  "avg_attended",
+                  "btn_open",
+                  "btn_start",
+                  "btn_finish",
+                  "btn_claim",
+                  "add_enroll",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "coh-t",
@@ -4098,14 +4160,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "attended",
+                  "btn_held",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "se-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "starts_at"
+                "dateField": "starts_at",
+                "hiddenFields": [
+                  "attended",
+                  "host",
+                  "btn_held",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "se-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 6,
+  "version": 7,
   "title": "Yoga Studio HQ",
   "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
@@ -2564,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2703,7 +2703,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "minutes",
+                  "valid_days",
+                  "holders"
+                ]
               },
               {
                 "id": "pla-t",
@@ -2752,7 +2757,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "client_status"
+                "groupField": "client_status",
+                "hiddenFields": [
+                  "classes_left",
+                  "email",
+                  "area",
+                  "visits",
+                  "no_shows",
+                  "paid_total",
+                  "flag",
+                  "add_booking_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "cli-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 4,
+  "version": 5,
   "title": "Small Manufacturer Production Desk",
   "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -457,7 +457,7 @@
               "status": "Confirmed",
               "ordered_on": "@today-10d",
               "due_on": "@today+20d",
-              "total": 11600,
+              "total": 13600,
               "owner": "tm-1",
               "owner_me": "@installer"
             }
@@ -486,7 +486,7 @@
               "status": "Quoted",
               "ordered_on": "@today-3d",
               "due_on": "@today-1d",
-              "total": 5400,
+              "total": 6600,
               "owner": "tm-1",
               "owner_me": "@installer"
             }
@@ -531,7 +531,7 @@
               "status": "Shipped",
               "ordered_on": "@today-70d",
               "due_on": "@today-45d",
-              "total": 1160,
+              "total": 1360,
               "owner": "tm-1",
               "shipped_on": "@today-47d"
             }
@@ -1372,9 +1372,9 @@
               "status": "Active",
               "family": "Tables",
               "price": 1450,
-              "build_hours": 22,
+              "build_hours": 16,
               "owner_me": "@installer",
-              "labor_rate": 38
+              "labor_rate": 30
             }
           },
           {
@@ -1384,8 +1384,8 @@
               "status": "Active",
               "family": "Shelving",
               "price": 620,
-              "build_hours": 9,
-              "labor_rate": 38
+              "build_hours": 7,
+              "labor_rate": 30
             }
           },
           {
@@ -1394,10 +1394,10 @@
               "product_name": "Spindle side chair",
               "status": "Active",
               "family": "Chairs",
-              "price": 290,
-              "build_hours": 6,
+              "price": 340,
+              "build_hours": 4,
               "owner_me": "@installer",
-              "labor_rate": 38
+              "labor_rate": 30
             }
           },
           {
@@ -1407,8 +1407,8 @@
               "status": "Active",
               "family": "Tables",
               "price": 410,
-              "build_hours": 7,
-              "labor_rate": 38
+              "build_hours": 5,
+              "labor_rate": 30
             }
           },
           {
@@ -1417,10 +1417,10 @@
               "product_name": "Wall shelf set, three",
               "status": "Active",
               "family": "Shelving",
-              "price": 180,
-              "build_hours": 3,
+              "price": 220,
+              "build_hours": 2,
               "owner_me": "@installer",
-              "labor_rate": 38
+              "labor_rate": 30
             }
           },
           {
@@ -1429,9 +1429,9 @@
               "product_name": "Cabinet pull set, brass",
               "status": "In development",
               "family": "Accessories",
-              "price": 45,
+              "price": 85,
               "build_hours": 1,
-              "labor_rate": 38
+              "labor_rate": 30
             }
           },
           {
@@ -1443,7 +1443,7 @@
               "price": 520,
               "build_hours": 8,
               "owner_me": "@installer",
-              "labor_rate": 38
+              "labor_rate": 30
             }
           }
         ]
@@ -1994,7 +1994,7 @@
               "line_name": "Harvest table, white oak",
               "product": "product-1",
               "part": "part-1",
-              "qty": 60,
+              "qty": 40,
               "unit": "Board feet"
             }
           },
@@ -2024,7 +2024,7 @@
               "line_name": "Bookshelf, white oak",
               "product": "product-2",
               "part": "part-1",
-              "qty": 28,
+              "qty": 20,
               "unit": "Board feet"
             }
           },
@@ -2044,7 +2044,7 @@
               "line_name": "Side chair, walnut",
               "product": "product-3",
               "part": "part-2",
-              "qty": 14,
+              "qty": 6,
               "unit": "Board feet"
             }
           },
@@ -2074,7 +2074,7 @@
               "line_name": "Bench, white oak",
               "product": "product-4",
               "part": "part-1",
-              "qty": 22,
+              "qty": 12,
               "unit": "Board feet"
             }
           },
@@ -3160,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3299,14 +3299,41 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "quantity",
+                  "owner",
+                  "runs_count",
+                  "good_units",
+                  "remaining",
+                  "btn_confirm",
+                  "btn_start",
+                  "btn_shipped",
+                  "btn_claim",
+                  "add_run",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-t",
@@ -3419,7 +3446,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "planned_qty",
+                  "good_qty",
+                  "scrap_qty",
+                  "labor_hours",
+                  "scrap_pct",
+                  "checks_failed",
+                  "checks_flagged",
+                  "checks_total",
+                  "btn_start",
+                  "btn_done",
+                  "btn_claim",
+                  "add_check",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "run-c",
@@ -3536,7 +3579,20 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "build_hours",
+                  "parts_count",
+                  "material_cost",
+                  "unit_cost",
+                  "margin",
+                  "orders_open",
+                  "units_open",
+                  "btn_claim",
+                  "add_line",
+                  "add_order",
+                  "added_at"
+                ]
               },
               {
                 "id": "pro-t",
@@ -3594,14 +3650,35 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "reorder_by"
+                "dateField": "reorder_by",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_point",
+                  "lead_days",
+                  "used_in",
+                  "short",
+                  "btn_restocked",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",
@@ -3711,7 +3788,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "unit"
+                "groupField": "unit",
+                "hiddenFields": [
+                  "qty",
+                  "line_cost"
+                ]
               },
               {
                 "id": "bom-t",
@@ -4483,7 +4564,7 @@
                 "sorts": [
                   {
                     "field": "margin",
-                    "direction": "asc"
+                    "direction": "desc"
                   }
                 ]
               }

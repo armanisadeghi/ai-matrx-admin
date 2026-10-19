@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 7,
+  "version": 8,
   "title": "Event Planning Company Desk",
   "description": "For event planners: clients, events, vendor contracts, deposits, budgets and timelines.",
   "forWho": "Event planners and event production companies",
@@ -2542,7 +2542,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2752,14 +2752,55 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "rsvp_yes",
+                  "agreement_signed",
+                  "vendor_cost",
+                  "pending_cost",
+                  "budget_left",
+                  "vendors_total",
+                  "vendors_ok",
+                  "deposits_open",
+                  "tasks_left",
+                  "days_to_go",
+                  "client",
+                  "planner",
+                  "owner_me",
+                  "added_at",
+                  "btn_wrap_up",
+                  "add_booking",
+                  "add_task"
+                ]
               },
               {
                 "id": "eve-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "event_on"
+                "dateField": "event_on",
+                "hiddenFields": [
+                  "guests",
+                  "rsvp_yes",
+                  "planning_fee",
+                  "agreement_signed",
+                  "vendor_cost",
+                  "pending_cost",
+                  "budget_left",
+                  "vendors_total",
+                  "vendors_ok",
+                  "deposits_open",
+                  "tasks_left",
+                  "days_to_go",
+                  "client",
+                  "planner",
+                  "owner_me",
+                  "added_at",
+                  "btn_wrap_up",
+                  "add_booking",
+                  "add_task"
+                ]
               },
               {
                 "id": "eve-t",

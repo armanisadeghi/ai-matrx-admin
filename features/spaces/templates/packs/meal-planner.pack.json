@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0209",
-  "version": 5,
+  "version": 6,
   "title": "Meal Planner",
   "description": "Home cooks and families: plan the week's meals from your recipes, with a shopping list.",
   "forWho": "Home cooks and families",
@@ -1539,7 +1539,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1609,14 +1609,25 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "servings",
+                  "planned_at",
+                  "overdue_flag",
+                  "cooked_btn"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "By day",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "day"
+                "groupField": "day",
+                "hiddenFields": [
+                  "servings",
+                  "overdue_flag",
+                  "cooked_btn"
+                ]
               },
               {
                 "id": "view-3",
@@ -1689,7 +1700,11 @@
                 "groupField": "aisle",
                 "filters": {
                   "bought": false
-                }
+                },
+                "hiddenFields": [
+                  "quantity",
+                  "bought_btn"
+                ]
               },
               {
                 "id": "view-5",
@@ -1780,21 +1795,58 @@
                 "id": "view-8",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "servings",
+                  "prep_min",
+                  "cook_min",
+                  "total_min",
+                  "rating",
+                  "source",
+                  "times_planned",
+                  "last_planned",
+                  "ingredient_count",
+                  "added",
+                  "open_source"
+                ]
               },
               {
                 "id": "view-9",
                 "name": "By meal type",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "meal_type"
+                "groupField": "meal_type",
+                "hiddenFields": [
+                  "servings",
+                  "prep_min",
+                  "cook_min",
+                  "total_min",
+                  "rating",
+                  "times_planned",
+                  "last_planned",
+                  "ingredient_count",
+                  "added",
+                  "open_source"
+                ]
               },
               {
                 "id": "view-10",
                 "name": "By cuisine",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "cuisine"
+                "groupField": "cuisine",
+                "hiddenFields": [
+                  "servings",
+                  "prep_min",
+                  "cook_min",
+                  "total_min",
+                  "rating",
+                  "times_planned",
+                  "last_planned",
+                  "ingredient_count",
+                  "added",
+                  "open_source"
+                ]
               },
               {
                 "id": "view-11",

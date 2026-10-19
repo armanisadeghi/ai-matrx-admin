@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0208",
-  "version": 4,
+  "version": 5,
   "title": "Personal Budget",
   "description": "Individuals: track monthly income and spending by category, plus savings goals.",
   "forWho": "Individuals tracking their money",
@@ -1469,7 +1469,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1637,7 +1637,11 @@
                 "name": "By kind",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "limit_left",
+                  "limit_used"
+                ]
               }
             ],
             "activeViewId": "view-5"
@@ -1814,7 +1818,10 @@
                 "id": "view-13",
                 "name": "Goals",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "saved_pct"
+                ]
               },
               {
                 "id": "view-14",

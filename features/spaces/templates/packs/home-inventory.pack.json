@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0215",
-  "version": 4,
+  "version": 5,
   "title": "Home Inventory",
   "description": "Homeowners and renters: list what you own by room, with values and warranty dates.",
   "forWho": "Homeowners and renters",
@@ -1021,7 +1021,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1079,7 +1079,12 @@
                 "id": "view-1",
                 "name": "Rooms",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "area_sqft",
+                  "item_count",
+                  "avg_value"
+                ]
               },
               {
                 "id": "view-2",
@@ -1089,7 +1094,7 @@
               },
               {
                 "id": "view-3",
-                "name": "Value by room",
+                "name": "Value by room chart",
                 "layout": "chart",
                 "icon": "ChartBar",
                 "chart": {

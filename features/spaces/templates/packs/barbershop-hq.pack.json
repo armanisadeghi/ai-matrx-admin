@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 6,
+  "version": 7,
   "title": "Barbershop HQ",
   "description": "For barbershops: walk-in queue, bookings, chair rent and commission, memberships.",
   "forWho": "Barbershops and grooming studios",
@@ -2437,7 +2437,7 @@
         "Tannery Square"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2576,7 +2576,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "minutes",
+                  "times_done",
+                  "members_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "pla-t",

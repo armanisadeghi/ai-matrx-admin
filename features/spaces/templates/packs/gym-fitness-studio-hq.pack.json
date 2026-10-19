@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 7,
+  "version": 8,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -3617,7 +3617,7 @@
         "Mercer Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3960,7 +3960,15 @@
                 "name": "By day",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "weekday"
+                "groupField": "weekday",
+                "hiddenFields": [
+                  "minutes",
+                  "capacity",
+                  "booked_n",
+                  "waitlist_n",
+                  "attended_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "cs-t",
@@ -4009,7 +4017,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "pkg_status"
+                "groupField": "pkg_status",
+                "hiddenFields": [
+                  "sessions_bought",
+                  "sessions_used",
+                  "sessions_left",
+                  "renew",
+                  "added_at"
+                ]
               },
               {
                 "id": "pt-t",
@@ -4073,7 +4088,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "attempts",
+                  "method",
+                  "paid_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "pay-t",
@@ -4230,7 +4251,18 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "min_term",
+                  "freeze_fee",
+                  "notice_days",
+                  "sessions_incl",
+                  "valid_days",
+                  "includes",
+                  "on_plan",
+                  "frozen_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "pla-t",

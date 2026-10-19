@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 4,
+  "version": 5,
   "title": "Trucking Fleet Desk",
   "description": "Small carrier desk: loads and rate per mile, drivers' hours, maintenance, driver files.",
   "forWho": "Small trucking companies and owner-operator fleets",
@@ -2906,7 +2906,7 @@
         "Terminal Road"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3045,14 +3045,45 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "miles",
+                  "loads_active",
+                  "maint_open",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
+                ]
               },
               {
                 "id": "tru-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "service_due"
+                "dateField": "service_due",
+                "hiddenFields": [
+                  "miles",
+                  "loads_active",
+                  "maint_open",
+                  "maint_cost",
+                  "net",
+                  "btn_shop",
+                  "btn_available",
+                  "btn_claim",
+                  "add_maint",
+                  "add_load",
+                  "owner_me",
+                  "revenue_live",
+                  "unbilled",
+                  "added_at"
+                ]
               },
               {
                 "id": "tru-t",
@@ -3303,7 +3334,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "miles_at",
+                  "btn_done",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "mai-c",

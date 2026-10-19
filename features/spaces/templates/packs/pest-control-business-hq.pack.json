@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 6,
+  "version": 7,
   "title": "Pest Control Business HQ",
   "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
@@ -783,7 +783,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Product cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Product cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -791,7 +791,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2671,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2982,7 +2982,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "reorder_flag",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

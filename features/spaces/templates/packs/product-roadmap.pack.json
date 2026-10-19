@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 6,
+  "version": 7,
   "title": "Product Roadmap",
   "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -1262,7 +1262,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1495,7 +1495,12 @@
                 "layout": "gallery",
                 "name": "Themes",
                 "icon": "LayoutGrid",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "item_count",
+                  "shipped_count",
+                  "shipped_pct"
+                ]
               },
               {
                 "layout": "grid",
@@ -1548,7 +1553,12 @@
                 "name": "Calendar",
                 "icon": "Calendar",
                 "dateField": "release_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "item_count",
+                  "shipped_in",
+                  "ready_pct"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -2038,7 +2048,12 @@
                 "name": "Calendar",
                 "icon": "Calendar",
                 "dateField": "release_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "item_count",
+                  "shipped_in",
+                  "ready_pct"
+                ]
               },
               {
                 "id": "view-release-this-month",

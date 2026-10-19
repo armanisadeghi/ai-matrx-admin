@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 7,
+  "version": 8,
   "title": "Teacher Lesson Planner",
   "description": "Teachers: weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -1463,7 +1463,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1608,14 +1608,26 @@
                 "id": "v-c",
                 "name": "Classes",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "students",
+                  "plan_count",
+                  "taught",
+                  "pct_taught"
+                ]
               },
               {
                 "id": "v-cg",
                 "name": "By grade",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "grade"
+                "groupField": "grade",
+                "hiddenFields": [
+                  "students",
+                  "plan_count",
+                  "taught",
+                  "pct_taught"
+                ]
               }
             ],
             "activeViewId": "v-c"
@@ -1717,7 +1729,11 @@
                 "name": "By type",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "type"
+                "groupField": "type",
+                "hiddenFields": [
+                  "uses",
+                  "open_link"
+                ]
               },
               {
                 "id": "v-rg",

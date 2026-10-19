@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 6,
+  "version": 7,
   "title": "Boutique Hotel Desk",
   "description": "For innkeepers: rooms, reservations, housekeeping status, repairs, occupancy and ADR.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -2440,7 +2440,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2598,7 +2598,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "kind"
+                "groupField": "kind",
+                "hiddenFields": [
+                  "sleeps",
+                  "stays_count",
+                  "nights_month",
+                  "repairs_waiting",
+                  "added_at",
+                  "btn_open_for_guests",
+                  "add_repair",
+                  "add_cleaning"
+                ]
               },
               {
                 "id": "roo-t",
@@ -2647,14 +2657,45 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "guests",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "check_in"
+                "dateField": "check_in",
+                "hiddenFields": [
+                  "guests",
+                  "rate",
+                  "total",
+                  "deposit",
+                  "balance",
+                  "requests",
+                  "arrival_time",
+                  "email",
+                  "room",
+                  "host",
+                  "owner_me",
+                  "added_at",
+                  "btn_check_in_guest",
+                  "btn_check_out_guest"
+                ]
               },
               {
                 "id": "res-t",
@@ -2756,14 +2797,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               },
               {
                 "id": "cle-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "minutes",
+                  "room",
+                  "cleaner",
+                  "owner_me",
+                  "added_at",
+                  "btn_passed_inspection"
+                ]
               },
               {
                 "id": "cle-t",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 6,
+  "version": 7,
   "title": "Print on Demand Shop HQ",
   "description": "For print-on-demand shops: designs, listings, print partners, production, reprints.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -1494,7 +1494,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Customer paid (USD)} - {Partner charged (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Customer paid (USD)} - {Partner charged (USD)})"
           },
           {
             "key": "channel",
@@ -2744,7 +2744,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

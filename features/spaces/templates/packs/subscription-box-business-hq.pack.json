@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 6,
+  "version": 7,
   "title": "Subscription Box Business HQ",
   "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
@@ -3201,7 +3201,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3332,7 +3332,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "ed_status"
+                "groupField": "ed_status",
+                "hiddenFields": [
+                  "boxes",
+                  "box_price",
+                  "value_ratio",
+                  "box_margin",
+                  "lineup",
+                  "sent_n",
+                  "added_at"
+                ]
               },
               {
                 "id": "ed-t",
@@ -3599,7 +3608,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "charge_status"
+                "groupField": "charge_status",
+                "hiddenFields": [
+                  "attempts",
+                  "added_at"
+                ]
               },
               {
                 "id": "chg-t",
@@ -3666,7 +3679,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "po_status"
+                "groupField": "po_status",
+                "hiddenFields": [
+                  "units",
+                  "added_at"
+                ]
               },
               {
                 "id": "po-t",
@@ -3713,7 +3730,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "terms",
+                "hiddenFields": [
+                  "lead_days",
+                  "product_n",
+                  "on_order",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"
