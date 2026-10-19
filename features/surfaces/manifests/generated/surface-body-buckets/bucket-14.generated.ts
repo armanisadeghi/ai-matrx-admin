@@ -7,9 +7,9 @@ export { marketingSitePagesManifest as s70 } from "../../marketing-site-pages.ma
 export { marketingAnalysisManifest as s77 } from "../../marketing-analysis.manifest";
 export { marketingBacklinksManifest as s80 } from "../../marketing-backlinks.manifest";
 export { marketingCoverageManifest as s89 } from "../../marketing-coverage.manifest";
-export { contentPlanEntitiesManifest as s106 } from "../../content-plan-entities.manifest";
-export { educationAudioStudyManifest as s144 } from "../../education-audio-study.manifest";
-export { appletsManifest as s155 } from "../../applets.manifest";
-export { markdownEditorManifest as s184 } from "../../markdown-editor.manifest";
-export { podcastStudioManifest as s201 } from "../../podcast-studio.manifest";
-export { scopesManifest as s203 } from "../../scopes.manifest";
+export { contentPlanEntitiesManifest as s108 } from "../../content-plan-entities.manifest";
+export { educationAudioStudyManifest as s146 } from "../../education-audio-study.manifest";
+export { appletsManifest as s157 } from "../../applets.manifest";
+export { markdownEditorManifest as s186 } from "../../markdown-editor.manifest";
+export { podcastStudioManifest as s203 } from "../../podcast-studio.manifest";
+export { scopesManifest as s205 } from "../../scopes.manifest";

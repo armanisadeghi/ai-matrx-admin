@@ -122,6 +122,8 @@ import { marketingBrandGuidelinesManifest } from "./marketing-brand-guidelines.m
 import { marketingBrandMessagingManifest } from "./marketing-brand-messaging.manifest";
 import { marketingBrandClaimsManifest } from "./marketing-brand-claims.manifest";
 import { marketingBrandOfferingsManifest } from "./marketing-brand-offerings.manifest";
+import { marketingBrandVoiceManifest } from "./marketing-brand-voice.manifest";
+import { marketingBrandAudienceManifest } from "./marketing-brand-audience.manifest";
 import { marketingIntegrationsManifest } from "./marketing-integrations.manifest";
 import { marketingSiteSettingsManifest } from "./marketing-site-settings.manifest";
 import { marketingTopicalMapManifest } from "./marketing-topical-map.manifest";
@@ -415,6 +417,8 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   marketingBrandMessagingManifest,
   marketingBrandClaimsManifest,
   marketingBrandOfferingsManifest,
+  marketingBrandVoiceManifest,
+  marketingBrandAudienceManifest,
   marketingIntegrationsManifest,
   marketingSiteSettingsManifest,
   // The brand's topical map — which pages should exist and where they live.
