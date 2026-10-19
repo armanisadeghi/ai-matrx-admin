@@ -3,7 +3,7 @@ name: one-canonical
 subject: skills/one-canonical
 type: Skill
 title: "one-canonical — find every instance of a thing, build one, move them all, prove none are left"
-description: "Collapsing every copy of one kind of thing (tables, UIs, utilities, hooks, APIs, renderers) into a single canonical one. Use when asked to unify, merge, converge, or 'make one X used everywhere', or before migrating callers onto a new canonical piece. NOT for docs (use docs)."
+description: "Collapsing every copy of one kind of thing (tables, UIs, hooks, APIs, renderers) into a single canonical one. Use when asked to unify, merge, converge, or 'make one X used everywhere', before migrating callers onto a new canonical piece, or removing a duplicate component. NOT for docs (use docs)."
 tags: [doctrine, consolidation, migration, census]
 timestamp: 2026-09-23T00:00:00Z
 ---
@@ -43,6 +43,9 @@ Done when: a round using a new method adds nothing to the list.
 
 ## 3. Migrate one by one from the list
 
+One duplicate component going away in favor of a kept one: follow
+[component-removal.md](component-removal.md) (audit, usages, preserve, update consumers, delete, prove).
+
 Work the list top to bottom. Each item: move it, verify it on its real surface, mark it done with the
 proof. No bulk "all migrated" claims. Before moving each item, screenshot it in place and apply
 [canonicalize without destroying](../../policies/no-dead-ends.md): an ordinary copy is
@@ -74,3 +77,9 @@ Add a guard that fails on any NEW use of an old copy, with a baseline that only 
 failing-then-passing (`forcing-function-tests`).
 
 Done when: the guard is in the release gates and its self-test goes red then green.
+
+## Relocated
+
+| Old trigger (skill `component-consolidation`, matrx-frontend) | Now |
+|---|---|
+| remove a component in favor of another; eliminate duplicates; reduce two versions to one; clean up redundant UI components | this skill + [component-removal.md](component-removal.md) |
