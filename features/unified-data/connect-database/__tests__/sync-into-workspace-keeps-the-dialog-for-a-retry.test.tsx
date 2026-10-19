@@ -37,9 +37,15 @@ jest.mock("@/features/organizations/components/OrganizationChooser", () => ({
     <button type="button" onClick={() => p.onChange({ id: "org-empty" })}>pick-empty-org</button>
   ),
 }));
+const ensureWorkspaceHome = jest.fn();
+jest.mock("../ensureWorkspaceHome", () => ({ ensureWorkspaceHome: (...a: unknown[]) => ensureWorkspaceHome(...a) }));
+jest.mock("@ai-matrx/records-ui/data-source", () => ({ recordsDataSource: () => ({}) }), { virtual: true });
+jest.mock("@ai-matrx/design-system", () => ({ ErrorNotice: (p: { message: string }) => <p>{p.message}</p> }), { virtual: true });
+jest.mock("@/utils/supabase/client", () => ({ createClient: () => ({}) }));
 jest.mock("@/components/errors/ErrorAlchemyMenu", () => ({ ErrorAlchemyMenu: () => null }));
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn(), success: jest.fn() } }));
 
+import { toast } from "@/lib/toast";
 import { SyncIntoWorkspaceButton } from "../SyncIntoWorkspaceButton";
 
 let container: HTMLDivElement;
@@ -48,6 +54,7 @@ const btn = (t: string) => [...container.querySelectorAll("button")].find((b) =>
 
 beforeEach(() => {
   tableCopySync.mockReset();
+  ensureWorkspaceHome.mockReset();
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -57,18 +64,34 @@ afterEach(() => {
   container.remove();
 });
 
+const REFUSAL = "You are not a member of that workspace.";
 it("says a workspace with no data home in the dialog and lets the person press Sync again", async () => {
-  tableCopySync.mockResolvedValueOnce({ ok: false, error: { message: NO_HOME } }).mockResolvedValueOnce({ ok: true, data: { table_id: "t2", rows_total: 3 } });
+  ensureWorkspaceHome.mockResolvedValue({ ok: false, message: REFUSAL });
+  tableCopySync.mockResolvedValue({ ok: false, error: { message: NO_HOME } });
   await act(async () => root.render(<SyncIntoWorkspaceButton tableId="t1" organizationId="org-src" />));
   await act(async () => btn("Sync into another workspace").click());
   await act(async () => btn("pick-empty-org").click());
   await act(async () => btn("Sync").click());
   expect(tableCopySync).toHaveBeenCalledTimes(1);
   const note = container.querySelector("[data-sync-into-workspace-no-home]");
-  expect(note?.textContent).toContain("no data home");
+  expect(note?.textContent).toContain(REFUSAL);
   expect(container.querySelector("[data-sync-into-workspace-form]")).not.toBeNull();
   expect((btn("Sync") as HTMLButtonElement).disabled).toBe(false);
   await act(async () => btn("Sync").click());
   expect(tableCopySync).toHaveBeenCalledTimes(2);
+});
+
+it("makes the data home in place when the target has none, then syncs and says success", async () => {
+  ensureWorkspaceHome.mockResolvedValue({ ok: true });
+  tableCopySync
+    .mockResolvedValueOnce({ ok: false, error: { message: NO_HOME } })
+    .mockResolvedValueOnce({ ok: true, data: { table_id: "t2", rows_total: 3 } });
+  await act(async () => root.render(<SyncIntoWorkspaceButton tableId="t1" organizationId="org-src" />));
+  await act(async () => btn("Sync into another workspace").click());
+  await act(async () => btn("pick-empty-org").click());
+  await act(async () => btn("Sync").click());
+  expect(ensureWorkspaceHome).toHaveBeenCalledTimes(1);
+  expect(tableCopySync).toHaveBeenCalledTimes(2);
+  expect(toast.success).toHaveBeenCalledWith("Synced 3 rows");
   expect(container.querySelector("[data-sync-into-workspace-no-home]")).toBeNull();
 });
