@@ -38,7 +38,7 @@ const CONNECTED = {
   team_name: "Acme Test",
   team_url: "https://acme-test.slack.com/",
   user_name: "ana",
-  scopes: ["channels:history", "channels:read", "chat:write"],
+  scopes: ["channels:history"],
   status: "connected",
   oauth_available: true,
 };
@@ -66,8 +66,17 @@ describe("SlackConnectionCard", () => {
     const state = hook({ connection: { ...CONNECTED, connected: false, status: "disconnected" } });
     mockUseSlackConnection.mockReturnValue(state);
     await act(async () => root.render(<SlackConnectionCard />));
-    expect(container.textContent).toContain("Read channels and post as you");
+    expect(container.textContent).toContain("Read channel messages");
     await act(async () => button("Connect Slack")!.click());
+    expect(state.signIn).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers Reconnect when Slack revoked the token", async () => {
+    const state = hook({ connection: { ...CONNECTED, connected: false, status: "needs_attention" } });
+    mockUseSlackConnection.mockReturnValue(state);
+    await act(async () => root.render(<SlackConnectionCard />));
+    expect(container.textContent).toContain("Needs reconnect");
+    await act(async () => button("Reconnect Slack")!.click());
     expect(state.signIn).toHaveBeenCalledTimes(1);
   });
 

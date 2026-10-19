@@ -28,6 +28,7 @@ export function SlackConnectionCard({
   const connected = slack.connection?.connected === true;
   const workspace = slack.connection?.team_name ?? null;
   const user = slack.connection?.user_name ?? null;
+  const needsReconnect = slack.connection?.status === "needs_attention";
   const oauthAvailable = slack.connection?.oauth_available !== false;
 
   useEffect(() => {
@@ -49,7 +50,9 @@ export function SlackConnectionCard({
                 ? "Checking…"
                 : connected
                   ? `${workspace ?? "Workspace"}${user ? ` · @${user}` : ""}`
-                  : "Read channels and post as you"}
+                  : needsReconnect
+                    ? "Needs reconnect"
+                    : "Read channel messages"}
             </p>
           </div>
           {connected ? (
@@ -85,7 +88,7 @@ export function SlackConnectionCard({
             onClick={() => void slack.signIn(returnUrl)}
           >
             {slack.busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogIn className="h-3.5 w-3.5" />}
-            Connect Slack
+            {needsReconnect ? "Reconnect Slack" : "Connect Slack"}
           </Button>
         ) : null}
 

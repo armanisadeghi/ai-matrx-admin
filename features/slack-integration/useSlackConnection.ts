@@ -79,8 +79,15 @@ export function useSlackConnection() {
     reload,
     check: () =>
       run(async () => {
-        const result = await checkSlackConnection();
-        setChecked(result.team_name ?? result.team_url ?? "Slack");
+        try {
+          const result = await checkSlackConnection();
+          setChecked(result.team_name ?? result.team_url ?? "Slack");
+        } catch (cause) {
+          // A refused token moved the row to needs_attention on the server: show Reconnect.
+          setChecked(null);
+          setConnection(await loadSlackConnection().catch(() => connection));
+          throw cause;
+        }
       }),
     disconnect: () =>
       run(async () => {

@@ -1,6 +1,6 @@
 # Slack integration — a person's own Slack account
 
-Slack OAuth v2 with a USER token (`channels:history`, `channels:read`, `chat:write`), sealed in the Vault by
+Slack OAuth v2 with a USER token (`channels:history` only; a scope joins with its consumer), sealed in the Vault by
 aidream (`aidream/services/slack_integrations`). Replaces the retired demo callback (the official Slack MCP
 needs a directory-published app, so it cannot be the connection path pre-launch).
 
