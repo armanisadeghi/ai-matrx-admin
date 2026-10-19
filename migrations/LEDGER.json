@@ -9644,6 +9644,12 @@
       "checksum": "bb00d4d27a26983f593c8f64c0ea0f4f15e2fd530ade1b86db602ad670d47156",
       "applied_at": "2026-09-20 15:15:12.811674+00"
     },
+    "migrations/campaign/template_fresh2_a_busy_tables_are_a_wait.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh2_a_busy_tables_are_a_wait.sql",
+      "checksum": "cc7b4a2550f88c0b7c0c12287a7dca34838d4f586ff3474370823223e1417203",
+      "applied_at": "2026-10-19 08:29:19.077012+00"
+    },
     "migrations/campaign/template_fresh_a_every_use_makes_a_new_install.sql": {
       "source": "matrx-frontend",
       "filename": "template_fresh_a_every_use_makes_a_new_install.sql",
