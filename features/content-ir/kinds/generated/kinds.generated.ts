@@ -7,7 +7,7 @@
 // Verify:      pnpm check:kind-types   (CI-blocking freshness gate)
 // Twin guard:  pnpm check:kind-type-twins
 //
-// 1616 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
+// 1617 active kinds. THESE ARE THE ONLY KIND PAYLOAD TYPES IN THE REPO.
 // A hand-written interface mirroring a registered kind is a defect — derive
 // (Pick/Omit) from the type here instead, and never re-declare it.
 //
@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 /** Structural fingerprint of the registry rows this artifact was generated from. */
-export const KIND_REGISTRY_FINGERPRINT = "cfdfd94762df";
+export const KIND_REGISTRY_FINGERPRINT = "ac61aeb286f6";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Shared nested structures. Deduped by structure across the registry — an
@@ -1751,6 +1751,50 @@ export interface BoardTableRow {
    * The row's version; a write sends it as expected_version.
    */
   version?: number | null;
+}
+
+/**
+ * One more place the same thing was said: the verbatim quote, the page and the value it came from.
+ *  *
+ *  * Shared by 3 kinds (brand_claim, brand_claim_decisions, brand_claim_set).
+ */
+export interface BrandClaimEvidence {
+  /**
+   * Verbatim words from the source.
+   */
+  quote: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
+  /**
+   * URL of the source page, or null.
+   */
+  source_url?: string | null;
+  /**
+   * Name of the provision value it came from, or null.
+   */
+  source_value?: string | null;
+}
+
+/**
+ * Claims that state the same thing; ``lead`` is the one whose wording leads.
+ *  *
+ *  * From kind `brand_claim_decisions`.
+ */
+export interface BrandClaimGroup {
+  /**
+   * Every claim id in the group, lead included.
+   */
+  ids: string[];
+  /**
+   * The id of the claim whose wording leads (one of ids).
+   */
+  lead: string;
+  /**
+   * The registered kind this payload is an instance of, when it is one.
+   */
+  __kind?: string;
 }
 
 /**
@@ -16823,9 +16867,15 @@ export interface BrandCard {
 }
 
 /**
- * Kind `brand_claim` (registry v2).
+ * One standalone statement about a brand, with its topic, source and verbatim quote.
+ *  *
+ *  * Kind `brand_claim` (registry v3).
  */
 export interface BrandClaim {
+  /**
+   * Short stable id code gave this claim in one run (c1, c2 …).
+   */
+  id?: string | null;
   /**
    * One standalone statement about the brand.
    */
@@ -16838,7 +16888,11 @@ export interface BrandClaim {
    * Fixed topic bucket.
    */
   topic: "offering" | "audience" | "place" | "proof" | "story" | "promise" | "value" | "voice" | "people" | "competitor" | "price" | "other";
-  __kind: "brand_claim";
+  __kind?: "brand_claim";
+  /**
+   * Every other place the same thing was said (quote, page, value); never dropped.
+   */
+  evidence?: BrandClaimEvidence[] | null;
   /**
    * True when the claim can be independently verified.
    */
@@ -16862,32 +16916,57 @@ export interface BrandClaim {
 }
 
 /**
- * Kind `brand_claim_set` (registry v2).
+ * The self-description detective's decisions over numbered claims (mandate
+ * ``brand_discovery.room_self_description``). Ids only, never claim text; code assembles the claim set.
+ *  *
+ *  * Kind `brand_claim_decisions` (registry v1).
+ */
+export interface BrandClaimDecisions {
+  /**
+   * brand_room slug of the claims decided on.
+   */
+  room?: string;
+  /**
+   * New claims from the non-page values only (menu, structured data, own accounts, store), each quoted verbatim from the named value.
+   */
+  added?: BrandClaim[];
+  /**
+   * Claim ids (group leads and single claims) in hierarchy order, most central first.
+   */
+  order?: string[];
+  /**
+   * The registered kind this payload is an instance of.
+   */
+  __kind?: "brand_claim_decisions";
+  /**
+   * Groups of claim ids that state the same thing.
+   */
+  groups?: BrandClaimGroup[];
+  /**
+   * Topics none of the sources speak to.
+   */
+  not_found?: ("offering" | "audience" | "place" | "proof" | "story" | "promise" | "value" | "voice" | "people" | "competitor" | "price" | "other")[];
+}
+
+/**
+ * One brand-discovery room's separate, sourced claims about a brand.
+ *  *
+ *  * Kind `brand_claim_set` (registry v3).
  */
 export interface BrandClaimSet {
   /**
    * brand_room slug: self_description, outside_world, or another room.
    */
   room: string;
-  __kind: "brand_claim_set";
+  __kind?: "brand_claim_set";
   /**
    * Separate, sourced claims from this room.
    */
-  claims: ({
-    claim: string;
-    quote: string;
-    topic: "offering" | "audience" | "place" | "proof" | "story" | "promise" | "value" | "voice" | "people" | "competitor" | "price" | "other";
-    __kind: "brand_claim";
-    checkable: boolean;
-    firsthand: boolean;
-    source_url?: string | null;
-    how_to_check?: string | null;
-    source_value: string;
-  })[];
+  claims: BrandClaim[];
   /**
    * Topics this room could not speak to.
    */
-  not_found?: string[];
+  not_found?: string[] | null;
 }
 
 /**
@@ -20765,7 +20844,7 @@ export interface Chart {
 }
 
 /**
- * Kind `chat.mandated_start.offer` (registry v9).
+ * Kind `chat.mandated_start.offer` (registry v10).
  */
 export interface ChatMandatedStartOffer {
   /**
@@ -20812,6 +20891,10 @@ export interface ChatMandatedStartOffer {
    * Whether a row is written at all. False means nothing about this turn will be remembered, which an agent that promises to 'save this for later' needs to know.
    */
   store_enabled?: boolean;
+  /**
+   * The person's own computer this chat is attached to, in one line: its operating system, the desktop app version and whether it is connected right now. Absent when the chat is not attached to one.
+   */
+  this_computer?: string;
   /**
    * The exact screen or app the request came from, such as the web chat, the browser extension or the desktop app. Absent when the caller did not say.
    */
@@ -37612,13 +37695,25 @@ export interface Mnemonic {
 }
 
 /**
- * Kind `models.availability_probe.offer` (registry v2).
+ * Kind `models.availability_probe.offer` (registry v3).
  */
 export interface ModelsAvailabilityProbeOffer {
   /**
    * The registered kind this payload is an instance of.
    */
   __kind?: "models.availability_probe.offer";
+  /**
+   * The catalog row id of the model under test.
+   */
+  model_id?: string;
+  /**
+   * The Agent Factory profiles (balanced, strongest) that can select this model.
+   */
+  profiles?: string[];
+  /**
+   * The provider serving the model under test.
+   */
+  provider?: string;
   /**
    * The catalog's display name for the model under test.
    */
@@ -38584,7 +38679,7 @@ export interface NewsMonitorSetupProposerOffer {
 }
 
 /**
- * Kind `news.report.offer` (registry v9).
+ * Kind `news.report.offer` (registry v10).
  */
 export interface NewsReportOffer {
   /**
@@ -38620,7 +38715,7 @@ export interface NewsReportOffer {
    */
   withheld: unknown;
   /**
-   * The committed run summary (news_run_summary): counts, source status, notices.
+   * The committed run summary (news_run_summary): counts (every funnel stage as {stage: count}), funnel, todays_read (pitch-ready, big, watched), source status, notices.
    */
   run_summary: unknown;
   /**
@@ -46556,7 +46651,7 @@ export interface ResearchScrapeCondensationOffer {
 }
 
 /**
- * Kind `research.source_read_candidate.offer` (registry v9).
+ * Kind `research.source_read_candidate.offer` (registry v10).
  */
 export interface ResearchSourceReadCandidateOffer {
   /**
@@ -46668,7 +46763,7 @@ export interface ResearchSourceReadCandidateOffer {
    */
   redundancy_group?: string;
   /**
-   * The deterministic 0-100 video ranking (research/video_ranking.py): search evidence relative to the topic's other videos, reach, engagement, channel size, freshness, length fit. Offered to disagree with, never to copy.
+   * A 0-100 score for how strong this video looks, worked out by fixed rules from how it showed up in search compared with the topic's other videos, how many people it reached, how much they engaged, the channel's size, how recent it is, and how well its length fits. Offered to disagree with, never to copy.
    */
   video_rank_score?: number;
   /**
@@ -49022,9 +49117,13 @@ export interface SeoAiVisibilityEvidenceIcpOffer {
 }
 
 /**
- * Kind `seo.ai_visibility_panel_designer.offer` (registry v4).
+ * Kind `seo.ai_visibility_panel_designer.offer` (registry v5).
  */
 export interface SeoAiVisibilityPanelDesignerOffer {
+  /**
+   * The requested design tier (the run's tier knob), which sets the slot budget.
+   */
+  tier: string;
   /**
    * The registered kind this payload is an instance of.
    */
@@ -50449,7 +50548,7 @@ export interface SeoPressCalendarPlannerOffer {
 }
 
 /**
- * Kind `seo.press_clip_reviewer.offer` (registry v4).
+ * Kind `seo.press_clip_reviewer.offer` (registry v5).
  */
 export interface SeoPressClipReviewerOffer {
   /**
@@ -50472,6 +50571,10 @@ export interface SeoPressClipReviewerOffer {
    * The client the clip is for.
    */
   client_name: string;
+  /**
+   * The exact current instant, ISO-8601 with offset. Every window is judged against it.
+   */
+  current_time: string;
   /**
    * The previous round's review.
    */
@@ -63288,6 +63391,7 @@ export type GeneratedKindSlug =
   | "brand_basics_fact"
   | "brand_card"
   | "brand_claim"
+  | "brand_claim_decisions"
   | "brand_claim_set"
   | "brand_confirmed_facts"
   | "brand_early_fact"
@@ -64907,6 +65011,7 @@ export interface KindPayloadBySlug {
   "brand_basics_fact": BrandBasicsFact;
   "brand_card": BrandCard;
   "brand_claim": BrandClaim;
+  "brand_claim_decisions": BrandClaimDecisions;
   "brand_claim_set": BrandClaimSet;
   "brand_confirmed_facts": BrandConfirmedFacts;
   "brand_early_fact": BrandEarlyFact;
@@ -66530,6 +66635,7 @@ export const GENERATED_KIND_SLUGS: readonly GeneratedKindSlug[] = [
   "brand_basics_fact",
   "brand_card",
   "brand_claim",
+  "brand_claim_decisions",
   "brand_claim_set",
   "brand_confirmed_facts",
   "brand_early_fact",
