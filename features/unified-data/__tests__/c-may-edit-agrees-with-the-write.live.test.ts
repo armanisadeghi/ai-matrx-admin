@@ -1,19 +1,22 @@
 /**
  * @jest-environment node
  */
-// CF-WRITE-3 — THE CONTROL IS ENABLED EXACTLY WHEN THE WRITE WOULD BE TAKEN.
+// CF-WRITE-3 / CF-WRITE-4 — THE CONTROL IS ENABLED EXACTLY WHEN THE WRITE WOULD BE TAKEN.
 //
-// Live (the one database), always ROLLED BACK, as admin@admin.com. For a sample of tokens - every HR kind and a spread of
-// the others - custom.entity_record_read's may_edit must AGREE with the outcome of the real write through the one door
+// Live (the one database), always ROLLED BACK, as admin@admin.com. For EVERY active custom-fields kind (CF-WRITE-4: no
+// longer a sample, so a future kind whose table refuses what the registry says it accepts fails here) -
+// custom.entity_record_read's may_edit must AGREE with the outcome of the real write through the one door
 // (custom.entity_row_write): a save needs may_edit = true; a refusal needs may_edit = false. A disagreement is a control
 // that is enabled and then refuses (hr_employee did: the ladder said editor, HR's own gate said no).
-// The full sweep over every token is scripts/custom-fields-write/census_probe.py (exit 1 on any DISAGREE).
-// RED before cfwrite_c_a_may_edit_asks_the_gate_the_write_uses.sql, GREEN after.
+// A kind whose table refuses every custom-value write whoever the person is declares it on the registry
+// (platform.entity_types.custom_values_locked); this guard also requires each such kind to answer may_edit=false with its reason.
+// RED before cfwrite_c_a_may_edit_asks_the_gate_the_write_uses.sql (hr_employee) and before
+// cfwrite_d_a_kinds_whose_table_refuses_custom_values_say_so.sql (document_version, univer_payload, esign_envelope_signer,
+// seo_site_offering_value, web_crawl_url), GREEN after.
 import { readFileSync } from "node:fs";
 import { Client } from "pg";
 
 const ADMIN_ID = "87a6e699-3622-4869-8843-d0867456c0dd";
-const OTHERS = ["team", "rulebook", "category", "billing_usage_ledger", "iam_api_key", "workflow_run", "agent", "note"];
 
 function dbEnv(): Record<string, string> {
   const text = readFileSync("/Users/armanisadeghi/code/aidream/.env", "utf8");
@@ -40,11 +43,10 @@ beforeAll(async () => {
   });
   await client.connect();
   await client.query("begin");
-  await client.query("set local statement_timeout = '8s'");
+  await client.query("set local statement_timeout = '20s'");
   const { rows } = await client.query(
     `select token, schema_name, table_name from platform.entity_types
-      where is_active and custom_fields_enabled and (schema_name = 'hr' or token = any($1)) order by token`,
-    [OTHERS],
+      where is_active and custom_fields_enabled order by token`,
   );
   tokens = rows;
 }, 60_000);
@@ -76,12 +78,15 @@ async function probe(t: { token: string; schema_name: string; table_name: string
         [`${t.schema_name}.${t.table_name}`],
       );
       if (!has.rows[0].cf || !has.rows[0].org) return { token: t.token, mayEdit: null, saved: null, words: "no columns" };
-      const r = await client.query(
-        `select distinct on (organization_id) id, organization_id from "${t.schema_name}"."${t.table_name}"
-          where organization_id in (select organization_id from iam.organization_member where user_id = $1) limit 8`,
-        [ADMIN_ID],
-      );
-      cands = r.rows;
+      // one row per organization she is in (an index probe per organization, never a scan of a big table)
+      const orgs = await client.query("select distinct organization_id from iam.organization_member where user_id = $1 limit 8", [ADMIN_ID]);
+      cands = [];
+      for (const o of orgs.rows) {
+        const r = await client.query(`select id, organization_id from "${t.schema_name}"."${t.table_name}" where organization_id = $1 limit 1`, [
+          o.organization_id,
+        ]);
+        cands.push(...r.rows);
+      }
     } catch (e) {
       return { token: t.token, mayEdit: null, saved: null, words: `unreadable: ${String(e).slice(0, 80)}` };
     }
@@ -116,22 +121,32 @@ async function probe(t: { token: string; schema_name: string; table_name: string
   }
 }
 
-it("may_edit agrees with the write on every sampled token", async () => {
-  expect(tokens.length).toBeGreaterThan(10);
+it("may_edit agrees with the write on every token, and a locked kind says why", async () => {
+  expect(tokens.length).toBeGreaterThan(500);
   const disagreements: string[] = [];
+  const unprobed: string[] = [];
   let compared = 0;
-  const hrEmployee: Outcome[] = [];
+  const byToken = new Map<string, Outcome>();
   for (const t of tokens) {
     const o = await probe(t);
-    if (o.mayEdit === null || o.saved === null) continue;
+    byToken.set(t.token, o);
+    if (o.mayEdit === null || o.saved === null) {
+      // nothing to compare for these: no columns / no row she can open. A probe that ERRORED (timeout) is not "nothing".
+      if (/timeout|canceling statement/.test(o.words)) unprobed.push(`${t.token}: ${o.words}`);
+      continue;
+    }
     compared += 1;
-    if (t.token === "hr_employee") hrEmployee.push(o);
     // a party refuses only because the probe's key is not a declared field - the probe's artifact, not a person gate
     if (t.token === "party" && !o.saved && o.words.includes("no field called")) continue;
     if (o.saved !== o.mayEdit) disagreements.push(`${o.token}: may_edit=${o.mayEdit} but the write ${o.saved ? "saved" : `refused (${o.words})`}`);
   }
-  expect(compared).toBeGreaterThan(5);
-  // the case that motivated this guard must have been compared, not skipped
-  expect(hrEmployee.length).toBe(1);
+  expect(compared).toBeGreaterThan(100);
+  // the cases that motivated this guard must have been compared, not skipped
+  expect(byToken.get("hr_employee")?.mayEdit).not.toBeNull();
+  expect(unprobed).toEqual([]);
   expect(disagreements).toEqual([]);
-}, 240_000);
+  const locked = await client.query(
+    "select token, custom_values_locked_reason from platform.entity_types where custom_fields_enabled and custom_values_locked",
+  );
+  for (const l of locked.rows) expect(String(l.custom_values_locked_reason ?? "").length).toBeGreaterThan(5);
+}, 900_000);

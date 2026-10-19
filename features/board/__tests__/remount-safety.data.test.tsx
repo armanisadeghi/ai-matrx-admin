@@ -31,9 +31,6 @@ jest.mock("@univerjs/preset-docs-hyper-link/lib/index.css", () => ({}));
 jest.mock("@univerjs/preset-docs-drawing", () => jest.requireActual("./remount-safety/univer-standin").univerModules.drawingPreset());
 jest.mock("@univerjs/preset-docs-drawing/locales/en-US", () => jest.requireActual("./remount-safety/univer-standin").univerModules.locale());
 jest.mock("@univerjs/preset-docs-drawing/lib/index.css", () => ({}));
-jest.mock("@univerjs/preset-docs-thread-comment", () => jest.requireActual("./remount-safety/univer-standin").univerModules.commentPreset());
-jest.mock("@univerjs/preset-docs-thread-comment/locales/en-US", () => jest.requireActual("./remount-safety/univer-standin").univerModules.locale());
-jest.mock("@univerjs/preset-docs-thread-comment/lib/index.css", () => ({}));
 jest.mock("@univerjs/find-replace", () => jest.requireActual("./remount-safety/univer-standin").univerModules.findReplace());
 jest.mock("@univerjs/find-replace/locale/en-US", () => jest.requireActual("./remount-safety/univer-standin").univerModules.locale());
 jest.mock("@univerjs/find-replace/lib/index.css", () => ({}));
@@ -90,7 +87,7 @@ jest.mock("@ai-matrx/records/react", () => {
 });
 
 import { BOARD_ITEM_TYPES } from "../items/catalog";
-import { expectRemountSafe, runCycle } from "./remount-safety/harness";
+import { expectRemountSafe, runCycle, settle } from "./remount-safety/harness";
 import { installBrowserGaps } from "./remount-safety/browser-gaps";
 import {
   DATA_RECORD_ID,
@@ -125,6 +122,8 @@ remountType(
       // The document model saves 2.5 s after the last edit.
       saveDelayMs: 3000,
       act: async () => {
+        // The editor is a lazy chunk (`DocumentCanvasBody` -> next/dynamic): wait for it, as a person would.
+        for (let waited = 0; !liveUniverDocument() && waited < 30_000; waited += 200) await settle(200);
         const doc = liveUniverDocument();
         if (!doc) throw new Error(`the document editor never mounted (instances: ${univerInstances().length})`);
         doc.type(ADDED);

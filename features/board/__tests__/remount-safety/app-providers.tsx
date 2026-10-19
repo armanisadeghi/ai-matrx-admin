@@ -18,6 +18,9 @@ import "@/providers/chat-surface-manifests";
 // `chatUiRegistrationProfile`, which next.config.js swaps for this file at build time and jest leaves a
 // no-op — so the suite registers the same slots the browser build does, or a chat tile draws the stand-ins.
 import "@/providers/chatUiRegistration";
+// The Docs model's two ports (`@ai-matrx/office/docs`), stated once at start-up by the client StoreProvider:
+// without them the document service throws "configureDocsHost(ports) was not called".
+import "@/lib/docs-host";
 import type { AppStore } from "@/lib/redux/store";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { CanvasHostProvider } from "@/features/canvas/host/CanvasHostProvider";

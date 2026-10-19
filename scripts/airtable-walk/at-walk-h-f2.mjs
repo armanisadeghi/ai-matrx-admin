@@ -1,0 +1,20 @@
+// open /f/<form> as the signed-in person, answer Name then Qty, submit, wait for the thank-you
+import { open, say, ORIGIN } from "./at-walk-h-lib.mjs";
+const [, , FORM, NAME, QTY, MEMBER] = process.argv;
+const { browser, page, who, shot } = await open(MEMBER === "member");
+say("who", who);
+await page.goto(`${ORIGIN}/f/${FORM}`, { waitUntil: "domcontentloaded", timeout: 240000 });
+const real = () => page.locator("input:visible, textarea:visible").evaluateAll((els) => els.map((e, i) => ({ i, y: Math.round(e.getBoundingClientRect().top), w: Math.round(e.getBoundingClientRect().width), tab: e.tabIndex, ac: e.autocomplete })));
+await page.getByText("Name", { exact: true }).first().waitFor({ timeout: 180000 });
+say("inputs q1", await real());
+const fillReal = async (v) => { const l = await page.locator("input:visible, textarea:visible").all(); for (const e of l) { const b = await e.boundingBox(); if (b && b.width > 300 && b.y > 150 && b.y < 600) { await e.fill(v); return; } } throw new Error("no real input"); };
+await fillReal(NAME);
+await page.getByRole("button", { name: "Next" }).click();
+await page.getByText("Qty", { exact: true }).first().waitFor({ timeout: 60000 });
+await fillReal(QTY);
+await shot(`f2-q2-${MEMBER ?? "admin"}`);
+await page.getByRole("button", { name: "Submit" }).click();
+await page.waitForFunction(() => /Thank you/.test(document.body.innerText), null, { timeout: 90000 }).catch(() => say("no thank-you in 90s"));
+say("DONE", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 300));
+await shot(`f2-done-${MEMBER ?? "admin"}`);
+await browser.close();

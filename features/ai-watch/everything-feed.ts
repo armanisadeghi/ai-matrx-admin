@@ -9,6 +9,7 @@
  */
 
 import { supabase } from "@/utils/supabase/client";
+import { RUN_LABEL_METADATA_COLUMNS, withLabelMetadata } from "./ai-watch-records";
 import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
 
 /** Why the feed once showed only the admin's own runs: on a user page the admin arm of RLS is closed unless the feed's own requests open the lane. */
@@ -63,7 +64,7 @@ export interface EverythingRow {
 export const EVERYTHING_PAGE_SIZE = 40;
 
 const COLUMNS =
-  "id, status, source_feature, agent_id, conversation_id, workflow_run_id, origin_class, created_by, organization_id, total_cost, created_at, metadata";
+  `id, status, source_feature, agent_id, conversation_id, workflow_run_id, origin_class, created_by, organization_id, total_cost, created_at, ${RUN_LABEL_METADATA_COLUMNS}`;
 
 type Row = Record<string, unknown>;
 const str = (v: unknown): string | null => (typeof v === "string" && v ? v : null);
@@ -153,7 +154,7 @@ export async function fetchEverythingPage(
   if (before) q = q.lt("created_at", before);
   const { data, error } = await everything(q.order("created_at", { ascending: false }).limit(pageSize));
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map(everythingRow);
+  return ((data ?? []) as Row[]).map((row) => everythingRow(withLabelMetadata(row)));
 }
 
 /** Pure: new rows merged over the old by id, newest first (a refresh never drops older pages). */

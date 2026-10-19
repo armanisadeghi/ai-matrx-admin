@@ -172,11 +172,18 @@ export const univerModules = {
     merge: (...parts: object[]) => Object.assign({}, ...parts),
     createUniver: createUniverStandIn(COMMAND_SERVICE, MUTATION),
   }),
+  // Univer's own core with the few names the stand-in engine must agree on replaced: a package above it
+  // (`@univerjs/rpc`, the collab and comment-anchor code in `@ai-matrx/office`) calls the real `createIdentifier`,
+  // `Disposable`, `CustomRangeType` and friends when its module loads.
   core: () => ({
+    ...jest.requireActual("@univerjs/core"),
     ICommandService: COMMAND_SERVICE,
     CommandType: { COMMAND: 0, OPERATION: 1, MUTATION },
     NamedStyleType: { NAMED_STYLE_TYPE_UNSPECIFIED: 0, NORMAL_TEXT: 1, TITLE: 2, SUBTITLE: 3, HEADING_1: 4, HEADING_2: 5, HEADING_3: 6, HEADING_4: 7, HEADING_5: 8 },
     CellValueType: { STRING: 1, NUMBER: 2, BOOLEAN: 3, FORCE_STRING: 4 },
+    // @ai-matrx/office/docs reads `CustomRangeType.COMMENT` when it loads (its anchored comments replaced Univer's
+    // thread-comment presets, aidream C9): the enum Univer's core ships.
+    CustomRangeType: { HYPERLINK: 0, FIELD: 1, SDT: 2, BOOKMARK: 3, COMMENT: 4, CUSTOM: 5, MENTION: 6, UNI_FORMULA: 7, FOOTNOTE: 8, ENDNOTE: 9, DELTED: 9999 },
     createParagraphId: () => `p${Math.random().toString(36).slice(2, 8)}`,
     createSectionId: () => `s${Math.random().toString(36).slice(2, 8)}`,
   }),
@@ -184,11 +191,10 @@ export const univerModules = {
   docsPreset: () => ({ UniverDocsCorePreset: () => ({ plugins: [] }) }),
   locale: () => ({ __esModule: true, default: {} }),
   sheetsPreset: () => ({ DragManagerService: class DragManagerService {}, HoverManagerService: class HoverManagerService {}, UniverSheetsCorePreset: () => ({ plugins: [] }) }),
-  // The docs add-ons DocumentEditor registers (links, drawings, comments, find & replace) and the UI service
+  // The docs add-ons DocumentEditor registers (links, drawings, find & replace; comments are anchored, not a preset) and the UI service
   // token the notification router replaces: presets answer with no plugins, plugins with empty classes.
   linkPreset: () => ({ UniverDocsHyperLinkPreset: () => ({ plugins: [] }) }),
   drawingPreset: () => ({ UniverDocsDrawingPreset: () => ({ plugins: [] }) }),
-  commentPreset: () => ({ UniverDocsThreadCommentPreset: () => ({ plugins: [] }) }),
   findReplace: () => ({ UniverFindReplacePlugin: class UniverFindReplacePlugin {} }),
   docsFindReplace: () => ({ UniverDocsFindReplacePlugin: class UniverDocsFindReplacePlugin {} }),
   ui: () => ({ INotificationService: Symbol.for("univer.INotificationService") }),

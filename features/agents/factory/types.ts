@@ -141,6 +141,11 @@ export interface FactoryBuildState {
   error?: string | null;
   /** The finished build as the registered `agent_factory_build` kind. */
   build?: Record<string, unknown> | null;
+  /**
+   * The contract step thought a workflow might serve better. Never a stop (owner 2026-10-19):
+   * the build goes on as one agent and the person is offered the workflow beside it.
+   */
+  workflow_suggestion?: { reason?: string; proposed_steps?: string[] } | null;
 }
 
 /** The spine row's status (`runtime.global_execution.status`). */

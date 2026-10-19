@@ -1,4 +1,4 @@
-// Row: trigger form submitted + action create a record, built in the panel as admin.
+// Row: trigger form submitted + action create a record, built in the panel as admin; then the form tab is opened.
 import { open, gotoTable, openAutomations, say } from "./at-walk-h-lib.mjs";
 const [, , T, LOG] = process.argv;
 const { browser, page, shot } = await open(false);
@@ -9,16 +9,26 @@ await d.getByRole("button", { name: "New automation" }).click();
 await d.getByLabel("Automation name").fill("ATWH form to log");
 await d.getByRole("button", { name: "Form answered" }).click();
 await d.getByRole("button", { name: "Add record" }).first().click();
-say("INROW", await d.locator("[data-testid=automation-step] > div").nth(1).evaluate((e) => e.outerHTML.replace(/<svg.*?<\/svg>/g, "").slice(0, 900)));
-const sel = d.locator("[data-testid=automation-step] > div").nth(1).locator("button, [role=combobox]").first();
-say("combobox count", await sel.count());
-await sel.click();
-await page.waitForTimeout(1000);
-say("OPTS", await page.getByRole("option").allInnerTexts());
-await shot("a1-opts");
-await page.getByRole("option", { name: /ATWH log/ }).click();
+await d.getByRole("button", { name: "Table" }).click();
+await page.locator('[role^="menuitem"]').filter({ hasText: /ATWH log/ }).first().click();
 await d.getByRole("button", { name: "Set a field" }).first().click();
-await page.waitForTimeout(800);
-say("CTRL", await d.getByRole("combobox").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") + "=" + e.innerText)));
+await page.waitForTimeout(600);
+const addVal = async (nth, label) => {
+  await d.getByRole("button", { name: "Use a value" }).nth(nth).click();
+  await page.locator("[data-token]").evaluateAll((els) => els.map((e) => e.getAttribute("data-token") + "|" + e.innerText)).then((x) => say("TOKENS", x));
+  await page.locator("[data-token]").filter({ hasText: label }).first().click();
+};
+const tt = d.locator("[data-testid=automation-token-text]");
+await tt.first().locator("input").fill("ATWH form fired for ");
+await addVal(0, "Name");
+await d.getByRole("button", { name: "Set a field" }).first().click();
+await page.waitForTimeout(600);
+await d.getByRole("button", { name: "Use a value" }).nth(1).click();
+await page.locator("[data-token]").filter({ hasText: "Qty" }).first().click();
 await shot("a1-set");
+say("STEP", (await d.locator("[data-testid=automation-step]").first().innerText()).replace(/\n+/g, " | "));
+await d.getByRole("button", { name: "Create" }).click();
+await page.waitForTimeout(4000);
+say("LIST", (await d.innerText()).replace(/\n+/g, " | ").slice(0, 500));
+await shot("a1-created");
 await browser.close();

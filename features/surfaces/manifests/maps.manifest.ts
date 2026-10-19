@@ -215,6 +215,7 @@ export const mapsManifest: SurfaceManifest = {
 You are in Visual Maps, a deliberately non-executable thinking canvas. The user is arranging ideas, systems, relationships, and plans as boxes, visual sections, and arrows; nothing here runs as a workflow. map_json is the complete authoritative document and map_boxes / map_arrows are convenient read twins. A section is a node with isGroup=true; boxes inside it carry parentId and section-relative positions. Read the complete map before proposing replace_map, preserve stable ids and positions for anything that remains, and never turn this map into executable workflow semantics.
 </surface_intro>`,
   groups,
+  briefValues: ["map_title","map_summary"],
   values: mergeBaselineValues(
     pickBaseline("content", "context"),
     surfaceSpecific,

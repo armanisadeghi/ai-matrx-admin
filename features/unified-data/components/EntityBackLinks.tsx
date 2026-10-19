@@ -83,7 +83,7 @@ function BackLinksSection({ entityToken, recordId, organizationId, className }: 
     if (!isSuperAdmin) return null;
     return (
       <section data-section="back-links" data-state="unlinkable" className={className}>
-        <Link href={ENTITY_REGISTRY_HREF} title="Register this kind so records can link to it">
+        <Link href={ENTITY_REGISTRY_HREF} title={links.unlinkableReason ?? "Register this kind so records can link to it"}>
           <Badge tone="warning">Not linkable: {entityToken}</Badge>
         </Link>
       </section>

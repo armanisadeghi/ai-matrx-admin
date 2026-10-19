@@ -13,3 +13,12 @@ export const NEEDS_EDIT_ACCESS = "Needs Edit access";
 export function recordMayBeEdited(record: unknown): boolean {
   return !(record && typeof record === "object" && (record as { may_edit?: unknown }).may_edit === false);
 }
+
+/**
+ * The words shown beside a read-only section: the kind's own reason when the registry says its table refuses every
+ * custom-value write (`may_edit_reason`, CF-WRITE-4: "This record is locked once saved"), else the shared access reason.
+ */
+export function recordEditBlockedReason(record: unknown): string {
+  const reason = record && typeof record === "object" ? (record as { may_edit_reason?: unknown }).may_edit_reason : null;
+  return typeof reason === "string" && reason.trim() ? reason : NEEDS_EDIT_ACCESS;
+}

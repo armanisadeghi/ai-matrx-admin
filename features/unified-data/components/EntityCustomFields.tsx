@@ -44,7 +44,7 @@ import { recordsDataSource } from "@ai-matrx/records-ui/helpers";
 import { Button } from "@ai-matrx/design-system/controls";
 import { entityRecordHome } from "@/features/unified-data/hub/doors";
 import { cn } from "@/lib/utils";
-import { NEEDS_EDIT_ACCESS, recordMayBeEdited } from "@/features/unified-data/needsEditAccess";
+import { recordEditBlockedReason, recordMayBeEdited } from "@/features/unified-data/needsEditAccess";
 import { EntityBackLinks } from "@/features/unified-data/components/EntityBackLinks";
 import { useCustomFieldsHost } from "@/features/unified-data/components/useCustomFieldsHost";
 import { useCollapsedCustomFieldsDoor } from "@/features/unified-data/components/useCollapsedCustomFieldsDoor";
@@ -381,7 +381,7 @@ function EntityCustomFieldsSection({
       </fieldset>
       {mayEdit ? null : (
         <p className="mt-1 text-xs text-muted-foreground" data-custom-fields-reason="needs-edit-access">
-          {NEEDS_EDIT_ACCESS}
+          {recordEditBlockedReason(record)}
         </p>
       )}
       </div>

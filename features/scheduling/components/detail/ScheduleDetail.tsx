@@ -52,6 +52,8 @@ import {
   scheduleRecordVariants,
   scheduleSummary,
 } from "../../lib/copy";
+import { ScheduleForm } from "../form/ScheduleForm";
+import { EmbeddedScheduleBar } from "./EmbeddedScheduleBar";
 import { SpecCard } from "./SpecCard";
 import { TriggerCard } from "./TriggerCard";
 import { RunHistoryCard } from "./RunHistoryCard";
@@ -77,6 +79,14 @@ interface Props {
    * one write on another person's task is the audited admin disable door.
    */
   seat?: "owner" | "admin";
+  /**
+   * A board tile: the same record without the shell page's header, back door or
+   * sibling dropdown. Actions and View / Edit sit in a bar on the tile; Edit shows
+   * the schedule form in place, and saving returns to View.
+   */
+  embedded?: boolean;
+  /** Embedded: the schedule was deleted from its tile. */
+  onDeleted?: () => void;
 }
 
 /**
@@ -86,7 +96,7 @@ interface Props {
  * here is the same hook `RunHistoryCard` uses (it no-ops when the runs are
  * already loaded), so no extra fetch is introduced.
  */
-export function ScheduleDetail({ taskId, seat = "owner" }: Props) {
+export function ScheduleDetail({ taskId, seat = "owner", embedded = false, onDeleted }: Props) {
   const dispatch = useAppDispatch();
   const { task } = useTaskDetail(taskId);
   const { tasks, status, error } = useScheduledTasks();
@@ -160,14 +170,14 @@ export function ScheduleDetail({ taskId, seat = "owner" }: Props) {
         {/* Radix `asChild` must receive a DOM element that can accept its
             context-menu handlers/ref. A function component drops those props. */}
         <div className="contents">
-          <ScheduleDetailBody taskId={taskId} seat={seat} />
+          <ScheduleDetailBody taskId={taskId} seat={seat} embedded={embedded} onDeleted={onDeleted} />
         </div>
       </NonEditableContextMenu>
     </SurfaceRuntimeProvider>
   );
 }
 
-function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
+function ScheduleDetailBody({ taskId, seat = "owner", embedded = false, onDeleted }: Props) {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { task, status, error, retry } = useTaskDetail(taskId);
@@ -186,6 +196,7 @@ function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
   } = useTaskRuns(taskId, 20, requiredRunIds);
   const [running, setRunning] = useState(false);
   const [flipping, setFlipping] = useState(false);
+  const [editing, setEditing] = useState(false);
   const isAdmin = useAppSelector((s) =>
     selectAdminFeature(s, "scheduler.system-jobs"),
   );
@@ -369,7 +380,8 @@ function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
     try {
       await dispatch(deleteScheduledTask(task.id));
       toast.success("Schedule deleted");
-      router.push("/schedules");
+      if (embedded) onDeleted?.();
+      else router.push("/schedules");
     } catch (err) {
       toastWriteFailure(err, { action: "delete this schedule", remedy: "Try again." });
     }
@@ -433,33 +445,7 @@ function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
     );
   }
 
-  return (
-    <>
-      <EntityModeHeader
-        backHref="/schedules"
-        entityLabel={task.title}
-        entityOptions={tasks.map((t) => ({
-          label: t.title,
-          href: `/schedules/${t.id}`,
-          active: t.id === task.id,
-        }))}
-        modes={
-          isSystemTask
-            ? [
-                { name: "View", href: `/schedules/${task.id}`, icon: Eye },
-                { name: "Edit", href: SYSTEM_JOBS_HREF, icon: Pencil },
-              ]
-            : [
-                { name: "View", href: `/schedules/${task.id}`, icon: Eye },
-                {
-                  name: "Edit",
-                  href: `/schedules/${task.id}/edit`,
-                  icon: Pencil,
-                },
-                { name: "New", href: "/schedules/new", icon: Plus },
-              ]
-        }
-        actions={[
+  const ownerActions = [
           {
             label: "Run now",
             icon: PlayCircle,
@@ -496,7 +482,65 @@ function ScheduleDetailBody({ taskId, seat = "owner" }: Props) {
                   destructive: true,
                 },
               ]),
-        ]}
+  ];
+
+  if (embedded) {
+    return (
+      <div className="flex h-full min-h-0 flex-col" data-schedule-embedded>
+        <EmbeddedScheduleBar
+          task={task}
+          editing={editing}
+          onEditing={setEditing}
+          isSystemTask={isSystemTask}
+          actions={ownerActions}
+        />
+        <div className="min-h-0 flex-1 overflow-y-auto p-3" data-board-scroll-root>
+          {editing ? (
+            <ScheduleForm task={task} onDone={() => setEditing(false)} onCancel={() => setEditing(false)} />
+          ) : (
+            <ScheduleRecordBody
+              task={task}
+              tasks={tasks}
+              runs={runs}
+              runsStatus={runsStatus}
+              runsError={runsError}
+              canFlip={canFlip}
+              flipping={flipping}
+              onSetEnabled={handleSetEnabled}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <EntityModeHeader
+        backHref="/schedules"
+        entityLabel={task.title}
+        entityOptions={tasks.map((t) => ({
+          label: t.title,
+          href: `/schedules/${t.id}`,
+          active: t.id === task.id,
+        }))}
+        modes={
+          isSystemTask
+            ? [
+                { name: "View", href: `/schedules/${task.id}`, icon: Eye },
+                { name: "Edit", href: SYSTEM_JOBS_HREF, icon: Pencil },
+              ]
+            : [
+                { name: "View", href: `/schedules/${task.id}`, icon: Eye },
+                {
+                  name: "Edit",
+                  href: `/schedules/${task.id}/edit`,
+                  icon: Pencil,
+                },
+                { name: "New", href: "/schedules/new", icon: Plus },
+              ]
+        }
+        actions={ownerActions}
       />
       <ScheduleRecordBody
         task={task}

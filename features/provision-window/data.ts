@@ -4,12 +4,12 @@
  * source. Capture needs the server (it reads stored captures); reading saved snapshots is direct.
  * Server: aidream/services/provision_window. FEATURE: ./FEATURE.md.
  */
-import { isRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
+import { isRunDebugView, withRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
+import { getJson } from "@/lib/python-client";
 import { callApi } from "@/lib/api/call-api";
 import type { AppDispatch } from "@/lib/redux/store";
 import { supabase } from "@/utils/supabase/client";
 import type { Json } from "@/types/database.types";
-import { withAdminFeature } from "@/utils/auth/adminFeaturesOnUserPages";
 
 export interface ProvisionValue {
   name: string;
@@ -22,6 +22,8 @@ export interface ProvisionValue {
   value: Json | null;
   source: string;
   missing_reason: string | null;
+  /** The value stays on the server (the reader is not watching AI): `value` is null, `chars` is its size. */
+  withheld: boolean;
 }
 
 /** What the step at this point must produce: a registered `__kind` (schema + example) or a plain example. */
@@ -66,6 +68,7 @@ function parseValue(raw: unknown): ProvisionValue {
     value: (r.value ?? null) as Json | null,
     source: String(r.source ?? ""),
     missing_reason: typeof r.missing_reason === "string" ? r.missing_reason : null,
+    withheld: r.withheld === true,
   };
 }
 
@@ -125,20 +128,26 @@ export async function captureProvision(
   return parseSnapshot(result.data);
 }
 
-const COLUMNS =
-  "id, point_key, point_label, code_location, subject_id, provision_values, coverage, total_chars, expected_output, created_at";
-
+/**
+ * One saved snapshot, read through the server (`GET /provision-window/snapshots/{id}`): the browser never
+ * selects `mandate.provision_snapshot.provision_values` itself (provision leak fix, stage 2). Values come back
+ * only while this tab watches AI (`?debug_view=1`, admin + debug mode); otherwise each value is `withheld`
+ * with its size. Reach (a platform admin opening another organization's snapshot) is the server's: the
+ * row's access, or the admin seat inside the admin system.
+ */
 export async function loadProvisionSnapshot(id: string): Promise<ProvisionSnapshot> {
-  // Registered admin feature: the one read carries the admin lane, so a platform admin's
-  // platform_admin_read policy opens a snapshot owned by an organization they are not in.
-  // For anyone else the header grants nothing and RLS hides the row as usual.
-  const { data, error } = await withAdminFeature(
-    "provision.open-any-snapshot",
-    supabase.schema("mandate").from("provision_snapshot").select(COLUMNS).eq("id", id).maybeSingle(),
-  );
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("This snapshot belongs to another organization, or no longer exists.");
-  return parseSnapshot(data);
+  try {
+    const { data } = await getJson<Record<string, unknown>>(
+      withRunDebugView(`/provision-window/snapshots/${encodeURIComponent(id)}`),
+      { captureErrors: false },
+    );
+    return parseSnapshot(data);
+  } catch (error) {
+    if ((error as { status?: number } | null)?.status === 404) {
+      throw new Error("This snapshot belongs to another organization, or no longer exists.");
+    }
+    throw error;
+  }
 }
 
 export interface ProvisionCapture {

@@ -120,7 +120,7 @@ describe("Use template failures reach the person, and Try again resumes", () => 
     // No stage text outlives the failure.
     expect(first.stages.at(-1)).toBeNull();
     expect(installCalls()).toHaveLength(1);
-    expect(installCalls()[0][1]).toMatchObject({ p_template_id: "tpl-SP0457", p_title: "Accounting Firm Desk", p_install_id: null });
+    expect(installCalls()[0][1]).toMatchObject({ p_template_id: "tpl-SP0457", p_title: "Accounting Firm Desk", p_install_id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-/) });
     expect(w.journalValue()).toMatchObject({ installId: "inst-1", trashed: true });
     const madeBefore = w.all().length;
 

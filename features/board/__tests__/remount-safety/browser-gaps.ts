@@ -16,8 +16,34 @@ class InertObserver {
   }
 }
 
+/**
+ * jsdom has no `MessageChannel` and no `requestIdleCallback`, and `@ai-matrx/kit`'s idle scheduler falls back
+ * to a message channel when a frame fires: the ReferenceError surfaced as an "unhandled exception" on
+ * `console.error` and failed every case that ran past a frame. The browser's one-way message hop, on a timer.
+ */
+class StandInMessagePort {
+  onmessage: ((event: { data: unknown }) => void) | null = null;
+  peer: StandInMessagePort | null = null;
+  postMessage(data: unknown) {
+    const to = this.peer;
+    setTimeout(() => to?.onmessage?.({ data }), 0);
+  }
+  close() {
+    this.peer = null;
+  }
+}
+class StandInMessageChannel {
+  port1 = new StandInMessagePort();
+  port2 = new StandInMessagePort();
+  constructor() {
+    this.port1.peer = this.port2;
+    this.port2.peer = this.port1;
+  }
+}
+
 export function installBrowserGaps(): void {
   const g = globalThis as Record<string, unknown>;
+  g.MessageChannel ??= StandInMessageChannel;
   g.ResizeObserver ??= InertObserver;
   g.IntersectionObserver ??= InertObserver;
   g.fetch = fakeFetch;

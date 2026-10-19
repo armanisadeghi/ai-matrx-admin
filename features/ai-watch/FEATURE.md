@@ -54,9 +54,16 @@ fork-and-run and resume) renders through `continuationView` / `earlierFrames`: "
 provision not re-applied" with who wrote the turn, its words or host line and its context, and a
 resume's earlier frames on the same request — never the door's provision as if it applied.
 
-**Records** — `ai-watch-records.ts`: `chat.user_request` (+ `metadata.mandate_watch`),
-`chat.request_snapshot`, `agent.definition_version` (instructions + output schema of the version
-that ran), `mandate.definition.version` (changed-since-run hint); runs lists via `readAllRows`.
+**Records** — `ai-watch-records.ts`: `chat.user_request` (+ `metadata.mandate_watch`), the exact provider
+calls through the server (`GET /runs/{request_id}/snapshots?debug_view=1`, `fetchAiWatchSnapshots` — the browser
+never selects `chat.request_snapshot` payload columns; stage 5 revokes them), provision values by hash through
+`GET /runs/{id}/values?debug_view=1`, `agent.definition_version` (instructions + output schema of the version
+that ran), `mandate.definition.version` (changed-since-run hint); runs lists via `readAllRows`. Run LISTS
+(`fetchAiWatchRuns`, `fetchFollowedRuns`, `everything-feed.ts`) select only the label fields of `metadata`
+(`RUN_LABEL_METADATA_COLUMNS` + `withLabelMetadata`), never the whole column with its watch frame.
+**On the wire** — the chat package adds `?debug_view=1` to every AI stream while `selectCanWatchAi` holds
+(`providers/ChatHostAdapter.tsx` `server.aiWatch` → `@ai-matrx/chat/host/ai-watch`); otherwise the server streams
+no `context_analysis` and withholds values (provision leak fix, stage 2).
 
 **Identity source** — `@ai-matrx/chat` ≥ 0.8.73: `ActiveRequest.serverRequestId` (header or the
 stream's own reservation), `ActiveRequest.mandateRun` (the server's `mandate_run` frame),

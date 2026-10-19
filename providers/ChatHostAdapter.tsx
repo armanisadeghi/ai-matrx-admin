@@ -101,7 +101,7 @@ import { requireOrganizationForChat } from "@/lib/organization/chat-org-port";
 import { toast, recordToast } from "@/lib/toast";
 import { createAppChatDiagnostics } from "@/lib/diagnostics/chat-diagnostics-port";
 import { getAgentCatalog } from "@/lib/agents/catalog";
-import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
+import { selectCanWatchAi, useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { createLazyChatWindowOpeners } from "@/features/overlays/chat-window-opener-specs";
 import { submitFeedback } from "@/actions/feedback.actions";
 import PageHeaderPortal from "@/features/shell/components/header/PageHeaderPortal";
@@ -434,6 +434,9 @@ export function ChatHostAdapter({ children }: { children: ReactNode }) {
       },
       // Every package server call runs this app's own lib/api (P9).
       api: appChatServerApi,
+      // AI WATCH (@ai-matrx/chat/host/ai-watch): admin feature `ai.watch` AND debug mode — the
+      // package's AI streams then carry `?debug_view=1`; the server still decides who may watch.
+      aiWatch: () => selectCanWatchAi(store.getState()),
     },
     notify: appNotify,
     prefs,

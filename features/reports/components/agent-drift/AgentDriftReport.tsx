@@ -22,11 +22,18 @@ import { AgentUsagesEngine } from "@/features/agents/components/usages/AgentUsag
 import { RollupTable } from "./RollupTable";
 import { AgentDriftReportHeader } from "./AgentDriftReportHeader";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { createReportsScope } from "@/features/surfaces/manifests/reports.manifest";
+import { REPORTS } from "@/features/reports/registry";
+import { Loader2, RotateCw } from "lucide-react";
 
 export function AgentDriftReport({
   mode = "user",
+  embedded = false,
 }: {
   mode?: "user" | "admin";
+  /** A board tile: the same report without the shell header, its back door or the page's top padding. */
+  embedded?: boolean;
 }) {
   const isMobile = useIsMobile();
   const [sort, setSort] = useState<{ key: ReportSortKey; desc: boolean }>({
@@ -122,7 +129,55 @@ export function AgentDriftReport({
     );
   })();
 
-  return (
+  // The reports surface for the open report (user scope only: the admin variant is the admin
+  // reporting surface's). Read at send time from what the report already holds.
+  const getScope = () =>
+    createReportsScope({
+      available_report_slugs: REPORTS.filter((r) => r.status === "live").map((r) => r.slug),
+      report_is_admin_scope: false,
+      report_slug: "agent-drift",
+      report_title: "Agent Drift",
+      report_row_count: rows.length,
+      report_findings: rows.map((r) => ({
+        agent_id: r.agentId,
+        agent_name: r.agentName,
+        current_version: r.currentVersion,
+        breaking: r.myBreaking,
+        silent_breaking: r.mySilent,
+        warning: r.myWarning,
+        info: r.myInfo,
+        stale_pins: r.myStalePins,
+        usages: r.myUsageCount,
+      })),
+      report_totals: { agents_with_drift: totals.agents, ...totals.totals },
+      report_load_status: { status, error },
+      ...(selected ? { report_selected_agent_id: selected } : {}),
+    });
+
+  const frame = embedded ? (
+    <div className="flex h-full min-h-0 flex-col" data-report-embedded>
+      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-2">
+        {showMobileDetail ? (
+          <Button variant="quiet" onClick={() => setSelected(null)}>
+            Back to report
+          </Button>
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">Agent Drift</span>
+        )}
+        <div className="ml-auto">
+          <Button
+            variant="outline"
+            icon={status === "loading" ? <Loader2 className="animate-spin" /> : <RotateCw />}
+            onClick={refresh}
+            disabled={status === "loading"}
+          >
+            Refresh
+          </Button>
+        </div>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{body}</div>
+    </div>
+  ) : (
     <>
       <AgentDriftReportHeader
         mode={mode}
@@ -139,6 +194,14 @@ export function AgentDriftReport({
         {body}
       </div>
     </>
+  );
+
+  return mode === "user" ? (
+    <SurfaceRuntimeProvider surfaceName="matrx-user/reports" getScope={getScope}>
+      {frame}
+    </SurfaceRuntimeProvider>
+  ) : (
+    frame
   );
 }
 

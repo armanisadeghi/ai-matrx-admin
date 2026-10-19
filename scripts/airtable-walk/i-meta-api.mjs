@@ -1,0 +1,17 @@
+import { createClient } from "@supabase/supabase-js";
+import { env } from "./lib.mjs";
+const sb = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: false } });
+const { data } = await sb.auth.signInWithPassword({ email: env.AI_ADMIN_USERNAME, password: env.AI_ADMIN_PASSWORD });
+const BASE = "https://server.app.matrxserver.com/api/v1/tables";
+const h = { Authorization: "Bearer " + data.session.access_token, "Content-Type": "application/json", "X-Organization-Id": "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f" };
+const call = async (m, p, b) => { const r = await fetch(BASE + p, { method: m, headers: h, body: b ? JSON.stringify(b) : undefined }); const t = await r.text(); console.log(m, p.slice(0, 50), r.status, t.slice(0, 260)); try { return JSON.parse(t); } catch { return {}; } };
+const made = await call("POST", "", { name: "ATWI meta api", columns: [{ name: "Title" }, { name: "Stage", type: "choice", choices: ["New", "Done"] }] });
+const T = made.table_id ?? made.id;
+await call("POST", `/${T}/columns`, { name: "Budget", type: "currency" });
+await call("PATCH", `/${T}/columns/Budget`, { name: "Spend" });
+await call("POST", `/${T}/views`, { name: "By stage", layout: "board", group_by: "Stage" });
+await call("GET", `/${T}/columns`);
+await call("POST", `/${T}/rows`, { values: { Title: "api row", Stage: "New", Spend: 12.5 } });
+await call("DELETE", `/${T}/columns/Spend`);
+await call("DELETE", `/${T}`);
+console.log("TABLE", T);

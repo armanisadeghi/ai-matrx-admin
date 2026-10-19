@@ -504,6 +504,7 @@ A sandbox is ephemeral: it expires on its TTL and everything in the shell sessio
 You can WRITE to the terminal, but only to stage: command_input types a command into the input box and working_directory sets where it will run. You cannot run anything. There is no execute target and asking for one is a refusal — the user reads the staged command and presses Enter, and that keystroke is the consent. Compose the command, say what it will do, and hand it over.
 </surface_intro>`,
   groups,
+  briefValues: ["sandbox_id","sandbox_status","sandbox_time_remaining"],
   values: mergeBaselineValues(
     pickBaseline("selection", "context"),
     surfaceSpecific,

@@ -27,6 +27,24 @@ import {
 } from "./data";
 
 function ValueRow({ v }: { v: ProvisionValue }) {
+  if (v.withheld) {
+    // The value stayed on the server (AI Watch off): name and size, never a blank that reads as empty.
+    return (
+      <PropertyRow
+        data-testid={`provision-value-${v.name}`}
+        gutter
+        label={v.label}
+        help={v.source}
+        value="Withheld"
+        meta={
+          <>
+            <code className="truncate text-[10px]">{v.name}</code>
+            <span className="shrink-0 tabular-nums">{formatCount(v.chars)} chars</span>
+          </>
+        }
+      />
+    );
+  }
   const text = valueText(v.value);
   const help = v.present ? v.source : `${v.missing_reason ?? "Not available here"} · ${v.source}`;
   const structured = v.present && v.value !== null && typeof v.value === "object";

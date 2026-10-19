@@ -100,6 +100,16 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "social-ad:quiet": { status: "passing" },
   "social-swipe-collection": { status: "passing" },
   "social-swipe-collection:quiet": { status: "passing" },
+  "schedule": { status: "passing" },
+  "schedule:quiet": { status: "passing" },
+  "knowledge-source": { status: "passing" },
+  "knowledge-source:quiet": { status: "passing" },
+  "visual-map": { status: "passing" },
+  "visual-map:quiet": { status: "passing" },
+  "report": { status: "passing" },
+  "report:quiet": { status: "passing" },
+  "sandbox": { status: "passing" },
+  "sandbox:quiet": { status: "passing" },
 };
 
 /** `it` for a passing row, `it.failing` for a failing one — the case body is the same. */

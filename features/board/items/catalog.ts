@@ -21,6 +21,7 @@
  *   content-items.tsx  web page · image · write-up · label
  *   cover-items.tsx    cover (a board's opening: rendered hero HTML above rendered prose)
  *   video-clone-items.tsx video clone (the Socials clone studio)
+ *   platform-items.tsx schedule · knowledge source · visual map · report · sandbox
  *   social-items.tsx   social post · social profile · outlier feed · ad · swipe collection
  *   page-items.tsx     any page of the app, framed (until its feature is a native item)
  */
@@ -44,8 +45,9 @@ import { TRANSCRIPT_ITEMS } from "./transcript-items";
 import { PAGE_ITEMS } from "./page-items";
 import { SOCIAL_ITEMS } from "./social-items";
 import { VIDEO_CLONE_ITEMS } from "./video-clone-items";
+import { PLATFORM_ITEMS } from "./platform-items";
 
-export const BOARD_ITEM_TYPES: readonly BoardItemType[] = [...WORK_ITEMS, ...DOCUMENT_ITEMS, ...OFFICE_ITEMS, ...CRM_ITEMS, ...AGENT_ITEMS, ...TRANSCRIPT_ITEMS, ...DATA_ITEMS, ...LIST_ITEMS, ...FEATURE_ITEMS, ...EDUCATION_ITEMS, ...SCOPE_ITEMS, ...MEETING_ITEMS, ...COVER_ITEMS, ...CONTENT_ITEMS, ...SOCIAL_ITEMS, ...VIDEO_CLONE_ITEMS, ...PAGE_ITEMS];
+export const BOARD_ITEM_TYPES: readonly BoardItemType[] = [...WORK_ITEMS, ...DOCUMENT_ITEMS, ...OFFICE_ITEMS, ...CRM_ITEMS, ...AGENT_ITEMS, ...TRANSCRIPT_ITEMS, ...DATA_ITEMS, ...LIST_ITEMS, ...FEATURE_ITEMS, ...EDUCATION_ITEMS, ...SCOPE_ITEMS, ...MEETING_ITEMS, ...COVER_ITEMS, ...CONTENT_ITEMS, ...SOCIAL_ITEMS, ...VIDEO_CLONE_ITEMS, ...PLATFORM_ITEMS, ...PAGE_ITEMS];
 
 export function itemTypeFor(source: NodeSource): BoardItemType | null {
   return BOARD_ITEM_TYPES.find((t) => t.matches(source)) ?? null;

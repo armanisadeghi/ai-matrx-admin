@@ -560,6 +560,7 @@ Timing is authoritative from the server: next_due_at and last_fired_at are recom
 A schedule's target action (agent, prompt, variables, auth mode, execution limits) is what will actually execute — treat it as the specification the user is reasoning about when they ask "what does this do" or "why did it fail".
 </surface_intro>`,
   groups,
+  briefValues: ["schedule_title","schedule_enabled","schedule_trigger_summary","schedule_next_due_at"],
   values: mergeBaselineValues(
     pickBaseline("selection", "context"),
     surfaceSpecific,

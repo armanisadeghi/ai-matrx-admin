@@ -28,7 +28,7 @@ class BackLinksRefused extends Error {
 }
 
 /** The kept answer: the store's, or "this kind is not a thing a record may link to" (22023). */
-type KeptAnswer = EntityBackLinks | { unlinkable: true };
+type KeptAnswer = EntityBackLinks | { unlinkable: true; reason: string };
 
 /**
  * The store's refusal of a kind no `record → <kind>` rule names: SQLSTATE 22023 with the hint pointing at
@@ -42,6 +42,8 @@ export function isUnlinkableKind(error: RecordsError): boolean {
 export interface KeptEntityBackLinks {
   /** True when the platform has not registered this kind as linkable (the admin fixes it in the registry). */
   unlinkable: boolean;
+  /** The store's own words for why this kind cannot be linked (set only when `unlinkable`). */
+  unlinkableReason: string | null;
   items: EntityBackLinkItem[];
   target: EntityBackLinks["target"] | null;
   loading: boolean;
@@ -75,7 +77,7 @@ export function useKeptEntityBackLinks(
       const answered = await client.entityBackLinks(args());
       if (!answered.ok) {
         // 22023: the kind is not registered as linkable. A state, not a failure; kept so a remount asks nothing.
-        if (isUnlinkableKind(answered.error)) return { unlinkable: true };
+        if (isUnlinkableKind(answered.error)) return { unlinkable: true, reason: answered.error.message };
         throw new BackLinksRefused(answered.error);
       }
       return answered.data;
@@ -85,6 +87,7 @@ export function useKeptEntityBackLinks(
   const [more, setMore] = useState<{ busy: boolean; error: RecordsError | null }>({ busy: false, error: null });
   const answer = read.data;
   const unlinkable = Boolean(answer && "unlinkable" in answer);
+  const unlinkableReason = answer && "unlinkable" in answer ? answer.reason : null;
   const kept = answer && !("unlinkable" in answer) ? answer : null;
   const cursor = kept?.next_cursor ?? null;
 
@@ -114,6 +117,7 @@ export function useKeptEntityBackLinks(
 
   return {
     unlinkable,
+    unlinkableReason,
     items: kept?.items ?? [],
     target: kept?.target ?? null,
     loading: read.isLoading,

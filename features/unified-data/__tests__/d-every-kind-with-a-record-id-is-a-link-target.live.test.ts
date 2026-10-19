@@ -95,9 +95,10 @@ it("a hand-registered link type keeps its own settings", async () => {
   expect(rows.length).toBeGreaterThanOrEqual(1);
 });
 
-it("entity_back_links answers for a sample of kinds, and refuses a kind with no row id with the reason", async () => {
+it("entity_back_links answers for a sample of kinds, and refuses a kind with no record id with the reason", async () => {
   const sample = ["team", "rulebook", "category", "billing_usage_ledger", "iam_api_key", "hr_employee", "hr_pay_period", "workflow_run"];
   let answered = 0;
+  let liveOrg = "";
   for (const token of sample) {
     await client.query("savepoint s");
     try {
@@ -112,6 +113,7 @@ it("entity_back_links answers for a sample of kinds, and refuses a kind with no 
       ).rows[0];
       if (!row) continue;
       await asAdmin();
+      liveOrg = row.organization_id;
       try {
         const a = await client.query("select custom.entity_back_links($1, $2, $3) as a", [row.organization_id, token, row.id]);
         expect(Array.isArray(a.rows[0].a.items)).toBe(true);
@@ -131,10 +133,10 @@ it("entity_back_links answers for a sample of kinds, and refuses a kind with no 
   await client.query("savepoint s");
   try {
     await asAdmin();
-    const org = (await client.query("select organization_id from iam.organization_member where user_id = $1 limit 1", [ADMIN_ID])).rows[0].organization_id;
+    const org = liveOrg;
     await expect(
       client.query("select custom.entity_back_links($1, 'embeddings_oai_3_small_1536', gen_random_uuid())", [org]),
-    ).rejects.toThrow(/no row id/);
+    ).rejects.toThrow(/carry no record id/);
   } finally {
     await client.query("rollback to savepoint s");
     await client.query("reset role");

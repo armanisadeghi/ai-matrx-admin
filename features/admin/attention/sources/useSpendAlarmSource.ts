@@ -77,8 +77,8 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     setStatus: (id, status, options) => after(setSpendAlarmStatus(id, status, options)),
     decideApproval: (approvalId, decision) => after(decideSpendApproval(approvalId, decision)),
     restoreApproval: (approvalId) => after(restoreOwnerApproval(approvalId)),
-    extendApprovals: (approvalIds, expiresAt) =>
-      after(Promise.all(approvalIds.map((id) => decideSpendApproval(id, "approve_temporary", { expiresAt })))),
+    extendApprovals: (approvalIds, expiresAt) => after(decideGroup(approvalIds, expiresAt, "temporary")),
+    reapproveApprovals: (approvalIds, expiresAt) => after(decideGroup(approvalIds, expiresAt, "rejected")),
     setTaskEnabled: (taskId, enabled) => after(patchSystemTask(taskId, { enabled })),
     runTaskNow: async (taskId) => {
       const { run_id } = await runSystemTaskNow(taskId);
@@ -113,4 +113,22 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     delegated: delegatedSpendAlarms(query.data ?? []),
     refetch,
   };
+}
+
+/**
+ * One grouped approval action (Extend / Approve again): each approval moves only while it is still in the
+ * status the card showed (`billing.run_approval_decide` p_expected_status), so a stale card never overrides a
+ * decision made since (review 3, N6). Any left alone are SAID, never silently skipped.
+ */
+export async function decideGroup(approvalIds: string[], expiresAt: string, expectedStatus: "temporary" | "rejected"): Promise<void> {
+  const settled = await Promise.allSettled(
+    approvalIds.map((id) => decideSpendApproval(id, "approve_temporary", { expiresAt, expectedStatus })),
+  );
+  const left = settled.filter((s) => s.status === "rejected").length;
+  if (left > 0) {
+    const done = approvalIds.length - left;
+    throw new Error(
+      `${done} of ${approvalIds.length} done; ${left} left as they are because someone decided ${left === 1 ? "it" : "them"} since.`,
+    );
+  }
 }

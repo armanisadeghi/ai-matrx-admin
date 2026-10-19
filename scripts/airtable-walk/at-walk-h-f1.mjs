@@ -1,0 +1,12 @@
+import { open, gotoTable, say } from "./at-walk-h-lib.mjs";
+const [, , T] = process.argv;
+const { browser, page, shot } = await open(false);
+await gotoTable(page, T);
+await page.getByRole("button", { name: "Layout: Grid" }).click();
+await page.waitForTimeout(800);
+say("OPTS", await page.locator("[role^=menuitem],[role=option]").allInnerTexts());
+await page.locator("[role^=menuitem],[role=option]").filter({ hasText: /^Form/ }).first().click();
+await page.waitForTimeout(8000);
+say("TXT", (await page.locator("body").innerText()).replace(/\n+/g, " | ").slice(0, 1200));
+await shot("f1-form");
+await browser.close();

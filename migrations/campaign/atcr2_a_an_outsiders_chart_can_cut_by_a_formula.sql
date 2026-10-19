@@ -46,7 +46,6 @@ begin
   return true;
 end
 $function$;
-revoke all on function custom.interface_chart_formula_ok(uuid, uuid, text, text[], integer) from public, anon, authenticated;
 
 create or replace function custom.interface_chart(p_interface_id uuid, p_chart_id text)
  returns jsonb
@@ -226,6 +225,11 @@ begin
       || ' when ''null'' then ''[]''::jsonb else jsonb_build_array(r.data -> %1$L) end) e'
       || ' where lower(coalesce(e ->> ''id'', e ->> ''record_id'', e #>> ''{}'')) = any (%2$L::text[]))', v_me, v_mine);
   end if;
+
+  -- The interface door has decided this reader may read rows of this table (above); the read path's worked-out column asks the
+  -- same question again (custom.assert_may_know_table, inside table_type_field) of a person who knows the table only through an
+  -- interface. Give it the answer it keeps for exactly this seat, this statement, this table - nothing wider.
+  perform platform.memo_k_put('w:k:' || v_org::text || ':' || v_table::text, '1');
 
   -- groups
   foreach k in array v_groups loop

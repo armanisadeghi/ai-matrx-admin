@@ -112,28 +112,21 @@ const FilePickerWindow = dynamic(
 );
 
 
-export function DataStoresPage() {
-  const router = useRouter();
-  const search = useSearchParams();
-  const storeId = search?.get("store_id") ?? null;
-  // `?new=1` — the Knowledge hub's "New data store" (the store list is the hub's
-  // Data stores group now, KNOWLEDGE-HUB §6 H6b): the create form owns the page.
-  const creating = !storeId && search?.get("new") === "1";
+type DataStoresList = ReturnType<typeof useDataStores>;
+type DataStoreDetail = ReturnType<typeof useDataStoreDetail>;
 
-  const list = useDataStores();
-  const detail = useDataStoreDetail(storeId);
+/**
+ * The data-stores surface scope for the store open in `detail` (the page's `?store_id=` store, or a
+ * board tile's one store) — ONE builder, so the page and the tile hand an agent the same values.
+ * Read at Run time from refs the hooks already hold, never on mount.
+ */
+function useDataStoresSurfaceScope(storeId: string | null, list: DataStoresList, detail: DataStoreDetail) {
   const isSuperAdmin = useAppSelector(selectIsSuperAdmin);
-
-  // WHY the caller can read a 'granted' store — "via <industry>", "Available
-  // to everyone", or "Subscribed" (org-audience grant). Hoisted from the
-  // detail panel so the surface emitter and the panel share ONE fetch; the
-  // hook no-ops (null id) for stores that aren't grant-conveyed.
-  const grantedStoreId =
-    detail.store?.access === "granted" ? (detail.store?.id ?? null) : null;
+  // WHY the caller can read a 'granted' store — "via <industry>", "Available to everyone", or
+  // "Subscribed" (org-audience grant). Hoisted from the detail panel so the surface emitter and the
+  // panel share ONE fetch; the hook no-ops (null id) for stores that aren't grant-conveyed.
+  const grantedStoreId = detail.store?.access === "granted" ? (detail.store?.id ?? null) : null;
   const { label: grantProvenanceLabel } = useStoreProvenance(grantedStoreId);
-
-  // Live surface scope for the header Agents chrome. Built at Run time from
-  // refs the hooks already hold — never on mount.
   const getScope = useCallback(
     () =>
       buildRagDataStoresContextData({
@@ -145,22 +138,94 @@ export function DataStoresPage() {
         members: detail.members,
         provenanceLabel: grantProvenanceLabel,
         isSuperAdmin,
-        selectionText:
-          typeof window !== "undefined"
-            ? (window.getSelection()?.toString() ?? "")
-            : "",
+        selectionText: typeof window !== "undefined" ? (window.getSelection()?.toString() ?? "") : "",
       }),
-    [
-      list.stores,
-      list.loading,
-      list.error,
-      detail.store,
-      detail.members,
-      storeId,
-      grantProvenanceLabel,
-      isSuperAdmin,
-    ],
+    [list.stores, list.loading, list.error, detail.store, detail.members, storeId, grantProvenanceLabel, isSuperAdmin],
   );
+  return { getScope, grantProvenanceLabel } as const;
+}
+
+/**
+ * ONE data store, as the page's right pane shows it — header, members, files, edit, share, publish —
+ * with the data-stores agent surface mounted for this store. The page renders it beside its list;
+ * a board tile renders it alone (`embedded`: no shell header, no list, no back door).
+ */
+export function DataStoreRecord({
+  storeId,
+  onDeleted,
+  onName,
+}: {
+  storeId: string;
+  onDeleted?: () => void;
+  /** The store's name as it loads and changes, so a tile can carry it. */
+  onName?: (name: string) => void;
+}) {
+  const list = useDataStores();
+  const detail = useDataStoreDetail(storeId);
+  const storeName = detail.store?.name;
+  useEffect(() => {
+    if (storeName) onName?.(storeName);
+  }, [storeName, onName]);
+  const { getScope, grantProvenanceLabel } = useDataStoresSurfaceScope(storeId, list, detail);
+  return (
+    <SurfaceRuntimeProvider surfaceName={RAG_DATA_STORES_SURFACE} getScope={getScope} isEditable={false}>
+      <div className="h-full min-h-0 bg-background">
+        <StoreDetailPanel
+          storeId={storeId}
+          detail={detail}
+          grantProvenanceLabel={grantProvenanceLabel}
+          onDeleted={() => onDeleted?.()}
+          onStoreUpdated={() => list.refresh()}
+        />
+      </div>
+    </SurfaceRuntimeProvider>
+  );
+}
+
+/**
+ * The page's create form on its own — a board tile's "New knowledge source". Nothing is made until
+ * the person presses Create in the form; `onCreated` hands the new store's id back to the tile.
+ */
+export function NewDataStoreRecord({ onCreated }: { onCreated: (id: string, name: string) => void }) {
+  const list = useDataStores();
+  const getScope = useCallback(
+    () =>
+      buildRagDataStoresContextData({
+        stores: list.stores,
+        listLoading: list.loading,
+        listError: list.error,
+        store: null,
+        selectedStoreId: null,
+        members: [],
+        provenanceLabel: null,
+        isSuperAdmin: false,
+        selectionText: "",
+      }),
+    [list.stores, list.loading, list.error],
+  );
+  return (
+    <SurfaceRuntimeProvider surfaceName={RAG_DATA_STORES_SURFACE} getScope={getScope} isEditable={false}>
+      <div className="h-full overflow-y-auto bg-background p-3">
+        <div className="max-w-md overflow-hidden rounded-md border bg-card">
+          <CreateStoreInline initialOpen onCreated={(id) => onCreated(id, list.stores.find((x) => x.id === id)?.name ?? "Knowledge source")} />
+        </div>
+      </div>
+    </SurfaceRuntimeProvider>
+  );
+}
+
+export function DataStoresPage() {
+  const router = useRouter();
+  const search = useSearchParams();
+  const storeId = search?.get("store_id") ?? null;
+  // `?new=1` — the Knowledge hub's "New data store" (the store list is the hub's
+  // Data stores group now, KNOWLEDGE-HUB §6 H6b): the create form owns the page.
+  const creating = !storeId && search?.get("new") === "1";
+
+  const list = useDataStores();
+  const detail = useDataStoreDetail(storeId);
+
+  const { getScope, grantProvenanceLabel } = useDataStoresSurfaceScope(storeId, list, detail);
 
   // Bulk selection over the store list. A store the person can't change (shared with them,
   // read-only) keeps its checkbox; the run skips and names it.
@@ -477,7 +542,7 @@ function StoreListRow({
   );
 }
 
-function CreateStoreInline({
+export function CreateStoreInline({
   onCreated,
   initialOpen = false,
 }: {

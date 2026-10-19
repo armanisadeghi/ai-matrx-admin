@@ -1,0 +1,7 @@
+{
+  "file": "20261020240100_readspeed4_b_writes_mark_stale_views_refresh_reader_check_kept.sql",
+  "sha256": "d072d897bea1bcaf5ab3fb28c4d2e455b478fdd09a205bebb7f378e1d45f6222",
+  "target": "clone",
+  "totalMs": 9982,
+  "measuredAt": "2026-10-19T23:15:29.693Z"
+}

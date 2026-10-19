@@ -1,0 +1,10 @@
+import { store } from "./store.mjs";
+process.env.WALK_ORG_ID ??= "884d1ce8-7b49-4fba-a2f3-0f7dd7c83d4f";
+const { client } = await store();
+const [, , MAIN, AUTO, LOG] = process.argv;
+const a = (await client.automations({ table_id: MAIN })).data.automations.find((x) => x.id === AUTO);
+const spec = JSON.parse(JSON.stringify(a.spec ?? a));
+console.log(JSON.stringify(Object.keys(a)));
+spec.actions[0].mandate_key = "realtests.routing_line";
+const r = await client.automationDeclare({ table_id: MAIN, spec: { name: a.name, trigger: spec.trigger, actions: spec.actions }, automation_id: AUTO });
+console.log(r.ok && r.data.ok ? "updated" : JSON.stringify(r.ok ? r.data._errors : r.error));

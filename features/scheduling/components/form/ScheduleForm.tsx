@@ -160,6 +160,10 @@ interface Props {
   initialRunsOn?: string | null;
   /** With `initialRunsOn`: the folder, coding app and account /work had chosen. */
   initialComputerWork?: { folder: string; provider: "claude" | "codex"; accountProfileId: string };
+  /** After a save, instead of opening the schedule's page (a board tile stays where it is). */
+  onDone?: (taskId: string) => void;
+  /** Cancel, instead of going back a page. */
+  onCancel?: () => void;
 }
 
 export function ScheduleForm({
@@ -170,8 +174,11 @@ export function ScheduleForm({
   initialConversationId,
   initialRunsOn,
   initialComputerWork,
+  onDone,
+  onCancel,
 }: Props) {
   const router = useRouter();
+  const finish = (id: string) => (onDone ? onDone(id) : router.push(`/schedules/${id}`));
   const dispatch = useAppDispatch();
   const [pending, startTransition] = useTransition();
   const [submitting, setSubmitting] = useState(false);
@@ -239,7 +246,7 @@ export function ScheduleForm({
           trigger,
         });
         toast.success("Schedule saved");
-        startTransition(() => router.push(`/schedules/${id}`));
+        startTransition(() => finish(id));
       } catch (err) {
         setSaveFailure(saveFailureFrom(err));
       } finally {
@@ -276,7 +283,7 @@ export function ScheduleForm({
             },
           );
           toast.success("Schedule updated");
-          startTransition(() => router.push(`/schedules/${task.id}`));
+          startTransition(() => finish(task.id));
           return;
         }
         const { id } = await createComputerCodingTask({
@@ -291,7 +298,7 @@ export function ScheduleForm({
           trigger,
         });
         toast.success("Schedule saved");
-        startTransition(() => router.push(`/schedules/${id}`));
+        startTransition(() => finish(id));
       } catch (err) {
         setSaveFailure(saveFailureFrom(err));
       } finally {
@@ -356,7 +363,7 @@ export function ScheduleForm({
           }),
         );
         toast.success("Schedule updated");
-        startTransition(() => router.push(`/schedules/${task.id}`));
+        startTransition(() => finish(task.id));
       } else {
         const input: CreateAgentTaskInput = {
           title: parsed.data.title,
@@ -390,7 +397,7 @@ export function ScheduleForm({
         } else {
           toast.success("Schedule created");
         }
-        startTransition(() => router.push(`/schedules/${newId}`));
+        startTransition(() => finish(newId));
       }
     } catch (err) {
       toast.error(
@@ -867,7 +874,7 @@ export function ScheduleForm({
           <Button
             type="button"
             variant="quiet"
-            onClick={() => router.back()}
+            onClick={() => (onCancel ? onCancel() : router.back())}
             disabled={submitting || pending}
           >
             Cancel

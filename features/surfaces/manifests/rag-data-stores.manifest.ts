@@ -453,6 +453,7 @@ This surface holds store and member METADATA, never document text. To read what
 is inside a member, use its id on the document viewer surface.
 </surface_intro>`,
   groups,
+  briefValues: ["store_name","store_kind","store_is_active","member_count"],
   values: mergeBaselineValues(
     pickBaseline("selection", "content", "context"),
     surfaceSpecific,

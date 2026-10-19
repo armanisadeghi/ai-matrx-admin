@@ -4,8 +4,10 @@ Policy: `common-docs/policies/agents-never-author-agents.md` § Provision first.
 platform shows the EXACT values available there and the expected output instead of running anything.
 
 - `data.ts` — `captureProvision(dispatch, pointKey, subjectId, orgId, trigger)` (server door
-  `POST /provision-window/{point_key}/capture`), `loadProvisionSnapshot(id)` and `listProvisionSnapshots(point, subject)`
-  (direct reads of `mandate.provision_snapshot`), `snapshotJson` / `snapshotMarkdown` (paste-ready samples).
+  `POST /provision-window/{point_key}/capture`), `loadProvisionSnapshot(id)` (server door
+  `GET /provision-window/snapshots/{id}?debug_view=1` — values only while watching AI, else each value `withheld` with
+  its size, drawn "Withheld"; the browser never selects `provision_values`), `listProvisionSnapshots(point, subject)`
+  (direct read of ids, times and sizes only), `snapshotJson` / `snapshotMarkdown` (paste-ready samples).
 - `ProvisionWindowBody.tsx` — every value (expand to full, size, source, missing + why, copy), Copy all JSON / Markdown,
   earlier captures picker, and the **Expected output** section (kind schema + example, each copyable).
 - `ProvisionCaptures.tsx` — buttons for each capture of a point for a subject ("At Create", "After setup", "Captured").

@@ -25,6 +25,8 @@ const NO_THREAD_OF_THEIR_OWN = new Set([
   "social-outlier-feed",
   "social-ad",
   "social-swipe-collection",
+  // A report is a view over the person's records (agent drift over their agents), not a record: no entity token.
+  "report",
 ]);
 
 const recordTypes = BOARD_ITEM_TYPES.filter((t) => "name" in t.surface);

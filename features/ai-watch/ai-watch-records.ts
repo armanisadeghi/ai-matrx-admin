@@ -4,14 +4,18 @@
  * Live runs stream through `state.activeRequests` (the client request id). The
  * durable record is the server's own: `chat.user_request` (status, tokens,
  * cost, timing — the SAME numbers the creator panel and agent battles show,
- * computed once by the server) plus `chat.request_snapshot` (the exact
- * provider request and response per iteration). No second cost calculator
- * lives here — this module only reads those rows, under normal RLS.
+ * computed once by the server) plus the exact provider request and response
+ * per iteration, read through the server (`GET /runs/{request_id}/snapshots`,
+ * AI Watch viewers only — the payloads carry every provision value, so the
+ * browser never selects `chat.request_snapshot` payload columns itself). No
+ * second cost calculator lives here.
  */
 
 import { readAllRows } from "@ai-matrx/data/db";
 import type { MandateRunData } from "@ai-matrx/agents/generated/stream-events";
 import { supabase } from "@/utils/supabase/client";
+import { getJson } from "@/lib/python-client";
+import { withRunDebugView } from "@/features/workflow-runtime/transport/debug-view";
 
 export interface AiWatchSnapshot {
   id: string;
@@ -72,6 +76,28 @@ export interface AiWatchRunSummary {
   /** The followed server work this call belongs to (`followed-work.ts`), when it was found through one. */
   followKey?: string | null;
   followLabel?: string | null;
+}
+
+/**
+ * A run LIST reads only the metadata fields that label a row — never the whole `metadata` column, which
+ * also holds the run's watch frame (provision values until stage 3 stops writing them). The pure mappers
+ * read `row.metadata`; `withLabelMetadata` rebuilds exactly these fields there.
+ */
+// Typed `string`: JSON-path aliases are beyond the select-string type parser (TS2589).
+export const RUN_LABEL_METADATA_COLUMNS: string =
+  "md_mandate_key:metadata->>mandate_key, md_agent_name:metadata->>agent_name, md_node:metadata->>workflow_node_id, md_holder_name:metadata->mandate_holder->>name, md_watch_key:metadata->mandate_watch->>mandate_key";
+
+export function withLabelMetadata(row: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...row,
+    metadata: {
+      mandate_key: row.md_mandate_key ?? null,
+      agent_name: row.md_agent_name ?? null,
+      workflow_node_id: row.md_node ?? null,
+      mandate_holder: { name: row.md_holder_name ?? null },
+      mandate_watch: { mandate_key: row.md_watch_key ?? null },
+    },
+  };
 }
 
 const USER_REQUEST_COLUMNS =
@@ -135,36 +161,58 @@ function toRecord(row: Row, snapshots: AiWatchSnapshot[]): AiWatchRecord {
   };
 }
 
+interface SnapshotsDoorResponse {
+  snapshots?: Array<{
+    id: string;
+    iteration?: number | null;
+    provider?: string | null;
+    model?: string | null;
+    request_payload?: unknown;
+    response_payload?: unknown;
+    created_at?: string | null;
+  }>;
+}
+
+/**
+ * The exact provider calls of one request, through the server's AI Watch door
+ * (`?debug_view=1` while this tab watches). A 404 is a run whose rows are not
+ * written yet (the request row is write-behind): no calls recorded so far.
+ */
+export async function fetchAiWatchSnapshots(userRequestId: string): Promise<AiWatchSnapshot[]> {
+  try {
+    const { data } = await getJson<SnapshotsDoorResponse>(
+      withRunDebugView(`/runs/${encodeURIComponent(userRequestId)}/snapshots`),
+      { captureErrors: false },
+    );
+    return (data.snapshots ?? []).map((s) => ({
+      id: String(s.id),
+      iteration: num(s.iteration),
+      provider: str(s.provider),
+      requestPayload: obj(s.request_payload),
+      responsePayload: obj(s.response_payload),
+      createdAt: String(s.created_at ?? ""),
+    }));
+  } catch (error) {
+    if ((error as { status?: number } | null)?.status === 404) return [];
+    throw error;
+  }
+}
+
 /** One recorded run, by its server id (`chat.user_request.id`). */
 export async function fetchAiWatchRecord(
   userRequestId: string,
 ): Promise<AiWatchRecord | null> {
-  const [ur, snaps] = await Promise.all([
+  const [ur, snapshots] = await Promise.all([
     supabase
       .schema("chat")
       .from("user_request")
       .select(USER_REQUEST_COLUMNS)
       .eq("id", userRequestId)
       .maybeSingle(),
-    supabase
-      .schema("chat")
-      .from("request_snapshot")
-      .select("id, iteration, provider, request_payload, response_payload, created_at")
-      .eq("user_request_id", userRequestId)
-      .is("deleted_at", null)
-      .order("iteration", { ascending: true }),
+    fetchAiWatchSnapshots(userRequestId),
   ]);
   if (ur.error) throw new Error(ur.error.message);
-  if (snaps.error) throw new Error(snaps.error.message);
   if (!ur.data) return null;
-  const snapshots: AiWatchSnapshot[] = ((snaps.data ?? []) as Row[]).map((s) => ({
-    id: String(s.id),
-    iteration: num(s.iteration),
-    provider: str(s.provider),
-    requestPayload: obj(s.request_payload),
-    responsePayload: obj(s.response_payload),
-    createdAt: String(s.created_at ?? ""),
-  }));
   return toRecord(ur.data as Row, snapshots);
 }
 
@@ -182,7 +230,7 @@ export async function fetchAiWatchRuns(scope: {
       let query = supabase
         .schema("chat")
         .from("user_request")
-        .select("id, status, source_feature, workflow_run_id, origin_class, created_at, metadata")
+        .select(`id, status, source_feature, workflow_run_id, origin_class, created_at, ${RUN_LABEL_METADATA_COLUMNS}`)
         .is("deleted_at", null);
       query = runIds.length
         ? query.in("workflow_run_id", runIds)
@@ -194,7 +242,7 @@ export async function fetchAiWatchRuns(scope: {
     },
     { label: "chat.user_request (Watch AI runs)" },
   );
-  return (rows as Row[]).map((row, index) => {
+  return (rows as Row[]).map(withLabelMetadata).map((row, index) => {
     const metadata = obj(row.metadata) ?? {};
     const holder = obj(metadata.mandate_holder);
     const watch = obj(metadata.mandate_watch);
@@ -449,7 +497,7 @@ export async function fetchFollowedRuns(scopes: readonly FollowedScope[]): Promi
   const ids = [...new Set(scopes.flatMap((s) => s.userRequestIds))];
   const conversations = [...new Set(scopes.flatMap((s) => s.conversationIds))];
   if (!ids.length && !conversations.length) return [];
-  const select = "id, status, source_feature, workflow_run_id, conversation_id, origin_class, created_at, metadata";
+  const select = `id, status, source_feature, workflow_run_id, conversation_id, origin_class, created_at, ${RUN_LABEL_METADATA_COLUMNS}`;
   const [byId, byConversation] = await Promise.all([
     ids.length
       ? supabase.schema("chat").from("user_request").select(select).in("id", ids).is("deleted_at", null)
@@ -461,7 +509,7 @@ export async function fetchFollowedRuns(scopes: readonly FollowedScope[]): Promi
   if (byId.error) throw new Error(byId.error.message);
   if (byConversation.error) throw new Error(byConversation.error.message);
   const rows = new Map<string, Row>();
-  for (const r of [...((byId.data ?? []) as Row[]), ...((byConversation.data ?? []) as Row[])]) rows.set(String(r.id), r);
+  for (const r of [...((byId.data ?? []) as Row[]), ...((byConversation.data ?? []) as Row[])]) rows.set(String(r.id), withLabelMetadata(r));
   return followedSummaries([...rows.values()], scopes);
 }
 

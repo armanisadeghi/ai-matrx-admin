@@ -1,6 +1,7 @@
 -- INVERSE of migrations/20261020040000_cfwrite_c_b_every_kind_with_a_record_id_is_a_link_target.sql (lane CF-WRITE-3): drops the trigger and its function, puts custom.entity_back_links back, deletes the link rules the kind registry registered (identified by their note).
 -- chair-step: deletes rows this migration inserted, drops one trigger and one function, restores one function body.
 -- lock: custom
+-- based-on: custom.entity_back_links(uuid, text, uuid, integer, text) 5f69ef74b957d6e136f4d2440f49365784131d881bb61f4785ad06f1e2155d39
 set local lock_timeout = '3s';
 
 DROP TRIGGER entity_type_is_a_link_target ON platform.entity_types;

@@ -5,7 +5,7 @@
 // One map, open. The canvas itself is InteractiveDiagramBlock in authoring
 // mode — this file owns loading, the name, and saving. Nothing here draws.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -40,7 +40,20 @@ const AUTOSAVE_DELAY_MS = 1200;
 
 type SaveState = "idle" | "pending" | "saving" | "saved" | "error";
 
-export function MapEditor({ mapId }: { mapId: string }) {
+export function MapEditor({
+  mapId,
+  embedded = false,
+  onTitle,
+}: {
+  mapId: string;
+  /**
+   * A board tile: the same editor without the shell header, the back door or the page's top padding.
+   * The map's name and save state sit in a strip above the canvas.
+   */
+  embedded?: boolean;
+  /** Embedded: the map's name as it loads and changes, so the tile can carry it. */
+  onTitle?: (title: string) => void;
+}) {
   const [diagram, setDiagram] = useState<DiagramData | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -119,6 +132,11 @@ export function MapEditor({ mapId }: { mapId: string }) {
       if (timer.current) clearTimeout(timer.current);
     };
   }, []);
+
+  const reportedTitle = diagram?.title;
+  useEffect(() => {
+    if (reportedTitle) onTitle?.(reportedTitle);
+  }, [reportedTitle, onTitle]);
 
   const renameMap = (title: string) => {
     if (!latest.current) return;
@@ -297,7 +315,24 @@ export function MapEditor({ mapId }: { mapId: string }) {
     replace_map: replaceMapFromSurface,
   });
 
-  const header = (
+  const nameField = (
+    <Input
+      data-surface-value="map_title"
+      value={diagram?.title ?? ""}
+      onChange={(e) => renameMap(e.target.value)}
+      disabled={!diagram}
+      aria-label="Map name"
+      className="w-full text-center"
+    />
+  );
+  const header = embedded ? (
+    <div className="flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-2" data-map-bar>
+      <div className="min-w-0 flex-1">{nameField}</div>
+      <div className="flex w-28 shrink-0 justify-end">
+        <SaveIndicator state={saveState} />
+      </div>
+    </div>
+  ) : (
     <RouteHeader
       left={
         <Button asChild variant="quiet" className="shrink-0">
@@ -307,18 +342,7 @@ export function MapEditor({ mapId }: { mapId: string }) {
           </Link>
         </Button>
       }
-      center={
-        <div className="mx-auto w-[min(44vw,28rem)] px-2">
-          <Input
-            data-surface-value="map_title"
-            value={diagram?.title ?? ""}
-            onChange={(e) => renameMap(e.target.value)}
-            disabled={!diagram}
-            aria-label="Map name"
-            className="w-full text-center"
-          />
-        </div>
-      }
+      center={<div className="mx-auto w-[min(44vw,28rem)] px-2">{nameField}</div>}
       right={
         <div className="flex w-28 justify-end pr-1">
           <SaveIndicator state={saveState} />
@@ -326,36 +350,34 @@ export function MapEditor({ mapId }: { mapId: string }) {
       }
     />
   );
+  const bodyTop = embedded ? undefined : { paddingTop: "var(--shell-header-h)" };
 
   if (loadError) {
     return (
-      <>
+      <Frame embedded={embedded}>
         {header}
         {/* getMap reports only a message, so the gate asks the platform
             which state this is (denied, deleted, missing, signed out). */}
-        <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
+        <div className={embedded ? "h-full overflow-hidden" : "h-full overflow-hidden pt-[var(--shell-header-h)]"}>
           <AccessGate
             token="canvas_item"
             id={mapId}
-            fallbackHref="/maps"
-            fallbackLabel="Back to your maps"
+            fallbackHref={embedded ? undefined : "/maps"}
+            fallbackLabel={embedded ? undefined : "Back to your maps"}
           />
         </div>
-      </>
+      </Frame>
     );
   }
 
   if (!diagram) {
     return (
-      <>
+      <Frame embedded={embedded}>
         {header}
-        <div
-          className="flex h-full items-center justify-center overflow-hidden"
-          style={{ paddingTop: "var(--shell-header-h)" }}
-        >
+        <div className="flex h-full items-center justify-center overflow-hidden" style={bodyTop}>
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
-      </>
+      </Frame>
     );
   }
 
@@ -366,6 +388,7 @@ export function MapEditor({ mapId }: { mapId: string }) {
       isEditable
       getWriteHandlers={getSurfaceWriteHandlers}
     >
+      <Frame embedded={embedded}>
       {header}
       <NonEditableContextMenu
         sourceFeature="canvas"
@@ -399,11 +422,7 @@ export function MapEditor({ mapId }: { mapId: string }) {
           },
         ]}
       >
-        <div
-          className="h-full overflow-hidden"
-          style={{ paddingTop: "var(--shell-header-h)" }}
-          data-surface-value="map_json"
-        >
+        <div className="min-h-0 flex-1 overflow-hidden" style={bodyTop} data-surface-value="map_json">
           <MapCanvas
             diagram={diagram}
             defaultEditing
@@ -413,8 +432,14 @@ export function MapEditor({ mapId }: { mapId: string }) {
           />
         </div>
       </NonEditableContextMenu>
+      </Frame>
     </SurfaceRuntimeProvider>
   );
+}
+
+/** Embedded in a tile the strip and the canvas stack in a column that fills the tile; on the page the header floats. */
+function Frame({ embedded, children }: { embedded: boolean; children: ReactNode }) {
+  return embedded ? <div className="flex h-full min-h-0 flex-col">{children}</div> : <>{children}</>;
 }
 
 function SaveIndicator({ state }: { state: SaveState }) {

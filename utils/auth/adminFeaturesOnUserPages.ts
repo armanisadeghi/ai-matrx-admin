@@ -202,7 +202,7 @@ export const ADMIN_FEATURES_ON_USER_PAGES = {
     level: "admin",
     allows: "Open any provision snapshot in the Provision window, including one owned by an organization the admin is not a member of.",
     where: "Provision window (features/provision-window/data.ts loadProvisionSnapshot)",
-    doors: ["mandate.provision_snapshot (read, platform_admin_read)"],
+    doors: ["GET /provision-window/snapshots/{id}?debug_view=1 (the server admits a watching admin; values never read in the browser)"],
     ruling: "Arman, 2026-10-12 (smart-add-brand VISION Part 4): \"I will never again allow agents to run randomly without me having full visibility into the inputs and the outputs.\" Provision windows are how he sees those inputs, for every organization.",
   },
 } as const satisfies Record<string, AdminFeatureOnUserPage>;

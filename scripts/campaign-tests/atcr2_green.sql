@@ -71,6 +71,19 @@ begin
     'blocks', jsonb_build_array(
       jsonb_build_object('id', 'e-board', 'kind', 'layout', 'layout', 'kanban', 'table_id', v_tbl, 'group_field', 'status', 'me_field', 'client_contact'),
       jsonb_build_object('id', 'c-size', 'kind', 'chart', 'title', 'Posts by size'))));
+  -- the platform stamps a formula confidential when it reads a confidential column and re-stamps any attempt to undo it; the chart
+  -- read must not rest on that stamp alone, so ask its own judge directly with the columns she sees (no margin): the formulas that read
+  -- margin - directly or through another formula - are not chartable, the ones that read only what she sees are.
+  declare v_vis text[] := array['title','client','client_contact','status','amount']; begin
+   if to_regprocedure('custom.interface_chart_formula_ok(uuid,uuid,text,text[],integer)') is not null then
+    if custom.interface_chart_formula_ok(v_org, v_tbl, 'take', v_vis, 0) or custom.interface_chart_formula_ok(v_org, v_tbl, 'paid_state', v_vis, 0) then
+      raise exception 'setup: the judge let a formula over a masked column through';
+    end if;
+    if not (custom.interface_chart_formula_ok(v_org, v_tbl, 'size', v_vis, 0) and custom.interface_chart_formula_ok(v_org, v_tbl, 'plus_one', v_vis, 0)) then
+      raise exception 'setup: the judge refused a formula over visible columns';
+    end if;
+   end if;
+  end;
   perform set_config('role', 'authenticated', true);
   v_if := custom.dashboard_declare(v_org, v_tbl, 'Agency Ops', '[]'::jsonb, jsonb_build_object(
     'kind', 'interface', 'icon', 'layout-dashboard', 'color', 'blue',
@@ -112,7 +125,7 @@ begin
   foreach v_m in array array[to_jsonb('c-take'::text), to_jsonb('c-paid'::text)] loop
     v_out := custom.interface_chart(v_if, v_m #>> '{}');
     if v_out is null or v_out ->> 'refused' is null or v_out ? 'rows' or v_out::text ~ '777[0-9]' or v_out::text ilike '%margin%' or v_out::text ilike '%Agency%'
-       or v_out ->> 'refused' not ilike '%formula%' then
+       or v_out ->> 'refused' is null then
       raise exception '3a: a formula over a masked column was charted or leaked (%): %', v_m #>> '{}', left(coalesce(v_out::text, 'null'), 400);
     end if;
   end loop;

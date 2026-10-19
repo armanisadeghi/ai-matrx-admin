@@ -106,6 +106,14 @@ export function seedPlatform(): void {
   seedRpc("cmt_list", []);
   seedRpc("has_access", true);
   seedRpc("association_link_sources", []);
+  // features/unified-data/hub/doors.ts — the custom-fields read and the "Linked records" section any record page
+  // asks once (a scope's page too): no custom values, no row linking here.
+  seedRpc("entity_record_read", {});
+  seedRpc("entity_back_links", { target: null, items: [], next_cursor: null });
+  // @ai-matrx/chat's background dock (chat.conversation_background_facts: one row per conversation it is asked
+  // about, none have background work) and its server look (`ues_touch`, a write the dock records once per point).
+  seedRpc("conversation_background_facts", []);
+  seedRpc("ues_touch", null, "write");
   // platform.home_names — the names of the homes a note lives in (features/notes/homes/useNoteHomes.ts `HomeNameRow`).
   seedRpc("home_names", []);
   // features/organizations/service/membershipsService.ts `MbrForUserRow`
@@ -148,6 +156,8 @@ export function seedPlatform(): void {
   seedRpc("conversation_files", []);
   // favorites/pins (`ues_get_bulk`): only rows that HAVE state come back — none yet.
   seedRpc("ues_get_bulk", []);
+  // features/file-actions (useFileFavorites, useRecordsOpened): the person's starred and recently opened files — none yet.
+  seedRpc("ues_list", []);
   // lib/knobs/unifiedDataCampaign.ts — the record store is on for this organization.
   seedRpc("unified_data_store_on", { on: true });
 }

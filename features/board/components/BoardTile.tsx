@@ -78,7 +78,7 @@ import { LabelFace, LevelLayers, StructureFace } from "./lod/TileLevels";
 import type { CardLine } from "../items/card-lines";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
 import { tileContentReady } from "../engine/content-ready";
-import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
+import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, atAutoHeightCeiling, autoContentHeight, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
  * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
@@ -549,6 +549,10 @@ export function BoardTile({
   // empty lazy body, a hidden page or an unlaid card — saving those collapsed whole boards), debounced, so
   // a write never feeds another measure. Becoming ready (loading ends, the page shows) measures again.
   const autoHeight = chrome.autoHeight && !focused && !overview;
+  // At the ceiling the card stops growing and its body becomes the tile's scroller: content past the
+  // ceiling scrolls inside the tile, never clipped (the wheel latch gives such a gesture to the tile).
+  const atCeiling = autoHeight && atAutoHeightCeiling(rect.h);
+  const bodyScrollRef = useRef<HTMLDivElement>(null);
   const onAutoHeightRef = useRef(onAutoHeight);
   useEffect(() => {
     onAutoHeightRef.current = onAutoHeight;
@@ -560,7 +564,9 @@ export function BoardTile({
     const write = () => {
       timer = null;
       if (!tileContentReady(card)) return;
-      const next = autoHeightChange(rectRef.current.h, card.offsetHeight);
+      const scroller = bodyScrollRef.current;
+      const scrolls = scroller !== null && atAutoHeightCeiling(rectRef.current.h);
+      const next = autoHeightChange(rectRef.current.h, autoContentHeight(card.offsetHeight, scrolls ? scroller : null));
       if (next !== null) onAutoHeightRef.current?.(id, next);
     };
     const schedule = () => {
@@ -569,6 +575,9 @@ export function BoardTile({
     };
     const ro = new ResizeObserver(schedule);
     ro.observe(card);
+    // At the ceiling the card is fixed: the content growing or shrinking inside it is the body's size.
+    const bodyBox = card.querySelector<HTMLElement>("[data-board-body]");
+    if (bodyBox) ro.observe(bodyBox);
     // Loading ending (a skeleton leaving, `aria-busy` clearing) may not change the card's size.
     const mo = new MutationObserver(schedule);
     mo.observe(card, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-busy"] });
@@ -684,7 +693,7 @@ export function BoardTile({
       data-board-tile-chrome={bare ? "bare" : headerless ? "headerless" : "full"}
       className={cn(
         "relative flex w-full flex-col",
-        autoHeight ? "h-auto" : "h-full",
+        autoHeight && !atCeiling ? "h-auto" : "h-full",
         bare
           ? "rounded-xl"
           : cn(
@@ -731,7 +740,12 @@ export function BoardTile({
         {tileMenu}
       </div>
       )}
-      <div className={autoHeight ? "relative" : "relative min-h-0 flex-1"} aria-hidden={overview}>
+      <div
+        ref={bodyScrollRef}
+        data-board-ceiling-scroll={atCeiling ? "" : undefined}
+        className={cn(autoHeight && !atCeiling ? "relative" : "relative min-h-0 flex-1", atCeiling && "overflow-y-auto overscroll-contain")}
+        aria-hidden={overview}
+      >
         {/* At overview the body stays mounted (a stream keeps its place) but
             is skipped for style, layout and paint. */}
         <div

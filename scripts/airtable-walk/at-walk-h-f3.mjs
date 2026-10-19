@@ -1,0 +1,13 @@
+import { open, gotoTable, say } from "./at-walk-h-lib.mjs";
+const [, , T, ACT] = process.argv;
+const { browser, page, shot, errs } = await open(false);
+await gotoTable(page, T);
+await page.getByRole("button", { name: "Layout: Grid" }).click();
+await page.locator("[role^=menuitem],[role=option]").filter({ hasText: /^Form/ }).first().click();
+const btn = page.getByRole("button", { name: ACT, exact: true });
+await btn.waitFor({ timeout: 120000 });
+await btn.click();
+await page.waitForFunction(() => /Published|Unpublish|Live/.test(document.body.innerText) && !/Not published/.test(document.body.innerText), null, { timeout: 90000 }).catch(() => say("no published state in 90s"));
+say("TXT", (await page.locator("body").innerText()).replace(/\n+/g, " | ").match(/ATWH intake.{0,200}/)?.[0]);
+await shot("f3-" + ACT); say("ERRS", errs.slice(-5));
+await browser.close();

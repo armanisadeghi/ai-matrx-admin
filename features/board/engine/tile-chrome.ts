@@ -128,6 +128,24 @@ export function autoHeightChange(current: number, measured: number, min = 48, ce
   return Math.abs(next - current) >= 1 ? next : null;
 }
 
+/**
+ * A tile that grew to its content has reached the ceiling: from here its body is the tile's own
+ * scroller (the rest of the content scrolls inside, never clipped), until the content fits again.
+ */
+export function atAutoHeightCeiling(h: number, ceiling = AUTO_HEIGHT_CEILING_PX): boolean {
+  return h >= ceiling - 1;
+}
+
+/**
+ * The height an auto-height tile's content needs, in board px. Below the ceiling the card IS its
+ * content (`cardHeight`); at the ceiling the card is fixed and its body scrolls, so the content is
+ * the card less the body's visible part plus everything the body holds (`scrollHeight`).
+ */
+export function autoContentHeight(cardHeight: number, body: { clientHeight: number; scrollHeight: number } | null): number {
+  if (!body) return cardHeight;
+  return cardHeight - body.clientHeight + Math.max(body.clientHeight, body.scrollHeight);
+}
+
 /** What `innerSlack` reads of a scroller inside a tile. */
 export interface ScrollerBox {
   scrollHeight: number;
