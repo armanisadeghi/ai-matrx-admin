@@ -1,5 +1,5 @@
 // Every design pack (the Design system board SP0363 and the ten starters from build-design-starters.py):
-// seeded text colors read at 4.5:1 on their ground and Lines colors (border, input, ring) at 3:1, in light
+// seeded text colors read at 4.5:1 on their ground and line colors (border, input, ring; `min: 3` in the value) at 3:1, in light
 // AND dark; every pack carries the one token vocabulary; the typed designProfile is validated.
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -17,7 +17,7 @@ const load = (f: string) => JSON.parse(readFileSync(join(DIR, f), "utf8")) as Pa
 const contrastFindings = (p: unknown) => checkPack(p).filter((f) => /reads at .*:1/.test(f.says));
 const names = (p: Pack, token: string) => p.spec.tables.find((t) => t.token === token)!.rows.map((r) => String(r.values.name));
 
-function setColor(p: Pack, name: string, value: { light: string; dark: string }) {
+function setColor(p: Pack, name: string, value: { light: string; dark: string; min?: number }) {
   const row = p.spec.tables.find((t) => t.token === "color")!.rows.find((r) => r.values.name === name)!;
   row.values.value = JSON.stringify(value);
 }
@@ -59,12 +59,23 @@ describe("design packs", () => {
     expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/in dark/);
   });
 
-  it("holds a field outline to 3:1, not 4.5:1", () => {
+  it("holds a field outline to its own minimum (min 3), not 4.5:1", () => {
     const p = load("design-starter-near-blank.pack.json");
-    setColor(p, "input", { light: "#8a8a8a", dark: "#858585" }); // ~3.4:1 on white: fine for a line
+    setColor(p, "input", { light: "#8a8a8a", dark: "#858585", min: 3 }); // ~3.4:1 on white: fine for a line
     expect(contrastFindings(p)).toEqual([]);
-    setColor(p, "input", { light: "#b5b5b5", dark: "#858585" }); // ~2:1: refused
-    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a Lines color reaches 3:1/);
+    setColor(p, "input", { light: "#b5b5b5", dark: "#858585", min: 3 }); // ~2:1: refused
+    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* a line color reaches its 3:1/);
+    // The minimum is the color's own data, never its group's name: without it the same gray is text at 4.5:1.
+    setColor(p, "input", { light: "#8a8a8a", dark: "#858585" });
+    expect(contrastFindings(p).map((f) => f.says).join("\n")).toMatch(/"input" on "card" .* seeded text colors reach 4.5:1/);
+  });
+
+  it("every Lines color in every design pack carries min 3", () => {
+    for (const file of FILES) {
+      for (const r of load(file).spec.tables.find((t) => t.token === "color")!.rows) {
+        if (r.values.group === "Lines") expect([file, r.values.name, JSON.parse(String(r.values.value)).min]).toEqual([file, r.values.name, 3]);
+      }
+    }
   });
 
   it("refuses a design profile with an unknown mood or a bad color", () => {
