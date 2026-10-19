@@ -77,6 +77,8 @@ export function useSpendAlarmSource(enabled: boolean): AttentionSourceState {
     setStatus: (id, status, options) => after(setSpendAlarmStatus(id, status, options)),
     decideApproval: (approvalId, decision) => after(decideSpendApproval(approvalId, decision)),
     restoreApproval: (approvalId) => after(restoreOwnerApproval(approvalId)),
+    extendApprovals: (approvalIds, expiresAt) =>
+      after(Promise.all(approvalIds.map((id) => decideSpendApproval(id, "approve_temporary", { expiresAt })))),
     setTaskEnabled: (taskId, enabled) => after(patchSystemTask(taskId, { enabled })),
     runTaskNow: async (taskId) => {
       const { run_id } = await runSystemTaskNow(taskId);

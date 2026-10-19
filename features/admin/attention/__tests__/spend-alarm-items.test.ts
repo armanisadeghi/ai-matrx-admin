@@ -112,6 +112,28 @@ describe("spendAlarmItems", () => {
     expect(plain.actions.map((a) => a.id)).not.toContain("restore_prior");
   });
 
+  it("the expiring-approvals group offers one Extend that names its consequence and extends every approval to the date", async () => {
+    const d = deps({
+      extendApprovals: async (...args) => {
+        d.calls.push(["extendApprovals", ...args]);
+      },
+    });
+    const group = row({
+      kind: "spend_approvals_expiring",
+      refs: { approval_ids: `${APPROVAL},${TASK}`, approval_count: "2", extend_to: "2026-11-18T09:11:36+00:00" },
+    });
+    const [item] = spendAlarmItems([group], d);
+    const extend = item.actions.find((a) => a.id === "extend_approvals");
+    expect(extend?.label).toBe("Extend");
+    expect(extend?.confirm?.title).toMatch(/^Extend 2 approvals to Nov 18, 2026\?$/);
+    expect(extend?.confirm?.description).toMatch(/lapsing back to rejected/);
+    expect(d.calls).toEqual([]);
+    await extend!.run();
+    expect(d.calls).toEqual([["extendApprovals", [APPROVAL, TASK], "2026-11-18T09:11:36+00:00"]]);
+    const [plain] = spendAlarmItems([row()], d);
+    expect(plain.actions.map((a) => a.id)).not.toContain("extend_approvals");
+  });
+
   it("info is its own severity; critical stays critical", () => {
     const items = spendAlarmItems([row({ id: "a", level: "info" }), row({ id: "b", level: "critical" })], deps());
     expect(items.map((i) => i.severity)).toEqual(["info", "critical"]);
