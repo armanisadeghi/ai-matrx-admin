@@ -1,6 +1,6 @@
 {
   "note": "Checked-in snapshot of public._schema_migrations for the files under migrations/campaign and migrations/inverse. Written by `pnpm db:apply` on every successful production apply and refreshed whole by the nightly catch-up. Never hand-edited: a self-written checksum is a claim nobody can check. Guard: pnpm check:ledgered-files-unedited.",
-  "generated_at": "2026-10-19T17:57:40.863Z",
+  "generated_at": "2026-10-19T18:07:55.592Z",
   "files": {
     "migrations/campaign/20261015230000_a_copied_table_gets_its_own_automations_switched_off.sql": {
       "source": "matrx-frontend",
@@ -103,6 +103,18 @@
       "filename": "20261019210000_readspeed_a_a_back_link_is_found_once_per_statement.sql",
       "checksum": "067feed0de69f9854dc841d333c20ef75f5abf21928368ecd656f059f4e8d169",
       "applied_at": "2026-10-19 17:57:39.35494+00"
+    },
+    "migrations/campaign/20261019211000_readspeed_b_a_rollup_filter_is_compiled_once_per_statement.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019211000_readspeed_b_a_rollup_filter_is_compiled_once_per_statement.sql",
+      "checksum": "101973f877eeb1f3e4a45ecfa677fdf8b8c01cd7ca3216f7fda847be79000857",
+      "applied_at": "2026-10-19 18:03:21.333043+00"
+    },
+    "migrations/campaign/20261019212000_readspeed_c_a_back_link_reader_predicate_is_asked_once_per_statement.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261019212000_readspeed_c_a_back_link_reader_predicate_is_asked_once_per_statement.sql",
+      "checksum": "14997ce7a25b2ebb18e37e1807fae37674e7261aeb0f54c9be5783c89f63dcf9",
+      "applied_at": "2026-10-19 18:07:54.307446+00"
     },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
