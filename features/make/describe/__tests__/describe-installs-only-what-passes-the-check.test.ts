@@ -28,7 +28,7 @@ describe("the describe box installs only what passes the store's check", () => {
     expect(checked.line).toBe(`${checked.problems[0]!.says}${checked.problems.length > 1 ? ` (+${checked.problems.length - 1} more)` : ""}`);
     expect(checked.line).not.toMatch(/\n/);
     // What the describe profile does not owe is never what refuses it.
-    expect(checked.problems.map((p) => p.says).join("\n")).not.toMatch(/at least three views|at least two extras|catalogue/i);
+    expect(checked.problems.map((p) => p.says).join("\n")).not.toMatch(/at least three views|at least two extras|catalog(ue)?\b/i);
   });
 
   it("passes a sound one-off spec with one view, one booking page and the empty lists left out", () => {
