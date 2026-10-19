@@ -17,7 +17,7 @@ import { siteConfig } from "@/config/extras/site";
 import { BoardSketch } from "@/features/board/templates/BoardSketch";
 import { planPackBoards, sketchTables } from "@/features/board/templates/board-pack-plan";
 import { TemplatePackPreview } from "@/features/spaces/public/TemplatePackPreview";
-import { packPageSettings, packPagesInOrder, spaceTemplateMakes, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { packPageSettings, packPagesInOrder, spaceTemplateMakes, spaceTemplateMakesLine, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 
 import { footprintLine, isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
 import { spacePageOutlines } from "./SpacePageOutline";
@@ -147,7 +147,7 @@ export function SpaceTemplatePublicBody({
         {boards ? (
           <section className="flex flex-col gap-4" aria-label="Board preview" data-space-template-board="">
             {boards.map((b) => (
-              <div key={b.key} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-4">
+              <div key={b.key} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-4 [&_svg]:max-h-[520px]">
                 <h2 className="type-title text-foreground">{b.title}</h2>
                 <BoardSketch doc={b.doc} />
               </div>
@@ -173,7 +173,7 @@ export function SpaceTemplatePublicBody({
             <div className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3">
               {boards ? (
                 <>
-                  <h3 className="text-sm font-medium text-muted-foreground tabular-nums">{boards.length === 1 ? "1 board" : `1 board · ${boards.length} pages`}</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground tabular-nums">{spaceTemplateMakesLine(space)}</h3>
                   <ul className="flex flex-col gap-1 text-sm" data-space-template-pages="">
                     {boards.map((b, i) => (
                       <li key={b.key} className="truncate" style={{ paddingLeft: i ? 16 : 0 }}>
