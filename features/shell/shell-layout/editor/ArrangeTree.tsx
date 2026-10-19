@@ -3,6 +3,8 @@
 // ArrangeTree — the person's menu as it will look: drag a row before/after any row or onto a group to
 // nest it (promote = drop it at the top level), rename and re-icon in place, and the same moves from each
 // row's menu for keyboard and touch. Every edit is a pure verb from ./tree.ts; this file only draws.
+// Groups start closed (the default Sidebar is ~350 rows; drawing them all made the editor take seconds to
+// open); a drop into a group opens it, so the moved row is in sight.
 import { useState } from "react";
 import {
   DndContext,
@@ -20,6 +22,8 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpToLine,
+  ChevronDown,
+  ChevronRight,
   FolderInput,
   GripVertical,
   MoreHorizontal,
@@ -70,6 +74,14 @@ const TOP_DROP_ID = "__top__";
 export function ArrangeTree({ nodes, region, onChange }: Props) {
   const [target, setTarget] = useState<DropTarget | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
+  const [openIds, setOpenIds] = useState<ReadonlySet<string>>(() => new Set());
+  const toggle = (id: string) =>
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }));
 
   const zoneFor = (event: DragMoveEvent): DropTarget | null => {
@@ -94,7 +106,9 @@ export function ArrangeTree({ nodes, region, onChange }: Props) {
     setDragging(null);
     if (!zone) return;
     const next = moveNode(nodes, String(event.active.id), zone, region);
-    if (next) onChange(next);
+    if (!next) return;
+    if (zone.kind === "inside") setOpenIds((prev) => new Set(prev).add(zone.id));
+    onChange(next);
   };
 
   return (
@@ -112,7 +126,7 @@ export function ArrangeTree({ nodes, region, onChange }: Props) {
       <DragCursorMonitor />
       <ul className="flex flex-col py-1" aria-label={region === "dock" ? "Your dock" : "Your sidebar"}>
         {nodes.map((node) => (
-          <Row key={node.id} node={node} depth={1} all={nodes} region={region} target={target} dragging={dragging} onChange={onChange} />
+          <Row key={node.id} node={node} depth={1} all={nodes} region={region} target={target} dragging={dragging} onChange={onChange} openIds={openIds} onToggle={toggle} />
         ))}
       </ul>
       {region === "sidebar" && dragging ? <TopDrop active={target?.kind === "top"} /> : null}
@@ -152,14 +166,18 @@ interface RowProps {
   target: DropTarget | null;
   dragging: string | null;
   onChange: (next: ShellNode[]) => void;
+  openIds: ReadonlySet<string>;
+  onToggle: (id: string) => void;
 }
 
-function Row({ node, depth, all, region, target, dragging, onChange }: RowProps) {
+function Row({ node, depth, all, region, target, dragging, onChange, openIds, onToggle }: RowProps) {
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState("");
   const drag = useDraggable({ id: node.id });
   const drop = useDroppable({ id: node.id });
   const children = childrenOf(node);
+  const hasChildren = (children?.length ?? 0) > 0;
+  const open = openIds.has(node.id);
   const mark = target && target.kind !== "top" && target.id === node.id ? target.kind : null;
   const label = rowLabel(node);
   const icon = rowIcon(node);
@@ -197,6 +215,19 @@ function Row({ node, depth, all, region, target, dragging, onChange }: RowProps)
         >
           <GripVertical className="h-4 w-4" aria-hidden />
         </span>
+        {hasChildren ? (
+          <button
+            type="button"
+            aria-label={open ? `Collapse ${label}` : `Expand ${label}`}
+            aria-expanded={open}
+            className="flex h-7 w-5 shrink-0 items-center justify-center text-muted-foreground"
+            onClick={() => onToggle(node.id)}
+          >
+            {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+          </button>
+        ) : (
+          <span className="w-5 shrink-0" />
+        )}
         <IconPicker value={icon} onChange={(next) => onChange(updateNode(all, node.id, { icon: next }))} />
         {renaming ? (
           // ui-exception: a menu row's name is a short raw label, not prose
@@ -226,6 +257,7 @@ function Row({ node, depth, all, region, target, dragging, onChange }: RowProps)
             {label}
           </button>
         )}
+        {hasChildren && !open ? <span className="type-meta shrink-0 text-muted-foreground">{children?.length}</span> : null}
         {kindWord ? <span className="type-meta shrink-0 text-muted-foreground">{kindWord}</span> : null}
         {custom ? <span className="type-meta shrink-0 text-muted-foreground">Renamed</span> : null}
         <DropdownMenu>
@@ -273,10 +305,10 @@ function Row({ node, depth, all, region, target, dragging, onChange }: RowProps)
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      {children && children.length > 0 ? (
+      {children && hasChildren && open ? (
         <ul>
           {children.map((child) => (
-            <Row key={child.id} node={child} depth={depth + 1} all={all} region={region} target={target} dragging={dragging} onChange={onChange} />
+            <Row key={child.id} node={child} depth={depth + 1} all={all} region={region} target={target} dragging={dragging} onChange={onChange} openIds={openIds} onToggle={onToggle} />
           ))}
         </ul>
       ) : null}

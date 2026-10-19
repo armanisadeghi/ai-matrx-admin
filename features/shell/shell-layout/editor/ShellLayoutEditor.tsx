@@ -36,17 +36,27 @@ import { useEffectiveKnob } from "@/lib/scoped-config/effectiveKnobs.client";
 import { setKnobOverride } from "@/lib/scoped-config/service";
 import { useLaunchpads } from "@/features/launchpad/useLaunchpads";
 import { buildShellCatalog, defaultDockTree, defaultHeaderButtons, defaultSidebarTree } from "../catalog";
-import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody, type StoredShellLayout } from "../contract";
+import { SHELL_LAYOUT_SCHEMA_VERSION, type ShellLayoutBody, type ShellNode, type StoredShellLayout } from "../contract";
 import { SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB } from "../knob";
 import { shellLayoutPreviewChanged } from "../shellLayoutSlice";
 import { useShellLayoutStore } from "../useShellLayoutStore";
 import { parseShellLayoutBody, serializeShellLayoutBody, SHELL_DOCK_MAX_ITEMS } from "../validate";
 import { AddOwnRow, type OwnRowInput, type PickOption } from "./AddOwnRow";
+import { AddRecordRow, recordKey, type PickedRecord } from "./AddRecordRow";
 import { ArrangeTree } from "./ArrangeTree";
 import { CatalogChecklist } from "./CatalogChecklist";
 import { HeaderPane } from "./HeaderPane";
 import { dockOf, headerOf, sidebarOf, startingBody, type EditorRegion } from "./regions";
-import { addRow, buildCatalogTree, placedRefs, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
+import { addRow, buildCatalogTree, placedRefs, removeNode, sameBody, tickEntry, untickEntry, type TreeRegion } from "./tree";
+
+/** Every record row in a region, by `${token}:${recordId}` → its node id. */
+function recordRows(nodes: readonly ShellNode[], out = new Map<string, string>()): Map<string, string> {
+  for (const node of nodes) {
+    if (node.kind === "record") out.set(recordKey(node.token, node.recordId), node.id);
+    if ((node.kind === "group" || node.kind === "nav") && node.children) recordRows(node.children, out);
+  }
+  return out;
+}
 
 export type ShellLayoutTargetKind = "person" | "organization";
 
@@ -121,6 +131,20 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
     if (row.kind === "group") setNodes(addRow(nodes, { kind: "group", label: row.label, icon: row.icon }, treeRegion));
     if (row.kind === "link") setNodes(addRow(nodes, { kind: "link", label: row.label, href: row.href, icon: row.icon, newTab: row.newTab }, treeRegion));
     if (row.kind === "launchpad") setNodes(addRow(nodes, { kind: "launchpad", key: row.key, label: row.label, icon: row.icon }, treeRegion));
+  };
+
+  const records = recordRows(nodes);
+  const onAddRecord = (r: PickedRecord): boolean => {
+    if (region === "dock" && nodes.length >= SHELL_DOCK_MAX_ITEMS) {
+      toast.info(`The dock holds ${SHELL_DOCK_MAX_ITEMS}. Remove one first.`);
+      return false;
+    }
+    setNodes(addRow(nodes, { kind: "record", label: r.label, token: r.token, recordId: r.id, href: r.href }, treeRegion));
+    return true;
+  };
+  const onRemoveRecord = (token: string, id: string) => {
+    const nodeId = records.get(recordKey(token, id));
+    if (nodeId) setNodes(removeNode(nodes, nodeId));
   };
 
   const save = async () => {
@@ -220,6 +244,7 @@ export function ShellLayoutEditor({ target, initialRegion = "sidebar" }: { targe
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center gap-1.5 p-2">
                 <AddOwnRow kinds={region === "dock" ? ["link", "launchpad"] : ["link", "group", "launchpad"]} launchpads={launchpadOptions} onAdd={onAddOwn} />
+                <AddRecordRow placed={new Set(records.keys())} onAdd={onAddRecord} onRemove={onRemoveRecord} />
                 <span className="ml-auto type-meta text-muted-foreground">
                   {region === "dock" ? `${nodes.length} of ${SHELL_DOCK_MAX_ITEMS}` : `${placed.size} pages`}
                 </span>

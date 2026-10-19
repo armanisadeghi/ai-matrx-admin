@@ -450,6 +450,12 @@ export function moveInList<T extends { id: string }>(list: readonly T[], id: str
   return out;
 }
 
+/** Where `moveInList` must put a row dragged from `from` and dropped before/after the row at `over` (a flat list). */
+export function listDropIndex(from: number, over: number, side: "before" | "after"): number {
+  const at = side === "before" ? over : over + 1;
+  return from < at ? at - 1 : at;
+}
+
 // ── the body ─────────────────────────────────────────────────────────────────
 
 /** A fresh body reviewed against today's catalog (the editor's starting point when nothing is saved). */

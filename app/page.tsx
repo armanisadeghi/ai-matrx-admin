@@ -180,7 +180,7 @@ export default async function LandingPage({ searchParams }: LandingPageProps) {
       <div className="relative z-10">
         <PublicFooter />
       </div>
-      <GoogleOneTapMount />
+      <GoogleOneTapMount landing={{ redirectTo: null }} />
     </div>
   );
 }

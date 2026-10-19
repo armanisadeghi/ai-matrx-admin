@@ -2,7 +2,9 @@
 
 // CatalogChecklist — everything that can go in the menu, as a three-level tree with check marks. Ticking a
 // row brings its default children (each can be unticked); a partly-placed parent shows a dash. Items the
-// default menu hides (Settings pages, admin pages, tool windows) sit under "More you can add".
+// default menu hides (Settings pages, admin pages, tool windows) sit under "More you can add", each section
+// closed until opened (or a search runs): they hold hundreds of rows, and drawing them all up front made the
+// editor take seconds to open (~8,500 DOM nodes for an admin, 2026-10-19).
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Checkbox, cn } from "@ai-matrx/design-system";
@@ -20,7 +22,15 @@ interface Props {
 
 export function CatalogChecklist({ tree, placed, onTick, flat = false }: Props) {
   const [query, setQuery] = useState("");
+  const [openSections, setOpenSections] = useState<ReadonlySet<string>>(() => new Set(["main"]));
   const searching = query.trim().length > 0;
+  const toggleSection = (key: string) =>
+    setOpenSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   const sections: Array<{ key: string; title: string | null; nodes: CatalogTreeNode[] }> = [
     { key: "main", title: null, nodes: tree.main },
     { key: "settings", title: "Settings", nodes: tree.settings },
@@ -36,15 +46,29 @@ export function CatalogChecklist({ tree, placed, onTick, flat = false }: Props) 
         {sections.map((section, i) => {
           const nodes = filterCatalogTree(section.nodes, query);
           if (nodes.length === 0) return null;
+          const shown = searching || openSections.has(section.key);
           return (
             <div key={section.key}>
               {i === 1 && !searching ? <p className="type-label px-2 pb-1 pt-3">More you can add</p> : null}
-              {section.title ? <p className="type-meta px-2 pb-0.5 pt-2 text-muted-foreground">{section.title}</p> : null}
-              <ul>
-                {nodes.map((node) => (
-                  <CheckRow key={node.entry.id} node={node} depth={1} tree={tree} placed={placed} onTick={onTick} flat={flat} forceOpen={searching} />
-                ))}
-              </ul>
+              {section.title ? (
+                <button
+                  type="button"
+                  aria-expanded={shown}
+                  className="flex w-full items-center gap-1 rounded-md px-1 pb-0.5 pt-2 text-left type-meta text-muted-foreground hover:bg-accent"
+                  onClick={() => toggleSection(section.key)}
+                >
+                  {shown ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+                  <span className="min-w-0 flex-1 truncate">{section.title}</span>
+                  <span className="shrink-0">{nodes.length}</span>
+                </button>
+              ) : null}
+              {shown ? (
+                <ul>
+                  {nodes.map((node) => (
+                    <CheckRow key={node.entry.id} node={node} depth={1} tree={tree} placed={placed} onTick={onTick} flat={flat} forceOpen={searching} />
+                  ))}
+                </ul>
+              ) : null}
             </div>
           );
         })}
