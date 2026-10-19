@@ -9650,6 +9650,12 @@
       "checksum": "cc7b4a2550f88c0b7c0c12287a7dca34838d4f586ff3474370823223e1417203",
       "applied_at": "2026-10-19 08:29:19.077012+00"
     },
+    "migrations/campaign/template_fresh2_b_unedited_sample_rows_follow_an_upgrade.sql": {
+      "source": "matrx-frontend",
+      "filename": "template_fresh2_b_unedited_sample_rows_follow_an_upgrade.sql",
+      "checksum": "87d189b7ae619158626cd1e316dd2e0d903f82ed24f7f7aa05130de73b8091eb",
+      "applied_at": "2026-10-19 08:32:36.246837+00"
+    },
     "migrations/campaign/template_fresh_a_every_use_makes_a_new_install.sql": {
       "source": "matrx-frontend",
       "filename": "template_fresh_a_every_use_makes_a_new_install.sql",
@@ -11360,6 +11366,12 @@
       "checksum": "4ce329ae669f10941cf697745508fa9441ca3cc2be564a122a02e9e50fa0dd3b",
       "applied_at": "2026-09-25 04:12:07.740699+00"
     },
+    "migrations/inverse/read_lane_v2_b4_seo_backlink_down.sql": {
+      "source": "matrx-frontend",
+      "filename": "read_lane_v2_b4_seo_backlink_down.sql",
+      "checksum": "42933df148367e68d5b0959306b5b914fcc5e7ff1ee3c17c8ce2ed9479876016",
+      "applied_at": "2026-10-19 08:34:49.062231+00"
+    },
     "migrations/inverse/rls_reference_convert_catalogues_down.sql": {
       "source": "matrx-frontend",
       "filename": "rls_reference_convert_catalogues_down.sql",
@@ -11485,18 +11497,6 @@
       "filename": "writeperf4_the_field_set_is_read_once_per_row_down.sql",
       "checksum": "faa8f0c7ba79f6453a6127a85cdf4549ca35ceb45a87cf6e5bee8ce5368ff7c6",
       "applied_at": "2026-09-22 09:33:14.786775+00"
-    },
-    "migrations/campaign/template_fresh2_b_unedited_sample_rows_follow_an_upgrade.sql": {
-      "source": "matrx-frontend",
-      "filename": "template_fresh2_b_unedited_sample_rows_follow_an_upgrade.sql",
-      "checksum": "87d189b7ae619158626cd1e316dd2e0d903f82ed24f7f7aa05130de73b8091eb",
-      "applied_at": "2026-10-19 08:32:36.246837+00"
-    },
-    "migrations/inverse/read_lane_v2_b4_seo_backlink_down.sql": {
-      "source": "matrx-frontend",
-      "filename": "read_lane_v2_b4_seo_backlink_down.sql",
-      "checksum": "42933df148367e68d5b0959306b5b914fcc5e7ff1ee3c17c8ce2ed9479876016",
-      "applied_at": "2026-10-19 08:34:49.062231+00"
     }
   }
 }
