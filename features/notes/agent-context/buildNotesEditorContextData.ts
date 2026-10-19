@@ -143,6 +143,10 @@ export function buildNotesEditorContextData(
         __kind: "resource_ref" as const,
         resource_type: "note" as const,
         resource_id: noteId,
+        // The note's BODY is what an agent here reads (notes-agent-from-evidence 2026-10-19:
+        // 37 of 54 turns fetched it by tool). Asking for the content representation lets the
+        // server read it from the note and inline it whole up to the agent's declared limit.
+        representation: "content" as const,
         ...(isDirty
           ? {
               overlay: {
