@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 4,
+  "version": 5,
   "title": "Short-Term Rental Host",
   "description": "For vacation rental hosts: bookings, cleanings, guest messages, repairs and payouts.",
   "forWho": "Vacation rental hosts and co-hosts with a few homes",
@@ -2332,7 +2332,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3476,6 +3476,25 @@
               "text": "The family with a dog left six days ago. The cleaner restocked the house and noted extra dog hair in the living room, so the host adds a lint-roller to the supply list and a pet fee to the listing."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Same-day turns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When one guest leaves at 10 and the next arrives at 4, send two cleaners or start the linens from a spare set so the beds are made by noon. Tell the arriving guest early check-in is not possible on those days."
+            }
+          ]
         }
       ]
     },
@@ -4045,7 +4064,7 @@
           "type": "quote",
           "text": [
             {
-              "text": "The beach house's outdoor shower runs hot only and was reported yesterday. It is not inside the house, but the family staying there uses it every day, so it is marked Guest-impacting and Wade is booked for this afternoon."
+              "text": "The beach house's outdoor shower runs hot only and was reported by the cleaner. It is not inside the house, but the family staying there uses it every day, so it is marked Guest-impacting and Wade is booked for this afternoon."
             }
           ]
         },
@@ -4065,6 +4084,25 @@
           "text": [
             {
               "text": "Tell the guest it is fixed and thank them for reporting it. Guests who see a quick fix often mention it in their review."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Repeat problems"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the same issue appears three times in a season on one home, stop patching it. Replace the part or the appliance and record the cost, so guests stop meeting the problem."
             }
           ]
         }
@@ -4348,6 +4386,25 @@
           "text": [
             {
               "text": "At the end of each season, write three lines on this page: what guests loved, what they complained about, and one change for next season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Before each season, count spare linens, towels, kitchen basics and cleaning stock in each home. Order what is short a month ahead so busy weeks never wait on a delivery. Record the count on this page so next season starts from real numbers instead of memory."
             }
           ]
         }

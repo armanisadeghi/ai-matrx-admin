@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 4,
+  "version": 5,
   "title": "Property Management",
   "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
   "forWho": "Landlords, property managers and leasing staff",
@@ -2494,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -4036,6 +4036,25 @@
               "text": "Millrace downstairs is in turnover with a paint touch-up scheduled. Showings start this weekend so a new lease can begin the week the paint dries."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turnover budget"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set a standard budget per unit size so the team does not have to ask for approval on every small job. Anything above it waits for the owner's yes. Compare the real cost on the maintenance requests with the budget after every turn."
+            }
+          ]
         }
       ]
     },
@@ -4640,6 +4659,25 @@
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewal calendar"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Put the 90-day and 60-day dates for every lease on the team calendar the day the lease is signed, so no renewal starts late."
+            }
+          ]
         }
       ]
     },
