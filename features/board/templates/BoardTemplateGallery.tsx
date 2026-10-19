@@ -15,6 +15,8 @@ import { toast } from "@/lib/toast";
 import { boardHref, isBoardError } from "../persistence/boardsService";
 import { BoardSketch } from "./BoardSketch";
 import { listBoardTemplates, makeBoardFromTemplate, templateBoardTitle, type BoardTemplateEntry } from "./board-templates";
+import { isPackKey } from "./board-packs";
+import { TextInputDialog } from "@ai-matrx/design-system";
 import { BUILTIN_BOARD_TEMPLATES } from "./builtin";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
 
@@ -58,11 +60,18 @@ export function BoardTemplateGallery({
     icon: t.builtin ? <Sparkles size={16} /> : <LayoutTemplate size={16} />,
   }));
 
-  const use = async () => {
+  // A template that makes its own tables (a design system per brand) is named first: the name titles the
+  // board and its tables ("Colors · Acme"), so two brands' boards never read alike.
+  const [naming, setNaming] = useState(false);
+  const use = async (name?: string) => {
     if (!current) return;
+    if (name === undefined && isPackKey(current.key)) {
+      setNaming(true);
+      return;
+    }
     setUsing(true);
     try {
-      const board = await makeBoardFromTemplate(current.key, organizationId, templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage });
+      const board = await makeBoardFromTemplate(current.key, organizationId, name?.trim() || templateBoardTitle(current.title), undefined, undefined, { dispatch, onStage: setStage });
       // A stale toast ("Saved as a template") must not sit over the new board; the new one carries Open
       // in case the navigation is slow or blocked.
       toast.dismiss();
@@ -79,6 +88,7 @@ export function BoardTemplateGallery({
   };
 
   return (
+    <>
     <TemplateGalleryShell
       open={open}
       onOpenChange={onOpenChange}
@@ -95,5 +105,20 @@ export function BoardTemplateGallery({
       using={using}
       onUse={() => void use()}
     />
+    <TextInputDialog
+      open={naming}
+      onOpenChange={setNaming}
+      title="Name this board"
+      description="Its tables take the same name."
+      placeholder="e.g. Acme design system"
+      defaultValue={current?.title ?? ""}
+      confirmLabel="Make board"
+      validate={(value) => (value.trim() ? null : "Name the board")}
+      onConfirm={(value: string) => {
+        setNaming(false);
+        void use(value);
+      }}
+    />
+    </>
   );
 }

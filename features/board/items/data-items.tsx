@@ -194,7 +194,7 @@ function TableDraftBody({ onSource }: ItemBodyProps) {
 /** Adopt the table's own name as the tile title (inside the mount: it reads through its client). */
 function AdoptTableName({ tableId, source, title, onSource }: { tableId: string } & Pick<ItemBodyProps, "source" | "title" | "onSource">) {
   const table = useTable(tableId);
-  const next = titleToAdopt(title, table.data?.name);
+  const next = titleToAdopt(title, tileNameOf(table.data?.name, source));
   useEffect(() => {
     if (next) onSource(source, next);
   }, [next, source, onSource]);
@@ -237,9 +237,21 @@ export function tableMenuActions({ source, onSource }: TileMenuContext): TileMen
  * tables (reading order) as CSS variables. Off a board, or a board with no token
  * tables, it is the plain section (samples keep the app's own tokens).
  */
-export function SectionWithBoardTokens({ tableId }: { tableId: string }) {
+export function SectionWithBoardTokens({ tableId, title }: { tableId: string; title?: string | undefined }) {
   // The board's tokens are provided once for every tile (`BoardTokensMount`), so the section adds none.
-  return <SectionCard source={{ kind: "table", id: tableId }} />;
+  // The section is titled as its tile is ("Colors"), never the copy's long table name.
+  return <SectionCard source={{ kind: "table", id: tableId }} {...(title ? { title } : {})} />;
+}
+
+/**
+ * The name a template table's tile shows: a fresh copy names its tables "<Table> · <board title>" so they
+ * stay apart in the data home; on its own board the tile reads just "<Table>". Other tables keep their name.
+ */
+export function tileNameOf(tableName: string | null | undefined, source: ItemBodyProps["source"]): string | null | undefined {
+  const fromPack = source.kind === "entity" && typeof source.meta?.table_token === "string";
+  if (!fromPack || !tableName) return tableName;
+  const at = tableName.lastIndexOf(" · ");
+  return at > 0 ? tableName.slice(0, at) : tableName;
 }
 
 /**
@@ -289,7 +301,7 @@ export function TableRecordBody({ id, tileId, source, title, onSource }: ItemBod
             <AdoptTableLook tableId={id} source={source} onSource={onSource} />
           </>
         }
-        {...(section ? { content: <SectionWithBoardTokens tableId={id} /> } : {})}
+        {...(section ? { content: <SectionWithBoardTokens tableId={id} title={title} /> } : {})}
       />
     </div>
   );

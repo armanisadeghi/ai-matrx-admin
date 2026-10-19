@@ -215,10 +215,11 @@ export function UserBoard({
   const chapterIcons = useChapterIcons(board);
   // The board's own design tokens: component samples on it draw in them.
   const tokenTables = useTokenTables(board);
-  // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here.
+  // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here,
+  // with a Run door (runHere) that opens the job's run window on this board (the run reads board_id from the page).
   useDeclaredSurfaceMandates(
     tokenTables.length
-      ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME }]
+      ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME, runHere: true }]
       : [],
   );
   // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
