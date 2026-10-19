@@ -10,7 +10,7 @@ import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAcce
 import { ensureTable } from "@ai-matrx/records/core";
 import { duplicateBase, restoredBaseName, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import { Button, Field, Select } from "@ai-matrx/design-system/controls";
+import { Button, Field } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ import { TEMPLATE_GALLERY_HREF } from "@/features/make/gallery/galleryHref";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectOrganizationsList } from "@/features/scopes/redux/selectors/tree";
 import { useOrganizationRequired } from "@/features/organizations/useOrganizationRequired";
+import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
 
 import { AirtableImportDialog } from "./AirtableImportDialog";
 import { makeEmptyBase } from "./makeEmptyBase";
@@ -376,7 +377,6 @@ export function EditDialog({ open, onClose, current, fallbackName, onSave }: { o
 export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCount, tableIds = [] }: { open: boolean; onClose: () => void; homeId: string; name: string; organizationId: string; tableCount: number; tableIds?: readonly string[] }) {
   const client = useRecordsClient();
   const router = useRouter();
-  const destinations = useAppSelector(selectOrganizationsList).filter((o) => o.id !== organizationId);
   const [to, setTo] = useState<string>("");
   const [phase, setPhase] = useState<
     { kind: "ask" } | { kind: "moving" } | { kind: "job"; jobId: string; rows: number | null; startedAt: number; seconds: number } | { kind: "refused"; text: string; error: unknown }
@@ -460,13 +460,9 @@ export function MoveBaseDialog({ open, onClose, homeId, name, organizationId, ta
           <>
             <label className="flex items-center justify-between gap-2 text-sm"><span>Workspace</span>
               <span className="min-w-0 flex-1" data-base-move-to="">
-                <Select
-                  className="w-full"
-                  value={to}
-                  onValueChange={setTo}
-                  aria-label="Workspace"
-                  options={[{ value: "", label: "Choose a workspace" }, ...destinations.map((o) => ({ value: o.id, label: o.name }))]}
-                />
+                {/* ONE SOURCE for "a workspace this person can put tables in" (AT-SNAPJOB): the same chooser as Sync into
+                    another workspace — every active organization they belong to, searched on the server, never a page. */}
+                <OrganizationChooser className="w-full justify-start" value={to || null} placeholder="Choose a workspace" excludeId={organizationId} onChange={(o) => setTo(o.id)} />
               </span>
             </label>
             <Words>{`${tableCount} tables, with their records, pages and automations, move together.`}</Words>

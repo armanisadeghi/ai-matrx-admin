@@ -15,6 +15,13 @@ const tableRowCounts = jest.fn();
 const refresh = jest.fn();
 const postJson = jest.fn();
 const getJson = jest.fn();
+jest.mock("@/features/organizations/components/OrganizationChooser", () => ({
+  OrganizationChooser: ({ value, onChange, excludeId }: { value: string | null; onChange: (o: { id: string; name: string; slug: string }) => void; excludeId?: string | null }) => (
+    <select aria-label="Workspace" value={value ?? ""} onChange={(e) => onChange({ id: e.target.value, name: e.target.value, slug: "" })}>
+      {[{ id: "", name: "Choose a workspace" }, { id: "org-a", name: "Harbor Clinic" }, { id: "org-b", name: "Bayview Clinic" }].filter((o) => o.id !== excludeId).map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+    </select>
+  ),
+}));
 jest.mock("@ai-matrx/records/react", () => ({ useRecordsClient: () => ({ baseMove, tableRowCounts }) }));
 jest.mock("next/navigation", () => ({ useRouter: () => ({ refresh, push }) }));
 jest.mock("@/lib/knobs/featureKnobs", () => ({ knobInt: async () => 250 }));
