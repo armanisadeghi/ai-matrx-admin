@@ -1,4 +1,3 @@
--- draft: aei-perf-2026-10-19 not yet applied
 -- based-on: iam.accessible_entity_ids(text, permission_level, integer, boolean) e734bcca0d5ef7116f2c493247e9119b10b009825454a46a57b2a945d6e22fda
 -- based-on: iam.entity_read_kernel_expected() 9f65a66594be847eb10624943664a3860197b6336f775d3e28457e777d84c862
 -- based-on: iam.entity_read_kernel_members_expected() 1e550c480b5e274215702808ce446613bd9044105673185334d65d88e411c7ff
@@ -12,13 +11,14 @@
 -- Now, for a parent with no self edge, an edge first reads the parent ids named by its still-addable rows and asks the
 -- parent only about those (recursively), passing the ask in the transaction-local setting iam.aei_within, which the
 -- callee consumes on entry and honours only for its own (type, level, depth, public) key; a restricted answer is the
--- full set cut to the asked ids. A parent with a self edge (folder) keeps the old memoized whole-set path. Membership
+-- full set cut to the asked ids. A parent with a self edge (folder), or an edge naming more than 10,000 parent ids,
+-- keeps the old memoized whole-set path. Membership
 -- tests use hashed `in (select unnest)`. (A new overload was tried first; the T-13 reader guard refuses any new
 -- function that reads the row column, so the body stays in this one function.)
--- Proof: old and new sets compared for every active entity type x seven users x (viewer/public, editor/public,
--- viewer/non-public) - see common-docs systems/intelligence/mandates/projects/intelligence-from-data/
+-- Proof: old and new sets compared per (type, person, level) before and after apply; each difference (live tables
+-- growing between two statements, or a statement timeout) re-run inside one snapshot and equal - see common-docs systems/intelligence/mandates/projects/intelligence-from-data/
 -- accessible-entity-ids-perf-2026-10-19.md. Measured admin@admin.com seo_collection_run: 4.5 s -> 0.3 s.
--- The kernel fingerprint is re-recorded (00efe07ad11519134936f98223dd0c9f -> 54027befc6430766d6705e6cd267da66).
+-- The kernel fingerprint is re-recorded (00efe07ad11519134936f98223dd0c9f -> 1bb408cbca865f2d3949ef2503f360b0).
 
 do $pre$
 begin
@@ -430,6 +430,22 @@ begin
       where c.table_schema = v_schema and c.table_name = v_table
         and c.column_name = rec.fk_column
     ) then
+      -- AEI-WITHIN: for a parent without a self edge, the parent ids named by rows this edge could still add (not
+      -- already held, inside the restriction). Up to 10,000 of them the parent is asked about just those; more, and
+      -- enumerating the parent's whole set (the memoized path below) is cheaper. Either way the same rows are added.
+      v_fk_vals := null;
+      if rec.parent_type <> p_type and not exists (
+          select 1 from platform.entity_relationships er2
+           where er2.child_type = rec.parent_type and er2.parent_type = rec.parent_type
+             and er2.kind in ('composition', 'containment')) then
+        execute format(
+          'with have as materialized (select iam.unnest_uuids($1) as id) '
+          || 'select coalesce(array_agg(distinct t.%I), ''{}'') from %s t '
+          || 'where t.%I is not null%s%s and not exists (select 1 from have h where h.id = t.id)',
+          rec.fk_column, v_tbl, rec.fk_column, v_child_gate,
+          case when v_only is null then '' else ' and t.id in (select iam.unnest_uuids($2))' end)
+          into v_fk_vals using v_ids, v_only;
+      end if;
       if rec.parent_type = p_type then
         -- T-11 leak fixes (2026-09-28), speed only: each closure step below probes the parent-id
         -- index once per row it just added (a LATERAL fenced with OFFSET 0). As a plain join the
@@ -477,21 +493,11 @@ begin
         end if;
         execute v_sql into v_more using v_ids;
         v_ids := coalesce(v_more, '{}'::uuid[]);
-      elsif not exists (
-          select 1 from platform.entity_relationships er2
-           where er2.child_type = rec.parent_type and er2.parent_type = rec.parent_type
-             and er2.kind in ('composition', 'containment')) then
-        -- AEI-WITHIN: the parent is asked only about the parent ids named by rows this edge could still add (not
-        -- already held, inside the restriction). The rows added are exactly the old ones: a row is added when its
-        -- parent id is in the parent's set, and the parent's set cut to the ids those rows name decides the same.
-        execute format(
-          'with have as materialized (select iam.unnest_uuids($1) as id) '
-          || 'select coalesce(array_agg(distinct t.%I), ''{}'') from %s t '
-          || 'where t.%I is not null%s%s and not exists (select 1 from have h where h.id = t.id)',
-          rec.fk_column, v_tbl, rec.fk_column, v_child_gate,
-          case when v_only is null then '' else ' and t.id in (select iam.unnest_uuids($2))' end)
-          into v_fk_vals using v_ids, v_only;
-        if coalesce(cardinality(v_fk_vals), 0) > 0 then
+      elsif v_fk_vals is not null and cardinality(v_fk_vals) <= 10000 then
+        -- AEI-WITHIN: the parent is asked only about the parent ids named by rows this edge could still add (read
+        -- above). The rows added are exactly the old ones: a row is added when its parent id is in the parent's set,
+        -- and the parent's set cut to the ids those rows name decides the same.
+        if cardinality(v_fk_vals) > 0 then
           perform set_config('iam.aei_within', concat_ws('|', rec.parent_type, p_required, p_depth + 1, p_include_public)
             || '#' || v_fk_vals::text, true);
           v_parent_ids := iam.accessible_entity_ids(
@@ -697,14 +703,14 @@ CREATE OR REPLACE FUNCTION iam.entity_read_kernel_expected()
  LANGUAGE sql
  IMMUTABLE
 AS $function$
-  SELECT '54027befc6430766d6705e6cd267da66'::text
+  SELECT '1bb408cbca865f2d3949ef2503f360b0'::text
 $function$;
 CREATE OR REPLACE FUNCTION iam.entity_read_kernel_members_expected()
  RETURNS jsonb
  LANGUAGE sql
  IMMUTABLE
 AS $function$
-  SELECT '{"members": {"files.is_crawl_artifact(p_file_id uuid)": "7eb586213cedff72ee4abb4dd60a0433", "iam.candidate_admits(p_type text, p_id uuid)": "aaafd2a1d1fb3e3579c326fe11d70cac", "iam.accessible_entity_candidates(p_type text)": "ff4a1d407ed7e37438cb773f0d5ce80e", "iam.accessible_child_parents(p_child_type text)": "020e0cf2e25e8e73bf1dda478b97aa22", "iam.has_org_access_for(p_user_id uuid, p_org uuid)": "05abb4362cb28aa7d775eedf975889f9", "public.is_pack_curator(p_user uuid, p_pack_id uuid)": "5e6f2b3c9c4f0f9011655974ef1532b7", "public.is_org_admin_for(p_user_id uuid, p_org_id uuid)": "ac5072f5e23eb0dfffb7ef05e9899ad4", "files.crawl_site_conveys(p_user_id uuid, p_file_id uuid)": "5fadac4e0d1ad31e788cdb446422d8fc", "public._edu_can_read_via_assignment(p_type text, p_id uuid)": "d97bbb3323238c5b8afb88e3e6337434", "public.is_rulebook_curator(p_user uuid, p_rulebook_id uuid)": "b781c4c0210974d680f53a603cb723aa", "public.library_is_open(p_entity_type text, p_entity_id uuid)": "36c934bb956df459e334c15085aacd30", "public.user_can_read_data_store_via_grant(p_user uuid, p_store uuid)": "63b3fd7f798351c9c8e7517fcfedc3fc", "public._edu_can_read_via_assignment(p_user_id uuid, p_type text, p_id uuid)": "a0d7ac13ea23ec81b8eb15bbb87e3cbb", "public.user_can_read_via_library_grant(p_user uuid, p_type text, p_id uuid)": "a49b44fa2f0de5d3aecace9d950f49e4", "files.has_access_for(p_user_id uuid, p_file_id uuid, p_required permission_level)": "d324b5143d4172b0a6b8b8188930ff7b", "iam.accessible_entity_ids(p_type text, p_required permission_level, p_depth integer)": "9fe155aa00093efd6fc9c89ab94b8479", "iam.has_access_for(p_user_id uuid, p_type text, p_id uuid, p_required permission_level)": "c7e2eec401c991f06be4bf28453548e5", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level)": "e37fdacb359b9a528d7aef6b2bfb5270", "iam.accessible_entity_ids(p_type text, p_required permission_level, p_depth integer, p_include_public boolean)": "71046f5d603631f253d3f457c8c13bf7", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level, p_include_public boolean)": "e6b147f6962003e0dc2c8b826ef4ee06", "public.has_permission_for(p_user_id uuid, p_resource_type text, p_resource_id uuid, p_required_permission permission_level)": "679e85b43c11904b2fd68bd563f5b1df", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level, p_include_public boolean, p_path text[])": "3de76c3943441fd7644ef6d9af12348b", "platform.entity_row_access_attrs(p_schema text, p_table text, p_id uuid, OUT o_vis platform.visibility, OUT o_owner uuid, OUT o_org uuid, OUT o_found boolean)": "760dc66d23a0c8ef2b1f06f9a1954f19"}, "fingerprint": "54027befc6430766d6705e6cd267da66"}'::jsonb
+  SELECT '{"members": {"files.is_crawl_artifact(p_file_id uuid)": "7eb586213cedff72ee4abb4dd60a0433", "iam.candidate_admits(p_type text, p_id uuid)": "aaafd2a1d1fb3e3579c326fe11d70cac", "iam.accessible_entity_candidates(p_type text)": "ff4a1d407ed7e37438cb773f0d5ce80e", "iam.accessible_child_parents(p_child_type text)": "020e0cf2e25e8e73bf1dda478b97aa22", "iam.has_org_access_for(p_user_id uuid, p_org uuid)": "05abb4362cb28aa7d775eedf975889f9", "public.is_pack_curator(p_user uuid, p_pack_id uuid)": "5e6f2b3c9c4f0f9011655974ef1532b7", "public.is_org_admin_for(p_user_id uuid, p_org_id uuid)": "ac5072f5e23eb0dfffb7ef05e9899ad4", "files.crawl_site_conveys(p_user_id uuid, p_file_id uuid)": "5fadac4e0d1ad31e788cdb446422d8fc", "public._edu_can_read_via_assignment(p_type text, p_id uuid)": "d97bbb3323238c5b8afb88e3e6337434", "public.is_rulebook_curator(p_user uuid, p_rulebook_id uuid)": "b781c4c0210974d680f53a603cb723aa", "public.library_is_open(p_entity_type text, p_entity_id uuid)": "36c934bb956df459e334c15085aacd30", "public.user_can_read_data_store_via_grant(p_user uuid, p_store uuid)": "63b3fd7f798351c9c8e7517fcfedc3fc", "public._edu_can_read_via_assignment(p_user_id uuid, p_type text, p_id uuid)": "a0d7ac13ea23ec81b8eb15bbb87e3cbb", "public.user_can_read_via_library_grant(p_user uuid, p_type text, p_id uuid)": "a49b44fa2f0de5d3aecace9d950f49e4", "files.has_access_for(p_user_id uuid, p_file_id uuid, p_required permission_level)": "d324b5143d4172b0a6b8b8188930ff7b", "iam.accessible_entity_ids(p_type text, p_required permission_level, p_depth integer)": "9fe155aa00093efd6fc9c89ab94b8479", "iam.has_access_for(p_user_id uuid, p_type text, p_id uuid, p_required permission_level)": "c7e2eec401c991f06be4bf28453548e5", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level)": "e37fdacb359b9a528d7aef6b2bfb5270", "iam.accessible_entity_ids(p_type text, p_required permission_level, p_depth integer, p_include_public boolean)": "801d60aa3ab82c33a6294ae48d019a7c", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level, p_include_public boolean)": "e6b147f6962003e0dc2c8b826ef4ee06", "public.has_permission_for(p_user_id uuid, p_resource_type text, p_resource_id uuid, p_required_permission permission_level)": "679e85b43c11904b2fd68bd563f5b1df", "iam.has_access_for_base(p_user_id uuid, p_type text, p_id uuid, p_required permission_level, p_include_public boolean, p_path text[])": "3de76c3943441fd7644ef6d9af12348b", "platform.entity_row_access_attrs(p_schema text, p_table text, p_id uuid, OUT o_vis platform.visibility, OUT o_owner uuid, OUT o_org uuid, OUT o_found boolean)": "760dc66d23a0c8ef2b1f06f9a1954f19"}, "fingerprint": "1bb408cbca865f2d3949ef2503f360b0"}'::jsonb
 $function$;
 
 do $post$
@@ -723,9 +729,9 @@ begin
   end if;
   insert into platform.kernel_fingerprint_record
     (fingerprint_from, fingerprint_to, members_changed, ruling, fixture_version, evidence, via, target)
-  values ('00efe07ad11519134936f98223dd0c9f', '54027befc6430766d6705e6cd267da66',
+  values ('00efe07ad11519134936f98223dd0c9f', '1bb408cbca865f2d3949ef2503f360b0',
           array['iam.accessible_entity_ids(p_type text, p_required permission_level, p_depth integer, p_include_public boolean)'],
-          'AEI-WITHIN (2026-10-19): a parent edge asks its parent only about the parent ids its rows name (the ask travels in the transaction-local setting iam.aei_within); speed only. Proof: old = new set for every active type x 7 users x 3 modes; equivalence v3 ok.',
+          'AEI-WITHIN (2026-10-19): a parent edge asks its parent only about the parent ids its rows name (the ask travels in the transaction-local setting iam.aei_within); speed only. Proof: old = new set for 1,324 (type, person, level) answers over 355 types and 7 people before apply, every difference re-run in one snapshot and equal; equivalence v3 ok.',
           'v3', jsonb_build_object('after', v_chk - 'answers'),
           'migrations/iam_accessible_entity_ids_asks_parents_only_named_ids.sql', 'iam.accessible_entity_ids');
 end $post$;
