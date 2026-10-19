@@ -62,15 +62,17 @@ export function UsdOnly({ children }: { children: React.ReactNode }) {
 export function CostFigures({ items }: { items: { usdLabel: string; pointsLabel: string; usd: number | null | undefined }[] }) {
   const sees = useSeesDollars();
   return (
-    <span className="flex items-center gap-3 whitespace-nowrap text-xs text-muted-foreground">
+    // Wraps figure by figure in a narrow toolbar; each figure stays whole (at 390 px the old
+    // one-line nowrap row drew the figures over each other — live walk 2026-10-18).
+    <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
       {items.map((it) => (
-        <span key={it.usdLabel} className="flex items-center gap-3">
+        <span key={it.usdLabel} className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
           {sees && (
-            <span>
+            <span className="whitespace-nowrap">
               {it.usdLabel} <span className="font-medium tabular-nums text-foreground"><AdminUsd usd={it.usd} /></span>
             </span>
           )}
-          <span>
+          <span className="whitespace-nowrap">
             {it.pointsLabel} <span className="font-medium tabular-nums text-foreground"><AdminPoints usd={it.usd} /></span>
           </span>
         </span>
