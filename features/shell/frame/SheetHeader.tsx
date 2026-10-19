@@ -30,7 +30,7 @@ import {
 } from "@ai-matrx/design-system";
 import { Button } from "@ai-matrx/design-system/controls";
 import { cn } from "@ai-matrx/design-system/cn";
-import type { FrameAction, FrameCrumb, FrameForm } from "./types";
+import type { FrameAction, FrameCrumb, FrameForm, FrameHeaderTool } from "./types";
 
 export interface FrameFavorite {
   starred: boolean;
@@ -57,7 +57,8 @@ export interface SheetHeaderProps {
   actions: readonly FrameAction[];
   /** Extra "…" items only the phone form needs (open menu, agent). */
   phoneActions?: readonly FrameAction[];
-  end?: ReactNode;
+  /** The right-side tools (search, notifications, account). */
+  tools?: readonly FrameHeaderTool[];
   /** Desktop with the sidebar hidden: the controls that bring it (and the grid) back. */
   start?: ReactNode;
   onOpenDrawer: () => void;
@@ -76,7 +77,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {plain.map((a) => {
           const Icon = a.icon;
           return (
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect}>
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} size="sm">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>
@@ -86,7 +87,7 @@ function PageMenu({ actions }: { actions: readonly FrameAction[] }) {
         {destructive.map((a) => {
           const Icon = a.icon;
           return (
-            <DropdownMenuItem key={a.id} onSelect={a.onSelect} tone="danger">
+            <DropdownMenuItem key={a.id} onSelect={a.onSelect} tone="danger" size="sm">
               {Icon ? <Icon aria-hidden /> : null}
               {a.label}
             </DropdownMenuItem>
@@ -103,7 +104,7 @@ export function SheetHeader({
   favorite,
   actions,
   phoneActions,
-  end,
+  tools = [],
   start,
   onOpenDrawer,
   onBack,
@@ -120,8 +121,18 @@ export function SheetHeader({
     />
   ) : null;
 
+  const toolButton = (t: FrameHeaderTool) => {
+    const Icon = t.icon;
+    return <Button key={t.id} variant="quiet" icon={<Icon />} aria-label={t.label} onClick={t.onSelect} />;
+  };
+
   if (form === "phone") {
     const canGoBack = crumbs.length > 1 && onBack;
+    const shown = tools.filter((t) => t.phone === "show");
+    // Tools that do not fit a phone header keep working from the "…" menu.
+    const overflow: FrameAction[] = tools
+      .filter((t) => t.phone !== "show")
+      .map((t) => ({ id: `tool-${t.id}`, label: t.label, icon: t.icon, onSelect: t.onSelect ?? (() => {}) }));
     return (
       // matrx-touch-targets: the platform's 44px touch ring on every control here.
       <header className="mf-rule-b matrx-touch-targets flex h-[var(--matrx-frame-header-h)] shrink-0 items-center gap-1 px-2">
@@ -132,7 +143,8 @@ export function SheetHeader({
         )}
         <h1 className="type-title min-w-0 flex-1 truncate px-1">{current?.label}</h1>
         {star}
-        <PageMenu actions={[...(phoneActions ?? []), ...actions]} />
+        {shown.map(toolButton)}
+        <PageMenu actions={[...(phoneActions ?? []), ...overflow, ...actions]} />
       </header>
     );
   }
@@ -170,7 +182,9 @@ export function SheetHeader({
         <PageMenu actions={actions} />
       </div>
       <div className="min-w-2 flex-1" />
-      {end ? <div className="flex shrink-0 items-center gap-0.5">{end}</div> : null}
+      {tools.length > 0 ? (
+        <div className="flex shrink-0 items-center gap-0.5">{tools.map(toolButton)}</div>
+      ) : null}
     </header>
   );
 }
@@ -205,15 +219,13 @@ function CrumbLink({ crumb }: { crumb: FrameCrumb }) {
   return <span className="type-body block truncate px-1 text-muted-foreground">{crumb.label}</span>;
 }
 
-/** Placeholders for the existing right-side header icons (search, notifications, account). */
-export function HeaderEndPlaceholders() {
-  return (
-    <>
-      <Button variant="quiet" icon={<SearchIcon />} aria-label="Search" />
-      <Button variant="quiet" icon={<BellIcon />} aria-label="Notifications" />
-      <Button variant="quiet" icon={<AccountIcon />} aria-label="Account" />
-    </>
-  );
+/** Stand-ins for the existing right-side header icons; search stays visible on a phone. */
+export function placeholderHeaderTools(onSelect?: (id: string) => void): FrameHeaderTool[] {
+  return [
+    { id: "search", label: "Search", icon: SearchIcon, phone: "show", onSelect: () => onSelect?.("search") },
+    { id: "notifications", label: "Notifications", icon: BellIcon, onSelect: () => onSelect?.("notifications") },
+    { id: "account", label: "Account", icon: AccountIcon, onSelect: () => onSelect?.("account") },
+  ];
 }
 
 /** The controls that bring a hidden sidebar back, shown at the header's start. */
