@@ -314,6 +314,18 @@ export function StrategyBriefWorkspace({
             reason: current.confidenceReason,
           },
           strategy_built_from: sources,
+          ...(history.data
+            ? {
+                strategy_history: history.data.map((version) => ({
+                  version_no: version.versionNo,
+                  generated_at: version.generatedAt,
+                  reviewed_at: version.reviewedAt,
+                  confidence: version.agentConfidence,
+                  guidance: version.guidance,
+                  brief_markdown: version.briefMarkdown,
+                })),
+              }
+            : {}),
         }
       : {};
 
