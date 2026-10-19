@@ -93,6 +93,20 @@ export const HOST_VALUE_SITES: readonly HostValueSite[] = [
     file: "features/mandates/host-values/usePageGuidanceRecord.ts",
     status: "wired",
   },
+  {
+    site: "notes page guide, open note",
+    mandateKey: "notes.page_guidance",
+    provision: "notes.page_guidance",
+    file: "features/notes/hooks/useNotesSurfaceScope.ts",
+    status: "wired",
+  },
+  {
+    site: "backlink work planner chip",
+    mandateKey: "seo.backlink_work_planner",
+    provision: "seo.backlinks_assist_sweep",
+    file: "features/marketing/components/backlinks/BacklinksAssistStrip.tsx",
+    status: "wired",
+  },
 ];
 
 /** The open list only shrinks. */

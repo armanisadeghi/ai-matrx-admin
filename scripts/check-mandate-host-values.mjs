@@ -54,17 +54,28 @@ export const UNWIRED_BASELINE = new Set([
   "conversation.drift_auditor",
   "conversation.outcome_summarizer",
   "conversation.vision_interviewer",
+  "education.grade_work_guidance",
   "education.page_guidance",
+  "education.planner_guidance",
+  "education.practice_oral_guidance",
+  "education.progress_guidance",
+  "education.tutor_guidance",
   "messaging.action_item_extraction",
   "messaging.conversation_catch_up",
   "messaging.conversation_summary",
   "messaging.reply_drafting",
-  "notes.page_guidance",
   "podcast_client.topic_ideas",
-  "seo.backlink_work_planner",
   "transcripts.clean_with_context",
   "transcripts.clean_with_context_variable",
   "transcripts.clean_without_context",
+]);
+
+// A file that NAMES a key without calling it (a label on a followed-work step,
+// a link) is not a call site. "file::key", each with its reason.
+const REFERENCE_ONLY = new Set([
+  // Labels the battle's pairwise-judge step in the followed-work timeline; the
+  // judge runs server-side (aidream evaluators), never from this file.
+  "features/ai-watch/followed-work-resolve.ts::evaluators.comparative_judge",
 ]);
 
 const SENDS = [
@@ -99,6 +110,7 @@ export function evaluate(files) {
   const refsByKey = new Map();
   const aliasToKey = new Map();
   const add = (key, file) => {
+    if (REFERENCE_ONLY.has(`${file.file}::${key}`)) return;
     if (!refsByKey.has(key)) refsByKey.set(key, new Set());
     refsByKey.get(key).add(file);
   };
@@ -126,6 +138,19 @@ export function evaluate(files) {
     const all = [...refs];
     if (all.some((f) => SENDS.some((re) => re.test(f.source)))) passing.add(key);
     else failing.push({ key, provision, mapped, files: all.map((f) => f.file) });
+  }
+  // THE CHAIN BLIND SPOT (rules audit 2026-10-18). Page-guide keys
+  // (`<module>.<screen>_guidance`) are called by the ambient launcher's
+  // COMPUTED chain (ambientAssistantMandateChain in @ai-matrx/chat), so no app
+  // file names them and they were never evaluated — 5 education job screens
+  // "passed" while nothing sent their values. Every such key whose provision
+  // declares values beyond the shared ambient page set is a call site; with no
+  // referencing file that sends, it fails.
+  const shared = new Set(MAPPED["ambient.page_guidance"]?.mapped_only ?? []);
+  for (const [key, { provision, mapped_only: mapped }] of Object.entries(MAPPED)) {
+    if (refsByKey.has(key) || !/_guidance$/.test(key)) continue;
+    const own = mapped.filter((n) => !shared.has(n));
+    if (own.length) failing.push({ key, provision, mapped: own, files: ["(ambient chain — no app file names this key)"] });
   }
   return { failing, passing };
 }
@@ -162,7 +187,12 @@ if (process.argv.includes("--self-test")) {
     },
   ].filter((f) => !/MANDATE_KEYS\.podcast__metadata\b|"podcast\.metadata"/.test(f.source) || f.file.includes("__planted__"));
   const red = report(planted);
+  // The chain leg: a page-guide key no app file names is still evaluated.
+  const chainSeen = evaluate(files).failing.some(
+    (f) => f.key === "education.tutor_guidance" && f.files[0].startsWith("(ambient chain"),
+  );
   const ok =
+    chainSeen &&
     green.fresh.length === 0 &&
     red.fresh.some((f) => f.key === "podcast.metadata" && f.files.includes("features/__planted__/UnwiredWarRoom.tsx"));
   console.log(ok ? "self-test: RED on the planted site, GREEN on the tree ✓" : "self-test FAILED");
