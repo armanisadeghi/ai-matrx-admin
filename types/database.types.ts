@@ -12280,6 +12280,7 @@ export type Database = {
           p_decision: string
           p_expected_result?: string
           p_expected_runs_per_month?: number
+          p_expected_status?: string
           p_expires_at?: string
           p_id: string
           p_note?: string
@@ -30410,6 +30411,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      _collab_anchor_only: {
+        Args: { p_groups: Json; p_kind: string }
+        Returns: boolean
+      }
       _collab_cp_verdict: {
         Args: { p_hash: string; p_rev: number; p_room: string }
         Returns: string
@@ -30441,6 +30446,15 @@ export type Database = {
         Returns: undefined
       }
       _collab_trim: { Args: { p_room: string }; Returns: number }
+      _comment_anchors_project: {
+        Args: {
+          p_kind: string
+          p_rev: number
+          p_room: string
+          p_snapshot: Json
+        }
+        Returns: number
+      }
       _search_args_ok: {
         Args: { p_archive: string; p_organization_id: string; p_scope: string }
         Returns: boolean
@@ -30489,6 +30503,10 @@ export type Database = {
       _space_public_media: { Args: { p_blob: Json }; Returns: Json }
       _space_row_of: { Args: { p_doc: string }; Returns: string }
       _space_tree_ids: { Args: { p_space_id: string }; Returns: string[] }
+      _utf16_to_cp: {
+        Args: { p_text: string; p_units: number }
+        Returns: number
+      }
       _write_came_through: { Args: { p_doors: string[] }; Returns: boolean }
       annotation_create: {
         Args: {
@@ -30562,6 +30580,7 @@ export type Database = {
         }
         Returns: Json
       }
+      collab_share_open: { Args: { p_token: string }; Returns: Json }
       collab_topic_admits: { Args: { p_topic: string }; Returns: boolean }
       document_get: {
         Args: { p_document_id: string; p_include_body?: boolean }
@@ -48323,6 +48342,14 @@ export type Database = {
           p_name?: string
           p_organization_id: string
           p_slug?: string
+        }
+        Returns: Json
+      }
+      table_find_many: {
+        Args: {
+          p_kept_for?: string
+          p_organization_ids: string[]
+          p_slug: string
         }
         Returns: Json
       }
@@ -87880,6 +87907,7 @@ export type Database = {
           rows_readable_under_refused_parent: number
         }[]
       }
+      containment_depth: { Args: { p_token: string }; Returns: number }
       content_levels: {
         Args: never
         Returns: {
@@ -110526,6 +110554,7 @@ export type Database = {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: Json
       }
+      share_link_target: { Args: { p_token: string }; Returns: Json }
       share_target_in_closed_org: {
         Args: { p_resource_id: string; p_resource_type: string }
         Returns: boolean
