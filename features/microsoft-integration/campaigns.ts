@@ -23,6 +23,7 @@ export const MICROSOFT_CAMPAIGNS = [
   "outlook_mail_send",
   "outlook_calendar_write",
   "teams_channel_send",
+  "teams_chat_send",
 ] as const;
 
 export type MicrosoftCampaign = (typeof MICROSOFT_CAMPAIGNS)[number];
@@ -130,6 +131,16 @@ export const MICROSOFT_CAMPAIGN_DESCRIPTORS: readonly MicrosoftCampaignDescripto
         "Post a message in a Teams channel you name when one of your automations has a Teams message step. Work or school accounts only.",
       cannot: "Read channel messages or chats.",
       scopes: ["ChannelMessage.Send"],
+      alwaysOn: false,
+      writes: true,
+    },
+    {
+      campaign: "teams_chat_send",
+      label: "Send Teams chat messages",
+      grants:
+        "Post a message in a Teams chat you are in when one of your automations has a Teams message step. Work or school accounts only.",
+      cannot: "Read your chats or start new ones.",
+      scopes: ["ChatMessage.Send"],
       alwaysOn: false,
       writes: true,
     },
