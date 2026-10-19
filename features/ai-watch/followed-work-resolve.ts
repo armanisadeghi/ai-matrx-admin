@@ -188,8 +188,8 @@ export interface AiColumnCallRow {
 
 /**
  * An AI column run's row calls (server stamps `metadata.ai_column_run_id`, aidream records_enrichment). One step per
- * row, newest last; the run is over once at least one call exists and every call is terminal. A run that never
- * reached a model (refused, nothing due) stays not-done with no steps — the sync's own lifetime bounds it.
+ * row, newest last; the run is over once at least one call exists and every call is terminal, or once the tab says
+ * the request ended (`FollowedWork.ended`): a failed request closes the run as failed with its reason.
  */
 export function resolveAiColumnRun(work: FollowedWork, rows: readonly AiColumnCallRow[]): Resolved {
   const sorted = [...rows].sort((a, b) => String(a.created_at ?? "").localeCompare(String(b.created_at ?? "")));
@@ -206,15 +206,19 @@ export function resolveAiColumnRun(work: FollowedWork, rows: readonly AiColumnCa
       record: r,
     };
   });
-  const done = sorted.length > 0 && sorted.every((r) => TERMINAL.has(String(r.status ?? "").toLowerCase()));
+  const allTerminal = sorted.length > 0 && sorted.every((r) => TERMINAL.has(String(r.status ?? "").toLowerCase()));
+  // The request that started the run came back: a failed one ends the run with its reason, a successful one with no
+  // call (nothing was due) ends it too. Calls still pending after a success keep it running until they land.
+  const failed = work.ended?.ok === false;
+  const done = allTerminal || failed || (work.ended?.ok === true && sorted.length === 0);
   const first = sorted[0]?.metadata ?? null;
   return {
     key: work.key,
     kind: work.kind,
     id: work.id,
     done,
-    status: done ? "completed" : sorted.length ? "running" : null,
-    error: sorted.find((r) => r.error)?.error ?? null,
+    status: failed ? "failed" : done ? "completed" : sorted.length ? "running" : null,
+    error: (failed ? work.ended?.reason : null) ?? sorted.find((r) => r.error)?.error ?? null,
     inputs: first ? { table_id: first.table_id ?? null, field_key: first.field_key ?? null } : null,
     state: { rows: sorted.length },
     steps,

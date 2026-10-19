@@ -19,7 +19,7 @@
 
 import { askTableByMandate } from "@/features/data-tables/records-ui-host/askTable";
 import { enrichByRunner } from "@/features/data-tables/records-ui-host/enrichPort";
-import { followServerWork } from "@/features/ai-watch/followed-work";
+import { endServerWork, followServerWork } from "@/features/ai-watch/followed-work";
 import { selectCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useBackendApi } from "@/hooks/useBackendApi";
 import { RecordBodyEditor } from "@/features/data-tables/records-ui-host/RecordBodyEditor";
@@ -341,7 +341,10 @@ export function useRecordsUiPorts({
         ask,
         // Debug-mode admins only: Watch AI follows every row's call of this run (`enrichPort.ts` WatchRun).
         selectCanWatchAi(store.getState())
-          ? (watchId, label) => followServerWork({ kind: "ai_column_run", id: watchId, label, source: "AI column" })
+          ? (watchId, label) => {
+              followServerWork({ kind: "ai_column_run", id: watchId, label, source: "AI column" });
+              return (outcome) => endServerWork("ai_column_run", watchId, outcome);
+            }
           : undefined,
       ),
     [backend, store],

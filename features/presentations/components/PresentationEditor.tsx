@@ -79,6 +79,8 @@ import {
   type PresentationRow,
 } from "../presentation-service";
 import { PaperSlide } from "../slide-paper";
+import { SurfaceRuntimeProvider } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
+import { AGENT_DECK_ACTIONS, PRESENTATION_SURFACE_NAME, createPresentationScope } from "@/features/surfaces/manifests/presentation.manifest";
 import { slideSizeOf } from "@/components/mardown-display/blocks/presentations/slide-size";
 import { SlideSizeDialog } from "./SlideSizeDialog";
 import { SlideRail } from "./SlideRail";
@@ -98,7 +100,7 @@ function layoutOf(layout: unknown, type: unknown): string {
   return raw;
 }
 
-export function PresentationEditor({ presentationId }: { presentationId: string }) {
+export function PresentationEditor({ presentationId, embedded = false, onName }: { presentationId: string; /** The presentation's current name once read (renamed here, by an agent or by a collaborator). */ onName?: (name: string) => void; /** Inside a board tile: the shell is left alone and the header's product mark is not a link. */ embedded?: boolean }) {
   const router = useRouter();
   const userId = useAppSelector(selectUserId);
   const isPhone = useIsMobile();
@@ -130,6 +132,10 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
   const menuBar = useMenuBarState();
 
   const { deck, current } = hist.present;
+  const loadedName = row?.name ?? null;
+  useEffect(() => {
+    if (loadedName) onName?.(loadedName);
+  }, [loadedName, onName]);
   const slide = deck.slides[current];
 
   const deckRef = useRef(deck);
@@ -396,7 +402,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
 
   if (loadError) {
     return (
-      <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
+      <div className={embedded ? "h-full overflow-hidden" : "h-full overflow-hidden pt-[var(--shell-header-h)]"}>
         <AccessGate token="presentation" id={presentationId} fallbackHref="/presentations" fallbackLabel="Back to presentations" />
       </div>
     );
@@ -472,7 +478,48 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
     </div>
   );
 
+  // The `matrx-user/presentation` agent surface: read at trigger time from the refs the editor keeps, written
+  // through the editor's own paths (the header field's rename, the deck reducer's steps).
+  const getSurfaceScope = () => {
+    const d = deckRef.current;
+    const i = currentRef.current;
+    const cur = d.slides[i];
+    return createPresentationScope({
+      presentation_id: presentationId,
+      can_edit: canEditRef.current,
+      ...(row ? { presentation_name: row.name } : {}),
+      slide_count: d.slides.length,
+      ...(d.theme ? { deck_theme: d.theme as Record<string, unknown> } : {}),
+      slide_outline: d.slides.map((sl, n) => ({ index: n, layout: layoutOf(sl.layout, sl.type), title: sl.title ?? "", skipped: isSkipped(sl) })),
+      deck: d as Record<string, unknown>,
+      current_slide_index: i,
+      ...(cur ? { current_slide: cur as Record<string, unknown> } : {}),
+      save_state: saveState,
+    });
+  };
+  const getSurfaceWriteHandlers = () => ({
+    presentation_name: async (value: unknown) => {
+      if (typeof value !== "string" || !value.trim() || value.trim().length > PRESENTATION_NAME_MAX_LENGTH)
+        throw new Error(`presentation_name expects a non-empty string of at most ${PRESENTATION_NAME_MAX_LENGTH} characters.`);
+      if (!canEditRef.current) throw new Error("This presentation is not editable yet or is open in view-only mode.");
+      const res = await renamePresentation(presentationId, value.trim());
+      if (isServiceFailure(res)) throw new Error(res.error);
+      setRow((r) => (r ? { ...r, name: res.data.name } : r));
+    },
+    deck_actions: async (value: unknown) => {
+      if (!Array.isArray(value) || value.length === 0 || value.length > 40) throw new Error("deck_actions expects an array of 1 to 40 steps.");
+      const allowed: readonly string[] = AGENT_DECK_ACTIONS;
+      value.forEach((step, n) => {
+        const type = (step as { type?: unknown } | null)?.type;
+        if (typeof type !== "string" || !allowed.includes(type)) throw new Error(`Step ${n} has no valid type; use one of: ${allowed.join(", ")}.`);
+      });
+      if (!canEditRef.current) throw new Error("This presentation is not editable yet or is open in view-only mode.");
+      for (const step of value) dispatchHist(step as DeckAction);
+    },
+  });
+
   return (
+    <SurfaceRuntimeProvider surfaceName={PRESENTATION_SURFACE_NAME} isEditable={canEdit} getScope={getSurfaceScope} getWriteHandlers={getSurfaceWriteHandlers}>
     <>
       <input
         ref={uploadRef}
@@ -486,6 +533,7 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         }}
       />
       <EditorDocumentHeader
+        embedded={embedded}
         backHref="/presentations"
         backLabel="Back to presentations"
         productTone="slides"
@@ -653,5 +701,6 @@ export function PresentationEditor({ presentationId }: { presentationId: string 
         </DialogContent>
       </Dialog>
     </>
+    </SurfaceRuntimeProvider>
   );
 }

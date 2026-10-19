@@ -1,0 +1,15 @@
+import { open, gotoTable, openAutomations, say } from "./at-walk-h-lib.mjs";
+const T = process.argv[2];
+const { browser, page, who, shot } = await open(false);
+await gotoTable(page, T);
+await openAutomations(page);
+const d = page.getByRole("dialog");
+await d.getByRole("button", { name: "New automation" }).click();
+await d.getByLabel("Automation name").fill("ATWH form to log");
+await d.getByRole("button", { name: "Form answered" }).click();
+say("BTNS", await d.getByRole("button").allInnerTexts()); await d.getByRole("button", { name: /^Add (page|row|record)/ }).first().click();
+await page.waitForTimeout(1500);
+say("DLG", (await d.innerText()).replace(/\n+/g, " | ").slice(0, 1200));
+say("INPUTS", await d.locator("input,select,textarea,[role=combobox]").evaluateAll((els) => els.map((e) => (e.getAttribute("aria-label") || e.getAttribute("placeholder") || e.tagName) + ":" + (e.value ?? ""))));
+await shot("x2-editor");
+await browser.close();

@@ -72,24 +72,10 @@ export interface ToolDetailData {
   strips: StripRow[];
 }
 
+/** Read through the server's admin door, not the browser's database lane: the admin layer is also mounted on the
+ * member Tools page, where the admin lane is off and a direct read would come back empty. */
 export async function loadToolDetail(toolId: string): Promise<ToolDetailData> {
-  const [entries, endpoints, providers] = await Promise.all([
-    readTable<EntryRow>("catalog_entry", ENTRY_COLUMNS, "display_name", (q) => q.eq("tool_id", toolId)),
-    readTable<EndpointRow>("catalog_endpoint", ENDPOINT_COLUMNS, "id", (q) => q.eq("tool_id", toolId)),
-    readTable<ProviderRow>("catalog_provider", PROVIDER_COLUMNS, "slug"),
-  ]);
-  const entry = entries[0];
-  if (!entry) throw new Error("That Tool no longer exists.");
-  const ids = endpoints.map((e) => e.id);
-  const none = ids.length === 0;
-  const [cards7, cards30, strips] = none
-    ? [[], [], []]
-    : await Promise.all([
-        readTable<ScorecardRow>("endpoint_scorecard", "*", "endpoint_id", (q) => q.eq("window_days", 7).in("endpoint_id", ids)),
-        readTable<ScorecardRow>("endpoint_scorecard", "*", "endpoint_id", (q) => q.eq("window_days", 30).in("endpoint_id", ids)),
-        readTable<StripRow>("endpoint_strip", "*", "bucket_start", (q) => q.in("endpoint_id", ids)),
-      ]);
-  return { entry, endpoints, providers, cards7, cards30, strips };
+  return (await getJson<ToolDetailData>(`/admin/tool-layer/tools/${toolId}/detail`)).data;
 }
 
 // ── the changes: one server door ─────────────────────────────────────────────────────────────────────

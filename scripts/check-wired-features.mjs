@@ -37,7 +37,7 @@ export function violations(root, spec) {
   const out = [];
   const native = spec.catalog_native_client_paths ?? [];
   for (const f of spec.features) {
-    if (f.status !== "active") continue;
+    if (f.status !== "active" || f.how === "catalog_native") continue; // a door BORN on the catalog may use it
     for (const p of f.client_paths) {
       for (const abs of walk(join(root, p))) {
         const rel = relative(root, abs).split("\\").join("/");

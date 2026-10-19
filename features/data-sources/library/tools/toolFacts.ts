@@ -112,3 +112,29 @@ export function refillFor(
   if (!callId || !view || view.call_id !== callId || alreadyRefilled === callId) return null;
   return view.inputs ?? null;
 }
+
+/** Words that only a tester writes: a sentence holding one is an internal note, never for a member. */
+const INTERNAL_NOTE = /\b(last live test|live test|sign-in wall|login wall|captcha|census|probe[ds]?|uninvoked|unverified|known issue|proof|scopes?|oauth|mcp|hit a [a-z-]+ wall|blocked|our account|last (?:live )?test|rate[- ]limited|trap)\b/i;
+
+/**
+ * A Tool's summary for a member: internal test notes are cut, and a note means the Tool may be flaky, which
+ * reads as one plain status ("May not work right now"). An admin's debug view passes `admin` and sees it raw.
+ */
+export function memberSummary(summary: string, admin = false): { text: string; flagged: boolean } {
+  if (admin) return { text: summary, flagged: false };
+  const sentences = summary.match(/[^.!?]+[.!?]*\s*/g) ?? [summary];
+  const kept = sentences.filter((sentence) => !INTERNAL_NOTE.test(sentence));
+  return { text: kept.join("").trim(), flagged: kept.length !== sentences.length };
+}
+
+/** One row per job: the same job listed twice (one job key, or two sources sharing one name) shows once, the first. */
+export function dedupeByJob<T extends { job_key: string; display_name?: string }>(hits: readonly T[]): T[] {
+  const seen = new Set<string>();
+  return hits.filter((hit) => {
+    const name = (hit.display_name ?? "").trim().toLowerCase();
+    if (seen.has(hit.job_key) || (name && seen.has(`name:${name}`))) return false;
+    seen.add(hit.job_key);
+    if (name) seen.add(`name:${name}`);
+    return true;
+  });
+}

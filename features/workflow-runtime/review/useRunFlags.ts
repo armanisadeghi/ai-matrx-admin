@@ -1,10 +1,14 @@
 "use client";
 
 // The flags one run raised. Read from workflow.run_log (row security: whoever
-// can read the run). Re-read whenever the run's status moves, so a live run's
-// flags appear as it settles — no polling.
+// can read the run). KEPT ONCE PER RUN (the Board's remount law: a tile that
+// wakes or remounts reads nothing); re-read only when the run's status moves
+// from the status the kept answer was read at, so a live run's flags appear
+// as it settles — no polling.
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+import { useStoreRead } from "@/lib/redux/store-reads/useStoreRead";
 
 import { fetchRunFlags, type RunFlag } from "./service";
 
@@ -14,30 +18,25 @@ export interface RunFlagsState {
   retry: () => void;
 }
 
+/** What is kept: the flags and the run status they were read at. */
+interface KeptRunFlags {
+  statusKey: string | null;
+  flags: RunFlag[];
+}
+
+const NO_FLAGS: RunFlag[] = [];
+
 export function useRunFlags(runId: string, statusKey: string | null): RunFlagsState {
-  const [state, setState] = useState<{ flags: RunFlag[]; error: string | null }>({
-    flags: [],
-    error: null,
-  });
-  const [attempt, setAttempt] = useState(0);
+  const read = useStoreRead<KeptRunFlags>(`workflow.run_flags:${runId}`, async () => ({
+    statusKey,
+    flags: await fetchRunFlags(runId),
+  }));
+  const keptStatus = read.data ? read.data.statusKey : undefined;
+  const { status, refresh } = read;
   useEffect(() => {
-    let live = true;
-    void fetchRunFlags(runId)
-      .then((flags) => {
-        if (live) setState({ flags, error: null });
-      })
-      .catch((error: unknown) => {
-        if (live)
-          setState((prev) => ({
-            flags: prev.flags,
-            error: error instanceof Error ? error.message : "Could not read this run's flags.",
-          }));
-      });
-    return () => {
-      live = false;
-    };
-  }, [runId, statusKey, attempt]);
-  return { ...state, retry: () => setAttempt((n) => n + 1) };
+    if (status === "ready" && keptStatus !== undefined && keptStatus !== statusKey) void refresh();
+  }, [status, keptStatus, statusKey]);
+  return { flags: read.data?.flags ?? NO_FLAGS, error: read.error, retry: () => void refresh() };
 }
 
 /** Flag count per step (node id), for the run journey's markers. */

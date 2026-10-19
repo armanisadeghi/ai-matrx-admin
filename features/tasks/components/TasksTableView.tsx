@@ -275,19 +275,20 @@ export default function TasksTableView() {
               {/* THE DOOR LAW. The row already selects the task into the
                   detail pane; the name keeps cmd/middle-click to /tasks/{id}
                   and the hover peek. */}
+              {/* One-line rows: the title truncates with an ellipsis (full title on hover) rather
+                  than wrapping into a row that clips it mid-word. */}
               <span className="min-w-0" data-user-content {...{ [TASK_TITLE_DOM_ATTR]: task.id }}>
                 <EntityRef
                   token="task"
                   id={task.id}
                   name={task.title}
                   showIcon={false}
-                  wrap
                   onOpen={() => dispatch(setSelectedTaskId(task.id))}
                   className="text-[13px]"
                   labelClassName={
                     task.completed
-                      ? "line-through text-muted-foreground break-words"
-                      : "font-medium text-foreground break-words"
+                      ? "line-through text-muted-foreground"
+                      : "font-medium text-foreground"
                   }
                 />
               </span>

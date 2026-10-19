@@ -39,3 +39,25 @@ describe("job families and verdicts", () => {
     expect(verdictLine("strong", "x")).toBeNull();
   });
 });
+
+import { dedupeByJob, memberSummary } from "../toolFacts";
+
+describe("members never read internal notes", () => {
+  const raw = "What people say about a place, newest first. Last live test hit a sign-in wall.";
+  it("cuts the note and flags the Tool", () => {
+    expect(memberSummary(raw)).toEqual({ text: "What people say about a place, newest first.", flagged: true });
+  });
+  it("an admin sees it raw", () => {
+    expect(memberSummary(raw, true)).toEqual({ text: raw, flagged: false });
+  });
+  it("a clean summary passes untouched", () => {
+    expect(memberSummary("Who works at a company.")).toEqual({ text: "Who works at a company.", flagged: false });
+  });
+  it("lists one row per job", () => {
+    expect(dedupeByJob([{ job_key: "a" }, { job_key: "a" }, { job_key: "b" }])).toHaveLength(2);
+    expect(dedupeByJob([{ job_key: "a", display_name: "Maps reviews" }, { job_key: "b", display_name: "maps reviews" }])).toHaveLength(1);
+  });
+  it("cuts a blocked-on-our-account note", () => {
+    expect(memberSummary("Reviews for a business; blocked on our account's last live test.")).toEqual({ text: "", flagged: true });
+  });
+});

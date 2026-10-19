@@ -37,6 +37,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ComparisonRefusal, type ComparisonResult } from "@/features/comparison/contract";
 import { CompareInline } from "../CompareInline";
 import { parseCompare } from "../parseCompare";
+import { comparePhaseLabels, compareInlineVisibility, setCompareRunPhase } from "../runStatus";
 
 const REQUEST = { kind: "companies_reviews", items: [{ label: "Acme" }, { label: "Globex" }] };
 const awaiting = {
@@ -183,5 +184,33 @@ describe("the card owns picking (live checks 2026-10-19)", () => {
     await act(async () => { confirmButton(host)?.click(); });
     expect(startChatComparison).toHaveBeenCalledWith(awaiting.run_id,
       { kind: "local_business", items: [store("a"), store("b")] }, { organizationId: "org-1" });
+  });
+});
+
+describe("the row and the card follow the run", () => {
+  it("the card opens pinned while it needs the person; other results fold", () => {
+    expect(compareInlineVisibility(entry(awaiting))?.visibility).toBe("pinned");
+    expect(compareInlineVisibility(entry({ status: "needs_items", message: "x" }))).toBeNull();
+  });
+  it("the row label goes Ready to confirm -> Comparing -> Comparison done / failed with the run", () => {
+    const label = () => comparePhaseLabels(entry(awaiting))?.complete;
+    setCompareRunPhase(awaiting.run_id, "confirm");
+    expect(label()).toBe("Ready to confirm");
+    setCompareRunPhase(awaiting.run_id, "running");
+    expect(label()).toBe("Comparing");
+    setCompareRunPhase(awaiting.run_id, "done");
+    expect(label()).toBe("Comparison done");
+    setCompareRunPhase(awaiting.run_id, "failed");
+    expect(label()).toBe("Comparison failed");
+    setCompareRunPhase(awaiting.run_id, "confirm");
+    expect(label()).toBe("Ready to confirm");
+  });
+  it("the header title names the stage once the run exists", async () => {
+    followRun.mockImplementation((_id: string, o: { onRunState: (s: unknown) => void }) => {
+      o.onRunState({ items: [], created_at: null });
+      return new Promise(() => {});
+    });
+    const host = await mount(awaiting);
+    expect(host.textContent).toContain("Comparing");
   });
 });

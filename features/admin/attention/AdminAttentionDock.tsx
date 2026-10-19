@@ -245,7 +245,7 @@ export default function AdminAttentionDock() {
   const notice =
     canRead && noticeTriage !== null ? buildAttentionNotice(shownSources, localMutes, now, noticeTriage) : null;
   const triageFailure: AttentionSourceState | null =
-    triageState.status === "failed"
+    triageState.status === "failed" || triageState.stale
       ? {
           id: "attention-triage",
           label: "Sorting",

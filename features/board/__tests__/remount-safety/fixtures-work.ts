@@ -51,6 +51,10 @@ export function seedNote(): void {
   // The notes provider owns `custom_fields` and reads the note's values once
   // (features/unified-data/customFieldsRead.ts) — no custom values yet.
   seedRpc("entity_record_read", {});
+  // features/notes/spelling/speller.ts — the Hunspell files in public/spellcheck, loaded once per page at idle
+  // (a failed load is never kept, so an unseeded one is asked again on every wake).
+  seedFetch(/\/spellcheck\/en\.aff$/, () => "SET UTF-8\n");
+  seedFetch(/\/spellcheck\/en\.dic$/, () => "2\nhallway\nbedroom\n");
 }
 
 // ── Chat ─────────────────────────────────────────────────────────────────────

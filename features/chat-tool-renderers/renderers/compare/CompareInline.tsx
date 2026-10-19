@@ -19,6 +19,7 @@ import { useComparisonKinds } from "@/features/comparison/hooks";
 import { inLineup, placePick, startRows, type CompareRow } from "@/features/comparison/rows";
 
 import { CompactResult } from "./CompactResult";
+import { compareStageLabel, setCompareRunPhase } from "./runStatus";
 import { parseCompare, type FoundThing, type ParsedCompare } from "./parseCompare";
 import { useCompareRun } from "./useCompareRun";
 
@@ -97,10 +98,15 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
     request: data?.request ?? null,
     organizationId: organizationId ?? null,
   });
+  const runId = data?.runId ?? null;
+  useEffect(() => {
+    if (awaiting) setCompareRunPhase(runId, run.phase);
+  }, [awaiting, runId, run.phase]);
   if (!data) return null;
 
   const photo = data.kind === "local_business";
-  const title = run.phase === "done" ? "Comparison" : "Compare";
+  // The header names where the run stands: Ready to confirm -> Comparing -> Comparison / failed.
+  const title = !awaiting ? "Compare" : run.phase === "done" ? "Comparison" : run.phase === "checking" ? "Compare" : compareStageLabel(run.phase);
   const names = data.found.filter((f) => f.name).map((f) => f.name).join(" vs ");
   const subtitle = names || data.found.map((f) => f.typed).join(" vs ") || null;
 

@@ -21,11 +21,11 @@ try {
   await page.goto(`${ORIGIN}/data/${table}`, { waitUntil: "domcontentloaded", timeout: 240000 });
   const resume = page.getByRole("button", { name: "Resume this preview" });
   if (await resume.count()) { console.log("preview was paused: resuming"); await resume.click(); }
-  await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.waitForTimeout(3000);
+  await page.waitForSelector("[data-table-toolbar]", { timeout: 240000 }); await page.getByText("Alpha", { exact: true }).first().waitFor({ timeout: 120000 }); await page.waitForTimeout(3000);
   const boxes = page.getByRole("checkbox", { name: /select row|select .*row|tick/i }).or(page.locator("tbody input[type=checkbox], [role=row] input[type=checkbox], [role=row] [role=checkbox]"));
   console.log("checkboxes", await boxes.count());
   await boxes.nth(1).click(); await boxes.nth(2).click(); await page.waitForTimeout(1500);
-  const bar = await page.locator("[data-records-bulk]").evaluateAll((b) => b.map((x) => `${x.getAttribute("data-records-bulk")}:${x.disabled ? "disabled" : "enabled"}:${x.getAttribute("title") ?? x.getAttribute("aria-label") ?? ""}`));
+  const bar = await page.locator("[data-records-bulk]").evaluateAll((b) => b.map((x) => `${x.getAttribute("data-records-bulk")}:${x.disabled ? "disabled" : "enabled"}:${x.closest("[title]")?.getAttribute("title") ?? ""}`));
   console.log("bulk buttons:", bar.join(" | "));
   const ticked = await page.locator("[role=checkbox][aria-checked=true], input[type=checkbox]:checked").count();
   console.log("ticked boxes:", ticked);

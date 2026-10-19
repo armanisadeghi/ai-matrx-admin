@@ -89,7 +89,9 @@ describe("a template link is one copy", () => {
     const w = world({ rootFails: true });
     const first = await run(w, storage);
     expect(first.ok).toBe(false);
-    expect(freshCalls()[0][1]).toMatchObject({ p_install_id: null });
+    // TEMPLATE-INSTALL-2: the first call already carries the id the page minted, and the attempt holds it from then on.
+    const minted = freshCalls()[0][1].p_install_id as string;
+    expect(minted).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
     // No page was made, but the attempt kept the copy the door started.
     expect(readAttempt("attempt-1", storage)).toMatchObject({ installId: "inst-1", root: null, done: false });
 
@@ -99,6 +101,25 @@ describe("a template link is one copy", () => {
     const second = await run(w, storage);
     expect(second.ok).toBe(true);
     expect(freshCalls()[1][1]).toMatchObject({ p_install_id: "inst-1" });
+  });
+
+  it("a refresh BEFORE the door's first answer resends the id the page minted: one copy, not two", async () => {
+    // The first call never answers in time (the page is reloaded while it is in flight): the attempt must already hold the id.
+    rpc.mockImplementation(async (fn: string) => (fn === "template_install_fresh" ? new Promise(() => undefined) : { data: [], error: null }));
+    const storage = memoryStorage();
+    const w = world();
+    void run(w, storage);
+    await new Promise((r) => setTimeout(r, 60));
+    const minted = freshCalls()[0][1].p_install_id as string;
+    expect(minted).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-/);
+    expect(readAttempt("attempt-1", storage)).toMatchObject({ installId: minted, done: false });
+
+    // The refresh: a new run over the same storage sends THE SAME id on its first call.
+    rpc.mockReset();
+    rpc.mockImplementation(async (fn: string) => (fn === "template_install_fresh" ? { data: { ...DONE, install_id: minted }, error: null } : { data: [], error: null }));
+    const second = await run(world(), storage);
+    expect(second.ok).toBe(true);
+    expect(freshCalls()[0][1]).toMatchObject({ p_install_id: minted });
   });
 
   it("a finished attempt keeps its root, and a revisit has nothing to resume", async () => {

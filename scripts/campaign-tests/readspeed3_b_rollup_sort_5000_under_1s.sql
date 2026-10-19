@@ -35,6 +35,8 @@ begin
     perform set_config('role', 'postgres', true);
     perform set_config('request.jwt.claims', '', true);
     if to_regprocedure('custom.computed_refresh_drain(integer)') is not null then
+      -- the new records queued as the write triggers (READ-SPEED-3 b) queue them, then the job's work
+      perform custom._computed_mark_org(c_org);
       perform custom.computed_refresh_drain(900000);
     end if;
     -- until READ-SPEED-3 b (the write triggers) lands, kept values are served only when forced (proofs only)

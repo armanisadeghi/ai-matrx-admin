@@ -96,6 +96,7 @@ function qualify(table: string): string {
 }
 
 function record(call: BackendCall): void {
+  if (process.env.DBGSTACK) console.log("[DBG-a4f2]", call.target, (new Error().stack ?? "").split("\n").filter((l) => !l.includes("node_modules") && !l.includes("fake-backend")).slice(0, 7).join("\n"));
   state.calls.push(call);
 }
 

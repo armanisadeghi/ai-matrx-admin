@@ -31,7 +31,7 @@ import { ToolResult } from "./ToolResult";
 import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
 import { checkedPhone, emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
 import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
-import { inputsToSend, jobFamilyOf, refillFor } from "./toolFacts";
+import { inputsToSend, jobFamilyOf, memberSummary, refillFor } from "./toolFacts";
 import { AdminToolLayer } from "@/features/admin/tool-layer";
 import { ToolAdvanced } from "./ToolAdvanced";
 import { ToolDescribe } from "./ToolDescribe";
@@ -121,9 +121,10 @@ export function ToolPage({
   const facts = form.data?.facts ?? null;
   // The card the person pressed carries reliability and speed; a deep link has only the run-form's facts.
   const title = card?.display_name ?? facts?.displayName ?? "Tool";
-  const summary = card?.summary ?? facts?.summary ?? "";
+  const rawSummary = card?.summary ?? facts?.summary ?? "";
   const noun = card?.display_noun ?? facts?.displayNoun ?? "";
   const adminView = useToolsAdminView();
+  const { text: summary, flagged } = memberSummary(rawSummary, adminView);
 
   // `?with=` fills the box (a lookup started from the one search box) and `&run=1` presses it once.
   const [values, setValues] = useState<Record<string, unknown>>(() => {
@@ -244,7 +245,7 @@ export function ToolPage({
           {form.data ? (
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               {noun ? <Badge tone="neutral">{noun}</Badge> : null}
-              {facts?.offNotice ? <Badge tone="warning">Paused</Badge> : null}
+              {facts?.offNotice ? <Badge tone="warning">Paused</Badge> : flagged ? <Badge tone="warning">May not work right now</Badge> : null}
             </div>
           ) : null}
         </div>

@@ -1,0 +1,24 @@
+// Row: trigger form submitted + action create a record, built in the panel as admin.
+import { open, gotoTable, openAutomations, say } from "./at-walk-h-lib.mjs";
+const [, , T, LOG] = process.argv;
+const { browser, page, shot } = await open(false);
+await gotoTable(page, T);
+await openAutomations(page);
+const d = page.getByRole("dialog");
+await d.getByRole("button", { name: "New automation" }).click();
+await d.getByLabel("Automation name").fill("ATWH form to log");
+await d.getByRole("button", { name: "Form answered" }).click();
+await d.getByRole("button", { name: "Add record" }).first().click();
+say("INROW", await d.locator("[data-testid=automation-step] > div").nth(1).evaluate((e) => e.outerHTML.replace(/<svg.*?<\/svg>/g, "").slice(0, 900)));
+const sel = d.locator("[data-testid=automation-step] > div").nth(1).locator("button, [role=combobox]").first();
+say("combobox count", await sel.count());
+await sel.click();
+await page.waitForTimeout(1000);
+say("OPTS", await page.getByRole("option").allInnerTexts());
+await shot("a1-opts");
+await page.getByRole("option", { name: /ATWH log/ }).click();
+await d.getByRole("button", { name: "Set a field" }).first().click();
+await page.waitForTimeout(800);
+say("CTRL", await d.getByRole("combobox").evaluateAll((els) => els.map((e) => e.getAttribute("aria-label") + "=" + e.innerText)));
+await shot("a1-set");
+await browser.close();

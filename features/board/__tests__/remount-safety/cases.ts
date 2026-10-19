@@ -50,6 +50,8 @@ export const REMOUNT_LEDGER: Record<string, RemountStatus> = {
   "transcript:quiet": { status: "passing" },
   "agent": { status: "failing", owner: "board-office lane", why: "AgentViewContent reads the version history, access summary, organization names and record fields in effects of its own on every wake and remount (about seven reads); they need kept answers keyed by agent id before the tile may sleep" },
   "agent:quiet": { status: "failing", owner: "board-office lane", why: "AgentViewContent reads the version history, access summary, organization names and record fields in effects of its own on every wake and remount (about seven reads); they need kept answers keyed by agent id before the tile may sleep" },
+  "presentation": { status: "failing", owner: "board-office lane", why: "PresentationEditor reads its row, the access check and its custom-field list in effects of its own on every wake and remount; they need kept answers keyed by presentation id before the tile may sleep" },
+  "presentation:quiet": { status: "failing", owner: "board-office lane", why: "PresentationEditor reads its row, the access check and its custom-field list in effects of its own on every wake and remount; they need kept answers keyed by presentation id before the tile may sleep" },
   "data-table": { status: "passing" },
   "data-table:quiet": { status: "passing" },
   "record": { status: "passing" },

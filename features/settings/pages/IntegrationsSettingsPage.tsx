@@ -128,6 +128,7 @@ import { IntegrationDirectory } from "@/features/connectors/IntegrationDirectory
 import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
 import { selectIsDebugMode } from "@/lib/redux/preferences/adminDebugSlice";
 import { AbilitySections } from "@/features/connectors/AbilitySections";
+import { describeForViewer } from "@/features/connectors/member-description";
 import { foldAbilities } from "@/features/connectors/provider-folds";
 import { useSettingsTabNavigate } from "@/features/settings/components/SettingsPresentationContext";
 import {
@@ -287,6 +288,8 @@ export function IntegrationsWorkspace({
     selectMcpAvailabilityStatusForOrganization(state, organizationId),
   );
   const connectionViewer = useConnectionViewer();
+  const showInternalNotes =
+    useAppSelector(selectIsAdminDebugger) && useAppSelector(selectIsDebugMode);
   const organizations = useAppSelector(selectOrganizationsList);
   const github = useGitHubConnection();
   const huggingFace = useHuggingFaceConnection();
@@ -831,15 +834,14 @@ export function IntegrationsWorkspace({
             entry.slug === "google-workspace"
               ? `${entry.name} · local tools`
               : entry.name,
-          description:
-            entry.description ?? `Connect ${entry.name} to your agents.`,
+          description: describeForViewer(entry, showInternalNotes),
           vendor: `${entry.vendor} · Agent tools`,
           category: entry.category,
           keywords: entry.slug,
           artwork: {
             id: entry.slug,
             name: entry.name,
-            blurb: entry.description ?? "",
+            blurb: describeForViewer(entry, showInternalNotes),
             surfaces: ["directory"],
             iconUrl: artwork[0],
             fallbackIconUrls: artwork.slice(1),
@@ -1169,7 +1171,7 @@ export function IntegrationsWorkspace({
             ) : null
           }
           exportControl={
-            visibleServers.length > 0 ? (
+            showInternalNotes && visibleServers.length > 0 ? (
               <CopyButtons
                 size="icon"
                 label="Hosted integrations"
@@ -1413,11 +1415,9 @@ function ServerCard({
         </div>
 
         {/* Description */}
-        {entry.description && (
-          <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">
-            {entry.description}
-          </p>
-        )}
+        <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">
+          {describeForViewer(entry, showDeveloperDetail)}
+        </p>
         {connectionPresentation.reason && !isConnected && (
           <p
             role="status"

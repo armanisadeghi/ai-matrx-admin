@@ -304,7 +304,9 @@ export async function installTemplateTables(
   const done = await timed("install-door", () =>
     runTemplateDoor(source, fresh ? "template_install_fresh" : "template_install", organizationId, t.id, {
       maxCalls: 400,
-      ...(fresh ? { title: fresh.title, installId: fresh.installId ?? null } : {}),
+      // TEMPLATE-INSTALL-2: the id is the page's from before the first call (held for a refresh, else minted by the door runner and
+      // announced through onInstallId at once), so a refresh inside the door's first ~4 s resumes this copy instead of making another.
+      ...(fresh ? { title: fresh.title, installId: fresh.installId ?? null, ...(fresh.onInstallId ? { onInstallId: fresh.onInstallId } : {}) } : {}),
       onCall: (answer) => {
         // The copy's id first: a refused or stopped run is resumed on THIS copy, never a new one.
         if (fresh && answer.install_id) fresh.onInstallId?.(answer.install_id);

@@ -1,4 +1,5 @@
 import { mcpConnectionRouteFor } from "@/features/agent-connections/mcp-connection-route";
+import { memberDescription } from "./member-description";
 import type { McpCatalogEntry } from "@ai-matrx/chat/agents/types/mcp.types";
 import { getFaviconUrl } from "@ai-matrx/chat/tool-call-visualization/renderers/search/parseSearch";
 import { connectorsFor, getConnector } from "./registry";
@@ -116,9 +117,8 @@ export function connectorDefinitionFromMcp(entry: McpCatalogEntry): ConnectorDef
   return {
     id: entry.slug,
     name: entry.name,
-    blurb:
-      entry.description?.trim() ||
-      `Connect ${entry.name} so agents can use it in conversations`,
+    // Never the catalog's internal description: that is builder notes, shown only to admins with debug view on.
+    blurb: memberDescription(entry.name),
     iconUrl: artworkUrls[0] ?? null,
     fallbackIconUrls: artworkUrls.slice(1),
     brandColor: entry.color,

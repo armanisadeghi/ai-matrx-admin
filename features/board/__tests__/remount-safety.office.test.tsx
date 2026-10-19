@@ -160,7 +160,7 @@ remountType(
       prepare: () => {
         seed("transcripts.transcripts", [transcriptRow]);
       },
-      loadMs: 1500,
+      loadMs: 3000,
       kept: (tile) => ({ line: shows(tile.container, TRANSCRIPT_LINE), loading: tile.container.querySelector('[aria-busy="true"]') !== null }),
     }),
   (r) => expectRemountSafe(r, { line: true, loading: false }, [/^transcripts\.transcripts$/]),
@@ -210,4 +210,44 @@ remountType(
       kept: (tile) => ({ instruction: shows(tile.container, AGENT_INSTRUCTION), loading: shows(tile.container, "Loading agent data") }),
     }),
   (r) => expectRemountSafe(r, { instruction: true, loading: false }, [/^agent\.definition$/]),
+);
+
+// ─── Presentation ────────────────────────────────────────────────────────────
+const PRESENTATION_ID = "5d7f9b1e-3a4c-4e68-90a2-7c1b3d5f8e46";
+const PRESENTATION_NAME = "Q4 owner update";
+const SLIDE_TITLE = "Occupancy reached 96 percent";
+const presentationRow = {
+  id: PRESENTATION_ID,
+  name: PRESENTATION_NAME,
+  description: null,
+  deck: {
+    __kind: "presentation_deck",
+    title: PRESENTATION_NAME,
+    slides: [{ __kind: "presentation_slide", id: "s1", layout: "title", title: SLIDE_TITLE, subtitle: "Harborview Properties" }],
+  },
+  source: "created",
+  project_id: null,
+  organization_id: ORGANIZATION.id,
+  created_by: PERSON.id,
+  visibility: "internal",
+  deleted_at: null,
+  created_at: "2026-09-30T19:00:00.000Z",
+  updated_at: "2026-09-30T19:00:00.000Z",
+};
+
+// Break: the presentation tile re-reads its deck (and access) on wake / remount instead of keeping
+// them, or loses the slide the person is on.
+remountType(
+  "presentation",
+  () =>
+    runCycle(type("presentation"), { kind: "entity", entity: "presentation", id: PRESENTATION_ID }, {
+      title: PRESENTATION_NAME,
+      prepare: () => {
+        seed("workbench.presentation", [presentationRow]);
+        seedRpc("get_share_capabilities", { publish_lane: "published_to_web", public_state_kind: null, public_state_column: null });
+      },
+      loadMs: 1500,
+      kept: (tile) => ({ slide: shows(tile.container, SLIDE_TITLE) || tile.container.innerHTML.includes(SLIDE_TITLE) }),
+    }),
+  (r) => expectRemountSafe(r, { slide: true }, [/^workbench\.presentation$/]),
 );

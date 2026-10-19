@@ -25,6 +25,7 @@ import { createAssociationsStore } from "@ai-matrx/associations/core";
 import type { AssociationsDataSource } from "@ai-matrx/associations";
 import { supabase } from "@/utils/supabase/client";
 import { requireUserId } from "@/utils/auth/getUserId";
+import { sessionStateNow } from "@/utils/supabase/sessionBarrier";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { withOrganizationRefusalShown } from "@ai-matrx/chat/host/org";
 import { associationsErrorSink } from "./errorSink";
@@ -61,6 +62,10 @@ export function getAssociationsStore(): AssociationsStore {
       dataSource: associationsDataSource,
       identity: {
         requireUserId,
+        // A 42501 "permission denied for function" is a signed-out tab only when the session is
+        // NOT attached; attached, it is a real grant gap and reads "Permission denied"
+        // (@ai-matrx/associations 0.14.80; the annotations sidecar asks the same question).
+        sessionAttached: () => sessionStateNow() === "attached",
         // Org for created rows/edges (CategorySelect/CategoryTagPicker
         // create paths). `ensureOrgId(null)` resolves the SELECTED
         // organization and REFUSES when there is none — the personal-org

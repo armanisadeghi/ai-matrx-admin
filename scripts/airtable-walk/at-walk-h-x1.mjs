@@ -1,0 +1,11 @@
+import { open, gotoTable, openAutomations, say } from "./at-walk-h-lib.mjs";
+const T = process.argv[2];
+const { browser, page, who, shot } = await open(false);
+say("who", who);
+await gotoTable(page, T);
+await openAutomations(page);
+const d = page.getByRole("dialog");
+say("DLG", (await d.innerText()).replace(/\n+/g, " | ").slice(0, 700));
+say("BTNS", await d.getByRole("button").allInnerTexts());
+await shot("x1-auto");
+await browser.close();

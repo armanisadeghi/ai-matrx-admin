@@ -31,9 +31,83 @@ const KNOBS: Record<string, unknown> = {
   "billing.points_per_usd": 20000,
   // features/marketing/social/post-count.ts POST_COUNT_KNOB (platform default 50): the profile tile's "how many posts" control.
   "social.profile_posts_default": 50,
+  // @ai-matrx/chat tool-call-visualization/registry/inlineVisibility.js and ReplySuggestedActionsSlot.js — a knob read
+  // that finds no row logs a console.error (a stand-in announces itself); the platform's own defaults.
+  "agents.tool_cards.inline_visibility": "compact",
+  "agents.reply_actions.enabled": true,
+};
+
+/** `iam.organizations` row of the person's one organization (features/organizations/service/myOrganizationsPage.ts `MyOrganizationRow`). */
+const ORGANIZATION_ROW = {
+  abbreviation: "HP",
+  archive_reason: null,
+  archived_at: null,
+  archived_by: null,
+  created_at: "2026-03-14T16:00:00.000Z",
+  created_by: PERSON.id,
+  description: null,
+  id: ORGANIZATION.id,
+  is_system: false,
+  logo_file_id: null,
+  logo_url: null,
+  metadata: {},
+  name: ORGANIZATION.name,
+  settings: null,
+  slug: "harborview-properties",
+  test_expires_at: null,
+  test_run_id: null,
+  updated_at: "2026-03-14T16:00:00.000Z",
+  updated_by: null,
+  website: null,
+};
+const ORGANIZATION_ENTRY = {
+  organization: ORGANIZATION_ROW,
+  role: "owner",
+  status: "active",
+  joined_at: "2026-03-14T16:05:00.000Z",
+  member_count: 4,
 };
 
 export function seedPlatform(): void {
+  // iam.my_organizations_by_ids / my_organizations_page — the bounded reads of her organizations
+  // (organizationLookup.ts keeps each id once per tab; an unseeded read FAILS, and a failed read is never kept).
+  seedRpc("my_organizations_by_ids", (args: unknown) => {
+    const ids = ((args as { p_ids?: string[] } | undefined)?.p_ids ?? []) as string[];
+    return { organizations: ids.includes(ORGANIZATION.id) ? [ORGANIZATION_ENTRY] : [] };
+  });
+  seedRpc("my_organizations_page", {
+    organizations: [ORGANIZATION_ENTRY],
+    total: 1,
+    has_more: false,
+    next_cursor: null,
+    page_size: 50,
+  });
+  // features/organizations/service/orgMemberRows.ts `OrganizationMemberRow` (kept once per organization per tab).
+  seedRpc("get_organization_members_with_users", [
+    {
+      id: "c1e7a3f0-2b9d-4c58-8e16-5a0f3d7b9c21",
+      invited_by: PERSON.id,
+      joined_at: "2026-03-14T16:05:00.000Z",
+      organization_id: ORGANIZATION.id,
+      role: "owner",
+      user_avatar_url: "",
+      user_display_name: "Dana Whitfield",
+      user_email: PERSON.email,
+      user_id: PERSON.id,
+    },
+  ]);
+  // custom.context_tree* — her organization has no scopes yet (an unseeded read maps to `door_absent`, logged to console.error).
+  seedRpc("context_tree", { types: [], scopes: [] });
+  seedRpc("context_tree_types", { types: [] });
+  seedRpc("context_tree_type_scopes", { scopes: [], total: 0, offset: 0, next_offset: null });
+  seedRpc("context_scopes", []);
+  // features/rich-document/annotations/service.ts — a record's comments (none yet), may she edit it (she owns it),
+  // and the association pairs a kind offers for highlights and links (none: `annotationPairs` keeps one answer per kind).
+  seedRpc("cmt_list", []);
+  seedRpc("has_access", true);
+  seedRpc("association_link_sources", []);
+  // platform.home_names — the names of the homes a note lives in (features/notes/homes/useNoteHomes.ts `HomeNameRow`).
+  seedRpc("home_names", []);
   // features/organizations/service/membershipsService.ts `MbrForUserRow`
   seedRpc("mbr_for_user", [
     {
