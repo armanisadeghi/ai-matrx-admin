@@ -68,6 +68,12 @@
       "checksum": "48f3491997f0161bcc512da4e076afedb513941529d64007a8e2ee99d84d3940",
       "applied_at": "2026-10-18 05:50:43.327974+00"
     },
+    "migrations/campaign/20261018233700_fix_auto_cursor_merge_owner_switch_off_check_send_once.sql": {
+      "source": "matrx-frontend",
+      "filename": "20261018233700_fix_auto_cursor_merge_owner_switch_off_check_send_once.sql",
+      "checksum": "1223a4c9bee197d1b5e0384e7b02c2d26f7fa49e3e20412476770040f96ca4a2",
+      "applied_at": "2026-10-19 03:09:00.324899+00"
+    },
     "migrations/campaign/a_chunk_is_the_size_the_client_door_can_actually_carry.sql": {
       "source": "matrx-frontend",
       "filename": "a_chunk_is_the_size_the_client_door_can_actually_carry.sql",

@@ -2,7 +2,9 @@
 -- inverse of 20261018233700_fix_auto_cursor_merge_owner_switch_off_check_send_once.sql
 -- lane: FIX-AUTO
 -- lock: custom,platform
--- BASED-ON-HERE
+-- based-on: custom.automation_app_note(uuid, text, jsonb) 488d9019562315da28c00b971b633bdf76700013d588484258074fceff02ef81
+-- based-on: custom.automation_app_event(uuid, jsonb, jsonb) ffb40275b0fbccdc19e0803a4bb5ea2c725ca902d98d4d25d2bac64a98d8a703
+-- based-on: custom._automation_flip(uuid, uuid, text, jsonb, text) e2996040fbf18fb368ac19aab883c1867f197382b8ff774bf29fd8a4774aaef6
 CREATE OR REPLACE FUNCTION custom.automation_app_note(p_automation_id uuid, p_says text, p_cursor jsonb DEFAULT NULL::jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql

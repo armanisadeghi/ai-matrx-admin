@@ -1014,7 +1014,7 @@ function AutomationsPanelBody({ tableId, organizationId, fields }: { tableId: st
                   <span className={`type-secondary min-w-0 flex-1 truncate ${a.app_says ? "text-destructive" : "text-muted-foreground"}`}>
                     {a.app_says ?? (a.app_checked_at ? `Checked ${new Date(a.app_checked_at).toLocaleString()}` : "Not checked yet")}
                   </span>
-                  <Button variant="quiet" disabled={checking === a.id} onClick={() => void checkNow(a)}>
+                  <Button variant="quiet" disabled={checking === a.id || !a.enabled} title={a.enabled ? undefined : "Switch it on first"} onClick={() => void checkNow(a)}>
                     {checking === a.id ? "Checking…" : "Check now"}
                   </Button>
                 </div>
