@@ -73,8 +73,8 @@ binding or placement is never approval to inherit page values.
 1. Manifest (`features/surfaces/manifests/<x>.manifest.ts`) → label, readiness, inheritsFrom, values, writeTargets, urlPattern/overlayId.
 2. The route (`route-to-surface.ts`) and the feature dir (`app/... → features/<name>/`); its `FEATURE.md` + Change Log; `docs/handoffs/*` mentioning it.
 3. Claimed contract + last ledger entry: `select last_check from ui.ui_surface where name = …` — prior failures and the contract's required rule version first.
-4. Open the page (`pnpm preview:start`, dev-login), desktop 1280×800, right-click once with the console open.
-   In a cloud container (it cannot run the preview and a type check at once): no dev server — push, then verify on the live site once the release train ships it. The two lanes are spelled out in `page-pass` ("Where you verify").
+4. Open the page on the live site (https://www.aimatrx.com, signed in as admin@admin.com, e.g. `node scripts/real-tests/pw.mjs <run> signin`), desktop 1280×800, right-click once with the console open.
+   Certification is read on live once a release carries the change (push, then check). The local preview (`pnpm preview:start`) is only a fix-and-look loop while you repair; it is never certification evidence.
 
 **Browser availability.** Live proof is a completion gate. If the isolated in-app
 Browser is unavailable, finish safe static repairs, record the exact missing
@@ -134,7 +134,7 @@ may unblock diagnosis but is not certification evidence. Publish and adopt the
 package (or use the released API), perform a clean install/preview, and rerun the
 entire live matrix. Otherwise settle `retry` with the exact package boundary.
 
-The preview must also prove it is serving that checkout, not merely answer on
+When a local preview is used for a repair loop, it must also prove it is serving that checkout, not merely answer on
 the expected port. Before treating a route response as evidence, record the
 preview checkout SHA, confirm Next's inferred workspace root is that checkout,
 and confirm the generated app-path manifest contains the target. A parent

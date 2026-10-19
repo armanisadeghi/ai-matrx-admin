@@ -12,8 +12,10 @@ What is compared, per fixture kind (the manifest's ``hash_rule`` says the same):
   agent          live version number and live version id, model id, and sha256 of: settings · declared tools
                  (each tool's id, registry name and active flag, plus custom_tools, tool_config, mcp_servers) ·
                  variables (variable_definitions) · the rest of the definition (messages, context policies,
-                 prompt blocks, output schema, skills, model tiers, name, active/deleted, organization)
-  agent_version  a version row a binding pins: the same four hashes and model id (version rows can be patched
+                 prompt blocks, output schema, skills, model tiers, name, active/deleted, organization) ·
+                 automatic context (`auto_context_disabled`: rule H makes `<org_catalog>` and `scope_system` lawful
+                 only while it is on, so turning it off or on must never pass unseen)
+  agent_version  a version row a binding pins: the same five hashes and model id (version rows can be patched
                  in place, as on 2026-10-16)
   row            one database row: its ``version`` column and sha256 of the named fields. An entry marked
                  ``"ignore_version": true`` (files, notes, knob overrides: things a restore re-writes) is compared
@@ -60,10 +62,10 @@ MANIFEST = HERE / "fixtures.json"
 
 AGENT_COLS = ("id,name,version,model_id,settings,tools,custom_tools,tool_config,mcp_servers,variable_definitions,"
               "messages,context_policies,prompt_blocks,output_schema,skill_config,model_tiers,is_active,deleted_at,"
-              "organization_id")
+              "organization_id,auto_context_disabled")
 VERSION_COLS = ("id,agent_id,version_number,version,name,model_id,settings,tools,custom_tools,tool_config,mcp_servers,"
                 "variable_definitions,messages,context_policies,prompt_blocks,output_schema,skill_config,model_tiers,"
-                "is_active,deleted_at,organization_id")
+                "is_active,deleted_at,organization_id,auto_context_disabled")
 
 
 # ---------------------------------------------------------------------------------------------- hashing
@@ -77,7 +79,7 @@ def sha(value: Any) -> str:
 
 
 def agent_hashes(row: Dict[str, Any], tool_rows: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
-    """The four content hashes of an agent row or an agent version row (same columns)."""
+    """The five content hashes of an agent row or an agent version row (same columns)."""
     tools = []
     for tid in sorted(row.get("tools") or []):
         t = tool_rows.get(tid) or {}
@@ -91,6 +93,8 @@ def agent_hashes(row: Dict[str, Any], tool_rows: Dict[str, Dict[str, Any]]) -> D
         "definition_sha256": sha({k: row.get(k) for k in ("messages", "context_policies", "prompt_blocks", "output_schema",
                                                            "skill_config", "model_tiers", "name", "is_active",
                                                            "organization_id")} | {"deleted": row.get("deleted_at") is not None}),
+        "auto_context_sha256": sha({"auto_context_disabled": row.get("auto_context_disabled")}),
+        "auto_context_disabled": row.get("auto_context_disabled"),
         "tools": [f"{t['name']}{'' if t['is_active'] else ' (INACTIVE)'}" for t in tools],
         "reasoning_effort": (row.get("settings") or {}).get("reasoning_effort"),
     }
@@ -205,15 +209,17 @@ def live_values(reader: Reader, entry: Dict[str, Any]) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------------------------- comparison
 
 COMPARED = {
-    "agent": ("live_version", "live_version_id", "model_id", "settings_sha256", "tools_sha256", "variables_sha256", "definition_sha256"),
-    "agent_version": ("agent_id", "version_number", "row_version", "model_id", "settings_sha256", "tools_sha256", "variables_sha256", "definition_sha256"),
+    "agent": ("live_version", "live_version_id", "model_id", "settings_sha256", "tools_sha256", "variables_sha256", "definition_sha256",
+              "auto_context_sha256"),
+    "agent_version": ("agent_id", "version_number", "row_version", "model_id", "settings_sha256", "tools_sha256", "variables_sha256",
+                      "definition_sha256", "auto_context_sha256"),
     "row": ("version", "sha256"),
     "value": ("value_version", "sha256"),
     "pick_list": ("sha256",),
     "presence": ("present",),
     "tool": ("name", "is_active", "deleted"),
 }
-SHOWN = ("tools", "reasoning_effort")  # printed beside a difference so a reader sees what moved
+SHOWN = ("tools", "reasoning_effort", "auto_context_disabled")  # printed beside a difference so a reader sees what moved
 
 
 def compare(key: str, entry: Dict[str, Any], live: Optional[Dict[str, Any]], error: Optional[str] = None) -> List[str]:
@@ -383,7 +389,8 @@ def require_fixtures(playbook: str, accept_drift: Optional[str]) -> Dict[str, An
         live = f.get("live") or {}
         record["fixtures"][key] = {k: live.get(k) for k in ("live_version", "live_version_id", "version_number", "version",
                                                              "value_version", "settings_sha256", "tools_sha256",
-                                                             "variables_sha256", "definition_sha256", "sha256") if k in live}
+                                                             "variables_sha256", "definition_sha256", "auto_context_sha256",
+                                                             "sha256") if k in live}
         record["fixtures"][key]["id"] = f.get("id")
         if f.get("error"):
             record["fixtures"][key]["read_error"] = f["error"]
@@ -452,7 +459,8 @@ def plant_self_test() -> int:
 def self_test() -> int:
     """Pure comparison cases. RED cases must produce at least one DIFF; GREEN cases none."""
     base = {"kind": "agent", "id": "a", "live_version": 5, "live_version_id": "v5", "model_id": "m",
-            "settings_sha256": "s", "tools_sha256": "t", "variables_sha256": "x", "definition_sha256": "d"}
+            "settings_sha256": "s", "tools_sha256": "t", "variables_sha256": "x", "definition_sha256": "d",
+            "auto_context_sha256": "c"}
     live_same = {k: v for k, v in base.items() if k not in ("kind", "id")}
     cases = [
         ("GREEN match", base, live_same, None, False),
@@ -487,6 +495,18 @@ def self_test() -> int:
     tool_ok = t1["tools_sha256"] != t2["tools_sha256"]
     missed += 0 if tool_ok else 1
     print(f"{'ok    ' if tool_ok else 'MISSED'} tools hash moves when a declared tool turns inactive")
+    # rule H rests on automatic context: turning it off (or on) must move a compared hash, and the comparison must see it
+    a_on = agent_hashes({"auto_context_disabled": False, "tools": []}, {})
+    a_off = agent_hashes({"auto_context_disabled": True, "tools": []}, {})
+    auto_ok = a_on.get("auto_context_sha256") is not None and a_on.get("auto_context_sha256") != a_off.get("auto_context_sha256")
+    missed += 0 if auto_ok else 1
+    print(f"{'ok    ' if auto_ok else 'MISSED'} auto-context hash moves when auto_context_disabled flips")
+    entry = {"kind": "agent", "id": "a", "live_version": 5, "live_version_id": "v5", "model_id": None,
+             **{k: a_on.get(k) for k in COMPARED["agent"] if k not in ("live_version", "live_version_id")}}
+    live_flip = {"live_version": 5, "live_version_id": "v5", **{k: a_off.get(k) for k in COMPARED["agent"] if k not in ("live_version", "live_version_id")}}
+    flip_red = bool(compare("selftest", entry, live_flip))
+    missed += 0 if flip_red else 1
+    print(f"{'ok    ' if flip_red else 'MISSED'} RED auto-context turned off, everything else equal: {'RED' if flip_red else 'GREEN'}")
     missed += plant_self_test()
     print(f"self-test: {missed} missed")
     return 1 if missed else 0

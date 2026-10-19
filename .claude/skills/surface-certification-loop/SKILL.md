@@ -98,12 +98,12 @@ facts and exceptions. Never launch one schedule per surface.
    URLs created under each grant. On interruption or failed cleanup, the
    coordinator closes those exact campaign-created tabs before the next grant;
    it never closes tabs that predated the campaign or belong to another task.
-   The Browser and the one machine-wide managed preview are the same exclusive
-   live lane. The same actively leased holder owns both or neither. Static/code
-   workers may prepare clean worktrees but may not start or retain the preview.
-   Before handoff, release the prior campaign preview; then start only
-   `pnpm preview:start` from the recorded checkout and record its SHA/workspace
-   root with the tab inventory. Raw or parallel dev servers are invalid proof.
+   Certification evidence is read on the live site (https://www.aimatrx.com,
+   admin@admin.com) once a release carries the change; record the live build
+   with the tab inventory. The managed local preview is only a fix-and-look loop
+   for the holder of the Browser lane (the same holder owns both or neither),
+   is released before handoff, and is never certification proof. Raw or
+   parallel dev servers are invalid for any purpose.
 4. Heartbeat active claims before half the lease elapses. Ownership loss stops
    writes immediately.
 5. Settle each worker through `complete`, `retry`, or `defer`, then refill the

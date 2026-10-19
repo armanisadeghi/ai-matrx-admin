@@ -3,10 +3,9 @@
  "organization_name": "Safety Net Real Tests",
  "built_at": "2026-10-18T08:25:24+00:00",
  "built_by": "fixture lane (review 2 tooling fix), read live as admin@admin.com through the project's API",
- "hash_rule": "sha256 of json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False); field sets are in fixture_check.py (agent_hashes, COMPARED) and each row entry's `fields`",
+ "hash_rule": "sha256 of json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False); field sets are in fixture_check.py (agent_hashes, COMPARED) and each row entry's `fields`; auto_context_sha256 = sha256 of {\"auto_context_disabled\": <value>} (added 2026-10-19 from the version row each entry names)",
  "rebaseline": "an owner re-baselines one entry by running `fixture_check.py --snapshot KEY` and pasting the printed values; drop `drifted` only after review",
  "not_in_manifest": [
-  "PB-01 skill 'Compass dispatch ref' (not built yet)",
   "PB-04/PB-06 second organization admin's Workspace itself (only its fixture rows are listed)",
   "test@test.com seat (a person, not a fixture)",
   "UI-QUICK 2026-10-19: spare column 'Dock lane' e55d5573-9a7e-4586-8492-3237b7065df5 on table e49d64a9-... (custom field, no row read); table 'Compass accessorial fees' 80b4297d-... and file move-4471.md are PB-06 fixtures already listed; Q-20 pages not built"
@@ -29,7 +28,9 @@
    "row_4471_ref",
    "picklist_compass",
    "block_compass",
-   "tool_agent"
+   "tool_agent",
+   "skill_dispatch_ref",
+   "org_override_workspace"
   ],
   "PB-02": [
    "mandate_desk",
@@ -159,6 +160,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "4aa8f60e1fd30a5a210400e27af802d38ec21b11955ff3e98a605d101907c688",
    "definition_sha256": "a063e3a7e17c03b96cb752dcb3b19efee5515f1e79465bfe79ad8a92d301d4c8",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -177,6 +180,8 @@
    "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
    "variables_sha256": "4aa8f60e1fd30a5a210400e27af802d38ec21b11955ff3e98a605d101907c688",
    "definition_sha256": "0bb3b40efcf290d2f0ba2729cb5bd9cefe1af14105ec4ee0fdbe2678ee416e3c",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent"
    ],
@@ -196,6 +201,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "8083d0c115cd413947a634a83f5a558816b47d4c1e75f4d556ea2d06ac3e416a",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -213,6 +220,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "322aa5b908f6ad84eecb55da904b18c532fa7bc271fcbd735bfb05f7d9a85b78",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -230,6 +239,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "07895d03ab84950aac1e2b380a63c484cbcdcdaee82113f3eac19632d8a9aaa0",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -248,6 +259,8 @@
    "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "a70c295cf3e470ff30dbc860c378f7608feb2313401d83bc8141db7db873de2a",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent"
    ],
@@ -265,6 +278,8 @@
    "tools_sha256": "221e0b24594cb5ac859c87e77c9d2d3e312ccc544b590452dce535c4f009dd35",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "d81d94a4ce681ff6a3737c5a1b5e850e1cf6c8ab45119920e1275feb16a45c62",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent"
    ],
@@ -283,6 +298,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "632c7c75d2f11636990323c59e948b855decfa6213b1cf53df88789064420658",
    "definition_sha256": "43f5187171a9baef3c4616b181730d9bc785c9485e98b601fc04139f7b03d304",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -300,6 +317,8 @@
    "tools_sha256": "b526a692a854d48e27807b6af5aface1b2cbeef352d51b38c2af428275fd861d",
    "variables_sha256": "7418305ff59b930c8ed7070777cdf1069e7d6ad575d8fda567436e630d6a6a25",
    "definition_sha256": "20ca98740f8d9699eee8680c6cee19e4b11950222152f3b1456077fc3edb2c3b",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "mandate_call"
    ],
@@ -320,6 +339,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "d700bd4a11a040379546e98c305f0eb68067a260df57982802ffaa13f6c5a0ff",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -341,6 +362,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "d865b6d95092a6708e3eab6db3f202eada595a42e3e6d6e19411bd94747b6535",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -362,6 +385,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "6dd6582590f99890db9ec03f5e5b3f8670869c5b3058901691f0f3322a238d21",
    "definition_sha256": "cc303464b74aa9d36ea8182721c778bc68cd608a5b00b2f733d8aec6e92a5e73",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -379,6 +404,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "95d9cc62002cb1532e3e18cc2938a244984aae5633aa2d1a8d55333ab82b9e87",
    "definition_sha256": "9f1f6e59944ecbb16d1d56c8ab52127ebe4e1439697e4e9e8db02fcd477e5203",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -393,6 +420,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "455562d4e123ed8c1806e69c9b0265cf08fd4f010d15e9a0016b971b6926270e",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -410,6 +439,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "8d4ffc6995d51522b5cadae5b4e47ed156fb04fcebdff75016814c9c66e18754",
    "definition_sha256": "9c5a34fdfd2b66666be69c6272a5b76c197889e736f67e114b3601632c5d824d",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -424,6 +455,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "cd05723abd0a1ef397b03cb8d1bfef13653ecbe27e29b5746df777797efd1195",
    "definition_sha256": "c07d0f74b0e4bab678f86aa7162dc2e047900e7f5844fba1c213e21e171af75a",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -438,6 +471,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "cd05723abd0a1ef397b03cb8d1bfef13653ecbe27e29b5746df777797efd1195",
    "definition_sha256": "9fd9f1506bdcdd323b3a8f3fdd7c8651ff21f72b584748fc97cc24d03eb7f17c",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -455,6 +490,8 @@
    "tools_sha256": "19c21214379cb4b2b1b19f509f005533581a49abd74e7cab32e9e95d9b8ced00",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "65ef0aa7ed739b3824749846443a73c249113f538299f1840c2c16ddcfc95500",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "send_message"
@@ -472,6 +509,8 @@
    "tools_sha256": "06a84269c6600512b8384103e522026781db6146339939dcb63f89bcc5a06a89",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "6a270976471bfcafeaa7ec303b87418bcd5dbab01653562ee523cfa013949571",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "agent",
     "task_stop",
@@ -493,6 +532,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "0ea6cc031535c6df327e8552640b97da7c7b0c58b79ea0d36eaf4ec07afe96f0",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -507,6 +548,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "a3b435bab3c582f4a45aaefb82f8839caf9062b0a0e822453481c844c108c68a",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -521,6 +564,8 @@
    "tools_sha256": "53f6b39edeca03e6641009368c591f37ef385b38d49aceca6dbdd2815d547198",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "8301dc3286c7efff0cb10a202e4cdad5bfa5250c35e56c13ac1e375ef3bd9a58",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "current_time_in_zone"
    ],
@@ -537,6 +582,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "a0756550965b7481ddae232f535dead74f29cc1b4d321b30e9d83c63cf24b4ca",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -1236,6 +1283,8 @@
    "tools_sha256": "515e78be552e52054900c9caffd3ab47a31e7d2b1fc519b3ae7a21cde9bd0043",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "1b6314332cdfc195228988468dcae11ddb6dca6aecf75a4b9405cbfa996543bd",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "memory",
     "web"
@@ -1253,6 +1302,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "095afa7a7bcc33ac2203e1b4634a00af0db908a7ca7b608e7dea7837682b009b",
    "definition_sha256": "0aa61fba435cde44966879fdcc80f6180332a5f7f051a8a40262c97ffd77c34f",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1267,6 +1318,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "56855c46a6fb27c67da72975b644e692148a2fa0d84b10dcb388a4585a12fc61",
    "definition_sha256": "9354268eb593eba8df938a6a94cffab836a6b9fd1d8315666d28f0d2b04eaeed",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1281,6 +1334,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "e1c2e14518ddde5dcf36350028a677fae04dcccbae48d1ca1e54db1557157b88",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1295,6 +1350,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "21e1dbcfea4c76ff919dabfa61a89d8732463b413b2752809f24ab32894479e0",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1309,6 +1366,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "5242ffc38cce56590700236da4f571d763632693a2f40f298d0c1790a5465881",
    "definition_sha256": "69600ad58dc27141e63750223a13579febc06f0be1f2587d0aa0149cc44284e8",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1323,6 +1382,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "a4f7813d805f4f90d6d3a67a1e993932b9da3b6c184396caef015d4978b6c740",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": "low"
   },
@@ -1337,6 +1398,8 @@
    "tools_sha256": "3e188ff088352efc0f55fc12e2b50e2c8df6c656b0b72144f4d8e4c46f0c6d73",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "fd7fcce29960e290506a53a4864f557871fd5fc0728eddd64b7dca2f97e31a7b",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [],
    "reasoning_effort": null
   },
@@ -1352,6 +1415,8 @@
    "tools_sha256": "c3c80f0156581b8a8ccfead8106291069def3a4ecdd6d60d2bb855a645e8afc4",
    "variables_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
    "definition_sha256": "6f6b962122b050f5febe9c16cd48404251e1b88f882125174c52a570bec3eb66",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "ask_person"
    ],
@@ -1369,6 +1434,8 @@
    "tools_sha256": "aa21b06a6aed4af646b851f8c1502cf68293f21d28d6359f4f9e0da54ec35c34",
    "variables_sha256": "d222517e73d6b33fd640d8c4305b1d8c7934dfc231a26aeef998bd523308fac3",
    "definition_sha256": "7b65838549e810fa40083b691db3f1c15a7a01fad1bdb2c227671147b21daada",
+   "auto_context_sha256": "0a1b8990627ac504497de962bc019dcb7aaf7f8337814cfa5bfb38f8f99ba72d",
+   "auto_context_disabled": false,
    "tools": [
     "math_calculate"
    ],
@@ -1629,6 +1696,42 @@
     "organization_id"
    ],
    "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
+   "version": 1
+  },
+  "skill_dispatch_ref": {
+   "kind": "row",
+   "schema": "skill",
+   "table": "definition",
+   "id": "b0fc88ce-4449-4521-bbe9-074842878ea4",
+   "name": "Skill 'Compass dispatch ref' (PB-01 S18)",
+   "fields": [
+    "skill_id",
+    "label",
+    "body",
+    "skill_type",
+    "is_active",
+    "deleted_at",
+    "organization_id",
+    "shown_to"
+   ],
+   "note": "built 2026-10-19 by build-pb01-fixtures.py through the personal-skill create door (signed-in skill.definition insert, organization Safety Net Real Tests); read back through the Skills picker's read",
+   "sha256": "374fed6c474373496f7280e58dd0c4127eee119312282615a5fe43112358c92f",
+   "version": 1
+  },
+  "org_override_workspace": {
+   "kind": "row",
+   "schema": "context",
+   "table": "system_context_item_org_value",
+   "id": "7a842d8e-113d-49a9-bf3e-52db03104bbf",
+   "name": "admin's Workspace override of company_name (Harborline Freight)",
+   "fields": [
+    "system_context_item_id",
+    "value",
+    "deleted_at",
+    "organization_id"
+   ],
+   "note": "built 2026-10-19 by build-pb01-fixtures.py through custom.context_value_write with organization_id (the orgSystemValues.ts door); PB-01 S12 wrong-organization value",
+   "sha256": "d83ba26a3014ecfee86c6909ea60dfde976116f0dd64529bb81ac4b6f3a32139",
    "version": 1
   }
  },
