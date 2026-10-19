@@ -20,6 +20,7 @@ import {
   type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
+import { useRefreshResearchImagesOnLink } from "@/features/marketing/data/hooks";
 
 
 const TOPIC_LINK_TOKENS = [
@@ -45,7 +46,10 @@ export function ResearchTopicLinks({
     label: topicName,
     direction: "outgoing",
   };
-  const adapter = useContainerLinksAdapter(container, TOPIC_LINK_TOKENS);
+  // A brand link moves this topic's images in or out of Media → Research: refresh it now.
+  const adapter = useRefreshResearchImagesOnLink(
+    useContainerLinksAdapter(container, TOPIC_LINK_TOKENS),
+  );
   return (
     <section className="space-y-2">
       <h2 className="type-secondary font-semibold uppercase tracking-wider text-muted-foreground border-b border-border pb-2">

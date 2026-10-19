@@ -17,7 +17,7 @@ import { isJsonRecord } from "@/features/marketing/types";
 import type { MarketingSite } from "@/features/marketing/types";
 import { SITE_COLUMNS } from "@/features/marketing/data/service";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
-import { guardedUpdate } from "@ai-matrx/data/db";
+import { guardedUpdate, readAllRows } from "@ai-matrx/data/db";
 import {
   associationsHelpers,
   associationsService,
@@ -72,10 +72,10 @@ interface ResearchMediaJoinedRow extends ResearchMediaRow {
 }
 
 /**
- * Every research-captured image visible to this organization, newest first,
- * with its source page and topic, read a page at a time (newest first) —
- * the workspace loads more on demand and filters client-side. Images the
- * researcher explicitly marked irrelevant are excluded.
+ * One page of research-captured images for this organization, newest first,
+ * with its source page and topic. Every filter (brand, category, topic, origin,
+ * search) runs in the query, so `total` and paging cover every matching image,
+ * not only the loaded page. Images the researcher marked irrelevant are excluded.
  */
 export interface ResearchImagePage {
   rows: ResearchImageRow[];
@@ -94,6 +94,32 @@ export type ResearchBrandScope =
   | { kind: "brand"; brandId: string }
   | { kind: "none"; brandIds: string[] };
 
+/** Category filter over ONE brand's image tags (tags are brand-scoped). */
+export type ResearchCategoryFilter =
+  | { kind: "any" }
+  /** No tag for this brand; `categoryIds` = every brand-image category. */
+  | { kind: "none"; brandId: string; categoryIds: string[] }
+  | { kind: "category"; brandId: string; categoryId: string };
+
+export interface ResearchImageFilters {
+  scope: ResearchBrandScope;
+  category: ResearchCategoryFilter;
+  topicId: string | null;
+  /** own = image or source page on one of `siteHosts`; external = neither. */
+  origin: "all" | "own" | "external";
+  siteHosts: string[];
+  search: string;
+}
+
+export const ALL_RESEARCH_IMAGES: ResearchImageFilters = {
+  scope: { kind: "all" },
+  category: { kind: "any" },
+  topicId: null,
+  origin: "all",
+  siteHosts: [],
+  search: "",
+};
+
 async function brandLinkedResearch(brandIds: string[]): Promise<{ topicIds: string[]; imageIds: string[] }> {
   if (brandIds.length === 0) return { topicIds: [], imageIds: [] };
   const { edges } = edgesOrThrow(await associationsService.listForTargets("web_brand", brandIds));
@@ -101,22 +127,96 @@ async function brandLinkedResearch(brandIds: string[]): Promise<{ topicIds: stri
   return { topicIds: of("research_topic"), imageIds: of("research_media") };
 }
 
+/** Image ids carrying any of `categoryIds` as a tag for `brandId` (every image, not a page). */
+async function brandTaggedImageIds(brandId: string, categoryIds: string[]): Promise<string[]> {
+  if (categoryIds.length === 0) return [];
+  const role = brandImageRole(brandId);
+  const { edges } = edgesOrThrow(await associationsService.listForTargets("category", categoryIds));
+  return [
+    ...new Set(
+      edges
+        .filter((e) => e.sourceType === "research_media" && e.role === role)
+        .map((e) => e.sourceId),
+    ),
+  ];
+}
+
+/** Bare hostnames, with and without `www.` — how an image or source page names a site. */
+function hostVariants(hosts: string[]): string[] {
+  const bare = [...new Set(hosts.map((h) => h.toLowerCase().replace(/^www\./, "")).filter(Boolean))];
+  return bare.flatMap((h) => [h, `www.${h}`]);
+}
+
+/** Source pages (rs_source) in the organization served from one of `hosts`. */
+async function sourceIdsOnHosts(organizationId: string, hosts: string[]): Promise<string[]> {
+  if (hosts.length === 0) return [];
+  const rows = await readAllRows<{ id: string }>(({ from, to }) =>
+    supabase
+      .schema("research")
+      .from("rs_source")
+      .select("id", { count: "exact" })
+      .eq("organization_id", organizationId)
+      .in("hostname", hosts)
+      .order("id", { ascending: true })
+      .range(from, to),
+    { label: "research.rs_source on brand hosts" },
+  );
+  return rows.map((row) => row.id);
+}
+
+/**
+ * Source pages whose hostname contains the search term. Capped: a term this
+ * broad is matched by the image URL leg of the search anyway.
+ */
+const SEARCH_SOURCE_CAP = 200;
+async function sourceIdsMatching(organizationId: string, term: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .schema("research")
+    .from("rs_source")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .ilike("hostname", `%${term}%`)
+    .limit(SEARCH_SOURCE_CAP);
+  if (error) throw error;
+  return (data ?? []).map((row) => row.id);
+}
+
+/** A search term safe inside a PostgREST `or=(…)` quoted value. */
+function searchTerm(raw: string): string {
+  return raw.trim().replace(/[\\"(),*%]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+const EMPTY_PAGE = (offset: number): ResearchImagePage => ({ rows: [], total: 0, offset });
+
 export async function fetchResearchImagesPage(
   organizationId: string,
   offset: number,
   signal?: AbortSignal,
-  scope: ResearchBrandScope = { kind: "all" },
+  filters: ResearchImageFilters = ALL_RESEARCH_IMAGES,
 ): Promise<ResearchImagePage> {
   await requireAuthenticatedSupabaseSession(supabase);
-  const linked =
+  const { scope, category, topicId, origin } = filters;
+  const term = searchTerm(filters.search);
+  const hosts = hostVariants(filters.siteHosts);
+  const [linked, tagged, ownSources, searchSources] = await Promise.all([
     scope.kind === "brand"
-      ? await brandLinkedResearch([scope.brandId])
+      ? brandLinkedResearch([scope.brandId])
       : scope.kind === "none"
-        ? await brandLinkedResearch(scope.brandIds)
-        : null;
+        ? brandLinkedResearch(scope.brandIds)
+        : null,
+    category.kind === "category"
+      ? brandTaggedImageIds(category.brandId, [category.categoryId])
+      : category.kind === "none"
+        ? brandTaggedImageIds(category.brandId, category.categoryIds)
+        : null,
+    origin !== "all" ? sourceIdsOnHosts(organizationId, hosts) : null,
+    term ? sourceIdsMatching(organizationId, term) : null,
+  ]);
   if (scope.kind === "brand" && linked && linked.topicIds.length === 0 && linked.imageIds.length === 0) {
-    return { rows: [], total: 0, offset };
+    return EMPTY_PAGE(offset);
   }
+  if (category.kind === "category" && tagged && tagged.length === 0) return EMPTY_PAGE(offset);
+  if (origin === "own" && hosts.length === 0) return EMPTY_PAGE(offset);
   let query = supabase
     .schema("research")
     .from("rs_media")
@@ -140,6 +240,35 @@ export async function fetchResearchImagesPage(
     // NULL topic_id is "no brand" too: a bare NOT IN would drop those rows.
     if (linked.topicIds.length) query = query.or(`topic_id.is.null,topic_id.not.in.(${linked.topicIds.join(",")})`);
     if (linked.imageIds.length) query = query.not("id", "in", `(${linked.imageIds.join(",")})`);
+  }
+  if (category.kind === "category" && tagged) {
+    query = query.in("id", tagged);
+  } else if (category.kind === "none" && tagged?.length) {
+    query = query.not("id", "in", `(${tagged.join(",")})`);
+  }
+  if (topicId) query = query.eq("topic_id", topicId);
+  if (origin !== "all") {
+    // The image itself (its URL host) or the page it came from (rs_source.hostname) is on a brand site.
+    const urlPatterns = hosts.flatMap((h) => [`*://${h}/*`, `*://${h}`]);
+    if (origin === "own") {
+      const either = [
+        ...urlPatterns.map((p) => `url.ilike.${p}`),
+        ownSources?.length ? `source_id.in.(${ownSources.join(",")})` : null,
+      ].filter(Boolean);
+      query = query.or(either.join(","));
+    } else {
+      for (const pattern of urlPatterns) query = query.not("url", "ilike", pattern);
+      if (ownSources?.length) query = query.or(`source_id.is.null,source_id.not.in.(${ownSources.join(",")})`);
+    }
+  }
+  if (term) {
+    const either = [
+      `url.ilike."*${term}*"`,
+      `alt_text.ilike."*${term}*"`,
+      `caption.ilike."*${term}*"`,
+      searchSources?.length ? `source_id.in.(${searchSources.join(",")})` : null,
+    ].filter(Boolean);
+    query = query.or(either.join(","));
   }
   query = query.range(offset, offset + RESEARCH_IMAGE_PAGE_SIZE - 1);
   const response = signal ? await query.abortSignal(signal) : await query;
@@ -169,6 +298,34 @@ export async function fetchResearchImagesPage(
   };
 }
 
+export interface ResearchTopicOption {
+  id: string;
+  name: string;
+}
+
+/** Topics in the organization that carry at least one image — the Topic filter's options. */
+export async function fetchResearchImageTopics(
+  organizationId: string,
+  signal?: AbortSignal,
+): Promise<ResearchTopicOption[]> {
+  await requireAuthenticatedSupabaseSession(supabase);
+  const rows = await readAllRows<{ id: string; name: string | null }>(({ from, to }) => {
+    const query = supabase
+      .schema("research")
+      .from("rs_topic")
+      .select("id, name, rs_media!inner(id)", { count: "exact" })
+      .eq("organization_id", organizationId)
+      .is("deleted_at", null)
+      .eq("rs_media.media_type", "image")
+      .limit(1, { referencedTable: "rs_media" })
+      .order("name", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to);
+    return signal ? query.abortSignal(signal) : query;
+  }, { label: "research.rs_topic with images" });
+  return rows.map((row) => ({ id: row.id, name: row.name ?? "Untitled topic" }));
+}
+
 /** First page only (newest RESEARCH_IMAGE_PAGE_SIZE) — callers that just need a sample. */
 export async function fetchResearchImages(
   organizationId: string,
@@ -183,20 +340,33 @@ export async function fetchResearchImages(
 // Three canonical edges, all written through the associations chokepoint:
 //   research_topic → web_brand   the research is about / for the brand
 //   research_media → web_brand   one image organized under the brand
-//   research_media → category    role `brand_image`, dimension `brand-image`
-//                                (system starters: Inspiration, Our brand —
-//                                keep / replace, Avoid; people add their own)
+//   research_media → category    role `brand_image:<brandId>`, dimension
+//                                `brand-image` (Inspiration, Our brand — keep /
+//                                replace, Avoid; people add their own)
 // Pairs registered in platform.association_types 2026-10-17.
+//
+// Tags are BRAND-SCOPED (2026-10-19): the brand lives in the edge's role, not
+// in metadata, because platform.associations is unique on (source, target,
+// role) — "Avoid" for brand A and "Avoid" for brand B on one image are two
+// edges, and untagging removes exactly one of them (`remove` matches by role).
+// The image → brand edge exists BECAUSE of its tags: removing an image's last
+// tag for a brand removes its brand link, and unlinking from a brand removes
+// that brand's tags with it.
 // ============================================================================
 
 export const BRAND_IMAGE_CATEGORY_ROLE = "brand_image";
+
+/** The role a brand-image category tag carries for one brand. */
+export function brandImageRole(brandId: string): string {
+  return `${BRAND_IMAGE_CATEGORY_ROLE}:${brandId}`;
+}
 
 export interface ResearchImageOrganization {
   /** topic id → brand ids it is linked to. */
   topicBrands: Record<string, string[]>;
   /** image id → brand ids it is organized under. */
   imageBrands: Record<string, string[]>;
-  /** image id → brand-image category ids. */
+  /** image id → brand-image category ids tagged FOR the brand asked about. */
   imageCategories: Record<string, string[]>;
 }
 
@@ -215,6 +385,7 @@ function edgesOrThrow<T>(
 export async function fetchResearchImageOrganization(
   imageIds: string[],
   topicIds: string[],
+  brandId: string,
 ): Promise<ResearchImageOrganization> {
   const out: ResearchImageOrganization = {
     topicBrands: {},
@@ -238,8 +409,9 @@ export async function fetchResearchImageOrganization(
   for (const edge of edgesOrThrow(imageBrandEdges).edges) {
     pushTo(out.imageBrands, edge.sourceId, edge.targetId);
   }
+  const role = brandImageRole(brandId);
   for (const edge of edgesOrThrow(imageCategoryEdges).edges) {
-    if (edge.role !== BRAND_IMAGE_CATEGORY_ROLE) continue;
+    if (edge.role !== role) continue;
     pushTo(out.imageCategories, edge.sourceId, edge.targetId);
   }
   return out;
@@ -267,40 +439,76 @@ export async function tagResearchImages(input: {
     await associationsHelpers.linkManyToOne({
       sources,
       target: { type: "category", id: input.categoryId },
-      attrs: { orgId: input.organizationId, role: BRAND_IMAGE_CATEGORY_ROLE },
+      attrs: { orgId: input.organizationId, role: brandImageRole(input.brandId) },
     }),
   );
 }
 
-/** Take one category off images (the brand edge stays). */
+/** This brand's tag edges on the given images. */
+async function brandTagEdges(imageIds: string[], brandId: string) {
+  if (imageIds.length === 0) return [];
+  const role = brandImageRole(brandId);
+  const { edges } = edgesOrThrow(
+    await associationsService.listForSources("research_media", imageIds, "category"),
+  );
+  return edges.filter((edge) => edge.role === role);
+}
+
+function brandLinkEdges(imageIds: string[], brandId: string) {
+  return imageIds.map((id) => ({
+    source: { type: "research_media" as const, id },
+    target: { type: "web_brand" as const, id: brandId },
+  }));
+}
+
+/**
+ * Take one category off images for ONE brand (other brands' tags stay). An
+ * image left with no tag for this brand leaves the brand too.
+ */
 export async function untagResearchImages(input: {
   imageIds: string[];
   categoryId: string;
+  brandId: string;
 }): Promise<void> {
+  const role = brandImageRole(input.brandId);
   edgesOrThrow(
     await associationsHelpers.unlinkEdges(
       input.imageIds.map((id) => ({
         source: { type: "research_media" as const, id },
         target: { type: "category" as const, id: input.categoryId },
-        role: BRAND_IMAGE_CATEGORY_ROLE,
+        role,
       })),
     ),
   );
+  const stillTagged = new Set(
+    (await brandTagEdges(input.imageIds, input.brandId))
+      .filter((edge) => edge.targetId !== input.categoryId)
+      .map((edge) => edge.sourceId),
+  );
+  const bare = input.imageIds.filter((id) => !stillTagged.has(id));
+  if (bare.length) {
+    edgesOrThrow(await associationsHelpers.unlinkEdges(brandLinkEdges(bare, input.brandId)));
+  }
 }
 
-/** Take images out of a brand (their brand-image categories stay). */
+/** Take images out of a brand, with every tag they carry for it. */
 export async function unlinkResearchImagesFromBrand(input: {
   imageIds: string[];
   brandId: string;
 }): Promise<void> {
-  edgesOrThrow(
-    await associationsHelpers.unlinkEdges(
-      input.imageIds.map((id) => ({
-        source: { type: "research_media" as const, id },
-        target: { type: "web_brand" as const, id: input.brandId },
-      })),
-    ),
-  );
+  const tags = await brandTagEdges(input.imageIds, input.brandId);
+  if (tags.length) {
+    edgesOrThrow(
+      await associationsHelpers.unlinkEdges(
+        tags.map((edge) => ({
+          source: { type: "research_media" as const, id: edge.sourceId },
+          target: { type: "category" as const, id: edge.targetId },
+          role: edge.role ?? undefined,
+        })),
+      ),
+    );
+  }
+  edgesOrThrow(await associationsHelpers.unlinkEdges(brandLinkEdges(input.imageIds, input.brandId)));
 }
 
 // ============================================================================

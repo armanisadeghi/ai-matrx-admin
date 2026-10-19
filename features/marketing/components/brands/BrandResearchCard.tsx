@@ -14,6 +14,7 @@ import {
   type PrimaryEntity,
 } from "@ai-matrx/associations/react";
 import type { EntityTypeToken } from "@ai-matrx/associations";
+import { useRefreshResearchImagesOnLink } from "@/features/marketing/data/hooks";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 
 
@@ -34,7 +35,10 @@ export function BrandResearchCard({
     orgId: organizationId,
     label: brandName,
   };
-  const adapter = useContainerLinksAdapter(container, RESEARCH_TOKENS);
+  // A topic link moves its images in or out of Media → Research: refresh it now.
+  const adapter = useRefreshResearchImagesOnLink(
+    useContainerLinksAdapter(container, RESEARCH_TOKENS),
+  );
   return (
     <SectionCard
       title="Research"
