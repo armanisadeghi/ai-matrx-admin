@@ -144,3 +144,7 @@ For admin, ON is faster in 5 of 6 comparisons (server rows land). For the member
 server's extra work and a later page. **Platform default stays OFF.** The member path needs its own
 diagnosis (why the member's server seed has no rows on a table where admin's does) before ON can help
 everyone.
+
+## A store timeout is said, never waited out (AT-FIX-G4, 2026-10-19)
+
+If the table's bundle (or the record's, or `table_facts`) answers a statement timeout (57014) during the browser's first reads, `askClientTableSeedHonestly` asks once more by itself; if the store still times out, `TableTimedOut` draws the shared timeout sentence and Try again inside the skeleton's own box (the skeleton stays mounted, still: zero layout shift). Try again re-asks. Guard: `__tests__/a-timed-out-table-page-says-so-in-its-own-box.test.tsx`. Live check: `scripts/airtable-walk/g4-timeout-walk.mjs`.
