@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0415",
-  "version": 2,
+  "version": 3,
   "title": "Short-Term Rental Host",
   "description": "Bookings, turnovers, issues and revenue for a host running several rentals.",
   "forWho": "Short-term rental hosts and co-hosts",
@@ -2188,7 +2188,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

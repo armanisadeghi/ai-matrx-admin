@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "formerSlugs": [
-    "spaces-sp0157"
-  ],
-  "version": 5,
+  "version": 6,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -1413,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2073,5 +2070,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0157"
+  ]
 }

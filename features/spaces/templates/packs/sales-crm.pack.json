@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "formerSlugs": [
-    "spaces-sp0150"
-  ],
-  "version": 7,
+  "version": 8,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -1885,7 +1882,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2909,5 +2906,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0150"
+  ]
 }
