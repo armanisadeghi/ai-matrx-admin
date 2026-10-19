@@ -209,7 +209,3 @@ test("repointing production's number webhooks from the clone is refused", async 
   await expect(updateAllWebhookUrls()).resolves.toMatchObject({ updated: 1 });
   expect(numberUpdate).toHaveBeenCalledTimes(1);
 });
-  wire(PROD_URL);
-  await POST(request());
-  expect(fetchMock).toHaveBeenCalledTimes(1);
-});
