@@ -22,6 +22,20 @@ describe("slide text-format css", () => {
   });
 });
 
+describe("slide text-format css reaches what a person sees", () => {
+  it("underline is drawn on inline-block fields and in ink, not on transparent gradient text", () => {
+    const css = slideTextFormatCss({ underline: true });
+    expect(css).toMatch(/:is\(h1[^)]*\) \*\{text-decoration:underline/);
+    expect(css).toContain("text-decoration-color:hsl(var(--foreground))");
+    expect(slideTextFormatCss({ underline: true, color: "#112233" })).toContain("text-decoration-color:currentColor");
+  });
+  it("an alignment lets the wrapper of a shrink-wrapped title span the row, so it can move", () => {
+    expect(slideTextFormatCss({ align: "right" })).toMatch(/:has\(> :is\(h1[^)]*\)\), \S+ :has\(> \* > :is\(h1[^)]*\)\)\{width:100%\}/);
+    expect(slideTextFormatCss({ align: "right" })).not.toMatch(/:has\([^)]*:has\(/); // :has() cannot nest: a nested one drops the whole rule
+    expect(slideTextFormatCss({})).toBe("");
+  });
+});
+
 describe("a deck card's text", () => {
   it("holds no style text (fails if the <style> is rendered back inside the card)", () => {
     const host = document.createElement("div");
