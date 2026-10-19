@@ -38,8 +38,6 @@ const LIGHT_PREFIXES = [
   "/terms-and-conditions",
   "/terms-of-service",
   "/templates",
-  "/pricing",
-  "/contact",
   "/how-it-works",
   "/how-we-prove-it",
   "/why-ai-matrx",
@@ -50,7 +48,11 @@ const LIGHT_PREFIXES = [
   "/extend",
   "/request-access",
 ];
-/** Under a light prefix but heavy at first paint (the applet intro mounts the install door). */
+/**
+ * Under a light prefix but heavy at first paint (the applet intro mounts the install door).
+ * Not light yet (their own code reads Redux at render): /pricing (EducationPricing reads the
+ * account and entitlement tier), /contact (ProTextarea reads Redux).
+ */
 const FULL_EXCEPTIONS = ["/templates/applets"];
 
 const under = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
