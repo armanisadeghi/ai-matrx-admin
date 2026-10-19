@@ -9,10 +9,11 @@ import { ListPlus } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, RegionSkeleton, Select, Tile } from "@ai-matrx/design-system/controls";
 import { toast } from "@/lib/toast";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectIsAdmin } from "@/lib/redux/selectors/userSelectors";
 import { useCurrentRecord } from "@/features/shell/current-record/currentRecord";
-import { parseShellLayoutBody } from "../validate";
+import { parseShellLayoutBody, serializeShellLayoutBody } from "../validate";
+import { shellLayoutPreviewChanged } from "../shellLayoutSlice";
 import { useShellLayoutStore } from "../useShellLayoutStore";
 import { rowLabel } from "./rowDisplay";
 import { addPageToBody, sidebarGroups, sidebarOf, startingBody, type AddPlace, type MenuPageItem } from "./regions";
@@ -45,6 +46,7 @@ export function itemFromFavorite(fav: { kind: string; label: string; href: strin
 /** The place choices; saves the person's layout. Must sit under ShellLayoutMount. */
 function AddChoices({ item, onDone }: { item: MenuPageItem; onDone: () => void }) {
   const store = useShellLayoutStore();
+  const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const [into, setInto] = useState("top");
   if (store.loading) return <RegionSkeleton />;
@@ -60,10 +62,13 @@ function AddChoices({ item, onDone }: { item: MenuPageItem; onDone: () => void }
       return;
     }
     const where = place.region === "header" ? "header" : place.region === "dock" ? "dock" : "sidebar";
+    // The shell shows the new row at once (the live-preview slot); the save confirms or takes it back.
+    dispatch(shellLayoutPreviewChanged(serializeShellLayoutBody(result.body)));
+    onDone();
     const answer = await store.save("person", result.body, `${result.moved ? "Moved" : "Added"} ${item.label} in the ${where}`);
+    dispatch(shellLayoutPreviewChanged(null));
     if (answer.ok) {
       toast.success(result.moved ? `Moved in your ${where}` : `Added to your ${where}`);
-      onDone();
     } else toast.error(answer.error);
   };
 

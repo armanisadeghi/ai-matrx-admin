@@ -462,7 +462,7 @@ export function AgentTestPage({
             href: backHref,
           },
         ]}
-        record={{ name: agentName }}
+        record={{ name: agentName, token: "agent", id: agentId }}
         modes={agentTestModes(basePath, agentId)}
       />
       <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto px-[var(--matrx-page-gutter)] pt-[calc(var(--shell-header-h)+var(--matrx-page-top))] lg:flex-row">

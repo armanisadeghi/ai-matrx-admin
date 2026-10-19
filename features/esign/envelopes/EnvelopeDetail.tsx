@@ -251,7 +251,7 @@ export function EnvelopeDetail({ envelopeId }: { envelopeId: string }) {
       <RecordPageHeader
         backHref="/esign"
         parents={[{ label: "E-Signatures", href: "/esign" }]}
-        record={{ name: title }}
+        record={{ name: title, token: "esign_envelope", id: envelopeId }}
         status={{ label: statusLabel(status), tone: status === "completed" ? "success" : status === "declined" || status === "voided" || status === "expired" ? "destructive" : "info" }}
         actions={actions}
       />

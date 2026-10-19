@@ -137,7 +137,7 @@ export function ToolBattlePage({ battleId }: { battleId: string }) {
       <RecordPageHeader
         backHref={BATTLE_HOME}
         parents={[{ label: "Tool Battle", href: BATTLE_HOME }]}
-        record={{ name: battle.blind && !revealed ? "Blind battle" : battle.title }}
+        record={{ name: battle.blind && !revealed ? "Blind battle" : battle.title, token: "tool_battle", id: battleId }}
         status={STATUS[battle.status]}
         actions={actions}
       />

@@ -115,7 +115,7 @@ export function ReviewWorkspace({ reviewId }: { reviewId: string }) {
         { label: "HR", href: hrHref(org) },
         { label: "Performance", href: hrPerformanceHref(org) },
       ]}
-      record={{ name: review?.employeeName ?? "Review" }}
+      record={{ name: review?.employeeName ?? "Review", token: "hr_review", id: reviewId }}
       status={review ? { label: statusLabel(review.status), tone: statusTone(review.status) } : undefined}
       actions={
         review

@@ -158,7 +158,7 @@ export function TrialWorkspace({ trialId }: { trialId: string }) {
           { label: "Intelligence", href: "/administration/intelligence" },
           { label: "Memory Lab", href: LAB_HREF },
         ]}
-        record={{ name: trial?.title ?? "Trial" }}
+        record={{ name: trial?.title ?? "Trial", token: "memory_trial", id: trialId }}
         status={archived ? { label: "Archived" } : undefined}
         actions={
           trial
