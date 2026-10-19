@@ -98,12 +98,20 @@ export function MentionComposer({
         const token = dateMention(date);
         next.push({ kind: "date", key: `date:${token}`, label: token.slice(2, token.indexOf("]")), detail: "Date", insert: token });
       }
+      // People answer in ~0.1 s; the record search crosses every token and can take many seconds. Show the people
+      // as soon as they arrive, and add the records when they come (they never hold the people back).
+      const peopleRead = mentions ? mentionCandidates(source, query).catch((e: unknown) => {
+        console.error("[annotations] people search failed", e);
+        setSearchFailed(true);
+        return [];
+      }) : Promise.resolve([]);
+      void peopleRead.then((found) => {
+        if (stale || found.length === 0) return;
+        setOptions([...next, ...found.map((p): Option => ({ kind: "person", key: `user:${p.userId}`, label: p.name, detail: p.email, insert: personMention(p.name, p.userId) }))]);
+        setCursor(0);
+      });
       const [people, records] = await Promise.all([
-        mentions ? mentionCandidates(source, query).catch((e: unknown) => {
-          console.error("[annotations] people search failed", e);
-          setSearchFailed(true);
-          return [];
-        }) : Promise.resolve([]),
+        peopleRead,
         query.length >= 2
           ? searchCandidatesAcrossTokens({ search: query, perTokenLimit: 3 })
               .then(({ results, failures }) => {

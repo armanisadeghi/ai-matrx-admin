@@ -13,4 +13,9 @@ import { supabase } from "@/utils/supabase/client";
 configureDocsHost({
   getSupabase: () => supabase as unknown as DocsSupabase,
   requestRaw: (path, init) => requestRaw(path, init),
+  // "Make a copy" copies what people are typing right now, not only the last save (lazy: the reader pulls the service in).
+  async readCurrentSnapshot(documentId) {
+    const { readCurrentDocument } = await import("@/lib/collab/current-record");
+    return { snapshot: (await readCurrentDocument(documentId)).snapshot };
+  },
 });

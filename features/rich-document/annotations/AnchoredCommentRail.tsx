@@ -7,8 +7,8 @@
 // threads are one tab away, with Re-open. Writing is the platform's MentionComposer (`@` lists the people who
 // can read the record) and each body renders through CommentBody, so a comment reads as it does everywhere.
 //
-// The rail is a fixed-width column (or an overlay below `xl`, toggled by the editor), so opening threads never
-// moves the page: nothing in it changes the editor's size.
+// The rail is a fixed-width column whose open state is known at the first render (kept per person; open by
+// default on wide screens), so threads loading or arriving never move the page; only the person's own toggle does.
 
 import { Avatar, AvatarFallback, AvatarImage, Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
 import { Button, EmptyState, SegmentedControl } from "@ai-matrx/design-system/controls";
@@ -290,6 +290,17 @@ export function AnchoredCommentRail({
     let bottom = -Infinity;
     for (const f of floats) {
       const y = Math.max(f.top, bottom + GAP);
+      placed.set(f.key, y);
+      bottom = y + h(f.key);
+    }
+  }
+
+  // Nothing floats above the area's top (an anchor scrolled above it, or under the removed list): keep the
+  // order, push down, never overlap.
+  {
+    let bottom = -GAP;
+    for (const f of floats) {
+      const y = Math.max(placed.get(f.key) ?? f.top, bottom + GAP);
       placed.set(f.key, y);
       bottom = y + h(f.key);
     }
