@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0507",
-  "version": 3,
+  "version": 4,
   "title": "Pest Control Business HQ",
-  "description": "Run recurring treatment routes, keep service records, track supplies and unpaid invoices.",
+  "description": "For pest control operators: service plans, routes, application records, callbacks.",
   "forWho": "Pest control and extermination companies",
   "icon": {
     "emoji": "🐜"
@@ -14,10 +14,12 @@
   },
   "category": "trades",
   "tags": [
+    "exterminator",
     "pest control",
-    "routes",
-    "recurring",
-    "records"
+    "termite",
+    "rodent",
+    "service plans",
+    "trades"
   ],
   "spec": {
     "specVersion": 1,
@@ -73,7 +75,7 @@
           },
           {
             "key": "customer_type",
-            "label": "Type",
+            "label": "Plan",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -130,6 +132,21 @@
             "contextPolicy": "include"
           },
           {
+            "key": "next_due",
+            "label": "Next service due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "property_notes",
+            "label": "Property notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -151,6 +168,24 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Open visits",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Completed",
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +195,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +213,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -313,7 +356,9 @@
               "phone": "(843) 555-0196",
               "email": "ingrid.zielinski@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-40d"
+              "since": "@today-40d",
+              "next_due": "@today+3w",
+              "property_notes": "Crawlspace access at the rear; dog in yard mornings"
             }
           },
           {
@@ -325,7 +370,9 @@
               "phone": "(843) 555-0133",
               "email": "basil.grayson@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-95d"
+              "since": "@today-95d",
+              "next_due": "@today+1w",
+              "property_notes": "Restaurant: service after close, Monday nights"
             }
           },
           {
@@ -337,7 +384,8 @@
               "phone": "(843) 555-0170",
               "email": "mirela.navarro@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-150d"
+              "since": "@today-150d",
+              "property_notes": "Ants in kitchen and bath; toddler at home, gel baits only indoors"
             }
           },
           {
@@ -349,7 +397,9 @@
               "phone": "(843) 555-0107",
               "email": "winston.yoshida@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-205d"
+              "since": "@today-205d",
+              "next_due": "@today+2d",
+              "property_notes": "Warehouse: 24 exterior bait stations, map in the office"
             }
           },
           {
@@ -361,7 +411,9 @@
               "phone": "(843) 555-0144",
               "email": "nadia.fairbairn@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-260d"
+              "since": "@today-260d",
+              "next_due": "@today+5w",
+              "property_notes": "Slab home; old termite bond from another company"
             }
           },
           {
@@ -373,7 +425,9 @@
               "phone": "(843) 555-0181",
               "email": "emeka.mbeki@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-315d"
+              "since": "@today-315d",
+              "next_due": "@today+9d",
+              "property_notes": "Bakery: monthly, log book by the back door"
             }
           },
           {
@@ -385,7 +439,8 @@
               "phone": "(843) 555-0118",
               "email": "solveig.underhill@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-370d"
+              "since": "@today-370d",
+              "property_notes": "Wasps under the deck stairs"
             }
           },
           {
@@ -397,7 +452,9 @@
               "phone": "(843) 555-0155",
               "email": "stellan.carrow@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-425d"
+              "since": "@today-425d",
+              "next_due": "@today+12d",
+              "property_notes": "Office park: interior monitors only, no sprays in suites"
             }
           },
           {
@@ -409,7 +466,9 @@
               "phone": "(843) 555-0192",
               "email": "marisol.jessup@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-13d"
+              "since": "@today-13d",
+              "next_due": "@today-4d",
+              "property_notes": "Overdue for quarterly; customer asked to wait for rain to stop"
             }
           },
           {
@@ -421,7 +480,8 @@
               "phone": "(843) 555-0129",
               "email": "callum.salazar@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-14d"
+              "since": "@today-14d",
+              "property_notes": "Cancelled plan after moving"
             }
           },
           {
@@ -433,7 +493,8 @@
               "phone": "(843) 555-0166",
               "email": "lucinda.brannigan@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-15d"
+              "since": "@today-15d",
+              "property_notes": "Mice in the attic; entry likely at the garage corner"
             }
           },
           {
@@ -445,9 +506,17 @@
               "phone": "(843) 555-0103",
               "email": "kwame.iyer@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-16d"
+              "since": "@today-16d",
+              "next_due": "@today+20d",
+              "property_notes": "Daycare: baits and monitors only, sign-in at front desk"
             }
           }
+        ],
+        "before": [
+          [
+            "since",
+            "next_due"
+          ]
         ]
       },
       {
@@ -557,6 +626,33 @@
             }
           },
           {
+            "key": "pest",
+            "label": "Target pest",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "General insects",
+              "Ants",
+              "Rodents",
+              "Termites",
+              "Mosquitoes",
+              "Wasps and bees",
+              "Bed bugs",
+              "Cockroaches"
+            ],
+            "choiceColors": {
+              "General insects": "blue",
+              "Ants": "green",
+              "Rodents": "amber",
+              "Termites": "violet",
+              "Mosquitoes": "teal",
+              "Wasps and bees": "orange",
+              "Bed bugs": "pink",
+              "Cockroaches": "slate"
+            }
+          },
+          {
             "key": "priority",
             "label": "Priority",
             "parityType": "select",
@@ -575,8 +671,16 @@
             "default": "Routine"
           },
           {
+            "key": "callback",
+            "label": "Callback",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "A free re-service because the pest came back between visits."
+          },
+          {
             "key": "tech",
-            "label": "Lead tech",
+            "label": "Technician",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -620,7 +724,7 @@
           },
           {
             "key": "parts_cost",
-            "label": "Parts cost (USD)",
+            "label": "Product cost (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -679,7 +783,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "{Quote (USD)} - {Product cost (USD)} - {Labor cost (USD)}"
           },
           {
             "key": "margin_pct",
@@ -892,348 +996,370 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Quarterly perimeter treatment - Navarro",
+              "job_name": "Quarterly exterior + crawlspace",
               "status": "Completed",
-              "customer": "custom-3",
+              "customer": "custom-1",
               "job_type": "Quarterly perimeter treatment",
+              "pest": "General insects",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@today-21d",
-              "quote": 105,
-              "parts_cost": 15,
-              "labor_cost": 35,
-              "hours": 0.8,
+              "quote": 135,
+              "parts_cost": 9,
+              "labor_cost": 42,
+              "hours": 1,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Ant treatment - Carrow",
+              "job_name": "Monthly kitchen service after close",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Ant treatment",
+              "customer": "custom-2",
+              "job_type": "Commercial monthly service",
+              "pest": "Cockroaches",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-16d",
-              "quote": 210,
-              "parts_cost": 30,
-              "labor_cost": 45,
-              "hours": 1,
+              "quote": 165,
+              "parts_cost": 14,
+              "labor_cost": 48,
+              "hours": 1.25,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Rodent exclusion - Zielinski",
+              "job_name": "Odorous house ants in kitchen and bath",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Rodent exclusion",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-3",
+              "job_type": "Ant treatment",
+              "pest": "Ants",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today-12d",
-              "quote": 895,
-              "parts_cost": 270,
-              "labor_cost": 175,
-              "hours": 4,
+              "quote": 225,
+              "parts_cost": 18,
+              "labor_cost": 64,
+              "hours": 1.5,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Termite inspection - Mbeki",
+              "job_name": "Seal garage corner, set attic traps",
               "status": "Completed",
-              "customer": "custom-6",
-              "job_type": "Termite inspection",
-              "priority": "Routine",
-              "tech": "tm-3",
+              "customer": "custom-11",
+              "job_type": "Rodent exclusion",
+              "pest": "Rodents",
+              "priority": "Urgent",
+              "tech": "tm-4",
               "scheduled_on": "@today-9d",
-              "quote": 105,
-              "parts_cost": 5,
-              "labor_cost": 45,
-              "hours": 1,
+              "quote": 485,
+              "parts_cost": 42,
+              "labor_cost": 160,
+              "hours": 4,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Mosquito yard treatment - Brannigan",
+              "job_name": "Yard mosquito treatment, first round",
               "status": "Completed",
-              "customer": "custom-11",
+              "customer": "custom-5",
               "job_type": "Mosquito yard treatment",
-              "priority": "Urgent",
-              "tech": "tm-4",
+              "pest": "Mosquitoes",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today-6d",
-              "quote": 125,
-              "parts_cost": 15,
-              "labor_cost": 35,
-              "hours": 0.8,
+              "quote": 95,
+              "parts_cost": 11,
+              "labor_cost": 30,
+              "hours": 0.75,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Wasp nest removal - Yoshida",
+              "job_name": "Wasp nest under the deck stairs",
               "status": "Completed",
-              "customer": "custom-4",
+              "customer": "custom-7",
               "job_type": "Wasp nest removal",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "pest": "Wasps and bees",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today-4d",
-              "quote": 255,
-              "parts_cost": 25,
-              "labor_cost": 55,
-              "hours": 1.2,
+              "quote": 175,
+              "parts_cost": 6,
+              "labor_cost": 32,
+              "hours": 0.75,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Bed bug heat treatment - Jessup",
+              "job_name": "Bed bug inspection, tenant moved",
               "status": "Cancelled",
-              "customer": "custom-9",
+              "customer": "custom-10",
               "job_type": "Bed bug heat treatment",
+              "pest": "Bed bugs",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
               "scheduled_on": "@today-8d",
-              "quote": 905,
-              "parts_cost": 165,
-              "labor_cost": 265,
-              "hours": 6
+              "quote": 1450,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Commercial monthly service - Grayson",
+              "job_name": "Termite inspection: waiting on crawlspace access",
               "status": "On hold",
-              "customer": "custom-2",
-              "job_type": "Commercial monthly service",
+              "customer": "custom-5",
+              "job_type": "Termite inspection",
+              "pest": "Termites",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-5d",
-              "quote": 350,
-              "parts_cost": 35,
-              "labor_cost": 65,
-              "hours": 1.5
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 48,
+              "hours": 1
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Quarterly perimeter treatment - Underhill",
+              "job_name": "Ants back in the bathroom",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Quarterly perimeter treatment",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-3",
+              "job_type": "Ant treatment",
+              "pest": "Ants",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today-2d",
-              "quote": 100,
-              "parts_cost": 10,
-              "labor_cost": 35,
-              "hours": 0.8
+              "quote": 0,
+              "parts_cost": 6,
+              "labor_cost": 32,
+              "hours": 0.75,
+              "callback": true
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Ant treatment - Iyer",
+              "job_name": "Warehouse bait station check, 24 stations",
               "status": "In progress",
-              "customer": "custom-12",
-              "job_type": "Ant treatment",
-              "priority": "Urgent",
-              "tech": "tm-3",
+              "customer": "custom-4",
+              "job_type": "Commercial monthly service",
+              "pest": "Rodents",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@mon",
-              "quote": 205,
-              "parts_cost": 30,
-              "labor_cost": 45,
-              "hours": 1,
+              "quote": 260,
+              "parts_cost": 35,
+              "labor_cost": 80,
+              "hours": 2,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Rodent exclusion - Fairbairn",
+              "job_name": "Bakery monthly service",
               "status": "In progress",
-              "customer": "custom-5",
-              "job_type": "Rodent exclusion",
+              "customer": "custom-6",
+              "job_type": "Commercial monthly service",
+              "pest": "Cockroaches",
               "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-3",
               "scheduled_on": "@tue",
-              "quote": 870,
-              "parts_cost": 260,
-              "labor_cost": 175,
-              "hours": 4
+              "quote": 145,
+              "parts_cost": 12,
+              "labor_cost": 40,
+              "hours": 1
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Termite inspection - Salazar",
+              "job_name": "Office park monitors",
               "status": "Scheduled",
-              "customer": "custom-10",
-              "job_type": "Termite inspection",
+              "customer": "custom-8",
+              "job_type": "Commercial monthly service",
+              "pest": "General insects",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@wed",
-              "quote": 105,
-              "parts_cost": 5,
-              "labor_cost": 45,
-              "hours": 1,
+              "quote": 210,
+              "parts_cost": 10,
+              "labor_cost": 64,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Mosquito yard treatment - Navarro",
+              "job_name": "Quarterly exterior, overdue",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Mosquito yard treatment",
+              "customer": "custom-9",
+              "job_type": "Quarterly perimeter treatment",
+              "pest": "General insects",
               "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@thu",
-              "quote": 120,
-              "parts_cost": 15,
-              "labor_cost": 35,
-              "hours": 0.8
+              "quote": 135,
+              "parts_cost": 9,
+              "labor_cost": 42,
+              "hours": 1
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Wasp nest removal - Carrow",
+              "job_name": "Daycare: baits and monitors",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Wasp nest removal",
+              "customer": "custom-12",
+              "job_type": "Commercial monthly service",
+              "pest": "Cockroaches",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@fri",
-              "quote": 250,
-              "parts_cost": 25,
-              "labor_cost": 55,
-              "hours": 1.2,
+              "quote": 175,
+              "parts_cost": 14,
+              "labor_cost": 48,
+              "hours": 1.25,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Bed bug heat treatment - Zielinski",
+              "job_name": "Roaches in a rental unit",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Bed bug heat treatment",
+              "customer": "custom-6",
+              "job_type": "Ant treatment",
+              "pest": "Cockroaches",
               "priority": "Urgent",
               "tech": "tm-5",
               "scheduled_on": "@sat",
-              "quote": 870,
-              "parts_cost": 155,
-              "labor_cost": 265,
-              "hours": 6,
+              "quote": 245,
+              "parts_cost": 22,
+              "labor_cost": 64,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Commercial monthly service - Mbeki",
+              "job_name": "Quote: termite bond transfer",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Commercial monthly service",
+              "customer": "custom-5",
+              "job_type": "Termite inspection",
+              "pest": "Termites",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-2",
               "scheduled_on": "@sun",
-              "quote": 340,
-              "parts_cost": 35,
-              "labor_cost": 65,
-              "hours": 1.5
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 32,
+              "hours": 0.5
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Quarterly perimeter treatment - Brannigan",
+              "job_name": "Quarterly exterior",
               "status": "Scheduled",
-              "customer": "custom-11",
+              "customer": "custom-1",
               "job_type": "Quarterly perimeter treatment",
+              "pest": "General insects",
               "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-5",
               "scheduled_on": "@tue+1w",
-              "quote": 100,
-              "parts_cost": 10,
-              "labor_cost": 35,
-              "hours": 0.8
+              "quote": 135,
+              "parts_cost": 9,
+              "labor_cost": 42,
+              "hours": 1
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Ant treatment - Yoshida",
+              "job_name": "Mosquito round 2",
               "status": "New request",
-              "customer": "custom-4",
-              "job_type": "Ant treatment",
+              "customer": "custom-5",
+              "job_type": "Mosquito yard treatment",
+              "pest": "Mosquitoes",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@thu+1w",
-              "quote": 195,
-              "parts_cost": 30,
-              "labor_cost": 45,
-              "hours": 1
+              "quote": 95,
+              "parts_cost": 11,
+              "labor_cost": 30,
+              "hours": 0.75
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Rodent exclusion - Jessup",
+              "job_name": "Rodent follow-up: check attic traps",
               "status": "Scheduled",
-              "customer": "custom-9",
+              "customer": "custom-11",
               "job_type": "Rodent exclusion",
+              "pest": "Rodents",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
               "scheduled_on": "@today",
-              "quote": 850,
-              "parts_cost": 255,
-              "labor_cost": 175,
-              "hours": 4,
+              "quote": 0,
+              "parts_cost": 4,
+              "labor_cost": 40,
+              "hours": 0.75,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Termite inspection - Grayson",
+              "job_name": "Restaurant monthly service",
               "status": "Scheduled",
               "customer": "custom-2",
-              "job_type": "Termite inspection",
-              "priority": "Urgent",
+              "job_type": "Commercial monthly service",
+              "pest": "Cockroaches",
+              "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today+2d",
-              "quote": 100,
-              "parts_cost": 5,
-              "labor_cost": 45,
-              "hours": 1
+              "quote": 165,
+              "parts_cost": 14,
+              "labor_cost": 48,
+              "hours": 1.25
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Mosquito yard treatment - Underhill",
+              "job_name": "Bed bug heat treatment, 2 bedrooms",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Mosquito yard treatment",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-8",
+              "job_type": "Bed bug heat treatment",
+              "pest": "Bed bugs",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@today+4d",
-              "quote": 120,
-              "parts_cost": 15,
-              "labor_cost": 35,
-              "hours": 0.8
+              "quote": 1650,
+              "parts_cost": 180,
+              "labor_cost": 640,
+              "hours": 8
             }
           }
         ],
@@ -1280,6 +1406,13 @@
               "Safety": "amber",
               "Office": "violet"
             }
+          },
+          {
+            "key": "epa_no",
+            "label": "EPA reg. no.",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "unit",
@@ -1392,33 +1525,36 @@
               "on_hand": 10,
               "reorder_at": 5,
               "supplier": "Lowcountry Pest Supply",
-              "counted_on": "@today-3d"
+              "counted_on": "@today-3d",
+              "epa_no": "EPA 90121-14"
             }
           },
           {
             "key": "part-2",
             "values": {
-              "part_name": "Granular bait",
+              "part_name": "Roach gel bait, 4 tubes",
               "category": "Products",
-              "unit": "tub",
-              "unit_cost": 32,
-              "on_hand": 14,
+              "unit": "box",
+              "unit_cost": 38,
+              "on_hand": 5,
               "reorder_at": 6,
-              "supplier": "Lowcountry Pest Supply",
-              "counted_on": "@today-5d"
+              "supplier": "Lowcountry Pro Supply",
+              "counted_on": "@today-2d",
+              "epa_no": "EPA 90121-48"
             }
           },
           {
             "key": "part-3",
             "values": {
-              "part_name": "Rodent bait stations",
-              "category": "Equipment",
-              "unit": "case",
-              "unit_cost": 58,
-              "on_hand": 6,
-              "reorder_at": 3,
-              "supplier": "Palmetto Trap and Tool",
-              "counted_on": "@today-7d"
+              "part_name": "Rodenticide blocks, 4 lb pail",
+              "category": "Products",
+              "epa_no": "EPA 90121-61",
+              "unit": "pail",
+              "unit_cost": 44,
+              "on_hand": 7,
+              "reorder_at": 4,
+              "supplier": "Lowcountry Pro Supply",
+              "counted_on": "@today-2d"
             }
           },
           {
@@ -1510,6 +1646,33 @@
               "reorder_at": 3,
               "supplier": "Palmetto Trap and Tool",
               "counted_on": "@today-21d"
+            }
+          },
+          {
+            "key": "part-11",
+            "values": {
+              "part_name": "Granular bait",
+              "category": "Products",
+              "unit": "tub",
+              "unit_cost": 32,
+              "on_hand": 14,
+              "reorder_at": 6,
+              "supplier": "Lowcountry Pest Supply",
+              "counted_on": "@today-5d",
+              "epa_no": "EPA 90121-33"
+            }
+          },
+          {
+            "key": "part-12",
+            "values": {
+              "part_name": "Rodent bait stations",
+              "category": "Equipment",
+              "unit": "case",
+              "unit_cost": 58,
+              "on_hand": 6,
+              "reorder_at": 3,
+              "supplier": "Palmetto Trap and Tool",
+              "counted_on": "@today-7d"
             }
           }
         ]
@@ -1691,11 +1854,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-1040",
+              "invoice_name": "CP-7710",
               "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-3",
-              "amount": 117.6,
+              "customer": "custom-1",
+              "amount": 196.2,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1703,65 +1866,290 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-1041",
+              "invoice_name": "CP-7711",
               "status": "Paid",
               "job": "job-2",
-              "customer": "custom-8",
-              "amount": 272.8,
+              "customer": "custom-2",
+              "amount": 181.5,
               "issued_on": "@today-16d",
               "due_on": "@today-2d",
-              "paid_on": "@today-12d",
-              "method": "Check"
+              "paid_on": "@today-9d",
+              "method": "Bank transfer"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-1042",
+              "invoice_name": "CP-7712",
               "status": "Paid",
               "job": "job-3",
-              "customer": "custom-1",
-              "amount": 1109.8,
+              "customer": "custom-3",
+              "amount": 247.5,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
-              "paid_on": "@today-8d",
-              "method": "Bank transfer"
+              "paid_on": "@today-12d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-1043",
+              "invoice_name": "CP-7713",
               "status": "Sent",
               "job": "job-4",
-              "customer": "custom-6",
-              "amount": 142.6,
+              "customer": "custom-11",
+              "amount": 626.75,
               "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "due_on": "@today"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-1044",
-              "status": "Sent",
+              "invoice_name": "CP-7714",
+              "status": "Overdue",
               "job": "job-5",
-              "customer": "custom-11",
-              "amount": 147.5,
+              "customer": "custom-5",
+              "amount": 104.5,
               "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "due_on": "@today-1d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-1045",
-              "status": "Draft",
+              "invoice_name": "CP-7715",
+              "status": "Sent",
               "job": "job-6",
-              "customer": "custom-4",
-              "amount": 341.2,
+              "customer": "custom-7",
+              "amount": 192.5,
               "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "due_on": "@today+3d"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "CP-7716",
+              "status": "Draft",
+              "job": "job-10",
+              "customer": "custom-4",
+              "amount": 414.2,
+              "issued_on": "@today-1d",
+              "due_on": "@today+29d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "application",
+        "name": "Application records",
+        "labelSingular": "Application",
+        "labelPlural": "Application records",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "application_name",
+        "describes": "The legal record of every product applied: what, where, how much, on what pest, and in what weather.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "application_name",
+            "label": "Application",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "visit",
+            "label": "Service visit",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "product",
+            "label": "Product",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "part",
+            "relationMax": 1
+          },
+          {
+            "key": "target",
+            "label": "Target pest",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "General insects",
+              "Ants",
+              "Rodents",
+              "Termites",
+              "Mosquitoes",
+              "Wasps and bees",
+              "Bed bugs",
+              "Cockroaches"
+            ],
+            "choiceColors": {
+              "General insects": "blue",
+              "Ants": "green",
+              "Rodents": "amber",
+              "Termites": "violet",
+              "Mosquitoes": "teal",
+              "Wasps and bees": "orange",
+              "Bed bugs": "pink",
+              "Cockroaches": "slate"
+            }
+          },
+          {
+            "key": "area",
+            "label": "Areas treated",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount applied",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "weather",
+            "label": "Weather",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "applied_on",
+            "label": "Applied on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "app-1",
+            "values": {
+              "application_name": "Perimeter band, Zielinski",
+              "visit": "job-1",
+              "product": "part-1",
+              "target": "General insects",
+              "area": "Foundation band 3 ft up, 3 ft out; crawlspace vents",
+              "amount": "1.2 gal finished",
+              "weather": "Clear, 74 F, wind 4 mph",
+              "applied_on": "@today-21d"
+            }
+          },
+          {
+            "key": "app-2",
+            "values": {
+              "application_name": "Kitchen gel, Grayson bistro",
+              "visit": "job-2",
+              "product": "part-2",
+              "target": "Cockroaches",
+              "area": "Under dish machine, cook line, dry storage",
+              "amount": "18 g",
+              "weather": "Indoor",
+              "applied_on": "@today-16d"
+            }
+          },
+          {
+            "key": "app-3",
+            "values": {
+              "application_name": "Ant bait, Navarro kitchen",
+              "visit": "job-3",
+              "product": "part-2",
+              "target": "Ants",
+              "area": "Exterior granular around foundation",
+              "amount": "1.5 lb",
+              "weather": "Overcast, 70 F, calm",
+              "applied_on": "@today-12d"
+            }
+          },
+          {
+            "key": "app-4",
+            "values": {
+              "application_name": "Attic snap traps + bait stations, Brannigan",
+              "visit": "job-4",
+              "product": "part-3",
+              "target": "Rodents",
+              "area": "2 exterior stations at garage corner; 8 traps in attic (no bait)",
+              "amount": "2 blocks",
+              "weather": "Clear, 68 F",
+              "applied_on": "@today-9d"
+            }
+          },
+          {
+            "key": "app-5",
+            "values": {
+              "application_name": "Yard mosquito mist, Fairbairn",
+              "visit": "job-5",
+              "product": "part-1",
+              "target": "Mosquitoes",
+              "area": "Shrubs and under deck, no flowering plants",
+              "amount": "0.8 gal finished",
+              "weather": "Calm, 77 F",
+              "applied_on": "@today-6d"
+            }
+          },
+          {
+            "key": "app-6",
+            "values": {
+              "application_name": "Wasp dust, Underhill deck",
+              "visit": "job-6",
+              "product": "part-1",
+              "target": "Wasps and bees",
+              "area": "Nest void under stair tread",
+              "amount": "2 oz",
+              "weather": "Clear, 71 F",
+              "applied_on": "@today-4d"
+            }
+          },
+          {
+            "key": "app-7",
+            "values": {
+              "application_name": "Warehouse stations refill, Yoshida",
+              "visit": "job-10",
+              "product": "part-3",
+              "target": "Rodents",
+              "area": "Stations 1-24, exterior only",
+              "amount": "11 blocks",
+              "weather": "Light rain, 62 F",
+              "applied_on": "@mon"
+            }
+          },
+          {
+            "key": "app-8",
+            "values": {
+              "application_name": "Bakery gel, Mbeki",
+              "visit": "job-11",
+              "product": "part-2",
+              "target": "Cockroaches",
+              "area": "Proofing room, mixer base, dish area",
+              "amount": "12 g",
+              "weather": "Indoor",
+              "applied_on": "@tue"
             }
           }
         ]
@@ -1807,6 +2195,26 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each application happened on one service visit.",
+        "fromTable": "application",
+        "fromField": "visit",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "applications"
+      },
+      {
+        "describes": "Each application used one product.",
+        "fromTable": "application",
+        "fromField": "product",
+        "toTable": "part",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "used_in"
       }
     ],
     "sharedBlocks": [
@@ -2148,6 +2556,20 @@
             "Overdue"
           ]
         }
+      },
+      {
+        "token": "all_application",
+        "name": "All applications",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "application"
+      },
+      {
+        "token": "application_by_pest",
+        "name": "By target pest",
+        "kind": "kanban",
+        "groupBy": "target",
+        "table": "application"
       }
     ],
     "agent": {
@@ -2220,6 +2642,18 @@
           "surface": "part_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open application records.",
+        "action": {
+          "kind": "open",
+          "surface": "application_by_pest"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "application_by_pest",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2237,7 +2671,7 @@
         "Plover Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2259,12 +2693,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan treatment routes from one page. Plan renewals and one-time calls land on the Service visits board, each technician sees their own list under Mine, and Mark done closes a visit. Products shows what to reorder; Invoices shows who owes you."
+              "text": "Run the company from here. Plan customers have a Next service due date, so routes fill themselves. Every visit goes on the Service visits board; every product applied is written in Application records, which is the record your state can ask to see. Sent and overdue invoices both count in a customer's Awaiting payment."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2657,6 +3097,337 @@
             ],
             "activeViewId": "inv-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Application records"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Product, amount, area, target pest and weather for every treatment. Write it before you leave the property."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "application",
+              "view": "all_application"
+            },
+            "inline": true,
+            "title": "Application records",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "ap-t",
+                "name": "All applications",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "applied_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "ap-b",
+                "name": "By target pest",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "target"
+              }
+            ],
+            "activeViewId": "ap-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "pest-control-business-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the route supervisor, the office manager and every technician."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": homes and businesses with their plan, next service due date, property notes, what they owe and how many visits are open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Service visits",
+              "bold": true
+            },
+            {
+              "text": ": each visit, with the target pest, technician, date, price, product cost and margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Application records",
+              "bold": true
+            },
+            {
+              "text": ": the legal record of every product applied, linked to the visit and to the product."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Products and equipment",
+              "bold": true
+            },
+            {
+              "text": ": products with their EPA numbers, equipment and safety gear, and what to reorder."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": plan bills and one-time treatments."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A visit from booking to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Plan customers show up on the Dashboard when they are due; one-time calls come in as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The route supervisor sets the technician and the date and moves the visit to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": ". A technician can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On site the technician inspects, treats and writes the application record before leaving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " stamps the date. Update the customer's Next service due."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The office sends the invoice. Past due becomes "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "; Awaiting payment counts sent and overdue together. "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's route, callbacks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Thursday: plan next week's routes from Due soon"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: count products and check safety gear"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: callbacks by route, record spot checks, license expiry dates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename plans and work types to match your services, add your products with their EPA numbers, and delete the sample customers once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety first, every stop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read the label before you mix, wear what it says to wear, and keep products locked in the truck. Note children, pets, fish tanks and gardens in the property notes, and choose baits over sprays indoors where you can."
+            }
+          ]
         }
       ]
     },
@@ -2919,6 +3690,123 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Plan customers due in the next 14 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "all_customer"
+            },
+            "inline": true,
+            "title": "Customers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "Due soon",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "next_due": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Callbacks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Service visits",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l5",
+                "name": "Callbacks",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "callback": true
+                }
+              }
+            ],
+            "activeViewId": "view-l5"
+          }
         }
       ]
     },
@@ -2934,7 +3822,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Quarterly plans make the business predictable. Plan routes a month ahead and keep each technician in one area per day."
+              "text": "Plan customers are the heart of a pest control business. A tight route lets one technician service 12 to 18 homes a day; a loose one does eight and burns the margin in fuel."
             }
           ],
           "background": "blue",
@@ -2946,7 +3834,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Setting up a plan customer"
             }
           ],
           "props": {
@@ -2957,7 +3845,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "On the first of each month, list plan customers due that month."
+              "text": "Set "
+            },
+            {
+              "text": "Plan",
+              "bold": true
+            },
+            {
+              "text": " on the customer: Quarterly, Monthly or Commercial."
             }
           ]
         },
@@ -2965,7 +3860,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Group them by area and assign one technician per area."
+              "text": "After each service, set "
+            },
+            {
+              "text": "Next service due",
+              "bold": true
+            },
+            {
+              "text": ": about 90 days out for quarterly, 30 for monthly. The Dashboard lists everyone due in the next 14 days."
             }
           ]
         },
@@ -2973,15 +3875,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create each visit with a day and a window."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Write access and safety details in "
+            },
             {
-              "text": "Text the customer the evening before."
+              "text": "Property notes",
+              "bold": true
+            },
+            {
+              "text": ": gates, dogs, crawlspace access, children or pets that limit which products you use."
             }
           ]
         },
@@ -2989,7 +3890,131 @@
           "type": "heading",
           "text": [
             {
-              "text": "Skipped visits"
+              "text": "Building the week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every Thursday the route supervisor opens the Due soon list and groups the customers by area."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each technician gets one area per day. Commercial accounts with fixed times (restaurants after close, daycares before opening) go in first; homes fill around them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book each stop as a service visit with the work type and target pest."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Text customers the day before. Many do not need to be home for an exterior service; note that on the card once they confirm."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At each stop"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the property notes and last visit's application record"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Inspect before treating: what pest, how much, where it comes in"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Treat only what the label allows, where the label allows it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write the application record before leaving: product, amount, area, target, weather"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leave a service note or door hanger saying what you did and any re-entry time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Update "
+            },
+            {
+              "text": "Next service due",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing a plan"
             }
           ],
           "props": {
@@ -3000,7 +4025,45 @@
           "type": "text",
           "text": [
             {
-              "text": "If the customer is not home, treat the exterior, leave a door hanger and reschedule the interior within the week."
+              "text": "Price a quarterly visit by drive time plus time on site plus product, then add margin. Plans earn their keep on volume and on free callbacks being rare. If callbacks on a route climb, the treatment or the interval is wrong, not the customer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Thursday the supervisor sees nine homes due in the next two weeks, six of them on the west side. He books them on Tuesday for Chidi, with the daycare at 6:30 am first. Two customers text back that the gate will be unlocked; he notes it on their cards for next time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rain and wind"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Exterior sprays are not applied in rain or wind above the label limit. Move the stop to the next dry day and write the reason on the visit. Indoor and bait work goes ahead."
             }
           ]
         }
@@ -3018,7 +4081,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Good records protect the customer and the company. Write them at the property, not later."
+              "text": "In most states every pesticide application must be recorded and kept for at least two years. A good record also protects you when a customer asks what was used around their children or pets."
             }
           ],
           "background": "blue",
@@ -3030,7 +4093,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Every visit records"
+              "text": "What every application record holds"
             }
           ],
           "props": {
@@ -3041,7 +4104,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Date, time on and off, and technician"
+              "text": "Service visit",
+              "bold": true
+            },
+            {
+              "text": " and the customer it was for"
             }
           ]
         },
@@ -3049,7 +4116,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Pest targeted and areas treated"
+              "text": "Product",
+              "bold": true
+            },
+            {
+              "text": " used, with its EPA registration number (kept on the product in Products and equipment)"
             }
           ]
         },
@@ -3057,7 +4128,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Products used and amounts"
+              "text": "Amount applied",
+              "bold": true
+            },
+            {
+              "text": ": finished gallons, grams of gel, number of bait blocks"
             }
           ]
         },
@@ -3065,7 +4140,50 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Notes on conditions found"
+              "text": "Target pest",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Areas treated",
+              "bold": true
+            },
+            {
+              "text": ", specific enough that another technician could find them"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Weather",
+              "bold": true
+            },
+            {
+              "text": " for exterior work: sky, temperature and wind"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Applied on",
+              "bold": true
+            },
+            {
+              "text": ", the date"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The technician's name and license number, kept on the team member"
             }
           ]
         },
@@ -3073,7 +4191,50 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the visit"
+              "text": "Writing it well"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write it on site, before leaving, from the label, not from memory."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Name places: \"under the dish machine and along the cook line,\" not \"kitchen.\""
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "For bait stations, give the station numbers. Commercial customers keep a station map; ask for a copy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record nothing applied as well: an inspection-only visit says so."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Customer requests"
             }
           ],
           "props": {
@@ -3084,7 +4245,89 @@
           "type": "text",
           "text": [
             {
-              "text": "Save the notes on the visit row and keep local rules in mind. Records follow the legal retention period for your state."
+              "text": "When a customer asks what was used, print or send the application record and the product label. Answer questions with the label in hand. Never say a product is \"safe\"; say what the label says about re-entry and pets."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The route supervisor spot-checks five records a week for completeness"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every visit marked done has at least one application record or an \"inspection only\" note"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Products used match what left the shelf (the weekly count shows it)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A daycare director asks what was used in the kitchen last month. The office opens the application records for that visit: gel bait, 12 grams, under the sink and behind the refrigerator, with the product's EPA number. The director gets the record and the label the same afternoon and renews the commercial plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Licenses and training"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every applicator's license number and expiry date sits on their team record. Trainees apply only under a licensed technician's supervision; the record names the licensed technician too. Schedule continuing education well before licenses expire."
             }
           ]
         }
@@ -3102,7 +4345,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A callback is a second chance. Treat it as free marketing."
+              "text": "On a plan, a callback is free and quick: it is how you keep the customer. Too many callbacks on one route is a sign to look at the treatment, not to stop answering the phone."
             }
           ],
           "background": "blue",
@@ -3114,7 +4357,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When the customer calls"
             }
           ],
           "props": {
@@ -3125,7 +4368,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the callback within 48 hours."
+              "text": "Ask what they are seeing, where, and how many. Ask for a photo; many \"roaches\" are beetles that wandered in."
             }
           ]
         },
@@ -3133,7 +4376,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the same technician when possible."
+              "text": "Check their plan and the last visit's application record."
             }
           ]
         },
@@ -3141,7 +4384,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Look for the cause: entry points, moisture, food."
+              "text": "Plan customers: book a callback within two working days at no charge. Tick "
+            },
+            {
+              "text": "Callback",
+              "bold": true
+            },
+            {
+              "text": " on the new visit."
             }
           ]
         },
@@ -3149,7 +4399,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Record what changed and tell the customer."
+              "text": "One-time customers: the warranty on the original job tells you whether it is free."
             }
           ]
         },
@@ -3157,7 +4407,73 @@
           "type": "heading",
           "text": [
             {
-              "text": "When it keeps coming back"
+              "text": "On the callback visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Inspect first: find where the pests are coming from, not just where they are seen"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look for conditions: leaks, gaps under doors, food left out, mulch against the siding"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Treat what the label allows; prefer baits indoors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tell the customer which conditions they can fix, in writing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write the application record"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Complaints that are not about pests"
             }
           ],
           "props": {
@@ -3168,7 +4484,69 @@
           "type": "text",
           "text": [
             {
-              "text": "Escalate to the route supervisor and offer an inspection with photos before spending more product."
+              "text": "Damage to plants, a stain on a floor, a technician who left a gate open: the owner or office manager calls back the same day, listens, and fixes it. A small credit or a free service costs far less than a lost plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviewing callbacks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every month, open the Callbacks list on the Dashboard."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Many ant callbacks after the first spring rain: switch to baits on those routes before the season."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One technician with most callbacks: ride along for a day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One property with repeated callbacks: a full inspection for conditions, with a written report for the customer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A homeowner texts a photo of ants in the bathroom ten days after an ant treatment. The office books a callback for the next morning. Chidi finds a trail coming through a gap at the tub drain, places gel bait along it, seals the gap, and shows the customer. The next quarterly visit notes no ants inside."
             }
           ]
         }
