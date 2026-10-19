@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 2,
+  "version": 3,
   "title": "App Development Agency Studio",
-  "description": "Clients, app projects, milestones and the bug list for a mobile and web agency.",
+  "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
   "icon": {
     "emoji": "📱"
@@ -14,11 +14,12 @@
   },
   "category": "tech",
   "tags": [
+    "agency owner",
+    "project manager",
+    "account manager",
+    "developer",
     "app development",
-    "projects",
-    "milestones",
-    "bugs",
-    "agency"
+    "sprints"
   ],
   "spec": {
     "specVersion": 1,
@@ -195,6 +196,19 @@
                 "Launched",
                 "Maintenance"
               ]
+            }
+          },
+          {
+            "key": "retainer_fee",
+            "label": "Retainer per month (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "retainers",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "status": "Active"
             }
           },
           {
@@ -541,6 +555,42 @@
             "contextPolicy": "include"
           },
           {
+            "key": "contract",
+            "label": "Contract",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Fixed price",
+              "Time and materials",
+              "Retainer"
+            ],
+            "choiceColors": {
+              "Fixed price": "blue",
+              "Time and materials": "amber",
+              "Retainer": "green"
+            }
+          },
+          {
+            "key": "day_rate",
+            "label": "Day rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000
+              }
+            ]
+          },
+          {
             "key": "starts_on",
             "label": "Started on",
             "parityType": "datetime",
@@ -646,6 +696,76 @@
             "formula": "IF({Open critical bugs} > 0, \"Blocked by critical bugs\", IF({Delivery progress (%)} >= 90, \"Ready to ship\", \"In progress\"))",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "changes_value",
+            "label": "Approved changes (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "change_requests",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Approved",
+                "Built"
+              ]
+            }
+          },
+          {
+            "key": "changes_waiting",
+            "label": "Changes waiting on the client",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "change_requests",
+            "pick": "cr_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Requested",
+                "Estimated"
+              ]
+            }
+          },
+          {
+            "key": "contract_now",
+            "label": "Contract value now (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budget (USD)} + {Approved changes (USD)}"
+          },
+          {
+            "key": "sprints_done",
+            "label": "Sprints closed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "sprints",
+            "pick": "sprint_name",
+            "agg": "count",
+            "filter": {
+              "status": "Done"
+            }
+          },
+          {
+            "key": "releases_out",
+            "label": "Releases not yet live",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "releases",
+            "pick": "release_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Live"
+                ]
+              }
+            }
           },
           {
             "key": "btn_build",
@@ -867,7 +987,9 @@
               "starts_on": "@today-80d",
               "launch_on": "@today+5d",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Fixed price",
+              "day_rate": 1100
             }
           },
           {
@@ -880,7 +1002,9 @@
               "budget": 64000,
               "starts_on": "@today-120d",
               "launch_on": "@today",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "contract": "Fixed price",
+              "day_rate": 1100
             }
           },
           {
@@ -894,7 +1018,9 @@
               "starts_on": "@today-5d",
               "launch_on": "@today+120d",
               "lead": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Time and materials",
+              "day_rate": 1200
             }
           },
           {
@@ -907,7 +1033,9 @@
               "budget": 54000,
               "starts_on": "@today-30d",
               "launch_on": "@today-3d",
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "contract": "Time and materials",
+              "day_rate": 1250
             }
           },
           {
@@ -921,7 +1049,9 @@
               "starts_on": "@today-300d",
               "launch_on": "@today+60d",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Retainer",
+              "day_rate": 1000
             }
           },
           {
@@ -934,7 +1064,9 @@
               "budget": 41000,
               "starts_on": "@today",
               "launch_on": "@today+90d",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "contract": "Fixed price",
+              "day_rate": 1100
             }
           },
           {
@@ -948,7 +1080,9 @@
               "starts_on": "@today-200d",
               "launch_on": "@today-20d",
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "contract": "Fixed price",
+              "day_rate": 1050
             }
           },
           {
@@ -961,7 +1095,9 @@
               "budget": 12000,
               "starts_on": "@today-250d",
               "launch_on": "@today-180d",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "contract": "Time and materials",
+              "day_rate": 1000
             }
           }
         ]
@@ -1690,6 +1826,1107 @@
             }
           }
         ]
+      },
+      {
+        "token": "sprint",
+        "name": "Sprints",
+        "labelSingular": "Sprint",
+        "labelPlural": "Sprints",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "timer",
+        "titleField": "sprint_name",
+        "describes": "Two-week sprints for each project: the goal, points planned and done, and whether the client demo happened.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New sprint",
+            "values": {
+              "sprint_name": "New sprint",
+              "status": "Planned"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Sprint goal"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "One sentence the client would understand."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Stories in this sprint"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "List each story with its points."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Demo notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What the client saw, what they liked and what they asked to change."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "starts_on",
+            "ends_on"
+          ]
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "sprint_name",
+            "label": "Sprint",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "projects",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planned",
+              "Active",
+              "Done"
+            ],
+            "choiceColors": {
+              "Planned": "slate",
+              "Active": "blue",
+              "Done": "green"
+            }
+          },
+          {
+            "key": "starts_on",
+            "label": "Starts on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ends_on",
+            "label": "Ends on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "goal",
+            "label": "Sprint goal",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "points_planned",
+            "label": "Points planned",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "points_done",
+            "label": "Points done",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "done_pct",
+            "label": "Done (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Points planned} > 0, ROUND({Points done} / {Points planned} * 100, 0), 0)"
+          },
+          {
+            "key": "demo",
+            "label": "Client demo",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not booked",
+              "Booked",
+              "Held"
+            ],
+            "choiceColors": {
+              "Not booked": "slate",
+              "Booked": "amber",
+              "Held": "green"
+            }
+          },
+          {
+            "key": "btn_close",
+            "label": "Close sprint",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "sprint_close"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "sprint-1",
+            "values": {
+              "sprint_name": "Ordering app, sprint 6",
+              "project": "projects-1",
+              "status": "Done",
+              "starts_on": "@today-28d",
+              "ends_on": "@today-15d",
+              "points_planned": 34,
+              "points_done": 31,
+              "demo": "Held",
+              "goal": "Checkout with saved cards"
+            }
+          },
+          {
+            "key": "sprint-2",
+            "values": {
+              "sprint_name": "Ordering app, sprint 7",
+              "project": "projects-1",
+              "status": "Done",
+              "starts_on": "@today-14d",
+              "ends_on": "@today-1d",
+              "points_planned": 32,
+              "points_done": 24,
+              "demo": "Held",
+              "goal": "Order history and reorder"
+            }
+          },
+          {
+            "key": "sprint-3",
+            "values": {
+              "sprint_name": "Ordering app, sprint 8",
+              "project": "projects-1",
+              "status": "Active",
+              "starts_on": "@today",
+              "ends_on": "@today+13d",
+              "points_planned": 30,
+              "points_done": 6,
+              "demo": "Booked",
+              "goal": "Push notifications and store builds"
+            }
+          },
+          {
+            "key": "sprint-4",
+            "values": {
+              "sprint_name": "Appointment portal, sprint 9",
+              "project": "projects-2",
+              "status": "Active",
+              "starts_on": "@today-6d",
+              "ends_on": "@today+7d",
+              "points_planned": 26,
+              "points_done": 18,
+              "demo": "Booked",
+              "goal": "Fix the QA list and accessibility pass"
+            }
+          },
+          {
+            "key": "sprint-5",
+            "values": {
+              "sprint_name": "Savings goals, design sprint 2",
+              "project": "projects-4",
+              "status": "Active",
+              "starts_on": "@today-3d",
+              "ends_on": "@today+10d",
+              "points_planned": 20,
+              "points_done": 7,
+              "demo": "Booked",
+              "goal": "Clickable prototype for the bank's review"
+            }
+          },
+          {
+            "key": "sprint-6",
+            "values": {
+              "sprint_name": "Lesson booking, discovery sprint",
+              "project": "projects-3",
+              "status": "Active",
+              "starts_on": "@today-5d",
+              "ends_on": "@today+9d",
+              "points_planned": 12,
+              "points_done": 5,
+              "demo": "Booked",
+              "goal": "User interviews and a feature map"
+            }
+          },
+          {
+            "key": "sprint-7",
+            "values": {
+              "sprint_name": "Driver check-in, sprint 1",
+              "project": "projects-6",
+              "status": "Planned",
+              "starts_on": "@today+14d",
+              "ends_on": "@today+27d",
+              "points_planned": 24,
+              "points_done": 0,
+              "demo": "Not booked",
+              "goal": "Sign-in and vehicle checklist"
+            }
+          }
+        ]
+      },
+      {
+        "token": "change",
+        "name": "Change requests",
+        "labelSingular": "Change request",
+        "labelPlural": "Change requests",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "git-pull-request",
+        "titleField": "cr_title",
+        "describes": "Work the client asks for that is not in the signed scope: the estimate, the price, what it does to the date, and the decision.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New change request",
+            "values": {
+              "cr_title": "New change request",
+              "status": "Requested"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What the client asked for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "In their words, with the date and who asked."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Why it is a change"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Which part of the signed scope it goes beyond."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Estimate and effect"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Days, price, and what moves: the launch date, another feature, or nothing."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "requested_on",
+            "decide_by"
+          ]
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "cr_title",
+            "label": "Change request",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "projects",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Requested",
+              "Estimated",
+              "Approved",
+              "Declined",
+              "Built"
+            ],
+            "choiceColors": {
+              "Requested": "amber",
+              "Estimated": "blue",
+              "Approved": "green",
+              "Declined": "slate",
+              "Built": "teal"
+            }
+          },
+          {
+            "key": "requested_by",
+            "label": "Asked for by",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "requested_on",
+            "label": "Asked on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "decide_by",
+            "label": "Client decides by",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "days",
+            "label": "Estimate (days)",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "impact",
+            "label": "Effect on the plan",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_approve",
+            "label": "Client approved",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "change_approve"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "change_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "change-1",
+            "values": {
+              "cr_title": "Apple Pay at checkout",
+              "project": "projects-1",
+              "status": "Estimated",
+              "requested_by": "Store operations manager",
+              "requested_on": "@today-6d",
+              "decide_by": "@today-2d",
+              "days": 4,
+              "price": 4400,
+              "impact": "Adds 4 days; launch holds"
+            }
+          },
+          {
+            "key": "change-2",
+            "values": {
+              "cr_title": "Spanish language version",
+              "project": "projects-2",
+              "status": "Requested",
+              "requested_by": "Clinic marketing lead",
+              "requested_on": "@today-3d",
+              "decide_by": "@today",
+              "days": 9,
+              "price": 9900,
+              "impact": "Moves launch by two weeks",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "change-3",
+            "values": {
+              "cr_title": "Second savings goal type",
+              "project": "projects-4",
+              "status": "Approved",
+              "requested_by": "Product owner at the bank",
+              "requested_on": "@today-20d",
+              "decide_by": "@today-14d",
+              "days": 6,
+              "price": 7500,
+              "impact": "Fits inside design sprint 3"
+            }
+          },
+          {
+            "key": "change-4",
+            "values": {
+              "cr_title": "Gift card balance screen",
+              "project": "projects-1",
+              "status": "Built",
+              "requested_by": "Store operations manager",
+              "requested_on": "@today-50d",
+              "decide_by": "@today-45d",
+              "days": 3,
+              "price": 3300,
+              "impact": "Shipped in sprint 6"
+            }
+          },
+          {
+            "key": "change-5",
+            "values": {
+              "cr_title": "Waitlist for full lessons",
+              "project": "projects-3",
+              "status": "Requested",
+              "requested_by": "Academy director",
+              "requested_on": "@today-1d",
+              "decide_by": "@today+2d",
+              "days": 5,
+              "price": 6000,
+              "impact": "Not yet sized against the plan",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "change-6",
+            "values": {
+              "cr_title": "Dark mode",
+              "project": "projects-5",
+              "status": "Declined",
+              "requested_by": "Hotel brand team",
+              "requested_on": "@today-40d",
+              "decide_by": "@today-35d",
+              "days": 5,
+              "price": 5000,
+              "impact": "Not worth it for upkeep budget"
+            }
+          },
+          {
+            "key": "change-7",
+            "values": {
+              "cr_title": "Export bookings to the front desk system",
+              "project": "projects-2",
+              "status": "Estimated",
+              "requested_by": "Clinic operations",
+              "requested_on": "@today-4d",
+              "decide_by": "@today+4d",
+              "days": 7,
+              "price": 7700,
+              "impact": "Needs the vendor's test account"
+            }
+          }
+        ]
+      },
+      {
+        "token": "release",
+        "name": "Store releases",
+        "labelSingular": "Store release",
+        "labelPlural": "Store releases",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "rocket",
+        "titleField": "release_name",
+        "describes": "Every build sent to the App Store or Google Play: version, review status, rejection reason and release date.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "submit_on",
+            "release_on"
+          ]
+        ],
+        "independentOf": {
+          "project": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "release_name",
+            "label": "Store release",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "project",
+            "label": "Project",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "projects",
+            "relationMax": 1
+          },
+          {
+            "key": "store",
+            "label": "Store",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "App Store",
+              "Google Play",
+              "Both stores"
+            ],
+            "choiceColors": {
+              "App Store": "blue",
+              "Google Play": "green",
+              "Both stores": "violet"
+            }
+          },
+          {
+            "key": "version",
+            "label": "Version",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Preparing",
+              "In review",
+              "Rejected",
+              "Approved",
+              "Live"
+            ],
+            "choiceColors": {
+              "Preparing": "slate",
+              "In review": "amber",
+              "Rejected": "red",
+              "Approved": "blue",
+              "Live": "green"
+            }
+          },
+          {
+            "key": "submit_on",
+            "label": "Submit for review on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "release_on",
+            "label": "Release on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "rejection",
+            "label": "Rejection reason",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_live",
+            "label": "Mark live",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "release_live"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "release_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "release-1",
+            "values": {
+              "release_name": "Ordering app 1.0 to App Store",
+              "project": "projects-1",
+              "store": "App Store",
+              "version": "1.0.0",
+              "status": "Preparing",
+              "submit_on": "@today+1d",
+              "release_on": "@today+5d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "release-2",
+            "values": {
+              "release_name": "Ordering app 1.0 to Google Play",
+              "project": "projects-1",
+              "store": "Google Play",
+              "version": "1.0.0",
+              "status": "Preparing",
+              "submit_on": "@today+1d",
+              "release_on": "@today+4d"
+            }
+          },
+          {
+            "key": "release-3",
+            "values": {
+              "release_name": "Loyalty cards 1.2 bug fixes",
+              "project": "projects-7",
+              "store": "Both stores",
+              "version": "1.2.0",
+              "status": "In review",
+              "submit_on": "@today-1d",
+              "release_on": "@today"
+            }
+          },
+          {
+            "key": "release-4",
+            "values": {
+              "release_name": "Loyalty cards 1.1",
+              "project": "projects-7",
+              "store": "App Store",
+              "version": "1.1.0",
+              "status": "Rejected",
+              "submit_on": "@today-6d",
+              "release_on": "@today-2d",
+              "rejection": "Sign in with Apple missing alongside social sign-in"
+            }
+          },
+          {
+            "key": "release-5",
+            "values": {
+              "release_name": "Guest app 3.4 seasonal menu",
+              "project": "projects-5",
+              "store": "App Store",
+              "version": "3.4.0",
+              "status": "Approved",
+              "submit_on": "@today-3d",
+              "release_on": "@today+2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "release-6",
+            "values": {
+              "release_name": "Loyalty cards 1.0",
+              "project": "projects-7",
+              "store": "Both stores",
+              "version": "1.0.0",
+              "status": "Live",
+              "submit_on": "@today-25d",
+              "release_on": "@today-20d"
+            }
+          },
+          {
+            "key": "release-7",
+            "values": {
+              "release_name": "Guest app 3.3",
+              "project": "projects-5",
+              "store": "App Store",
+              "version": "3.3.0",
+              "status": "Live",
+              "submit_on": "@today-40d",
+              "release_on": "@today-37d"
+            }
+          }
+        ]
+      },
+      {
+        "token": "retainer",
+        "name": "Retainers",
+        "labelSingular": "Retainer",
+        "labelPlural": "Retainers",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "repeat",
+        "titleField": "retainer_name",
+        "describes": "Monthly support plans: fee, hours included, hours used this month and when the plan renews.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "independentOf": {
+          "client": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "retainer_name",
+            "label": "Retainer",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "client",
+            "label": "Client",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "client",
+            "relationMax": 1
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Paused",
+              "Ended"
+            ],
+            "choiceColors": {
+              "Active": "green",
+              "Paused": "amber",
+              "Ended": "slate"
+            }
+          },
+          {
+            "key": "fee",
+            "label": "Monthly fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "hours",
+            "label": "Hours included each month",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 744
+              }
+            ]
+          },
+          {
+            "key": "used",
+            "label": "Hours used this month",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 744
+              }
+            ]
+          },
+          {
+            "key": "left",
+            "label": "Hours left this month",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Hours included each month} - {Hours used this month}"
+          },
+          {
+            "key": "renews_on",
+            "label": "Renews on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "covers",
+            "label": "What it covers",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "retainer-1",
+            "values": {
+              "retainer_name": "Ember and Oak upkeep",
+              "client": "client-6",
+              "status": "Active",
+              "fee": 4500,
+              "hours": 30,
+              "used": 26,
+              "renews_on": "@today+40d",
+              "covers": "iOS updates, hosting, store listings"
+            }
+          },
+          {
+            "key": "retainer-2",
+            "values": {
+              "retainer_name": "Thistledown support plan",
+              "client": "client-1",
+              "status": "Active",
+              "fee": 3000,
+              "hours": 20,
+              "used": 9,
+              "renews_on": "@today+75d",
+              "covers": "Loyalty app fixes and monitoring"
+            }
+          },
+          {
+            "key": "retainer-3",
+            "values": {
+              "retainer_name": "Larkspur design support",
+              "client": "client-5",
+              "status": "Active",
+              "fee": 2000,
+              "hours": 12,
+              "used": 12,
+              "renews_on": "@today+8d",
+              "covers": "Small design changes in the banking app"
+            }
+          },
+          {
+            "key": "retainer-4",
+            "values": {
+              "retainer_name": "Kestrel tracking upkeep",
+              "client": "client-8",
+              "status": "Ended",
+              "fee": 1500,
+              "hours": 10,
+              "used": 0,
+              "renews_on": "@today-60d",
+              "covers": "Prototype hosting until handover"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1762,6 +2999,46 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "bug_by_assignee"
+      },
+      {
+        "describes": "A sprint belongs to one project.",
+        "fromTable": "sprint",
+        "fromField": "project",
+        "toTable": "projects",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sprints"
+      },
+      {
+        "describes": "A change request belongs to one project.",
+        "fromTable": "change",
+        "fromField": "project",
+        "toTable": "projects",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "change_requests"
+      },
+      {
+        "describes": "A store release belongs to one project.",
+        "fromTable": "release",
+        "fromField": "project",
+        "toTable": "projects",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "releases"
+      },
+      {
+        "describes": "A retainer is with one client.",
+        "fromTable": "retainer",
+        "fromField": "client",
+        "toTable": "client",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "retainers"
       }
     ],
     "sharedBlocks": [
@@ -2017,6 +3294,76 @@
         "kind": "row_action",
         "token": "bugs_claim",
         "table": "bugs",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "sprint_close",
+        "table": "sprint",
+        "name": "Close sprint",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "change_approve",
+        "table": "change",
+        "name": "Client approved",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Approved"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "change_claim",
+        "table": "change",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "release_live",
+        "table": "release",
+        "name": "Mark live",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Live"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "release_claim",
+        "table": "release",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2372,6 +3719,214 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_sprint",
+        "name": "All sprints",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "sprint"
+      },
+      {
+        "token": "sprint_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "sprint"
+      },
+      {
+        "token": "sprint_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "ends_on",
+        "allDay": true,
+        "table": "sprint"
+      },
+      {
+        "token": "all_change",
+        "name": "All change requests",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "change"
+      },
+      {
+        "token": "change_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "change"
+      },
+      {
+        "token": "change_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "decide_by",
+        "allDay": true,
+        "table": "change"
+      },
+      {
+        "token": "change_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Estimated"
+          ]
+        },
+        "table": "change"
+      },
+      {
+        "token": "change_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Estimated"
+          ]
+        },
+        "table": "change"
+      },
+      {
+        "token": "change_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "decide_by": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Requested",
+            "Estimated"
+          ]
+        },
+        "table": "change"
+      },
+      {
+        "token": "change_mine",
+        "name": "My change requests",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "change"
+      },
+      {
+        "token": "all_release",
+        "name": "All store releases",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "release"
+      },
+      {
+        "token": "release_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "release"
+      },
+      {
+        "token": "release_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "release_on",
+        "allDay": true,
+        "table": "release"
+      },
+      {
+        "token": "release_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "In review",
+            "Rejected",
+            "Approved"
+          ]
+        },
+        "table": "release"
+      },
+      {
+        "token": "release_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "In review",
+            "Rejected",
+            "Approved"
+          ]
+        },
+        "table": "release"
+      },
+      {
+        "token": "release_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "release_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Preparing",
+            "In review",
+            "Rejected",
+            "Approved"
+          ]
+        },
+        "table": "release"
+      },
+      {
+        "token": "release_mine",
+        "name": "My store releases",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "release"
+      },
+      {
+        "token": "all_retainer",
+        "name": "All retainers",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "retainer"
+      },
+      {
+        "token": "retainer_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "retainer"
       }
     ],
     "agent": {
@@ -2445,6 +4000,54 @@
           "surface": "milestones_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open sprints.",
+        "action": {
+          "kind": "open",
+          "surface": "sprint_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "sprint_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open change requests.",
+        "action": {
+          "kind": "open",
+          "surface": "change_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "change_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open store releases.",
+        "action": {
+          "kind": "open",
+          "surface": "release_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "release_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open retainers.",
+        "action": {
+          "kind": "open",
+          "surface": "retainer_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "retainer_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2461,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2483,12 +4086,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The agency's delivery view in one place: clients and proposals, projects by stage, milestones and bugs. Start with the Dashboard each morning. Any critical bug blocks the release check on its project, so look at that column before agreeing a launch date."
+              "text": "The studio in one place. Clients and Projects hold the work and its money; Sprints show what each team is building these two weeks; Change requests keep scope honest; Store releases track every build through Apple and Google review; Retainers hold the monthly support plans. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -3036,6 +4645,646 @@
             ],
             "activeViewId": "bug-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sprints"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two-week sprints with goals, points and client demos."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "sprint",
+              "view": "all_sprint"
+            },
+            "inline": true,
+            "title": "Sprints",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sp-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "sp-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "ends_on"
+              },
+              {
+                "id": "sp-t",
+                "name": "All sprints",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "sp-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Change requests"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Work beyond the signed scope, priced and decided."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "change",
+              "view": "all_change"
+            },
+            "inline": true,
+            "title": "Change requests",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cr-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cr-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "decide_by"
+              },
+              {
+                "id": "cr-t",
+                "name": "All change requests",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cr-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "decide_by": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Estimated"
+                  ]
+                }
+              },
+              {
+                "id": "cr-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "decide_by": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Estimated"
+                  ]
+                }
+              },
+              {
+                "id": "cr-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "decide_by": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Estimated"
+                  ]
+                }
+              },
+              {
+                "id": "cr-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "cr-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Store releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every build through App Store and Google Play review."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Store releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rl-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rl-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "release_on"
+              },
+              {
+                "id": "rl-t",
+                "name": "All store releases",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "rl-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "release_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "In review",
+                    "Rejected",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rl-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "release_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "In review",
+                    "Rejected",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rl-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "release_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "In review",
+                    "Rejected",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "rl-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "rl-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retainers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Monthly support plans and hours used."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "retainer",
+              "view": "all_retainer"
+            },
+            "inline": true,
+            "title": "Retainers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rt-t",
+                "name": "All retainers",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "rt-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "app-development-agency-studio",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the studio in this workspace. Share it with account managers, project leads, designers and developers."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": who we work for, the follow-up date, contracted value and any monthly retainer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Projects",
+              "bold": true
+            },
+            {
+              "text": ": each app with platform, contract type, budget, day rate, launch date, approved changes and contract value now."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Milestones",
+              "bold": true
+            },
+            {
+              "text": ": design sign-off through client training, with owners and dates."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sprints",
+              "bold": true
+            },
+            {
+              "text": ": two-week blocks with a goal, points planned and done, and the client demo."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Change requests",
+              "bold": true
+            },
+            {
+              "text": ": work beyond scope, estimated, priced and decided."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Store releases",
+              "bold": true
+            },
+            {
+              "text": ": each build through App Store and Google Play review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bugs",
+              "bold": true
+            },
+            {
+              "text": ": found in testing or in production, by severity."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retainers",
+              "bold": true
+            },
+            {
+              "text": ": monthly support plans with hours used."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the dashboard. Milestones and releases due, changes waiting on clients, critical bugs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every other Friday: sprint demos and closing sprints."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: account managers review leads, proposals and retainer hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "End of month: retainer hours reset, change requests invoiced with milestones."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: critical bugs, releases in review, changes due a decision"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every sprint: goal set, demo booked, points closed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: retainers checked against hours used"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every project: kickoff checklist at the start, release checklist at the end"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Account managers own clients, proposals and retainers. Project leads own milestones, sprints and change requests. Developers own bugs and builds. The studio owner reads contract value, approved changes and retainer income."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers we use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Contract value now",
+              "bold": true
+            },
+            {
+              "text": " is the signed budget plus every approved change. "
+            },
+            {
+              "text": "Done (%)",
+              "bold": true
+            },
+            {
+              "text": " on a sprint is points done over points planned; under 80 percent two sprints running means re-plan. "
+            },
+            {
+              "text": "Hours left this month",
+              "bold": true
+            },
+            {
+              "text": " on a retainer going negative means a conversation with the client before the next invoice, not after."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename platforms, contract types and milestone kinds to fit how you work, set your own day rates, and delete the sample rows once your first real project is in."
+            }
+          ]
         }
       ]
     },
@@ -3446,6 +5695,135 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scope and releases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "change",
+              "view": "all_change"
+            },
+            "inline": true,
+            "title": "Changes waiting on clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "da-1",
+                "name": "Changes waiting on clients",
+                "layout": "list",
+                "icon": "Clock",
+                "anyOf": {
+                  "status": [
+                    "Requested",
+                    "Estimated"
+                  ]
+                }
+              },
+              {
+                "id": "da-2",
+                "name": "Approved change value by project",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "project",
+                  "op": "sum",
+                  "field": "price"
+                }
+              }
+            ],
+            "activeViewId": "da-1"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "release",
+              "view": "all_release"
+            },
+            "inline": true,
+            "title": "Store releases",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "da-3",
+                "name": "Releases in flight",
+                "layout": "list",
+                "icon": "Rocket",
+                "anyOf": {
+                  "status": [
+                    "Preparing",
+                    "In review",
+                    "Rejected",
+                    "Approved"
+                  ]
+                }
+              },
+              {
+                "id": "da-4",
+                "name": "Rejected builds",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Rejected"
+                }
+              }
+            ],
+            "activeViewId": "da-3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retainer hours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "retainer",
+              "view": "all_retainer"
+            },
+            "inline": true,
+            "title": "Retainer hours",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "da-5",
+                "name": "Active retainers",
+                "layout": "list",
+                "icon": "Repeat",
+                "filters": {
+                  "status": "Active"
+                }
+              }
+            ],
+            "activeViewId": "da-5"
+          }
         }
       ]
     },
@@ -3464,7 +5842,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A project goes wrong at the start far more often than at the end. Kickoff is where scope, people and risks get written down."
+              "text": "The first two weeks decide whether a project runs on time. This is the kickoff we run for every new app, from signed contract to the first sprint."
             }
           ],
           "background": "blue",
@@ -3476,7 +5854,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "With the client"
+              "text": "Before the kickoff meeting"
             }
           ],
           "props": {
@@ -3487,7 +5865,28 @@
           "type": "todo",
           "text": [
             {
-              "text": "Agree the goal in one sentence"
+              "text": "Contract signed, with "
+            },
+            {
+              "text": "Contract",
+              "bold": true
+            },
+            {
+              "text": " type, "
+            },
+            {
+              "text": "Budget",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Day rate",
+              "bold": true
+            },
+            {
+              "text": " filled in"
             }
           ],
           "props": {
@@ -3498,7 +5897,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "List the three must-have features"
+              "text": "Project created under the client with a lead and a target launch date"
             }
           ],
           "props": {
@@ -3509,7 +5908,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Name the client's single decision maker"
+              "text": "Client named one product owner who can say yes and no"
             }
           ],
           "props": {
@@ -3520,7 +5919,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Set the meeting rhythm and the change request process"
+              "text": "Developer accounts: the client owns their Apple Developer and Google Play accounts and adds us as team members"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Access to any system the app talks to: payments, bookings, a test account"
             }
           ],
           "props": {
@@ -3531,7 +5941,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Inside the agency"
+              "text": "The kickoff meeting (two hours)"
             }
           ],
           "props": {
@@ -3539,48 +5949,186 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Create the project row and add milestones"
+              "text": "The client tells us who uses the app and the one job it must do well."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "We walk through the signed scope screen by screen. Anything not on the list is written down as a possible "
+            },
+            {
+              "text": "Change request",
+              "bold": true
+            },
+            {
+              "text": ", not promised."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree the sprint rhythm: two-week "
+            },
+            {
+              "text": "Sprints",
+              "bold": true
+            },
+            {
+              "text": ", a demo at the end of each, and who from the client attends."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree how bugs are reported and how fast we answer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the milestones: design sign-off, prototype, feature complete, QA pass, store submission, client training."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Discovery sprint"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Book design, build and QA time"
+              "text": "Interview five real users if the client can arrange it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Map every screen and the path between them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "List the risky parts: a payment provider, an old booking system, offline use."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "End with a demo of the screen map and a revised estimate. If the estimate grows, say so now."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Design sprints"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Set up repositories, tracker and a test device list"
+              "text": "Design runs one sprint ahead of build. The client signs off each screen group before it is built; changes after sign-off are change requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First build sprint"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Agree what 'done' means for each milestone"
+              "text": "Set the "
+            },
+            {
+              "text": "Sprint goal",
+              "bold": true
+            },
+            {
+              "text": " in one sentence the client understands, the "
+            },
+            {
+              "text": "Points planned",
+              "bold": true
+            },
+            {
+              "text": ", and book the demo. Close the sprint with "
+            },
+            {
+              "text": "Close sprint",
+              "bold": true
+            },
+            {
+              "text": " and write "
+            },
+            {
+              "text": "Points done",
+              "bold": true
+            },
+            {
+              "text": ". Two sprints in a row under 80 percent done means the plan is wrong, not the team."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sunrise Language Academy signed a time-and-materials contract for a lesson booking app. In discovery, interviews showed teachers mostly use phones between classes, so the plan put the teacher schedule first. A waitlist for full lessons came up and was logged as a change request rather than squeezed in."
+            }
+          ]
         }
       ]
     },
@@ -3599,7 +6147,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Shipping is a ritual: the same steps every time, so no one has to remember them under pressure."
+              "text": "Shipping to the App Store and Google Play is its own small project. Apple's review usually takes a day or two and can reject a build for reasons that have nothing to do with code. Plan for it."
             }
           ],
           "background": "blue",
@@ -3611,7 +6159,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A week before"
+              "text": "Two weeks before release"
             }
           ],
           "props": {
@@ -3622,7 +6170,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Open the project's Release check and clear every critical bug"
+              "text": "Store listing written: name, subtitle, description, keywords, support link, privacy policy link"
             }
           ],
           "props": {
@@ -3633,7 +6181,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Freeze features; only fixes from now on"
+              "text": "Screenshots for every required phone and tablet size"
             }
           ],
           "props": {
@@ -3644,7 +6192,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Run the regression pass on real devices"
+              "text": "Privacy answers for both stores match what the app really collects"
             }
           ],
           "props": {
@@ -3655,12 +6203,150 @@
           "type": "todo",
           "text": [
             {
-              "text": "Prepare release notes and store text"
+              "text": "Test accounts for reviewers, with a note on how to reach every feature"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Version number set, and a "
+            },
+            {
+              "text": "Store release",
+              "bold": true
+            },
+            {
+              "text": " row for each store with "
+            },
+            {
+              "text": "Submit for review on",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Release on",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before submitting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No open critical bugs on the project ("
+            },
+            {
+              "text": "Release check",
+              "bold": true
+            },
+            {
+              "text": " must say Ready to ship)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The client has tested the release build on their own phones and said yes in writing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Crash reporting and analytics are switched on for the release build."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sign-in works for a new user, a returning user and someone who deleted the app."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Submitting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the release to "
+            },
+            {
+              "text": "In review",
+              "bold": true
+            },
+            {
+              "text": ". Watch the review status daily. Release manually rather than automatically, so the client can announce it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a build is rejected"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set it to "
+            },
+            {
+              "text": "Rejected",
+              "bold": true
+            },
+            {
+              "text": " and copy the reviewer's words into "
+            },
+            {
+              "text": "Rejection reason",
+              "bold": true
+            },
+            {
+              "text": ". Most rejections are about sign-in options, payments for digital goods, missing privacy details or a demo account that does not work. Fix, reply in the review thread, and resubmit the same day if you can."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3674,48 +6360,81 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Upload the build and submit for review"
+              "text": "Release in the store, check the listing live, install from the store on a clean phone."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark live",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Watch crash reports for 48 hours. A crash rate above one percent of sessions means a fix release."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell the client what to expect in reviews and how to answer them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After release"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Watch crash reports for the first 24 hours"
+              "text": "Phased release on the App Store lets you pause if something breaks. Google Play staged rollouts work the same way; start at 20 percent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Tell the client the moment the store approves"
+              "text": "Loyalty cards 1.1 was rejected because it offered social sign-in without Sign in with Apple. The team added it in a day, resubmitted with a note to the reviewer, and the build was approved the next afternoon. The rejection reason went into the kickoff checklist for the next project."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Press Mark launched"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3734,7 +6453,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Changes are normal. Unwritten changes are what turn a good project into an argument."
+              "text": "Every agency loses money in the gap between what was signed and what the client remembers asking for. Change requests close that gap politely and in writing."
             }
           ],
           "background": "blue",
@@ -3746,50 +6465,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Process"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write the request as a short story: who wants what and why."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Estimate the effort in hours and the effect on the date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the client the estimate and wait for a written yes."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add the work as a milestone so progress stays honest."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Say yes with a price"
+              "text": "What counts as a change"
             }
           ],
           "props": {
@@ -3800,7 +6476,249 @@
           "type": "text",
           "text": [
             {
-              "text": "A good answer is rarely no. It is yes, here is what it costs and what moves."
+              "text": "Anything not in the signed scope: a new screen, a new integration, a second language, a different way of doing something already signed off. Bug fixes are not changes. Polish inside an agreed screen usually is not either; use judgment and be generous with small things."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How a change is handled"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The request is logged as a "
+            },
+            {
+              "text": "Change request",
+              "bold": true
+            },
+            {
+              "text": " the day it is made, with who asked and their words. Nothing is promised in the meeting."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The project lead sizes it in days within two working days and sets "
+            },
+            {
+              "text": "Estimate (days)",
+              "bold": true
+            },
+            {
+              "text": ". Status becomes "
+            },
+            {
+              "text": "Estimated",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price it at the project's "
+            },
+            {
+              "text": "Day rate",
+              "bold": true
+            },
+            {
+              "text": " and write the "
+            },
+            {
+              "text": "Effect on the plan",
+              "bold": true
+            },
+            {
+              "text": ": does the launch move, does another feature drop, or does it fit?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send it to the client's product owner with a "
+            },
+            {
+              "text": "Client decides by",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When they say yes in writing, press "
+            },
+            {
+              "text": "Client approved",
+              "bold": true
+            },
+            {
+              "text": ". It goes into the next sprint plan, not the current one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If they say no, mark it "
+            },
+            {
+              "text": "Declined",
+              "bold": true
+            },
+            {
+              "text": ". That is a fine outcome."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fixed-price projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On fixed price, every approved change adds to the contract. "
+            },
+            {
+              "text": "Contract value now",
+              "bold": true
+            },
+            {
+              "text": " shows the signed budget plus approved changes. Invoice changes with the next milestone payment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Time-and-materials projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The change still gets logged and estimated, so the client sees what they are buying and the launch date stays honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Swaps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sometimes the client would rather swap: drop something not yet built and add the new thing at equal size. Log the swap as a change at zero price and note what was dropped."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No request older than two days without an estimate"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Changes waiting on the client chased by their decide-by date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Approved changes in the next sprint plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Greenfield Clinic Group asked for a Spanish version two weeks before launch. The lead estimated nine days, priced it at the project's day rate and showed it would move launch by two weeks. The clinic chose to launch in English on time and approve Spanish for the first update."
             }
           ]
         }
