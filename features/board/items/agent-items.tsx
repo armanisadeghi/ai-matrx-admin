@@ -24,6 +24,7 @@ import { AgentRecord } from "@/features/agents/route/AgentRecord";
 import { useAgentName } from "@ai-matrx/chat/agents/identity/agent-identity";
 import { entityComments, type BoardItemType, type ItemBodyProps, type PickerProps } from "./types";
 import { titleToAdopt } from "./feature-items.logic";
+import { AgentStructure } from "./structures";
 import { nameMatches } from "./record-finders";
 import { AGENT_ITEM_KEY, agentIdOf, agentRecordHref, agentSource } from "./agent-items.logic";
 
@@ -78,6 +79,7 @@ export const AGENT_ITEMS: readonly BoardItemType[] = [
     group: "features",
     section: "ai",
     accent: "violet",
+    structure: AgentStructure,
     status: { none: "An agent record has no running state; a run is a chat or an agent form." },
     // Stat strip, then the system instruction and message cards: tall.
     defaultSize: { w: 900, h: 1000 },
