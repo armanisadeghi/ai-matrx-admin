@@ -26,7 +26,7 @@ jest.mock("@/features/organizations/useOrganizationGatedControl", () => ({
     press: (callback: () => void) => callback,
   }),
 }));
-const mockIsCancelled = jest.fn(() => false);
+const mockIsCancelled = jest.fn((_cause: unknown) => false);
 jest.mock("@/providers/google-provider/GoogleApiProvider", () => ({
   isGoogleAuthorizationCancelled: (cause: unknown) => mockIsCancelled(cause),
   useGoogleAPI: () => ({ isGoogleLoaded: true }),

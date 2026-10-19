@@ -1,7 +1,7 @@
 /** @jest-environment node */
 // Every client (serverApi, python-client, callApi) reports failures through captureApiError, so a
 // 401 auth_required reaching it must start the one session-lost answer — not each feature.
-const note = jest.fn(async () => "ignored");
+const note = jest.fn(async (..._args: unknown[]) => "ignored");
 jest.mock("@/lib/api/session-lost", () => ({ noteServerSessionRefusal: (...a: unknown[]) => note(...a) }));
 
 import { captureApiError } from "../captureApiError";

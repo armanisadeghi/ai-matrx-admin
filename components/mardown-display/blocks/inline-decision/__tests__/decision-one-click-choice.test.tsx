@@ -116,7 +116,7 @@ test("no native radios: two decisions on one page never share a group", () => {
 });
 
 test("a choice the host cannot place brings the block back for a retry", () => {
-  const onResolve = jest.fn(() => {
+  const onResolve = jest.fn((): void => {
     throw new Error("host could not replace the block");
   });
   render(onResolve);

@@ -101,7 +101,7 @@ export const NO_ROOM_CSS = Array.from(
  * markup is untouched, so React's hydration matches the server; `clearNoRoomMarks` removes the
  * mark once React has applied the real hidden set.
  */
-export function noRoomScript(specs: readonly EntityColumnSpec<never>[], reserve: number = ROW_ACTIONS_WIDTH): string {
+export function noRoomScript<TRow>(specs: readonly EntityColumnSpec<TRow>[], reserve: number = ROW_ACTIONS_WIDTH): string {
   const info: Record<string, RoomItem> = {};
   for (const spec of specs)
     info[spec.id] = {
