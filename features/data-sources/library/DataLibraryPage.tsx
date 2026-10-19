@@ -17,7 +17,7 @@
 import { createElement, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { pushAddressWithoutNavigating, replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
-import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ChevronRight, Database, SearchX, ShieldCheck, Wrench } from "lucide-react";
 import { useOwnToolSearch } from "@ai-matrx/chat/agents/identity/tool-search";
 import type { CatalogToolHit } from "@ai-matrx/agents/tools";
 import { Badge, Button, Chip, ChipSet, DisclosureHeader, EmptyState, RegionSkeleton, SearchField, Tile } from "@ai-matrx/design-system/controls";
@@ -51,10 +51,10 @@ import { ToolsHome } from "./tools/ToolsHome";
 type View = { kind: "home" } | { kind: "browse" } | { kind: "task"; id: string };
 
 /**
- * The page is the Tools home (R-12: the data library grew into it, there is no second home). It opens
- * on the Tools search; a Tool opens in place (`?tool=<id>`, a running call `&call=<id>`); the data
- * sources stay one press away (`?view=data`, and every `?source=` link). A server with no Tool
- * catalog yet shows the data library exactly as it was — never an empty Tools page.
+ * The page opens on the data library's task home, exactly as it always has ("nothing should have
+ * ever changed for active things"). The Tools home is its own door: `?view=tools` (the Tools nav
+ * entry). A Tool opens in place (`?tool=<id>`, a running call `&call=<id>`); every `?source=` link
+ * still opens its source. A server with no Tool catalog yet falls back to the data library.
  */
 export function DataLibraryPage() {
   const router = useRouter();
@@ -62,13 +62,15 @@ export function DataLibraryPage() {
   const params = useSearchParams();
   const toolId = params.get("tool");
   const callId = params.get("call");
-  const dataMode = params.get("view") === "data" || params.get("source") !== null;
+  // The Tools home is entered only on purpose; the data library is the landing.
+  const dataMode = params.get("view") !== "tools" || params.get("source") !== null;
 
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState<string | null>(null);
   const [opened, setOpened] = useState<CatalogToolHit | null>(null);
   const [giving, setGiving] = useState<CatalogToolHit | null>(null);
   const search = useOwnToolSearch(query, family, !toolId && !dataMode);
+  const toolsRequested = params.get("view") === "tools";
   const toolsOpen = search.status !== "unavailable";
 
   const go = (next: Record<string, string | null>) => {
@@ -84,7 +86,7 @@ export function DataLibraryPage() {
 
   return (
     <>
-      <RecordPageHeader backHref="/data" record={{ name: toolsOpen ? "Tools" : "Data library" }} />
+      <RecordPageHeader backHref="/data" record={{ name: toolId || (toolsRequested && toolsOpen) ? "Tools" : "Data library" }} />
       <div className="h-full overflow-hidden pt-[var(--shell-header-h)]">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll="" data-data-library="">
           {toolId ? (
@@ -102,17 +104,23 @@ export function DataLibraryPage() {
               }}
               onGive={setGiving}
               onLookup={(plan) => go({ tool: plan.jobKey, with: JSON.stringify(plan.inputs), run: "1", call: null })}
-              dataSection={<DataSourcesDoor query={query} onOpen={() => go({ view: "data" })} />}
+              dataSection={<DataSourcesDoor query={query} onOpen={() => go({ view: null })} />}
             />
           ) : (
             <>
-              {toolsOpen ? (
+              {toolsRequested && toolsOpen ? (
                 <div className="mx-auto max-w-6xl px-4 pt-4">
-                  <Button variant="quiet" onClick={() => go({ view: null, source: null, field: null, value: null })} icon={<ArrowLeft className="h-4 w-4" />}>
+                  <Button variant="quiet" onClick={() => go({ view: "tools", source: null, field: null, value: null })} icon={<ArrowLeft className="h-4 w-4" />}>
                     All Tools
                   </Button>
                 </div>
-              ) : null}
+              ) : (
+                <div className="mx-auto flex max-w-6xl justify-end px-4 pt-4">
+                  <Button variant="outline" onClick={() => go({ view: "tools", source: null, field: null, value: null })} icon={<Wrench className="h-4 w-4" />} data-tools-link="">
+                    Tools
+                  </Button>
+                </div>
+              )}
               <DataSourcesBody />
             </>
           )}

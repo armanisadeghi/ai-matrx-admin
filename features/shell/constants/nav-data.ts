@@ -628,11 +628,21 @@ export const DATA_NAV_CHILDREN: ShellNavChild[] = [
     color: "cyan",
   },
   {
-    id: "data.tools",
-    // The Tools home (R-12: the data library grew into it): search thousands of Tools, try one, give it to an agent.
-    // Until the server has a Tool catalog the page is the data library as it was.
-    label: "Tools",
+    id: "data.library",
+    // The data library's task home, as it has always been ("what do you need done", browse).
+    label: "Data Library",
     href: "/data/library",
+    iconName: "Library",
+    description: "Reviews, places, products, jobs and more, ready to fetch",
+    color: "cyan",
+    dashboard: true,
+    guestHidden: true,
+  },
+  {
+    id: "data.tools",
+    // The Tools home: search thousands of Tools, try one, give it to an agent. Its own door.
+    label: "Tools",
+    href: "/data/library?view=tools",
     iconName: "Library",
     description: "Find, try and give Tools to your agents",
     color: "cyan",
