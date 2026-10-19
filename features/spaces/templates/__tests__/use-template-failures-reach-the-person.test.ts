@@ -76,7 +76,7 @@ function world(opts: { failOn?: string; createMs?: number } = {}) {
   };
 }
 
-const installCalls = () => rpc.mock.calls.filter(([fn]) => fn === "template_install_fresh");
+const installCalls = () => rpc.mock.calls.filter(([fn]) => fn === "template_install_fresh" || fn === "template_install");
 
 function use(w: ReturnType<typeof world>, extra: Partial<Parameters<typeof runUseTemplate>[0]> = {}) {
   const stages: Array<string | null> = [];
@@ -99,7 +99,7 @@ beforeEach(() => {
 
 describe("Use template failures reach the person, and Try again resumes", () => {
   it("a refused install (55P03) ends at once with the store's sentence — asked ONCE, never in a loop", async () => {
-    rpc.mockImplementation(async (fn: string) => (fn === "template_install_fresh" ? { data: REFUSED, error: null } : { data: [], error: null }));
+    rpc.mockImplementation(async (fn: string) => (fn === "template_install" ? { data: REFUSED, error: null } : { data: [], error: null }));
     const w = world();
     const t0 = Date.now();
     await expect(makeTemplatePages(w.store, w.createRoot, template, installTemplateTables(template, "org-1", jest.fn() as never), undefined, w.journal)).rejects.toThrow(

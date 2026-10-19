@@ -479,6 +479,9 @@ export async function makeTemplatePages(
   }
 }
 
+/** How long a failed run waits for a page create already on the wire before it answers. */
+const TREE_SETTLE_MS = 5_000;
+
 /** Makes every sub-page not already in `ids` under its parent: parents in parallel, each parent's children in order. */
 async function makePageTree(
   store: SpacesStore,
@@ -531,12 +534,17 @@ async function fillTemplatePages(
   const onExternal = () => stop.abort(external?.reason);
   if (external?.aborted) onExternal();
   external?.addEventListener("abort", onExternal, { once: true });
+  let treeSettled: Promise<void> = Promise.resolve();
   try {
     const tablesP = tablesReady.catch((err: unknown) => {
       stop.abort(err);
       throw err;
     });
     const tree = timed("page-tree", () => makePageTree(store, ordered, run.ids, () => (remember(), step()), stop.signal));
+    treeSettled = tree.then(
+      () => undefined,
+      () => undefined,
+    );
     // Both are always settled by someone: a page failure never leaves the install's rejection unhandled.
     tablesP.catch(() => undefined);
     tree.catch(() => undefined);
@@ -570,6 +578,12 @@ async function fillTemplatePages(
       for (let i = 0; i < kids.length; i += 6) await untilStopped(Promise.all(kids.slice(i, i + 6).map(write)), stop.signal);
       return madeRoot;
     });
+  } catch (err) {
+    // A page create already on the wire lands before the set goes to Trash and the journal is final, or a
+    // Try again would make that page a second time. Bounded: a create that never answers does not hold the run.
+    stop.abort(err);
+    await Promise.race([treeSettled, new Promise((r) => setTimeout(r, TREE_SETTLE_MS))]);
+    throw err;
   } finally {
     external?.removeEventListener("abort", onExternal);
   }
