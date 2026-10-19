@@ -25,6 +25,9 @@ export function BoardSketch({ doc }: { doc: BoardDocument }) {
   const maxX = Math.max(...boxes.map((r) => r.x + r.w)) + pad;
   const maxY = Math.max(...boxes.map((r) => r.y + r.h)) + pad;
   const byId = new Map(doc.nodes.map((n) => [n.id, n.rect]));
+  // A board laid out as one long column of chapters (the design-system starters: 10 chapters, 1180 × 8100) drawn as
+  // one picture is a sliver of unreadable frames (ADVERSARIAL-4 N8). Past TALL, each chapter is a card with its tiles.
+  if ((maxY - minY) / (maxX - minX) > TALL && doc.groups.length > 1) return <ChapterCards doc={doc} />;
   return (
     <svg
       viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
@@ -58,5 +61,37 @@ export function BoardSketch({ doc }: { doc: BoardDocument }) {
         </g>
       ))}
     </svg>
+  );
+}
+
+/** Height ÷ width past which the layout picture stops being readable at page width. */
+const TALL = 2.5;
+
+const inside = (r: { x: number; y: number; w: number; h: number }, g: { x: number; y: number; w: number; h: number }) =>
+  r.x + r.w / 2 >= g.x && r.x + r.w / 2 <= g.x + g.w && r.y + r.h / 2 >= g.y && r.y + r.h / 2 <= g.y + g.h;
+
+/** The board's chapters in reading order, each a card naming its tiles. */
+function ChapterCards({ doc }: { doc: BoardDocument }) {
+  const groups = [...doc.groups].sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x);
+  return (
+    <ol className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,13rem),1fr))] gap-3" aria-label={`Layout: ${groups.length} chapters`} data-board-sketch-chapters="">
+      {groups.map((g, i) => {
+        const tiles = doc.nodes.filter((n) => inside(n.rect, g.rect)).sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x);
+        return (
+          <li key={g.id} className="flex min-w-0 flex-col gap-2 rounded-lg border border-dashed border-border p-3">
+            <span className="flex items-baseline gap-2">
+              <span className="type-meta tabular-nums text-muted-foreground">{i + 1}</span>
+              <span className="truncate type-body font-medium text-foreground">{g.title}</span>
+            </span>
+            {tiles.map((n) => (
+              <span key={n.id} className="flex min-w-0 flex-col rounded-md border border-border bg-card px-2 py-1.5">
+                <span className="truncate type-body text-foreground">{n.title}</span>
+                <span className="truncate type-meta text-muted-foreground">{kindLabel(n.source)}</span>
+              </span>
+            ))}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
