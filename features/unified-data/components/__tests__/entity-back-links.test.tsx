@@ -52,6 +52,7 @@ import { EntityBackLinks } from "../EntityBackLinks";
 
 const state = (over: Record<string, unknown> = {}) => ({
   unlinkable: false,
+  unlinkableReason: null,
   items: [],
   target: null,
   loading: false,
@@ -152,10 +153,11 @@ it("a kind the platform has not registered as linkable shows people nothing", as
 
 it("a super admin sees a badge into the entity registry for an unlinkable kind", async () => {
   superAdmin = true;
-  hook.mockReturnValue(state({ unlinkable: true }));
+  hook.mockReturnValue(state({ unlinkable: true, unlinkableReason: "its rows carry no record id" }));
   await mount();
   const section = host.querySelector('[data-section="back-links"]');
   expect(section?.getAttribute("data-state")).toBe("unlinkable");
+  expect(section?.querySelector("a")?.getAttribute("title")).toBe("its rows carry no record id");
   expect(section?.querySelector("a")?.getAttribute("href")).toBe("/administration/database/relationships/rules");
   superAdmin = false;
 });

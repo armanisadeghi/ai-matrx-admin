@@ -5,7 +5,11 @@ Every save is rolled back. Per token the outcome is one of:
   READ_ONLY  the ladder says this reader may not edit this row: the door answers may_edit=false AND refuses in words
              ("takes edit access") - the section shows the values read-only with "Needs Edit access"
   NO_ROW / NO_COLS / NOT_READABLE  nothing to probe for this reader
-  REFUSED    anything else (printed with the store's words)"""
+  REFUSED    the write refused although may_edit said true (a DISAGREEMENT: the control is enabled, then refuses)
+  OTHER      anything else (printed with the store's words)
+  CF-WRITE-3 rule: for every token may_edit must AGREE with the write outcome: SAVED needs may_edit=true, and a refusal
+  needs may_edit=false. Any SAVED with may_edit=false or REFUSED with may_edit=true is listed under DISAGREE and the
+  script exits 1."""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from collections import Counter
@@ -49,13 +53,13 @@ for tok, sch, tab in toks:
         c.execute("savepoint w")
         try:
             c.execute("select custom.entity_row_write(%s,%s,%s,'{}'::jsonb,%s::jsonb)", (row[1], tok, row[0], '{"zz_probe":"x"}'))
-            res[tok] = ('SAVED', f'may_edit={may}')
+            res[tok] = ('SAVED' if may is not False else 'DISAGREE', f'may_edit={may}, the write saved')
         except Exception as e:
             msg = str(e).splitlines()[0]
-            if may is False and ('edit access' in msg or 'not yours to change' in msg):
-                res[tok] = ('READ_ONLY', msg[:140])
+            if may is False:
+                res[tok] = ('READ_ONLY' if ('edit access' in msg or 'not yours to change' in msg) else 'READ_ONLY_OTHER', msg[:140])
             else:
-                res[tok] = ('REFUSED', f'may_edit={may}: {msg[:140]}')
+                res[tok] = ('DISAGREE', f'may_edit={may} but the write refused: {msg[:140]}')
     except Exception as e:
         res[tok] = ('ERR', str(e).splitlines()[0][:140])
     finally:
@@ -68,3 +72,4 @@ print(Counter(v[0] for v in res.values()))
 for k, v in res.items():
     if v[0] not in ('SAVED', 'NO_ROW', 'NO_COLS'):
         print(k, v)
+sys.exit(1 if any(v[0] == 'DISAGREE' for v in res.values()) else 0)
