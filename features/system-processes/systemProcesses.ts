@@ -50,10 +50,11 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
   const execs = await readAllRows(({ from, to }) =>
     runtime
       .from("global_execution")
-      .select("id")
+      .select("id", { count: "exact" })
       .eq("type", "system_process_queue")
       .order("id", { ascending: true })
       .range(from, to),
+    { label: "runtime.global_execution (system_process_queue)" },
   );
   const ids = execs.map((e) => e.id);
 
@@ -63,12 +64,14 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
           .from("work_item")
           .select(
             "id, canonical_key, state, attempts, max_attempts, not_before, error, payload, created_at, updated_at",
+            { count: "exact" },
           )
           .in("execution_id", ids)
           .is("deleted_at", null)
           .order("updated_at", { ascending: false })
           .order("id", { ascending: true })
           .range(from, to),
+        { label: "runtime.work_item (system processes)" },
       )
     : [];
 
@@ -93,10 +96,11 @@ export async function fetchQueue(): Promise<QueueSnapshot> {
     supabase
       .schema("platform")
       .from("feature_knob")
-      .select("key, label, value")
+      .select("key, label, value", { count: "exact" })
       .eq("feature", "system_processes")
       .order("key", { ascending: true })
       .range(from, to),
+    { label: "platform.feature_knob (system_processes)" },
   );
   const knobs: KnobValue[] = knobRows.map((k) => ({
     key: k.key,
