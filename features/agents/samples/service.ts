@@ -301,21 +301,70 @@ export async function renameAgentSample(
  * insert the borrow button makes, minus the run it came from. Values are kept
  * verbatim — empty variables are dropped, text is never trimmed or merged.
  */
-export async function createAgentSample(input: {
+export interface AgentSampleInput {
   agentId: string;
   label: string;
   variables: Record<string, string>;
   userInput: string;
   referenceOutput: string;
   head: AgentContractHead | null;
-}): Promise<AgentSampleRow> {
+  /**
+   * Extra message parts saved after the text — e.g. an image the builder saves
+   * on paste: `{type:"media", kind:"image", file_id, mime_type}`. Stored file
+   * ids only; stored verbatim as `metadata.input_content`.
+   */
+  attachments?: readonly MessagePart[];
+  /**
+   * The agent's declared variable names. When given, variables are mapped by
+   * name and any other name is returned as `unmappedVariables` (never stored,
+   * never silently dropped). Defaults to `head.variableDeclarations` when that
+   * is non-empty.
+   */
+  declaredVariableNames?: readonly string[];
+}
+
+export interface CreatedAgentSample {
+  sample: AgentSampleRow;
+  /** Names sent that the agent does not declare. Not stored. */
+  unmappedVariables: string[];
+}
+
+export function splitSampleVariables(
+  variables: Record<string, string>,
+  declared: readonly string[] | null,
+): { mapped: JsonObject; unmapped: string[] } {
+  const mapped: JsonObject = {};
+  const unmapped: string[] = [];
+  for (const [name, value] of Object.entries(variables)) {
+    if (declared && !declared.includes(name)) {
+      unmapped.push(name);
+      continue;
+    }
+    if (value !== "") mapped[name] = value;
+  }
+  return { mapped, unmapped };
+}
+
+export async function createAgentSample(input: AgentSampleInput): Promise<AgentSampleRow> {
+  return (await createAgentSampleDetailed(input)).sample;
+}
+
+export async function createAgentSampleDetailed(
+  input: AgentSampleInput,
+): Promise<CreatedAgentSample> {
   const label = input.label.trim();
   if (!label) throw new Error("Give the test case a name.");
-  const variables: JsonObject = {};
-  for (const [name, value] of Object.entries(input.variables)) {
-    if (value !== "") variables[name] = value;
-  }
+  const declared =
+    input.declaredVariableNames ??
+    (input.head && input.head.variableDeclarations.length > 0
+      ? input.head.variableDeclarations.map((d) => d.name)
+      : null);
+  const { mapped: variables, unmapped } = splitSampleVariables(input.variables, declared);
   const userInput = input.userInput === "" ? null : input.userInput;
+  const inputContent: MessagePart[] = [
+    ...(userInput ? [{ type: "text", text: userInput } as MessagePart] : []),
+    ...(input.attachments ?? []),
+  ];
   const supabase = createClient();
   // org-filter: write-target writes into the organization the person is working in; no list reads it
   const organizationId = await ensureOrgId(null);
@@ -335,16 +384,12 @@ export async function createAgentSample(input: {
       output_contract_hash: input.head?.outputContractHash ?? null,
       visibility: "personal",
       organization_id: organizationId,
-      metadata: {
-        [SAMPLE_INPUT_CONTENT_KEY]: userInput
-          ? [{ type: "text", text: userInput }]
-          : [],
-      },
+      metadata: { [SAMPLE_INPUT_CONTENT_KEY]: inputContent as unknown as JsonObject[] },
     })
     .select("*")
     .single();
   if (error) throw error;
-  return data;
+  return { sample: data, unmappedVariables: unmapped };
 }
 
 // ── Borrow from real runs ────────────────────────────────────────────────────
