@@ -104,9 +104,11 @@ export function GenericStructure() {
 /** L3: only a couple of words fit — the type icon and the title, crisp, on the card's own surface. */
 export function LabelFace({ title, icon: Icon, accent, selected = false }: { title: string; icon?: LucideIcon; accent: BoardAccent; selected?: boolean }) {
   return (
-    <div data-board-label className="board-label absolute inset-0 flex items-center overflow-hidden" data-selected={selected || undefined} style={accentStyle(accent)} title={title}>
-      {Icon && <Icon aria-hidden className="board-label-icon shrink-0" />}
-      <span className="board-label-text min-w-0 truncate font-semibold text-foreground">{title}</span>
+    <div data-board-label className="board-label absolute inset-0 overflow-hidden" data-selected={selected || undefined} style={accentStyle(accent)} title={title}>
+      <div className="board-label-row">
+        {Icon && <Icon aria-hidden className="board-label-icon shrink-0" />}
+        <span className="board-label-text min-w-0 truncate font-semibold text-foreground">{title}</span>
+      </div>
     </div>
   );
 }

@@ -123,6 +123,17 @@
     inset 0 0 0 max(2px, calc(2.5px / var(--board-z, 1))) hsl(var(--primary));
 }
 
+/* A short card keeps its words (title, facts, status) and drops the picture rather than clip it. */
+/* em of the container = one fact line in SCREEN px (container queries read the container's own em). */
+.board-face {
+  font-size: calc(11.5px / var(--board-z, 1));
+}
+@container (max-height: 13em) {
+  .board-face-media {
+    display: none;
+  }
+}
+
 /* A short, wide tile (a one-line strip): the title alone, as large as the strip allows. */
 @container (aspect-ratio > 3) {
   .board-face-kind,

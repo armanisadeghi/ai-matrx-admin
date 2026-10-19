@@ -196,6 +196,18 @@ describe("the far-zoom card's facts come from saved basics", () => {
   });
 });
 
+describe("file basics read as a person would say them", () => {
+  it("size in KB/MB, the date without its clock, the mime type left out", () => {
+    const lines = cardLinesFromBasics({
+      file_name: "nist.pdf",
+      file_mime_type: "application/pdf",
+      file_size_bytes: 1040566,
+      file_updated_at: "2026-10-10 06:15:59.262929+00:00",
+    });
+    expect(lines.map((l) => `${l.label} ${l.value}`)).toEqual(["Size 1016 KB", expect.stringMatching(/^Updated Oct (9|10)/)]);
+  });
+});
+
 describe("words on the canvas turn into bars below legibility", () => {
   const css = readFileSync(join(__dirname, "../components/lod/board-lod.css"), "utf8");
 

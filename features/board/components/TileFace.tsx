@@ -135,7 +135,7 @@ export function OverviewCard({
         <p className="board-face-title line-clamp-2 break-words font-semibold leading-[1.18] tracking-[-0.01em] text-foreground">
           {title}
         </p>
-        {lines && lines.length > 0 && !media ? (
+        {lines && lines.length > 0 ? (
           <div data-board-face-lines className="board-face-lines min-h-0 flex-1">
             {lines.map((line, i) => (
               <p key={i} className="board-face-line truncate">

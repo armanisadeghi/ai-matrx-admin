@@ -16,7 +16,7 @@ export interface CardLine {
 
 /** Keys that never make a card line: ids, links, the name (the title shows it), the status (the chip shows it). */
 const SKIP_KEY = /(^|_)(id|ids|uuid|url|urls|href|link|slug|status|state|title|name|kind|type|organization|org|owner|user)$/;
-const PREFIX = /^(active|current|selected|focused|open)_/;
+const PREFIX = /^(active|current|selected|focused|open|brief)_/;
 /** A first word that only repeats what the card already says (its type). */
 const ENTITY_WORD = new Set([
   "task", "note", "meeting", "run", "chat", "conversation", "table", "record", "file", "doc", "document",
@@ -30,6 +30,8 @@ const LINE_CHARS = 120;
 export function humanizeKey(key: string): string {
   let parts = key.replace(PREFIX, "").split(/[_\s]+/).filter(Boolean);
   if (parts.length > 1 && ENTITY_WORD.has(parts[0].toLowerCase())) parts = parts.slice(1);
+  // "updated_at" → "Updated"; "size_bytes" → "Size" (the value carries its unit).
+  if (parts.length > 1 && /^(at|bytes)$/i.test(parts[parts.length - 1])) parts = parts.slice(0, -1);
   const words = parts.join(" ").toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
@@ -39,6 +41,18 @@ function shortDate(iso: string): string | null {
   if (Number.isNaN(d.getTime())) return null;
   const sameYear = d.getFullYear() === new Date().getFullYear();
   return d.toLocaleDateString(undefined, sameYear ? { month: "short", day: "numeric" } : { month: "short", day: "numeric", year: "numeric" });
+}
+
+function bytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let v = n / 1024;
+  let i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i += 1;
+  }
+  return `${v < 10 ? v.toFixed(1) : Math.round(v)} ${units[i]}`;
 }
 
 /** The first readable line of prose: headings, markdown marks and blank lines dropped (a heading usually repeats the title). */
@@ -77,7 +91,7 @@ export function cardLinesFromBasics(values: ItemBasicValues | null | undefined, 
       }
       facts.push({ label, value: v });
     } else if (typeof raw === "number" && Number.isFinite(raw)) {
-      facts.push({ label, value: raw.toLocaleString() });
+      facts.push({ label, value: /_bytes$/i.test(key) ? bytes(raw) : raw.toLocaleString() });
     } else if (Array.isArray(raw) && raw.length > 0) {
       facts.push({ label, value: raw.length.toLocaleString() });
     }

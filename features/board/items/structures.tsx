@@ -699,6 +699,32 @@ export const VideoCloneStructure: S = () => (
   </Pad>
 );
 
+/** A person or company: avatar and name, contact rows, recent activity. */
+export const PartyStructure: S = () => (
+  <Pad>
+    <Row gap={12}>
+      <Dot size={44} />
+      <Stack gap={7} className="flex-1">
+        <Bar w="46%" h={10} strong />
+        <Bar w="30%" h={6} />
+      </Stack>
+    </Row>
+    {[0, 1, 2].map((i) => (
+      <Row key={i} gap={10}>
+        <Glyph icon={[AtSign, Globe, CalendarDays][i]} size={13} />
+        <Bar w={["44%", "36%", "28%"][i]} h={7} />
+      </Row>
+    ))}
+    <Rule />
+    {[0, 1, 2].map((i) => (
+      <Row key={i} gap={10} className="items-start">
+        <div className="shrink-0 rounded-full" style={{ width: u(8), height: u(8), marginTop: u(3), background: accentFill(0.6) }} />
+        <Lines widths={i === 1 ? ["80%"] : ["92%", "54%"]} gap={6} h={6} />
+      </Row>
+    ))}
+  </Pad>
+);
+
 // ── canvas ────────────────────────────────────────────────────────────────────
 
 /** The retired Label tile: its one line, centered. */
