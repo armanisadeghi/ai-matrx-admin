@@ -77,7 +77,7 @@ READ A ZERO CORRECTLY. A pass that placed nothing is usually one of three things
 
 Knobs are the ceiling and the console refuses to guess one: cap_ceiling of zero means the knob row is MISSING and the console will not run at all.
 
-Everything here is evidence and this surface has no write targets. Reason about the run, compare brands, explain an outcome, draft what should change — but Run now, the cap and the schedule are a person's call, because each of them spends money or changes what the platform publishes.
+Everything here is evidence and this surface has no write targets. Reason about the run, compare brands, explain an outcome, draft what should change — but Run now, the cap and the schedule are a person's call, because each of them needs the person's approval or changes what the platform publishes.
 </surface_intro>`,
   groups: RUN_CONSOLE_GROUPS,
   values: mergeBaselineValues(

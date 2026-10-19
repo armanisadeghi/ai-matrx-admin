@@ -551,7 +551,7 @@ keywords and the filename slug for ONE image, addressed by its name from
 source_files (call it once per image). Those same six fields are reported back
 on every source_files entry, so read them first and extend rather than
 clobber. Writing that text yourself is the point — do NOT ask the user to
-press Describe with AI, which spends a model call and uploads a preview.
+press Describe with AI, which runs a model call and uploads a preview.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(

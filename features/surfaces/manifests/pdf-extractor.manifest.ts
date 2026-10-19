@@ -577,7 +577,7 @@ user composes before running an agent chunk-by-chunk over this document.
 \`extraction_template_draft\` stages its name, page range, chunk size and
 overlap; \`extraction_output_columns\` stages the Results table definition. Both
 only STAGE into the editor — the human still presses Update/Save, and then Run,
-which is the button that actually spends model budget over the whole document.
+which is the button that actually runs the extraction over the whole document.
 Read \`extraction_template_editor\` FIRST: both targets are refused unless
 \`editing\` is true (the user clicked New or Edit) and refused while
 \`run_in_flight\` is true. Read \`extraction_template_draft\` /

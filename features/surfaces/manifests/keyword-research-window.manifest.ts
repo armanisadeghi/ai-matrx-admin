@@ -450,7 +450,7 @@ const writeTargets: SurfaceWriteTarget[] = [
   {
     name: "research_input_keyword",
     label: "Staged research keyword",
-    description: `Stages one non-empty, single-line primary keyword of at most ${MAX_STAGED_KEYWORD_LENGTH} characters into the launcher. This never presses Research and never starts or spends a paid pipeline call; the user must do that explicitly.`,
+    description: `Stages one non-empty, single-line primary keyword of at most ${MAX_STAGED_KEYWORD_LENGTH} characters into the launcher. This never presses Research and never starts a pipeline run; the user must approve that explicitly.`,
     valueType: "string",
     updatesValue: "research_input_keyword",
     mode: "draft",

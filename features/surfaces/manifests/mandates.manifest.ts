@@ -296,7 +296,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: AGENT_MANDATES_WRITE_TARGETS.exemplarDraft,
     label: "Exemplar draft",
     description:
-      'Stages a test-bench exemplar into the "+ Exemplar" composer on the OPEN mandate, expanding the form so the admin sees it. NOTHING is saved and nothing runs — the admin still presses "Save exemplar", and separately "Run all" to spend budget comparing agents against it. ' +
+      'Stages a test-bench exemplar into the "+ Exemplar" composer on the OPEN mandate, expanding the form so the admin sees it. NOTHING is saved and nothing runs — the admin still presses "Save exemplar", and separately "Run all" to compare agents against it. ' +
       "Value: an object with AT LEAST ONE of `{ label, variables, user_input }`. Each key REPLACES that one field; omit a key to leave what the admin typed alone (read `mandate_exemplar_draft` first if you mean to extend rather than replace). " +
       "`label` — what this test case is called, a short non-empty string that says what it exercises (e.g. \"Long transcript, no speaker names\"). " +
       "`variables` — an OBJECT (send real JSON, not a string; it is serialized into the textarea for you). Its keys are the mandate's declared inputs: fill every entry of `selected_mandate_contract.required_variables`, and send `{}` only for a mandate whose contract declares none. Keys outside the contract are allowed but are not supplied by the mandate at run time. " +
@@ -333,7 +333,7 @@ Two laws govern this page: (1) THE SYSTEM-AGENT LAW — a mandate default may on
 What you may safely do: read the mandate list, health roll-up, and the selected mandate's pin state and overrides, then help the admin reason about drift, law violations, or draft mandate labels/descriptions. You never rebind, enable, disable, or run a test yourself — those are the admin's own actions.
 
 You can also WRITE here, through apply_surface_write, into one place: \`select_mandate\` opens a mandate's own page (its id or mandate_key, from mandates_summary) — exactly as clicking the row would. Test-bench exemplars are composed on that page's Test tab, never from this list; \`mandate_exemplar_draft\` is refused here.
-Nothing else here is writable, and the reasons are worth knowing: health and the roll-ups are MEASURED, not authored, so writing them would fabricate the state of the system; rebinding and per-principal overrides are agent identity by UUID over live production capacity, with no agent catalog on this surface to pick from; enable/disable and Run spend real capacity and budget. The way you move those numbers is by helping the admin decide, then letting them press the button.
+Nothing else here is writable, and the reasons are worth knowing: health and the roll-ups are MEASURED, not authored, so writing them would fabricate the state of the system; rebinding and per-principal overrides are agent identity by UUID over live production capacity, with no agent catalog on this surface to pick from; enable/disable and Run need the admin's approval. The way you move those numbers is by helping the admin decide, then letting them press the button.
 </surface_intro>`,
   groups,
   writeTargets,

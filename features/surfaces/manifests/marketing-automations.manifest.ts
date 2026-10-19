@@ -62,7 +62,7 @@ engine_mandate_keys names the AI doing this job — an empty list means the pass
 
 READ A ZERO CORRECTLY. Nothing placed is usually one of three different things: the autonomy mode said wait (autonomy_refusals carries the sentence), the daily ceiling was already reached, or there was genuinely no owed work. They mean completely different next steps, so never collapse them.
 
-This surface has no write targets. Explain the run, compare brands, say what should change — the run itself, the cap and the schedule stay with the person, because each one spends money or changes what their site publishes.
+This surface has no write targets. Explain the run, compare brands, say what should change — the run itself, the cap and the schedule stay with the person, because each one needs the person's approval or changes what their site publishes.
 </surface_intro>`,
   groups: RUN_CONSOLE_GROUPS,
   values: mergeBaselineValues(

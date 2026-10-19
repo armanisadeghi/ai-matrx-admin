@@ -654,7 +654,7 @@ full of scan_final_v3.pdf is a corpus nobody can search. Read the document's
 row first and name it for what it IS.
 Everything that SPENDS or DESTROYS is deliberately not writable — ingesting,
 re-processing, re-embedding, deleting, and catalog subscribe/unsubscribe.
-An embedding run costs real money, so the user's own click is the gate. Hand
+An embedding run needs the person's approval, so the user's own click is the gate. Hand
 them the narrowed list and let them press the button.
 Every count and total is DERIVED and cannot be written at all. After any
 filter write, the counts and row lists you were given describe the PREVIOUS

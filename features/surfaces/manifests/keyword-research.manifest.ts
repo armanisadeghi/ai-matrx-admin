@@ -146,7 +146,7 @@ const surfaceSpecific: SurfaceValue[] = [
     name: "research_input_keyword",
     label: "Staged research keyword",
     description:
-      "The phrase currently typed into the research launcher's input but NOT yet run — what pressing Research would spend a paid pipeline call on. Empty when the box is empty. Distinct from run_primary_keyword, which is the keyword a run actually launched for.",
+      "The phrase currently typed into the research launcher's input but NOT yet run — what pressing Research would launch a pipeline run for. Empty when the box is empty. Distinct from run_primary_keyword, which is the keyword a run actually launched for.",
     valueType: "string",
     alwaysAvailable: false,
     typicalCharCount: 40,

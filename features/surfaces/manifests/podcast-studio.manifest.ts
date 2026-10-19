@@ -497,7 +497,7 @@ Read the surface in four parts: what the episode is made FROM (source_kind plus 
 Two server-owned facts you must not re-derive: cast_provider and the default cast come from the server's cast preview, and feature_image_style's default is the server's. Propose edits on top of them; never invent provider routing or voice defaults.
 host_count is load-bearing — it selects both the script agent and the TTS provider. Changing it changes the whole production path.
 truncate_audio_for_testing = true means this run is a cheap ~1-line-per-speaker test render, not a real episode; say so rather than describing the result as a finished show.
-You can FILL THIS FORM IN: source_text, episode_shape, target_audience, prep_instructions, and show_blurb are write targets. Everything you write is staged into the form exactly as if the user typed it — and because nothing here is saved anywhere, it stays a proposal until the user presses Generate. That press is theirs alone: it spends real money, and it is not something you can do.
+You can FILL THIS FORM IN: source_text, episode_shape, target_audience, prep_instructions, and show_blurb are write targets. Everything you write is staged into the form exactly as if the user typed it — and because nothing here is saved anywhere, it stays a proposal until the user presses Generate. That press is theirs alone: it is the person's approval to generate, and it is not something you can do.
 </surface_intro>`,
   groups,
   values: mergeBaselineValues(

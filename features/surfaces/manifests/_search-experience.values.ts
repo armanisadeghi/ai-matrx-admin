@@ -66,7 +66,7 @@ export function searchExperienceWriteTargets(group: string, base: number): Surfa
     {
       name: "social_platform",
       label: "Social platform",
-      description: `Stages which platform the Social tab searches: ${PLATFORMS}. Anything else is refused. Staged only: a social search spends the user's points, so the user still presses Search. Read back from social_platform. Refused while a search is running.`,
+      description: `Stages which platform the Social tab searches: ${PLATFORMS}. Anything else is refused. Staged only: the user approves the search by pressing Search. Read back from social_platform. Refused while a search is running.`,
       valueType: "string",
       updatesValue: "social_platform",
       mode: "draft",

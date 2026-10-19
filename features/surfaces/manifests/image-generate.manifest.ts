@@ -246,8 +246,8 @@ Read generation_request_summary for what the user is asking for — helping
 sharpen a prompt is the most valuable thing an agent can do here, especially
 when prompt is empty or vague, and the generation_request write target lets
 you put that sharpened request straight into the form. Filling the form is
-never the same as running it: pressing Generate spends real money on image
-models and stays the user's move. result_file_ids are durable cloud file UUIDs;
+never the same as running it: pressing Generate runs the image
+models and stays the user's approval to give. result_file_ids are durable cloud file UUIDs;
 resolve image bytes from those ids, never from URLs. generation_enabled false
 means the backend endpoint has not shipped for this build — the user can
 still draft prompts.
