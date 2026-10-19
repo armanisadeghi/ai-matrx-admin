@@ -68,6 +68,7 @@ const ServerNotes = lazySlot("ServerNotes");
 const ReferenceCopyButton = lazySlot("ReferenceCopyButton", SlotLoadingGlyph);
 const MandateNotesPanel = lazySlot("MandateNotesPanel", SlotLoadingBlock);
 const SurfaceBoundAgentsList = lazySlot("SurfaceBoundAgentsList", SlotLoadingBlock);
+const AddToMyMenu = lazySlot("AddToMyMenu");
 const ProposedDirectivesZone = lazySlot("ProposedDirectivesZone");
 const EntityCommentPopover = lazySlot("EntityCommentPopover", SlotLoadingGlyph);
 const MatrxEnvelopeBlock = lazySlot("MatrxEnvelopeBlock", SlotLoadingBlock);
@@ -264,6 +265,11 @@ registerChatUi({
 
 registerChatUi({
   SurfaceBoundAgentsList: SurfaceBoundAgentsList,
+});
+
+// custom-experience: "Add to my menu" in the Intelligence dropdown.
+registerChatUi({
+  AddToMyMenu: AddToMyMenu,
 });
 
 registerChatUi({
