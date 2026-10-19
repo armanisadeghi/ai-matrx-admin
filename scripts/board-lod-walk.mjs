@@ -21,6 +21,9 @@ const origin = new URL(open).origin;
 const browser = await chromium.launch({ headless: true });
 const ctx = await browser.newContext({ viewport: { width: 1600, height: 1000 } });
 const page = await ctx.newPage();
+const consoleErrors = [];
+page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text().slice(0, 300)));
+page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${String(e).slice(0, 300)}`));
 await page.goto(open, { waitUntil: "domcontentloaded" });
 await page.waitForURL(/\/board/, { timeout: 180000 });
 
@@ -29,6 +32,7 @@ async function resume() {
   if (await parked.count()) await parked.first().click().catch(() => {});
 }
 async function gotoBoard(url) {
+  here = url;
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await resume();
   if (!page.url().includes(new URL(url).pathname)) await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -36,17 +40,23 @@ async function gotoBoard(url) {
   await page.waitForTimeout(3000);
 }
 const hud = () => page.locator("[data-board-zoom-hud] button");
-async function zoomTo(steps) {
+/** Press a zoom HUD button in the page (an error badge may sit over the HUD; this is the button's own click). */
+let here = null;
+const hudPress = (i) => page.evaluate((n) => document.querySelectorAll("[data-board-zoom-hud] button")[n]?.click(), i).catch(() => {});
+async function zoomTo(steps, tries = 3) {
+  // A dev reload or the walk cap can move the page mid-run: come back and start the step over.
+  if (here && (!page.url().includes(new URL(here).pathname) || !(await page.locator("[data-board-zoom-hud]").count()))) await gotoBoard(here);
   // Fit, then 100% about the view center, then k steps of 1/1.25.
-  await hud().nth(3).click();
+  await hudPress(3);
   await page.waitForTimeout(500);
-  await hud().nth(1).click();
+  await hudPress(1);
   await page.waitForTimeout(500);
   for (let i = 0; i < steps; i++) {
-    await hud().nth(0).click();
+    await hudPress(0);
     await page.waitForTimeout(280);
   }
   await page.waitForTimeout(900);
+  if (tries > 0 && here && !page.url().includes(new URL(here).pathname)) return zoomTo(steps, tries - 1);
 }
 const levels = () =>
   page.evaluate(() => {
@@ -112,18 +122,18 @@ for (const dark of [false, true]) {
   await theme(dark);
   for (const [name, steps] of LADDER) {
     await zoomTo(steps);
-    report[`${name}-${dark ? "dark" : "light"}`] = await levels();
+    report[`${name}-${dark ? "dark" : "light"}`] = { zoom: await page.locator("[data-board-zoom-hud] button").nth(1).innerText(), ...(await levels()) };
     await page.screenshot({ path: `${shots}/${name}-${dark ? "dark" : "light"}.png` });
   }
 }
 // Transitions: mid-fade captures while crossing L1 -> L2 and L0 -> L1.
 await theme(false);
 await zoomTo(3);
-await hud().nth(0).click();
+await hudPress(0);
 await page.waitForTimeout(60);
 await page.screenshot({ path: `${shots}/transition-L0-to-L1-60ms.png` });
 await zoomTo(6);
-await hud().nth(0).click();
+await hudPress(0);
 await page.waitForTimeout(120);
 await page.screenshot({ path: `${shots}/transition-L1-to-L2-120ms.png` });
 // Detail crops: one of each face at a readable size.
@@ -147,7 +157,9 @@ if (!skipDemo) {
   report["demo-100-standing"] = await frames(() => page.waitForTimeout(3000));
   report["demo-100-panzoom"] = await frames(panZoom);
   report["demo-levels"] = await levels();
+  report["demo-faces"] = await page.evaluate(() => ({ lod: document.querySelectorAll("[data-lod-level]").length, overview: document.querySelectorAll("[data-board-overview]").length, tiles: document.querySelectorAll("[data-board-tile]").length, newCard: document.querySelectorAll(".board-face-icon").length, labels: document.querySelectorAll("[data-board-label]").length }));
   await page.screenshot({ path: `${shots}/demo-100-streams.png` });
 }
+report.consoleErrors = [...new Set(consoleErrors)].slice(0, 15);
 console.log(JSON.stringify(report, null, 1));
 await browser.close();

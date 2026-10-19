@@ -1,5 +1,14 @@
 # CHANGELOG — Board (`features/board`)
 
+## 2026-10-19 — Zoom levels of detail: structure, card, label (Arman's ruling)
+
+- **Four levels by on-screen size** (`engine/lod.ts` `detailLevelFor`, `DetailLevel`; camera store `getLevel`/`subscribeLevel`, `useDetailLevel`): full → structure (180×120 screen px) → card (104×64) → label. The old single cliff from the real body to a title card is gone.
+- **L1 structure per type** (`BoardItemType.structure` / `structureGeneric`; `items/structures.tsx` on `components/lod/StructureKit.tsx`): chat bubbles + composer, editor toolbar + paragraphs, table header + grid rows, task checkbox rows, meeting avatars + agenda, workflow step pills, browser frame + blocks, workbook grid, social post/profile/feed/ad/swipe, video clone, person/company, and more — every catalog type explicit. Guard: `__tests__/tile-levels.test.tsx`.
+- **L2 card redesigned** (`TileFace.tsx`, `board-accents.css`): icon on a tinted tile, soft accent wash, 1–3 facts from saved basics (`items/card-lines.ts`), picture only when the card is tall enough. **L3 label** (`components/lod/TileLevels.tsx` `LabelFace`): crisp icon + title, never a dark bar.
+- **No body until needed:** a tile first seen below full detail never mounts its feature body (`useBodyWanted`, monotonic).
+- **Canvas words go to bars** below legibility (`.board-ink`, pure CSS on `--board-z`).
+- Measured (headless, dev build, 36-tile mixed board): median 16.7 ms at every level; p95 66–100 ms at full, 50–67 ms structure, 33 ms card/label.
+
 ## 2026-10-19 — Board pending defects: agent form by name, phone touch floor, chapters, provenance
 
 - **An agent can start a form for a named agent:** `board_add_items` takes `agent` (an agent's NAME or id) on `agent-form` and `chat` entries (`BoardItemType.startWithAgent`; `tools/board-agent-resolve.ts` resolves it through the agent catalog — exact name, else the server search; an unknown, archived or ambiguous name is refused with the candidates, never a silent pick). Manifest text updated and synced (`matrx-user/board`, `--check` passes). Guard: `__tests__/board-add-agent-form.test.tsx`.
