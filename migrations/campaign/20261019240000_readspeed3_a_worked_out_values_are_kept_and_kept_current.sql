@@ -1,3 +1,4 @@
+-- chair-step: registers its new machinery table in platform.entity_types (the provision guard requires it in the same transaction); the only DELETE is inside custom.computed_refresh's body, run later by the refresh job on custom.record_computed alone
 -- additive: yes
 -- guard: custom/system_enabled
 -- lane: READ-SPEED-3
@@ -176,7 +177,7 @@ $function$;
 CREATE FUNCTION custom._computed_reader_ok(p_me uuid, p_org uuid, p_table uuid)
  RETURNS boolean
  LANGUAGE plpgsql
- STABLE SECURITY DEFINER
+ STABLE
  SET search_path TO 'pg_catalog'
 AS $function$
 declare
@@ -318,7 +319,7 @@ REVOKE ALL ON FUNCTION custom.computed_refresh(uuid, uuid, uuid[]) FROM PUBLIC, 
 CREATE FUNCTION custom._computed_mark(p_org uuid, p_ids uuid[], p_hard_deleted uuid[] DEFAULT '{}')
  RETURNS integer
  LANGUAGE plpgsql
- VOLATILE SECURITY DEFINER
+ VOLATILE
  SET search_path TO 'pg_catalog'
 AS $function$
 declare
@@ -380,7 +381,7 @@ REVOKE ALL ON FUNCTION custom._computed_mark(uuid, uuid[], uuid[]) FROM PUBLIC, 
 CREATE FUNCTION custom._computed_mark_org(p_org uuid)
  RETURNS void
  LANGUAGE plpgsql
- VOLATILE SECURITY DEFINER
+ VOLATILE
  SET search_path TO 'pg_catalog'
 AS $function$
 begin
@@ -437,7 +438,7 @@ REVOKE ALL ON FUNCTION custom.computed_refresh_drain(integer) FROM PUBLIC, anon,
 CREATE FUNCTION custom.computed_refresh_progress(p_org uuid)
  RETURNS jsonb
  LANGUAGE sql
- STABLE SECURITY DEFINER
+ STABLE
  SET search_path TO 'pg_catalog'
 AS $function$
   select jsonb_build_object('kept', count(*) filter (where not stale), 'refreshing', count(*) filter (where stale))
