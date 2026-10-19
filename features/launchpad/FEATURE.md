@@ -28,7 +28,7 @@ Two things live here, one feature:
   pickers), History (preview in place, Set active).
 - `components/YourLaunchpads.tsx` — the strip and the New launchpad template picker.
 - `server/readLaunchpads.ts` — the person's own launchpads read on the server (same `listAppRows`, same
-  `visibleLaunchpadRows` pick, 2.5 s deadline, announced on failure) so `/launchpad/<key>` has its saved layout in
+  `visibleLaunchpadRows` pick, 6 s deadline, announced on failure) so `/launchpad/<key>` has its saved layout in
   the first HTML and `/launchpad`'s strip streams in without waiting for the browser.
 - `useLaunchpads.ts` — list / byKey / save (versioned) / archive, history + restore, and the one-time Start move.
 - `doc.ts` — the pure verbs over `LaunchpadDoc` (parse, add, move, resize, configure, remove, apply grid
@@ -117,6 +117,9 @@ and favorites into an always-open launcher.
 
 ## Change log
 
+- `2026-10-19` — Lane J: the server read waits up to 6 s (was 2.5 s, which every cold function instance missed
+  live, so the first load after a deploy or idle fell back to the ~12 s browser read). Warm loads paint the grid at
+  ~1.3–1.5 s live.
 - `2026-10-19` — Lane J: "New launchpad" templates wait for the person's list (a key chosen against an empty list
   could reuse an existing key and overwrite that launchpad); a signed-out or thrown write now says so instead of
   doing nothing or sticking on "Creating…".
