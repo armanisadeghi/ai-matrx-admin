@@ -25,6 +25,7 @@ import { callApi, type ApiCallConfig, type ApiCallResult } from "@/lib/api/call-
 import { toast } from "@/lib/toast";
 import { parseCallApiError } from "@ai-matrx/api";
 import { runScope } from "../runOrganization";
+import { readRunScopeBody } from "../runScopeBody";
 
 export interface StartRunArgs {
   definitionId: string;
@@ -143,6 +144,8 @@ export function useWorkflowRunControls(): WorkflowRunControls {
         ...(inputs ? { inputs } : {}),
         ...(nodeInputs ? { node_inputs: nodeInputs } : {}),
         ...(mode ? { mode } : {}),
+        // The person's current scope selection, as the chat sends it.
+        ...dispatch(readRunScopeBody()),
       };
       const captured: { text: string | null } = { text: null };
       const config: ApiCallConfig<typeof path, "POST"> = {
