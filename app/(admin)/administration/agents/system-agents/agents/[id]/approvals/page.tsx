@@ -1,4 +1,5 @@
-// record-view: SubjectApprovalsPanel — one system agent's spend approval: status, decision history,
+// record-view: none — a spend approval (billing.run_approval) takes no custom fields
+// SubjectApprovalsPanel — one system agent's spend approval: status, decision history,
 // held runs, spend (Arman 2026-10-16: "Just like the admin agent routes have build, run, etc.,
 // they should have 'approvals' as well").
 import { getAgent } from "@/lib/agents/data";

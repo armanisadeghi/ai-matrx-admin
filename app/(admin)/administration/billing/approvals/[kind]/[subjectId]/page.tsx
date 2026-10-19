@@ -1,6 +1,7 @@
 "use client";
 
-// record-view: ApprovalRecordView — one subject's spend approval by kind + id, for every kind
+// record-view: none — a spend approval (billing.run_approval) takes no custom fields
+// ApprovalRecordView — one subject's spend approval by kind + id, for every kind
 // (agent, mandate, workflow, Agent Factory door, coding session, scheduled task, trigger), drawn
 // beside the approvals list (../../layout.tsx). Agents, mandates and workflows also have it as a
 // tab on their own pages (SubjectApprovalsPanel).

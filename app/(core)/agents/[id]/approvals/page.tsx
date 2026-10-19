@@ -1,4 +1,5 @@
-// record-view: SubjectApprovalsPanel — this agent's spend approval on its organization's seat:
+// record-view: none — a spend approval (billing.run_approval) takes no custom fields
+// SubjectApprovalsPanel — this agent's spend approval on its organization's seat:
 // status, decision history, held runs, spend (Arman 2026-10-16).
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";

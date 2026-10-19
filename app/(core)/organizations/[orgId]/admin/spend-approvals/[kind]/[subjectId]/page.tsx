@@ -1,6 +1,7 @@
 "use client";
 
-// record-view: SubjectApprovalsPanel — one subject's spend approval on this organization's seat.
+// record-view: none — a spend approval (billing.run_approval) takes no custom fields
+// SubjectApprovalsPanel — one subject's spend approval on this organization's seat.
 // Route: /organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]  ([orgId] = slug or UUID)
 import { useParams } from "next/navigation";
 import { OrgSubjectApprovals } from "@/features/admin/spend-approvals/OrgSubjectApprovals";
