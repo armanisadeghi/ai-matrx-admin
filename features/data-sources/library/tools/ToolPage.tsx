@@ -32,6 +32,7 @@ import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
 import { checkedPhone, emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
 import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
 import { inputsToSend, jobFamilyOf, refillFor } from "./toolFacts";
+import { AdminToolLayer } from "@/features/admin/tool-layer";
 import { ToolAdvanced } from "./ToolAdvanced";
 import { ToolDescribe } from "./ToolDescribe";
 import { ToolsAdminSlot, useToolsAdminView } from "./ToolsAdminSlot";
@@ -214,7 +215,9 @@ export function ToolPage({
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-4" data-tool-page={toolId}>
-      <ToolsAdminSlot where="tool" toolId={realToolId} />
+      <ToolsAdminSlot where="tool" toolId={realToolId}>
+        <AdminToolLayer toolId={realToolId} />
+      </ToolsAdminSlot>
       <div className="flex items-center gap-2">
         <Button variant="quiet" onClick={onBack} icon={<ArrowLeft className="h-4 w-4" />}>
           All Tools
@@ -273,7 +276,7 @@ export function ToolPage({
             />
           )}
           {form.data ? (
-            <div className="mt-3 flex flex-col items-start gap-2">
+            <div className="mt-3 flex flex-col gap-2">
               <ToolDescribe
                 toolId={realToolId}
                 current={inputsToSend(merged)}
