@@ -22,6 +22,7 @@ import { createLiveSpacesStore, type LiveSpacesStore } from "./live-store";
 import { hasSignedInSession, isRefusal, onSignedIn, readWhenSignedIn, type LoadAccess } from "./load-access";
 import { listTemplateIds, setTemplate, copyTemplate } from "./templates";
 import { bringTemplateTables } from "./template-tables";
+import { attemptJournal } from "../templates/use-attempt";
 import { installTemplateTables, olderTemplateCopies, packRunJournal, readSpaceTemplate, readStarterTemplate, runUseTemplate, timed, type PreviewSizes } from "../templates/use-pack";
 
 const FAVORITES_KEY = "spaces:favorites";
@@ -98,7 +99,12 @@ interface SpacesContextValue {
   };
   /** The template library (custom.space_templates): "Use template" installs its tables in the active
    *  organization and makes its pages there. `stage` = what it is doing now; null = idle. */
-  packs: { stage: string | null; use: (templateId: string, sizes?: PreviewSizes | null) => Promise<void> };
+  packs: {
+    stage: string | null;
+    /** Answers the made root (null = it did not finish, or another run is going). `attempt` = a template link's
+     *  install attempt (use-attempt.ts): a refresh resumes that copy, and a finished attempt is never made again. */
+    use: (templateId: string, sizes?: PreviewSizes | null, options?: { attempt?: string }) => Promise<SpaceId | null>;
+  };
   /** The live pages loaded so far (the sidebar loads lazily, like Notion): never the whole tree. */
   summaries: SpaceSummary[];
   /** Trash: empty until `loadTrash` (Trash opened) has read it. */
@@ -502,8 +508,8 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
    * sub-pages are filled behind it. USE-TEMPLATE-FAILURES: every way it can end reaches the person: the reason
    * with "Try again" (which resumes the same copy and pages), and Cancel once nothing has moved for a while.
    */
-  const applyPack = async (templateId: string, sizes?: PreviewSizes | null) => {
-    if (packStage) return;
+  const applyPack = async (templateId: string, sizes?: PreviewSizes | null, options?: { attempt?: string }): Promise<SpaceId | null> => {
+    if (packStage) return null;
     setPackStage("Planning…");
     const started = typeof performance === "undefined" ? 0 : performance.now();
     let opened = false;
@@ -511,7 +517,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
     const failed = (message: string) =>
       toast.error(message, {
         duration: Infinity,
-        action: { label: "Try again", onClick: () => void applyPack(templateId, sizes) },
+        action: { label: "Try again", onClick: () => void applyPack(templateId, sizes, options) },
       });
     try {
       const [template, orgId] = await Promise.all([
@@ -536,7 +542,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
             return doc;
           },
           install: (onStage, signal, fresh) => timed("tables", () => installTemplateTables(template, orgId, dispatch, onStage, signal, fresh)),
-          journal: packRunJournal(orgId, templateId),
+          journal: options?.attempt ? attemptJournal(options.attempt, templateId) : packRunJournal(orgId, templateId),
           sizes,
           onStage: (stage) => setPackStage(stage),
           onRootReady: openRoot,
@@ -551,7 +557,7 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
       store.notifyTree();
       if (!result.ok) {
         failed(result.message);
-        return;
+        return null;
       }
       if (!opened) openRoot(result.root);
       if (typeof performance !== "undefined") performance.measure("spaces:use-template:total", { start: started, end: performance.now() });
@@ -572,8 +578,10 @@ export function SpacesProvider({ children }: { children: ReactNode }) {
         },
         () => undefined,
       );
+      return result.root.id;
     } catch (err) {
       failed(err instanceof Error && err.message ? err.message : `We couldn't use this template: ${errorSentence(err)}`);
+      return null;
     } finally {
       if (stallToast !== null) toast.dismiss(stallToast);
       setPackStage(null);
