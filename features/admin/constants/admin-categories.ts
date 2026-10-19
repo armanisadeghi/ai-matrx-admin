@@ -1028,6 +1028,14 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "System processes",
+        description:
+          "The durable queue behind platform AI work nobody sees, such as naming a chat: counts by state, outcomes and recent items.",
+        iconName: "ListChecks",
+        link: "/administration/intelligence/system-processes",
+        isNew: true,
+      },
+      {
         title: "Mandate support lookup",
         description:
           "Support tool: look into an organization's or a person's mandates while doing tech support. The Mandates page manages system mandates only.",
