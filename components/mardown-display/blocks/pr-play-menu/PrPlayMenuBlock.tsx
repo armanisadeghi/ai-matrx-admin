@@ -9,7 +9,7 @@
  */
 
 import { PrPlayMenuView } from "@/features/marketing/pr/director/PrPlayMenuView";
-import type { PrPlayView } from "@/features/content-ir/kinds/pr-play-menu";
+import { readPrPeg, type PrPegView, type PrPlayView } from "@/features/content-ir/kinds/pr-play-menu";
 
 export interface PrPlayMenuBlockProps {
   serverData: Record<string, unknown>;
@@ -19,5 +19,10 @@ export interface PrPlayMenuBlockProps {
 export default function PrPlayMenuBlock({ serverData, conversationId }: PrPlayMenuBlockProps) {
   const plays = Array.isArray(serverData.plays) ? (serverData.plays as PrPlayView[]) : [];
   const nextMove = typeof serverData.nextMove === "string" ? serverData.nextMove : "";
-  return <PrPlayMenuView plays={plays} nextMove={nextMove} conversationId={conversationId ?? null} />;
+  // Bridged data carries the read peg; a raw payload carries `pr_peg_check` — read either.
+  const peg: PrPegView | null =
+    serverData.peg && typeof serverData.peg === "object" && "passesNew" in serverData.peg
+      ? (serverData.peg as PrPegView)
+      : readPrPeg(serverData.peg);
+  return <PrPlayMenuView plays={plays} nextMove={nextMove} peg={peg} conversationId={conversationId ?? null} />;
 }
