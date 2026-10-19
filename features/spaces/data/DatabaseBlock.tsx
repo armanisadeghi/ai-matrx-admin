@@ -485,7 +485,7 @@ function DatabaseFrame({
       <Dialog open={expanded} onOpenChange={setExpanded}>
         <DialogContent size="2xl" height="tall" className="spaces-db-expanded overflow-auto">
           <DialogTitle>{props.title || sourceName}</DialogTitle>
-          {resolved.state === "plain" || resolved.state === "resolved" ? <DatabaseBody tableId={tableId} view={shown} newRowValues={newRowValues} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} /> : body}
+          {resolved.state === "plain" || resolved.state === "resolved" ? <DatabaseBody tableId={tableId} titleField={(table.data as { title_field?: string | null } | null)?.title_field ?? null} view={shown} newRowValues={newRowValues} fields={fields} onOpenRecord={setOpen} editable={editable} shape={shape} sample={sample} overRows={sample || published} sortOverride={sortOverride} search={search} onSummaries={shape && !sample && !published ? (summaries) => saveView({ summaries } as Partial<SpaceDbView>) : undefined} onFormId={(formId) => saveView({ formId })} onLook={saveView} /> : body}
         </DialogContent>
       </Dialog>
     </div>
@@ -507,8 +507,11 @@ function DatabaseBody({
   onSummaries,
   onFormId,
   onLook,
+  titleField,
 }: {
   tableId: string;
+  /** The table's own title column (`title_field`): every card (gallery, board) is named by it (ADVERSARIAL-4 N1). */
+  titleField?: string | null;
   view: ViewWithSummaries;
   /** What a row added in this view starts with (the relation to the page's row). */
   newRowValues: Record<string, string[]>;
@@ -552,6 +555,7 @@ function DatabaseBody({
         view={spec}
         chooser={false}
         embedded
+        titleField={titleField ?? null}
         // A table's row is a "record" (canonical vocabulary); "New page" stays on the Spaces-native entity database.
         newRowLabel={editable ? "New record" : undefined}
         {...(Object.keys(newRowValues).length ? { newRowValues } : {})}
