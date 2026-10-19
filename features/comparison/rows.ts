@@ -4,7 +4,7 @@
  * compared; a row that does not resolve keeps its nearest real matches to pick from.
  */
 
-import type { LookupItem, LookupMatch } from "./contract";
+import type { ComparisonItemInput, LookupItem, LookupMatch } from "./contract";
 import type { ResolveCandidate, ResolveResult } from "./discovery";
 import { parseInput, isLink, type KindKey } from "./parse-input";
 
@@ -24,6 +24,10 @@ export interface CompareRow {
   category: string;
   candidates: ResolveCandidate[];
   message: string | null;
+  /** Look it up as soon as it shows (filled from the one-line box). */
+  autoFind?: boolean;
+  /** Put the cursor in its name when it shows (a new or reopened card). */
+  focus?: boolean;
 }
 
 let seq = 0;
@@ -100,4 +104,37 @@ export function rowsFromText(text: string, kind: KindKey, near: string): Compare
     }
     return newRow({ name: i.input.label ?? i.text });
   });
+}
+
+/** A row is empty when the person typed nothing into it yet. */
+export const isEmptyRow = (r: CompareRow): boolean => !r.name.trim() && !r.website.trim();
+
+/**
+ * A real thing the person picked from a found list (a map search's place, a review-site company) goes
+ * into the first empty row, already matched — it IS the real entity. A full lineup gains a row up to
+ * MAX_ROWS; past that nothing changes (the caller says so).
+ */
+export function placePick(rows: CompareRow[], match: LookupMatch, category: string): CompareRow[] {
+  const filled = newRow({ name: match.name, state: "found", match, category });
+  const at = rows.findIndex(isEmptyRow);
+  if (at >= 0) return rows.map((r, i) => (i === at ? { ...filled, key: r.key } : r));
+  return rows.length < MAX_ROWS ? [...rows, filled] : rows;
+}
+
+/** Whether a found-list entity is already in the lineup (same listing or page). */
+export function inLineup(rows: CompareRow[], match: LookupMatch): boolean {
+  const id = match.item.url ?? match.url ?? match.name;
+  return rows.some((r) => r.match && (r.match.item.url ?? r.match.url ?? r.match.name) === id);
+}
+
+/**
+ * What one non-place row sends to the lookup: a company's website is its identity (matched by that
+ * domain first, the name only labels it); a link is that exact page; anything else is the typed words.
+ */
+export function rowItem(kind: KindKey, row: CompareRow): ComparisonItemInput {
+  const name = row.name.trim();
+  const website = row.website.trim();
+  if (kind === "companies_reviews" && website) return { label: name || website, website };
+  const parsed = parseInput(name, kind).items[0];
+  return parsed?.input ?? { label: name };
 }

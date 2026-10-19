@@ -3,8 +3,9 @@
 /**
  * /compare — the deterministic comparison engine's home (aidream `services/comparison`).
  *
- *   type anything → "Here's what we found" (matched, candidates, add/remove, the quote) → Compare
- *   → honest per-item progress → the result stage (`components/ComparisonView`).
+ *   the LINEUP (one card per contender: a name and where it is → it looks itself up and becomes the real
+ *   thing, or offers the nearest real matches) ← fed by the one-line ask (a list fills cards; a concept
+ *   finds real candidates to add) → Compare (priced first) → honest per-item progress → the result stage.
  *
  * Drop-safe: the run id is the stream's first event and goes into the address (`?run=`). A dropped
  * connection, a refresh or a new tab follows the saved run (`GET /comparison/runs/{id}`) to its end.
@@ -14,9 +15,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { RotateCcw } from "lucide-react";
+import { Building2, RotateCcw, Share2, ShoppingBag, Store } from "lucide-react";
 import { Button, RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { ErrorNotice, ReadFailure } from "@ai-matrx/design-system";
+import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
 
 import { RecordPageHeader } from "@/features/shell/components/header/templates/RecordPageHeader";
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -24,7 +26,7 @@ import { useSeesDollars } from "@/components/cost/useCostDisplay";
 import { CompareLayerInputs } from "@/features/provision-window/CompareLayerInputs";
 
 import { useComparisonKinds, useComparisonOrganizationId } from "./hooks";
-import { followRun, lookupItems, runComparison } from "./server";
+import { followRun, runComparison } from "./server";
 import {
   applyProgress,
   ComparisonRefusal,
@@ -36,18 +38,15 @@ import {
   type ItemProgress,
   type LookupMatch,
 } from "./contract";
-import { parseInput, type KindKey } from "./parse-input";
+import type { KindKey } from "./parse-input";
 import { discover, discoveryRecord, inferMode, type DiscoverResult, type InputMode, type Scope } from "./discovery";
-import { DiscoveryStep, rowsOf, type DiscoveryRow } from "./components/DiscoveryStep";
-import { CompareRows } from "./components/CompareRows";
-import { editRow, rowsFromText, startRows, type CompareRow } from "./rows";
-
-/** Kinds whose default input is the guaranteed rows (a name and where it is, per item). */
-const ROW_KINDS = new Set(["local_business", "companies_reviews"]);
-import { CompareInput } from "./components/CompareInput";
+import {
+  inLineup, isEmptyRow, MAX_ROWS, newRow, placePick, rowsFromText, startRows, type CompareRow,
+} from "./rows";
+import { AskBar } from "./components/AskBar";
 import { ComparisonView } from "./components/ComparisonView";
-import { FoundStep, type FoundRow } from "./components/FoundStep";
-import { FacetOptions } from "./components/FacetOptions";
+import { Lineup } from "./components/Lineup";
+import { PickList } from "./components/PickList";
 import { ShareButton } from "./public/ShareButton";
 import { RunProgress, type ProgressRowIdentity } from "./components/RunProgress";
 
@@ -74,7 +73,7 @@ export function ComparePage() {
   );
 }
 
-type Phase = "input" | "found" | "discovered" | "running" | "result" | "failed";
+type Phase = "build" | "running" | "result" | "failed";
 
 function setRunInAddress(runId: string | null) {
   const url = new URL(window.location.href);
@@ -86,8 +85,15 @@ function setRunInAddress(runId: string | null) {
 /** A map listing link that names one place exactly (the place reader's own form). */
 const PLACE_LINK = /\/maps\/place\/.*data=.*!1s0x/;
 
-let rowSeq = 0;
-const rowKey = () => `r${++rowSeq}`;
+const KIND_UI: Record<string, { label: string; icon: React.ReactNode; soonId?: string }> = {
+  local_business: { label: "Local businesses", icon: <Store className="h-4 w-4" /> },
+  companies_reviews: { label: "Companies", icon: <Building2 className="h-4 w-4" /> },
+  products: { label: "Products", icon: <ShoppingBag className="h-4 w-4" />, soonId: "compare.products" },
+  social_accounts: { label: "Social", icon: <Share2 className="h-4 w-4" />, soonId: "compare.social-accounts" },
+};
+
+/** The identity a compared item was sent with (`ComparedItem.item_id` is its link, else its label). */
+const sentId = (m: LookupMatch) => m.item.url ?? m.item.label ?? m.name;
 
 function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; organizationId: string }) {
   const seesDollars = useSeesDollars();
@@ -95,15 +101,16 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const live = kinds.filter((k) => k.status === "live");
   const [kindKey, setKindKey] = useState<string>(
     live.find((k) => k.key === "local_business")?.key ?? live[0]?.key ?? "");
-  const [compareRows, setCompareRows] = useState<CompareRow[]>(startRows);
+  const [rows, setRows] = useState<CompareRow[]>(startRows);
   const [text, setText] = useState(() => params.get("q") ?? ""); // a public-page hand-off arrives as ?q=
-  const [area, setArea] = useState("");
-  // A page opened on ?run=<id> (a refresh, a new tab, a shared link) starts on that saved run.
+  const [near, setNear] = useState("");
   const runParam = params.get("run");
-  const [phase, setPhase] = useState<Phase>(runParam ? "running" : "input");
+  const [phase, setPhase] = useState<Phase>(runParam ? "running" : "build");
   const [finding, setFinding] = useState(false);
-  const [rows, setRows] = useState<FoundRow[]>([]);
-  const [adding, setAdding] = useState(false);
+  const [stage, setStage] = useState<string | null>(null);
+  const [modeOverride, setModeOverride] = useState<InputMode | null>(null);
+  const [scope, setScope] = useState<Scope>("auto");
+  const [discovered, setDiscovered] = useState<DiscoverResult | null>(null);
   const [progress, setProgress] = useState<ItemProgress[]>([]);
   const [identities, setIdentities] = useState<ProgressRowIdentity[]>([]);
   const [startedAt, setStartedAt] = useState(() => Date.now());
@@ -111,23 +118,18 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [runKind, setRunKind] = useState<string>(kindKey);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const [lookupError, setLookupError] = useState<string | null>(null);
-  const [modeOverride, setModeOverride] = useState<InputMode | null>(null);
-  const [scope, setScope] = useState<Scope>("auto");
-  const [stage, setStage] = useState<string | null>(null);
-  const [discovered, setDiscovered] = useState<DiscoverResult | null>(null);
-  const [discoveryRows, setDiscoveryRows] = useState<DiscoveryRow[]>([]);
+  const [askError, setAskError] = useState<string | null>(null);
   const abort = useRef<AbortController | null>(null);
   // The run THIS tab started: its own stream is already following it, so the address must not start a second reader.
   const ownRun = useRef<string | null>(null);
 
-  // Leaving the page stops this tab's reading (the run itself carries on on the server).
   useEffect(() => () => abort.current?.abort(), []);
 
   const kind = kinds.find((k) => k.key === kindKey) ?? null;
   const runKindInfo = kinds.find((k) => k.key === runKind) ?? kind;
+  const mode: InputMode = modeOverride ?? inferMode(text, kindKey as KindKey);
 
-  // …and follows it to its end.
+  // A page opened on ?run=<id> (a refresh, a new tab, a shared link) follows that saved run to its end.
   useEffect(() => {
     if (!runParam || runParam === ownRun.current) return;
     const ctrl = new AbortController();
@@ -156,94 +158,66 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     // the run id in the address, whenever it changes (a shared link, back/forward, a pasted address)
   }, [runParam]);
 
-  async function find() {
-    if (!kind) return;
-    const parsed = parseInput(text, kindKey as KindKey, area);
-    const useKind = parsed.suggestedKind && kinds.some((k) => k.key === parsed.suggestedKind && k.status === "live")
-      ? parsed.suggestedKind : kindKey;
-    if (useKind !== kindKey) setKindKey(useKind);
-    setFinding(true);
-    setLookupError(null);
-    try {
-      const out = await lookupItems(useKind, parsed.items.map((i) => i.input), { organizationId });
-      setRows(out.items.map((it) => ({ ...it, key: rowKey(), query: parsed.items[it.index]?.text ?? it.query })));
-      setPhase("found");
-    } catch (err) {
-      setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look those up. Try again.");
-    } finally {
-      setFinding(false);
-    }
+  function switchKind(next: string) {
+    if (next === kindKey) return;
+    setKindKey(next);
+    setRows(startRows());
+    setDiscovered(null);
+    setAskError(null);
   }
-
-  const mode: InputMode = modeOverride ?? inferMode(text, kindKey as KindKey);
 
   function onText(t: string) {
     setText(t);
+    setAskError(null);
     if (!t.trim()) { setModeOverride(null); setScope("auto"); }
   }
 
-  /** Branch A/C: find the list for a concept, then show it to pick from. */
-  async function runDiscover() {
+  /** A list typed in one line fills the cards; each looks itself up, the person sees every match. */
+  function fill() {
+    const filled = rowsFromText(text, kindKey as KindKey, near).map((r) => ({ ...r, autoFind: true }));
+    if (!filled.length) return;
+    setRows((rs) => {
+      const kept = rs.filter((r) => !isEmptyRow(r));
+      const next = [...kept, ...filled].slice(0, MAX_ROWS);
+      return next.length >= 2 ? next : [...next, ...startRows()].slice(0, 2);
+    });
+    onText("");
+  }
+
+  /** A concept: find the real candidates to pick from (nothing goes into the lineup by itself). */
+  async function find() {
     setFinding(true);
     setStage(null);
-    setLookupError(null);
+    setAskError(null);
     try {
-      const out = await discover({ text, kind: kindKey, area, scope }, { organizationId, onStage: setStage });
-      if (kinds.some((k) => k.key === out.kind)) setKindKey(out.kind);
+      const out = await discover({ text, kind: kindKey, area: near, scope }, { organizationId, onStage: setStage });
+      if (out.kind !== kindKey && kinds.some((k) => k.key === out.kind && k.status === "live")) {
+        setKindKey(out.kind);
+        setRows(startRows());
+      }
+      if (out.reading.area && !near.trim() && out.kind === "local_business") setNear(out.reading.area);
       setDiscovered(out);
-      setDiscoveryRows(rowsOf(out, () => rowKey()));
-      setPhase("discovered");
     } catch (err) {
-      setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "That search did not answer. Try again.");
+      setAskError(err instanceof ComparisonRefusal ? err.userMessage : "That search did not answer. Try again.");
     } finally {
       setFinding(false);
       setStage(null);
     }
   }
 
-  /** "Add your own" on a found list: looked up like any typed item, added ticked. */
-  async function addToDiscovery(textToAdd: string) {
-    if (!discovered) return;
-    const parsed = parseInput(textToAdd, discovered.kind as KindKey, area);
-    if (!parsed.items.length) return;
-    setAdding(true);
-    setLookupError(null);
-    try {
-      const out = await lookupItems(discovered.kind, parsed.items.map((i) => i.input), { organizationId });
-      const added: DiscoveryRow[] = [];
-      for (const it of out.items) {
-        if (it.status === "found" && it.match) added.push({ key: rowKey(), match: it.match, rank: null, note: "", picked: true });
-        else if (it.status === "choose") added.push(...it.candidates.map((c) => ({ key: rowKey(), match: c, rank: null, note: "Pick one", picked: false })));
-        else setLookupError(it.message ?? "We could not find that.");
-      }
-      setDiscoveryRows((rs) => [...rs, ...added]);
-    } catch (err) {
-      setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look that up.");
-    } finally {
-      setAdding(false);
-    }
-  }
-
-  async function addOne(textToAdd: string) {
-    const parsed = parseInput(textToAdd, kindKey as KindKey, area);
-    if (!parsed.items.length) return;
-    setAdding(true);
-    try {
-      const out = await lookupItems(kindKey, parsed.items.map((i) => i.input), { organizationId });
-      setRows((rs) => [...rs, ...out.items.map((it) => ({ ...it, key: rowKey(), query: parsed.items[it.index]?.text ?? it.query }))]);
-    } catch (err) {
-      setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look that up.");
-    } finally {
-      setAdding(false);
-    }
-  }
-
-  async function compare(matches: LookupMatch[], discovery: Record<string, unknown> | null = null) {
+  async function compare(matches: LookupMatch[]) {
     if (!kind || matches.length < 2) return;
     const ctrl = new AbortController();
     abort.current?.abort();
     abort.current = ctrl;
     const items: ComparisonItemInput[] = matches.map((m) => m.item);
+    const record = discovered && discovered.kind === kind.key
+      ? discoveryRecord(text || discovered.reading.summary, discovered, [
+        ...discovered.items.map((i) => ({ match: i.match, rank: i.rank, picked: inLineup(rows, i.match) })),
+        ...matches.filter((m) => !discovered.items.some((i) => sentId(i.match) === sentId(m)))
+          .map((m) => ({ match: m, rank: null, picked: true })),
+      ])
+      : null;
     setRunKind(kind.key);
     setIdentities(matches.map((m) => ({ name: m.name, logoUrl: m.logo_url, website: m.website })));
     setProgress(matches.map((m, index) => ({ index, label: m.name, stage: "queued", stageLabel: "", current: null, total: null, done: false, error: null })));
@@ -256,7 +230,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       const out = await runComparison(kind.key, items, {
         organizationId,
         signal: ctrl.signal,
-        discovery,
+        discovery: record,
         onRunId: (runId) => { ownRun.current = runId; setRunInAddress(runId); },
         onProgress: (p) => setProgress((cur) => applyProgress(cur, p)),
         onRunState: (s) => setProgress((cur) => mergeRunProgress(cur, s.items)),
@@ -277,49 +251,42 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     setRunInAddress(null);
     setResult(null);
     setFailure(null);
-    setRows([]);
+    setRows(startRows());
     setDiscovered(null);
-    setDiscoveryRows([]);
     setModeOverride(null);
     setScope("auto");
     setText("");
-    setPhase("input");
+    setPhase("build");
   }
 
-  /** A result item that needs a pick goes back to "found" with that place chosen. */
+  /** A result item that needs a pick goes back to the lineup with that place chosen. */
   function pick(item: ComparedItem, placeId: string) {
     const c = item.candidates.find((x) => x.pick === placeId);
     const match: LookupMatch = {
-      // The place's own map link reads exactly that place; a bare place_id is refused by the reader (2026-10-18).
       item: c?.url && PLACE_LINK.test(c.url)
-        ? { label: c?.name ?? item.name, url: c.url }
-        : { label: c?.name ?? item.name, inputs: { place_id: placeId } },
-      name: c?.name ?? item.name, detail: c?.address ?? "", logo_url: null, website: null, url: c?.url ?? null,
+        ? { label: c.name || item.name, url: c.url }
+        : { label: c?.name || item.name, inputs: { place_id: placeId } },
+      name: c?.name || item.name, detail: c?.address ?? "", logo_url: null, website: null, url: c?.url ?? null,
       rating: c?.rating ?? null, reviews_count: c?.reviews_count ?? null,
     };
-    // Keep every original row (its candidates, rating, logo) and swap only the picked one. The
-    // result lists the compared rows in the order they were sent: the found rows with a match.
-    const sent = rows.filter((r) => r.status === "found" && r.match);
-    const at = (result?.items ?? []).findIndex((i) => i.item_id === item.item_id);
-    const target = at >= 0 ? sent[at] : undefined;
-    if (target) {
-      setRows(rows.map((r) => (r.key === target.key
-        ? { ...r, status: "found", match, open: false, candidates: r.candidates.length ? r.candidates : [match] }
-        : r)));
+    const chosen = newRow({ name: match.name, state: "found", match, category: c?.category ?? "" });
+    const sent = rows.filter((r) => r.state === "found" && r.match);
+    if (sent.some((r) => r.match && sentId(r.match) === item.item_id)) {
+      setRows(rows.map((r) => (r.match && sentId(r.match) === item.item_id ? { ...chosen, key: r.key } : r)));
     } else {
-      // A page opened on a saved run has no found rows: rebuild them from the result.
-      setRows((result?.items ?? []).filter((i) => !i.error).map((i, index): FoundRow => i.item_id === item.item_id
-        ? { key: rowKey(), index, query: i.name, status: "found", match, candidates: [match], message: null }
-        : { key: rowKey(), index, query: i.name, status: "found", candidates: [], message: null,
-            match: {
-              item: { label: i.name, url: i.source_url ?? undefined, website: i.website ?? undefined, logo_url: i.logo_url ?? undefined },
-              name: i.name, detail: i.website ?? "", logo_url: i.logo_url, website: i.website, url: i.source_url,
-              rating: null, reviews_count: null,
-            } }));
+      // A page opened on a saved run has no lineup: rebuild it from the result.
+      setRows((result?.items ?? []).filter((i) => !i.error).map((i) => (i.item_id === item.item_id ? chosen : newRow({
+        name: i.name, state: "found", category: "",
+        match: {
+          item: { label: i.name, url: i.source_url ?? undefined, website: i.website ?? undefined, logo_url: i.logo_url ?? undefined },
+          name: i.name, detail: i.website ?? "", logo_url: i.logo_url, website: i.website, url: i.source_url,
+          rating: null, reviews_count: null,
+        },
+      }))));
     }
     ownRun.current = null;
     setRunInAddress(null);
-    setPhase("found");
+    setPhase("build");
   }
 
   if (phase === "result" && result) {
@@ -353,58 +320,47 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       <div className="space-y-4">
         <ErrorNotice message={failure ?? "The comparison could not be run."} />
         <div className="flex gap-2">
-          {discovered ? <Button variant="primary" onClick={() => setPhase("discovered")}>Back</Button>
-            : rows.length ? <Button variant="primary" onClick={() => setPhase("found")}>Back</Button> : null}
+          {rows.some((r) => r.state === "found") ? <Button variant="primary" onClick={() => setPhase("build")}>Back</Button> : null}
           <Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button>
         </div>
       </div>
     );
   }
 
-  if (phase === "found" && kind) {
-    return (
-      <div className="space-y-4">
-        {lookupError ? <ErrorNotice message={lookupError} /> : null}
-        <FacetOptions kind={kind} itemCount={rows.filter((r) => r.status === "found").length} />
-        <FoundStep kind={kind} rows={rows} organizationId={organizationId} seesDollars={seesDollars}
-          adding={adding} onRows={setRows} onAdd={(t) => void addOne(t)}
-          onBack={() => setPhase("input")} onCompare={(m) => void compare(m)} starting={false} />
-      </div>
-    );
-  }
-
-  const discoveredKind = discovered ? kinds.find((k) => k.key === discovered.kind) ?? null : null;
-  if (phase === "discovered" && discovered && discoveredKind) {
-    return (
-      <div className="space-y-4">
-        {lookupError ? <ErrorNotice message={lookupError} /> : null}
-        <DiscoveryStep kind={discoveredKind} result={discovered} rows={discoveryRows} organizationId={organizationId}
-          seesDollars={seesDollars} adding={adding} onRows={setDiscoveryRows} onAdd={(t) => void addToDiscovery(t)}
-          onBack={() => setPhase("input")}
-          onCompare={(m) => void compare(m, discoveryRecord(text, discovered, discoveryRows))} />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-8">
-      <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">Compare</h1>
-      <CompareInput kinds={kinds} kindKey={kindKey}
-        onKind={(k) => { setKindKey(k); setCompareRows((rs) => rs.map((r) => editRow(r, {}))); }}
-        text={text} onText={onText}
-        area={area} onArea={setArea} onFind={() => void find()} finding={finding}
-        mode={mode} onMode={setModeOverride} scope={scope} onScope={setScope}
-        onDiscover={() => void runDiscover()} organizationId={organizationId} stage={stage}
-        onFillRows={kind && ROW_KINDS.has(kind.key) ? () => {
-          const filled = rowsFromText(text, kindKey as KindKey, area);
-          if (filled.length) { setCompareRows(filled.length === 1 ? [...filled, ...startRows().slice(1)] : filled); onText(""); }
-        } : undefined}>
-        {kind && ROW_KINDS.has(kind.key) ? (
-          <CompareRows kind={kind} rows={compareRows} onRows={setCompareRows} near={area} onNear={setArea}
-            organizationId={organizationId} seesDollars={seesDollars} onCompare={(m) => void compare(m)} />
-        ) : null}
-      </CompareInput>
-      {lookupError ? <ErrorNotice message={lookupError} /> : null}
+    <div className="space-y-6 pb-8">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">Compare</h1>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="What to compare">
+          {kinds.map((k) => {
+            const meta = KIND_UI[k.key];
+            const soon = k.status !== "live";
+            return (
+              <Button key={k.key} variant="outline" pressed={k.key === kindKey && !soon} icon={meta?.icon}
+                meta={soon ? "Soon" : undefined}
+                onClick={() => (soon ? void announceComingSoon(meta?.soonId ?? k.key) : switchKind(k.key))}>
+                {meta?.label ?? k.label}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AskBar kindKey={kindKey} text={text} onText={onText} near={near} mode={mode} onMode={setModeOverride}
+        scope={scope} onScope={setScope} finding={finding} stage={stage} organizationId={organizationId}
+        onFind={() => void find()} onFill={fill} />
+      {askError ? <ErrorNotice message={askError} /> : null}
+
+      {discovered ? (
+        <PickList result={discovered} rows={rows}
+          onAdd={(picks) => setRows((rs) => picks.reduce((acc, p) => placePick(acc, p.match, p.category), rs))}
+          onClose={() => setDiscovered(null)} />
+      ) : null}
+
+      {kind ? (
+        <Lineup kind={kind} rows={rows} onRows={setRows} near={near} onNear={setNear}
+          organizationId={organizationId} seesDollars={seesDollars} onCompare={(m) => void compare(m)} />
+      ) : null}
     </div>
   );
 }

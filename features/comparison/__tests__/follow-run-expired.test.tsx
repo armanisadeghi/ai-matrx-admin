@@ -23,7 +23,8 @@ jest.mock("../hooks", () => ({
     data: [{ key: "companies_reviews", label: "Companies", status: "live", lookup_points: 0 }],
   }),
 }));
-jest.mock("../components/CompareInput", () => ({ CompareInput: () => <div data-testid="input-step">input</div> }));
+jest.mock("../components/Lineup", () => ({ Lineup: () => <div data-testid="input-step">lineup</div>, RATING_SOURCE: {} }));
+jest.mock("../components/AskBar", () => ({ AskBar: () => null }));
 jest.mock("../components/RunProgress", () => ({ RunProgress: () => <div>running</div> }));
 
 import { followRun } from "../server";
