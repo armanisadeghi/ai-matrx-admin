@@ -21,9 +21,12 @@ import {
   Moon,
   MonitorSpeaker,
   LayoutTemplate,
+  PanelLeft,
+  PanelTop,
   Settings,
   SlidersHorizontal,
   Sun,
+  Smartphone,
   SunMoon,
   Trash2,
   type LucideIcon,
@@ -48,6 +51,7 @@ import { SegmentedControl, Switch } from "@ai-matrx/design-system/controls";
 import { selectHoldsShellLayout, selectShellStandardView } from "@/features/shell/shell-layout/useResolvedShellLayout";
 import { shellStandardViewChanged } from "@/features/shell/shell-layout/shellLayoutSlice";
 import { setShellStandardViewCookie } from "@/features/shell/shell-layout/ShellLayoutSync";
+import { useOpenShellLayoutEditor } from "@/features/overlays/definitions/shellLayoutEditorWindow.overlay";
 
 // The account rail's one menu look: the account menu's own row class.
 const ROW = MENU_ITEM_CLASS;
@@ -96,6 +100,31 @@ function StandardViewRow() {
   );
 }
 
+/** The layout editors' doors, beside the Standard view switch (custom-experience). */
+function CustomizeRows({ onDone }: { onDone: () => void }) {
+  const openEditor = useOpenShellLayoutEditor();
+  const open = (region: "sidebar" | "header" | "dock") => {
+    onDone();
+    openEditor({ region });
+  };
+  return (
+    <>
+      <button type="button" className={ROW} role="menuitem" onClick={() => open("sidebar")}>
+        <PanelLeft />
+        <span className="min-w-0 flex-1 truncate text-left">Edit sidebar…</span>
+      </button>
+      <button type="button" className={ROW} role="menuitem" onClick={() => open("header")}>
+        <PanelTop />
+        <span className="min-w-0 flex-1 truncate text-left">Customize header…</span>
+      </button>
+      <button type="button" className={ROW} role="menuitem" onClick={() => open("dock")}>
+        <Smartphone />
+        <span className="min-w-0 flex-1 truncate text-left">Customize dock…</span>
+      </button>
+    </>
+  );
+}
+
 /** The list itself — one copy for the rail popover and the phone sheet. */
 function SettingsMenuList({ onDone }: { onDone: () => void }) {
   const dispatch = useAppDispatch();
@@ -127,6 +156,7 @@ function SettingsMenuList({ onDone }: { onDone: () => void }) {
       </button>
       <ThemeRow />
       <StandardViewRow />
+      {isAuthenticated ? <CustomizeRows onDone={onDone} /> : null}
       <button type="button" className={ROW} role="menuitem" onClick={() => open("audioControlWindow")}>
         <MonitorSpeaker />
         <span className="min-w-0 flex-1 truncate text-left">Media</span>

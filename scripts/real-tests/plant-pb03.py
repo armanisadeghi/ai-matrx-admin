@@ -7,6 +7,8 @@
                                       every other key identical), reads the saved settings back and prints them. Refuses
                                       (exit 1) if the pre-state tool_choice is not "auto", if the saved tool_choice is not
                                       "none", or if any other key changed.
+  (--plant also writes the grader plant record planted-PB-03.json: agent, key, value, 2h expiry; --restore deletes it.
+   The disposable gate in pb03-send.py accepts exactly that difference and prints only a count.)
   plant-pb03.py --agent ID --restore  saves tool_choice "auto" again and reads back.
 
 Arman's ruling 2026-10-19: the Settings Desk agents (A, O, G) are shared live agents and are never written by a test;
@@ -26,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import fixture_check  # noqa: E402
+import pb03_gate  # noqa: E402
 
 _spec = importlib.util.spec_from_file_location("pb03_send", Path(__file__).resolve().parent / "pb03-send.py")
 if _spec is None or _spec.loader is None:
@@ -76,11 +79,16 @@ def main() -> None:
     else:
         target = {**before, KEY: "auto"}
     save_settings(token, args.agent, target)
+    if args.restore:
+        print(f"grader record for PB-03: {'deleted' if pb03_gate.delete_plant_record() else 'none present'}")
     after, v1 = live_settings(fixture_check.Reader(), args.agent)
     print(f"saved settings (version {v1}): {json.dumps(after, sort_keys=True)}")
     others_changed = sorted(k for k in set(before) | set(after) if k != KEY and before.get(k) != after.get(k))
     if after.get(KEY) != target[KEY] or others_changed:
         raise SystemExit(f"FAILED: saved {KEY} is {after.get(KEY)!r} (wanted {target[KEY]!r}); other keys changed: {others_changed}")
+    if args.plant:  # the grader record that lets the disposable gate accept exactly this one planted difference
+        pb03_gate.write_plant_record(args.agent, KEY, after[KEY])
+        print("grader record for PB-03: written")
 
 
 if __name__ == "__main__":

@@ -189,6 +189,7 @@ export { setContextValueWindowOverlay } from "./setContextValueWindow.definition
 export { shareLinkDialogOverlay } from "./shareLinkDialog.definition";
 export { shareModalOverlay } from "./shareModal.definition";
 export { shareModalWindowOverlay } from "./shareModalWindow.definition";
+export { shellLayoutEditorWindowOverlay } from "./shellLayoutEditorWindow.definition";
 export { shortcutEditorWindowOverlay } from "./shortcutEditorWindow.definition";
 export { singleMessageWindowOverlay } from "./singleMessageWindow.definition";
 export { siteAnalyticsWindowOverlay } from "./siteAnalyticsWindow.definition";

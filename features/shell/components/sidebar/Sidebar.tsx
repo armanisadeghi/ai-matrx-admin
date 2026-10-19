@@ -16,6 +16,7 @@
 import { LoadMark } from "@/lib/diagnostics/LoadMarkIsland";
 import { PrepaintScript } from "@/components/ssr/PrepaintScript";
 import ShellSidebarNav from "./ShellSidebarNav";
+import { EditSidebarRow, WhatsNewSlot } from "./SidebarLayoutSlots";
 import FavoritesNavGroup from "./FavoritesNavGroup";
 import SidebarMenuSearch from "./SidebarMenuSearch";
 import AdminSidebarSection from "./admin-menu/AdminSidebarSection";
@@ -79,6 +80,9 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
 
         {/* Standard nav — always server-rendered */}
         <div className="shell-sidebar-main-nav">
+          {/* What's new — the reserved place at the top (custom-experience §5.5): renders nothing unless a
+              person with her own sidebar has a new destination or organization change to review. */}
+          {isAuthenticated && <WhatsNewSlot />}
           {/* Search menu — opens the menu-search palette (⌘/); the palette
               chunk loads on first open. */}
           <SidebarMenuSearch />
@@ -88,6 +92,7 @@ export default function Sidebar({ pathname, isAuthenticated, isAdmin = false }: 
           {/* THE LAYOUT's rows (custom-experience): the default menu, or the person's / her
               organization's saved one — chosen on the server, rendered live (ShellSidebarNav). */}
           <ShellSidebarNav isAuthenticated={isAuthenticated} />
+          {isAuthenticated && <EditSidebarRow />}
         </div>
 
         {/* Route menu — populated by RouteMenuSlot client island */}

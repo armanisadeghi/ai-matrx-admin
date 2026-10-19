@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0565",
-  "version": 2,
+  "version": 3,
   "title": "Local Newsroom Editorial Desk",
-  "description": "Story budget, sources, events to cover and corrections for a local newsroom.",
+  "description": "Local newsroom: story budget, assignments, sources, publish schedule and corrections.",
   "forWho": "Local newsrooms and community news outlets",
   "icon": {
     "emoji": "📰"
@@ -14,11 +14,12 @@
   },
   "category": "media",
   "tags": [
+    "editor",
+    "reporter",
+    "managing editor",
     "newsroom",
-    "stories",
-    "editorial",
-    "sources",
-    "corrections"
+    "corrections",
+    "sources"
   ],
   "spec": {
     "specVersion": 1,
@@ -167,6 +168,88 @@
             "format": "date",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "publish_at",
+            "label": "Publish at",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "datetime"
+          },
+          {
+            "key": "slot",
+            "label": "Slot",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Morning newsletter",
+              "Midday web",
+              "Evening web",
+              "Weekend",
+              "Weekly print"
+            ],
+            "choiceColors": {
+              "Morning newsletter": "amber",
+              "Midday web": "blue",
+              "Evening web": "violet",
+              "Weekend": "teal",
+              "Weekly print": "slate"
+            }
+          },
+          {
+            "key": "fact_check",
+            "label": "Fact check",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not started",
+              "In progress",
+              "Done"
+            ],
+            "choiceColors": {
+              "Not started": "slate",
+              "In progress": "amber",
+              "Done": "green"
+            }
+          },
+          {
+            "key": "art",
+            "label": "Art",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Photo needed",
+              "Photo in",
+              "Graphic needed",
+              "No art"
+            ],
+            "choiceColors": {
+              "Photo needed": "red",
+              "Photo in": "green",
+              "Graphic needed": "orange",
+              "No art": "slate"
+            }
+          },
+          {
+            "key": "pageviews",
+            "label": "Pageviews, first week",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
           },
           {
             "key": "words",
@@ -459,7 +542,11 @@
               "words": 900,
               "reporter": "tm-4",
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "In progress",
+              "art": "Photo needed",
+              "publish_at": "@today 21:00",
+              "slot": "Evening web"
             }
           },
           {
@@ -472,7 +559,11 @@
               "due_on": "@today+1d",
               "words": 350,
               "reporter": "tm-3",
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "fact_check": "Done",
+              "art": "Photo in",
+              "publish_at": "@today+1d 07:00",
+              "slot": "Morning newsletter"
             }
           },
           {
@@ -486,7 +577,10 @@
               "words": 700,
               "reporter": "tm-5",
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "Not started",
+              "art": "Photo needed",
+              "slot": "Weekly print"
             }
           },
           {
@@ -499,7 +593,11 @@
               "due_on": "@today+2d",
               "words": 800,
               "reporter": "tm-3",
-              "editor": "tm-1"
+              "editor": "tm-1",
+              "fact_check": "Not started",
+              "art": "Graphic needed",
+              "publish_at": "@today+2d 22:00",
+              "slot": "Evening web"
             }
           },
           {
@@ -513,7 +611,10 @@
               "words": 0,
               "reporter": "tm-6",
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "Not started",
+              "art": "Photo needed",
+              "slot": "Weekend"
             }
           },
           {
@@ -526,7 +627,11 @@
               "due_on": "@today-1d",
               "words": 400,
               "reporter": "tm-3",
-              "editor": "tm-2"
+              "editor": "tm-2",
+              "fact_check": "Done",
+              "art": "No art",
+              "publish_at": "@today 12:00",
+              "slot": "Midday web"
             }
           },
           {
@@ -540,7 +645,10 @@
               "words": 600,
               "reporter": "tm-5",
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "Not started",
+              "art": "Photo needed",
+              "slot": "Weekend"
             }
           },
           {
@@ -553,7 +661,10 @@
               "due_on": "@today+20d",
               "words": 3500,
               "reporter": "tm-3",
-              "editor": "tm-1"
+              "editor": "tm-1",
+              "fact_check": "In progress",
+              "art": "Graphic needed",
+              "slot": "Weekly print"
             }
           },
           {
@@ -567,7 +678,11 @@
               "words": 650,
               "reporter": "tm-4",
               "editor": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "In progress",
+              "art": "Photo in",
+              "publish_at": "@today+4d 18:00",
+              "slot": "Evening web"
             }
           },
           {
@@ -580,7 +695,12 @@
               "due_on": "@today-5d",
               "words": 750,
               "reporter": "tm-3",
-              "editor": "tm-1"
+              "editor": "tm-1",
+              "fact_check": "Done",
+              "art": "Photo in",
+              "publish_at": "@today-5d 18:00",
+              "slot": "Evening web",
+              "pageviews": 4820
             }
           },
           {
@@ -594,9 +714,17 @@
               "words": 300,
               "reporter": "tm-3",
               "editor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "fact_check": "Not started",
+              "art": "No art"
             }
           }
+        ],
+        "before": [
+          [
+            "due_on",
+            "publish_at"
+          ]
         ]
       },
       {
@@ -614,7 +742,8 @@
         "subject": "thing",
         "independentOf": {
           "story": "Either record can be created or change status before the other.",
-          "reporter": "Either record can be created or change status before the other."
+          "reporter": "Either record can be created or change status before the other.",
+          "source": "Either record can be created or change status before the other."
         },
         "statusImplies": [],
         "fields": [
@@ -634,6 +763,15 @@
             "relationMax": 1,
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "source",
+            "label": "Source",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "source",
+            "relationMax": 1
           },
           {
             "key": "role",
@@ -820,7 +958,8 @@
               "speak_on": "@today-1d",
               "attribution": "On the record",
               "reporter": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "source": "source-1"
             }
           },
           {
@@ -857,7 +996,8 @@
               "status": "Spoken",
               "speak_on": "@today-2d",
               "attribution": "On the record",
-              "reporter": "tm-3"
+              "reporter": "tm-3",
+              "source": "source-2"
             }
           },
           {
@@ -882,7 +1022,8 @@
               "status": "Scheduled",
               "speak_on": "@today+2d",
               "attribution": "On the record",
-              "reporter": "tm-5"
+              "reporter": "tm-5",
+              "source": "source-3"
             }
           },
           {
@@ -907,7 +1048,8 @@
               "status": "Spoken",
               "speak_on": "@today-3d",
               "attribution": "On the record",
-              "reporter": "tm-3"
+              "reporter": "tm-3",
+              "source": "source-4"
             }
           },
           {
@@ -932,7 +1074,8 @@
               "status": "Spoken",
               "speak_on": "@today-6d",
               "attribution": "On the record",
-              "reporter": "tm-3"
+              "reporter": "tm-3",
+              "source": "source-7"
             }
           },
           {
@@ -945,7 +1088,8 @@
               "speak_on": "@today-4d",
               "attribution": "Background",
               "reporter": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "source": "source-6"
             }
           }
         ]
@@ -1557,6 +1701,288 @@
             }
           }
         ]
+      },
+      {
+        "token": "source",
+        "name": "Sources",
+        "labelSingular": "Source",
+        "labelPlural": "Sources",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "contact",
+        "titleField": "source_name",
+        "describes": "The contact book: who to call on each beat, how they like to be quoted, and when you last spoke.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New source",
+            "values": {
+              "source_name": "New source",
+              "prefers": "On the record"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "How we met"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Where, when and who introduced you."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Terms agreed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "On the record unless both sides agreed otherwise before the conversation. Write down exactly what was agreed."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What they know"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Topics they can speak to with authority, and what they cannot."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "source_name",
+            "label": "Source",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "beat",
+            "label": "Beat",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "City hall",
+              "Schools",
+              "Health",
+              "Environment",
+              "Business",
+              "Sports"
+            ],
+            "choiceColors": {
+              "City hall": "blue",
+              "Schools": "green",
+              "Health": "red",
+              "Environment": "teal",
+              "Business": "amber",
+              "Sports": "violet"
+            }
+          },
+          {
+            "key": "role",
+            "label": "Role",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "phone",
+            "label": "Phone",
+            "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "last_contact",
+            "label": "Last spoke",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "prefers",
+            "label": "Agreed terms",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "On the record",
+              "Background only",
+              "Not for attribution"
+            ],
+            "choiceColors": {
+              "On the record": "green",
+              "Background only": "amber",
+              "Not for attribution": "violet"
+            }
+          },
+          {
+            "key": "note",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "times",
+            "label": "Interviews done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "source_interviews",
+            "pick": "interview_name",
+            "agg": "count",
+            "filter": {
+              "status": "Spoken"
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "source-1",
+            "values": {
+              "source_name": "Dolores Achterberg",
+              "beat": "Schools",
+              "role": "School board chair",
+              "phone": "(605) 555-0181",
+              "last_contact": "@today-1d",
+              "prefers": "On the record",
+              "note": "Returns calls after 4 pm"
+            }
+          },
+          {
+            "key": "source-2",
+            "values": {
+              "source_name": "Rafe Okonjo",
+              "beat": "City hall",
+              "role": "Public works director",
+              "phone": "(605) 555-0182",
+              "last_contact": "@today-2d",
+              "prefers": "On the record",
+              "note": "Prefers email for numbers"
+            }
+          },
+          {
+            "key": "source-3",
+            "values": {
+              "source_name": "Ingrid Salazar-Moe",
+              "beat": "Health",
+              "role": "Clinic director",
+              "phone": "(605) 555-0183",
+              "last_contact": "@today-10d",
+              "prefers": "On the record",
+              "note": "Ask the clinic's press line first"
+            }
+          },
+          {
+            "key": "source-4",
+            "values": {
+              "source_name": "Tobias Wren",
+              "beat": "City hall",
+              "role": "Cycling advocate",
+              "phone": "(605) 555-0184",
+              "last_contact": "@today-3d",
+              "prefers": "On the record",
+              "note": "Brings data; check it"
+            }
+          },
+          {
+            "key": "source-5",
+            "values": {
+              "source_name": "Priya Kallan",
+              "beat": "Environment",
+              "role": "River trust volunteer lead",
+              "phone": "(605) 555-0185",
+              "last_contact": "@today-30d",
+              "prefers": "On the record"
+            }
+          },
+          {
+            "key": "source-6",
+            "values": {
+              "source_name": "Name withheld (rail engineer)",
+              "beat": "City hall",
+              "role": "Rail safety engineer",
+              "phone": "(605) 555-0186",
+              "last_contact": "@today-4d",
+              "prefers": "Background only",
+              "note": "Never name or describe the employer"
+            }
+          },
+          {
+            "key": "source-7",
+            "values": {
+              "source_name": "Augustin Feeney",
+              "beat": "Business",
+              "role": "County fair board treasurer",
+              "phone": "(605) 555-0187",
+              "last_contact": "@today-6d",
+              "prefers": "On the record"
+            }
+          },
+          {
+            "key": "source-8",
+            "values": {
+              "source_name": "Coach Marisa Delgado",
+              "beat": "Sports",
+              "role": "High school football coach",
+              "phone": "(605) 555-0188",
+              "last_contact": "@today-12d",
+              "prefers": "On the record",
+              "note": "Not on game days"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1629,6 +2055,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "coverage_by_reporter"
+      },
+      {
+        "describes": "An interview is with one source.",
+        "fromTable": "interviews",
+        "fromField": "source",
+        "toTable": "source",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "source_interviews"
       }
     ],
     "sharedBlocks": [
@@ -2235,6 +2671,20 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_source",
+        "name": "All sources",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "source"
+      },
+      {
+        "token": "source_board",
+        "name": "By beat",
+        "kind": "kanban",
+        "groupBy": "beat",
+        "table": "source"
       }
     ],
     "agent": {
@@ -2307,6 +2757,18 @@
           "surface": "corrections_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open sources.",
+        "action": {
+          "kind": "open",
+          "surface": "source_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "source_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2323,7 +2785,7 @@
         "Granary Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2345,12 +2807,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The newsroom's daily budget in one place. Start with the Dashboard before the morning meeting: stories due, meetings to cover and corrections open. Log every interview so reporting is traceable, and fix corrections before they are old. Never put passwords or protected-source identities in these rows."
+              "text": "The newsroom in one place. Stories is the budget from pitch to published, with the publish slot, fact check and art; Events to cover lists the meetings and hearings someone must attend; Sources is the contact book; Interviews tracks who has been reached; Corrections keeps the record honest. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2903,6 +3371,328 @@
             ],
             "activeViewId": "cov-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sources"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The contact book by beat, with agreed terms."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "source",
+              "view": "all_source"
+            },
+            "inline": true,
+            "title": "Sources",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "so-b",
+                "name": "By beat",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "beat"
+              },
+              {
+                "id": "so-t",
+                "name": "All sources",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "last_contact",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "so-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "local-newsroom-editorial-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the newsroom in this workspace. Share it with every editor, reporter and photographer."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stories",
+              "bold": true
+            },
+            {
+              "text": ": the budget. Each story's desk, format, reporter, editor, filing deadline, publish time and slot, fact check, art, pageviews and open corrections."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Events to cover",
+              "bold": true
+            },
+            {
+              "text": ": public meetings, hearings, press conferences and games, with who is going."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interviews",
+              "bold": true
+            },
+            {
+              "text": ": everyone who must be reached for a story, linked to the source, with how they may be quoted."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sources",
+              "bold": true
+            },
+            {
+              "text": ": the contact book by beat, with agreed terms and when you last spoke."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Corrections",
+              "bold": true
+            },
+            {
+              "text": ": every reported error, its fix-by date and outcome."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Morning meeting: today's slots, new pitches, tonight's events."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reporters report and file by their deadline."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Editors edit, fact-check and schedule."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Evening: tonight's meeting stories filed; tomorrow's newsletter set."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: publish schedule for today, overdue filings, open corrections"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: events for the next seven days assigned; sources not called in a month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: pageviews by desk, corrections patterns"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: beats and the source book reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The managing editor owns the budget and corrections. Editors own their desks' stories from assignment to publish. Reporters own their stories, sources and interviews. Photographers own art requests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Standards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "We name sources whenever we can, we give people we write about a real chance to respond, and we never publish a number we cannot show where it came from. When in doubt, the editor decides, and the decision is written in the story's notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Protecting sources"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Sources' phone numbers and notes are confidential. A source granted background terms is never named in the workspace text that others can see beyond the newsroom."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename desks, slots and formats to your newsroom and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns."
+            }
+          ]
         }
       ]
     },
@@ -3305,6 +4095,116 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Publish schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "all_story"
+            },
+            "inline": true,
+            "title": "Publish schedule",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dn-1",
+                "name": "Publishing in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "publish_at": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Editing",
+                    "Ready",
+                    "Reporting"
+                  ]
+                }
+              },
+              {
+                "id": "dn-2",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "publish_at"
+              }
+            ],
+            "activeViewId": "dn-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it runs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "story",
+              "view": "all_story"
+            },
+            "inline": true,
+            "title": "Fact check and art",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dn-3",
+                "name": "Fact check not done",
+                "layout": "list",
+                "icon": "ShieldCheck",
+                "anyOf": {
+                  "fact_check": [
+                    "Not started",
+                    "In progress"
+                  ],
+                  "status": [
+                    "Editing",
+                    "Ready"
+                  ]
+                }
+              },
+              {
+                "id": "dn-4",
+                "name": "Art still needed",
+                "layout": "list",
+                "icon": "Camera",
+                "anyOf": {
+                  "art": [
+                    "Photo needed",
+                    "Graphic needed"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dn-3"
+          }
         }
       ]
     },
@@ -3323,7 +4223,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every story passes the same gates. The gates are how a small newsroom stays accurate under time pressure."
+              "text": "Every story moves through the same stages, and the budget always shows where each one is. If it is not on the budget, it is not happening."
             }
           ],
           "background": "blue",
@@ -3335,7 +4235,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Gates"
+              "text": "Pitch"
             }
           ],
           "props": {
@@ -3343,152 +4243,268 @@
           }
         },
         {
-          "type": "table",
+          "type": "text",
+          "text": [
+            {
+              "text": "Anyone can pitch. A pitch is two sentences: what is new, and why readers in this county should care. Add it to "
+            },
+            {
+              "text": "Stories",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Pitch",
+              "bold": true
+            },
+            {
+              "text": " with the desk and format. Editors decide at the morning meeting: assign it or kill it with a reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assigned and reporting"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Status"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who owns it"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Ready to move on when"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Pitch"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Reporter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "An editor agrees it is worth doing"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Assigned"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Reporter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A plan and first sources are listed"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Reporting"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Reporter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Facts are gathered and sourced"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Editing"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Editor"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Facts, fairness and language are checked"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Ready"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Editor"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Headline, photos and links are done"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Published"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Editor"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "It is live and the budget is updated"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The editor sets the reporter, the filing deadline and the length."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The reporter lists who must be reached in "
+            },
+            {
+              "text": "Interviews",
+              "bold": true
+            },
+            {
+              "text": ", linked to the person in "
+            },
+            {
+              "text": "Sources",
+              "bold": true
+            },
+            {
+              "text": ". Every story that criticizes someone gives them a fair chance to respond, with a deadline you would accept yourself."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Documents beat memory: get the budget, the minutes, the inspection report."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Editing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The editor reads for fairness, clarity and holes first, then line by line."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fact check",
+              "bold": true
+            },
+            {
+              "text": ": every name, title, number, date and quote is checked against notes or documents. Mark it Done only when every fact has been checked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Art",
+              "bold": true
+            },
+            {
+              "text": ": a photo, a chart or a map. Mark what is needed early; photographers book up."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ready and published"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the "
+            },
+            {
+              "text": "Publish at",
+              "bold": true
+            },
+            {
+              "text": " time and the "
+            },
+            {
+              "text": "Slot",
+              "bold": true
+            },
+            {
+              "text": ": the morning newsletter, midday, evening, the weekend or the weekly print edition."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The editor gives the final read and moves it to "
+            },
+            {
+              "text": "Ready",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When it is live, set it to "
+            },
+            {
+              "text": "Published",
+              "bold": true
+            },
+            {
+              "text": ". After a week, write the "
+            },
+            {
+              "text": "Pageviews",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Killed stories"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Some stories do not hold up. Kill them honestly, write why in a line, and thank the people who gave their time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The morning meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Today's slots: what is ready, what is late"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New pitches: assign or kill"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tonight's meetings and who is going"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open corrections"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Rules of thumb"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3496,26 +4512,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Two sources for any serious claim."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Call the person criticized before publishing."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "If in doubt, hold the story one day."
+              "text": "The school board budget story is reporting, due tonight. The reporter has the board chair on the record and is waiting on the finance chief. At 4 pm the editor sets it for the evening web slot with a photo needed. The finance chief calls back at 5; the story is edited, fact-checked and live at 9."
             }
           ]
         }
@@ -3536,7 +4536,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A visible, quick correction is a sign of a trustworthy newsroom. Hiding a mistake is what hurts."
+              "text": "Readers forgive mistakes. They do not forgive hiding them. A quick, plain correction is part of the job and protects everything else you publish."
             }
           ],
           "background": "blue",
@@ -3559,7 +4559,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log it on the Corrections table the moment it arrives."
+              "text": "Thank them, whoever they are."
             }
           ]
         },
@@ -3567,7 +4567,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "The editor checks the claim against notes and documents."
+              "text": "Add it to "
+            },
+            {
+              "text": "Corrections",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Open",
+              "bold": true
+            },
+            {
+              "text": ", linked to the story, with the kind of error and a "
+            },
+            {
+              "text": "fix by",
+              "bold": true
+            },
+            {
+              "text": " date. Same day for anything serious."
             }
           ]
         },
@@ -3575,15 +4596,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If it is wrong, fix the story and add a correction note at the top or bottom."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Mark fixed and thank the reader who reported it."
+              "text": "The editor of the story checks it against notes and documents."
             }
           ]
         },
@@ -3591,7 +4604,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Never"
+              "text": "Deciding"
             }
           ],
           "props": {
@@ -3602,7 +4615,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Quietly change text with no note on a material error."
+              "text": "If it is wrong, it is corrected. Set it to "
+            },
+            {
+              "text": "Fixed",
+              "bold": true
+            },
+            {
+              "text": " when the correction is live."
             }
           ]
         },
@@ -3610,7 +4630,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Argue with the reader before checking."
+              "text": "If it is right, set "
+            },
+            {
+              "text": "Not an error",
+              "bold": true
+            },
+            {
+              "text": " and explain to the person, kindly, what your reporting showed."
             }
           ]
         },
@@ -3618,7 +4645,135 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Leave an error up while you decide."
+              "text": "If it is a matter of opinion, consider a letter to the editor, not a correction."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How a correction appears"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fix the text, then add a note at the bottom of the story: \"An earlier version of this story gave the wrong date for the council vote. It is Tuesday, March 4.\" Say what was wrong and what is right. Do not quietly change it."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "For print, run the correction in the next edition in a consistent place."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Serious errors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A wrong name in a crime story, a wrong number that changes the meaning, or a misquote is serious. The managing editor is told at once, the subject is called, and the story is reviewed for other problems."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learning from errors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each story counts its open corrections. Once a month, read the list: are the errors names, numbers or dates? Most are fixed by better habits in fact-checking, not by blame."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No correction open past its fix-by date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Fixed correction has a note on the story"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Patterns shared at the staff meeting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A reader emails that the board chair's first name is misspelled. The editor checks the meeting agenda, confirms the error, fixes the name, adds a correction note, and marks it Fixed within the hour. The reporter adds the correct spelling to the source's record."
             }
           ]
         }
@@ -3639,7 +4794,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Most local news starts in a meeting room. A good plan turns a long night into one clear story."
+              "text": "Public meetings are where local news starts: budgets, zoning, schools and police. Showing up is the first rule of local reporting, and doing it well takes preparation."
             }
           ],
           "background": "blue",
@@ -3651,7 +4806,64 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before"
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check "
+            },
+            {
+              "text": "Events to cover",
+              "bold": true
+            },
+            {
+              "text": " for tomorrow and who is assigned."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the agenda and the packet. The story is usually on page 40, not page 1."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull past stories on the issues coming up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Text the key sources in "
+            },
+            {
+              "text": "Sources",
+              "bold": true
+            },
+            {
+              "text": " that you will be there."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the meeting"
             }
           ],
           "props": {
@@ -3662,7 +4874,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Download the agenda and packet"
+              "text": "Arrive early; sign in if required; sit where you can see faces"
             }
           ],
           "props": {
@@ -3673,7 +4885,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "List the items likely to matter and who will speak"
+              "text": "Note the time of each vote and the count, by name"
             }
           ],
           "props": {
@@ -3684,7 +4896,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check the livestream or recording options"
+              "text": "Get public commenters' names spelled and their neighborhood"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Catch officials after the meeting for the quote the meeting did not give"
             }
           ],
           "props": {
@@ -3695,7 +4918,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "During"
+              "text": "Filing"
             }
           ],
           "props": {
@@ -3706,7 +4929,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Note the time of each vote and how each member voted."
+              "text": "If the vote matters tonight, file a short version within an hour for the evening web slot. Write the longer story for the morning."
             }
           ]
         },
@@ -3714,7 +4937,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Get names and spellings from the sign-in sheet."
+              "text": "Lead with what was decided and what it means for residents, not with the order of the agenda."
             }
           ]
         },
@@ -3722,7 +4945,66 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask one clarifying question in the break."
+              "text": "Add the story to "
+            },
+            {
+              "text": "Stories",
+              "bold": true
+            },
+            {
+              "text": " with its "
+            },
+            {
+              "text": "Publish at",
+              "bold": true
+            },
+            {
+              "text": " time, if it is not already there."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Meetings you cannot attend"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark them "
+            },
+            {
+              "text": "Skipped",
+              "bold": true
+            },
+            {
+              "text": " with a reason, watch the recording if there is one, and read the minutes. Never write as if you were there."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Court hearings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Court is not a meeting: names and charges must be exact, and a charge is not a conviction. The editor reads every court story before it runs."
             }
           ]
         },
@@ -3738,37 +5020,38 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Call anyone whose statement needs checking"
+              "text": "Set the event to "
+            },
+            {
+              "text": "Covered",
+              "bold": true
+            },
+            {
+              "text": ", log new sources, and note anything to follow up on the next agenda."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "File within the budget deadline"
+              "text": "The school board budget workshop starts at 7 pm. The reporter has read the packet and spotted a proposal to close a library branch. She files a 300-word story at 9:15 for the evening web slot and a fuller version with the parents' reaction for the morning newsletter."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Press Mark covered on the event"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     }

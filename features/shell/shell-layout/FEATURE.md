@@ -22,6 +22,14 @@ database here.
 | `useResolvedShellLayout.ts` | `selectResolvedShellLayout` + hook — the renderers' one data source; `selectHoldsShellLayout`, `selectShellStandardView`, `selectShellNavReserved`. |
 | `ShellLayoutSync.tsx` | The island: installs a late streamed seed, follows the tab's active organization, keeps the two cookies in step; `setShellStandardViewCookie`. |
 | `service.ts` | Records-store reads/writes: `readShellLayouts`, `saveShellLayout` (compare-and-swap), `clearShellLayout`, `listShellLayoutVersions`, `previewShellLayoutVersion`, `restoreShellLayoutVersion`. |
+| `knob.ts` | `SHELL_MEMBERS_MAY_CUSTOMIZE_KNOB` — `shell.members_may_customize` (boolean, default true, organization rung only). |
+| `editor/tree.ts` | The editors' pure verbs: catalog tree, tick (brings defaults) / untick / tri-state, move (before/after/inside/top, depth ≤ 3, Dock flat ≤ 8), nudge, rename, re-icon, own rows, header buttons. |
+| `editor/regions.ts` | A body's regions as seen (absent = default), `startingBody`, `addPageToBody` (Add to my menu: catalog page → its row, already placed → moved there, record → `record`, else `link`), What's new verbs. |
+| `editor/ShellLayoutEditor.tsx` | THE editor (Sidebar / Header / Dock tabs, checklist + arrange tree, live preview, Save, Reset, History "Set active", the organization's "Members may customize" switch). |
+| `editor/ArrangeTree.tsx`, `CatalogChecklist.tsx`, `HeaderPane.tsx`, `AddOwnRow.tsx`, `IconPicker.tsx`, `rowDisplay.ts` | Its parts (dnd-kit + DragCursorMonitor; row ⋯ menu = keyboard/touch twin of every drag). |
+| `editor/ShellLayoutMount.tsx` | Records provider for the editors (active organization, or the organization being edited). |
+| `editor/AddToMyMenu.tsx` | Add to my menu: `AddToMyMenuTile` (the chat `AddToMyMenu` host slot in the Intelligence dropdown) and `AddToMyMenuButton` (beside every `PinButton`). |
+| `editor/OrgLayoutSection.tsx` | Organization settings › Layout (owner/admin). |
 | `useShellLayoutStore.ts` | THE door for the editors (lane C): `person`, `organization`, `canEditOrganization`, `save(target, body, note)`, `clear(target)`, `versions(target)`, `preview(target, v)`, `restore(target, v, seenVersion)`. Under a records provider. |
 
 ## Permanent ids
@@ -90,10 +98,38 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   load / Standard view). The device copy fills only a gap the server left; `remote.fetch` (`iam.shell_layout_seed`)
   revalidates on boot and on focus (≥ 60 s) and replaces what is held; saves are compare-and-swap.
 - **Standard view:** the switch in the Settings menu of the account rail (only when a layout is held).
-- **Landing:** password sign-in with no destination of her own lands on `shellLandingAfterSignIn`.
+- **Landing:** every sign-in path with no destination of her own (the default `/dashboard` counts as none) lands on `shellLandingAfterSignIn`.
+
+## Editors and entry points (lane C)
+
+- **One window** `shellLayoutEditorWindow` (`useOpenShellLayoutEditor()({ region, target, organizationId })`; phone:
+  fullscreen). Doors: "Edit sidebar…" at the bottom of the Sidebar (`SidebarLayoutSlots.tsx`), "Edit sidebar… /
+  Customize header… / Customize dock…" in the account rail's Settings menu beside Standard view, Settings ›
+  Appearance › Layout (`features/settings/tabs/LayoutTab.tsx`, also the sign-in landing choice), and
+  Organization settings › Layout (target `organization`, owner/admin).
+- **Live preview:** an unsaved draft goes to the slice's `previewBody`; `resolveHeldShellLayout` draws it in place of
+  every stored layout, so the real Sidebar/Header/Dock show it. Cleared on save, discard and close. Never persisted.
+- **Saving** refuses a body with `problems`. History lists record versions; "Set active" = `restore` (one new version).
+- **Reset:** the section (region back to default), "Use organization's layout" (clear person), "Reset to standard"
+  (person with an org layout saves explicit default regions so they win; else clear).
+- **Add to my menu** saves the person's layout at once. The page's record comes from the current-record primitive
+  (`features/shell/current-record/currentRecord.ts`: `EntityModeHeader` / `RecordPageHeader` declare the name, and
+  `token`/`id` when the caller passes `record.token`/`record.id`; `<DeclareCurrentRecord token id />` for routes like
+  `/agents/[id]`).
+- **Lock:** `shell.members_may_customize` off → `personAllowed: false` (amendment in REGISTER.md); the server pick
+  reads the knob only when a person layout AND the predicted organization's layout both exist; `ShellLayoutSync`
+  follows it on the client. A locked member's editor says so in one line.
+- **What's new** (`WhatsNewSlot`, top of the Sidebar, only for a person with her own custom sidebar): "New: X" — Add
+  (into the sidebar; the body moves to today's catalog version once nothing newer is left) / Dismiss
+  (`dismissedNew`); "Your organization updated its menu" — Review / Dismiss, keyed in localStorage by the
+  organization layout's version (first sight records it silently).
+- **Landing:** every sign-in path ends in `signInDestination` (utils/auth/FEATURE.md); `/dashboard` counts as none.
 
 ## Change log
 
 - `2026-10-19` — claude (lane A): catalog, validator, resolver, permanent nav ids + guard.
 - `2026-10-19` — claude (lane B): storage, boot seed `shell`, server pick, live renderers, sync policy,
   cookies + reserve, Standard view, landing, editor door.
+- `2026-10-19` — claude (lane C): editor window, live preview, history, Add to my menu + current-record primitive,
+  organization layout + lock knob (`personAllowed` amendment), What's new, Settings › Layout, landing on every
+  sign-in path.

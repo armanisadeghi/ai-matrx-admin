@@ -19,6 +19,7 @@ import { ServerNotes } from "@/components/official/ServerNotes";
 import { ReferenceCopyButton } from "@/features/matrx-envelope/components/ReferenceCopyButton";
 import { MandateNotesPanel } from "@/features/mandates/components/MandateNotesPanel";
 import { SurfaceBoundAgentsList } from "@/features/surfaces/components/bind/SurfaceBoundAgentsList";
+import { AddToMyMenuTile } from "@/features/shell/shell-layout/editor/AddToMyMenu";
 import type { ProposedDirectivesZone as ProposedDirectivesZoneType } from "@/features/matrx-envelope/components/ProposedDirectivesZone";
 import { EntityCommentPopover } from "@/components/comments/EntityCommentPopover";
 import MatrxEnvelopeBlock from "@/features/matrx-envelope/MatrxEnvelopeBlock";
@@ -88,6 +89,7 @@ export const fullSlotImpls = {
   ReferenceCopyButton,
   MandateNotesPanel,
   SurfaceBoundAgentsList,
+  AddToMyMenu: AddToMyMenuTile,
   ProposedDirectivesZone,
   EntityCommentPopover,
   MatrxEnvelopeBlock,

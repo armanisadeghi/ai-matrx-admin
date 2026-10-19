@@ -16,6 +16,7 @@ import { Star } from "lucide-react";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { usePinned, type FavoriteInput } from "./usePinned";
+import { AddToMyMenuButton, itemFromFavorite } from "@/features/shell/shell-layout/editor/AddToMyMenu";
 
 export interface PinButtonProps {
   /** The favorite to toggle. `id` must be stable — use favoriteId() for records. */
@@ -59,6 +60,7 @@ export function PinButton({
   };
 
   return (
+    <>
     <button
       type="button"
       onClick={onClick}
@@ -82,6 +84,9 @@ export function PinButton({
         />
       </span>
     </button>
+    {/* Beside every pin: put the same page or record in your Sidebar, Dock or Header (custom-experience). */}
+    <AddToMyMenuButton item={itemFromFavorite(item)} />
+    </>
   );
 }
 

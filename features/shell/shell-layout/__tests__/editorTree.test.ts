@@ -167,3 +167,23 @@ describe("the Header", () => {
     expect(parsed.body?.header).toEqual(header);
   });
 });
+
+import { addPageToBody } from "../editor/regions";
+describe("Add to my menu", () => {
+  const entries = buildShellCatalog({ isAdmin: false });
+  const page = entries.find((e) => e.depth === 2 && e.href && !e.external)!;
+  it("a page already in the menu is promoted to the top level, not duplicated", () => {
+    const r = addPageToBody(emptyBody(), { href: page.href!, label: page.label, record: null }, { region: "sidebar", intoId: null }, { isAdmin: false });
+    expect(r.added).toBe(true);
+    expect(r.moved).toBe(true);
+    expect(locate(r.body.sidebar!, page.id)?.depth).toBe(1);
+  });
+  it("a record becomes a record row; a page the menus do not know becomes a link", () => {
+    const rec = addPageToBody(emptyBody(), { href: "/agents/a1", label: "Acme", record: { token: "agent", id: "a1" } }, { region: "sidebar", intoId: null }, { isAdmin: false });
+    expect(rec.body.sidebar!.at(-1)).toMatchObject({ kind: "record", token: "agent", recordId: "a1" });
+    const link = addPageToBody(emptyBody(), { href: "/somewhere/odd?x=1", label: "Odd" , record: null }, { region: "dock" }, { isAdmin: false });
+    expect(link.body.dock!.at(-1)).toMatchObject({ kind: "link", href: "/somewhere/odd?x=1" });
+    const hdr = addPageToBody(emptyBody(), { href: page.href!, label: page.label, record: null }, { region: "header" }, { isAdmin: false });
+    expect(hdr.body.header!.some((b) => b.kind === "nav" && b.ref === page.id)).toBe(true);
+  });
+});

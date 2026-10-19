@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-19-025710/pnpm-lock.yaml.held — LOCAL latest 2026-10-19 02:55; GITHUB latest 2026-10-19 02:51; LOCAL lacks 6 of GITHUB's 26 new lines; GITHUB lacks 17 of LOCAL's 37 new lines; recover: git show a45a2e9fe6:'pnpm-lock.yaml' / ba251b7649:'pnpm-lock.yaml'
 
 ## Resolution log
 - 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).

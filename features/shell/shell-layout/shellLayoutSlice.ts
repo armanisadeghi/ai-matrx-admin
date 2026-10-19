@@ -42,6 +42,11 @@ export interface ShellLayoutState {
   reserved: boolean;
   /** The organization lets members use their own layout (knob `shell.members_may_customize`); false = locked. */
   personAllowed: boolean;
+  /**
+   * The open layout editor's draft (serialized body), shown by the real shell while the editor is open —
+   * the live preview. This tab only: never persisted, never broadcast. null = no editor open.
+   */
+  previewBody: string | null;
 }
 
 export const initialShellLayoutState: ShellLayoutState = {
@@ -53,6 +58,7 @@ export const initialShellLayoutState: ShellLayoutState = {
   standardView: false,
   reserved: false,
   personAllowed: true,
+  previewBody: null,
 };
 
 /** True when anything is stored for this viewer (drives the `matrx_shell` cookie and the Standard view switch). */
@@ -105,6 +111,10 @@ const shellLayoutSlice = createSlice({
     shellPersonAllowedChanged(state, action: PayloadAction<boolean>) {
       state.personAllowed = action.payload;
     },
+    /** The layout editor's live preview (its draft), or null when it closes. */
+    shellLayoutPreviewChanged(state, action: PayloadAction<string | null>) {
+      state.previewBody = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(REHYDRATE_ACTION_TYPE, (state, action: RehydrateAction) => {
@@ -135,6 +145,7 @@ export const {
   shellLayoutOrganizationChanged,
   shellStandardViewChanged,
   shellPersonAllowedChanged,
+  shellLayoutPreviewChanged,
 } = shellLayoutSlice.actions;
 
 export default shellLayoutSlice.reducer;
@@ -159,6 +170,7 @@ export function seedShellLayoutState(input: {
     standardView: input.standardView,
     reserved: input.reserved,
     personAllowed: input.personAllowed !== false,
+    previewBody: null,
   };
 }
 

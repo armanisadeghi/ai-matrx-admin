@@ -29,6 +29,7 @@ import {
   Crown,
   Shield,
   SlidersHorizontal,
+  LayoutTemplate,
   BookA,
   User as UserIcon,
   KeyRound,
@@ -60,6 +61,7 @@ import { OrgIndustriesSection } from "@/features/industries/components/OrgIndust
 import { MemberManagement } from "./MemberManagement";
 import { TeamManagement } from "./TeamManagement";
 import { OrgTrashSection } from "@/features/trash/components/OrgTrashSection";
+import { OrgLayoutSection } from "@/features/shell/shell-layout/editor/OrgLayoutSection";
 import { InvitationManager } from "./InvitationManager";
 import { DangerZone } from "./DangerZone";
 import { ArchivedOrganizationBanner } from "./ArchivedOrganizationBanner";
@@ -181,6 +183,8 @@ export function OrgManage({
       icon: SlidersHorizontal,
       show: canManageSettings,
     },
+    // custom-experience: the sidebar, header and dock members start from, and the lock.
+    { id: "layout", label: "Layout", icon: LayoutTemplate, show: canManageSettings },
     {
       id: "configuration",
       label: "Configuration",
@@ -599,6 +603,12 @@ export function OrgManage({
                 orgId={displayOrganization.id}
                 canEdit={canManageSettings}
               />
+            </SectionCard>
+          )}
+
+          {canManageSettings && (
+            <SectionCard id="layout" icon={LayoutTemplate} title="Layout" description="The sidebar, header and dock your members start from.">
+              <OrgLayoutSection organizationId={displayOrganization.id} />
             </SectionCard>
           )}
 
