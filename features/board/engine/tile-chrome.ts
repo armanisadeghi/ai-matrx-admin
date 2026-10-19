@@ -194,6 +194,16 @@ export const LOOK_ICON: Readonly<Record<string, string>> = {
 };
 
 export const CHAPTER_FALLBACK_ICON = "Bookmark";
+/** A chapter whose tile is a note or plain text (never the cover's icon, never a page's). */
+export const NOTE_CHAPTER_ICON = "NotebookText";
+/** The outline's Pages list: the top board, and a page under it. */
+export const TOP_PAGE_ICON = "LayoutDashboard";
+export const CHILD_PAGE_ICON = "FileText";
+
+/** A page row's icon name in the outline: the top board differs from the pages under it. */
+export function pageIconName(page: { parentId: string | null }): string {
+  return page.parentId ? CHILD_PAGE_ICON : TOP_PAGE_ICON;
+}
 
 export function chapterIconName(
   frame: { icon?: string | null },
@@ -208,7 +218,7 @@ export function chapterIconName(
 export function tileIconHint(source: { kind: string; entity?: string; meta?: Record<string, unknown> | null }): string | null {
   const look = source.meta?.look;
   if (typeof look === "string" && LOOK_ICON[look]) return LOOK_ICON[look];
-  if (source.kind === "text" || (source.kind === "entity" && source.entity === "note")) return "BookOpen";
+  if (source.kind === "text" || (source.kind === "entity" && source.entity === "note")) return NOTE_CHAPTER_ICON;
   if (source.kind === "html") return "Component";
   if (source.kind === "entity" && source.entity === "file") return "Folder";
   return null;

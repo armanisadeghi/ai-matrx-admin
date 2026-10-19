@@ -6,7 +6,7 @@ import { readOf } from "@ai-matrx/design-system";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { Button as ControlButton, Chip, SearchField, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { enumUrlCodec, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import {
   ImageIcon,
   Play,
@@ -157,10 +157,13 @@ export default function MediaGallery() {
     buckets.unknownAspect.length > 0;
 
   return (
-    <div className="space-y-4 px-3 pb-4 sm:px-4">
-      <div className="sticky top-0 z-20 -mx-3 space-y-2 border-b border-border/60 bg-background/90 px-3 py-2 backdrop-blur-xl sm:-mx-4 sm:px-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="type-section shrink-0 whitespace-nowrap">
+    <div className="pb-4">
+      <div
+        data-media-bar
+        className="sticky top-0 z-20 space-y-1.5 border-b border-border/60 bg-background/90 px-3 py-2 backdrop-blur-xl sm:px-4"
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="type-section hidden shrink-0 whitespace-nowrap sm:block">
             Media{" "}
             <span className="type-meta tabular-nums text-muted-foreground">
               <UntrustedCount
@@ -175,7 +178,7 @@ export default function MediaGallery() {
             onChange={(event) => setSearch(event.target.value, { history: "replace" })}
             placeholder="Search media"
             aria-label="Search media"
-            className="order-last min-w-0 basis-full sm:order-none sm:basis-auto sm:min-w-48 sm:flex-1"
+            className="min-w-0 flex-1"
           />
           <SegmentedControl
             aria-label="Show"
@@ -187,6 +190,7 @@ export default function MediaGallery() {
               { value: "excluded", label: "Excluded" },
             ]}
           />
+          <div className="hidden shrink-0 sm:block">
           <SegmentedControl
             aria-label="Media view"
             value={view}
@@ -196,10 +200,25 @@ export default function MediaGallery() {
               { value: "debug", label: <span className="inline-flex items-center gap-1"><Bug className="size-3" />Debug</span> },
             ]}
           />
+          </div>
         </div>
-        {view === "gallery" && <MediaSectionNav sections={mediaSections(buckets)} />}
+        <MediaSectionNav
+          sections={view === "gallery" ? mediaSections(buckets) : []}
+          trailing={<div className="ml-auto shrink-0 sm:hidden">
+          <SegmentedControl
+            aria-label="Media view"
+            value={view}
+            onValueChange={(next) => setView(next)}
+            data={[
+              { value: "gallery", label: <span className="inline-flex items-center gap-1"><LayoutGrid className="size-3" />Gallery</span> },
+              { value: "debug", label: <span className="inline-flex items-center gap-1"><Bug className="size-3" />Debug</span> },
+            ]}
+          />
+          </div>}
+        />
       </div>
 
+      <div className="space-y-4 px-3 pt-4 sm:px-4">
       {mediaError && mediaList.length > 0 && (
         <StaleDataNotice
           hasData
@@ -365,6 +384,7 @@ export default function MediaGallery() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
@@ -390,52 +410,86 @@ function mediaSections(buckets: ReturnType<typeof bucketMedia>): MediaSectionLin
   ].filter((section) => section.count > 0);
 }
 
+/** The element that actually scrolls this page (the app shell's main pane). */
+function scrollParentOf(element: HTMLElement | null): HTMLElement | Window {
+  for (let node = element?.parentElement; node; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) return node;
+  }
+  return window;
+}
+
 /** Every kind on the page, always in view: shows where you are, jumps on click. */
-function MediaSectionNav({ sections }: { sections: MediaSectionLink[] }) {
+function MediaSectionNav({ sections, trailing }: { sections: MediaSectionLink[]; trailing?: React.ReactNode }) {
+  const navRef = useRef<HTMLElement>(null);
   const [current, setCurrent] = useState<string | null>(null);
+  /** A click owns the highlight until its scroll settles (a short last
+   * section can never reach the top, so the spy would pick its neighbour). */
+  const clickedRef = useRef<{ key: string; until: number } | null>(null);
   const keys = sections.map((section) => section.key).join(",");
 
   useEffect(() => {
-    const elements = keys
-      .split(",")
-      .map((key) => document.getElementById(`media-${key}`))
-      .filter((element): element is HTMLElement => !!element);
-    if (elements.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setCurrent(visible.target.id.replace("media-", ""));
-      },
-      { rootMargin: "-120px 0px -60% 0px" },
-    );
-    for (const element of elements) observer.observe(element);
-    return () => observer.disconnect();
+    const scroller = scrollParentOf(navRef.current);
+    const bar = navRef.current?.closest("[data-media-bar]") as HTMLElement | null;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const clicked = clickedRef.current;
+      if (clicked && Date.now() < clicked.until) return;
+      const line = (bar?.getBoundingClientRect().bottom ?? 0) + 12;
+      let active: string | null = null;
+      for (const key of keys.split(",")) {
+        const element = document.getElementById(`media-${key}`);
+        if (element && element.getBoundingClientRect().top <= line) active = key;
+      }
+      setCurrent(active);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, [keys]);
 
-  if (sections.length < 2) return null;
+  const jump = (key: string) => {
+    const target = document.getElementById(`media-${key}`);
+    if (!target) return;
+    const scroller = scrollParentOf(navRef.current);
+    const bar = navRef.current?.closest("[data-media-bar]") as HTMLElement | null;
+    const barHeight = bar?.getBoundingClientRect().height ?? 0;
+    clickedRef.current = { key, until: Date.now() + 900 };
+    setCurrent(key);
+    // Scroll only the pane that scrolls; scrollIntoView also nudges the outer
+    // shell and pushes the sticky bar's top row out of view.
+    if (scroller === window) {
+      window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - barHeight - 8, behavior: "smooth" });
+    } else {
+      const pane = scroller as HTMLElement;
+      const top = pane.scrollTop + target.getBoundingClientRect().top - pane.getBoundingClientRect().top;
+      pane.scrollTo({ top: top - barHeight - 8, behavior: "smooth" });
+    }
+  };
+
+  const pressed = sections.some((section) => section.key === current) ? current : sections[0]?.key;
   return (
-    <nav aria-label="Media sections" className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-0.5">
-      {sections.map((section) => (
-        <Chip
-          key={section.key}
-          asChild
-          label={`${section.label} ${section.count}`}
-          icon={section.icon}
-          pressed={(current ?? sections[0]?.key) === section.key}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setCurrent(section.key);
-              document
-                .getElementById(`media-${section.key}`)
-                ?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-          />
-        </Chip>
-      ))}
+    <nav ref={navRef} aria-label="Media sections" className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 pb-0.5">
+      {sections.length > 1 &&
+        sections.map((section) => (
+          <Chip
+            key={section.key}
+            asChild
+            label={`${section.label} ${section.count}`}
+            icon={section.icon}
+            pressed={pressed === section.key}
+          >
+            <button type="button" onClick={() => jump(section.key)} />
+          </Chip>
+        ))}
+      {trailing}
     </nav>
   );
 }

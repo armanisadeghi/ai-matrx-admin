@@ -6,7 +6,7 @@
  * kept on the tile's source (`{ kind: "entity", entity: "cover", id: null, meta: { hero, markdown } }`),
  * so it saves with the board and copies with a template; an agent writes the same two strings.
  *
- * Read first. "Edit" (or a press on the prose while the tile is open for work) shows the prose in
+ * Read first. "Edit" in the tile's one "…" menu (or a press on the prose while the tile is open for work) shows the prose in
  * the writing box and the hero's HTML source beneath it, each drawn live; Done or Escape returns to
  * the rendered cover. The hero is drawn by records-ui's seamless frame (`/html-frame`): sandboxed
  * markup and CSS only, transparent, as tall as its content, with the theme's tokens as CSS variables.
@@ -14,14 +14,15 @@
  * Comments: none of its own, so the tile's comment door posts on the board's thread.
  */
 
-import { useEffect, useState } from "react";
-import { BookOpen } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
+import { LayoutTemplate, Pencil } from "lucide-react";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { HtmlSampleFrame } from "@ai-matrx/records-ui/html-frame";
 import { Button, Textarea } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import type { NodeSource } from "../board/document";
-import type { BoardItemType, ItemBodyProps } from "./types";
+import type { BoardItemType, ItemBodyProps, TileMenuAction, TileMenuContext } from "./types";
+import { BoardCameraStoreContext } from "../engine/react";
 import { FaceLine, faceCopy } from "./face-text";
 import { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-source";
 
@@ -29,9 +30,42 @@ export { COVER_ENTITY, coverOf, coverSource, type CoverContent } from "./cover-s
 
 const DRAW_AFTER_MS = 250;
 
-function CoverBody({ source, onSource, title, interacting }: ItemBodyProps) {
+/** "Edit" from the tile's menu reaches the cover body showing that tile (the menu holds no component). */
+const editRequests = new Map<string, Set<() => void>>();
+
+export function requestCoverEdit(tileId: string): void {
+  for (const open of editRequests.get(tileId) ?? []) open();
+}
+
+function onCoverEditRequest(tileId: string, open: () => void): () => void {
+  const set = editRequests.get(tileId) ?? new Set<() => void>();
+  set.add(open);
+  editRequests.set(tileId, set);
+  return () => {
+    set.delete(open);
+    if (set.size === 0) editRequests.delete(tileId);
+  };
+}
+
+/** The cover's own entry in the tile's one "…" menu. */
+export function coverMenuActions({ tileId }: TileMenuContext): TileMenuAction[] {
+  return [{ key: "edit", label: "Edit", icon: Pencil, onSelect: () => requestCoverEdit(tileId) }];
+}
+
+function CoverBody({ tileId, source, onSource, title, interacting }: ItemBodyProps) {
   const cover = coverOf(source);
+  const store = useContext(BoardCameraStoreContext);
   const [editing, setEditing] = useState(false);
+
+  // The menu's Edit opens the writing box and gives the tile the input, so the box takes typing at once.
+  useEffect(
+    () =>
+      onCoverEditRequest(tileId, () => {
+        setEditing(true);
+        store?.setEditing(tileId);
+      }),
+    [tileId, store],
+  );
   const [draft, setDraft] = useState<CoverContent>(() => cover ?? { hero: "", markdown: "" });
   const [drawn, setDrawn] = useState<CoverContent>(draft);
 
@@ -79,7 +113,7 @@ function CoverBody({ source, onSource, title, interacting }: ItemBodyProps) {
 
   if (!editing) {
     return (
-      <article data-board-cover="" className="group relative flex flex-col gap-6 rounded-xl bg-card px-10 py-10">
+      <article data-board-cover="" className="flex flex-col gap-6 rounded-xl bg-card px-10 py-10">
         {hero}
         {prose ? (
           <div
@@ -93,11 +127,6 @@ function CoverBody({ source, onSource, title, interacting }: ItemBodyProps) {
           </div>
         ) : null}
         {!hero && !prose ? <p className="py-6 text-center text-sm text-muted-foreground">Empty cover</p> : null}
-        <div className="absolute right-3 top-3 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
-          <Button variant="outline" onClick={() => setEditing(true)}>
-            Edit
-          </Button>
-        </div>
       </article>
     );
   }
@@ -136,7 +165,7 @@ function CoverBody({ source, onSource, title, interacting }: ItemBodyProps) {
 /** The cover at far zoom: its first words. */
 function CoverFace({ source }: { source: NodeSource }) {
   const { text, muted } = faceCopy("write-up", coverOf(source)?.markdown ?? null, true);
-  return <FaceLine icon={BookOpen} text={text} muted={muted} />;
+  return <FaceLine icon={LayoutTemplate} text={text} muted={muted} />;
 }
 
 export const COVER_ITEMS: BoardItemType[] = [
@@ -146,7 +175,7 @@ export const COVER_ITEMS: BoardItemType[] = [
     surface: { none: "Board-only content: the board's own tools (board_update_tile) edit it." },
     comments: null,
     label: "Cover",
-    icon: BookOpen,
+    icon: LayoutTemplate,
     group: "content",
     section: "notes",
     accent: "indigo",
@@ -155,6 +184,7 @@ export const COVER_ITEMS: BoardItemType[] = [
     matches: (s) => s.kind === "entity" && s.entity === COVER_ENTITY,
     Body: CoverBody,
     Face: CoverFace,
+    menuActions: coverMenuActions,
     autoHeight: () => true,
     namesItself: () => true,
     startNew: {

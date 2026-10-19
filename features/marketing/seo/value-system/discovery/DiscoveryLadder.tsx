@@ -64,6 +64,7 @@ import {
   type DiscoveryStepKey,
   type DiscoveryStepStatus,
 } from "./data";
+import { usePublishRunningStep } from "./knowledge-live";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
 /**
@@ -164,6 +165,7 @@ export function DiscoveryLadder({ siteId, brandId }: DiscoveryLadderProps) {
     staleTime: 15_000,
   });
   const [runningStep, setRunningStep] = useState<DiscoveryStepKey | null>(null);
+  usePublishRunningStep(runningStep);
   const [openStep, setOpenStep] = useState<DiscoveryStepKey | null>(null);
 
   const run = useSeoCommandRun<StepResultDoc>({

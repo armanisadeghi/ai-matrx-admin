@@ -2,6 +2,7 @@
 -- chair-step: put back the live body of custom._view_field_key and drop custom._fxp_formula_type
 -- lane: VIEWS-AND-FIELDS
 -- lock: custom
+-- based-on: custom._view_field_key(uuid, uuid, text, text, jsonb, text[]) eb8192b37c21e7500f6fb76bfd20993ffa3cb9563870f601bd73c655a1ef2dd9
 CREATE OR REPLACE FUNCTION custom._view_field_key(p_organization_id uuid, p_table_id uuid, p_path text, p_shape text, p_ref jsonb, p_known text[])
  RETURNS text
  LANGUAGE plpgsql
