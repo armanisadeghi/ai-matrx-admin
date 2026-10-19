@@ -194,6 +194,8 @@ async function main(): Promise<void> {
 
   const browser = await chromium.launch({ headless: !argv.includes("--headed") });
   const page = await (await browser.newContext({ viewport: { width: 1600, height: 1000 } })).newPage();
+  // a dev server's first compile of /login or the route can take minutes under load
+  page.setDefaultNavigationTimeout(300_000);
   await signIn(page, base);
   await page.goto(`${base}${route}`, { waitUntil: "domcontentloaded" });
   // The hook arrives with the deferred singleton core (post-idle); wait for it.

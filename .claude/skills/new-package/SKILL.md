@@ -16,6 +16,45 @@ timestamp: 2026-08-30
 
 # new-package — create or majorly grow an @ai-matrx package, the right way
 
+<!-- rules:stamp -->
+> Rules from `common-docs/policies/typescript-package-standard.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
+
+1. **Solved once = a package.** Code any other app could use lives in a package, never in an app.
+   Every NEW package name is approved by Arman first; growing an existing one needs no approval.
+2. **A package is REAL only when all four hold** (Arman, 2026-10-11): the host imports it and no
+   in-app copy remains; it builds, type-checks and tests alone with no app imports; app inputs
+   are injected; one documented entry point per section, internals not importable.
+3. **Zero duplicate code** — no copy in any app or in another package.
+   **Proven twice** (Arman, 2026-10-15): a package is proven by deleting the code it replaces AND
+   by a second app using it. Until both, it is unproven.
+4. **One capability per package, no grab-bags.** Two packages that never live apart are one
+   package (Arman, 2026-10-07). Split by capability, merge what always ships together.
+   Lines come from responsibility, never from today's import counts: a package is separate only if some
+   app could need it without the rest, and its job is nameable in one sentence.
+5. **Few packages, many sections; pay only for what you use** (Arman, 2026-10-08). Importing one
+   section never loads another; unused parts cost zero, measured in a built consumer.
+   **Optional parts are sections, never separate packages** (Arman, 2026-10-15, set on sync): a
+   part most apps never use lives as its own section of its owning package, and its heavy
+   outside libraries are *optional* peer dependencies, so an app that doesn't import that
+   section neither downloads nor bundles them. Proven per part: a built consumer of a sibling
+   section contains none of its code, and a plain install does not fetch its libraries.
+6. **Dependencies point one way** — lower layers never import higher ones; no cycles.
+7. **Ownership lines:** auth = sign-in, session, organizations; api = ALL server communication;
+   data = ALL database communication (live updates included); files = files; chat = runs all AI;
+   agents = only creating agents and workflows.
+8. **Everything ships inside** — UI, hooks, framework bindings, default implementations; the host
+   injects only identity (auth source, org/env values, navigation, notifications).
+9. **Siblings are ordinary dependencies** (`workspace:*` in source, `latest` when packed); every app
+   consumes `latest` — never pinned (THE LATEST LAW).
+10. **Publish before anyone imports.** No app imports an export that is not on npm yet.
+11. **The tarball is the proof** — `npm pack` + unpack of the published version, never the version
+    number or the source.
+12. **Fix where it lives, same session** — a package bug is fixed in the package, published, and
+    the consumer updated in the same session (THE SAME-SESSION LAW).
+13. **Rules are enforced at publish; apps get reports.** A package that breaks a rule is refused
+    at the release step; app-side findings are reported, never a CI gate.
+<!-- rules:stamp-end -->
+
 **Invocation: `/new-package <name or capability>`.** Use for: a NEW `@ai-matrx/*` package,
 extracting existing code into one, or a major growth wave on a shipped one.
 **NOT for:** a routine fix/addition inside an existing package — that is
