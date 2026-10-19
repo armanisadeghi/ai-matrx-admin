@@ -11,6 +11,24 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { NewRowPick, RowTemplateChoice } from "./row-templates";
 import type { SpaceDbView } from "./sources";
 
+/**
+ * Brings `el` into view inside its nearest HORIZONTALLY scrolling ancestor (a tab strip), moving that strip's
+ * scrollLeft only. The page, the window and any vertical scroller are never moved.
+ */
+export function revealInStrip(el: HTMLElement): void {
+  let strip = el.parentElement;
+  while (strip) {
+    const x = getComputedStyle(strip).overflowX;
+    if ((x === "auto" || x === "scroll") && strip.scrollWidth > strip.clientWidth) break;
+    strip = strip.parentElement;
+  }
+  if (!strip) return;
+  const s = strip.getBoundingClientRect();
+  const r = el.getBoundingClientRect();
+  if (r.left < s.left) strip.scrollLeft -= s.left - r.left;
+  else if (r.right > s.right) strip.scrollLeft += r.right - s.right;
+}
+
 export function ViewTab({
   view,
   icon,
@@ -34,10 +52,12 @@ export function ViewTab({
 }) {
   const [menu, setMenu] = useState(false);
   const [name, setName] = useState(view.name);
-  // The open tab stays in view when the strip scrolls (more views than the block is wide).
+  // The open tab stays in view when the strip scrolls (more views than the block is wide) — by scrolling THE STRIP
+  // only. Never scrollIntoView: it scrolls every scrollable ancestor, so each database block's open tab dragged
+  // the page down to itself on mount and every Spaces page opened part-way down (ADVERSARIAL-3 D4).
   const openTab = useRef<HTMLButtonElement | null>(null);
   useEffect(() => {
-    if (active) openTab.current?.scrollIntoView?.({ inline: "nearest", block: "nearest" });
+    if (active && openTab.current) revealInStrip(openTab.current);
   }, [active]);
   return (
     <Popover open={menu} onOpenChange={(o) => (editable ? setMenu(o) : null)}>

@@ -2,7 +2,7 @@
  * NARROW-FIXES item 2: in a Spaces database block at 768 beside the sidebar and at 375 the open view's tab
  * shrank to a blank pill or one letter, because the tab strip let every tab shrink to nothing inside an
  * overflow:hidden strip. Break named: the strip must not clip (it scrolls), a tab never shrinks, and the open
- * tab scrolls into view. jsdom has no layout, so the stylesheet's rules and the scroll call are pinned.
+ * tab is revealed inside the strip (never by scrollIntoView, which also scrolls the page). jsdom has no layout, so the stylesheet's rules and the scroll call are pinned.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -21,7 +21,7 @@ it("the tab strip scrolls instead of clipping, and no tab shrinks below its name
   expect(css).toMatch(/\.spaces-db-frame:not\(\[data-layout="chart"\]\) \.spaces-db-tabs > \* \{ flex: none; \}/);
 });
 
-it("the open tab scrolls itself into view and keeps its name as text", async () => {
+it("the open tab keeps its name as text and never calls scrollIntoView (it moves the page: ADVERSARIAL-3 D4)", async () => {
   const scrolled: unknown[] = [];
   (Element.prototype as unknown as { scrollIntoView: (o: unknown) => void }).scrollIntoView = function (o) {
     scrolled.push([(this as HTMLElement).getAttribute("role"), o]);
@@ -44,6 +44,7 @@ it("the open tab scrolls itself into view and keeps its name as text", async () 
   });
   const tab = host.querySelector('[role="tab"]') as HTMLElement;
   expect(tab.textContent).toBe("Open pipeline deals");
-  expect(scrolled).toEqual([["tab", { inline: "nearest", block: "nearest" }]]);
+  // The strip reveals the open tab by its own scrollLeft (a-page-opens-at-its-top-not-at-a-view-tab.test.tsx).
+  expect(scrolled).toEqual([]);
   await act(async () => root.unmount());
 });
