@@ -99,7 +99,7 @@ export function MemberReceivesCard({
 
   const save = async (next: MemberContext) => {
     setSaving(true);
-    const res = await dispatch(saveMemberContext({ conductorId, agentId: member.agentId, context: next }));
+    const res = await dispatch(saveMemberContext({ conductorId, edgeId: member.edgeId, context: next }));
     setSaving(false);
     if (!res.ok) toast.error(res.stale ? "Changed elsewhere — reloaded" : `Not saved. ${res.error ?? ""}`.trim());
   };
@@ -110,6 +110,7 @@ export function MemberReceivesCard({
   };
 
   const addKey = () => {
+    if (saving) return;
     const key = adding.trim();
     if (!VALUE_REF_PATTERN.test(key) || listed.includes(key)) return;
     setAdding("");
@@ -177,6 +178,7 @@ export function MemberReceivesCard({
                       >
                         <Checkbox
                           checked={listed.includes(o.key)}
+                          disabled={saving}
                           onCheckedChange={(on) =>
                             setList(on === true ? [...listed, o.key] : listed.filter((k) => k !== o.key))
                           }
@@ -196,7 +198,7 @@ export function MemberReceivesCard({
                   placeholder="Value name"
                   aria-label="Add a value name"
                 />
-                <Button variant="outline" onClick={addKey} disabled={!VALUE_REF_PATTERN.test(adding.trim())}>
+                <Button variant="outline" onClick={addKey} disabled={saving || !VALUE_REF_PATTERN.test(adding.trim())}>
                   Add
                 </Button>
               </div>
@@ -207,7 +209,7 @@ export function MemberReceivesCard({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <label htmlFor={`receives-person-${member.agentId}`} className="type-meta text-muted-foreground">
+          <label htmlFor={`receives-person-${member.edgeId}`} className="type-meta text-muted-foreground">
             Person &amp; org
           </label>
           <InfoHint
@@ -216,7 +218,7 @@ export function MemberReceivesCard({
           />
         </div>
         <Switch
-          id={`receives-person-${member.agentId}`}
+          id={`receives-person-${member.edgeId}`}
           checked={ctx.personAndOrg}
           disabled={saving}
           onCheckedChange={(on) => void save({ ...ctx, personAndOrg: on })}

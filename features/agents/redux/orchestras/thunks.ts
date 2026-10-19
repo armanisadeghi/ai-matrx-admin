@@ -381,12 +381,13 @@ export function saveMemberMeta(args: {
  */
 export function saveMemberContext(args: {
   conductorId: string;
-  agentId: string;
+  /** The member EDGE (one agent may be a member twice; each connection is its own). */
+  edgeId: string;
   context: MemberContext;
 }): AppThunk<Promise<OrchestraWriteResult & { stale?: boolean }>> {
   return async (dispatch, getState) => {
     const m = getState().orchestras.byId[args.conductorId]?.members.find(
-      (x) => x.agentId === args.agentId,
+      (x) => x.edgeId === args.edgeId,
     );
     if (!m || m.edgeId.startsWith("optimistic:")) {
       return { ok: false, error: "Not saved yet" };

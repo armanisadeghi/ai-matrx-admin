@@ -20,6 +20,7 @@
 
 "use client";
 
+import { throwIfHeld, whileAgentHoldsTheNote } from "@/features/notes/service/noteEditHold";
 import { StickyNote } from "lucide-react";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import { readAllRows } from "@ai-matrx/data/db";
@@ -189,17 +190,18 @@ const notesAdapter: VirtualSourceAdapter = {
       content: args.content,
       updated_at: new Date().toISOString(),
     };
-    let query = supabase
-      .schema("workbench").from("notes")
-      .update(update)
-      .eq("id", args.id)
-      .eq("created_by", userId);
-    if (args.expectedUpdatedAt) {
-      query = query.eq("updated_at", args.expectedUpdatedAt);
-    }
-    const { data, error } = await query
-      .select("updated_at")
-      .maybeSingle();
+    // A person's save waits while an agent of an Orchestra holds the note (noteEditHold).
+    const { data, error } = await whileAgentHoldsTheNote(null, async () => {
+      let query = supabase
+        .schema("workbench").from("notes")
+        .update(update)
+        .eq("id", args.id)
+        .eq("created_by", userId);
+      if (args.expectedUpdatedAt) {
+        query = query.eq("updated_at", args.expectedUpdatedAt);
+      }
+      return throwIfHeld(await query.select("updated_at").maybeSingle());
+    });
     if (error || !data) {
       throw new Error(
         "We couldn't save this note. It may have been edited somewhere else — reload it and reapply your change.",
