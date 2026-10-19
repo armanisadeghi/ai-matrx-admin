@@ -1,6 +1,6 @@
 -- INVERSE of atprint_b_doc_render_body_reads_as_a_checked_door.sql: custom.doc_render_body back to SECURITY INVOKER with no checks (as it stood).
 -- chair-step: restores one function body.
--- based-on: custom.doc_render_body(uuid, uuid, uuid) 6a9e3bd5f2a1d4c0e7b8a9f0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0
+-- based-on: custom.doc_render_body(uuid, uuid, uuid) c3ccbca770b51d012ed3bded0192fc40ab2924f791a9f4a34843fd889ffc3203
 
 CREATE OR REPLACE FUNCTION custom.doc_render_body(p_organization_id uuid, p_template_id uuid, p_record_id uuid)
  RETURNS text
