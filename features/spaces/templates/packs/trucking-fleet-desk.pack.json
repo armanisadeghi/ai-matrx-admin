@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0571",
-  "version": 2,
+  "version": 3,
   "title": "Trucking Fleet Desk",
-  "description": "Trucks, loads, maintenance and driver paperwork for a small trucking company.",
+  "description": "Small carrier desk: loads and rate per mile, drivers' hours, maintenance, driver files.",
   "forWho": "Small trucking companies and owner-operator fleets",
   "icon": {
     "emoji": "🚛"
@@ -14,11 +14,12 @@
   },
   "category": "manufacturing",
   "tags": [
+    "dispatcher",
+    "fleet manager",
+    "owner-operator",
     "trucking",
-    "fleet",
-    "loads",
-    "maintenance",
-    "drivers"
+    "hours of service",
+    "loads"
   ],
   "spec": {
     "specVersion": 1,
@@ -301,6 +302,41 @@
             "parityType": "member",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "revenue_live",
+            "label": "Revenue booked, not cancelled (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "rate",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "unbilled",
+            "label": "Delivered, not yet paid (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "loads",
+            "pick": "rate",
+            "agg": "sum",
+            "filter": {
+              "billing": [
+                "Not invoiced",
+                "Invoiced",
+                "Short paid"
+              ],
+              "status": "Delivered"
+            }
           },
           {
             "key": "added_at",
@@ -670,6 +706,82 @@
             "contextPolicy": "include"
           },
           {
+            "key": "deadhead",
+            "label": "Empty miles to pickup",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "rpm",
+            "label": "Rate per loaded mile (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Loaded miles} > 0, ROUND({Rate (USD)} / {Loaded miles}, 2), 0)"
+          },
+          {
+            "key": "all_rpm",
+            "label": "Rate per total mile (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Loaded miles} + {Empty miles to pickup} > 0, ROUND({Rate (USD)} / ({Loaded miles} + {Empty miles to pickup}), 2), 0)"
+          },
+          {
+            "key": "detention",
+            "label": "Detention hours",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 72
+              }
+            ]
+          },
+          {
+            "key": "pod",
+            "label": "Signed delivery receipt in",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not invoiced",
+              "Invoiced",
+              "Paid",
+              "Short paid"
+            ],
+            "choiceColors": {
+              "Not invoiced": "slate",
+              "Invoiced": "blue",
+              "Paid": "green",
+              "Short paid": "red"
+            }
+          },
+          {
             "key": "per_mile",
             "label": "Revenue per mile (USD)",
             "parityType": "formula",
@@ -869,7 +981,11 @@
               "deliver_by": "@today+1d 12:00",
               "rate": 2850,
               "miles": 500,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deadhead": 40,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -884,7 +1000,11 @@
               "pickup_at": "@today 14:00",
               "deliver_by": "@today+2d 10:00",
               "rate": 3600,
-              "miles": 680
+              "miles": 680,
+              "deadhead": 85,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -900,7 +1020,11 @@
               "deliver_by": "@today+3d 16:00",
               "rate": 2400,
               "miles": 360,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deadhead": 120,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -915,7 +1039,11 @@
               "pickup_at": "@today 06:00",
               "deliver_by": "@today 18:00",
               "rate": 1100,
-              "miles": 260
+              "miles": 260,
+              "deadhead": 15,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -931,7 +1059,11 @@
               "deliver_by": "@today+5d 15:00",
               "rate": 1450,
               "miles": 210,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deadhead": 60,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -946,7 +1078,11 @@
               "pickup_at": "@today-2d 10:00",
               "deliver_by": "@today-1d 12:00",
               "rate": 1900,
-              "miles": 360
+              "miles": 360,
+              "deadhead": 25,
+              "detention": 2.5,
+              "pod": false,
+              "billing": "Not invoiced"
             }
           },
           {
@@ -963,7 +1099,11 @@
               "rate": 3400,
               "miles": 680,
               "delivered_on": "@today-10d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deadhead": 0,
+              "detention": 0,
+              "pod": true,
+              "billing": "Paid"
             }
           },
           {
@@ -979,7 +1119,11 @@
               "deliver_by": "@today-8d 14:00",
               "rate": 1250,
               "miles": 140,
-              "delivered_on": "@today-8d"
+              "delivered_on": "@today-8d",
+              "deadhead": 70,
+              "detention": 3,
+              "pod": true,
+              "billing": "Invoiced"
             }
           },
           {
@@ -995,7 +1139,31 @@
               "deliver_by": "@today-15d 18:00",
               "rate": 0,
               "miles": 260,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "deadhead": 0,
+              "detention": 0,
+              "pod": false,
+              "billing": "Not invoiced"
+            }
+          },
+          {
+            "key": "loads-10",
+            "values": {
+              "load_name": "Kansas City to Wichita, auto parts",
+              "customer": "Roadmaster Tire Wholesale",
+              "lane": "Kansas City to Wichita",
+              "truck": "truck-1",
+              "driver": "tm-3",
+              "status": "Delivered",
+              "pickup_at": "@today-20d 07:00",
+              "deliver_by": "@today-20d 15:00",
+              "delivered_on": "@today-20d",
+              "rate": 980,
+              "miles": 200,
+              "deadhead": 30,
+              "detention": 0,
+              "pod": true,
+              "billing": "Short paid"
             }
           }
         ]
@@ -1621,6 +1789,296 @@
             }
           }
         ]
+      },
+      {
+        "token": "hos",
+        "name": "Hours of service",
+        "labelSingular": "Driver day",
+        "labelPlural": "Hours of service",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clock",
+        "titleField": "hos_name",
+        "describes": "Each driver's day from the electronic log: driving, on duty and hours used in the 8-day cycle.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New driver day",
+            "values": {
+              "hos_name": "New driver day",
+              "status": "Within limits"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "From the electronic log"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Driving, on-duty and cycle hours copied from the log at the end of the shift."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "If a limit was passed"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What happened, what the driver wrote in the log, and what changes next time."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "driver": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "hos_name",
+            "label": "Driver day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "driver",
+            "label": "Driver",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "log_on",
+            "label": "Day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "driving",
+            "label": "Driving hours",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "key": "on_duty",
+            "label": "On-duty hours",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 24
+              }
+            ]
+          },
+          {
+            "key": "cycle_used",
+            "label": "Hours used, last 8 days",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "key": "cycle_left",
+            "label": "Hours left in the 70-hour cycle",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "MAX(0, 70 - {Hours used, last 8 days})"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Within limits",
+              "Over a limit",
+              "Reset taken"
+            ],
+            "choiceColors": {
+              "Within limits": "green",
+              "Over a limit": "red",
+              "Reset taken": "blue"
+            }
+          },
+          {
+            "key": "note",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "hos-1",
+            "values": {
+              "hos_name": "Everard, last shift",
+              "driver": "tm-3",
+              "log_on": "@today-1d",
+              "driving": 10.5,
+              "on_duty": 13,
+              "cycle_used": 58,
+              "status": "Within limits",
+              "note": "Long day, Dallas pickup"
+            }
+          },
+          {
+            "key": "hos-2",
+            "values": {
+              "hos_name": "Natasha, last shift",
+              "driver": "tm-4",
+              "log_on": "@today-1d",
+              "driving": 9,
+              "on_duty": 12.5,
+              "cycle_used": 52,
+              "status": "Within limits"
+            }
+          },
+          {
+            "key": "hos-3",
+            "values": {
+              "hos_name": "Ignatius, last shift",
+              "driver": "tm-5",
+              "log_on": "@today-1d",
+              "driving": 6,
+              "on_duty": 9,
+              "cycle_used": 41,
+              "status": "Within limits"
+            }
+          },
+          {
+            "key": "hos-4",
+            "values": {
+              "hos_name": "Everard, two shifts ago",
+              "driver": "tm-3",
+              "log_on": "@today-2d",
+              "driving": 11,
+              "on_duty": 14,
+              "cycle_used": 47.5,
+              "status": "Within limits",
+              "note": "Reset planned after delivery"
+            }
+          },
+          {
+            "key": "hos-5",
+            "values": {
+              "hos_name": "Natasha, two shifts ago",
+              "driver": "tm-4",
+              "log_on": "@today-2d",
+              "driving": 11.5,
+              "on_duty": 14,
+              "cycle_used": 43.5,
+              "status": "Over a limit",
+              "note": "Ran 30 minutes over driving time in traffic; note filed"
+            }
+          },
+          {
+            "key": "hos-6",
+            "values": {
+              "hos_name": "Ignatius, two shifts ago",
+              "driver": "tm-5",
+              "log_on": "@today-2d",
+              "driving": 8,
+              "on_duty": 11,
+              "cycle_used": 32,
+              "status": "Within limits"
+            }
+          },
+          {
+            "key": "hos-7",
+            "values": {
+              "hos_name": "Everard, three shifts ago",
+              "driver": "tm-3",
+              "log_on": "@today-3d",
+              "driving": 9.5,
+              "on_duty": 12,
+              "cycle_used": 36.5,
+              "status": "Within limits"
+            }
+          },
+          {
+            "key": "hos-8",
+            "values": {
+              "hos_name": "Natasha, after 34-hour reset",
+              "driver": "tm-4",
+              "log_on": "@today-5d",
+              "driving": 0,
+              "on_duty": 0,
+              "cycle_used": 0,
+              "status": "Reset taken",
+              "note": "34 hours off duty"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1683,6 +2141,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "doc_by_driver"
+      },
+      {
+        "describes": "Each log day belongs to one driver.",
+        "fromTable": "hos",
+        "fromField": "driver",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "hos_days"
       }
     ],
     "sharedBlocks": [
@@ -2314,6 +2782,30 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_hos",
+        "name": "All driver days",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "hos"
+      },
+      {
+        "token": "hos_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "log_on",
+        "allDay": true,
+        "table": "hos"
+      },
+      {
+        "token": "hos_over",
+        "name": "Over a limit",
+        "kind": "grid",
+        "filters": {
+          "status": "Over a limit"
+        },
+        "table": "hos"
       }
     ],
     "agent": {
@@ -2386,6 +2878,18 @@
           "surface": "maintenance_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open hours of service.",
+        "action": {
+          "kind": "open",
+          "surface": "hos_cal"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "hos_cal",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2402,7 +2906,7 @@
         "Terminal Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2424,12 +2928,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Trucks, loads, maintenance and driver paperwork on one board. Start with the Dashboard every morning: loads in transit, deliveries due, maintenance overdue and documents about to expire. Follow your own regulator's rules on hours and records; this workspace helps you track dates, not replace those rules."
+              "text": "The fleet in one place. Loads shows every lane with rate per mile, empty miles, detention and billing; Hours of service shows who can legally drive and for how long; Trucks and Maintenance keep equipment rolling; Driver paperwork warns before a medical card or license lapses. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2983,6 +3493,311 @@
             ],
             "activeViewId": "doc-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours of service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each driver day from the electronic log."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "hos",
+              "view": "all_hos"
+            },
+            "inline": true,
+            "title": "Hours of service",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "hs-t",
+                "name": "All driver days",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "log_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "hs-o",
+                "name": "Over a limit",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "status": "Over a limit"
+                }
+              }
+            ],
+            "activeViewId": "hs-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "trucking-fleet-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the fleet in this workspace. Share it with the dispatcher, the fleet maintenance lead, the owner and the office."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Loads",
+              "bold": true
+            },
+            {
+              "text": ": every load with customer, lane, truck, driver, windows, rate, loaded and empty miles, rate per mile, detention, delivery receipt and billing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Trucks",
+              "bold": true
+            },
+            {
+              "text": ": each tractor and trailer with status, miles, service and inspection dates, revenue booked and delivered loads not yet paid."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hours of service",
+              "bold": true
+            },
+            {
+              "text": ": each driver's day from the electronic log, with hours left in the 70-hour cycle."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Maintenance",
+              "bold": true
+            },
+            {
+              "text": ": scheduled service, inspections and repairs, with cost and mileage."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Driver paperwork",
+              "bold": true
+            },
+            {
+              "text": ": licenses, medical cards, testing and training, with expiry dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Morning: loads picking up today confirmed; drivers' hours checked."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Through the day: check-ins at pickup and delivery; problems called in."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Afternoon: tomorrow's loads assigned; delivered loads invoiced."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Evening: hours of service entered from the logs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: loads today, drivers' hours, trucks in the shop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: maintenance due in 14 days, unpaid invoices over 30 days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: rate per mile by customer, documents expiring"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: maintenance cost per truck, customer review"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The dispatcher books and assigns loads and watches hours. The maintenance lead owns trucks and service. The office invoices and chases payment. The owner sets rates and reads the Dashboard."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "No load is worth a tired driver or an unsafe truck. Any driver can refuse a load they cannot run legally or safely, and dispatch backs them every time. Roadside inspections, warnings and accidents are recorded the same day and reviewed with the driver."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename units, lanes and customers, set your own cost per mile in the dispatch routine, and delete the sample rows once your own are in. Edit any cell in place; rates per mile and hours left update by themselves."
+            }
+          ]
         }
       ]
     },
@@ -3393,6 +4208,102 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "loads",
+              "view": "all_loads"
+            },
+            "inline": true,
+            "title": "Billing",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dk-1",
+                "name": "Delivered, not yet paid",
+                "layout": "list",
+                "icon": "Receipt",
+                "filters": {
+                  "status": "Delivered"
+                },
+                "anyOf": {
+                  "billing": [
+                    "Not invoiced",
+                    "Invoiced",
+                    "Short paid"
+                  ]
+                }
+              },
+              {
+                "id": "dk-2",
+                "name": "Revenue by customer",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "customer",
+                  "op": "sum",
+                  "field": "rate"
+                }
+              }
+            ],
+            "activeViewId": "dk-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Drivers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "hos",
+              "view": "all_hos"
+            },
+            "inline": true,
+            "title": "Hours left by driver",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dk-3",
+                "name": "Hours left in the cycle",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "driver",
+                  "op": "min",
+                  "field": "cycle_left"
+                }
+              }
+            ],
+            "activeViewId": "dk-3"
+          }
         }
       ]
     },
@@ -3411,7 +4322,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Dispatch is matching the right truck, driver and load, then checking back until the freight is delivered."
+              "text": "Dispatch is matching loads to trucks and drivers who are legal, rested and in the right place. A good dispatcher plans tomorrow today, and a load is not covered until the driver confirms."
             }
           ],
           "background": "blue",
@@ -3423,51 +4334,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each morning"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Open Loads due in the next 7 days and call any in-transit load behind schedule"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check driver paperwork expiring this week"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Confirm which trucks are in the shop"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Assigning a load"
+              "text": "Booking a load"
             }
           ],
           "props": {
@@ -3478,7 +4345,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the truck's status and open maintenance."
+              "text": "Add it to "
+            },
+            {
+              "text": "Loads",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Booked",
+              "bold": true
+            },
+            {
+              "text": " with the customer, lane, pickup and delivery windows, the rate and the loaded miles."
             }
           ]
         },
@@ -3486,7 +4367,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the driver's documents and rest before assigning."
+              "text": "Write the "
+            },
+            {
+              "text": "Empty miles to pickup",
+              "bold": true
+            },
+            {
+              "text": ". A load that pays well per loaded mile can be poor once the empty miles are counted; "
+            },
+            {
+              "text": "Rate per total mile",
+              "bold": true
+            },
+            {
+              "text": " shows the truth."
             }
           ]
         },
@@ -3494,15 +4389,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Dispatch and send the pickup details."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Update to In transit at pickup and Delivered at the proof of delivery."
+              "text": "Know your cost per mile (fuel, driver pay, truck payment, insurance, maintenance). Below it, say no, or take it only to reposition for a better load."
             }
           ]
         },
@@ -3510,7 +4397,241 @@
           "type": "heading",
           "text": [
             {
-              "text": "When there is a problem"
+              "text": "Assigning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the driver's "
+            },
+            {
+              "text": "Hours left in the 70-hour cycle",
+              "bold": true
+            },
+            {
+              "text": " and last shift in "
+            },
+            {
+              "text": "Hours of service",
+              "bold": true
+            },
+            {
+              "text": ". Under the common US rules a driver may drive up to 11 hours within a 14-hour window after 10 hours off, and no more than 70 hours in 8 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the truck is "
+            },
+            {
+              "text": "Available",
+              "bold": true
+            },
+            {
+              "text": ", with no service or inspection overdue."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the driver's medical card and license in "
+            },
+            {
+              "text": "Driver paperwork",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the load to "
+            },
+            {
+              "text": "Dispatched",
+              "bold": true
+            },
+            {
+              "text": " and send the driver the pickup number, addresses, windows and any appointment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the road"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The driver checks in at pickup and delivery. Move the load to "
+            },
+            {
+              "text": "In transit",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the shipper or receiver keeps the truck past the free time (often two hours), write "
+            },
+            {
+              "text": "Detention hours",
+              "bold": true
+            },
+            {
+              "text": " and tell the customer the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any delay, breakdown or damage: set "
+            },
+            {
+              "text": "Problem",
+              "bold": true
+            },
+            {
+              "text": " and call the customer before they call you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivered"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark delivered",
+              "bold": true
+            },
+            {
+              "text": "; the date is stamped."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Get the signed delivery receipt photo the same day and tick "
+            },
+            {
+              "text": "Signed delivery receipt in",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Invoice that day and set "
+            },
+            {
+              "text": "Billing",
+              "bold": true
+            },
+            {
+              "text": " to Invoiced. Mark it Paid, or Short paid when the customer deducts something you must chase."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every load tomorrow has a legal driver and a ready truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every delivered load has its receipt and an invoice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Detention logged and billed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
@@ -3521,7 +4642,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Press Flag a problem, call the customer within the hour and write what was agreed on the load row."
+              "text": "A customer offers Tulsa to Denver at $3,600 for 680 loaded miles, about $5.29 a mile, with 85 empty miles to the pickup. The total-mile rate is $4.71, above cost. Natasha has 18 hours left in her cycle after tomorrow, so the dispatcher books the load for her, and plans a return load before she leaves Denver."
             }
           ]
         }
@@ -3542,7 +4663,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A truck that is fixed on schedule costs far less than one fixed on the side of the road."
+              "text": "A truck that breaks down on the road costs a tow, a missed delivery and a customer's trust. Preventive maintenance on a schedule is far cheaper than repairs, and it keeps you ready for a roadside inspection."
             }
           ],
           "background": "blue",
@@ -3554,7 +4675,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Set the schedule"
+              "text": "The schedule"
             }
           ],
           "props": {
@@ -3562,10 +4683,24 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Use the manufacturer's service intervals as a starting point."
+              "text": "Each truck shows its "
+            },
+            {
+              "text": "Service due",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Inspection due",
+              "bold": true
+            },
+            {
+              "text": ". Typical intervals for a long-haul tractor:"
             }
           ]
         },
@@ -3573,7 +4708,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Add the next service and inspection dates to every truck."
+              "text": "Oil and filter: every 15,000 to 25,000 miles, by the engine maker's guide."
             }
           ]
         },
@@ -3581,7 +4716,31 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Add a maintenance job for each due service so the cost is tracked."
+              "text": "Brake check: at every service; adjust and replace pads by measurement, not by calendar."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tires: tread depth and pressure every week; steer tires replaced before 4/32 of an inch."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Annual inspection: every 12 months, with the sticker and report in the truck file."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Trailers: lights, brakes, tires and doors at every service."
             }
           ]
         },
@@ -3589,7 +4748,142 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each month"
+              "text": "Driver inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Drivers inspect before and after every trip: lights, tires, brakes, coupling, fluid leaks. Anything wrong is written on the inspection report. The maintenance lead signs off each defect as fixed or not affecting safety before the truck goes out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a job in "
+            },
+            {
+              "text": "Maintenance",
+              "bold": true
+            },
+            {
+              "text": " with the truck, kind, due date and estimated cost."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book it on a day the truck is home, so service does not cost a load."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the truck goes to the shop, set it to "
+            },
+            {
+              "text": "In the shop",
+              "bold": true
+            },
+            {
+              "text": " so dispatch does not book it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the work is done, press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " and write the mileage and actual cost."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Out of service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A truck with a safety defect does not move. Set it to "
+            },
+            {
+              "text": "Out of service",
+              "bold": true
+            },
+            {
+              "text": " until it is repaired, then back to "
+            },
+            {
+              "text": "Available",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching cost"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Compare maintenance cost per truck each quarter. A truck whose repairs in a year approach a third of its value is a candidate to replace."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
             }
           ],
           "props": {
@@ -3600,7 +4894,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review Maintenance overdue and book the shop"
+              "text": "Service and inspections due in the next 14 days booked"
             }
           ],
           "props": {
@@ -3611,7 +4905,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Compare maintenance spend by truck"
+              "text": "Every driver defect report closed"
             }
           ],
           "props": {
@@ -3622,12 +4916,31 @@
           "type": "todo",
           "text": [
             {
-              "text": "Replace trucks that cost more to fix than to retire"
+              "text": "Tires measured on every unit"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Unit 102 is due for brake service in three days and has a load on Thursday. The maintenance lead books the shop for Wednesday morning while the truck is home. Pads measure close to the limit and are replaced; the truck leaves on time Thursday."
+            }
+          ]
         }
       ]
     },
@@ -3646,7 +4959,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Missing paperwork can park a good driver. Track expiry dates before they arrive."
+              "text": "A driver with an expired medical card or license cannot legally drive, and a roadside inspection will find it. Keeping every driver's file current is simple when every document has a date."
             }
           ],
           "background": "blue",
@@ -3658,7 +4971,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What to track"
+              "text": "What each driver file holds"
             }
           ],
           "props": {
@@ -3666,114 +4979,85 @@
           }
         },
         {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Document"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Why"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Check how often"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Commercial license"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Needed to drive"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Monthly view of expiry dates"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Medical card"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Needed to stay qualified"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Monthly"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Safety training"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Required by customers and insurers"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Quarterly"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Insurance listing"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Needed for dispatch"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "At each renewal"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Commercial license",
+              "bold": true
+            },
+            {
+              "text": ": class and endorsements, with the expiry date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medical card",
+              "bold": true
+            },
+            {
+              "text": ": from a certified medical examiner, usually valid up to two years, sometimes less."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Drug and alcohol test records",
+              "bold": true
+            },
+            {
+              "text": ": pre-employment and random testing results, kept confidential."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Safety training",
+              "bold": true
+            },
+            {
+              "text": ": company training and any required courses."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance listing",
+              "bold": true
+            },
+            {
+              "text": ": the driver approved on your insurance policy."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add each to "
+            },
+            {
+              "text": "Driver paperwork",
+              "bold": true
+            },
+            {
+              "text": " with its expiry date."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Never store here"
+              "text": "Watching expiry"
             }
           ],
           "props": {
@@ -3784,7 +5068,188 @@
           "type": "text",
           "text": [
             {
-              "text": "License numbers, medical details and anything private. Keep those in the secure personnel file and track only the dates."
+              "text": "Documents move from "
+            },
+            {
+              "text": "Valid",
+              "bold": true
+            },
+            {
+              "text": " to "
+            },
+            {
+              "text": "Expiring",
+              "bold": true
+            },
+            {
+              "text": " about 45 days before the date. The Dashboard lists them. Book the medical exam or the license renewal right away; appointments can take weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something lapses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set it to "
+            },
+            {
+              "text": "Expired",
+              "bold": true
+            },
+            {
+              "text": " and stop dispatching that driver for any work that needs it. No exceptions, even for a short local run."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the new card or license arrives, get a copy for the file, set the old record to "
+            },
+            {
+              "text": "Renewed",
+              "bold": true
+            },
+            {
+              "text": ", and add the new one with its new expiry date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours of service"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Drivers' electronic logs are reviewed daily. Enter each driver's day in "
+            },
+            {
+              "text": "Hours of service",
+              "bold": true
+            },
+            {
+              "text": ". Any shift "
+            },
+            {
+              "text": "Over a limit",
+              "bold": true
+            },
+            {
+              "text": " is talked about with the driver the same day: what happened, and how dispatch will plan differently."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Medical and drug test details are confidential. Keep only the document, its status and its date here; keep results in the locked driver file."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every document expiring in the next 60 days has a renewal booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New drivers' files complete before their first load"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hours-of-service exceptions reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Everard's medical card expires in six days. The dispatcher books an exam for Tuesday, plans his loads to bring him home Monday, and files the new card Wednesday. His record shows Renewed and the new card is valid for two years."
             }
           ]
         }
