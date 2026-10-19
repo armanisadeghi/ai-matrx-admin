@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 4,
+  "version": 3,
   "title": "Auto Repair Shop HQ",
-  "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
+  "description": "Track repair orders from estimate to pickup, manage parts stock and unpaid invoices.",
   "forWho": "Independent auto repair shops and garages",
   "icon": {
     "emoji": "🔧"
@@ -14,12 +14,10 @@
   },
   "category": "trades",
   "tags": [
-    "mechanic",
-    "auto repair",
-    "garage",
+    "auto",
     "repair orders",
-    "vehicles",
-    "service advisor"
+    "garage",
+    "parts"
   ],
   "spec": {
     "specVersion": 1,
@@ -82,14 +80,14 @@
             "choices": [
               "Driver",
               "Fleet",
-              "Referral",
-              "Warranty company"
+              "Dealer referral",
+              "Student"
             ],
             "choiceColors": {
               "Driver": "slate",
               "Fleet": "blue",
-              "Referral": "amber",
-              "Warranty company": "violet"
+              "Dealer referral": "amber",
+              "Student": "violet"
             }
           },
           {
@@ -153,24 +151,6 @@
             }
           },
           {
-            "key": "open_jobs",
-            "label": "Open repair orders",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "jobs",
-            "pick": "job_name",
-            "agg": "count",
-            "filter": {
-              "status": {
-                "not": [
-                  "Completed",
-                  "Cancelled"
-                ]
-              }
-            }
-          },
-          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -180,12 +160,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": {
-                "not": [
-                  "Draft",
-                  "Void"
-                ]
-              }
+              "status": "Paid"
             }
           },
           {
@@ -198,10 +173,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": [
-                "Sent",
-                "Overdue"
-              ]
+              "status": "Sent"
             }
           },
           {
@@ -360,7 +332,7 @@
             "key": "custom-3",
             "values": {
               "customer_name": "Kwame Eriksen",
-              "customer_type": "Referral",
+              "customer_type": "Dealer referral",
               "customer_status": "Active",
               "phone": "(616) 555-0159",
               "email": "kwame.eriksen@inbox-mail.net",
@@ -372,7 +344,7 @@
             "key": "custom-4",
             "values": {
               "customer_name": "Fenella Montague",
-              "customer_type": "Driver",
+              "customer_type": "Student",
               "customer_status": "Lead",
               "phone": "(616) 555-0196",
               "email": "fenella.montague@inbox-mail.net",
@@ -408,7 +380,7 @@
             "key": "custom-7",
             "values": {
               "customer_name": "Anders Lindqvist",
-              "customer_type": "Referral",
+              "customer_type": "Dealer referral",
               "customer_status": "Active",
               "phone": "(616) 555-0107",
               "email": "anders.lindqvist@inbox-mail.net",
@@ -420,7 +392,7 @@
             "key": "custom-8",
             "values": {
               "customer_name": "Ottoline Sandoval",
-              "customer_type": "Driver",
+              "customer_type": "Student",
               "customer_status": "Active",
               "phone": "(616) 555-0144",
               "email": "ottoline.sandoval@inbox-mail.net",
@@ -456,7 +428,7 @@
             "key": "custom-11",
             "values": {
               "customer_name": "Desmond Prescott",
-              "customer_type": "Referral",
+              "customer_type": "Dealer referral",
               "customer_status": "Active",
               "phone": "(616) 555-0155",
               "email": "desmond.prescott@inbox-mail.net",
@@ -468,7 +440,7 @@
             "key": "custom-12",
             "values": {
               "customer_name": "Noor Zuberi",
-              "customer_type": "Driver",
+              "customer_type": "Student",
               "customer_status": "Active",
               "phone": "(616) 555-0192",
               "email": "noor.zuberi@inbox-mail.net",
@@ -558,32 +530,6 @@
             "relationMax": 1
           },
           {
-            "key": "vehicle",
-            "label": "Vehicle",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "vehicle",
-            "relationMax": 1
-          },
-          {
-            "key": "mileage_in",
-            "label": "Mileage in",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 900000
-              }
-            ]
-          },
-          {
             "key": "job_type",
             "label": "Work type",
             "parityType": "select",
@@ -612,48 +558,25 @@
           },
           {
             "key": "priority",
-            "label": "Waiting or drop-off",
+            "label": "Priority",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Drop-off",
-              "Waiting",
-              "Tow-in"
+              "Routine",
+              "Urgent",
+              "Emergency"
             ],
             "choiceColors": {
-              "Drop-off": "slate",
-              "Waiting": "amber",
-              "Tow-in": "red"
+              "Routine": "slate",
+              "Urgent": "blue",
+              "Emergency": "amber"
             },
             "default": "Routine"
           },
           {
-            "key": "approved",
-            "label": "Customer approved",
-            "parityType": "checkbox",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "declined",
-            "label": "Declined work",
-            "parityType": "long_text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "description": "What we recommended that the customer put off."
-          },
-          {
-            "key": "comeback",
-            "label": "Comeback",
-            "parityType": "checkbox",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "description": "Back for the same problem within 90 days."
-          },
-          {
             "key": "tech",
-            "label": "Technician",
+            "label": "Lead tech",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -678,7 +601,7 @@
           },
           {
             "key": "quote",
-            "label": "Estimate (USD)",
+            "label": "Quote (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -756,7 +679,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Estimate (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
           },
           {
             "key": "margin_pct",
@@ -764,7 +687,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0)"
+            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
           },
           {
             "key": "margin_flag",
@@ -969,401 +892,348 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Oil service + 30-point inspection",
+              "job_name": "Oil change and inspection - Eriksen",
               "status": "Completed",
-              "customer": "custom-1",
+              "customer": "custom-3",
               "job_type": "Oil change and inspection",
-              "priority": "Drop-off",
-              "tech": "tm-4",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@today-21d",
-              "quote": 89,
-              "parts_cost": 24,
-              "labor_cost": 32,
-              "hours": 0.5,
-              "vehicle": "veh-1",
-              "mileage_in": 88410,
-              "approved": true,
-              "declined": "Rear pads at 3 mm, quote next visit",
+              "quote": 95,
+              "parts_cost": 25,
+              "labor_cost": 45,
+              "hours": 0.8,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Van 14: front pads and rotors",
+              "job_name": "Brake pads and rotors - Sandoval",
               "status": "Completed",
-              "customer": "custom-2",
+              "customer": "custom-8",
               "job_type": "Brake pads and rotors",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@today-16d",
-              "quote": 540,
-              "parts_cost": 198,
-              "labor_cost": 165,
-              "hours": 2,
-              "vehicle": "veh-2",
-              "mileage_in": 126300,
-              "approved": true,
+              "quote": 595,
+              "parts_cost": 285,
+              "labor_cost": 160,
+              "hours": 2.8,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Check engine: misfire cylinder 3",
+              "job_name": "Check engine diagnostic - Pemberton",
               "status": "Completed",
-              "customer": "custom-3",
+              "customer": "custom-1",
               "job_type": "Check engine diagnostic",
-              "priority": "Waiting",
-              "tech": "tm-3",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today-12d",
-              "quote": 385,
-              "parts_cost": 112,
-              "labor_cost": 145,
-              "hours": 2,
-              "vehicle": "veh-4",
-              "mileage_in": 171250,
-              "approved": true,
-              "declined": "Valve cover gasket seep",
+              "quote": 220,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "No start: battery and terminals",
+              "job_name": "Tire rotation and balance - Dunmore",
               "status": "Completed",
-              "customer": "custom-5",
-              "job_type": "Battery and charging system",
-              "priority": "Tow-in",
-              "tech": "tm-5",
+              "customer": "custom-6",
+              "job_type": "Tire rotation and balance",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@today-9d",
-              "quote": 265,
-              "parts_cost": 148,
-              "labor_cost": 40,
-              "hours": 0.6,
-              "vehicle": "veh-5",
-              "mileage_in": 142600,
-              "approved": true,
+              "quote": 75,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "AC blowing warm: leak test and recharge",
+              "job_name": "Battery and charging system - Prescott",
               "status": "Completed",
-              "customer": "custom-9",
-              "job_type": "AC recharge",
-              "priority": "Drop-off",
+              "customer": "custom-11",
+              "job_type": "Battery and charging system",
+              "priority": "Urgent",
               "tech": "tm-4",
               "scheduled_on": "@today-6d",
-              "quote": 310,
-              "parts_cost": 85,
-              "labor_cost": 120,
-              "hours": 1.5,
-              "vehicle": "veh-8",
-              "mileage_in": 77900,
-              "approved": true,
+              "quote": 280,
+              "parts_cost": 155,
+              "labor_cost": 60,
+              "hours": 1,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Timing belt and water pump, 2010 Civic",
+              "job_name": "AC recharge - Montague",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Timing belt service",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "customer": "custom-4",
+              "job_type": "AC recharge",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today-4d",
-              "quote": 890,
-              "parts_cost": 265,
-              "labor_cost": 360,
-              "hours": 4.5,
-              "vehicle": "veh-7",
-              "mileage_in": 201480,
-              "approved": true,
-              "declined": "Motor mounts soft",
+              "quote": 315,
+              "parts_cost": 95,
+              "labor_cost": 85,
+              "hours": 1.5,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Strut quote, customer went to dealer",
+              "job_name": "Timing belt service - Abernathy",
               "status": "Cancelled",
-              "customer": "custom-10",
-              "job_type": "Suspension repair",
-              "priority": "Drop-off",
-              "tech": "tm-5",
+              "customer": "custom-9",
+              "job_type": "Timing belt service",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@today-8d",
-              "quote": 1120,
-              "parts_cost": 0,
-              "labor_cost": 0,
-              "hours": 0
+              "quote": 935,
+              "parts_cost": 395,
+              "labor_cost": 290,
+              "hours": 5
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Tacoma: ball joints, waiting on parts",
+              "job_name": "Suspension repair - Whitlock",
               "status": "On hold",
-              "customer": "custom-12",
+              "customer": "custom-2",
               "job_type": "Suspension repair",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "priority": "Emergency",
+              "tech": "tm-4",
               "scheduled_on": "@today-5d",
-              "quote": 760,
-              "parts_cost": 290,
-              "labor_cost": 240,
-              "hours": 3,
-              "vehicle": "veh-11",
-              "mileage_in": 233100,
-              "approved": true
+              "quote": 940,
+              "parts_cost": 425,
+              "labor_cost": 230,
+              "hours": 4
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Misfire is back: recheck coil",
+              "job_name": "Oil change and inspection - Lindqvist",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Check engine diagnostic",
-              "priority": "Waiting",
-              "tech": "tm-3",
+              "customer": "custom-7",
+              "job_type": "Oil change and inspection",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today-2d",
-              "quote": 0,
-              "parts_cost": 0,
+              "quote": 95,
+              "parts_cost": 25,
               "labor_cost": 45,
-              "hours": 0.5,
-              "vehicle": "veh-4",
-              "mileage_in": 171610,
-              "comeback": true
+              "hours": 0.8
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Van 9: PM service + tire rotation",
+              "job_name": "Brake pads and rotors - Zuberi",
               "status": "In progress",
-              "customer": "custom-2",
-              "job_type": "Tire rotation and balance",
-              "priority": "Drop-off",
-              "tech": "tm-4",
+              "customer": "custom-12",
+              "job_type": "Brake pads and rotors",
+              "priority": "Urgent",
+              "tech": "tm-3",
               "scheduled_on": "@mon",
-              "quote": 165,
-              "parts_cost": 46,
-              "labor_cost": 60,
-              "hours": 1,
-              "vehicle": "veh-3",
-              "mileage_in": 158900,
-              "approved": true,
+              "quote": 580,
+              "parts_cost": 280,
+              "labor_cost": 160,
+              "hours": 2.8,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Courier car: oil, wipers, cabin filter",
+              "job_name": "Check engine diagnostic - Valdez",
               "status": "In progress",
-              "customer": "custom-6",
-              "job_type": "Oil change and inspection",
-              "priority": "Waiting",
-              "tech": "tm-5",
+              "customer": "custom-5",
+              "job_type": "Check engine diagnostic",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@tue",
-              "quote": 142,
-              "parts_cost": 48,
-              "labor_cost": 40,
-              "hours": 0.6,
-              "vehicle": "veh-6",
-              "mileage_in": 96320,
-              "approved": true
+              "quote": 215,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Sienna: rear brakes grinding",
+              "job_name": "Tire rotation and balance - Ibarra",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Brake pads and rotors",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "customer": "custom-10",
+              "job_type": "Tire rotation and balance",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@wed",
-              "quote": 465,
-              "parts_cost": 175,
-              "labor_cost": 140,
-              "hours": 1.8,
-              "vehicle": "veh-9",
-              "mileage_in": 184200,
+              "quote": 70,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "RAV4: first oil service",
+              "job_name": "Battery and charging system - Eriksen",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Oil change and inspection",
-              "priority": "Waiting",
-              "tech": "tm-4",
+              "customer": "custom-3",
+              "job_type": "Battery and charging system",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@thu",
-              "quote": 95,
-              "parts_cost": 30,
-              "labor_cost": 32,
-              "hours": 0.5,
-              "vehicle": "veh-10",
-              "mileage_in": 31800
+              "quote": 270,
+              "parts_cost": 150,
+              "labor_cost": 60,
+              "hours": 1
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Tacoma: inspection for sale",
+              "job_name": "AC recharge - Sandoval",
               "status": "Scheduled",
-              "customer": "custom-12",
-              "job_type": "Oil change and inspection",
-              "priority": "Drop-off",
-              "tech": "tm-5",
+              "customer": "custom-8",
+              "job_type": "AC recharge",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@fri",
-              "quote": 129,
-              "parts_cost": 0,
-              "labor_cost": 60,
-              "hours": 1,
-              "vehicle": "veh-11",
-              "mileage_in": 233100,
+              "quote": 310,
+              "parts_cost": 95,
+              "labor_cost": 85,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Jetta: clunk over bumps",
+              "job_name": "Timing belt service - Pemberton",
               "status": "New request",
-              "customer": "custom-4",
-              "job_type": "Suspension repair",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "customer": "custom-1",
+              "job_type": "Timing belt service",
+              "priority": "Emergency",
+              "tech": "tm-5",
               "scheduled_on": "@sat",
-              "quote": 0,
-              "parts_cost": 0,
-              "labor_cost": 45,
-              "hours": 0.5,
-              "vehicle": "veh-12",
-              "mileage_in": 104550,
+              "quote": 910,
+              "parts_cost": 380,
+              "labor_cost": 290,
+              "hours": 5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Accord: rear pads",
+              "job_name": "Suspension repair - Dunmore",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Brake pads and rotors",
-              "priority": "Waiting",
-              "tech": "tm-4",
+              "customer": "custom-6",
+              "job_type": "Suspension repair",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@sun",
-              "quote": 285,
-              "parts_cost": 82,
-              "labor_cost": 95,
-              "hours": 1.2,
-              "vehicle": "veh-1",
-              "mileage_in": 88900
+              "quote": 910,
+              "parts_cost": 410,
+              "labor_cost": 230,
+              "hours": 4
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "F-150: serpentine belt squeal",
+              "job_name": "Oil change and inspection - Prescott",
               "status": "Scheduled",
-              "customer": "custom-5",
-              "job_type": "Battery and charging system",
-              "priority": "Waiting",
-              "tech": "tm-5",
+              "customer": "custom-11",
+              "job_type": "Oil change and inspection",
+              "priority": "Routine",
+              "tech": "tm-4",
               "scheduled_on": "@tue+1w",
-              "quote": 165,
-              "parts_cost": 38,
-              "labor_cost": 55,
-              "hours": 0.7,
-              "vehicle": "veh-5",
-              "mileage_in": 143100
+              "quote": 95,
+              "parts_cost": 25,
+              "labor_cost": 45,
+              "hours": 0.8
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Van 14: PM service",
+              "job_name": "Brake pads and rotors - Montague",
               "status": "New request",
-              "customer": "custom-2",
-              "job_type": "Oil change and inspection",
-              "priority": "Drop-off",
-              "tech": "tm-4",
+              "customer": "custom-4",
+              "job_type": "Brake pads and rotors",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@thu+1w",
-              "quote": 135,
-              "parts_cost": 46,
-              "labor_cost": 40,
-              "hours": 0.6,
-              "vehicle": "veh-2",
-              "mileage_in": 130000
+              "quote": 560,
+              "parts_cost": 270,
+              "labor_cost": 160,
+              "hours": 2.8
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Equinox: check engine light on",
+              "job_name": "Check engine diagnostic - Abernathy",
               "status": "Scheduled",
               "customer": "custom-9",
               "job_type": "Check engine diagnostic",
-              "priority": "Waiting",
+              "priority": "Routine",
               "tech": "tm-3",
               "scheduled_on": "@today",
-              "quote": 149,
-              "parts_cost": 0,
-              "labor_cost": 95,
-              "hours": 1,
-              "vehicle": "veh-8",
-              "mileage_in": 78450,
+              "quote": 210,
+              "parts_cost": 10,
+              "labor_cost": 85,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Outback: valve cover gasket",
+              "job_name": "Tire rotation and balance - Whitlock",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Timing belt service",
-              "priority": "Drop-off",
-              "tech": "tm-5",
+              "customer": "custom-2",
+              "job_type": "Tire rotation and balance",
+              "priority": "Urgent",
+              "tech": "tm-4",
               "scheduled_on": "@today+2d",
-              "quote": 420,
-              "parts_cost": 68,
-              "labor_cost": 240,
-              "hours": 3,
-              "vehicle": "veh-4",
-              "mileage_in": 171700
+              "quote": 70,
+              "parts_cost": 5,
+              "labor_cost": 45,
+              "hours": 0.8
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Civic: motor mounts",
+              "job_name": "Battery and charging system - Lindqvist",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Suspension repair",
-              "priority": "Drop-off",
-              "tech": "tm-3",
+              "customer": "custom-7",
+              "job_type": "Battery and charging system",
+              "priority": "Routine",
+              "tech": "tm-5",
               "scheduled_on": "@today+4d",
-              "quote": 510,
-              "parts_cost": 190,
-              "labor_cost": 180,
-              "hours": 2.2,
-              "vehicle": "veh-7",
-              "mileage_in": 201900
+              "quote": 265,
+              "parts_cost": 145,
+              "labor_cost": 60,
+              "hours": 1
             }
           }
         ],
@@ -1825,397 +1695,77 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "RO-48810",
-              "status": "Paid",
+              "invoice_name": "INV-1040",
+              "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-1",
-              "amount": 142.18,
+              "customer": "custom-3",
+              "amount": 106.4,
               "issued_on": "@today-21d",
-              "due_on": "@today-21d",
-              "paid_on": "@today-21d",
-              "method": "Card"
+              "due_on": "@today-7d"
             }
           },
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "RO-48822",
-              "status": "Overdue",
+              "invoice_name": "INV-1041",
+              "status": "Paid",
               "job": "job-2",
-              "customer": "custom-2",
-              "amount": 712.9,
+              "customer": "custom-8",
+              "amount": 727.1,
               "issued_on": "@today-16d",
-              "due_on": "@today-1d"
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "RO-48840",
+              "invoice_name": "INV-1042",
               "status": "Paid",
               "job": "job-3",
-              "customer": "custom-3",
-              "amount": 412.2,
+              "customer": "custom-1",
+              "amount": 272.8,
               "issued_on": "@today-12d",
-              "due_on": "@today-12d",
-              "paid_on": "@today-12d",
-              "method": "Card"
+              "due_on": "@today+2d",
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "RO-48851",
-              "status": "Paid",
+              "invoice_name": "INV-1043",
+              "status": "Sent",
               "job": "job-4",
-              "customer": "custom-5",
-              "amount": 318.4,
+              "customer": "custom-6",
+              "amount": 109.0,
               "issued_on": "@today-9d",
-              "due_on": "@today-9d",
-              "paid_on": "@today-9d",
-              "method": "Cash"
+              "due_on": "@fri"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "RO-48866",
+              "invoice_name": "INV-1044",
               "status": "Sent",
               "job": "job-5",
-              "customer": "custom-9",
-              "amount": 331.7,
+              "customer": "custom-11",
+              "amount": 330.4,
               "issued_on": "@today-6d",
-              "due_on": "@today"
+              "due_on": "@today+4d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "RO-48872",
-              "status": "Paid",
-              "job": "job-6",
-              "customer": "custom-8",
-              "amount": 952.3,
-              "issued_on": "@today-4d",
-              "due_on": "@today-4d",
-              "paid_on": "@today-4d",
-              "method": "Card"
-            }
-          },
-          {
-            "key": "invoic-7",
-            "values": {
-              "invoice_name": "RO-48880",
-              "status": "Sent",
-              "job": "job-10",
-              "customer": "custom-2",
-              "amount": 176.55,
-              "issued_on": "@today-1d",
-              "due_on": "@today+29d"
-            }
-          },
-          {
-            "key": "invoic-8",
-            "values": {
-              "invoice_name": "RO-48881",
+              "invoice_name": "INV-1045",
               "status": "Draft",
-              "job": "job-11",
-              "customer": "custom-6",
-              "amount": 151.95,
-              "issued_on": "@today",
-              "due_on": "@today+30d"
-            }
-          }
-        ]
-      },
-      {
-        "token": "vehicle",
-        "name": "Vehicles",
-        "labelSingular": "Vehicle",
-        "labelPlural": "Vehicles",
-        "type": "entity",
-        "display": "board",
-        "weight": "light",
-        "ordered": false,
-        "icon": "car",
-        "titleField": "vehicle_name",
-        "describes": "Every car, truck and van that comes in, with VIN, plate, mileage and when the next oil change is due.",
-        "subject": "thing",
-        "statusImplies": [],
-        "rowTemplates": [],
-        "fields": [
-          {
-            "key": "vehicle_name",
-            "label": "Vehicle",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "customer",
-            "label": "Owner",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "customer",
-            "relationMax": 1
-          },
-          {
-            "key": "year",
-            "label": "Year",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1960
-              },
-              {
-                "kind": "max",
-                "value": 2100
-              }
-            ]
-          },
-          {
-            "key": "make_model",
-            "label": "Make and model",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "vin",
-            "label": "VIN",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "plate",
-            "label": "Plate",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "mileage",
-            "label": "Mileage at last visit",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 900000
-              }
-            ]
-          },
-          {
-            "key": "oil_due_miles",
-            "label": "Next oil change at (miles)",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 900000
-              }
-            ]
-          },
-          {
-            "key": "last_in",
-            "label": "Last in",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "veh-1",
-            "values": {
-              "vehicle_name": "2017 Accord, silver",
-              "customer": "custom-1",
-              "year": 2017,
-              "make_model": "Honda Accord EX",
-              "vin": "1HGCV1F3XHA0F4421",
-              "plate": "8KDL412",
-              "mileage": 88410,
-              "oil_due_miles": 91500,
-              "last_in": "@today-21d"
-            }
-          },
-          {
-            "key": "veh-2",
-            "values": {
-              "vehicle_name": "Van 14: 2021 Transit 250",
-              "customer": "custom-2",
-              "year": 2021,
-              "make_model": "Ford Transit 250",
-              "vin": "1FTBR1Y87MKA2Z113",
-              "plate": "FLT-0014",
-              "mileage": 126300,
-              "oil_due_miles": 130000,
-              "last_in": "@today-16d"
-            }
-          },
-          {
-            "key": "veh-3",
-            "values": {
-              "vehicle_name": "Van 9: 2019 ProMaster",
-              "customer": "custom-2",
-              "year": 2019,
-              "make_model": "Ram ProMaster 2500",
-              "vin": "3C6TRVDG5KE5Z0187",
-              "plate": "FLT-0009",
-              "mileage": 158900,
-              "oil_due_miles": 162000,
-              "last_in": "@mon"
-            }
-          },
-          {
-            "key": "veh-4",
-            "values": {
-              "vehicle_name": "2012 Outback",
-              "customer": "custom-3",
-              "year": 2012,
-              "make_model": "Subaru Outback 2.5i",
-              "vin": "4S4BRBAC1C3Z20965",
-              "plate": "7HWR339",
-              "mileage": 171250,
-              "oil_due_miles": 174000,
-              "last_in": "@today-12d"
-            }
-          },
-          {
-            "key": "veh-5",
-            "values": {
-              "vehicle_name": "2015 F-150",
-              "customer": "custom-5",
-              "year": 2015,
-              "make_model": "Ford F-150 XLT",
-              "vin": "1FTEW1EF4FKZ19024",
-              "plate": "5TRK881",
-              "mileage": 142600,
-              "oil_due_miles": 145000,
-              "last_in": "@today-9d"
-            }
-          },
-          {
-            "key": "veh-6",
-            "values": {
-              "vehicle_name": "Courier car: 2020 Corolla",
-              "customer": "custom-6",
-              "year": 2020,
-              "make_model": "Toyota Corolla LE",
-              "vin": "5YFEPRAE6LPZ00741",
-              "plate": "FLT-2203",
-              "mileage": 96320,
-              "oil_due_miles": 100000,
-              "last_in": "@tue"
-            }
-          },
-          {
-            "key": "veh-7",
-            "values": {
-              "vehicle_name": "2010 Civic",
-              "customer": "custom-8",
-              "year": 2010,
-              "make_model": "Honda Civic LX",
-              "vin": "2HGFA1F5XAH5Z0318",
-              "plate": "4MNQ227",
-              "mileage": 201480,
-              "oil_due_miles": 204000,
-              "last_in": "@today-4d"
-            }
-          },
-          {
-            "key": "veh-8",
-            "values": {
-              "vehicle_name": "2018 Equinox",
-              "customer": "custom-9",
-              "year": 2018,
-              "make_model": "Chevrolet Equinox LT",
-              "vin": "2GNAXSEV1J6Z11807",
-              "plate": "9PLM560",
-              "mileage": 77900,
-              "oil_due_miles": 80000,
-              "last_in": "@today-2d"
-            }
-          },
-          {
-            "key": "veh-9",
-            "values": {
-              "vehicle_name": "2014 Sienna",
-              "customer": "custom-7",
-              "year": 2014,
-              "make_model": "Toyota Sienna XLE",
-              "vin": "5TDYK3DCXES5Z4129",
-              "plate": "6GHB903",
-              "mileage": 184200,
-              "oil_due_miles": 187000,
-              "last_in": "@wed"
-            }
-          },
-          {
-            "key": "veh-10",
-            "values": {
-              "vehicle_name": "2022 RAV4 Hybrid",
-              "customer": "custom-11",
-              "year": 2022,
-              "make_model": "Toyota RAV4 Hybrid",
-              "vin": "JTMEWRFV5NJZ02273",
-              "plate": "2XRT118",
-              "mileage": 31800,
-              "oil_due_miles": 35000,
-              "last_in": "@thu"
-            }
-          },
-          {
-            "key": "veh-11",
-            "values": {
-              "vehicle_name": "2009 Tacoma",
-              "customer": "custom-12",
-              "year": 2009,
-              "make_model": "Toyota Tacoma",
-              "vin": "5TEUU42N69Z619702",
-              "plate": "3BKS774",
-              "mileage": 233100,
-              "oil_due_miles": 236000,
-              "last_in": "@fri"
-            }
-          },
-          {
-            "key": "veh-12",
-            "values": {
-              "vehicle_name": "2016 Jetta",
+              "job": "job-6",
               "customer": "custom-4",
-              "year": 2016,
-              "make_model": "Volkswagen Jetta SE",
-              "vin": "3VWD17AJ5GM2Z1846",
-              "plate": "8QWE052",
-              "mileage": 104550,
-              "oil_due_miles": 108000,
-              "last_in": "@sat"
+              "amount": 415.6,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
             }
           }
         ]
@@ -2261,26 +1811,6 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
-      },
-      {
-        "describes": "Each vehicle belongs to one customer.",
-        "fromTable": "vehicle",
-        "fromField": "customer",
-        "toTable": "customer",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "vehicles"
-      },
-      {
-        "describes": "Each repair order is for one vehicle.",
-        "fromTable": "job",
-        "fromField": "vehicle",
-        "toTable": "vehicle",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "repair_orders"
       }
     ],
     "sharedBlocks": [
@@ -2370,7 +1900,7 @@
           },
           {
             "fieldKey": "priority",
-            "ask": "Will you wait, drop it off, or is it being towed in?"
+            "ask": "How urgent is it?"
           },
           {
             "fieldKey": "scheduled_on",
@@ -2622,13 +2152,6 @@
             "Overdue"
           ]
         }
-      },
-      {
-        "token": "all_vehicle",
-        "name": "All vehicles",
-        "kind": "grid",
-        "isDefault": true,
-        "table": "vehicle"
       }
     ],
     "agent": {
@@ -2701,18 +2224,6 @@
           "surface": "part_board",
           "minItems": 3
         }
-      },
-      {
-        "says": "Open vehicles.",
-        "action": {
-          "kind": "open",
-          "surface": "all_vehicle"
-        },
-        "expect": {
-          "kind": "renders",
-          "surface": "all_vehicle",
-          "minItems": 3
-        }
       }
     ],
     "foundation": [],
@@ -2730,7 +2241,7 @@
         "Foundry Road"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {
@@ -2752,18 +2263,12 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the shop from here. Every repair order is tied to a vehicle, so the whole history of a car (mileage, past work, what the customer declined) is one click away. The service advisor writes the order, gets approval, and Mark done closes it at pickup. Fleet accounts pay on terms; sent and overdue invoices both count in Awaiting payment."
+              "text": "Run the shop from one page. A car arrives, a repair order goes on the board, the technician takes it and Mark done moves it to pickup. Parts shows what to restock and Invoices shows unpaid work. Check the Dashboard at the morning huddle."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "page",
-          "props": {
-            "spaceId": "page:start-here"
           }
         },
         {
@@ -3156,334 +2661,6 @@
             ],
             "activeViewId": "inv-b"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Vehicles"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Every vehicle that comes through the bays, with mileage, VIN and when its next oil change is due."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "vehicle",
-              "view": "all_vehicle"
-            },
-            "inline": true,
-            "title": "Vehicles",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "vh-t",
-                "name": "All vehicles",
-                "layout": "grid",
-                "icon": "Table"
-              },
-              {
-                "id": "vh-w",
-                "name": "In this week",
-                "layout": "list",
-                "icon": "CalendarDays",
-                "within": {
-                  "last_in": {
-                    "relative": "this_week"
-                  }
-                }
-              }
-            ],
-            "activeViewId": "vh-t"
-          }
-        }
-      ]
-    },
-    {
-      "key": "start-here",
-      "parent": "auto-repair-shop-hq",
-      "title": "Start here: how this workspace runs",
-      "icon": {
-        "emoji": "🧭"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A ten-minute tour of how the shop's work flows through this workspace. Share it with the service advisors, the shop manager and every technician."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What lives where"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Customers",
-              "bold": true
-            },
-            {
-              "text": ": drivers and fleet accounts, with what they owe and how many repair orders are open."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Vehicles",
-              "bold": true
-            },
-            {
-              "text": ": each car, truck and van, with VIN, plate, mileage and the next oil change. Every repair order for that vehicle is listed on its card."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Repair orders",
-              "bold": true
-            },
-            {
-              "text": ": the complaint, the vehicle, the technician, the estimate, approval, declined work, parts and labor cost, and margin."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Parts stock",
-              "bold": true
-            },
-            {
-              "text": ": oil, filters, brakes, batteries and the rest of the shelf, with reorder points."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Invoices",
-              "bold": true
-            },
-            {
-              "text": ": what each repair order billed, paid and owed. Fleet invoices carry terms."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "A repair order from counter to pickup"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The advisor writes the order as "
-            },
-            {
-              "text": "New request",
-              "bold": true
-            },
-            {
-              "text": ", with the vehicle and mileage in."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The technician diagnoses; the advisor builds the estimate and gets approval ("
-            },
-            {
-              "text": "Customer approved",
-              "bold": true
-            },
-            {
-              "text": "). A technician can press "
-            },
-            {
-              "text": "Assign to me",
-              "bold": true
-            },
-            {
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Parts arrive, work is done. Waiting on parts means "
-            },
-            {
-              "text": "On hold",
-              "bold": true
-            },
-            {
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Quality check and road test, then "
-            },
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": " at pickup."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Payment at the counter, or an invoice on terms for fleets. Past due becomes "
-            },
-            {
-              "text": "Overdue",
-              "bold": true
-            },
-            {
-              "text": "; Awaiting payment counts sent and overdue. "
-            },
-            {
-              "text": "Mark paid",
-              "bold": true
-            },
-            {
-              "text": " stamps the date."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Your rhythm"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every morning: Dashboard, today's appointments, orders waiting for approval"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every afternoon: call every drop-off customer with a status before 3 pm"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every Friday: shelf count, cores and returns"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every month: comebacks, thin margins, and declined work to follow up"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Making it yours"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Rename work types to the jobs you do most, add your parts suppliers, and delete the sample customers once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "An invoice can be higher than the first estimate when the customer approves extra work at the counter; keep the estimate as written so the margin compares what you sold with what it cost."
-            }
-          ]
         }
       ]
     },
@@ -3746,127 +2923,6 @@
             ],
             "activeViewId": "view-l2"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Awaiting payment (sent and overdue)"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "invoice",
-              "view": "all_invoice"
-            },
-            "inline": true,
-            "title": "Invoices",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l3",
-                "name": "Awaiting payment",
-                "layout": "list",
-                "icon": "Table",
-                "anyOf": {
-                  "status": [
-                    "Sent",
-                    "Overdue"
-                  ]
-                }
-              }
-            ],
-            "activeViewId": "view-l3"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Waiting for approval"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "job",
-              "view": "all_job"
-            },
-            "inline": true,
-            "title": "Repair orders",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l4",
-                "name": "Not yet approved",
-                "layout": "list",
-                "icon": "Table",
-                "filters": {
-                  "approved": false
-                },
-                "anyOf": {
-                  "status": [
-                    "New request",
-                    "Scheduled",
-                    "In progress"
-                  ]
-                }
-              }
-            ],
-            "activeViewId": "view-l4"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Comebacks"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "job",
-              "view": "all_job"
-            },
-            "inline": true,
-            "title": "Repair orders",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l5",
-                "name": "Comebacks",
-                "layout": "list",
-                "icon": "Table",
-                "filters": {
-                  "comeback": true
-                }
-              }
-            ],
-            "activeViewId": "view-l5"
-          }
         }
       ]
     },
@@ -3882,7 +2938,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The repair order is a contract. Write the customer's words, test before you sell, and never touch a wrench without approval."
+              "text": "A clear estimate prevents most arguments. Write it before anything is taken apart."
             }
           ],
           "background": "blue",
@@ -3905,21 +2961,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Find the customer and pick the "
-            },
-            {
-              "text": "Vehicle",
-              "bold": true
-            },
-            {
-              "text": " (or add it: year, make and model, VIN, plate). Write "
-            },
-            {
-              "text": "Mileage in",
-              "bold": true
-            },
-            {
-              "text": " from the dash, not from memory."
+              "text": "Greet the driver, walk around the car and note existing dents."
             }
           ]
         },
@@ -3927,7 +2969,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write the complaint in the customer's own words: \"grinding from the back when I stop,\" not \"needs brakes.\""
+              "text": "Write the concern in their words, not in shop words."
             }
           ]
         },
@@ -3935,30 +2977,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask when it happens: cold or warm, at what speed, turning or straight, for how long."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Set "
-            },
-            {
-              "text": "Waiting or drop-off",
-              "bold": true
-            },
-            {
-              "text": ". Waiters get a time promise; drop-offs get a call by a set hour."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check the vehicle's earlier repair orders. Declined work from last time is the first thing to mention."
+              "text": "Ask for a phone number and the best way to reach them."
             }
           ]
         },
@@ -3966,7 +2985,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Diagnose before you estimate"
+              "text": "Estimate"
             }
           ],
           "props": {
@@ -3974,98 +2993,26 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Charge for diagnosis. A check-engine light is not a part number. Say up front what the diagnostic costs and that it comes off the repair if they go ahead."
+              "text": "Inspect and diagnose before quoting."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "The technician writes the cause and the test that proved it on the order: the code, the freeze-frame, the reading."
+              "text": "Quote parts and labor separately and list what is optional."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Photos of worn parts next to a new one sell more honestly than any script."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Building the estimate"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Parts at your price, with your markup."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Labor from a published labor guide, times your door rate."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Shop supplies and disposal, and tax."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Split it into "
-            },
-            {
-              "text": "must do now",
-              "bold": true
-            },
-            {
-              "text": " (safety, the complaint), "
-            },
-            {
-              "text": "should do soon",
-              "bold": true
-            },
-            {
-              "text": ", and "
-            },
-            {
-              "text": "can wait",
-              "bold": true
-            },
-            {
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Enter the estimate, parts cost, labor cost and hours. Under 20 percent margin shows as Thin; on parts-heavy jobs check your markup first."
+              "text": "Get an approval by text or phone and note the time on the repair order."
             }
           ]
         },
@@ -4073,7 +3020,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Getting approval"
+              "text": "Extra work"
             }
           ],
           "props": {
@@ -4084,75 +3031,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Call or text the estimate with photos. When the customer says yes, tick "
-            },
-            {
-              "text": "Customer approved",
-              "bold": true
-            },
-            {
-              "text": " and write who approved it and when. Anything they put off goes in "
-            },
-            {
-              "text": "Declined work",
-              "bold": true
-            },
-            {
-              "text": "; it is the first thing the advisor brings up next visit."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "A 2012 wagon comes in with a flashing check-engine light. The diagnostic finds a misfire on cylinder 3; swapping coils moves the misfire, so the coil is bad. The advisor texts a photo and the estimate: coil and plugs now, the valve cover gasket seep can wait. The customer approves the coil and plugs. Next time the car is in, the advisor opens the order and sees the gasket on the declined list."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Never do this"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Add work without approval, even small items."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Promise a time you have not checked with the technician."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Write \"check and advise\" with no complaint behind it."
+              "text": "Never add work that was not approved. Call, explain, and wait for a yes."
             }
           ]
         }
@@ -4170,7 +3049,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Parts are where shops quietly lose money: wrong parts, slow returns, and cores left in the back. A simple routine fixes all three."
+              "text": "Stock the fast movers, order the rest the same day. Parts delays cost more than the part."
             }
           ],
           "background": "blue",
@@ -4182,58 +3061,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What to keep on the shelf"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Oil in your top three weights, the filters for the vehicles you see most, cabin and engine air filters"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Brake pads and rotors for your most common vehicles, brake fluid, brake clean"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Batteries in the two or three groups that fit most cars in your area"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Wiper blades, bulbs, belts, coolant, and common fuses"
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Everything else comes from the parts store, usually within an hour."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Ordering for a repair order"
+              "text": "Daily"
             }
           ],
           "props": {
@@ -4244,7 +3072,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Order with the VIN, not just year, make and model. Many models change parts mid-year."
+              "text": "Read tomorrow repair orders and list what you do not stock."
             }
           ]
         },
@@ -4252,7 +3080,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Put the parts cost on the repair order as soon as it is known, so the margin is right."
+              "text": "Order before 10:00 for same day delivery."
             }
           ]
         },
@@ -4260,22 +3088,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If a part is more than a day out, set the order "
-            },
-            {
-              "text": "On hold",
-              "bold": true
-            },
-            {
-              "text": " and tell the customer the date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check the part against the old one before installing. Wrong parts are returned the same day."
+              "text": "Receive parts against the repair order and mark them on the sheet."
             }
           ]
         },
@@ -4283,51 +3096,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Cores and returns"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every core (batteries, alternators, starters, calipers) tagged with the repair order number"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Returns and cores go back on the next delivery run, never later than the end of the week"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Return credits checked against the store statement every month"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The weekly count"
+              "text": "Returns"
             }
           ],
           "props": {
@@ -4338,59 +3107,7 @@
           "type": "text",
           "text": [
             {
-              "text": "On Friday the shop manager counts the shelf and types the real count into "
-            },
-            {
-              "text": "On hand",
-              "bold": true
-            },
-            {
-              "text": ". Anything showing "
-            },
-            {
-              "text": "Reorder",
-              "bold": true
-            },
-            {
-              "text": " goes on Monday's stock order. Look at the Stock value column once a quarter: slow parts on the shelf are cash you cannot spend."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Warranty on parts"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Keep failed parts that are under warranty, tagged with the vehicle, mileage and date. Parts stores will not credit a warranty claim without the old part."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "On Thursday a delivery fleet's van needs front pads and rotors. The rotors on the shelf do not match the VIN's brake package, so the advisor orders the right ones by VIN for a 2 pm delivery. The wrong pair stays on the shelf for the next van of that model. The old rotors go in the scrap bin, and the caliper core goes back with Friday's run."
+              "text": "Return unused or wrong parts within a week and note the credit. Keep core returns in a labeled bin."
             }
           ]
         }
@@ -4408,7 +3125,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Pickup is where the customer decides whether they trust you. A clean car, a clear invoice and five minutes of explanation bring them back."
+              "text": "The last ten minutes of a job are the ones the driver remembers."
             }
           ],
           "background": "blue",
@@ -4420,128 +3137,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before you call the customer"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Road test the vehicle and confirm the complaint is fixed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Torque the wheels to spec on any job that had them off"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check for leaks under the car after the test drive"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Reset the oil life and any warning lights you were asked to clear"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Remove seat covers, floor paper and the steering wheel cover"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Old parts in a box in the trunk if the customer asked for them"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Update "
-            },
-            {
-              "text": "Mileage at last visit",
-              "bold": true
-            },
-            {
-              "text": " and "
-            },
-            {
-              "text": "Next oil change at",
-              "bold": true
-            },
-            {
-              "text": " on the vehicle"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Explaining the invoice"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Walk the customer through the work in plain words: what was wrong, what you did, and what you saw that they should plan for. Point at the declined work you wrote down. Never pressure: \"this can wait until spring\" builds more trust than a scare."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Closing the order"
+              "text": "Before calling the driver"
             }
           ],
           "props": {
@@ -4552,14 +3148,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press "
-            },
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": ": it stamps the completion date."
+              "text": "Another technician road tests the car."
             }
           ]
         },
@@ -4567,28 +3156,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Take payment and press "
-            },
-            {
-              "text": "Mark paid",
-              "bold": true
-            },
-            {
-              "text": " on the invoice. Fleet accounts get the invoice set to "
-            },
-            {
-              "text": "Sent",
-              "bold": true
-            },
-            {
-              "text": " with their terms; past their due date it becomes "
-            },
-            {
-              "text": "Overdue",
-              "bold": true
-            },
-            {
-              "text": ", and their Awaiting payment shows both."
+              "text": "Wheel torque, fluid levels and warning lights checked."
             }
           ]
         },
@@ -4596,7 +3164,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the next visit if one is due."
+              "text": "Invoice matched to the estimate."
             }
           ]
         },
@@ -4604,7 +3172,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Comebacks"
+              "text": "At pickup"
             }
           ],
           "props": {
@@ -4612,55 +3180,26 @@
           }
         },
         {
-          "type": "text",
+          "type": "numbered",
           "text": [
             {
-              "text": "A car that returns within 90 days for the same problem is a comeback. Open a new repair order, tick "
-            },
-            {
-              "text": "Comeback",
-              "bold": true
-            },
-            {
-              "text": ", and give it to the technician who did the work, with the shop manager looking over it. Comebacks show on the Dashboard; review them every month. Most come from a missed second cause (two bad coils, not one), a part from a weak brand, or a test that was skipped."
+              "text": "Explain what was done and what to watch."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "A customer picks up her pickup after a new battery. The advisor shows her the test printout from the old battery, mentions that the serpentine belt is cracked and can wait a month, and books her in for it. Two weeks later she calls to move the appointment up, because she trusts the shop's timing."
+              "text": "Show any worn parts and mention what is coming due."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Thank-you and follow-up"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "The day after pickup, send a short text: \"Thanks for coming in. Anything we should know about the car?\" It catches problems while they are small and earns the review."
+              "text": "Set a reminder for the next service."
             }
           ]
         }

@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0500",
-  "version": 4,
+  "version": 3,
   "title": "HVAC Company HQ",
-  "description": "For HVAC contractors: service calls, equipment at each home, maintenance plans, parts.",
+  "description": "Dispatch service calls, price jobs, track parts and invoices, and keep plans on schedule.",
   "forWho": "HVAC companies and heating and cooling contractors",
   "icon": {
     "emoji": "❄️"
@@ -15,10 +15,9 @@
   "category": "trades",
   "tags": [
     "hvac",
-    "hvac technician",
-    "heating",
-    "air conditioning",
-    "furnace",
+    "service",
+    "dispatch",
+    "jobs",
     "trades"
   ],
   "spec": {
@@ -153,40 +152,6 @@
             }
           },
           {
-            "key": "open_calls",
-            "label": "Open calls",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "jobs",
-            "pick": "job_name",
-            "agg": "count",
-            "filter": {
-              "status": {
-                "not": [
-                  "Completed",
-                  "Cancelled"
-                ]
-              }
-            }
-          },
-          {
-            "key": "on_plan",
-            "label": "Plans active",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "agreements",
-            "pick": "agreement_name",
-            "agg": "count",
-            "filter": {
-              "status": [
-                "Active",
-                "Due for renewal"
-              ]
-            }
-          },
-          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -196,12 +161,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": {
-                "not": [
-                  "Draft",
-                  "Void"
-                ]
-              }
+              "status": "Paid"
             }
           },
           {
@@ -214,10 +174,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": [
-                "Sent",
-                "Overdue"
-              ]
+              "status": "Sent"
             }
           },
           {
@@ -574,15 +531,6 @@
             "relationMax": 1
           },
           {
-            "key": "equipment",
-            "label": "Unit",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "equipment",
-            "relationMax": 1
-          },
-          {
             "key": "job_type",
             "label": "Work type",
             "parityType": "select",
@@ -626,14 +574,6 @@
               "Emergency": "amber"
             },
             "default": "Routine"
-          },
-          {
-            "key": "callback",
-            "label": "Callback",
-            "parityType": "checkbox",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "description": "A return trip to fix our own work, not billed."
           },
           {
             "key": "tech",
@@ -953,33 +893,32 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "No heat: igniter cracked, replaced",
+              "job_name": "Furnace repair - Rosenthal",
               "status": "Completed",
               "customer": "custom-3",
               "job_type": "Furnace repair",
-              "priority": "Urgent",
+              "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-21d",
-              "quote": 345,
-              "parts_cost": 62,
-              "labor_cost": 150,
-              "hours": 2.25,
-              "equipment": "eq-3",
+              "quote": 315,
+              "parts_cost": 80,
+              "labor_cost": 155,
+              "hours": 2.5,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Spring AC tune-up, both units",
+              "job_name": "AC tune-up - Galloway",
               "status": "Completed",
               "customer": "custom-8",
               "job_type": "AC tune-up",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@today-16d",
-              "quote": 0,
-              "parts_cost": 18,
+              "quote": 170,
+              "parts_cost": 25,
               "labor_cost": 95,
               "hours": 1.5,
               "completed_on": "@today-16d"
@@ -988,334 +927,314 @@
           {
             "key": "job-3",
             "values": {
-              "job_name": "Cold-climate heat pump install",
+              "job_name": "Heat pump install - Dunmore",
               "status": "Completed",
               "customer": "custom-1",
               "job_type": "Heat pump install",
               "priority": "Routine",
               "tech": "tm-6",
               "scheduled_on": "@today-12d",
-              "quote": 14200,
-              "parts_cost": 6890,
-              "labor_cost": 1980,
-              "hours": 22,
-              "equipment": "eq-2",
+              "quote": 10840,
+              "parts_cost": 5635,
+              "labor_cost": 1115,
+              "hours": 18,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Smart thermostat + humidistat wiring",
+              "job_name": "Thermostat install - Oyelaran",
               "status": "Completed",
               "customer": "custom-6",
               "job_type": "Thermostat install",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-9d",
-              "quote": 395,
-              "parts_cost": 140,
+              "quote": 245,
+              "parts_cost": 100,
               "labor_cost": 75,
-              "hours": 1.25,
-              "equipment": "eq-9",
+              "hours": 1.2,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Duct cleaning after renovation dust",
+              "job_name": "Duct cleaning - Delacroix",
               "status": "Completed",
               "customer": "custom-11",
               "job_type": "Duct cleaning",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-5",
               "scheduled_on": "@today-6d",
-              "quote": 640,
-              "parts_cost": 35,
-              "labor_cost": 260,
+              "quote": 610,
+              "parts_cost": 60,
+              "labor_cost": 250,
               "hours": 4,
-              "equipment": "eq-12",
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Boiler lockout at 5 a.m., reset + new sensor",
+              "job_name": "No-heat emergency - Abernathy",
               "status": "Completed",
-              "customer": "custom-8",
+              "customer": "custom-4",
               "job_type": "No-heat emergency",
-              "priority": "Emergency",
+              "priority": "Routine",
               "tech": "tm-6",
               "scheduled_on": "@today-4d",
-              "quote": 585,
-              "parts_cost": 88,
-              "labor_cost": 210,
-              "hours": 2.5,
-              "equipment": "eq-8",
+              "quote": 880,
+              "parts_cost": 265,
+              "labor_cost": 185,
+              "hours": 3,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "AC not cooling, R-22 system: quote replacement",
+              "job_name": "AC repair - Nakamura",
               "status": "Cancelled",
               "customer": "custom-9",
               "job_type": "AC repair",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today-8d",
-              "quote": 129,
-              "parts_cost": 0,
-              "labor_cost": 60,
-              "hours": 1,
-              "equipment": "eq-10"
+              "quote": 405,
+              "parts_cost": 155,
+              "labor_cost": 155,
+              "hours": 2.5
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Rooftop unit: compressor hard start, parts on order",
+              "job_name": "Maintenance plan visit - Kowalczyk",
               "status": "On hold",
-              "customer": "custom-3",
-              "job_type": "AC repair",
-              "priority": "Urgent",
+              "customer": "custom-2",
+              "job_type": "Maintenance plan visit",
+              "priority": "Emergency",
               "tech": "tm-5",
               "scheduled_on": "@today-5d",
-              "quote": 920,
-              "parts_cost": 410,
-              "labor_cost": 190,
-              "hours": 3,
-              "equipment": "eq-3"
+              "quote": 160,
+              "parts_cost": 20,
+              "labor_cost": 75,
+              "hours": 1.2
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Igniter again: check wiring we left",
+              "job_name": "Furnace repair - Zuberi",
               "status": "Scheduled",
-              "customer": "custom-3",
+              "customer": "custom-7",
               "job_type": "Furnace repair",
-              "priority": "Urgent",
-              "tech": "tm-4",
+              "priority": "Routine",
+              "tech": "tm-6",
               "scheduled_on": "@today-2d",
-              "quote": 0,
-              "parts_cost": 0,
-              "labor_cost": 75,
-              "hours": 1,
-              "equipment": "eq-3",
-              "callback": true
+              "quote": 310,
+              "parts_cost": 75,
+              "labor_cost": 155,
+              "hours": 2.5
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Fall plan visit, unit A and B",
+              "job_name": "AC tune-up - Kellerman",
               "status": "In progress",
               "customer": "custom-12",
-              "job_type": "Maintenance plan visit",
-              "priority": "Routine",
+              "job_type": "AC tune-up",
+              "priority": "Urgent",
               "tech": "tm-4",
               "scheduled_on": "@mon",
-              "quote": 0,
-              "parts_cost": 22,
-              "labor_cost": 110,
-              "hours": 2,
-              "equipment": "eq-13",
+              "quote": 165,
+              "parts_cost": 25,
+              "labor_cost": 95,
+              "hours": 1.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Short-cycling furnace, flame sensor",
+              "job_name": "Heat pump install - Halvorsen",
               "status": "In progress",
               "customer": "custom-5",
-              "job_type": "Furnace repair",
-              "priority": "Urgent",
+              "job_type": "Heat pump install",
+              "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@tue",
-              "quote": 265,
-              "parts_cost": 16,
-              "labor_cost": 95,
-              "hours": 1.25,
-              "equipment": "eq-5"
+              "quote": 10655,
+              "parts_cost": 5540,
+              "labor_cost": 1115,
+              "hours": 18
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Mini-split heads: clean coils and drains",
+              "job_name": "Thermostat install - Vasquez",
               "status": "Scheduled",
-              "customer": "custom-2",
-              "job_type": "Maintenance plan visit",
+              "customer": "custom-10",
+              "job_type": "Thermostat install",
               "priority": "Routine",
               "tech": "tm-6",
               "scheduled_on": "@wed",
-              "quote": 0,
-              "parts_cost": 14,
-              "labor_cost": 140,
-              "hours": 2,
-              "equipment": "eq-6",
+              "quote": 235,
+              "parts_cost": 95,
+              "labor_cost": 75,
+              "hours": 1.2,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Heat exchanger inspection before winter",
+              "job_name": "Duct cleaning - Rosenthal",
               "status": "Scheduled",
-              "customer": "custom-5",
-              "job_type": "Furnace repair",
+              "customer": "custom-3",
+              "job_type": "Duct cleaning",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@thu",
-              "quote": 149,
-              "parts_cost": 0,
-              "labor_cost": 75,
-              "hours": 1,
-              "equipment": "eq-5"
+              "quote": 590,
+              "parts_cost": 60,
+              "labor_cost": 250,
+              "hours": 4
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Install media filter cabinet",
+              "job_name": "No-heat emergency - Galloway",
               "status": "Scheduled",
               "customer": "custom-8",
-              "job_type": "Thermostat install",
+              "job_type": "No-heat emergency",
               "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@fri",
-              "quote": 480,
-              "parts_cost": 190,
-              "labor_cost": 95,
-              "hours": 1.5,
-              "equipment": "eq-8",
+              "quote": 855,
+              "parts_cost": 255,
+              "labor_cost": 185,
+              "hours": 3,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Furnace replacement estimate",
+              "job_name": "AC repair - Dunmore",
               "status": "New request",
               "customer": "custom-1",
-              "job_type": "Furnace repair",
-              "priority": "Routine",
-              "tech": "tm-2",
+              "job_type": "AC repair",
+              "priority": "Emergency",
+              "tech": "tm-6",
               "scheduled_on": "@sat",
-              "quote": 0,
-              "parts_cost": 0,
-              "labor_cost": 60,
-              "hours": 1,
-              "equipment": "eq-1",
+              "quote": 380,
+              "parts_cost": 145,
+              "labor_cost": 155,
+              "hours": 2.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Fall plan visit, crawlspace furnace",
+              "job_name": "Maintenance plan visit - Oyelaran",
               "status": "New request",
               "customer": "custom-6",
               "job_type": "Maintenance plan visit",
               "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@sun",
-              "quote": 0,
-              "parts_cost": 22,
+              "quote": 155,
+              "parts_cost": 20,
               "labor_cost": 75,
-              "hours": 1,
-              "equipment": "eq-9"
+              "hours": 1.2
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Burning smell on first heat-up",
+              "job_name": "Furnace repair - Delacroix",
               "status": "Scheduled",
               "customer": "custom-11",
               "job_type": "Furnace repair",
-              "priority": "Urgent",
+              "priority": "Routine",
               "tech": "tm-5",
               "scheduled_on": "@tue+1w",
-              "quote": 189,
-              "parts_cost": 0,
-              "labor_cost": 75,
-              "hours": 1,
-              "equipment": "eq-12"
+              "quote": 305,
+              "parts_cost": 70,
+              "labor_cost": 155,
+              "hours": 2.5
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Humidifier pad + water panel",
+              "job_name": "AC tune-up - Abernathy",
               "status": "New request",
               "customer": "custom-4",
-              "job_type": "Thermostat install",
+              "job_type": "AC tune-up",
               "priority": "Routine",
               "tech": "tm-6",
               "scheduled_on": "@thu+1w",
-              "quote": 165,
-              "parts_cost": 48,
-              "labor_cost": 45,
-              "hours": 0.75,
-              "equipment": "eq-14"
+              "quote": 160,
+              "parts_cost": 25,
+              "labor_cost": 95,
+              "hours": 1.5
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Shop heat pump: defrost board",
+              "job_name": "Heat pump install - Nakamura",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "No-heat emergency",
-              "priority": "Emergency",
+              "customer": "custom-9",
+              "job_type": "Heat pump install",
+              "priority": "Routine",
               "tech": "tm-4",
               "scheduled_on": "@today",
-              "quote": 610,
-              "parts_cost": 245,
-              "labor_cost": 150,
-              "hours": 2.5,
-              "equipment": "eq-11",
+              "quote": 10465,
+              "parts_cost": 5440,
+              "labor_cost": 1115,
+              "hours": 18,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Quarterly rooftop service",
+              "job_name": "Thermostat install - Kowalczyk",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Maintenance plan visit",
-              "priority": "Routine",
+              "customer": "custom-2",
+              "job_type": "Thermostat install",
+              "priority": "Urgent",
               "tech": "tm-5",
               "scheduled_on": "@today+2d",
-              "quote": 0,
-              "parts_cost": 36,
-              "labor_cost": 150,
-              "hours": 2.5,
-              "equipment": "eq-3"
+              "quote": 225,
+              "parts_cost": 90,
+              "labor_cost": 75,
+              "hours": 1.2
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Upstairs AC: weak airflow, check blower",
+              "job_name": "Duct cleaning - Zuberi",
               "status": "Scheduled",
-              "customer": "custom-5",
-              "job_type": "AC repair",
+              "customer": "custom-7",
+              "job_type": "Duct cleaning",
               "priority": "Routine",
               "tech": "tm-6",
               "scheduled_on": "@today+4d",
-              "quote": 225,
-              "parts_cost": 0,
-              "labor_cost": 95,
-              "hours": 1.5,
-              "equipment": "eq-4"
+              "quote": 575,
+              "parts_cost": 60,
+              "labor_cost": 250,
+              "hours": 4
             }
           }
         ],
@@ -1512,7 +1431,7 @@
               "category": "Heating",
               "unit": "each",
               "unit_cost": 16,
-              "on_hand": 3,
+              "on_hand": 4,
               "reorder_at": 5,
               "supplier": "Badger Furnace Parts",
               "counted_on": "@today-9d"
@@ -1547,10 +1466,10 @@
           {
             "key": "part-7",
             "values": {
-              "part_name": "Refrigerant R-454B 20 lb",
+              "part_name": "Refrigerant R-410A 25 lb",
               "category": "Cooling",
               "unit": "cylinder",
-              "unit_cost": 265,
+              "unit_cost": 210,
               "on_hand": 2,
               "reorder_at": 2,
               "supplier": "Northern Gas and Welding",
@@ -1775,11 +1694,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-2211",
+              "invoice_name": "INV-1040",
               "status": "Overdue",
               "job": "job-1",
               "customer": "custom-3",
-              "amount": 389.95,
+              "amount": 352.8,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1787,11 +1706,25 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-2212",
+              "invoice_name": "INV-1041",
+              "status": "Paid",
+              "job": "job-2",
+              "customer": "custom-8",
+              "amount": 225.6,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-12d",
+              "method": "Check"
+            }
+          },
+          {
+            "key": "invoic-3",
+            "values": {
+              "invoice_name": "INV-1042",
               "status": "Paid",
               "job": "job-3",
               "customer": "custom-1",
-              "amount": 7100.0,
+              "amount": 13441.6,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
               "paid_on": "@today-8d",
@@ -1799,710 +1732,39 @@
             }
           },
           {
-            "key": "invoic-3",
-            "values": {
-              "invoice_name": "INV-2213",
-              "status": "Sent",
-              "job": "job-3",
-              "customer": "custom-1",
-              "amount": 7745.3,
-              "issued_on": "@today-1d",
-              "due_on": "@today+13d"
-            }
-          },
-          {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-2214",
+              "invoice_name": "INV-1043",
               "status": "Sent",
               "job": "job-4",
               "customer": "custom-6",
-              "amount": 430.55,
+              "amount": 299.4,
               "issued_on": "@today-9d",
-              "due_on": "@today"
+              "due_on": "@fri"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-2215",
-              "status": "Overdue",
+              "invoice_name": "INV-1044",
+              "status": "Sent",
               "job": "job-5",
               "customer": "custom-11",
-              "amount": 701.4,
+              "amount": 719.8,
               "issued_on": "@today-6d",
-              "due_on": "@today-1d"
+              "due_on": "@today+4d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-2216",
-              "status": "Paid",
-              "job": "job-6",
-              "customer": "custom-8",
-              "amount": 642.05,
-              "issued_on": "@today-4d",
-              "due_on": "@today+10d",
-              "paid_on": "@today-2d",
-              "method": "Check"
-            }
-          },
-          {
-            "key": "invoic-7",
-            "values": {
-              "invoice_name": "INV-2217",
-              "status": "Void",
-              "job": "job-7",
-              "customer": "custom-9",
-              "amount": 129.0,
-              "issued_on": "@today-8d",
-              "due_on": "@today+6d"
-            }
-          },
-          {
-            "key": "invoic-8",
-            "values": {
-              "invoice_name": "INV-2218",
+              "invoice_name": "INV-1045",
               "status": "Draft",
-              "job": "job-8",
-              "customer": "custom-3",
-              "amount": 460.0,
-              "issued_on": "@today-2d",
-              "due_on": "@today+4d"
-            }
-          }
-        ]
-      },
-      {
-        "token": "equipment",
-        "name": "Equipment",
-        "labelSingular": "Unit",
-        "labelPlural": "Equipment",
-        "type": "entity",
-        "display": "board",
-        "weight": "light",
-        "ordered": false,
-        "icon": "fan",
-        "titleField": "unit_name",
-        "describes": "Every furnace, heat pump, AC and boiler you look after, at each home or business.",
-        "subject": "thing",
-        "statusImplies": [],
-        "rowTemplates": [],
-        "fields": [
-          {
-            "key": "unit_name",
-            "label": "Unit",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "customer",
-            "label": "Customer",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "customer",
-            "relationMax": 1
-          },
-          {
-            "key": "kind",
-            "label": "Kind",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Gas furnace",
-              "Heat pump",
-              "Central AC",
-              "Ductless mini-split",
-              "Boiler",
-              "Rooftop unit",
-              "Controls"
-            ],
-            "choiceColors": {
-              "Gas furnace": "blue",
-              "Heat pump": "green",
-              "Central AC": "amber",
-              "Ductless mini-split": "violet",
-              "Boiler": "teal",
-              "Rooftop unit": "orange",
-              "Controls": "pink"
-            }
-          },
-          {
-            "key": "brand",
-            "label": "Make",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "model_no",
-            "label": "Model",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "serial_no",
-            "label": "Serial",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "installed_year",
-            "label": "Installed (year)",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1970
-              },
-              {
-                "kind": "max",
-                "value": 2100
-              }
-            ]
-          },
-          {
-            "key": "warranty_until",
-            "label": "Warranty until",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "filter_size",
-            "label": "Filter size",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "refrigerant",
-            "label": "Refrigerant",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "R-410A",
-              "R-454B",
-              "R-22 (retired)",
-              "None"
-            ],
-            "choiceColors": {
-              "R-410A": "blue",
-              "R-454B": "teal",
-              "R-22 (retired)": "red",
-              "None": "slate"
-            }
-          },
-          {
-            "key": "condition",
-            "label": "Condition",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Good",
-              "Watch",
-              "Replace soon"
-            ],
-            "choiceColors": {
-              "Good": "green",
-              "Watch": "amber",
-              "Replace soon": "red"
-            }
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "eq-1",
-            "values": {
-              "unit_name": "Basement furnace, 96% gas",
-              "customer": "custom-1",
-              "kind": "Gas furnace",
-              "brand": "Arcton two-stage",
-              "model_no": "G96V-070",
-              "serial_no": "5821K4410",
-              "installed_year": 2009,
-              "warranty_until": "@today-6y",
-              "filter_size": "16x25x4",
-              "refrigerant": "None",
-              "condition": "Replace soon"
-            }
-          },
-          {
-            "key": "eq-2",
-            "values": {
-              "unit_name": "Cold-climate heat pump, back yard",
-              "customer": "custom-1",
-              "kind": "Heat pump",
-              "brand": "Polarline inverter",
-              "model_no": "HP-36CC",
-              "serial_no": "H1124X0931",
-              "installed_year": 2026,
-              "warranty_until": "@today+10y",
-              "filter_size": "16x25x4",
-              "refrigerant": "R-454B",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-3",
-            "values": {
-              "unit_name": "Rooftop unit over the kitchen",
-              "customer": "custom-3",
-              "kind": "Rooftop unit",
-              "brand": "Kestrel packaged",
-              "model_no": "RTU-48G",
-              "serial_no": "R0919P2205",
-              "installed_year": 2015,
-              "warranty_until": "@today-1y",
-              "filter_size": "20x20x2",
-              "refrigerant": "R-410A",
-              "condition": "Watch"
-            }
-          },
-          {
-            "key": "eq-4",
-            "values": {
-              "unit_name": "Upstairs zone AC condenser",
-              "customer": "custom-5",
-              "kind": "Central AC",
-              "brand": "Brightwater single stage",
-              "model_no": "AC-24S",
-              "serial_no": "T1405C7731",
-              "installed_year": 2014,
-              "warranty_until": "@today-2y",
-              "refrigerant": "R-410A",
-              "condition": "Watch"
-            }
-          },
-          {
-            "key": "eq-5",
-            "values": {
-              "unit_name": "Main floor furnace",
-              "customer": "custom-5",
-              "kind": "Gas furnace",
-              "brand": "Arcton 80%",
-              "model_no": "F80-090",
-              "serial_no": "G1012F5562",
-              "installed_year": 2011,
-              "warranty_until": "@today-3y",
-              "filter_size": "16x25x1",
-              "refrigerant": "None",
-              "condition": "Replace soon"
-            }
-          },
-          {
-            "key": "eq-6",
-            "values": {
-              "unit_name": "Unit 2 ductless head, living room",
-              "customer": "custom-2",
-              "kind": "Ductless mini-split",
-              "brand": "Sorrel wall mount",
-              "model_no": "DM-12",
-              "serial_no": "F2201D0047",
-              "installed_year": 2021,
-              "warranty_until": "@today+3y",
-              "filter_size": "washable",
-              "refrigerant": "R-410A",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-7",
-            "values": {
-              "unit_name": "Unit 4 ductless head, bedroom",
-              "customer": "custom-2",
-              "kind": "Ductless mini-split",
-              "brand": "Sorrel wall mount",
-              "model_no": "DM-09",
-              "serial_no": "F2201D0052",
-              "installed_year": 2021,
-              "warranty_until": "@today+3y",
-              "filter_size": "washable",
-              "refrigerant": "R-410A",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-8",
-            "values": {
-              "unit_name": "Hot water boiler, mechanical room",
-              "customer": "custom-8",
-              "kind": "Boiler",
-              "brand": "Holbeck cast iron",
-              "model_no": "CI-150",
-              "serial_no": "W0807B1190",
-              "installed_year": 2008,
-              "warranty_until": "@today-8y",
-              "refrigerant": "None",
-              "condition": "Replace soon"
-            }
-          },
-          {
-            "key": "eq-9",
-            "values": {
-              "unit_name": "Gas furnace, crawlspace",
-              "customer": "custom-6",
-              "kind": "Gas furnace",
-              "brand": "Vireo 95%",
-              "model_no": "R95-060",
-              "serial_no": "RH1611F0384",
-              "installed_year": 2016,
-              "warranty_until": "@today+1y",
-              "filter_size": "16x20x1",
-              "refrigerant": "None",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-10",
-            "values": {
-              "unit_name": "Central AC, side yard",
-              "customer": "custom-9",
-              "kind": "Central AC",
-              "brand": "Arcton two stage",
-              "model_no": "AC-36T",
-              "serial_no": "L1306C2219",
-              "installed_year": 2013,
-              "warranty_until": "@today-3y",
-              "refrigerant": "R-22 (retired)",
-              "condition": "Replace soon"
-            }
-          },
-          {
-            "key": "eq-11",
-            "values": {
-              "unit_name": "Shop heat pump",
-              "customer": "custom-7",
-              "kind": "Heat pump",
-              "brand": "Kestrel packaged",
-              "model_no": "HP-60P",
-              "serial_no": "D1803H5520",
-              "installed_year": 2018,
-              "warranty_until": "@today+2y",
-              "filter_size": "20x25x1",
-              "refrigerant": "R-410A",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-12",
-            "values": {
-              "unit_name": "Office furnace and coil",
-              "customer": "custom-11",
-              "kind": "Gas furnace",
-              "brand": "Vireo 96%",
-              "model_no": "B96-080",
-              "serial_no": "B1908F7713",
-              "installed_year": 2019,
-              "warranty_until": "@today+3y",
-              "filter_size": "20x25x4",
-              "refrigerant": "None",
-              "condition": "Good"
-            }
-          },
-          {
-            "key": "eq-13",
-            "values": {
-              "unit_name": "Tenant furnace, unit A",
-              "customer": "custom-12",
-              "kind": "Gas furnace",
-              "brand": "Holbeck 80%",
-              "model_no": "A80-070",
-              "serial_no": "A1210F4472",
-              "installed_year": 2012,
-              "warranty_until": "@today-4y",
-              "filter_size": "16x25x1",
-              "refrigerant": "None",
-              "condition": "Watch"
-            }
-          },
-          {
-            "key": "eq-14",
-            "values": {
-              "unit_name": "Thermostat and humidifier",
+              "job": "job-6",
               "customer": "custom-4",
-              "kind": "Controls",
-              "brand": "Wrenfield smart",
-              "model_no": "SMT-2",
-              "serial_no": "N/A",
-              "installed_year": 2024,
-              "warranty_until": "@today+1y",
-              "refrigerant": "None",
-              "condition": "Good"
-            }
-          }
-        ]
-      },
-      {
-        "token": "agreement",
-        "name": "Maintenance agreements",
-        "labelSingular": "Agreement",
-        "labelPlural": "Agreements",
-        "type": "entity",
-        "display": "board",
-        "weight": "light",
-        "ordered": false,
-        "icon": "file-check",
-        "titleField": "agreement_name",
-        "describes": "Yearly maintenance plans: who is on one, what they paid, and when it renews.",
-        "subject": "thing",
-        "statusImplies": [],
-        "rowTemplates": [],
-        "before": [
-          [
-            "started",
-            "renews_on"
-          ]
-        ],
-        "fields": [
-          {
-            "key": "agreement_name",
-            "label": "Agreement",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "customer",
-            "label": "Customer",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "customer",
-            "relationMax": 1
-          },
-          {
-            "key": "plan",
-            "label": "Plan",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Comfort Club",
-              "Comfort Club Plus",
-              "Commercial quarterly"
-            ],
-            "choiceColors": {
-              "Comfort Club": "blue",
-              "Comfort Club Plus": "green",
-              "Commercial quarterly": "amber"
-            }
-          },
-          {
-            "key": "status",
-            "label": "Status",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Active",
-              "Due for renewal",
-              "Lapsed",
-              "Cancelled"
-            ],
-            "choiceColors": {
-              "Active": "green",
-              "Due for renewal": "amber",
-              "Lapsed": "red",
-              "Cancelled": "slate"
-            }
-          },
-          {
-            "key": "started",
-            "label": "Started",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "renews_on",
-            "label": "Renews on",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "price",
-            "label": "Price per year (USD)",
-            "parityType": "currency",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 20000
-              }
-            ]
-          },
-          {
-            "key": "visits_left",
-            "label": "Visits left this year",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 12
-              }
-            ]
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "ag-1",
-            "values": {
-              "agreement_name": "Dunmore, Comfort Club Plus",
-              "customer": "custom-1",
-              "plan": "Comfort Club Plus",
-              "status": "Active",
-              "started": "@today-11m",
-              "renews_on": "@today+25d",
-              "price": 289,
-              "visits_left": 1
-            }
-          },
-          {
-            "key": "ag-2",
-            "values": {
-              "agreement_name": "Kowalczyk rentals, 2 units",
-              "customer": "custom-2",
-              "plan": "Comfort Club",
-              "status": "Active",
-              "started": "@today-5m",
-              "renews_on": "@today+7m",
-              "price": 358,
-              "visits_left": 2
-            }
-          },
-          {
-            "key": "ag-3",
-            "values": {
-              "agreement_name": "Rosenthal Bistro rooftop",
-              "customer": "custom-3",
-              "plan": "Commercial quarterly",
-              "status": "Active",
-              "started": "@today-14m",
-              "renews_on": "@today+10d",
-              "price": 1180,
-              "visits_left": 1
-            }
-          },
-          {
-            "key": "ag-4",
-            "values": {
-              "agreement_name": "Halvorsen, Comfort Club",
-              "customer": "custom-5",
-              "plan": "Comfort Club",
-              "status": "Due for renewal",
-              "started": "@today-12m",
-              "renews_on": "@today+3d",
-              "price": 189,
-              "visits_left": 0
-            }
-          },
-          {
-            "key": "ag-5",
-            "values": {
-              "agreement_name": "Oyelaran, Comfort Club",
-              "customer": "custom-6",
-              "plan": "Comfort Club",
-              "status": "Active",
-              "started": "@today-3m",
-              "renews_on": "@today+9m",
-              "price": 189,
-              "visits_left": 1
-            }
-          },
-          {
-            "key": "ag-6",
-            "values": {
-              "agreement_name": "Zuberi Auto Body shop",
-              "customer": "custom-7",
-              "plan": "Commercial quarterly",
-              "status": "Active",
-              "started": "@today-8m",
-              "renews_on": "@today+4m",
-              "price": 1180,
-              "visits_left": 2
-            }
-          },
-          {
-            "key": "ag-7",
-            "values": {
-              "agreement_name": "Galloway Towers boiler",
-              "customer": "custom-8",
-              "plan": "Commercial quarterly",
-              "status": "Lapsed",
-              "started": "@today-15m",
-              "renews_on": "@today-3m",
-              "price": 1640,
-              "visits_left": 0
-            }
-          },
-          {
-            "key": "ag-8",
-            "values": {
-              "agreement_name": "Nakamura, Comfort Club",
-              "customer": "custom-9",
-              "plan": "Comfort Club",
-              "status": "Cancelled",
-              "started": "@today-20m",
-              "renews_on": "@today-8m",
-              "price": 179,
-              "visits_left": 0
-            }
-          },
-          {
-            "key": "ag-9",
-            "values": {
-              "agreement_name": "Delacroix Dental office",
-              "customer": "custom-11",
-              "plan": "Comfort Club Plus",
-              "status": "Active",
-              "started": "@today-1m",
-              "renews_on": "@today+11m",
-              "price": 289,
-              "visits_left": 2
+              "amount": 1116.2,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
             }
           }
         ]
@@ -2548,36 +1810,6 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
-      },
-      {
-        "describes": "Each unit sits at one customer's home or business.",
-        "fromTable": "equipment",
-        "fromField": "customer",
-        "toTable": "customer",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "equipment"
-      },
-      {
-        "describes": "Each agreement covers one customer.",
-        "fromTable": "agreement",
-        "fromField": "customer",
-        "toTable": "customer",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "agreements"
-      },
-      {
-        "describes": "A service call is usually about one unit.",
-        "fromTable": "job",
-        "fromField": "equipment",
-        "toTable": "equipment",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "service_calls"
       }
     ],
     "sharedBlocks": [
@@ -2929,52 +2161,6 @@
             "Overdue"
           ]
         }
-      },
-      {
-        "token": "all_equipment",
-        "name": "All equipment",
-        "kind": "grid",
-        "isDefault": true,
-        "table": "equipment"
-      },
-      {
-        "token": "equipment_board",
-        "name": "Equipment by condition",
-        "kind": "kanban",
-        "groupBy": "condition",
-        "table": "equipment"
-      },
-      {
-        "token": "all_agreement",
-        "name": "All agreements",
-        "kind": "grid",
-        "isDefault": true,
-        "table": "agreement"
-      },
-      {
-        "token": "agreement_board",
-        "name": "Agreements by status",
-        "kind": "kanban",
-        "groupBy": "status",
-        "table": "agreement"
-      },
-      {
-        "token": "agreement_renewing",
-        "name": "Renewing in 30 days",
-        "kind": "grid",
-        "within": {
-          "renews_on": {
-            "relative": "next_days",
-            "n": 30
-          }
-        },
-        "anyOf": {
-          "status": [
-            "Active",
-            "Due for renewal"
-          ]
-        },
-        "table": "agreement"
       }
     ],
     "agent": {
@@ -3047,30 +2233,6 @@
           "surface": "part_board",
           "minItems": 3
         }
-      },
-      {
-        "says": "Open equipment.",
-        "action": {
-          "kind": "open",
-          "surface": "equipment_board"
-        },
-        "expect": {
-          "kind": "renders",
-          "surface": "equipment_board",
-          "minItems": 3
-        }
-      },
-      {
-        "says": "Open maintenance agreements.",
-        "action": {
-          "kind": "open",
-          "surface": "agreement_board"
-        },
-        "expect": {
-          "kind": "renders",
-          "surface": "agreement_board",
-          "minItems": 3
-        }
       }
     ],
     "foundation": [],
@@ -3086,10 +2248,9 @@
       ],
       "fictionalStreets": [
         "Tanner Row"
-      ],
-      "notes": "Equipment makes (Arcton, Polarline, Kestrel, Brightwater, Sorrel, Holbeck, Vireo, Wrenfield) are invented."
+      ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {
@@ -3111,18 +2272,12 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the shop from here. New calls land on the Service calls board; the dispatcher books a tech, ties the call to the unit in Equipment, and Mark done closes it. Maintenance agreements shows who renews this month. Invoices that are sent or overdue both count in a customer's Awaiting payment."
+              "text": "Run the whole shop from one page. New calls land on the Service calls board; the dispatcher schedules them, a technician takes them, and Mark done closes them out. Parts shows what to reorder and Invoices shows who still owes you. Start with the Dashboard each morning."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "page",
-          "props": {
-            "spaceId": "page:start-here"
           }
         },
         {
@@ -3515,396 +2670,6 @@
             ],
             "activeViewId": "inv-b"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Equipment"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Every unit you look after, with model, serial, age, filter size and warranty, so the tech knows the system before the truck leaves."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "equipment",
-              "view": "equipment_board"
-            },
-            "inline": true,
-            "title": "Equipment",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "eq-b",
-                "name": "By condition",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "condition"
-              },
-              {
-                "id": "eq-t",
-                "name": "All units",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "eq-b"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Maintenance agreements"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Yearly plans: two visits, priority booking and a parts discount. The renewals list is where next year's steady work comes from."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "agreement",
-              "view": "agreement_board"
-            },
-            "inline": true,
-            "title": "Maintenance agreements",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "ag-b",
-                "name": "By status",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "status"
-              },
-              {
-                "id": "ag-r",
-                "name": "Renewing in 30 days",
-                "layout": "list",
-                "icon": "Clock",
-                "within": {
-                  "renews_on": {
-                    "relative": "next_days",
-                    "n": 30
-                  }
-                },
-                "anyOf": {
-                  "status": [
-                    "Active",
-                    "Due for renewal"
-                  ]
-                }
-              },
-              {
-                "id": "ag-t",
-                "name": "All agreements",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "ag-b"
-          }
-        }
-      ]
-    },
-    {
-      "key": "start-here",
-      "parent": "hvac-company-hq",
-      "title": "Start here: how this workspace runs",
-      "icon": {
-        "emoji": "🧭"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the dispatcher, the office manager and each technician."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What lives where"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Customers",
-              "bold": true
-            },
-            {
-              "text": ": homes, landlords and businesses, with what they have been billed, what they still owe, open calls, and whether they are on a plan."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Equipment",
-              "bold": true
-            },
-            {
-              "text": ": every furnace, heat pump, AC, boiler and mini-split you look after, with make, model, serial, install year, filter size, refrigerant, warranty and condition."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Service calls",
-              "bold": true
-            },
-            {
-              "text": ": every visit, linked to the customer and the unit, with the tech, the date, the price and the margin."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Maintenance agreements",
-              "bold": true
-            },
-            {
-              "text": ": who is on a plan, what they paid, visits left, and when it renews."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Parts and stock",
-              "bold": true
-            },
-            {
-              "text": ": what is on the trucks and shelves and what needs ordering."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Invoices",
-              "bold": true
-            },
-            {
-              "text": ": what is billed, paid and late."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "A call from phone to paid"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The call comes in. The dispatcher adds a service call on the board (or the customer uses the Request form) as "
-            },
-            {
-              "text": "New request",
-              "bold": true
-            },
-            {
-              "text": ", picks the unit, and sets the priority."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The dispatcher books the lead tech and a date, and moves it to "
-            },
-            {
-              "text": "Scheduled",
-              "bold": true
-            },
-            {
-              "text": ". A tech can press "
-            },
-            {
-              "text": "Assign to me",
-              "bold": true
-            },
-            {
-              "text": " to take a call; it then shows in their Mine list."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "On site the tech works the job sheet, enters parts and hours, and updates the unit's condition."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": " closes the call and stamps the date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The office sends the invoice. If it goes past due, set it to "
-            },
-            {
-              "text": "Overdue",
-              "bold": true
-            },
-            {
-              "text": ": the customer's Awaiting payment counts sent and overdue together."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark paid",
-              "bold": true
-            },
-            {
-              "text": " stamps the payment date."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Your rhythm"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every morning: Dashboard, then overdue calls, then the Awaiting payment list"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every Monday: Renewing in 30 days, and book plan visits"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every Friday: truck and shelf count"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every month: callbacks, thin margins, and units marked Replace soon (your replacement leads)"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Making it yours"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Rename the plans and work types to your own, add your trucks, and delete the sample customers after you have added a dozen of your own. Type in any cell, drag cards between columns; every total updates by itself."
-            }
-          ]
         }
       ]
     },
@@ -4167,129 +2932,6 @@
             ],
             "activeViewId": "view-l2"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Awaiting payment (sent and overdue)"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "invoice",
-              "view": "all_invoice"
-            },
-            "inline": true,
-            "title": "Invoices",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l3",
-                "name": "Awaiting payment",
-                "layout": "list",
-                "icon": "Table",
-                "anyOf": {
-                  "status": [
-                    "Sent",
-                    "Overdue"
-                  ]
-                }
-              }
-            ],
-            "activeViewId": "view-l3"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Plans renewing in the next 30 days"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "agreement",
-              "view": "all_agreement"
-            },
-            "inline": true,
-            "title": "Agreements",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l4",
-                "name": "Renewing",
-                "layout": "list",
-                "icon": "Table",
-                "within": {
-                  "renews_on": {
-                    "relative": "next_days",
-                    "n": 30
-                  }
-                },
-                "anyOf": {
-                  "status": [
-                    "Active",
-                    "Due for renewal"
-                  ]
-                }
-              }
-            ],
-            "activeViewId": "view-l4"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Units to replace soon"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "equipment",
-              "view": "all_equipment"
-            },
-            "inline": true,
-            "title": "Equipment",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l5",
-                "name": "Replace soon",
-                "layout": "list",
-                "icon": "Table",
-                "filters": {
-                  "condition": "Replace soon"
-                }
-              }
-            ],
-            "activeViewId": "view-l5"
-          }
         }
       ]
     },
@@ -4305,7 +2947,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A good service call is predictable: the customer knows when you are coming, the tech knows the equipment before arriving, and the invoice goes out before the truck leaves the driveway."
+              "text": "Follow the same ten minutes at every door. Customers remember the walk-in and the walk-out more than the repair."
             }
           ],
           "background": "blue",
@@ -4317,7 +2959,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the truck rolls"
+              "text": "Before you leave the shop"
             }
           ],
           "props": {
@@ -4328,14 +2970,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the call and check the "
-            },
-            {
-              "text": "Unit",
-              "bold": true
-            },
-            {
-              "text": " it is linked to. Model, serial, age, filter size and refrigerant are on that unit's card. If the unit is not there yet, the tech adds it on site."
+              "text": "Read the call notes and the last visit on this address."
             }
           ]
         },
@@ -4343,7 +2978,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Look at the unit's earlier service calls. A second igniter in three weeks is not bad luck; it is a wiring or gas pressure problem, and it should go to your most senior tech."
+              "text": "Load the parts the problem most likely needs: capacitor, igniter, filter, contactor."
             }
           ]
         },
@@ -4351,7 +2986,26 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Load the right filter and the common failures for that make: igniter, flame sensor, capacitor, contactor."
+              "text": "Text the customer your arrival window and your name."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At the door"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Introduce yourself, put on shoe covers and ask where the system is."
             }
           ]
         },
@@ -4359,7 +3013,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Text the customer the tech's name and a two-hour window, then a heads-up thirty minutes out."
+              "text": "Ask what happened and when, before touching anything."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the thermostat, filter and breaker first. Half of all no-heat calls end there."
             }
           ]
         },
@@ -4367,95 +3029,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On site, every call"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Shoe covers on, drop cloth under the work area"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Ask the customer what they noticed, when it started, and what they already tried"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check the thermostat and the filter first; a clogged filter causes more no-heat calls than any part"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Test before replacing: amp draw, capacitor value, temperature split, gas pressure, flue draft"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Carbon monoxide reading at the supply register and around the furnace on every gas call"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Show the customer the failed part and the reading that proved it"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Give a price before the repair; offer the options (repair, repair plus plan, replace)"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Pricing"
+              "text": "Before you start work"
             }
           ],
           "props": {
@@ -4466,14 +3040,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Price repairs from a flat-rate book so two techs never quote the same job differently. Put real parts cost and hours on the call so the "
-            },
-            {
-              "text": "Margin",
-              "bold": true
-            },
-            {
-              "text": " shows the truth; anything under twenty percent shows as Thin. Plan members get their discount on parts, and their tune-up visits are priced at zero because the agreement already paid for them."
+              "text": "State the repair price in plain terms and get a yes. If the price is above the quote, stop and call the office."
             }
           ]
         },
@@ -4481,7 +3048,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "No-heat emergencies in winter"
+              "text": "Closing the call"
             }
           ],
           "props": {
@@ -4489,69 +3056,26 @@
           }
         },
         {
-          "type": "text",
+          "type": "numbered",
           "text": [
             {
-              "text": "When it is below freezing, a no-heat call jumps the queue. Ask about elderly people, infants or pets in the home, and about pipes in outside walls. If the part is not on the truck, leave portable heaters and book the return the same day. Mark the call "
-            },
-            {
-              "text": "Emergency",
-              "bold": true
-            },
-            {
-              "text": " so the board shows it in red."
+              "text": "Show the customer what you replaced and keep the old part until they have seen it."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "A small restaurant calls at opening: the rooftop unit blows warm. The dispatcher sees from the unit card it is a 2015 packaged unit on R-410A that was serviced last quarter. Ilse finds a weak start capacitor and a pitted contactor, replaces both from the truck, and the kitchen is cool before lunch. She enters 3 hours and the part costs, presses "
-            },
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": ", and the office sends the invoice that afternoon."
+              "text": "Mark the call done, fill in parts cost and hours."
             }
           ]
         },
         {
-          "type": "heading",
+          "type": "numbered",
           "text": [
             {
-              "text": "Callbacks"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "If you return to fix your own work, tick "
-            },
-            {
-              "text": "Callback",
-              "bold": true
-            },
-            {
-              "text": " on the new call and do not bill it. Review callbacks every month with the techs: each one costs a truck, a tech and a customer's trust."
+              "text": "Hand over the invoice and mention the maintenance plan once, politely."
             }
           ]
         }
@@ -4569,7 +3093,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Maintenance agreements smooth out the year. They fill the slow weeks in spring and fall, they keep equipment running longer, and plan members are the first to call you when it is time to replace."
+              "text": "Plans smooth the slow months. Each plan means two visits a year, one for heating in early fall and one for cooling in spring."
             }
           ],
           "background": "blue",
@@ -4581,7 +3105,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What a plan includes here"
+              "text": "What a plan includes"
             }
           ],
           "props": {
@@ -4592,11 +3116,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Comfort Club",
-              "bold": true
-            },
-            {
-              "text": ": a heating check in the fall and a cooling check in the spring, priority booking, no after-hours surcharge."
+              "text": "Two tune-up visits a year"
             }
           ]
         },
@@ -4604,11 +3124,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Comfort Club Plus",
-              "bold": true
-            },
-            {
-              "text": ": the same, plus 15 percent off repair parts and one free filter change between visits."
+              "text": "Priority scheduling during hot and cold spells"
             }
           ]
         },
@@ -4616,19 +3132,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Commercial quarterly",
-              "bold": true
-            },
-            {
-              "text": ": four visits a year for rooftop units and boilers, with filters and belts included."
+              "text": "A discount on repairs"
             }
           ]
         },
         {
-          "type": "text",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Set your own names and prices in the Plan column; the board updates with them."
+              "text": "A reminder text two weeks before each visit"
             }
           ]
         },
@@ -4636,7 +3148,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Selling a plan"
+              "text": "Scheduling visits"
             }
           ],
           "props": {
@@ -4647,7 +3159,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer it on every repair call, after the repair, when the customer has seen what a neglected unit costs."
+              "text": "On the first of each month, add a Maintenance plan visit call for every plan holder due that month."
             }
           ]
         },
@@ -4655,7 +3167,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Keep it to one sentence: \"For the price of one repair a year, we look after it twice and you jump the queue.\""
+              "text": "Group visits by neighborhood so one technician can do five in a day."
             }
           ]
         },
@@ -4663,14 +3175,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add the agreement with a start date and a renewal date one year out. Set "
-            },
-            {
-              "text": "Visits left this year",
-              "bold": true
-            },
-            {
-              "text": " to the number of visits in the plan."
+              "text": "Text the customer a reminder. Reschedule within the week if they miss it."
             }
           ]
         },
@@ -4678,140 +3183,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Running the visits"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "At the start of each season, open "
-            },
-            {
-              "text": "Renewing in 30 days",
-              "bold": true
-            },
-            {
-              "text": " and the agreements board, and book every member who still has a visit left."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Book plan visits as service calls with work type "
-            },
-            {
-              "text": "Maintenance plan visit",
-              "bold": true
-            },
-            {
-              "text": ", linked to the unit."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "After each visit, take one off Visits left."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The plan visit checklist"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Replace or wash the filter, note its size on the unit card"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Clean the condenser coil and check the condensate drain"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Test capacitors, contactors and blower amps"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Gas: check burners, igniter, flame sensor, heat exchanger and flue; carbon monoxide test"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Heat pump: check defrost and refrigerant pressures against the label"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Set the unit's "
-            },
-            {
-              "text": "Condition",
-              "bold": true
-            },
-            {
-              "text": " to Good, Watch or Replace soon, and tell the customer why"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Renewals"
+              "text": "Renewing"
             }
           ],
           "props": {
@@ -4822,33 +3194,7 @@
           "type": "text",
           "text": [
             {
-              "text": "A plan that lapses is very hard to win back. Work the "
-            },
-            {
-              "text": "Renewing in 30 days",
-              "bold": true
-            },
-            {
-              "text": " list every week: call or text, take the card, and push the renewal date out one year. If the customer says no, set the status to Cancelled and write the reason on the agreement, so you can see why plans are lost."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "In early September the service manager opens the renewals list: six agreements renew in the next month. He books fall visits for the four who still have one left and calls the two that are due. One renews on the phone; the other moved away, so he marks it Cancelled with that note."
+              "text": "Plans renew by card each year. If a card fails, the customer shows under Awaiting payment on their record. Call, do not email."
             }
           ]
         }
@@ -4866,7 +3212,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The difference between a one-trip repair and a two-trip repair is usually a ten-dollar part. Count weekly, reorder early, and keep the common failures on every truck."
+              "text": "Count the truck stock every other Friday and the shelves the last Friday of the month. The Reorder? column does the thinking."
             }
           ],
           "background": "blue",
@@ -4878,7 +3224,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The weekly count"
+              "text": "How to count"
             }
           ],
           "props": {
@@ -4889,7 +3235,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Every Friday afternoon the techs count their trucks; the office counts the shop shelves."
+              "text": "Pick one truck or shelf at a time and count every part on it."
             }
           ]
         },
@@ -4897,21 +3243,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Type the real count into "
-            },
-            {
-              "text": "On hand",
-              "bold": true
-            },
-            {
-              "text": " and set "
-            },
-            {
-              "text": "Last counted",
-              "bold": true
-            },
-            {
-              "text": " to the day."
+              "text": "Type the number into On hand and update Last counted."
             }
           ]
         },
@@ -4919,14 +3251,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Sort by "
-            },
-            {
-              "text": "Reorder?",
-              "bold": true
-            },
-            {
-              "text": " and send one order per supplier before the weekend so parts are on will-call Monday morning."
+              "text": "Anything that says Reorder goes on the supplier list that afternoon."
             }
           ]
         },
@@ -4934,7 +3259,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What every service truck carries"
+              "text": "Reorder rules"
             }
           ],
           "props": {
@@ -4942,162 +3267,114 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Electrical: run capacitors in the common sizes, contactors, a universal control board, fuses"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Heating: hot surface igniters, flame sensors, pressure switches, inducer motor for your most common make"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Cooling: condensate pumps, float switches, a recovery machine and refrigerant for the systems you service"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Filters in the five sizes you see most often (check the Filter size column on Equipment to find them)"
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Thermostat, wire, and a manometer, a combustion analyzer and a CO meter"
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Refrigerant"
-            }
-          ],
+          "type": "table",
           "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Track refrigerant by the cylinder and know which systems use which. Older systems on retired refrigerants are getting expensive to recharge: when the Equipment list shows one in Watch or Replace soon, offer a replacement estimate before the next leak, not after."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Setting reorder points"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Look at what you used in the last two weeks and add a safety amount for a cold snap. Igniters and capacitors fail in waves on the first hot or cold week of the season, so raise those points a month before it."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Warranty parts"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "When a failed part is under warranty, keep it in a tagged bag with the unit's serial number and the date. The Equipment card shows the warranty date; claims are usually refused without the old part."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Checklist when a part runs out on a job"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Call the dispatcher before leaving the site"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check whether another truck nearby has it"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Put the call On hold with the part named in the notes"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Book the return as soon as the part arrives, and tell the customer when"
-            }
-          ],
-          "props": {
-            "checked": false
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep on hand"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Capacitors, contactors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "10 of each"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 6"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ignitors, flame sensors"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "5 of each"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 5"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Filters"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "4 cases"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 4"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Refrigerant"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "2 cylinders"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At 2"
+                    }
+                  ]
+                ]
+              }
+            ]
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Example"
+              "text": "When a supplier is out"
             }
           ],
           "props": {
@@ -5108,7 +3385,7 @@
           "type": "text",
           "text": [
             {
-              "text": "On Friday Marcus counts flame sensors: three left, reorder point five. The row shows Reorder. The office adds six to the Badger Furnace Parts order. The first cold weekend brings four short-cycling furnaces, and every one is fixed on the first trip."
+              "text": "Ask for the closest equivalent, write the swap in the call notes and tell the customer."
             }
           ]
         }

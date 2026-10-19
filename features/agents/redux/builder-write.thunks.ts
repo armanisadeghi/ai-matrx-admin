@@ -273,6 +273,10 @@ export const createAgent = createAsyncThunk<
     isActive: partial.isActive ?? true,
     isArchived: partial.isArchived ?? false,
     isFavorite: partial.isFavorite ?? false,
+    // The column defaults (agent.definition): memory settings.
+    isChatAgent: partial.isChatAgent ?? false,
+    readsMemory: partial.readsMemory ?? true,
+    addsToMemory: partial.addsToMemory ?? true,
     agentType: partial.agentType ?? "user",
 
     // New agents are never version snapshots

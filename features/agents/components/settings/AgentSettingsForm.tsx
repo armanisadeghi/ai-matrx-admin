@@ -32,7 +32,12 @@ import {
   Archive,
   Network,
   Layers,
+  MessagesSquare,
+  BookOpen,
+  NotebookPen,
 } from "lucide-react";
+import { mergePartialAgent } from "@ai-matrx/chat/agents/redux/agent-definition/slice";
+import { supabase } from "@/utils/supabase/client";
 import { VoiceTextarea } from "@/components/official/VoiceTextarea";
 import { InfoHint } from "@/components/official/InfoHint";
 import { EngagementPicker } from "@/features/scopes/components/active-context/engagement/EngagementPicker";
@@ -264,6 +269,20 @@ export function AgentSettingsForm({
     setDraft((prev) => ({ ...prev, [field]: value }));
   };
 
+  // A DB trigger mirrors `is_chat_agent` to the `chat-agent` tag; read the tags back after it saves.
+  const refreshTagsAfterChatAgentSave = async (save: Promise<unknown>) => {
+    await save;
+    const { data } = await supabase
+      .schema("agent")
+      .from("definition")
+      .select("tags")
+      .eq("id", agentId)
+      .maybeSingle();
+    if (!data) return;
+    dispatch(mergePartialAgent({ id: agentId, tags: data.tags }));
+    setTagsInput(data.tags.join(", "));
+  };
+
   const handleSave = () => {
     // Diff and dispatch
     for (const key of Object.keys(draft) as Array<keyof AgentDefinition>) {
@@ -273,7 +292,10 @@ export function AgentSettingsForm({
       // key was never populated in the draft (no AgentDefinition field is
       // itself `| undefined`), so there's nothing real to persist.
       if (draftValue !== undefined && draftValue !== agent[key]) {
-        dispatch(saveAgentField({ agentId, field: key, value: draftValue }));
+        const save = dispatch(saveAgentField({ agentId, field: key, value: draftValue })).unwrap();
+        if (key === "isChatAgent") {
+          void refreshTagsAfterChatAgentSave(save).catch(() => undefined);
+        }
       }
     }
     // Save tags
@@ -519,7 +541,6 @@ export function AgentSettingsForm({
                       <Activity className="w-4 h-4" />
                     </div>
                     <Label
-                      className="font-medium text-foreground cursor-pointer"
                       onClick={() => handleUpdate("isActive", !draft.isActive)}
                     >
                       Active
@@ -537,7 +558,6 @@ export function AgentSettingsForm({
                       <Star className="w-4 h-4" />
                     </div>
                     <Label
-                      className="font-medium text-foreground cursor-pointer"
                       onClick={() =>
                         handleUpdate("isFavorite", !draft.isFavorite)
                       }
@@ -557,7 +577,6 @@ export function AgentSettingsForm({
                       <Archive className="w-4 h-4" />
                     </div>
                     <Label
-                      className="font-medium text-foreground cursor-pointer"
                       onClick={() =>
                         handleUpdate("isArchived", !draft.isArchived)
                       }
@@ -570,6 +589,61 @@ export function AgentSettingsForm({
                     onCheckedChange={(c) => handleUpdate("isArchived", c)}
                   />
                 </div>
+
+                <div className="flex items-center justify-between pl-2">
+                  <div className="flex items-center gap-2.5">
+                    <MessagesSquare className="w-4 h-4 text-muted-foreground" />
+                    <Label
+                      onClick={() =>
+                        handleUpdate("isChatAgent", !draft.isChatAgent)
+                      }
+                    >
+                      Chat agent
+                    </Label>
+                    <InfoHint text="Its chats are about the person, so memory reviews them." />
+                  </div>
+                  <Switch
+                    checked={draft.isChatAgent ?? false}
+                    onCheckedChange={(c) => handleUpdate("isChatAgent", c)}
+                  />
+                </div>
+
+                {draft.isChatAgent ? (
+                  <>
+                    <div className="flex items-center justify-between pl-8">
+                      <div className="flex items-center gap-2.5">
+                        <BookOpen className="w-4 h-4 text-muted-foreground" />
+                        <Label
+                          onClick={() =>
+                            handleUpdate("readsMemory", !draft.readsMemory)
+                          }
+                        >
+                          Reads memory
+                        </Label>
+                      </div>
+                      <Switch
+                        checked={draft.readsMemory ?? true}
+                        onCheckedChange={(c) => handleUpdate("readsMemory", c)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between pl-8">
+                      <div className="flex items-center gap-2.5">
+                        <NotebookPen className="w-4 h-4 text-muted-foreground" />
+                        <Label
+                          onClick={() =>
+                            handleUpdate("addsToMemory", !draft.addsToMemory)
+                          }
+                        >
+                          Adds to memory
+                        </Label>
+                      </div>
+                      <Switch
+                        checked={draft.addsToMemory ?? true}
+                        onCheckedChange={(c) => handleUpdate("addsToMemory", c)}
+                      />
+                    </div>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>

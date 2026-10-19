@@ -1028,6 +1028,14 @@ export const adminCategoriesData: AdminCategory[] = [
         isNew: true,
       },
       {
+        title: "Memory Lab",
+        description:
+          "Replay one person's chats through the memory agents into a sandbox store and inspect every edit.",
+        iconName: "FlaskConical",
+        link: "/administration/intelligence/memory-lab",
+        isNew: true,
+      },
+      {
         title: "System processes",
         description:
           "The durable queue behind platform AI work nobody sees, such as naming a chat: counts by state, outcomes and recent items.",

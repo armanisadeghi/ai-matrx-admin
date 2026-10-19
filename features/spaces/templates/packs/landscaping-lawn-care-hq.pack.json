@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 4,
+  "version": 3,
   "title": "Landscaping and Lawn Care HQ",
-  "description": "For lawn care and landscaping companies: weekly routes, projects, crews and billing.",
+  "description": "Plan mowing routes, price seasonal projects, track materials and invoices.",
   "forWho": "Landscaping and lawn care companies",
   "icon": {
     "emoji": "🌿"
@@ -14,12 +14,10 @@
   },
   "category": "trades",
   "tags": [
-    "landscaper",
-    "lawn care",
-    "mowing",
     "landscaping",
-    "irrigation",
-    "trades"
+    "lawn",
+    "routes",
+    "crews"
   ],
   "spec": {
     "specVersion": 1,
@@ -132,47 +130,6 @@
             "contextPolicy": "include"
           },
           {
-            "key": "lawn_sqft",
-            "label": "Turf area (sq ft)",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 500000
-              }
-            ]
-          },
-          {
-            "key": "gate_notes",
-            "label": "Gate and access notes",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          },
-          {
-            "key": "zones",
-            "label": "Irrigation zones",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 60
-              }
-            ]
-          },
-          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -194,37 +151,6 @@
             }
           },
           {
-            "key": "open_jobs",
-            "label": "Open projects",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "jobs",
-            "pick": "job_name",
-            "agg": "count",
-            "filter": {
-              "status": {
-                "not": [
-                  "Completed",
-                  "Cancelled"
-                ]
-              }
-            }
-          },
-          {
-            "key": "weekly_value",
-            "label": "Recurring per visit",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "services",
-            "pick": "price_per_visit",
-            "agg": "sum",
-            "filter": {
-              "status": "Active"
-            }
-          },
-          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -234,12 +160,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": {
-                "not": [
-                  "Draft",
-                  "Void"
-                ]
-              }
+              "status": "Paid"
             }
           },
           {
@@ -252,10 +173,7 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": [
-                "Sent",
-                "Overdue"
-              ]
+              "status": "Sent"
             }
           },
           {
@@ -395,10 +313,7 @@
               "phone": "(919) 555-0111",
               "email": "okonkwo.jankowski@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-40d",
-              "lawn_sqft": 6200,
-              "gate_notes": "Side gate, latch sticks. Dog inside until noon.",
-              "zones": 4
+              "since": "@today-40d"
             }
           },
           {
@@ -410,10 +325,7 @@
               "phone": "(919) 555-0148",
               "email": "ingrid.quillan@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-95d",
-              "lawn_sqft": 84000,
-              "gate_notes": "Clubhouse code 4412; mow common areas Tue",
-              "zones": 18
+              "since": "@today-95d"
             }
           },
           {
@@ -425,10 +337,7 @@
               "phone": "(919) 555-0185",
               "email": "basil.yamamoto@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-150d",
-              "lawn_sqft": 22000,
-              "gate_notes": "Mow before 7 am or after 6 pm (store hours)",
-              "zones": 6
+              "since": "@today-150d"
             }
           },
           {
@@ -440,9 +349,7 @@
               "phone": "(919) 555-0122",
               "email": "mirela.grayson@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-205d",
-              "lawn_sqft": 5400,
-              "zones": 0
+              "since": "@today-205d"
             }
           },
           {
@@ -454,10 +361,7 @@
               "phone": "(919) 555-0159",
               "email": "winston.navarro@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-260d",
-              "lawn_sqft": 9800,
-              "gate_notes": "Back gate padlock, key under the gnome",
-              "zones": 5
+              "since": "@today-260d"
             }
           },
           {
@@ -469,10 +373,7 @@
               "phone": "(919) 555-0196",
               "email": "nadia.westbrook@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-315d",
-              "lawn_sqft": 61000,
-              "gate_notes": "Pool area closed Mondays",
-              "zones": 14
+              "since": "@today-315d"
             }
           },
           {
@@ -484,10 +385,7 @@
               "phone": "(919) 555-0133",
               "email": "emeka.fairbairn@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-370d",
-              "lawn_sqft": 31000,
-              "gate_notes": "Loading dock side: no mowing during deliveries",
-              "zones": 8
+              "since": "@today-370d"
             }
           },
           {
@@ -499,10 +397,7 @@
               "phone": "(919) 555-0170",
               "email": "solveig.mbeki@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-425d",
-              "lawn_sqft": 4700,
-              "gate_notes": "Tenant's dog in back yard; text before entering",
-              "zones": 0
+              "since": "@today-425d"
             }
           },
           {
@@ -514,10 +409,7 @@
               "phone": "(919) 555-0107",
               "email": "stellan.thackeray@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-13d",
-              "lawn_sqft": 12500,
-              "gate_notes": "Steep bank by the creek: string trim only",
-              "zones": 7
+              "since": "@today-13d"
             }
           },
           {
@@ -529,9 +421,7 @@
               "phone": "(919) 555-0144",
               "email": "marisol.carrow@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-14d",
-              "lawn_sqft": 48000,
-              "zones": 10
+              "since": "@today-14d"
             }
           },
           {
@@ -543,10 +433,7 @@
               "phone": "(919) 555-0181",
               "email": "callum.jessup@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-15d",
-              "lawn_sqft": 27500,
-              "gate_notes": "Office lot: park in visitor spots",
-              "zones": 9
+              "since": "@today-15d"
             }
           },
           {
@@ -558,10 +445,7 @@
               "phone": "(919) 555-0118",
               "email": "lucinda.rutherford@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-16d",
-              "lawn_sqft": 3900,
-              "gate_notes": "Shared driveway, do not block",
-              "zones": 0
+              "since": "@today-16d"
             }
           }
         ]
@@ -652,24 +536,24 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
+              "Weekly mowing",
               "Spring cleanup",
               "Mulch installation",
               "Aeration and overseed",
               "Shrub trimming",
               "Irrigation repair",
               "Sod installation",
-              "Leaf removal",
-              "Planting and beds"
+              "Leaf removal"
             ],
             "choiceColors": {
-              "Spring cleanup": "green",
+              "Weekly mowing": "slate",
+              "Spring cleanup": "blue",
               "Mulch installation": "amber",
-              "Aeration and overseed": "teal",
-              "Shrub trimming": "blue",
-              "Irrigation repair": "violet",
-              "Sod installation": "orange",
-              "Leaf removal": "pink",
-              "Planting and beds": "slate"
+              "Aeration and overseed": "violet",
+              "Shrub trimming": "teal",
+              "Irrigation repair": "orange",
+              "Sod installation": "green",
+              "Leaf removal": "yellow"
             }
           },
           {
@@ -692,29 +576,12 @@
           },
           {
             "key": "tech",
-            "label": "Crew leader",
+            "label": "Lead tech",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
-          },
-          {
-            "key": "crew_size",
-            "label": "Crew size",
-            "parityType": "integer",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 12
-              }
-            ]
           },
           {
             "key": "scheduled_on",
@@ -1025,53 +892,50 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Front beds: 9 yards hardwood mulch",
+              "job_name": "Weekly mowing - Yamamoto",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Mulch installation",
+              "customer": "custom-3",
+              "job_type": "Weekly mowing",
               "priority": "Routine",
               "tech": "tm-3",
-              "crew_size": 3,
               "scheduled_on": "@today-21d",
-              "quote": 765,
-              "parts_cost": 315,
-              "labor_cost": 270,
-              "hours": 9,
+              "quote": 60,
+              "parts_cost": 0,
+              "labor_cost": 35,
+              "hours": 1,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "HOA entrance: fall annuals",
+              "job_name": "Spring cleanup - Mbeki",
               "status": "Completed",
-              "customer": "custom-2",
-              "job_type": "Planting and beds",
+              "customer": "custom-8",
+              "job_type": "Spring cleanup",
               "priority": "Routine",
               "tech": "tm-4",
-              "crew_size": 3,
               "scheduled_on": "@today-16d",
-              "quote": 1450,
-              "parts_cost": 520,
-              "labor_cost": 390,
-              "hours": 13,
+              "quote": 365,
+              "parts_cost": 35,
+              "labor_cost": 135,
+              "hours": 4,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Core aeration + overseed, tall fescue",
+              "job_name": "Mulch installation - Jankowski",
               "status": "Completed",
-              "customer": "custom-9",
-              "job_type": "Aeration and overseed",
+              "customer": "custom-1",
+              "job_type": "Mulch installation",
               "priority": "Routine",
-              "tech": "tm-3",
-              "crew_size": 2,
+              "tech": "tm-5",
               "scheduled_on": "@today-12d",
-              "quote": 620,
-              "parts_cost": 165,
-              "labor_cost": 150,
+              "quote": 1000,
+              "parts_cost": 450,
+              "labor_cost": 170,
               "hours": 5,
               "completed_on": "@today-12d"
             }
@@ -1079,17 +943,16 @@
           {
             "key": "job-4",
             "values": {
-              "job_name": "Broken rotor heads, zone 3 and 5",
+              "job_name": "Aeration and overseed - Westbrook",
               "status": "Completed",
-              "customer": "custom-5",
-              "job_type": "Irrigation repair",
-              "priority": "Urgent",
-              "tech": "tm-5",
-              "crew_size": 1,
+              "customer": "custom-6",
+              "job_type": "Aeration and overseed",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@today-9d",
-              "quote": 285,
-              "parts_cost": 48,
-              "labor_cost": 90,
+              "quote": 235,
+              "parts_cost": 80,
+              "labor_cost": 85,
               "hours": 2.5,
               "completed_on": "@today-9d"
             }
@@ -1097,297 +960,280 @@
           {
             "key": "job-5",
             "values": {
-              "job_name": "Office park hedges, first trim",
+              "job_name": "Shrub trimming - Jessup",
               "status": "Completed",
-              "customer": "custom-7",
+              "customer": "custom-11",
               "job_type": "Shrub trimming",
-              "priority": "Routine",
+              "priority": "Urgent",
               "tech": "tm-4",
-              "crew_size": 4,
               "scheduled_on": "@today-6d",
-              "quote": 880,
-              "parts_cost": 0,
-              "labor_cost": 420,
-              "hours": 14,
+              "quote": 225,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Backyard sod after drainage fix",
+              "job_name": "Irrigation repair - Grayson",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Sod installation",
+              "customer": "custom-4",
+              "job_type": "Irrigation repair",
               "priority": "Routine",
-              "tech": "tm-3",
-              "crew_size": 4,
+              "tech": "tm-5",
               "scheduled_on": "@today-4d",
-              "quote": 2350,
-              "parts_cost": 980,
-              "labor_cost": 640,
-              "hours": 20,
+              "quote": 470,
+              "parts_cost": 120,
+              "labor_cost": 70,
+              "hours": 2,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Leaf vacuum, rental duplex",
+              "job_name": "Sod installation - Thackeray",
               "status": "Cancelled",
-              "customer": "custom-12",
-              "job_type": "Leaf removal",
+              "customer": "custom-9",
+              "job_type": "Sod installation",
               "priority": "Routine",
-              "tech": "tm-6",
-              "crew_size": 2,
+              "tech": "tm-3",
               "scheduled_on": "@today-8d",
-              "quote": 260,
-              "parts_cost": 0,
-              "labor_cost": 0,
-              "hours": 0
+              "quote": 1480,
+              "parts_cost": 740,
+              "labor_cost": 270,
+              "hours": 8
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Retaining wall bed replant, waiting on stone",
+              "job_name": "Leaf removal - Quillan",
               "status": "On hold",
-              "customer": "custom-6",
-              "job_type": "Planting and beds",
+              "customer": "custom-2",
+              "job_type": "Leaf removal",
               "priority": "Routine",
               "tech": "tm-4",
-              "crew_size": 3,
               "scheduled_on": "@today-5d",
-              "quote": 3900,
-              "parts_cost": 1650,
-              "labor_cost": 1200,
-              "hours": 36
+              "quote": 345,
+              "parts_cost": 5,
+              "labor_cost": 120,
+              "hours": 3.5
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Rotor still spraying the street",
+              "job_name": "Weekly mowing - Fairbairn",
               "status": "Scheduled",
-              "customer": "custom-5",
-              "job_type": "Irrigation repair",
-              "priority": "Urgent",
+              "customer": "custom-7",
+              "job_type": "Weekly mowing",
+              "priority": "Routine",
               "tech": "tm-5",
-              "crew_size": 1,
               "scheduled_on": "@today-2d",
-              "quote": 0,
-              "parts_cost": 12,
-              "labor_cost": 60,
+              "quote": 60,
+              "parts_cost": 0,
+              "labor_cost": 35,
               "hours": 1
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Aeration, common areas phase 1",
+              "job_name": "Spring cleanup - Rutherford",
               "status": "In progress",
-              "customer": "custom-2",
-              "job_type": "Aeration and overseed",
-              "priority": "Routine",
+              "customer": "custom-12",
+              "job_type": "Spring cleanup",
+              "priority": "Urgent",
               "tech": "tm-3",
-              "crew_size": 3,
               "scheduled_on": "@mon",
-              "quote": 2900,
-              "parts_cost": 620,
-              "labor_cost": 880,
-              "hours": 24,
+              "quote": 355,
+              "parts_cost": 35,
+              "labor_cost": 135,
+              "hours": 4,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Store frontage: pine straw refresh",
+              "job_name": "Mulch installation - Navarro",
               "status": "In progress",
-              "customer": "custom-3",
+              "customer": "custom-5",
               "job_type": "Mulch installation",
               "priority": "Routine",
               "tech": "tm-4",
-              "crew_size": 2,
               "scheduled_on": "@tue",
-              "quote": 540,
-              "parts_cost": 210,
-              "labor_cost": 150,
+              "quote": 970,
+              "parts_cost": 435,
+              "labor_cost": 170,
               "hours": 5
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Crape myrtle and holly pruning",
+              "job_name": "Aeration and overseed - Carrow",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Shrub trimming",
+              "customer": "custom-10",
+              "job_type": "Aeration and overseed",
               "priority": "Routine",
-              "tech": "tm-3",
-              "crew_size": 2,
+              "tech": "tm-5",
               "scheduled_on": "@wed",
-              "quote": 460,
-              "parts_cost": 0,
-              "labor_cost": 210,
-              "hours": 7,
+              "quote": 225,
+              "parts_cost": 80,
+              "labor_cost": 85,
+              "hours": 2.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Winterize irrigation, 14 zones",
+              "job_name": "Shrub trimming - Yamamoto",
               "status": "Scheduled",
-              "customer": "custom-6",
-              "job_type": "Irrigation repair",
+              "customer": "custom-3",
+              "job_type": "Shrub trimming",
               "priority": "Routine",
-              "tech": "tm-5",
-              "crew_size": 1,
+              "tech": "tm-3",
               "scheduled_on": "@thu",
-              "quote": 420,
-              "parts_cost": 0,
-              "labor_cost": 120,
-              "hours": 3
+              "quote": 215,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Fall leaf cleanup, round 1",
+              "job_name": "Irrigation repair - Mbeki",
               "status": "Scheduled",
-              "customer": "custom-1",
-              "job_type": "Leaf removal",
+              "customer": "custom-8",
+              "job_type": "Irrigation repair",
               "priority": "Routine",
-              "tech": "tm-6",
-              "crew_size": 3,
+              "tech": "tm-4",
               "scheduled_on": "@fri",
-              "quote": 340,
-              "parts_cost": 0,
-              "labor_cost": 150,
-              "hours": 5,
+              "quote": 455,
+              "parts_cost": 115,
+              "labor_cost": 70,
+              "hours": 2,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Drainage swale and sod quote",
+              "job_name": "Sod installation - Jankowski",
               "status": "New request",
-              "customer": "custom-4",
+              "customer": "custom-1",
               "job_type": "Sod installation",
-              "priority": "Routine",
-              "tech": "tm-1",
-              "crew_size": 1,
+              "priority": "Urgent",
+              "tech": "tm-5",
               "scheduled_on": "@sat",
-              "quote": 0,
-              "parts_cost": 0,
-              "labor_cost": 60,
-              "hours": 1,
+              "quote": 1410,
+              "parts_cost": 705,
+              "labor_cost": 270,
+              "hours": 8,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Holiday planters at the entrance",
+              "job_name": "Leaf removal - Westbrook",
               "status": "New request",
-              "customer": "custom-7",
-              "job_type": "Planting and beds",
+              "customer": "custom-6",
+              "job_type": "Leaf removal",
               "priority": "Routine",
-              "tech": "tm-4",
-              "crew_size": 2,
+              "tech": "tm-3",
               "scheduled_on": "@sun",
-              "quote": 780,
-              "parts_cost": 320,
-              "labor_cost": 180,
-              "hours": 6
+              "quote": 335,
+              "parts_cost": 5,
+              "labor_cost": 120,
+              "hours": 3.5
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Fall leaf cleanup, round 2",
+              "job_name": "Weekly mowing - Jessup",
               "status": "Scheduled",
-              "customer": "custom-9",
-              "job_type": "Leaf removal",
+              "customer": "custom-11",
+              "job_type": "Weekly mowing",
               "priority": "Routine",
-              "tech": "tm-6",
-              "crew_size": 3,
+              "tech": "tm-4",
               "scheduled_on": "@tue+1w",
-              "quote": 380,
+              "quote": 55,
               "parts_cost": 0,
-              "labor_cost": 170,
-              "hours": 6
+              "labor_cost": 35,
+              "hours": 1
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Overseed bare patches by the pool",
+              "job_name": "Spring cleanup - Grayson",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Aeration and overseed",
+              "customer": "custom-4",
+              "job_type": "Spring cleanup",
               "priority": "Routine",
-              "tech": "tm-3",
-              "crew_size": 2,
+              "tech": "tm-5",
               "scheduled_on": "@thu+1w",
-              "quote": 410,
-              "parts_cost": 95,
-              "labor_cost": 120,
+              "quote": 345,
+              "parts_cost": 35,
+              "labor_cost": 135,
               "hours": 4
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Storm cleanup: limbs on the lawn",
+              "job_name": "Mulch installation - Thackeray",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Leaf removal",
-              "priority": "Urgent",
-              "tech": "tm-6",
-              "crew_size": 3,
+              "customer": "custom-9",
+              "job_type": "Mulch installation",
+              "priority": "Routine",
+              "tech": "tm-3",
               "scheduled_on": "@today",
-              "quote": 520,
-              "parts_cost": 0,
-              "labor_cost": 240,
-              "hours": 8,
+              "quote": 940,
+              "parts_cost": 425,
+              "labor_cost": 170,
+              "hours": 5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Backflow test and controller reset",
+              "job_name": "Aeration and overseed - Quillan",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Irrigation repair",
-              "priority": "Routine",
-              "tech": "tm-5",
-              "crew_size": 1,
+              "customer": "custom-2",
+              "job_type": "Aeration and overseed",
+              "priority": "Urgent",
+              "tech": "tm-4",
               "scheduled_on": "@today+2d",
-              "quote": 165,
-              "parts_cost": 0,
-              "labor_cost": 60,
-              "hours": 1.5
+              "quote": 215,
+              "parts_cost": 75,
+              "labor_cost": 85,
+              "hours": 2.5
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "New shrub bed by the mailbox",
+              "job_name": "Shrub trimming - Fairbairn",
               "status": "Scheduled",
-              "customer": "custom-12",
-              "job_type": "Planting and beds",
+              "customer": "custom-7",
+              "job_type": "Shrub trimming",
               "priority": "Routine",
-              "tech": "tm-4",
-              "crew_size": 2,
+              "tech": "tm-5",
               "scheduled_on": "@today+4d",
-              "quote": 690,
-              "parts_cost": 260,
-              "labor_cost": 180,
-              "hours": 6
+              "quote": 210,
+              "parts_cost": 5,
+              "labor_cost": 70,
+              "hours": 2
             }
           }
         ],
@@ -1845,11 +1691,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-3418",
+              "invoice_name": "INV-1040",
               "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-1",
-              "amount": 864.45,
+              "customer": "custom-3",
+              "amount": 67.2,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1857,386 +1703,65 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-3419",
+              "invoice_name": "INV-1041",
               "status": "Paid",
               "job": "job-2",
-              "customer": "custom-2",
-              "amount": 1450.0,
+              "customer": "custom-8",
+              "amount": 455.7,
               "issued_on": "@today-16d",
               "due_on": "@today-2d",
-              "paid_on": "@today-10d",
+              "paid_on": "@today-12d",
               "method": "Check"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-3420",
+              "invoice_name": "INV-1042",
               "status": "Paid",
               "job": "job-3",
-              "customer": "custom-9",
-              "amount": 689.5,
+              "customer": "custom-1",
+              "amount": 1240.0,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
-              "paid_on": "@today-9d",
-              "method": "Card"
+              "paid_on": "@today-8d",
+              "method": "Bank transfer"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-3421",
+              "invoice_name": "INV-1043",
               "status": "Sent",
               "job": "job-4",
-              "customer": "custom-5",
-              "amount": 318.75,
+              "customer": "custom-6",
+              "amount": 288.2,
               "issued_on": "@today-9d",
-              "due_on": "@today"
+              "due_on": "@fri"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-3422",
-              "status": "Overdue",
+              "invoice_name": "INV-1044",
+              "status": "Sent",
               "job": "job-5",
-              "customer": "custom-7",
-              "amount": 880.0,
+              "customer": "custom-11",
+              "amount": 265.5,
               "issued_on": "@today-6d",
-              "due_on": "@today-1d"
+              "due_on": "@today+4d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-3423",
-              "status": "Sent",
-              "job": "job-6",
-              "customer": "custom-8",
-              "amount": 2690.4,
-              "issued_on": "@today-4d",
-              "due_on": "@today+3d"
-            }
-          },
-          {
-            "key": "invoic-7",
-            "values": {
-              "invoice_name": "INV-3424",
+              "invoice_name": "INV-1045",
               "status": "Draft",
-              "job": "job-10",
-              "customer": "custom-2",
-              "amount": 1450.0,
-              "issued_on": "@today-1d",
-              "due_on": "@today+29d"
-            }
-          }
-        ]
-      },
-      {
-        "token": "service",
-        "name": "Recurring services",
-        "labelSingular": "Recurring service",
-        "labelPlural": "Recurring services",
-        "type": "entity",
-        "display": "board",
-        "weight": "light",
-        "ordered": false,
-        "icon": "repeat",
-        "titleField": "service_name",
-        "describes": "Weekly and biweekly mowing and fertilizer programs: which day, which crew, what each visit pays.",
-        "subject": "thing",
-        "statusImplies": [],
-        "rowTemplates": [],
-        "before": [
-          [
-            "season_start",
-            "season_end"
-          ]
-        ],
-        "fields": [
-          {
-            "key": "service_name",
-            "label": "Service",
-            "parityType": "text",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "required": true
-          },
-          {
-            "key": "customer",
-            "label": "Client",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "customer",
-            "relationMax": 1
-          },
-          {
-            "key": "service",
-            "label": "Kind",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Weekly mowing",
-              "Every other week",
-              "Fertilizer program"
-            ],
-            "choiceColors": {
-              "Weekly mowing": "blue",
-              "Every other week": "green",
-              "Fertilizer program": "amber"
-            }
-          },
-          {
-            "key": "route_day",
-            "label": "Route day",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday"
-            ],
-            "choiceColors": {
-              "Monday": "blue",
-              "Tuesday": "teal",
-              "Wednesday": "green",
-              "Thursday": "amber",
-              "Friday": "violet"
-            }
-          },
-          {
-            "key": "crew",
-            "label": "Crew",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Crew 1",
-              "Crew 2"
-            ],
-            "choiceColors": {
-              "Crew 1": "blue",
-              "Crew 2": "green"
-            }
-          },
-          {
-            "key": "price_per_visit",
-            "label": "Price per visit (USD)",
-            "parityType": "currency",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
-          },
-          {
-            "key": "status",
-            "label": "Status",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Active",
-              "Paused",
-              "Ended"
-            ],
-            "choiceColors": {
-              "Active": "green",
-              "Paused": "amber",
-              "Ended": "slate"
-            }
-          },
-          {
-            "key": "season_start",
-            "label": "Season starts",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "season_end",
-            "label": "Season ends",
-            "parityType": "datetime",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "format": "date"
-          },
-          {
-            "key": "added_at",
-            "label": "Added",
-            "parityType": "created_time",
-            "sensitivity": "internal",
-            "contextPolicy": "include"
-          }
-        ],
-        "rows": [
-          {
-            "key": "svc-1",
-            "values": {
-              "service_name": "Jankowski, weekly mow",
-              "customer": "custom-1",
-              "service": "Weekly mowing",
-              "route_day": "Monday",
-              "crew": "Crew 1",
-              "price_per_visit": 48,
-              "status": "Active",
-              "season_start": "@today-26w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-2",
-            "values": {
-              "service_name": "Oak Hollow HOA, common areas",
-              "customer": "custom-2",
-              "service": "Weekly mowing",
-              "route_day": "Tuesday",
-              "crew": "Crew 2",
-              "price_per_visit": 640,
-              "status": "Active",
-              "season_start": "@today-28w",
-              "season_end": "@today+5w"
-            }
-          },
-          {
-            "key": "svc-3",
-            "values": {
-              "service_name": "Yamamoto Hardware lot",
-              "customer": "custom-3",
-              "service": "Weekly mowing",
-              "route_day": "Wednesday",
-              "crew": "Crew 2",
-              "price_per_visit": 185,
-              "status": "Active",
-              "season_start": "@today-27w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-4",
-            "values": {
-              "service_name": "Navarro, weekly mow",
-              "customer": "custom-5",
-              "service": "Weekly mowing",
-              "route_day": "Monday",
-              "crew": "Crew 1",
-              "price_per_visit": 58,
-              "status": "Active",
-              "season_start": "@today-25w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-5",
-            "values": {
-              "service_name": "Westbrook Commons",
-              "customer": "custom-6",
-              "service": "Weekly mowing",
-              "route_day": "Thursday",
-              "crew": "Crew 2",
-              "price_per_visit": 520,
-              "status": "Active",
-              "season_start": "@today-28w",
-              "season_end": "@today+5w"
-            }
-          },
-          {
-            "key": "svc-6",
-            "values": {
-              "service_name": "Fairbairn office park",
-              "customer": "custom-7",
-              "service": "Weekly mowing",
-              "route_day": "Wednesday",
-              "crew": "Crew 1",
-              "price_per_visit": 290,
-              "status": "Active",
-              "season_start": "@today-27w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-7",
-            "values": {
-              "service_name": "Mbeki rental, biweekly",
-              "customer": "custom-8",
-              "service": "Every other week",
-              "route_day": "Friday",
-              "crew": "Crew 1",
-              "price_per_visit": 52,
-              "status": "Paused",
-              "season_start": "@today-20w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-8",
-            "values": {
-              "service_name": "Thackeray, 6-round fertilizer",
-              "customer": "custom-9",
-              "service": "Fertilizer program",
-              "route_day": "Thursday",
-              "crew": "Crew 1",
-              "price_per_visit": 72,
-              "status": "Active",
-              "season_start": "@today-30w",
-              "season_end": "@today+4w"
-            }
-          },
-          {
-            "key": "svc-9",
-            "values": {
-              "service_name": "Jessup Medical, weekly",
-              "customer": "custom-11",
-              "service": "Weekly mowing",
-              "route_day": "Friday",
-              "crew": "Crew 2",
-              "price_per_visit": 240,
-              "status": "Active",
-              "season_start": "@today-26w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-10",
-            "values": {
-              "service_name": "Rutherford rental, biweekly",
-              "customer": "custom-12",
-              "service": "Every other week",
-              "route_day": "Friday",
-              "crew": "Crew 1",
-              "price_per_visit": 45,
-              "status": "Active",
-              "season_start": "@today-22w",
-              "season_end": "@today+6w"
-            }
-          },
-          {
-            "key": "svc-11",
-            "values": {
-              "service_name": "Carrow HOA, ended",
-              "customer": "custom-10",
-              "service": "Weekly mowing",
-              "route_day": "Tuesday",
-              "crew": "Crew 2",
-              "price_per_visit": 480,
-              "status": "Ended",
-              "season_start": "@today-60w",
-              "season_end": "@today-34w"
+              "job": "job-6",
+              "customer": "custom-4",
+              "amount": 607.8,
+              "issued_on": "@today-4d",
+              "due_on": "@today+12d"
             }
           }
         ]
@@ -2282,16 +1807,6 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
-      },
-      {
-        "describes": "Each recurring service is for one client.",
-        "fromTable": "service",
-        "fromField": "customer",
-        "toTable": "customer",
-        "flavor": "referenced",
-        "cardinality": "one",
-        "onDelete": "set_null",
-        "inverseKey": "services"
       }
     ],
     "sharedBlocks": [
@@ -2643,20 +2158,6 @@
             "Overdue"
           ]
         }
-      },
-      {
-        "token": "all_service",
-        "name": "All recurring services",
-        "kind": "grid",
-        "isDefault": true,
-        "table": "service"
-      },
-      {
-        "token": "service_route",
-        "name": "Routes by day",
-        "kind": "kanban",
-        "groupBy": "route_day",
-        "table": "service"
       }
     ],
     "agent": {
@@ -2729,18 +2230,6 @@
           "surface": "part_board",
           "minItems": 3
         }
-      },
-      {
-        "says": "Open recurring services.",
-        "action": {
-          "kind": "open",
-          "surface": "service_route"
-        },
-        "expect": {
-          "kind": "renders",
-          "surface": "service_route",
-          "minItems": 3
-        }
       }
     ],
     "foundation": [],
@@ -2758,7 +2247,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {
@@ -2780,18 +2269,12 @@
           "type": "callout",
           "text": [
             {
-              "text": "Two kinds of work run this company. Recurring services are the weekly and biweekly visits that fill each route day. Projects (cleanups, mulch, sod, irrigation, planting) are priced one by one on the Jobs board. Mark done stamps the finish; sent and overdue invoices both count in a client's Awaiting payment."
+              "text": "One page for the season. Weekly mowing and one-off projects live on the Jobs board; crew leaders see their own list under Mine. Materials shows what to order before the weekend, and Invoices shows who still owes you. Start with the Dashboard every Monday."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "page",
-          "props": {
-            "spaceId": "page:start-here"
           }
         },
         {
@@ -3184,330 +2667,6 @@
             ],
             "activeViewId": "inv-b"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Recurring services"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Which properties each crew mows on each day, and what every visit is worth."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "service",
-              "view": "service_route"
-            },
-            "inline": true,
-            "title": "Recurring services",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "sv-b",
-                "name": "Routes by day",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "route_day"
-              },
-              {
-                "id": "sv-t",
-                "name": "All services",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "sv-b"
-          }
-        }
-      ]
-    },
-    {
-      "key": "start-here",
-      "parent": "landscaping-lawn-care-hq",
-      "title": "Start here: how this workspace runs",
-      "icon": {
-        "emoji": "🧭"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the operations manager and every crew leader."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What lives where"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Clients",
-              "bold": true
-            },
-            {
-              "text": ": homes, HOAs, rentals and businesses, with turf area, gate notes, irrigation zones, what they owe, and what their recurring services are worth per visit."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Recurring services",
-              "bold": true
-            },
-            {
-              "text": ": weekly and biweekly mowing and fertilizer programs, with route day, crew, price per visit and season dates."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Jobs",
-              "bold": true
-            },
-            {
-              "text": ": one-off projects: cleanups, mulch, aeration, sod, planting, irrigation repairs."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Materials and equipment",
-              "bold": true
-            },
-            {
-              "text": ": mulch, seed, irrigation parts, blades and oil, and what to reorder."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Invoices",
-              "bold": true
-            },
-            {
-              "text": ": monthly mowing bills and project invoices."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "How the week runs"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Each route day, the crew works the stops on the Routes by day board."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Projects come in as "
-            },
-            {
-              "text": "New request",
-              "bold": true
-            },
-            {
-              "text": "; the office prices them, sets the crew leader and date, and moves them to "
-            },
-            {
-              "text": "Scheduled",
-              "bold": true
-            },
-            {
-              "text": ". A crew leader can press "
-            },
-            {
-              "text": "Assign to me",
-              "bold": true
-            },
-            {
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": " stamps the finish date. The office invoices the project that day and bills recurring services once a month."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Past-due invoices become "
-            },
-            {
-              "text": "Overdue",
-              "bold": true
-            },
-            {
-              "text": "; the client's Awaiting payment counts sent and overdue together. "
-            },
-            {
-              "text": "Mark paid",
-              "bold": true
-            },
-            {
-              "text": " stamps the date."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Your rhythm"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every morning: Dashboard, today's route, today's projects"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Rain day: slide the routes and text the clients"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every Friday: count materials and equipment parts"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Every month: send recurring bills, look at thin margins and weak route days"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Making it yours"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Rename crews and route days, add your own services and prices, and delete the sample clients once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Billing recurring work"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Bill weekly and biweekly clients once a month for the visits actually made. Count the visits from the route sheets, multiply by the "
-            },
-            {
-              "text": "Price per visit",
-              "bold": true
-            },
-            {
-              "text": ", and send one invoice per client. Skipped visits (drought, client request) are not billed; say so on the invoice so the client sees you are fair. Commercial clients often want a fixed monthly amount instead; agree it in writing and note it on their service."
-            }
-          ]
         }
       ]
     },
@@ -3770,86 +2929,6 @@
             ],
             "activeViewId": "view-l2"
           }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Awaiting payment (sent and overdue)"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "invoice",
-              "view": "all_invoice"
-            },
-            "inline": true,
-            "title": "Invoices",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l3",
-                "name": "Awaiting payment",
-                "layout": "list",
-                "icon": "Table",
-                "anyOf": {
-                  "status": [
-                    "Sent",
-                    "Overdue"
-                  ]
-                }
-              }
-            ],
-            "activeViewId": "view-l3"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Route value by day"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "service",
-              "view": "all_service"
-            },
-            "inline": true,
-            "title": "Recurring services",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-c9",
-                "name": "Per-visit value by day",
-                "layout": "chart",
-                "icon": "ChartColumn",
-                "chart": {
-                  "type": "bar",
-                  "groupBy": "route_day",
-                  "op": "sum",
-                  "field": "price_per_visit"
-                }
-              }
-            ],
-            "activeViewId": "view-c9"
-          }
         }
       ]
     },
@@ -3865,7 +2944,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A route is profitable when the crew spends its day mowing, not driving. Group properties tightly, price by the visit, and protect the route day."
+              "text": "A good route saves a crew an hour a day. Group stops by neighborhood and keep each day to the same side of town."
             }
           ],
           "background": "blue",
@@ -3877,7 +2956,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Build the route on a map first"
+              "text": "Setting up the route"
             }
           ],
           "props": {
@@ -3888,14 +2967,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "List every recurring property with its "
-            },
-            {
-              "text": "Turf area",
-              "bold": true
-            },
-            {
-              "text": " from Clients."
+              "text": "List every weekly client with their lot size and gate notes."
             }
           ]
         },
@@ -3903,7 +2975,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Group them into tight clusters, one cluster per day. A crew of two to three can mow 14 to 20 average residential lawns a day, fewer when commercial lots are in the mix."
+              "text": "Group clients by neighborhood and pick one day for each group."
             }
           ]
         },
@@ -3911,21 +2983,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set the "
-            },
-            {
-              "text": "Route day",
-              "bold": true
-            },
-            {
-              "text": " and "
-            },
-            {
-              "text": "Crew",
-              "bold": true
-            },
-            {
-              "text": " on each recurring service. The Routes by day board shows every day's stops at a glance."
+              "text": "Aim for 12 to 16 stops per crew per day."
             }
           ]
         },
@@ -3933,144 +2991,9 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Put the biggest commercial property early in the day, when the crew is fresh and before customers arrive."
+              "text": "Put the farthest stops first so the crew drives home toward the shop."
             }
           ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Pricing a weekly visit"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Start from minutes on site: mowing, trimming, edging and blowing, plus drive time to the next stop."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Multiply by your crew's loaded hourly cost and add your margin."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Steep banks, many beds, gates and dogs add minutes; write them in "
-            },
-            {
-              "text": "Gate and access notes",
-              "bold": true
-            },
-            {
-              "text": " so the price reflects them."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Every-other-week lawns grow longer between visits: price them at about 1.3 times a weekly visit, not half a month."
-            }
-          ]
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "The Dashboard chart adds the per-visit value of each day. A weak day is the place to sell new stops."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Crew checklist at each stop"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Gate closed behind you, pets checked"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Pick up sticks and toys before mowing"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Mow with sharp blades; alternate the stripe direction each week"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Trim around beds, trees and fences; edge walks and drives every other visit"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Blow clippings off hard surfaces, never into the street or storm drain"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Note anything the client should know: irrigation leaks, sick shrubs, fence damage"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
         },
         {
           "type": "heading",
@@ -4087,7 +3010,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Do not skip a route day; slide it. Rain on Tuesday moves Tuesday to Wednesday and everything after it by a day. Saturday is the catch-up day. Text clients on the moved days."
+              "text": "Move the day, not the crew. Text every client on the affected route the night before, and add one extra visit to the next dry day."
             }
           ]
         },
@@ -4095,7 +3018,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Example"
+              "text": "Pricing a stop"
             }
           ],
           "props": {
@@ -4106,40 +3029,7 @@
           "type": "text",
           "text": [
             {
-              "text": "In spring the office notices that Friday carries only three stops worth under $350. They sell two nearby rental properties on every-other-week service and move the medical office from Thursday to Friday, which shortens Thursday's drive and fills Friday to the same value as the other days."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "End of season"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "When the "
-            },
-            {
-              "text": "Season ends",
-              "bold": true
-            },
-            {
-              "text": " date nears, offer leaf removal and next year's fertilizer program to every recurring client. Mark services that stop as "
-            },
-            {
-              "text": "Ended",
-              "bold": true
-            },
-            {
-              "text": " rather than deleting them, so you can see who to call in the spring."
+              "text": "Add drive time and cleanup to the mowing time, multiply by the crew rate, and add materials. A stop that does not clear 30 percent margin should be repriced at renewal."
             }
           ]
         }
@@ -4157,7 +3047,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Spring cleanup sets the look of a property for the whole season, and it is where most new weekly clients are won. Price it fairly, do it in one visit, and sell the season while you are there."
+              "text": "Spring is the biggest sales window. Run the same checklist at every property so the quality is predictable."
             }
           ],
           "background": "blue",
@@ -4169,7 +3059,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the visit"
+              "text": "Steps"
             }
           ],
           "props": {
@@ -4180,7 +3070,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk the property or use the client's photos. Count beds, measure linear feet of bed edge, and estimate the leaf and debris load."
+              "text": "Walk the property with the client or photograph it first."
             }
           ]
         },
@@ -4188,7 +3078,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Price by crew hours plus disposal, plus mulch or pine straw if the client wants it."
+              "text": "Cut back dead growth and remove leaves from beds."
             }
           ]
         },
@@ -4196,21 +3086,23 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book it as a project on the Jobs board with work type "
-            },
+              "text": "Edge the beds and refresh the mulch lines."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
             {
-              "text": "Spring cleanup",
-              "bold": true
-            },
+              "text": "Aerate and overseed thin turf where the quote says so."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
             {
-              "text": " and the "
-            },
-            {
-              "text": "Crew size",
-              "bold": true
-            },
-            {
-              "text": "."
+              "text": "Test the irrigation and note broken heads."
             }
           ]
         },
@@ -4218,130 +3110,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On site"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Remove leaves and winter debris from beds, under shrubs and along fences"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Cut back ornamental grasses and perennials that were left standing"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Prune winter damage; save shaping for after the first flush of growth"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Re-cut bed edges with a half-moon or bed edger"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Pre-emergent in beds where weeds were a problem last year"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "First mow of the season, a little higher than usual"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Haul all debris; leave the property cleaner than the neighbors'"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Mulch"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Two inches is right; more smothers roots. Keep mulch off trunks and house siding."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "One cubic yard covers about 100 to 160 square feet at two inches."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Hardwood mulch on most beds; pine straw where clients prefer it and on slopes."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Upsell, gently"
+              "text": "Quality check"
             }
           ],
           "props": {
@@ -4352,52 +3121,7 @@
           "type": "text",
           "text": [
             {
-              "text": "The crew leader tells the office what they saw: thin turf (aeration in the fall), broken irrigation heads, overgrown shrubs. The office follows up with a price. Clients who have a cleanup are the easiest to sign for weekly mowing."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Example"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "A homeowner calls in March. The office measures 140 feet of bed edge from photos, prices a three-person crew for three hours plus nine yards of mulch, and books it. During the visit the crew leader notes two dead rotor heads; the office books an irrigation repair the next week and signs the client for weekly mowing starting in April."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Close-out"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Enter real hours and material costs on the job, press "
-            },
-            {
-              "text": "Mark done",
-              "bold": true
-            },
-            {
-              "text": ", and send the invoice the same day. If the margin shows Thin, look at the hours first: cleanups usually run over because the debris load was underestimated."
+              "text": "The crew leader walks the property and takes after photos. Anything that is not done goes on the sheet as a follow-up visit."
             }
           ]
         }
@@ -4415,7 +3139,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Mulch, seed and fertilizer are bought in bulk and used in waves. Order too late and crews stand around; order too much and money sits in a pile behind the shop."
+              "text": "Order on Tuesday for Thursday delivery. The Reorder? column tells you what is low."
             }
           ],
           "background": "blue",
@@ -4427,66 +3151,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What to keep and how much"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mulch and pine straw",
-              "bold": true
-            },
-            {
-              "text": ": in spring, a week's projects plus a buffer. Bulk mulch is cheaper by the truckload; bags only for small jobs."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Seed and starter fertilizer",
-              "bold": true
-            },
-            {
-              "text": ": order in late summer for fall aeration season, based on the turf area of the clients who signed up."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Irrigation parts",
-              "bold": true
-            },
-            {
-              "text": ": rotor and spray heads, nozzles, swing pipe, and a couple of valves in the sizes your clients use."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Equipment parts",
-              "bold": true
-            },
-            {
-              "text": ": blades, trimmer line, belts, filters and two-stroke oil. A mower down for a day costs more than a shelf of blades."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The weekly count"
+              "text": "Rules"
             }
           ],
           "props": {
@@ -4497,7 +3162,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Every Friday the operations manager counts the yard and the shop."
+              "text": "Check Materials every Tuesday morning."
             }
           ]
         },
@@ -4505,21 +3170,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Type the count into "
-            },
-            {
-              "text": "On hand",
-              "bold": true
-            },
-            {
-              "text": " and set "
-            },
-            {
-              "text": "Last counted",
-              "bold": true
-            },
-            {
-              "text": "."
+              "text": "Order bulk items by the yard in whole truckloads when possible."
             }
           ]
         },
@@ -4527,14 +3178,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Anything showing "
-            },
-            {
-              "text": "Reorder",
-              "bold": true
-            },
-            {
-              "text": " goes on Monday's order. Bulk mulch is ordered by Wednesday for the next week."
+              "text": "Ask the supplier to deliver to the shop yard, not to a job site, unless the job is over eight yards."
             }
           ]
         },
@@ -4542,104 +3186,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Working out quantities"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mulch at 2 inches: square feet of bed divided by 160 gives cubic yards; round up."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Overseeding tall fescue: about 5 to 8 pounds per 1,000 square feet. Use the client's "
-            },
-            {
-              "text": "Turf area",
-              "bold": true
-            },
-            {
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Pine straw: one bale covers about 50 square feet."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Checklist before a big project"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Material on site or ordered with a delivery date"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Dump trailer booked if hauling"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Right blades and spare belts on the truck"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Irrigation flags and paint if you will dig near lines"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Example"
+              "text": "Storage"
             }
           ],
           "props": {
@@ -4650,7 +3197,7 @@
           "type": "text",
           "text": [
             {
-              "text": "In August the office adds up the turf area of 22 clients who booked aeration: about 190,000 square feet. At 6 pounds per thousand, that is roughly 1,140 pounds of seed, so they order 24 bags of 50 pounds plus starter fertilizer, before the supplier's fall price increase."
+              "text": "Keep seed and fertilizer dry and off the floor. Write the date received on every bag."
             }
           ]
         }

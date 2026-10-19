@@ -280,6 +280,17 @@ export const adminNavigationRegistry: readonly AdminNavigationDomain[] = [
         ],
       },
       {
+        // Memory Lab (memory v1, 2026-10-19): replays one person's chats
+        // through the memory agents into a sandbox store, never live memory.
+        name: "Memory Lab",
+        iconName: "FlaskConical",
+        destinations: [
+          destination("/administration/intelligence/memory-lab", [
+            "/administration/intelligence/memory-lab/[trialId]",
+          ]),
+        ],
+      },
+      {
         name: "System processes",
         iconName: "ListChecks",
         destinations: [destination("/administration/intelligence/system-processes")],
