@@ -28,6 +28,7 @@ const FAVORITES_HREF = "/dashboard"; // hub that hosts the full "Pinned" grid
 // section at the bottom of the flyout. Opens the Manage Favorites window so the
 // user can edit their pins straight from this menu (handler in navActions.ts).
 const MANAGE_CHILD: ShellNavChild = {
+  id: "favorites.manage",
   label: "Manage favorites",
   href: FAVORITES_HREF,
   iconName: "SlidersHorizontal",
@@ -47,6 +48,7 @@ export default function FavoritesNavGroup() {
   const visibleFavorites = hydrated ? favorites : [];
 
   const children: ShellNavChild[] = visibleFavorites.map((f) => ({
+    id: `favorites.${f.id}`,
     label: f.label,
     href: f.href,
     iconName: resolveShellIconName(f.iconName ?? "Star"),
@@ -57,6 +59,7 @@ export default function FavoritesNavGroup() {
   children.push(MANAGE_CHILD);
 
   const item: ShellNavItem = {
+    id: "favorites",
     label: "Favorites",
     href: FAVORITES_HREF,
     iconName: "Star",

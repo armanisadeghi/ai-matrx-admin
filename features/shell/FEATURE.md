@@ -3,8 +3,9 @@
 **Purpose:** the one frame around every authenticated route (`AppShell`, used
 by `(core)` and `(admin)`; the `(dev)` layout mirrors it). Sub-features carry
 their own docs: sidebar `components/sidebar/FEATURE.md`, route headers
-`components/header/variants/USAGE.md` + the `core-route-headers` skill. This
-file holds the two laws that span them.
+`components/header/variants/USAGE.md` + the `core-route-headers` skill; custom
+layouts (permanent nav ids, the placeable catalog, validator, resolver)
+`shell-layout/FEATURE.md`. This file holds the two laws that span them.
 
 **Canvas chrome** — a page that hosts `ChatCanvasWorkspace` flips this shell to
 `data-shell-chrome="canvas"`: the shell header (by visibility) and
@@ -126,6 +127,8 @@ The shell chat opens by default at >= 1440px. A route whose own layout needs the
 the chat starts closed, the person opens it by hand (the rail's Chat row on a desktop, the header toggle at 768–1023px, the ⋮ row on a phone, Cmd+\), and a remembered choice still wins.
 
 ## Change log
+
+- `2026-10-19` — claude (custom-experience lane A): **every nav node has a permanent id** (`ShellNavItem.id` / `ShellNavChild.id`, guard `__tests__/nav-ids.test.ts`) and `shell-layout/` gains the catalog, validator and resolver for custom layouts — read `shell-layout/FEATURE.md`. Renderers unchanged.
 
 - `2026-10-15` — claude: **The chat's door is the rail's first row** (`sidebar/SidebarChatToggle.tsx`, `.shell-nav-chat`, pressed while docked open). The header's `ShellChatToggle` shows only at 768–1023px (no rail there); the header, the dock's top row and the canvas header no longer reserve room for a fixed button — a closed chat's button sat where every page puts its back chevron.
 
