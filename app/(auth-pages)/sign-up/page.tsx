@@ -20,7 +20,6 @@ import AuthPageContainer from "@/components/auth/auth-page-container";
 import { HardRedirectForm } from "@/components/auth/HardRedirectForm";
 import { GuestFingerprintField } from "./GuestFingerprintField";
 import {
-  authDestinationOr,
   preserveAuthDestination,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
@@ -279,7 +278,7 @@ export default async function SignUp({ searchParams }: SignUpProps) {
           </form>
         </div>
       </div>
-      <GoogleOneTapMount context="signup" destination={authDestinationOr({ redirectTo })} />
+      <GoogleOneTapMount context="signup" landing={{ redirectTo: redirectTo ?? null }} />
     </AuthPageContainer>
   );
 }

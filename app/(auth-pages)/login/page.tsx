@@ -21,7 +21,6 @@ import { AuthMessageType } from "@/components/form-message";
 import { GuestFingerprintField } from "../sign-up/GuestFingerprintField";
 import {
   AUTH_DEST_PARAM,
-  authDestinationOr,
   preserveAuthDestination,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
@@ -232,7 +231,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
           </form>
         </div>
       </div>
-      <GoogleOneTapMount context="signin" destination={authDestinationOr({ redirectTo })} />
+      <GoogleOneTapMount context="signin" landing={{ redirectTo: redirectTo ?? null }} />
     </AuthPageContainer>
   );
 }
