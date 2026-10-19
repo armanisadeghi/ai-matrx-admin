@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-19-123326/features/settings/pages/IntegrationsSettingsPage.tsx.held — LOCAL latest 2026-10-19 12:49; GITHUB latest 2026-10-19 12:44; LOCAL lacks 0 of GITHUB's 12 new lines; GITHUB lacks 9 of LOCAL's 21 new lines; recover: git show fc3c3d9713:'features/settings/pages/IntegrationsSettingsPage.tsx' / ec8a41ffc3:'features/settings/pages/IntegrationsSettingsPage.tsx'
 
 ## Resolution log
 
