@@ -13,6 +13,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { SpaceTemplateCover, SpaceTemplateIcon } from "@/features/spaces/public/SpaceTemplateIcon";
+import { spaceTemplateMakesLine } from "@/lib/spaces-blocks/template-pack";
 
 import { footprintLine, footprintParts, wordFor, type GalleryCard } from "./catalogue";
 import { spaceCategoryLabel } from "./publicGallery";
@@ -106,7 +107,7 @@ export function SpaceTemplateCardGrid({
                 </span>
                 <span className="line-clamp-2 type-body text-muted-foreground">{card.space.description}</span>
                 <span className="mt-auto truncate pt-1 type-meta text-muted-foreground tabular-nums">
-                  {card.space.pages === 1 ? "1 page" : `${card.space.pages} pages`} · {spaceCategoryLabel(card.space.category)}
+                  {spaceTemplateMakesLine(card.space)} · {spaceCategoryLabel(card.space.category)}
                 </span>
               </span>
             </Link>

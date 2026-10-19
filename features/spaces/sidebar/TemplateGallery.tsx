@@ -17,6 +17,7 @@ import {
 } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ArrowLeft, FileText, LayoutGrid, LayoutTemplate } from "lucide-react";
+import dynamic from "next/dynamic";
 import {
   useEffect,
   useRef,
@@ -27,7 +28,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { selectActiveOrganizationId } from "@/features/scopes/redux/selectors/active-context";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { SPACE_TEMPLATE_CATEGORIES } from "@/lib/spaces-blocks/template-pack";
+import { SPACE_TEMPLATE_CATEGORIES, spaceTemplateMakes, spaceTemplateMakesLine } from "@/lib/spaces-blocks/template-pack";
 import { searchTemplates } from "@/lib/spaces-blocks/template-search";
 
 import type { SpaceDoc, SpaceSummary } from "../contract";
@@ -47,6 +48,13 @@ import {
   type SpaceTemplateCard,
   type SpaceTemplateFull,
 } from "../templates/use-pack";
+
+// A page-less pack makes a BOARD (the design-system starters): its card opens the Board gallery's own preview
+// and install (naming, tables, board), loaded only when such a card is picked.
+const BoardTemplateGallery = dynamic(
+  () => import("@/features/board/templates/BoardTemplateGallery").then((m) => m.BoardTemplateGallery),
+  { ssr: false },
+);
 
 const ALL = "all";
 const MINE = "mine";
@@ -71,6 +79,7 @@ export function TemplateGallery({
   const [q, setQ] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [mine, setMine] = useState<Record<string, SpaceDoc | null>>({});
+  const [boardKey, setBoardKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -127,13 +136,31 @@ export function TemplateGallery({
     title: mine[id]?.title ?? "",
   }));
 
-  const pick = (key: string | null) => setPicked(key);
+  const pick = (key: string | null) => {
+    const card = key ? cards?.find((c) => c.id === key) : undefined;
+    if (card && spaceTemplateMakes(card.space) === "board") {
+      // A board template: the Board gallery previews and installs it; this picker steps aside.
+      onOpenChange(false);
+      setBoardKey(`pack:${card.id}`);
+      return;
+    }
+    setPicked(key);
+  };
   const close = (next: boolean) => {
     onOpenChange(next);
     if (!next) setPicked(null);
   };
 
   return (
+    <>
+    {boardKey ? (
+      <BoardTemplateGallery
+        key={boardKey}
+        open
+        onOpenChange={(next) => (next ? undefined : setBoardKey(null))}
+        initialKey={boardKey}
+      />
+    ) : null}
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-w-[min(1180px,96vw)] h-[86dvh] gap-0 p-0 overflow-hidden spaces-tg">
         <DialogTitle className="sr-only">Templates</DialogTitle>
@@ -242,9 +269,7 @@ export function TemplateGallery({
                             {c.space.description}
                           </span>
                           <span className="spaces-tg-card-foot type-secondary text-muted-foreground">
-                            {c.space.pages === 1
-                              ? "1 page"
-                              : `${c.space.pages} pages`}
+                            {spaceTemplateMakesLine(c.space)}
                             {c.installed ? (
                               <Badge tone="success">In this organization</Badge>
                             ) : null}
@@ -290,6 +315,7 @@ export function TemplateGallery({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

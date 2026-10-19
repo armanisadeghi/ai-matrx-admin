@@ -12,7 +12,7 @@
 //
 // No store import here: this file is pure so tests and the clone guard can load it.
 
-import type { SpaceTemplateCardFace } from "@/lib/spaces-blocks/template-pack";
+import { spaceTemplateMakes, type SpaceTemplateCardFace } from "@/lib/spaces-blocks/template-pack";
 
 /** One card exactly as `custom.templates` answers it (card keys only — never a spec, plan or row). */
 export interface GalleryCard {
@@ -47,8 +47,12 @@ export interface GalleryCard {
   space?: SpaceTemplateCardFace | null;
 }
 
-/** A Space template with pages: shown as a workspace (its pages previewed), never as a table template. */
-export const isSpaceCard = (card: Pick<GalleryCard, "space">): boolean => (card.space?.pages ?? 0) > 0;
+/**
+ * A Space template (pages, or a page-less pack that makes a board): shown as a workspace, never as a table template.
+ * The one test is spaceTemplateMakes, shared with the signed-in Spaces picker (ADVERSARIAL-3 D3: a pages-only test
+ * dropped the 11 design-system board packs).
+ */
+export const isSpaceCard = (card: Pick<GalleryCard, "space">): boolean => spaceTemplateMakes(card.space) !== null;
 
 /** The first rows of a template's main table, as the public door hands them to a gallery card. */
 export interface GalleryThumb {

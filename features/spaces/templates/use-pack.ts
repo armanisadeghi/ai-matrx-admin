@@ -14,7 +14,7 @@
 import { allTables, listTemplateInstances, runTemplateDoor, templateUpgradeHint, upgradeTemplateInstall, type TemplateDoorAnswer, type TemplateSpec } from "@ai-matrx/records/templates";
 import { storeDoors, supabaseDataSource } from "@ai-matrx/records/core";
 
-import { packPageSettings, packPagesInOrder, resolvePackBlocks, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { packPageSettings, packPagesInOrder, resolvePackBlocks, spaceTemplateMakes, type ResolvedTable, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import type { AppDispatch } from "@/lib/redux/store";
 import { errorSentence, toast } from "@/lib/toast";
 import { createClient } from "@/utils/supabase/client";
@@ -69,14 +69,15 @@ const door = () => createClient().schema("custom") as unknown as Door;
 
 /**
  * Every Space template the person can use; `installedIn` marks the ones that organization already has.
- * `makes` picks the gallery: "pages" (the Spaces gallery: packs with pages) or "board" (the Board gallery:
- * packs that carry a board, `card.space.board`). One catalog, two doors.
+ * `makes` picks the gallery: "any" (the Spaces gallery: packs with pages AND page-less board packs, through the one
+ * test `spaceTemplateMakes`; a board card opens the Board gallery's install) or "board" (the Board gallery: packs
+ * that carry a board, `card.space.board`). One catalog, two doors.
  */
-export async function listSpaceTemplates(installedIn: string | null, makes: "pages" | "board" = "pages"): Promise<SpaceTemplateCard[]> {
+export async function listSpaceTemplates(installedIn: string | null, makes: "any" | "board" = "any"): Promise<SpaceTemplateCard[]> {
   const { data, error } = await door().rpc("space_templates", { p_filter: installedIn ? { installed_in: installedIn } : {} });
   if (error) throw new Error(`We couldn't list the templates: ${error.message}`);
   const cards = (data?.cards ?? []) as SpaceTemplateCard[];
-  return cards.filter((c) => (makes === "board" ? !!c.space?.board : (c.space?.pages ?? 0) > 0));
+  return cards.filter((c) => (makes === "board" ? !!c.space?.board : spaceTemplateMakes(c.space) !== null));
 }
 
 const full = new Map<string, Promise<SpaceTemplateFull>>();

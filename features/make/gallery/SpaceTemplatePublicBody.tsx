@@ -14,8 +14,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { siteConfig } from "@/config/extras/site";
+import { BoardSketch } from "@/features/board/templates/BoardSketch";
+import { planPackBoards, sketchTables } from "@/features/board/templates/board-pack-plan";
 import { TemplatePackPreview } from "@/features/spaces/public/TemplatePackPreview";
-import { packPageSettings, packPagesInOrder, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
+import { packPageSettings, packPagesInOrder, spaceTemplateMakes, type SpaceTemplateCardFace, type SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 
 import { footprintLine, isSpaceCard, wordFor, type GalleryCard } from "./catalogue";
 import { spacePageOutlines } from "./SpacePageOutline";
@@ -60,7 +62,9 @@ export function SpaceTemplatePublicBody({
   all: readonly GalleryCard[];
 }) {
   const url = `${siteConfig.url}${publicTemplateHref(card)}`;
-  const pages = packPagesInOrder(pack.pages);
+  const pages = packPagesInOrder(pack.pages ?? []);
+  // A page-less pack makes a board (the design-system starters): its preview is the board's layout over its tables.
+  const boards = spaceTemplateMakes(space) === "board" && pack.board ? planPackBoards(pack.board, sketchTables(spec.tables.map((t) => t.token))) : null;
   const views = spec.views ?? [];
   const related = relatedSpaces(card, all);
   const signUp = spaceTemplateSignUpHref(card);
@@ -140,12 +144,23 @@ export function SpaceTemplatePublicBody({
           </Suspense>
         </header>
 
-        <TemplatePackPreview
-          templateKey={card.slug ?? card.catalogue_id}
-          catalogueId={card.catalogue_id}
-          pages={pages.map((p) => ({ key: p.key, title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p) }))}
-          outlines={spacePageOutlines(pages, spec)}
-        />
+        {boards ? (
+          <section className="flex flex-col gap-4" aria-label="Board preview" data-space-template-board="">
+            {boards.map((b) => (
+              <div key={b.key} className="flex min-w-0 flex-col gap-2 rounded-xl border border-border bg-card p-4">
+                <h2 className="type-title text-foreground">{b.title}</h2>
+                <BoardSketch doc={b.doc} />
+              </div>
+            ))}
+          </section>
+        ) : (
+          <TemplatePackPreview
+            templateKey={card.slug ?? card.catalogue_id}
+            catalogueId={card.catalogue_id}
+            pages={pages.map((p) => ({ key: p.key, title: p.title, icon: p.icon ?? null, cover: p.cover ?? null, settings: packPageSettings(p) }))}
+            outlines={spacePageOutlines(pages, spec)}
+          />
+        )}
 
         <section className="flex flex-col gap-3" aria-labelledby="space-template-inside">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
@@ -156,14 +171,29 @@ export function SpaceTemplatePublicBody({
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3">
-              <h3 className="text-sm font-medium text-muted-foreground tabular-nums">{pages.length === 1 ? "1 page" : `${pages.length} pages`}</h3>
-              <ul className="flex flex-col gap-1 text-sm" data-space-template-pages="">
-                {pages.map((p) => (
-                  <li key={p.key} className="truncate" style={{ paddingLeft: p.parent ? 16 : 0 }}>
-                    {p.title}
-                  </li>
-                ))}
-              </ul>
+              {boards ? (
+                <>
+                  <h3 className="text-sm font-medium text-muted-foreground tabular-nums">{boards.length === 1 ? "1 board" : `1 board · ${boards.length} pages`}</h3>
+                  <ul className="flex flex-col gap-1 text-sm" data-space-template-pages="">
+                    {boards.map((b, i) => (
+                      <li key={b.key} className="truncate" style={{ paddingLeft: i ? 16 : 0 }}>
+                        {b.title}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-sm font-medium text-muted-foreground tabular-nums">{pages.length === 1 ? "1 page" : `${pages.length} pages`}</h3>
+                  <ul className="flex flex-col gap-1 text-sm" data-space-template-pages="">
+                    {pages.map((p) => (
+                      <li key={p.key} className="truncate" style={{ paddingLeft: p.parent ? 16 : 0 }}>
+                        {p.title}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
             <div className="flex min-w-0 flex-col gap-1.5 rounded-xl border border-border bg-card p-3">
               <h3 className="text-sm font-medium text-muted-foreground tabular-nums">

@@ -237,6 +237,27 @@ export function packBoards(board: PackBoard): PackBoardPage[] {
   return [top, ...(pages ?? [])];
 }
 
+/**
+ * WHAT A SPACE TEMPLATE MAKES, from its card face: "pages" (a workspace: pages over its tables) or "board" (a
+ * page-less pack that makes a board over its tables: the design-system starters). Every gallery that lists Space
+ * templates (the Spaces picker, the public Workspaces gallery) lists BOTH through this one test, so a valid published
+ * pack is never silently dropped because it has no pages (ADVERSARIAL-3 D3). Null only for a face that makes nothing.
+ */
+export function spaceTemplateMakes(face: Pick<SpaceTemplateCardFace, "pages" | "board"> | null | undefined): "pages" | "board" | null {
+  if (!face) return null;
+  if ((face.pages ?? 0) > 0) return "pages";
+  return face.board ? "board" : null;
+}
+
+/** "3 pages" / "Board · 4 pages": what a gallery card says a Space template makes. */
+export function spaceTemplateMakesLine(face: Pick<SpaceTemplateCardFace, "pages" | "board">): string {
+  if (spaceTemplateMakes(face) === "board") {
+    const n = 1 + (face.board?.pages ?? 0);
+    return n === 1 ? "Board" : `Board · ${n} pages`;
+  }
+  return face.pages === 1 ? "1 page" : `${face.pages} pages`;
+}
+
 /** The card face of a pack. */
 export function packCardFace(pack: SpaceTemplatePack): SpaceTemplateCardFace {
   return {

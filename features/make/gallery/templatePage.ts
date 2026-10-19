@@ -26,7 +26,8 @@ export function shapeTemplatePage(data: unknown, today = new Date().toISOString(
   if (!answer?.card) return null;
   const { spacePack, ...tables } = answer.spec as TemplateSpec & { spacePack?: Omit<SpaceTemplatePack, "spec"> };
   const spec = resolveRelativeDates(tables as TemplateSpec, today) as unknown as ShowSpec;
-  const pack = spacePack?.pages?.length ? spacePack : null;
+  // A page-less pack that makes a board (the design-system starters) is a Space template too (ADVERSARIAL-3 D3).
+  const pack = spacePack?.pages?.length || spacePack?.board ? spacePack : null;
   return { card: answer.card, spec, pack, updatedAt: answer.updated_at };
 }
 
