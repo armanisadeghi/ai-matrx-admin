@@ -37,7 +37,7 @@ import { selectResolvedBaseUrl } from "@/lib/redux/slices/apiConfigSlice";
 import { useServerOrganizationId } from "@/lib/api/useServerOrganizationId";
 import { adminTwinHref } from "@/features/scopes/registry/adminTwins";
 import { openFromNotice } from "@/lib/notice-open/openFromNotice";
-import { toast } from "@/lib/toast";
+import { recordToast, toast } from "@/lib/toast";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { readConfidenceThreshold, readTranslationCellDetail } from "../data";
 import {
@@ -235,7 +235,7 @@ function TestNow({ cell }: { cell: TranslationCellRow }) {
       await queryClient.invalidateQueries({ queryKey: TRANSLATION_GRID_QUERY_KEY });
       const fresh = await readTranslationCellDetail(cell.id).catch(() => null);
       if (fresh?.state && fresh.state !== cell.state && !NEEDS_YOU_STATES.has(fresh.state)) {
-        toast.info(`${cell.setting_key} is now ${fresh.state}`, {
+        recordToast.info({ type: "translation_cell", id: cell.id, title: cell.setting_key }, `${cell.setting_key} is now ${fresh.state}`, {
           description: reply.summary ?? undefined,
           action: { label: "Open grid", onClick: () => openFromNotice(`${GRID_HREF}?tab=all`) },
         });
