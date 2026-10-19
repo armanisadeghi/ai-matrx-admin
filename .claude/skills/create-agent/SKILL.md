@@ -126,9 +126,12 @@ Arman's words are [Provision first](/policies/agents-never-author-agents.md#prov
    Create the mandate SEEDLESS (no `seed_version_id`) — it names the job and freezes the contract
    (goal + output kind + provision) without embedding a Holder. Multiple mandates may stand at one
    rich position.
-7. **STOP. Arman builds the agent.** A coding agent does not author the Holder. He builds it
-   (through the agent factory), it is tested LIVE with the request and response streamed through
-   AI Watch, he tweaks, and only after his sign-off is the step production-ready.
+7. **STOP. Arman builds the agent** — unless he has approved a coding agent building it through the
+   factory for that work. He did for the General Chat replacement work (2026-10-18 02:34Z): *"Build
+   the first 5 for me to check. Do a test run before, then create them, then, do a test run after and
+   show me the table"*, with builds run *"signed in as the admin test account"* (admin@admin.com, never
+   the Matrx System bot). Approved or not, the build is a candidate: it is tested LIVE with the request
+   and response streamed through AI Watch, and it becomes the live holder only after his sign-off.
 
 A coding agent's job ends at step 6: provision declared (full), `__kind` defined, goal written,
 mandate(s) created. Everything below (steps 0–10) is how to do steps 1–6 well and how the agent
@@ -294,9 +297,10 @@ Tool rules: `common-docs/systems/agents/agent-tools/TOOL-SOURCES.md`. Origin (Ar
 to Flash-Lite with 11 tools **2 minutes and 22 seconds later**, and stayed there for
 eleven versions until he moved it back himself.
 
-🚨 **`settings` is not a tuning exercise — leave it `{"stream": true}`.** Do NOT write
-`temperature`, `max_output_tokens`, `top_p`, or a reasoning knob because the field
-exists. **Absent means the model's own default, and that is the correct value until you
+🚨 **`settings` is not a tuning exercise — birth it as `{"stream": true, "reasoning_effort": "low"}`.**
+Reasoning defaults to LOW (Arman, 2026-10-15: *"reasoning effort defaults to LOW, sometimes medium,
+high almost never"*); medium only when a measured run shows low falls short, high is his call. Do NOT
+write `temperature`, `max_output_tokens` or `top_p` because the field exists. **Absent means the model's own default, and that is the correct value until you
 have MEASURED a better one.** A number you did not measure is a number you invented, and
 it will outlive you on that agent. Write one only when you can say, in the same breath,
 what you ran and what changed — and put that in the `change_note`. (Same review row: the
