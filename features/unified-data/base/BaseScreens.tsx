@@ -10,7 +10,8 @@ import { ActivityFeedButton } from "@/features/unified-data/table-page/TableAcce
 import { ensureTable } from "@ai-matrx/records/core";
 import { duplicateBase, restoredBaseName, restoreSnapshot, snapshotBase, type BaseCopyProgress, type BaseTable } from "@ai-matrx/records";
 import { useRecordsClient } from "@ai-matrx/records/react";
-import { Button, Field } from "@ai-matrx/design-system/controls";
+import { Button, Field, Select } from "@ai-matrx/design-system/controls";
+import { ErrorNotice } from "@ai-matrx/design-system";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -88,7 +89,7 @@ function BasesBody() {
   const [state, setState] = useState<{ bases: Array<{ homeId: string; name: string; icon: string | null; color: string | null; description: string | null; tables: number }> } | { error: string } | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const load = useCallback(async () => {
+  const readBases = useCallback(async (): Promise<NonNullable<typeof state>> => {
     try {
       const [tables, identities] = await Promise.all([homeTables(client, undefined, orgKey ? orgKey.split(",") : undefined), listBases()]);
       const byHome = new Map<string, HomeTable[]>();
@@ -100,12 +101,16 @@ function BasesBody() {
       });
       // A Base someone named comes first; the rest are Homes that hold tables and have not been named yet.
       bases.sort((a, b) => Number(named.has(b.homeId)) - Number(named.has(a.homeId)) || a.name.localeCompare(b.name));
-      setState({ bases });
+      return { bases };
     } catch (e) {
-      setState({ error: e instanceof Error ? e.message : "The bases could not be read." });
+      return { error: e instanceof Error ? e.message : "The bases could not be read." };
     }
   }, [client, orgKey]);
-  useEffect(() => void load(), [load]);
+  useEffect(() => {
+    let live = true;
+    void readBases().then((s) => { if (live) setState(s); });
+    return () => { live = false; };
+  }, [readBases]);
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4" data-bases-home="">
@@ -113,7 +118,7 @@ function BasesBody() {
         <h1 className="text-lg font-semibold">Bases</h1>
         <Button variant="primary" onClick={() => setCreating(true)}>New base</Button>
       </div>
-      {state === null ? <Words>Reading your bases…</Words> : "error" in state ? <Words>{state.error}</Words> : state.bases.length === 0 ? <Words>No tables yet. Make a base to begin.</Words> : (
+      {state === null ? <Words>Reading your bases…</Words> : "error" in state ? <ErrorNotice message={state.error} size="inline" /> : state.bases.length === 0 ? <Words>No tables yet. Make a base to begin.</Words> : (
         <ul className="grid gap-2 sm:grid-cols-2">
           {state.bases.map((b) => (
             <li key={b.homeId}>
@@ -182,7 +187,7 @@ export function NewBaseDialog({ open, onOpenChange, onMade }: { open: boolean; o
       <DialogContent className="max-w-[min(520px,96vw)] gap-3 p-4" data-new-base="">
         <DialogTitle>New base</DialogTitle>
         <Field autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Name of the base" aria-label="Name of the base" />
-        {problem ? <Words>{problem}</Words> : null}
+        {problem ? <ErrorNotice message={problem} size="inline" /> : null}
         <div className="flex flex-col gap-2">
           <Button variant="primary" disabled={busy || !name.trim()} onClick={() => void makeEmpty()} data-new-base-empty="">Start empty</Button>
           <div className="flex gap-2">
@@ -219,12 +224,14 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
   const [error, setError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<null | "edit" | "duplicate" | "move" | "snapshots" | "airtable" | "sheets" | "github">(null);
 
-  const load = useCallback(async () => {
+  const [reloads, setReloads] = useState(0);
+  const load = useCallback(() => setReloads((n) => n + 1), []);
+  const readAll = useCallback(async (apply: { tables: (t: HomeTable[]) => void; identity: (i: BaseIdentity | null) => void; extras: (e: Extras) => void; error: (m: string) => void }) => {
     try {
       const ts = (await homeTables(client, organizationId)).filter((t) => t.home_id === homeId);
-      setTables(ts);
+      apply.tables(ts);
       const org = ts[0]?.organization_id;
-      setIdentity(org ? await readBase(org, homeId) : null);
+      apply.identity(org ? await readBase(org, homeId) : null);
       const pages: Extras["pages"] = [];
       const automations: Extras["automations"] = [];
       for (const t of ts) {
@@ -232,14 +239,23 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
         if (d.ok) for (const x of d.data) pages.push({ id: x.dashboard_id, name: x.name, table: t.name, href: pageHref(x, t.id) });
         if (a.ok) for (const x of a.data.automations) automations.push({ id: x.id, name: x.name, enabled: x.enabled, table: t.name, href: `/data/${t.id}` });
       }
-      setExtras({ pages, automations });
+      apply.extras({ pages, automations });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "The base could not be read.");
+      apply.error(e instanceof Error ? e.message : "The base could not be read.");
     }
   }, [client, homeId, organizationId]);
-  useEffect(() => void load(), [load]);
+  useEffect(() => {
+    let live = true;
+    void readAll({
+      tables: (t) => { if (live) setTables(t); },
+      identity: (i) => { if (live) setIdentity(i); },
+      extras: (e) => { if (live) setExtras(e); },
+      error: (m) => { if (live) setError(m); },
+    });
+    return () => { live = false; };
+  }, [readAll, reloads]);
 
-  if (error) return <div className="p-4"><Words>{error}</Words></div>;
+  if (error) return <div className="p-4"><ErrorNotice message={error} size="inline" /></div>;
   if (tables === null) return <div className="p-4"><Words>Reading the base…</Words></div>;
   if (tables.length === 0) return <div className="p-4"><Words>This base has no tables you can open.</Words></div>;
   const name = identity?.name ?? tables[0]?.name ?? "Untitled base";
@@ -290,13 +306,13 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
         )}
       </section>
 
-      <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); await load(); }} />
+      <EditDialog open={dialog === "edit"} onClose={() => setDialog(null)} current={identity} fallbackName={name} onSave={async (v) => { await saveBase(org, homeId, v); setDialog(null); load(); }} />
       <DuplicateDialog open={dialog === "duplicate"} onClose={() => setDialog(null)} name={name} tables={tables} organizationId={org} identity={identity} />
       <MoveBaseDialog open={dialog === "move"} onClose={() => setDialog(null)} homeId={homeId} name={name} organizationId={org} tableCount={tables.length} />
       <SnapshotsDialog open={dialog === "snapshots"} onClose={() => setDialog(null)} homeId={homeId} organizationId={org} name={name} tables={tables} identity={identity} onNeedIdentity={async () => (await saveBase(org, homeId, { name })) } />
-      <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
-      <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
-      <GithubImportDialog open={dialog === "github"} onClose={() => { setDialog(null); void load(); }} organizationId={org} />
+      <AirtableImportDialog open={dialog === "airtable"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
+      <SheetsImportDialog open={dialog === "sheets"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
+      <GithubImportDialog open={dialog === "github"} onClose={() => { setDialog(null); load(); }} organizationId={org} />
     </div>
   );
 }
@@ -304,7 +320,13 @@ function BasePageBody({ homeId, organizationId }: { homeId: string; organization
 function EditDialog({ open, onClose, current, fallbackName, onSave }: { open: boolean; onClose: () => void; current: BaseIdentity | null; fallbackName: string; onSave: (v: { name: string; icon: string; color: string; description: string }) => Promise<void> }) {
   const [v, setV] = useState({ name: fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" });
   const [busy, setBusy] = useState(false);
-  useEffect(() => { if (open) setV({ name: current?.name ?? fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" }); }, [open, current, fallbackName]);
+  // Reset the form each time the dialog opens (or what it edits changes) — derived during render, not in an effect.
+  const sig = open ? JSON.stringify([current?.name, current?.icon, current?.color, current?.description, fallbackName]) : null;
+  const [seenSig, setSeenSig] = useState<string | null>(sig);
+  if (sig !== seenSig) {
+    setSeenSig(sig);
+    if (sig !== null) setV({ name: current?.name ?? fallbackName, icon: current?.icon ?? "", color: current?.color ?? COLORS[0]!, description: current?.description ?? "" });
+  }
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && !busy ? onClose() : undefined)}>
       <DialogContent className="max-w-[min(480px,96vw)] gap-3 p-4" data-base-edit="">
@@ -351,13 +373,18 @@ function MoveBaseDialog({ open, onClose, homeId, name, organizationId, tableCoun
         {phase.kind === "moving" ? <Words>Moving the base…</Words> : (
           <>
             <label className="flex items-center justify-between gap-2 text-sm"><span>Workspace</span>
-              <select className="h-7 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-sm" value={to} onChange={(e) => setTo(e.target.value)} aria-label="Workspace" data-base-move-to="">
-                <option value="">Choose a workspace</option>
-                {destinations.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
+              <span className="min-w-0 flex-1" data-base-move-to="">
+                <Select
+                  className="w-full"
+                  value={to}
+                  onValueChange={setTo}
+                  aria-label="Workspace"
+                  options={[{ value: "", label: "Choose a workspace" }, ...destinations.map((o) => ({ value: o.id, label: o.name }))]}
+                />
+              </span>
             </label>
             <Words>{`${tableCount} tables, with their records, pages and automations, move together.`}</Words>
-            {phase.kind === "refused" ? <p className="text-sm text-destructive" data-base-move-refused="">{phase.text}</p> : null}
+            {phase.kind === "refused" ? <div data-base-move-refused=""><ErrorNotice message={phase.text} size="inline" /></div> : null}
             <div className="flex justify-end gap-2"><Button variant="quiet" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!to} onClick={() => void go()} data-base-move-go="">Move base</Button></div>
           </>
         )}
@@ -421,7 +448,17 @@ function SnapshotsDialog({ open, onClose, homeId, organizationId, name, tables, 
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const load = useCallback(async (b: BaseIdentity | null) => { if (b) setRows(await listSnapshots(b.id)); }, []);
-  useEffect(() => { if (open) { setBase(identity); void load(identity); } }, [open, identity, load]);
+  const [seenOpen, setSeenOpen] = useState<{ open: boolean; identity: BaseIdentity | null } | null>(null);
+  if (!seenOpen || seenOpen.open !== open || seenOpen.identity !== identity) {
+    setSeenOpen({ open, identity });
+    if (open) setBase(identity);
+  }
+  useEffect(() => {
+    if (!open || !identity) return;
+    let live = true;
+    void listSnapshots(identity.id).then((r) => { if (live) setRows(r); });
+    return () => { live = false; };
+  }, [open, identity]);
 
   const take = async () => {
     setBusy("Taking the snapshot…"); setNote(null);
