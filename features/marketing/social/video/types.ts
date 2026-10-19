@@ -51,6 +51,8 @@ export interface VideoProjectAnswer {
   output_file_ids: string[];
   /** File id -> the composition version that render was made from (absent for older renders). */
   output_versions?: Record<string, number>;
+  /** File id -> the variant (id, and label as it was when rendered) that made it, recorded by the server. */
+  output_variants?: Record<string, { variant_id: string; label: string }>;
   render_run_ids: string[];
 }
 

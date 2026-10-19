@@ -1,7 +1,7 @@
 import { dragonLairComposition, editWordOps, type PatchOp } from "@ai-matrx/media/video";
 
 import { describeTheirs, historyFromRows, rebasePending } from "../conflict";
-import { summarizeEstimate, estimateLabel, confirmLine, outputRows, downloadName, variantDownloadName } from "../estimate";
+import { summarizeEstimate, estimateLabel, confirmLine, outputRows, downloadName, finishedDownloadName, variantDownloadName } from "../estimate";
 import { brandNameIn, hookPrefill } from "../hook-brand";
 import { joinOverlayLines } from "../text";
 import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
@@ -180,5 +180,29 @@ describe("finished videos say which version they are", () => {
   it("saves under the video's name", () => {
     expect(downloadName('Tuft: "Pillow" / v2')).toBe("Tuft Pillow v2.mp4");
     expect(downloadName("  ")).toBe("video.mp4");
+  });
+});
+
+describe("finished download names come from the server's record of which variant made each file", () => {
+  const answer = {
+    output_file_ids: ["file-aaaaaa", "file-bbbbbb", "file-cccccc"],
+    output_versions: { "file-aaaaaa": 2, "file-bbbbbb": 2, "file-cccccc": 2 },
+    output_variants: { "file-aaaaaa": { variant_id: "v1", label: "Shape 1:1" }, "file-bbbbbb": { variant_id: "v2", label: "Hook: Cozy up" } },
+    head_version: 2,
+  };
+  it("names a variant's file with its label and never lets two downloads share a name", () => {
+    const taken = new Set<string>();
+    const names = outputRows(answer).map((r) => [r.fileId, finishedDownloadName("Tea", r, taken)]);
+    const byFile = Object.fromEntries(names);
+    expect(byFile["file-aaaaaa"]).toBe("Tea Shape 1 1.mp4");
+    expect(byFile["file-bbbbbb"]).toBe("Tea Hook Cozy up.mp4".replace("Hook Cozy", "Hook  Cozy").replace("  ", " "));
+    expect(new Set(Object.values(byFile)).size).toBe(3);
+  });
+  it("a file with no recorded variant falls back to its version, uniquely", () => {
+    const taken = new Set<string>();
+    const rows = outputRows({ output_file_ids: ["aaaaaa11", "bbbbbb22"], output_versions: { aaaaaa11: 2, bbbbbb22: 2 }, head_version: 2 });
+    const [a, b] = rows.map((r) => finishedDownloadName("Tea", r, taken));
+    expect(a).not.toBe(b);
+    expect(rows[0].variantLabel).toBeNull();
   });
 });

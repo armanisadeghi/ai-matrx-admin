@@ -36,8 +36,7 @@ import {
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
-import { finishedDownloadName, readVariantFiles, rememberVariantFile } from "../../video/variant-files";
-import { confirmLine, downloadName, estimateLabel, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, downloadName, estimateLabel, finishedDownloadName, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
@@ -83,7 +82,6 @@ function batchHandler(
   setSteps: (fn: (prev: RunStep[]) => RunStep[]) => void,
   setOutcome: (fn: (prev: Record<string, ItemOutcome>) => Record<string, ItemOutcome>) => void,
   labelOf: (id: string) => string,
-  rememberFile: (fileId: string, label: string) => void,
   flags: { confirm: boolean; error: string | null; failed: number },
 ) {
   return (e: LineEvent) => {
@@ -118,7 +116,6 @@ function batchHandler(
       case "render.done": {
         const out = (e.output ?? {}) as { file_id?: string };
         setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null } }));
-        if (out.file_id && vid && vid !== HEAD_ITEM) rememberFile(out.file_id, labelOf(vid));
         setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
         break;
       }
@@ -367,7 +364,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
         projectId,
         kind === "render" ? { head: true, variant_ids: [], renderer, confirmed } : { variant_ids: ids, renderer, confirmed },
         { organizationId },
-        batchHandler(setSteps, setOutcome, labelOf, (f, l) => rememberVariantFile(projectId, f, l), flags),
+        batchHandler(setSteps, setOutcome, labelOf, flags),
       );
       if (flags.confirm) {
         setConfirm({ kind, ids });
@@ -811,7 +808,6 @@ function VariantCard({ v, doc, head, outcome, projectName, blocked }: { v: Varia
 // ── every finished output ───────────────────────────────────────────────────────────────────────────
 
 function Outputs({ answer, busy, onRenderAgain, onCards }: { answer: VideoProjectAnswer; busy: boolean; onRenderAgain: () => void; onCards: Set<string> }) {
-  const [labels] = useState(() => readVariantFiles(answer.project_id));
   if (!answer.output_file_ids.length) return null;
   // A variant's video has its own card with its own Download; the list holds the rest, so no card has two.
   const rows = outputRows(answer).filter((r) => !onCards.has(r.fileId));
@@ -822,7 +818,7 @@ function Outputs({ answer, busy, onRenderAgain, onCards }: { answer: VideoProjec
       <span className="type-label text-foreground">{`Finished videos (${rows.length})`}</span>
       {rows.map((r, i) => (
         <div key={r.fileId} className="flex min-w-0 flex-col gap-1">
-          <OutputDownload fileId={r.fileId} label={labels[r.fileId] ? `${labels[r.fileId]} (${r.label})` : r.label} fileName={finishedDownloadName(answer.name, r, labels, taken)} />
+          <OutputDownload fileId={r.fileId} label={r.variantLabel ? `${r.variantLabel} (${r.label})` : r.label} fileName={finishedDownloadName(answer.name, r, taken)} />
           {r.stale && i === 0 ? (
             <div className="flex items-center gap-2">
               <span className="type-meta text-warning">{`The video is now v${answer.head_version}; this file does not have your latest changes`}</span>

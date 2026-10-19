@@ -45,6 +45,8 @@ export interface OutputRow {
   version: number | null;
   /** True when the head has moved on since: the file is not what the preview shows. */
   stale: boolean;
+  /** The variant that made this file (its label as it was when it rendered), recorded by the server; null for the project's own video. */
+  variantLabel: string | null;
 }
 
 /**
@@ -52,11 +54,12 @@ export interface OutputRow {
  * The server lists renders in the order they were attached (oldest first), so the newest is found by the version it was
  * made from, and by position when a render has no version (a later one is newer).
  */
-export function outputRows(answer: { output_file_ids: string[]; output_versions?: Record<string, number>; head_version: number }): OutputRow[] {
+export function outputRows(answer: { output_file_ids: string[]; output_versions?: Record<string, number>; output_variants?: Record<string, { variant_id: string; label: string }>; head_version: number }): OutputRow[] {
   return answer.output_file_ids
     .map((fileId, index) => {
       const version = answer.output_versions?.[fileId] ?? null;
-      return { fileId, index, version, stale: version !== null && version < answer.head_version, label: version !== null ? `Made from v${version}` : `Render ${index + 1}` };
+      const variantLabel = answer.output_variants?.[fileId]?.label ?? null;
+      return { fileId, index, version, variantLabel, stale: version !== null && version < answer.head_version, label: version !== null ? `Made from v${version}` : `Render ${index + 1}` };
     })
     .sort((a, b) => (b.version ?? -1) - (a.version ?? -1) || b.index - a.index)
     .map(({ index: _index, ...row }) => row);
@@ -71,4 +74,16 @@ export function variantDownloadName(projectName: string, variantLabel: string): 
 export function downloadName(name: string): string {
   const safe = name.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
   return `${safe || "video"}.mp4`;
+}
+
+/**
+ * The download name of one row of the Finished list: the variant's label when the server recorded one, else the version,
+ * always made unique among `taken` by the file's own id so two downloads never share a name.
+ */
+export function finishedDownloadName(projectName: string, row: Pick<OutputRow, "fileId" | "version" | "variantLabel">, taken: Set<string>): string {
+  const base = row.variantLabel ? `${projectName} ${row.variantLabel}` : `${projectName}${row.version !== null ? ` v${row.version}` : ""}`;
+  let name = downloadName(base);
+  if (taken.has(name)) name = downloadName(`${base} ${row.fileId.slice(0, 6)}`);
+  taken.add(name);
+  return name;
 }
