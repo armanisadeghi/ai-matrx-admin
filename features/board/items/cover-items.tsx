@@ -16,7 +16,7 @@
 
 import { useContext, useEffect, useState } from "react";
 import { LayoutTemplate, Pencil } from "lucide-react";
-import { HtmlSampleFrame } from "@ai-matrx/records-ui/html-frame";
+import { HtmlSampleFrame, TokenScope } from "@ai-matrx/records-ui/html-frame";
 import { Button, Textarea } from "@ai-matrx/design-system/controls";
 import { ProTextarea } from "@/components/official/ProTextarea";
 import type { NodeSource } from "../board/document";
@@ -106,8 +106,11 @@ function CoverBody({ tileId, source, onSource, title, interacting, tier }: ItemB
 
   const hero = drawn.hero.trim() ? <HtmlSampleFrame html={drawn.hero} title={`${title} cover`} initialHeight={160} /> : null;
   const prose = drawn.markdown.trim() ? (
-    // The board's one prose renderer (the write-up's): laid out at its content's height, never an inner scroll.
-    <MarkdownTileBody id={`${tileId}-prose`} text={drawn.markdown} tier={tier} fit />
+    // The board's one prose renderer (the write-up's), at its content's height, in the BOARD's own colors and
+    // body font (TokenScope reads the board's token tables), like the hero above it.
+    <TokenScope>
+      <MarkdownTileBody id={`${tileId}-prose`} text={drawn.markdown} tier={tier} fit />
+    </TokenScope>
   ) : null;
 
   if (!editing) {
