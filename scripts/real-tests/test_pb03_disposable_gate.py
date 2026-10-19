@@ -5,6 +5,7 @@ Run: python3 -m pytest scripts/real-tests/test_pb03_disposable_gate.py
 Break named: gate waved through (check_disposable returning []) -- every refusal test below fails.
 """
 import copy
+import subprocess
 import importlib.util
 import sys
 from pathlib import Path
@@ -73,4 +74,61 @@ def test_wrong_organization_and_archived_are_refused():
 def test_pb03_send_requires_agent_and_runs_the_gate_before_any_send():
     src = (HERE / "pb03-send.py").read_text()
     assert "REFUSED: no --agent" in src
-    assert src.index("diffs = gate(reader,") < src.index("send(token, path, body)")
+    assert src.index("diffs, accepted = gate_counted(reader,") < src.index("send(token, path, body)")
+
+
+# ---- grader plant record (PB-03 blind fault proof): accepts exactly the planted difference, silently
+import pytest  # noqa: E402
+
+
+@pytest.fixture
+def grader(tmp_path, monkeypatch):
+    monkeypatch.setattr(fc, "GRADER_DIR", tmp_path)
+    return tmp_path
+
+
+def planted(**over):
+    s = copy.deepcopy(g.SEALED_SETTINGS); s["tool_choice"] = "none"; s.update(over)
+    return disp(settings=s)
+
+
+def test_plant_record_matching_diff_passes_silently(grader):
+    g.write_plant_record("disp", "tool_choice", "none")
+    out, n = g.check_disposable_counted(Fake(planted()), "A", "disp")
+    assert out == [] and n == 1
+    assert g.gate(Fake(planted()), {"A": "disp"}) == []
+
+
+def test_plant_record_other_value_is_refused(grader):
+    g.write_plant_record("disp", "tool_choice", "none")
+    out = run(planted(tool_choice="required"))
+    assert any("settings.tool_choice" in x for x in out)
+
+
+def test_plant_record_other_key_is_refused(grader):
+    g.write_plant_record("disp", "tool_choice", "none")
+    out = run(planted(seed=1))
+    assert any("settings.seed" in x for x in out) and not any("settings.tool_choice" in x for x in out)
+
+
+def test_plant_record_for_another_agent_or_expired_is_refused(grader):
+    from datetime import datetime, timedelta, timezone
+    g.write_plant_record("someone-else", "tool_choice", "none")
+    assert run(planted())
+    g.write_plant_record("disp", "tool_choice", "none")
+    later = datetime.now(timezone.utc) + timedelta(hours=3)
+    assert g.check_disposable(Fake(planted()), "A", "disp", now=later)
+
+
+def test_no_record_is_refused(grader):
+    assert any("settings.tool_choice" in x for x in run(planted()))
+
+
+def test_record_never_accepts_non_settings_difference(grader):
+    g.write_plant_record("disp", "tool_choice", "none")
+    assert run(planted(model_id="m2"))
+
+
+def test_send_output_does_not_name_planted_key():
+    src = (HERE / "pb03-send.py").read_text()
+    assert "difference(s) accepted" in src and "tool_choice" not in src.split("disposable gate: PASS")[1][:200]

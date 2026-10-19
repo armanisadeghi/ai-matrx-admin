@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 2,
+  "version": 3,
   "title": "Small Manufacturer Production Desk",
-  "description": "Customer orders, products, parts, production runs and quality checks for a small factory.",
+  "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
   "icon": {
     "emoji": "🏭"
@@ -14,11 +14,12 @@
   },
   "category": "manufacturing",
   "tags": [
+    "plant manager",
+    "production supervisor",
+    "quality inspector",
     "manufacturing",
-    "orders",
     "bill of materials",
-    "production",
-    "quality"
+    "scrap rate"
   ],
   "spec": {
     "specVersion": 1,
@@ -632,6 +633,45 @@
             "contextPolicy": "include"
           },
           {
+            "key": "station",
+            "label": "Work center",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mill room",
+              "Joinery bench",
+              "Assembly",
+              "Finishing booth",
+              "Packing"
+            ],
+            "choiceColors": {
+              "Mill room": "slate",
+              "Joinery bench": "blue",
+              "Assembly": "amber",
+              "Finishing booth": "violet",
+              "Packing": "green"
+            }
+          },
+          {
+            "key": "hold",
+            "label": "Quality hold",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "No hold",
+              "On hold",
+              "Released"
+            ],
+            "choiceColors": {
+              "No hold": "slate",
+              "On hold": "red",
+              "Released": "green"
+            },
+            "description": "On hold stops the run until the inspector releases it."
+          },
+          {
             "key": "run_on",
             "label": "Run starts",
             "parityType": "datetime",
@@ -699,6 +739,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "labor_hours",
+            "label": "Labor hours logged",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
             "key": "supervisor",
             "label": "Supervisor",
             "parityType": "relation",
@@ -726,6 +783,22 @@
             "contextPolicy": "include",
             "filter": {
               "result": "Fail"
+            }
+          },
+          {
+            "key": "checks_flagged",
+            "label": "Checks needing rework or failed",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "checks",
+            "pick": "check_name",
+            "agg": "count",
+            "filter": {
+              "result": [
+                "Rework",
+                "Fail"
+              ]
             }
           },
           {
@@ -866,7 +939,10 @@
               "good_qty": 0,
               "scrap_qty": 0,
               "supervisor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "station": "Assembly",
+              "hold": "Released",
+              "labor_hours": 96
             }
           },
           {
@@ -879,7 +955,10 @@
               "planned_qty": 12,
               "good_qty": 8,
               "scrap_qty": 1,
-              "supervisor": "tm-2"
+              "supervisor": "tm-2",
+              "station": "Finishing booth",
+              "hold": "On hold",
+              "labor_hours": 70
             }
           },
           {
@@ -893,7 +972,10 @@
               "good_qty": 0,
               "scrap_qty": 0,
               "supervisor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "station": "Mill room",
+              "hold": "No hold",
+              "labor_hours": 0
             }
           },
           {
@@ -906,7 +988,10 @@
               "planned_qty": 10,
               "good_qty": 0,
               "scrap_qty": 0,
-              "supervisor": "tm-2"
+              "supervisor": "tm-2",
+              "station": "Joinery bench",
+              "hold": "No hold",
+              "labor_hours": 0
             }
           },
           {
@@ -920,7 +1005,10 @@
               "good_qty": 0,
               "scrap_qty": 0,
               "supervisor": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "station": "Mill room",
+              "hold": "No hold",
+              "labor_hours": 0
             }
           },
           {
@@ -934,7 +1022,10 @@
               "good_qty": 8,
               "scrap_qty": 0,
               "supervisor": "tm-2",
-              "finished_on": "@today-30d"
+              "finished_on": "@today-30d",
+              "station": "Packing",
+              "hold": "No hold",
+              "labor_hours": 58
             }
           },
           {
@@ -949,7 +1040,10 @@
               "scrap_qty": 1,
               "supervisor": "tm-2",
               "finished_on": "@today-55d",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "station": "Packing",
+              "hold": "No hold",
+              "labor_hours": 26
             }
           },
           {
@@ -962,7 +1056,10 @@
               "planned_qty": 3,
               "good_qty": 0,
               "scrap_qty": 3,
-              "supervisor": "tm-2"
+              "supervisor": "tm-2",
+              "station": "Mill room",
+              "hold": "On hold",
+              "labor_hours": 9
             }
           }
         ]
@@ -1070,6 +1167,26 @@
             "contextPolicy": "include"
           },
           {
+            "key": "labor_rate",
+            "label": "Shop rate per hour (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "description": "Wages, benefits and shop overhead per build hour."
+          },
+          {
             "key": "parts_count",
             "label": "Parts in the recipe",
             "parityType": "rollup",
@@ -1078,6 +1195,32 @@
             "agg": "count",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "material_cost",
+            "label": "Material cost per unit (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bom_lines",
+            "pick": "line_cost",
+            "agg": "sum"
+          },
+          {
+            "key": "unit_cost",
+            "label": "Cost per unit (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Material cost per unit (USD)} + {Build hours} * {Shop rate per hour (USD)}, 2)"
+          },
+          {
+            "key": "margin",
+            "label": "Gross margin (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Wholesale price (USD)} > 0, ROUND(({Wholesale price (USD)} - {Cost per unit (USD)}) / {Wholesale price (USD)} * 100, 0), 0)"
           },
           {
             "key": "orders_open",
@@ -1230,7 +1373,8 @@
               "family": "Tables",
               "price": 1450,
               "build_hours": 22,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "labor_rate": 38
             }
           },
           {
@@ -1240,7 +1384,8 @@
               "status": "Active",
               "family": "Shelving",
               "price": 620,
-              "build_hours": 9
+              "build_hours": 9,
+              "labor_rate": 38
             }
           },
           {
@@ -1251,7 +1396,8 @@
               "family": "Chairs",
               "price": 290,
               "build_hours": 6,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "labor_rate": 38
             }
           },
           {
@@ -1261,7 +1407,8 @@
               "status": "Active",
               "family": "Tables",
               "price": 410,
-              "build_hours": 7
+              "build_hours": 7,
+              "labor_rate": 38
             }
           },
           {
@@ -1272,7 +1419,8 @@
               "family": "Shelving",
               "price": 180,
               "build_hours": 3,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "labor_rate": 38
             }
           },
           {
@@ -1282,7 +1430,8 @@
               "status": "In development",
               "family": "Accessories",
               "price": 45,
-              "build_hours": 1
+              "build_hours": 1,
+              "labor_rate": 38
             }
           },
           {
@@ -1293,7 +1442,8 @@
               "family": "Tables",
               "price": 520,
               "build_hours": 8,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "labor_rate": 38
             }
           }
         ]
@@ -1780,6 +1930,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "part_cost",
+            "label": "Part unit cost (USD)",
+            "parityType": "lookup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "part",
+            "pick": "unit_cost"
+          },
+          {
+            "key": "line_cost",
+            "label": "Line cost (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Quantity per unit} * {Part unit cost (USD)}, 2)"
+          },
+          {
             "key": "added_at",
             "label": "Added",
             "parityType": "created_time",
@@ -1920,6 +2087,36 @@
               "qty": 6,
               "unit": "Each"
             }
+          },
+          {
+            "key": "bom_lines-11",
+            "values": {
+              "line_name": "Bench, hardwax oil",
+              "product": "product-4",
+              "part": "part-4",
+              "qty": 0.3,
+              "unit": "Liters"
+            }
+          },
+          {
+            "key": "bom_lines-12",
+            "values": {
+              "line_name": "Wall shelf set, walnut",
+              "product": "product-5",
+              "part": "part-2",
+              "qty": 6,
+              "unit": "Board feet"
+            }
+          },
+          {
+            "key": "bom_lines-13",
+            "values": {
+              "line_name": "Harvest table, corner guards",
+              "product": "product-1",
+              "part": "part-7",
+              "qty": 8,
+              "unit": "Each"
+            }
           }
         ]
       },
@@ -1996,6 +2193,25 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "disposition",
+            "label": "Disposition",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Use as is",
+              "Rework",
+              "Scrap",
+              "Return to supplier"
+            ],
+            "choiceColors": {
+              "Use as is": "green",
+              "Rework": "amber",
+              "Scrap": "red",
+              "Return to supplier": "violet"
+            }
           },
           {
             "key": "checked_on",
@@ -2122,7 +2338,8 @@
               "result": "Rework",
               "checked_on": "@today-2d",
               "inspector": "tm-3",
-              "finding": "Two leg joints show a gap; reglue and clamp."
+              "finding": "Two leg joints show a gap; reglue and clamp.",
+              "disposition": "Rework"
             }
           },
           {
@@ -2160,7 +2377,8 @@
               "checked_on": "@today",
               "inspector": "tm-3",
               "finding": "One shelf warped; scrap and remake.",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "disposition": "Scrap"
             }
           },
           {
@@ -2185,7 +2403,8 @@
               "checked_on": "@today-56d",
               "inspector": "tm-3",
               "finding": "One chair scrapped for a hairline crack.",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "disposition": "Scrap"
             }
           },
           {
@@ -2197,7 +2416,8 @@
               "result": "Fail",
               "checked_on": "@today-9d",
               "inspector": "tm-3",
-              "finding": "Material moved after cutting; trial stopped."
+              "finding": "Material moved after cutting; trial stopped.",
+              "disposition": "Scrap"
             }
           }
         ]
@@ -2940,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2962,12 +3182,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The shop floor and the order book in one place: customer orders, the recipe behind each product, parts stock, production runs and quality checks. Start with the Dashboard each morning. Order whatever shows Short by, and record scrap and checks on every run before it is closed."
+              "text": "The shop in one place. Customer orders become production runs (your work orders); each product's recipe lines give its material cost and cost per unit; Parts and materials shows what to reorder; Quality checks record every inspection, and a failed check puts the run on hold. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -3558,6 +3784,266 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "small-manufacturer-production-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the shop in this workspace. Share it with the operations manager, the production supervisor, the quality inspector and whoever does purchasing."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customer orders",
+              "bold": true
+            },
+            {
+              "text": ": every quote and order with product, quantity, due date, total, runs, good units made and units still to make."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Production runs",
+              "bold": true
+            },
+            {
+              "text": ": the work orders. Each batch's work center, quality hold, units planned, good and scrapped, scrap rate, labor hours and checks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Products",
+              "bold": true
+            },
+            {
+              "text": ": price, build hours, shop rate, material cost per unit, cost per unit and gross margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recipe lines",
+              "bold": true
+            },
+            {
+              "text": ": the bill of materials. Each part and quantity in one unit of a product, with its cost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Parts and materials",
+              "bold": true
+            },
+            {
+              "text": ": on hand, reorder point, lead time, supplier and unit cost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Quality checks",
+              "bold": true
+            },
+            {
+              "text": ": every inspection with its result, finding and disposition."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: the production meeting; runs planned for the week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every day: runs updated, checks recorded, labor hours logged."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: parts at reorder point ordered."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: count the top five parts; review scrap and holds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: runs on hold, runs starting today, orders due this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: reorder list, scrap by work center"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: unit costs updated, margins reviewed, full count"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: supplier review and price changes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The operations manager owns orders, pricing and purchasing. The production supervisor owns runs and labor. The quality inspector owns checks and holds. Everyone stops a run that looks wrong."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Guards stay on, push sticks are used, dust collection runs, and hearing and eye protection are worn on every machine. Any near miss is written up the same day, without blame, so the next person is safe."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename work centers, part kinds and product families to your shop, set your own shop rate per hour, and delete the sample rows once your own are in. Edit any cell in place; costs and margins update on their own."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "small-manufacturer-production-desk",
       "title": "Dashboard",
@@ -3961,6 +4447,98 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cost and margin by product"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "all_product"
+            },
+            "inline": true,
+            "title": "Cost and margin",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dm-1",
+                "name": "Products by margin",
+                "layout": "grid",
+                "icon": "Table",
+                "filters": {
+                  "status": "Active"
+                },
+                "sorts": [
+                  {
+                    "field": "margin",
+                    "direction": "asc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "dm-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality holds"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "runs",
+              "view": "all_runs"
+            },
+            "inline": true,
+            "title": "Runs on hold",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dm-2",
+                "name": "On hold",
+                "layout": "list",
+                "icon": "OctagonAlert",
+                "filters": {
+                  "hold": "On hold"
+                }
+              },
+              {
+                "id": "dm-3",
+                "name": "Scrapped units by work center",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "station",
+                  "op": "sum",
+                  "field": "scrap_qty"
+                }
+              }
+            ],
+            "activeViewId": "dm-2"
+          }
         }
       ]
     },
@@ -3979,7 +4557,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every order follows the same path. Each handoff has one owner and one thing that must be true before it passes on."
+              "text": "Every order follows the same path from quote to truck. When each step is recorded, the operations manager can promise dates customers believe and the floor knows exactly what to build next."
             }
           ],
           "background": "blue",
@@ -3991,122 +4569,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The path"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Stage"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Owner"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Must be true to move on"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Quoted"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Sales"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Customer has price, date and finish in writing"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Confirmed"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Operations"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Deposit received and parts checked against the recipe"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "In production"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Supervisor"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "At least one run planned for every unit"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Shipped"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Shipping"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Final inspection passed and carrier booked"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Each Friday"
+              "text": "1. Quote"
             }
           ],
           "props": {
@@ -4117,7 +4580,318 @@
           "type": "text",
           "text": [
             {
-              "text": "Walk the Orders due in the next 7 days list with the supervisor and decide what to overtime, move or tell the customer about."
+              "text": "A retailer or studio asks for a price. Add the order as "
+            },
+            {
+              "text": "Quoted",
+              "bold": true
+            },
+            {
+              "text": " with the product, quantity, customer and the date they need it. Price from the product's "
+            },
+            {
+              "text": "Cost per unit",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Gross margin",
+              "bold": true
+            },
+            {
+              "text": ", not from memory: if the margin on a custom size falls below your floor (many small shops aim for 40 percent or more on wholesale), quote higher or decline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "2. Confirm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the customer accepts in writing and pays any deposit, set it to "
+            },
+            {
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": ". Check "
+            },
+            {
+              "text": "Parts and materials",
+              "bold": true
+            },
+            {
+              "text": " against the recipe: the product's recipe lines times the quantity. Anything "
+            },
+            {
+              "text": "Low",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Out",
+              "bold": true
+            },
+            {
+              "text": " is ordered now, with the supplier's lead time in mind."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "3. Plan the work orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each "
+            },
+            {
+              "text": "production run",
+              "bold": true
+            },
+            {
+              "text": " is a work order: one batch at one work center, with units planned and a supervisor. Big orders split into batches (chairs in two runs of 20). Put the run start date where materials and people are both free; the "
+            },
+            {
+              "text": "Production runs",
+              "bold": true
+            },
+            {
+              "text": " count on the order shows how many are planned."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "4. Build"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The supervisor sets the run to "
+            },
+            {
+              "text": "Running",
+              "bold": true
+            },
+            {
+              "text": " and moves it between "
+            },
+            {
+              "text": "Work centers",
+              "bold": true
+            },
+            {
+              "text": ": mill room, joinery, assembly, finishing, packing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Log "
+            },
+            {
+              "text": "Labor hours",
+              "bold": true
+            },
+            {
+              "text": " at the end of each day. Comparing them with the product's "
+            },
+            {
+              "text": "Build hours",
+              "bold": true
+            },
+            {
+              "text": " shows whether your costing is right."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Quality checks happen at first article, during the run and at final inspection."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "5. Finish and count"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At the end, enter "
+            },
+            {
+              "text": "Good units",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Scrapped units",
+              "bold": true
+            },
+            {
+              "text": ", then press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ". The order's "
+            },
+            {
+              "text": "Units still to make",
+              "bold": true
+            },
+            {
+              "text": " drops; if it is above zero, another run is needed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "6. Ship"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pack with corner guards and a packing check. Press the button to mark the order "
+            },
+            {
+              "text": "Shipped",
+              "bold": true
+            },
+            {
+              "text": "; the date is stamped. Send the invoice the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly production meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Orders due in the next 14 days: on track?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Runs on quality hold: what is the fix and when?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Parts below their reorder point"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Labor hours against build hours on last week's runs"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Larkspur Cafe confirms 40 chairs due in three weeks. The supervisor plans two runs of 20, the first in four days. The recipe needs 560 board feet of walnut; 420 are on hand, so 200 more are ordered from the lumber yard with a nine-day lead time. The first run finishes with 19 good chairs and one scrapped for a crack; the second run is planned for 20, and the order ships on time."
             }
           ]
         }
@@ -4138,7 +4912,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Quality is built in at each step, not added at the end. Three checks per run catch most problems early."
+              "text": "Quality is cheapest at the start of a run. One careful first-article check saves a whole batch of rework. Every check is written down, and a failed check stops the run until it is understood."
             }
           ],
           "background": "blue",
@@ -4150,7 +4924,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Checks"
+              "text": "The checks"
             }
           ],
           "props": {
@@ -4161,7 +4935,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "First article: measure the first piece before the batch continues."
+              "text": "First article",
+              "bold": true
+            },
+            {
+              "text": ": the first unit off each run is measured against the drawing: length, width, height, squareness, joint fit. Nothing else is built until it passes."
             }
           ]
         },
@@ -4169,7 +4947,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "In process: check joints and dimensions halfway through."
+              "text": "In process",
+              "bold": true
+            },
+            {
+              "text": ": at least once per run, the inspector picks a unit at random from the bench."
             }
           ]
         },
@@ -4177,7 +4959,75 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Final inspection: look at every unit before packing."
+              "text": "Finish check",
+              "bold": true
+            },
+            {
+              "text": ": even coat, no runs, drips, dust or bare spots, color matches the sample."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Final inspection",
+              "bold": true
+            },
+            {
+              "text": ": every unit, before packing. Wobble test on a flat surface for tables and chairs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Packing check",
+              "bold": true
+            },
+            {
+              "text": ": corners guarded, hardware bagged and labeled, instructions in the box."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recording a check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add a row in "
+            },
+            {
+              "text": "Quality checks",
+              "bold": true
+            },
+            {
+              "text": ", linked to the run, with the kind, the "
+            },
+            {
+              "text": "Result",
+              "bold": true
+            },
+            {
+              "text": " (Pass, Rework, Fail) and "
+            },
+            {
+              "text": "What was found",
+              "bold": true
+            },
+            {
+              "text": " in plain words a new hire would understand."
             }
           ]
         },
@@ -4193,26 +5043,170 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Stop the run and write what was found on the check row."
+              "text": "Set the run's "
+            },
+            {
+              "text": "Quality hold",
+              "bold": true
+            },
+            {
+              "text": " to "
+            },
+            {
+              "text": "On hold",
+              "bold": true
+            },
+            {
+              "text": ". The run stops."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Rework only with the supervisor's approval; record rework as such."
+              "text": "Decide the "
+            },
+            {
+              "text": "Disposition",
+              "bold": true
+            },
+            {
+              "text": " for the affected units: use as is (only if the customer would never notice and it is within tolerance), rework, scrap, or return to the supplier for bad material."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "If the cause is material or tooling, add a note to the part or product."
+              "text": "Find the cause, not the culprit: blade, jig, material moisture, finish temperature, or a step that is not written down."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the fix is proven on a new unit, the inspector sets the hold to "
+            },
+            {
+              "text": "Released",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Scrap rate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each run shows "
+            },
+            {
+              "text": "Scrap (%)",
+              "bold": true
+            },
+            {
+              "text": ": scrapped units over all units finished. Most small woodshops aim to keep it under about 3 percent. The Dashboard shows scrapped units by work center, which points at where to look first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplier problems"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Material that moves after cutting, cracks or arrives wet is recorded and the supplier is told the same week, with photos. Two bad deliveries in a quarter is a conversation about changing supplier."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every run on hold has a cause and a fix date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Scrap by work center against last month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Repeated findings turned into a written step or a jig"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The bookshelf final inspection fails: one shelf has warped. The inspector puts the run on hold, scraps the shelf, and checks the lumber moisture: the last delivery reads 12 percent instead of 8. The supervisor stacks the remaining boards to acclimate for a week, the supplier is told, and the run is released when a remade shelf passes."
             }
           ]
         }
@@ -4233,7 +5227,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Running out of a part stops the whole line. A weekly stock walk keeps the reorder list honest."
+              "text": "Running out of a five-dollar part can stop a five-thousand-dollar order. Reorder points, lead times and a weekly count keep the shop supplied without filling it with stock."
             }
           ],
           "background": "blue",
@@ -4245,62 +5239,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly walk"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Count on-hand for parts marked Low"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Update the On hand figure on each row"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check lead times against orders due in the next three weeks"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Send the purchase orders"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Setting the reorder level"
+              "text": "Reorder points"
             }
           ],
           "props": {
@@ -4311,7 +5250,253 @@
           "type": "text",
           "text": [
             {
-              "text": "Reorder level = average weekly use times lead time in weeks, plus a safety margin you can explain. Review it each quarter."
+              "text": "Each part has "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Reorder at",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Lead time (days)",
+              "bold": true
+            },
+            {
+              "text": ". A simple rule for the reorder point: what you use in a typical week, times the lead time in weeks, plus a week of safety. When on hand falls to the reorder point, order. "
+            },
+            {
+              "text": "Short by",
+              "bold": true
+            },
+            {
+              "text": " shows how far below it you are."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the recipes tell you"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every product's recipe lines say how much of each part one unit uses. Before confirming an order, multiply by the quantity and compare with what is on hand. The part's "
+            },
+            {
+              "text": "Used in products",
+              "bold": true
+            },
+            {
+              "text": " count shows how many products depend on it; parts used everywhere (white oak, finish, glue) deserve a larger safety stock."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ordering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the part to "
+            },
+            {
+              "text": "Low",
+              "bold": true
+            },
+            {
+              "text": " when it reaches the reorder point, and write the "
+            },
+            {
+              "text": "Reorder by",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Place the order with the supplier; note the expected delivery."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When it arrives, count it, check quality (moisture for lumber, dates for finishes), and update "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": ". Set it back to "
+            },
+            {
+              "text": "Stocked",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Count the five most-used parts every Friday and everything else monthly. Fix the number on the part when the count differs, and ask why: scrap not recorded, or parts used for repairs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cost"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep "
+            },
+            {
+              "text": "Unit cost",
+              "bold": true
+            },
+            {
+              "text": " current when a supplier changes prices. Every product's "
+            },
+            {
+              "text": "Material cost per unit",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Cost per unit",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Gross margin",
+              "bold": true
+            },
+            {
+              "text": " update the same moment, so you see which products need a price change before you quote the next order."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Parts at or below reorder point ordered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deliveries due this week confirmed with suppliers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Unit costs updated from the latest invoices"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "White oak is at 180 board feet against a reorder point of 300, with a nine-day lead time and two oak orders confirmed. The operations manager orders 600 board feet on Monday. The lumber yard's price rose a dollar a board foot, so the unit cost is updated, and the harvest table's margin drops three points; the next quote is priced up to match."
             }
           ]
         }

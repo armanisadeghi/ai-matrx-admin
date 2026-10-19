@@ -51,7 +51,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_identity import record_run_identity  # noqa: E402
 from fixture_check import Reader, add_accept_drift_arg, require_fixtures  # noqa: E402
-from pb03_gate import gate  # noqa: E402
+from pb03_gate import gate_counted  # noqa: E402
 
 SERVER = "https://server.app.matrxserver.com"
 ORG = "226be635-194d-42dd-87c8-7a9562f70939"  # Safety Net Real Tests (the real tests' own organization)
@@ -230,12 +230,13 @@ def main() -> None:
     # --accept-drift does not reach it.
     if args.accept_drift:
         print("disposable gate: --accept-drift covers the fixture check only; it does NOT bypass this gate")
-    diffs = gate(reader, {c: COPIES[c] for c in copies})
+    diffs, accepted = gate_counted(reader, {c: COPIES[c] for c in copies})
     for d in diffs:
         print(f"disposable gate: DIFF {d}")
     if diffs:
         sys.exit(f"disposable gate: REFUSED to send, {len(diffs)} difference(s)")
-    print(f"disposable gate: PASS for {', '.join(f'{c}={COPIES[c]}' for c in copies)}")
+    print(f"disposable gate: PASS for {', '.join(f'{c}={COPIES[c]}' for c in copies)}"
+          + (f" ({accepted} difference(s) accepted)" if accepted else ""))
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix="pb03-"))
     out.mkdir(parents=True, exist_ok=True)
     record_run_identity("pb03-send --dry-run" if args.dry_run else "pb03-send", SERVER,
