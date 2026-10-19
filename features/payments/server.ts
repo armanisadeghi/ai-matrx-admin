@@ -269,45 +269,31 @@ function intentOfSession(session: Stripe.Checkout.Session): string | null {
   return typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id ?? null;
 }
 
-/** True when the public form asks this field as a question (payer-typed). */
-async function formAsks(formId: string, fieldKey: string): Promise<boolean> {
-  const { data, error } = await createAdminClient().schema("custom").from("anon_form")
-    .select("exposed_field_keys").eq("id", formId).maybeSingle();
-  if (error) throw new Error(`Reading the form failed: ${error.message}`);
-  const keys = (data as { exposed_field_keys: unknown } | null)?.exposed_field_keys;
-  return Array.isArray(keys) && keys.includes(fieldKey);
-}
+const jsonKey = (fieldKey: string) => JSON.stringify([fieldKey]); // jsonb containment wants JSON text, not a Postgres array
 
 /**
- * True when an open (not archived) portal lets its client set this field on this table (PAYMENTS-FINAL:
- * the payer would set her own price): the portal opens the field for editing, or a form the portal
- * carries (config.forms, written by custom.portal_form_submit) asks it. Mirrors billing.payment_ask_set.
+ * True when a live form writing into this table (public, booking or carried by a portal) asks this field:
+ * people filling it in would type the price (REVIEW-PAYMENTS M3, PAYMENTS-FINAL). Mirrors billing.payment_ask_set.
  */
-async function portalLetsPayerSet(organizationId: string, tableId: string, fieldKey: string): Promise<boolean> {
+async function aFormAsks(organizationId: string, tableId: string, fieldKey: string): Promise<boolean> {
+  const { data, error } = await createAdminClient().schema("custom").from("anon_form").select("id")
+    .eq("organization_id", organizationId).eq("table_id", tableId).is("deleted_at", null)
+    .contains("exposed_field_keys", jsonKey(fieldKey)).limit(1);
+  if (error) throw new Error(`Reading the forms on this table failed: ${error.message}`);
+  return ((data as unknown[] | null) ?? []).length > 0;
+}
+
+/** True when an open (not archived) portal on this table lets its client change this field (PAYMENTS-FINAL). */
+async function aPortalEdits(tableId: string, fieldKey: string): Promise<boolean> {
   const custom = () => createAdminClient().schema("custom");
-  const asJson = JSON.stringify([fieldKey]); // jsonb containment wants JSON text, not a Postgres array
-
   const { data: edits, error } = await custom().from("portal_table")
-    .select("portal_id").eq("table_id", tableId).contains("editable_field_keys", asJson);
+    .select("portal_id").eq("table_id", tableId).contains("editable_field_keys", jsonKey(fieldKey));
   if (error) throw new Error(`Reading the portals on this table failed: ${error.message}`);
-  const editingIds = ((edits as { portal_id: string }[] | null) ?? []).map((r) => r.portal_id);
-  if (editingIds.length > 0) {
-    const { data: open, error: openError } = await custom().from("portal").select("id").in("id", editingIds).is("archived_at", null);
-    if (openError) throw new Error(`Reading the portals on this table failed: ${openError.message}`);
-    if (((open as unknown[] | null) ?? []).length > 0) return true;
-  }
-
-  const { data: portals, error: portalsError } = await custom().from("portal")
-    .select("config").eq("organization_id", organizationId).is("archived_at", null);
-  if (portalsError) throw new Error(`Reading the organization's portals failed: ${portalsError.message}`);
-  const formIds = ((portals as { config: { forms?: unknown } | null }[] | null) ?? []).flatMap((p) =>
-    Array.isArray(p.config?.forms) ? p.config.forms.map((f) => String((f as { form_id?: unknown })?.form_id ?? "")).filter(Boolean) : [],
-  );
-  if (formIds.length === 0) return false;
-  const { data: asking, error: formsError } = await custom().from("anon_form").select("id")
-    .in("id", formIds).eq("table_id", tableId).is("deleted_at", null).contains("exposed_field_keys", asJson);
-  if (formsError) throw new Error(`Reading the portal's forms failed: ${formsError.message}`);
-  return ((asking as unknown[] | null) ?? []).length > 0;
+  const ids = ((edits as { portal_id: string }[] | null) ?? []).map((r) => r.portal_id);
+  if (ids.length === 0) return false;
+  const { data: open, error: openError } = await custom().from("portal").select("id").in("id", ids).is("archived_at", null);
+  if (openError) throw new Error(`Reading the portals on this table failed: ${openError.message}`);
+  return ((open as unknown[] | null) ?? []).length > 0;
 }
 
 /** Every check before money is asked for; throws PaymentRefusal with the sentence the payer sees. */
@@ -319,13 +305,14 @@ async function readyToCharge(ask: PaymentAsk, recordId: string): Promise<{ accou
 
   const record = await recordValues(ask.organization_id, recordId);
   if (!record || record.table_id !== ask.table_id) throw new PaymentRefusal("That record is not one this payment is for.", 404);
-  if (ask.amount_mode === "field" && ask.subject_kind === "form" && ask.amount_field && (await formAsks(ask.subject_id, ask.amount_field))) {
-    // REVIEW-PAYMENTS-2 M3: the form now asks the amount question itself, so the payer would set the price.
-    throw new PaymentRefusal("This form lets the payer type the amount, so it cannot take payment.", 400);
-  }
-  if (ask.amount_mode === "field" && ask.amount_field && (await portalLetsPayerSet(ask.organization_id, ask.table_id, ask.amount_field))) {
-    // PAYMENTS-FINAL: a portal client can change the amount field (or a portal form asks it): she would set her own price.
-    throw new PaymentRefusal("A portal lets the payer change the amount, so this cannot take payment.", 400);
+  if (ask.amount_mode === "field" && ask.amount_field) {
+    // The payer never sets her own price: no form may ask the amount field and no portal may open it.
+    if (await aFormAsks(ask.organization_id, ask.table_id, ask.amount_field)) {
+      throw new PaymentRefusal("This form lets people type the amount this payment charges — make the field read-only on the form, or use a fixed amount.", 400);
+    }
+    if (await aPortalEdits(ask.table_id, ask.amount_field)) {
+      throw new PaymentRefusal("This portal lets people type the amount this payment charges — make the field read-only on the portal, or use a fixed amount.", 400);
+    }
   }
   const amount = resolveAmountCents(ask, record.data);
   if (!amount.ok) throw new PaymentRefusal(amount.message, 400);
