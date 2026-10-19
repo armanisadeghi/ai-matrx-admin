@@ -24,6 +24,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import cardsFixture from "./fixtures/clone-template-cards.json";
 import type { GalleryCard } from "../gallery/catalogue";
+import { PAGE_SIZE } from "../gallery/PublicGalleryPage";
 
 jest.mock("../gallery/publicGallery", () =>
   process.env.MAKE_PUBLIC_PLANT ? jest.requireActual(process.env.MAKE_PUBLIC_PLANT) : jest.requireActual("../gallery/publicGallery"),
@@ -69,6 +70,7 @@ import PublicTemplatePage, { generateMetadata } from "@/app/(public)/templates/[
 // eslint-disable-next-line import/first
 import IndustryTemplatesPage from "@/app/(public)/templates/category/[industry]/page";
 
+const NOT_FOUND = "NEXT_HTTP_ERROR_FALLBACK;404";
 const CAPTURED = cardsFixture as unknown as GalleryCard[];
 const ACCOUNTING = CAPTURED.find((c) => c.catalogue_id === "T0001")!;
 const PRIMARY_CARE = CAPTURED.find((c) => c.catalogue_id === "T0016")!;
@@ -99,7 +101,8 @@ async function html(node: Promise<React.ReactElement>) {
   return renderToStaticMarkup(await node);
 }
 const index = () => html(PublicTemplatesPage({ searchParams: Promise.resolve({}) }));
-const industryPage = (industry: string) => html(IndustryTemplatesPage({ params: Promise.resolve({ industry }), searchParams: Promise.resolve({}) }));
+const industryPage = (industry: string, page = 1) =>
+  html(IndustryTemplatesPage({ params: Promise.resolve({ industry }), searchParams: Promise.resolve(page > 1 ? { page: String(page) } : {}) }));
 const detail = (slug: string) => html(PublicTemplatePage({ params: Promise.resolve({ slug }), searchParams: Promise.resolve({}) }));
 
 beforeEach(() => {
@@ -123,8 +126,21 @@ describe("the public gallery index", () => {
     const page = await index();
     expect(offsetsAsked).toEqual([0, 200]);
     expect(page).toContain('href="/templates/T0016"');
-    // The index shows a few per industry; the industry's own page lists every one of them.
-    expect(await industryPage("legal_professional")).toContain('href="/templates/T2198"');
+    // The index shows a few per industry; the industry's own pages list every one of them, PAGE_SIZE at a
+    // time (server-rendered ?page=N links). Walk them all: none of the 199 may be dropped.
+    const pageCount = Math.ceil(199 / PAGE_SIZE);
+    const first = await industryPage("legal_professional");
+    expect(first).toContain(`data-public-templates-pager="1/${pageCount}"`);
+    expect(first).toContain("?page=2");
+    const seen = new Set<string>();
+    for (let n = 1; n <= pageCount; n++) {
+      const html = n === 1 ? first : await industryPage("legal_professional", n);
+      for (const m of html.matchAll(/href="\/templates\/(T\d+)"/g)) seen.add(m[1]);
+    }
+    expect(seen.size).toBe(199);
+    expect(seen.has("T2198")).toBe(true);
+    // Past the end shows the last page, never an empty one.
+    expect(await industryPage("legal_professional", pageCount + 1)).toContain(`data-public-templates-pager="${pageCount}/${pageCount}"`);
   });
 
   it.each([
@@ -181,14 +197,19 @@ describe("one template's public page", () => {
 
   it("keeps an organization's saved template off the public web", async () => {
     open();
-    expect(await detail("BV-INTAKE")).toContain("This template is not in the gallery");
+    // An organization's saved template is addressed by its id and opens only through the signed-in
+    // fallback; its catalog code is no public address at all (a real 404, never a 200 page).
+    expect(await detail(SAVED_BY_BRENNAN.id)).toContain("This template is not in the gallery");
+    await expect(detail("BV-INTAKE")).rejects.toThrow(NOT_FOUND);
     const meta = await generateMetadata({ params: Promise.resolve({ slug: "BV-INTAKE" }), searchParams: Promise.resolve({}) });
     expect(meta.robots).toEqual({ index: false, follow: true });
   });
 
   it("says the template is not in the gallery when the door is absent", async () => {
     closedWith("PGRST202", "Could not find the function custom.templates(p_filter) in the schema cache");
-    expect(await detail("T0016")).toContain("This template is not in the gallery");
+    // A saved template's id still opens the signed-in fallback; a catalog code with no door is a 404.
+    expect(await detail(PRIMARY_CARE.id)).toContain("This template is not in the gallery");
+    await expect(detail("T0016")).rejects.toThrow(NOT_FOUND);
   });
 });
 

@@ -39,6 +39,14 @@ jest.mock("@ai-matrx/records-ui", () => {
     tokenFor: (s: string) => s,
   };
 });
+// The portal's blocks editor reads the Records client from <RecordsProvider> (mounted once by the app shell,
+// not by Make); it is its own unit, so here it is a spy that must be handed the made portal's id.
+jest.mock("@/features/portals/PortalBlocksEditor", () => ({
+  PortalBlocksEditor: (props: Props) => {
+    seen["PortalBlocksEditor"] = props;
+    return <div data-builder="PortalBlocksEditor" />;
+  },
+}));
 jest.mock("../MakeMount", () => ({
   MakeMount: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   NewTableBody: () => <div data-builder="TablesHome" />,
@@ -162,6 +170,7 @@ async function forgets(tile: MakeTile): Promise<string | null> {
   await reopened.done();
   if (again[protocol.reopen] !== MADE) return `${tile.id}: a reload does not reopen what was made`;
   if (protocol.makeNew && again[protocol.makeNew]) return `${tile.id}: a reload makes another one`;
+  if (tile.flow === "portal" && seen["PortalBlocksEditor"]?.["portalId"] !== MADE) return `${tile.id}: the blocks editor is not opened on what was made`;
   return null;
 }
 

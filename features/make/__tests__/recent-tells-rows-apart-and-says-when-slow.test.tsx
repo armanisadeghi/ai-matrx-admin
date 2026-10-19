@@ -43,7 +43,12 @@ jest.mock("@ai-matrx/records-ui", () => {
 });
 jest.mock("@ai-matrx/records/core", () => ({ createRecordsClient: jest.fn(), supabaseDataSource: jest.fn() }));
 jest.mock("@ai-matrx/records", () => ({ bookingPath: (id: string) => `/b/${id}`, publicFormPath: (id: string) => `/f/${id}` }));
-jest.mock("@ai-matrx/design-system", () => ({ Skeleton: () => <div data-skeleton="" /> }));
+// The copy menu mounted by the page (@ai-matrx/alchemy) draws with the rest of the design system, so only
+// the skeleton (counted below) is replaced; everything else is the real package.
+jest.mock("@ai-matrx/design-system", () => ({
+  ...jest.requireActual("@ai-matrx/design-system"),
+  Skeleton: () => <div data-skeleton="" />,
+}));
 jest.mock("@/components/ui/button", () => ({
   Button: ({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{children}</button>,
 }));
