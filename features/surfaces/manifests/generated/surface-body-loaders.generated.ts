@@ -134,7 +134,7 @@ export const SURFACE_BODY_LOADERS: Readonly<Record<string, () => Promise<readonl
   "matrx-user/content-plan-node": () => Promise.all([bucket12().then((m) => m.s105), bucket11().then((m) => m.s109)]),
   "matrx-user/masterwork-rulebook": () => Promise.all([bucket10().then((m) => m.s110)]),
   "matrx-user/board": () => Promise.all([bucket09().then((m) => m.s111)]),
-  "matrx-user/start-page": () => Promise.all([bucket05().then((m) => m.s112)]),
+  "matrx-user/launchpad": () => Promise.all([bucket01().then((m) => m.s112)]),
   "matrx-user/agents": () => Promise.all([bucket01().then((m) => m.s113)]),
   "matrx-user/organizations": () => Promise.all([bucket09().then((m) => m.s114)]),
   "matrx-user/organization-performance-reviews": () => Promise.all([bucket09().then((m) => m.s115)]),

@@ -24,7 +24,10 @@ import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { useRecordsDataSource } from "@/features/data-tables/records-ui-host/recordsDataSource";
 import { useObjectOrganization } from "@/features/unified-data/objectOrganization";
 import { MakeMount } from "@/features/make/MakeMount";
-import { useStartPage } from "@/features/start/useStartPage";
+import { START_LAUNCHPAD_KEY, useLaunchpads } from "@/features/launchpad/useLaunchpads";
+import { addWidget } from "@/features/launchpad/doc";
+import { launchpadHref } from "@/features/shell/shell-layout/resolve";
+import { toast } from "@/lib/toast";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 const PAGES_HOME = "/data/pages";
@@ -111,19 +114,29 @@ export function PageRoute({ pageId }: { pageId: string }) {
   );
 }
 
-/** "Make start page": this page becomes the person's /start (v7 APPS-ON-DATA item 3). */
+/** "Add to launchpad": this page becomes a widget on the person's Start launchpad (it was "Make start page"). */
 function MakeStartPage({ pageId }: { pageId: string }) {
-  const start = useStartPage();
-  if (start.pageId === pageId) {
+  const pads = useLaunchpads();
+  const start = pads.byKey(START_LAUNCHPAD_KEY);
+  const doc = start?.parsed.ok ? start.parsed.doc : null;
+  if (doc?.widgets.some((w) => w.type === "page" && w.config.pageId === pageId)) {
     return (
       <Button variant="quiet" asChild>
-        <Link href="/start">Your start page</Link>
+        <Link href={launchpadHref(START_LAUNCHPAD_KEY)}>On your launchpad</Link>
       </Button>
     );
   }
   return (
-    <Button variant="quiet" disabled={start.loading} onClick={() => void start.choose(pageId)}>
-      Make start page
+    <Button
+      variant="quiet"
+      disabled={pads.loading || !doc || pads.saving}
+      onClick={async () => {
+        if (!doc || !start) return;
+        const result = await pads.save({ key: start.key, title: start.title, doc: addWidget(doc, { type: "page", config: { pageId }, w: 12 }), owner: start.owner }, "Added a data page");
+        if (!result.ok) toast.error(result.error);
+      }}
+    >
+      Add to launchpad
     </Button>
   );
 }

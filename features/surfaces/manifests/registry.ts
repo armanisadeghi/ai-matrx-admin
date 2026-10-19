@@ -129,7 +129,7 @@ import { marketingSiteSettingsManifest } from "./marketing-site-settings.manifes
 import { marketingTopicalMapManifest } from "./marketing-topical-map.manifest";
 import { contentPlanManifest } from "./content-plan.manifest";
 import { boardManifest } from "./board.manifest";
-import { startPageManifest } from "./start-page.manifest";
+import { launchpadManifest } from "./launchpad.manifest";
 import { contentPlanEntitiesManifest } from "./content-plan-entities.manifest";
 import { contentPlanListManifest } from "./content-plan-list.manifest";
 import { contentPlanNodeManifest } from "./content-plan-node.manifest";
@@ -436,7 +436,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   masterworkRulebookManifest,
   // The Board — mounted by every board host; carries the board tools.
   boardManifest,
-  startPageManifest,
+  launchpadManifest,
   // 2026-07-24 fleet push — hub/list + workspace surfaces.
   agentsHubManifest,
   organizationsManifest,

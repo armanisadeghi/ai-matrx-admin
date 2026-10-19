@@ -2,33 +2,79 @@
 
 **Status:** `active`
 **Tier:** `2`
-**Last updated:** `2026-09-19`
+**Last updated:** `2026-10-19`
 
 ## Purpose
 
-`/launchpad` is the signed-in user's always-open command surface. It is the
-user counterpart to the Admin Launchpad, but deliberately calmer: a compact
-set of real start actions, the user's existing favorites, a searchable catalog,
-and concise area cards instead of the administration page's dense route wall.
-Every work destination opens in a new tab so the Launchpad remains intact.
+Two things live here, one feature:
 
-The personalized `/dashboard` remains the user's hub for momentum, metrics,
-and discovery. The Launchpad is a launcher, not a second dashboard.
+1. **Launchpads** (project custom-experience, PLAN §5.2/§5.6): a person's own pages of widgets, many per
+   person, each bookmarkable at `/launchpad/<key>`, linking to each other, built in a drag-and-drop grid
+   editor, versioned with "Set active" restore, and tunable by an agent from chat. The Start page (`/start`)
+   moved in as each person's `start` launchpad and its code was deleted.
+2. **The launcher** at `/launchpad`: the calm, always-open command surface (start actions, favorites,
+   searchable catalog, area cards; every destination opens in a new tab). It stays for everyone and now
+   opens with the "Your launchpads" strip and "New launchpad".
 
 ## Entry points
 
-- `app/(core)/launchpad/page.tsx` — Server Component route shell and AppShell header.
-- `features/launchpad/components/UserLaunchpad.tsx` — search, favorites, compact area cards, and new-tab launch contract.
-- `features/launchpad/catalog.ts` — pure catalog derivation from `primaryNavItems` and `settingsItem`.
-- `features/launchpad/hooks/useVisibilityAwarePageRefresh.ts` — shared one-shot stale-page refresh used by both Launchpads.
-- `features/shell/constants/nav-data.ts` — the canonical Launchpad navigation entry; it opens in a new tab and is hidden from guests.
+- `app/(core)/launchpad/page.tsx` — the launcher (`UserLaunchpad`, with `YourLaunchpads` at the top).
+- `app/(core)/launchpad/[key]/page.tsx` — one launchpad (`components/LaunchpadPage.tsx`).
+- `app/(core)/start/page.tsx` — permanent redirect to `/launchpad/start`.
+- `components/LaunchpadPage.tsx` — view / Edit / History / Chat; `RecordPageHeader` with the launchpads as
+  record siblings (switcher), Actions menu Rename · Duplicate · Archive.
+- `components/LaunchpadGrid.tsx` — a `LaunchpadDoc` on `GridCanvas` (`@ai-matrx/design-system`).
+- `components/LaunchpadPanels.tsx` — Add (catalog by Board section), Set up (width, height, fields with
+  pickers), History (preview in place, Set active).
+- `components/YourLaunchpads.tsx` — the strip and the New launchpad template picker.
+- `useLaunchpads.ts` — list / byKey / save (versioned) / archive, history + restore, and the one-time Start move.
+- `doc.ts` — the pure verbs over `LaunchpadDoc` (parse, add, move, resize, configure, remove, apply grid
+  placements, the version note, Start → launchpad conversion).
+- `widgets/` — THE ONE WIDGET REGISTRY: `types.ts`, `catalog.ts` (pure specs), `registry.tsx` (bodies),
+  `frame.tsx` (the widget frame and row list), `bodies/*`.
+- `tools/` — the agent tools (`launchpad-tools.ts`, executed by `useLaunchpadAgentTools.ts` through `agentEdits.ts`).
+- `templates.ts` — starting launchpads by role.
+- `catalog.ts`, `components/UserLaunchpad.tsx`, `hooks/useVisibilityAwarePageRefresh.ts` — the launcher.
+- Landing: sign-in's destination helper is `shellLandingHref` / `launchpadHref` in
+  `features/shell/shell-layout/resolve.ts` (lane A's; this feature uses it, never a second one).
 
 ## Data model
 
-No database table, API endpoint, or Redux slice is owned by this feature.
-Favorites are read and written through the existing `usePinned()` API. Start
-actions come from `features/dashboard/dashboard.config.ts`. Browse and search
-destinations derive from the shell navigation registry.
+- **`launchpad` typed table** (`launchpad.typed-table.ts`; slug `LAUNCHPAD_TABLE_SLUG`, kept_for
+  `custom_experience`, organization scope, key `slot`). Fields: `slot` (unique: `org:<key>` or
+  `person:<uuid>:<key>`), `key`, `title`, `owner` (`org` | `person:<uuid>`), `doc` (JSON `LaunchpadDoc` —
+  the frozen contract in `features/shell/shell-layout/contract.ts`), `note`, `saved_at`. Every save is a
+  record version (History). A person's launchpads are read across all their organizations (newest wins per
+  key) plus the active organization's `org` launchpads; a key opens the person's own first. Every write names
+  its organization: the row's own, else the active organization.
+- **Start move**: on first visit (`/launchpad` or any `/launchpad/<key>`), `startMigration.ts` writes the
+  person's newest `start_layout` doc as their `start` launchpad (s / m / l → 3 / 6 / 12 columns, same order),
+  or today's first-visit layout plus their old start data page if they had none. Once per person (per-tab memo
+  + Web Lock + fresh re-read, `seedOnce.ts`), announced with `console.info`. The `start_layout` / `start_page`
+  rows stay in the store untouched; their definitions live in `start-move/` only for this read.
+- The launcher owns no table; favorites go through `usePinned()`.
+
+## The grid and the registry
+
+- Placement: 12 columns × 24px rows on a desktop, 4 columns on a phone (container narrower than 640px). A
+  widget without a saved phone placement reflows from the desktop grid; editing on a phone saves phone
+  placements for every widget. Drag the header to move, the corner to resize, arrow keys to nudge (Shift
+  resizes); overlaps push down and the grid compacts. One commit per gesture.
+- **Add a widget type**: one entry in `widgets/catalog.ts` (type, label, lucide icon, Board section, grid
+  sizes `defaultW/defaultH/minW/minH/maxW?/maxH?`, default config, fields, `describe`, optional `href` and
+  `publishes` — the page-bus slot, unwired today) + one body in `widgets/registry.tsx` taking
+  `{ config, editing, capacity }`. The registry test fails without both. A new field picker goes in
+  `LaunchpadPanels.tsx`.
+- Widgets today: counts, count, recent, tasks, today, favorites, pinned agents, data page, table (the Start
+  nine), Applet (`AppletInPage`), launchpad link, app page (the Board's Page item body — any app address,
+  which also covers a Space page).
+
+## Agent
+
+Surface `matrx-user/launchpad` (`features/surfaces/manifests/launchpad.manifest.ts`), role
+`start_page_maintainer` holding mandate `start_page.maintainer`. Tool names stay `start_*` (the agent was
+built on them); `size` s/m/l maps to 3/6/12 columns and `w`/`h` give exact grid units. One agent turn saves
+as ONE version ("Agent for you" in History).
 
 ## Key flows
 
@@ -67,6 +113,11 @@ No existing primitive combined the user navigation hierarchy, start actions,
 and favorites into an always-open launcher.
 
 ## Change log
+
+- `2026-10-19` — Lane D (custom-experience): launchpads — the `launchpad` typed table, `/launchpad/<key>`, the
+  GridCanvas editor, one widget registry (Start's widgets adapted + Applet, launchpad link, app page), role
+  templates, History with Set active, agent tools repointed; the Start page moved in and `features/start`
+  deleted (its FEATURE content folded into the sections above).
 
 - `2026-09-19` — Cursor: split browse into a uniform app row and a size-sorted folder grid; restored the left shell sidebar; one-line folder descriptions; removed the unused browse helper sentence. The page scrolls in `.shell-main` with at least a quarter-viewport of empty space under the last cards.
 - `2026-08-20` — Codex: created the authenticated user Launchpad, registry-backed search and browse cards, shared new-tab quick starts and favorites, the persistent shell door, unique route identity, and shared visibility-aware stale-page refresh.

@@ -9,7 +9,6 @@ export { marketingManifest as s67 } from "../../marketing.manifest";
 export { marketingReputationManifest as s82 } from "../../marketing-reputation.manifest";
 export { marketingRanksHubManifest as s84 } from "../../marketing-ranks-hub.manifest";
 export { marketingBrandGuidelinesManifest as s96 } from "../../marketing-brand-guidelines.manifest";
-export { startPageManifest as s112 } from "../../start-page.manifest";
 export { messageTemplateManifest as s122 } from "../../message-template.manifest";
 export { educationKitsManifest as s137 } from "../../education-kits.manifest";
 export { educationLibraryCommunityManifest as s154 } from "../../education-library-community.manifest";
