@@ -149,6 +149,13 @@ do not run). That is a product decision. Everything else is engineering you alre
 authority to do — and escalating it instead is how his time gets consumed by work that was
 never his.
 
+### What the agent kept fetching is what the call site must hand over
+
+A provision is proven by the runs, not the declaration: when real runs of the job fetch the
+same value by tool (the receipt row reads `on_request`), the value is offered but not
+delivered. Promote it — an inline limit on the holder's context policy, a server-resolved
+reference — as taught once in [create-agent § 0b](/skills/create-agent/SKILL.md).
+
 ### Design from real data, never from imagined data
 
 Before proposing a structure, **look at the real rows.** The recommendation in this skill was
