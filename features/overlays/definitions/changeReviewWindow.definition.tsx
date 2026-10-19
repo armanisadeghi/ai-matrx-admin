@@ -11,5 +11,6 @@ export const changeReviewWindowOverlay = defineOverlay<ChangeReviewWindowDefinit
   instance: "single",
   keepAlive: "none",
   closesOnNavigation: false,
-  window: {},
+  // One-shot (a move/delete confirmation: reappearing after a reload would re-ask a settled question): never comes back after a reload.
+  window: { preservation: false },
 });

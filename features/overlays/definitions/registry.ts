@@ -237,4 +237,7 @@ export const APP_OVERLAYS = [
   d.dataChangesWindowOverlay,
   d.welcomeFoundWindowOverlay,
   d.meetMatrxWindowOverlay,
+  d.promptDebugIndicatorOverlay,
+  d.resourceDebugIndicatorOverlay,
+  d.executionStateDebugOverlay,
 ] as const;

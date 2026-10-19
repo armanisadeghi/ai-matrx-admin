@@ -16,11 +16,11 @@
 // from that store via useCapturedErrors. The old `consoleErrors` ring buffer +
 // listeners were retired to avoid a parallel capture system.
 //
-// Indicators (promptDebug, resourceDebug, executionStateDebug) are unchanged from
-// the original design — they drive the floating debug panels in DebugIndicatorManager.
+// The floating debug indicators (prompt, resources, execution state) are summon overlays now
+// (features/overlays/definitions/{promptDebugIndicator,resourceDebugIndicator,executionStateDebug}),
+// opened by dispatch like every other overlay; this slice holds no open/close state for them.
 
 import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { DebugData } from "@/components/debug/SystemPromptDebugModal";
 import {
   BUILDER_ENTRY_MAX,
   BUILDER_HISTORY_MAX,
@@ -55,13 +55,6 @@ export interface AdminDebugState {
   // 3. builderFeeds — the Builder panel's feed, one per surface (useBuilderFeed).
   //    Keyed entries replace in place and keep a short history. Admin-only writers.
   builderFeeds: Record<string, BuilderFeed>;
-
-  // Floating debug panel indicators (unchanged from original design)
-  indicators: {
-    promptDebug?: { isOpen: boolean; data: DebugData | null };
-    resourceDebug?: { isOpen: boolean; runId: string };
-    executionStateDebug?: { isOpen: boolean; runId: string };
-  };
 }
 
 const initialState: AdminDebugState = {
@@ -69,7 +62,6 @@ const initialState: AdminDebugState = {
   routeContext: null,
   debugData: {},
   builderFeeds: {},
-  indicators: {},
 };
 
 // ============================================================================
@@ -202,41 +194,6 @@ const adminDebugSlice = createSlice({
       if (state.builderFeeds) delete state.builderFeeds[action.payload];
     },
 
-    // ── Indicator management (unchanged) ─────────────────────────────────
-
-    showPromptDebugIndicator: (
-      state,
-      action: PayloadAction<DebugData | null>,
-    ) => {
-      state.indicators.promptDebug = { isOpen: true, data: action.payload };
-    },
-    hidePromptDebugIndicator: (state) => {
-      state.indicators.promptDebug = undefined;
-    },
-    showResourceDebugIndicator: (
-      state,
-      action: PayloadAction<{ runId: string }>,
-    ) => {
-      state.indicators.resourceDebug = {
-        isOpen: true,
-        runId: action.payload.runId,
-      };
-    },
-    hideResourceDebugIndicator: (state) => {
-      state.indicators.resourceDebug = undefined;
-    },
-    showExecutionStateDebug: (
-      state,
-      action: PayloadAction<{ runId: string }>,
-    ) => {
-      state.indicators.executionStateDebug = {
-        isOpen: true,
-        runId: action.payload.runId,
-      };
-    },
-    hideExecutionStateDebug: (state) => {
-      state.indicators.executionStateDebug = undefined;
-    },
   },
 });
 
@@ -255,12 +212,6 @@ export const {
   clearDebugNamespace,
   clearDebugData,
   resetDebugState,
-  showPromptDebugIndicator,
-  hidePromptDebugIndicator,
-  showResourceDebugIndicator,
-  hideResourceDebugIndicator,
-  showExecutionStateDebug,
-  hideExecutionStateDebug,
   builderPublish,
   builderRemove,
   builderClearSurface,
@@ -292,8 +243,6 @@ const selectAdminDebugSlice = (state: WithAdminDebug): AdminDebugState => {
   }
   return initialState;
 };
-const selectIndicators = (state: WithAdminDebug) =>
-  selectAdminDebugSlice(state).indicators;
 
 export const selectIsDebugMode = (state: WithAdminDebug) =>
   selectAdminDebugSlice(state).isDebugMode;
@@ -306,16 +255,6 @@ export const selectDebugKey = (key: string) => (state: WithAdminDebug) =>
 
 /** Full slice snapshot — only use for the "Copy Context" serialization path, not in reactive components. */
 export const selectAdminDebug = selectAdminDebugSlice;
-
-/** All indicator sub-objects — direct reference; stable unless an indicator changes. */
-export const selectDebugIndicators = selectIndicators;
-
-export const selectPromptDebugIndicator = (state: WithAdminDebug) =>
-  selectIndicators(state).promptDebug;
-export const selectResourceDebugIndicator = (state: WithAdminDebug) =>
-  selectIndicators(state).resourceDebug;
-export const selectExecutionStateDebug = (state: WithAdminDebug) =>
-  selectIndicators(state).executionStateDebug;
 
 const EMPTY_FEEDS: Record<string, BuilderFeed> = {};
 /** Every surface's Builder feed (the Builder panel + its sidebar item). */

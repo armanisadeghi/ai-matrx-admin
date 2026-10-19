@@ -1,5 +1,7 @@
 // components/admin/AdminIndicator.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
+import { useDock } from "@ai-matrx/summon/dock";
+import { clientDockStore } from "@/lib/sync/dock-positions";
 import SmallIndicator from "./SmallIndicator";
 import MediumIndicator from "./MediumIndicator";
 import LargeIndicator from "./LargeIndicator";
@@ -7,11 +9,6 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectIsSuperAdminDebugger } from "@/lib/redux/slices/userSlice";
 
 type IndicatorSize = "small" | "medium" | "large";
-
-interface Position {
-  x: number;
-  y: number;
-}
 
 /**
  * Floating admin chip — registered as `overlayId: "adminIndicator"` in
@@ -34,51 +31,21 @@ interface AdminIndicatorProps {
 const AdminIndicator: React.FC<AdminIndicatorProps> = () => {
   const isSuperAdmin = useAppSelector(selectIsSuperAdminDebugger);
   const [size, setSize] = useState<IndicatorSize>("small");
-  const [position, setPosition] = useState<Position>({ x: 50, y: 5 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
-  const indicatorRef = useRef<HTMLDivElement>(null);
-  // Drag handling functions
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (indicatorRef.current) {
-      const rect = indicatorRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-      setIsDragging(true);
-    }
+  // Drag: summon's dock (pointer events, threshold, viewport clamp, window z-lane, remembered
+  // position) — the chip used to hand-roll mousemove listeners that re-rendered on every move.
+  const dock = useDock({
+    id: "admin-indicator",
+    corner: "top-left",
+    defaultPosition: { x: 50, y: 5 },
+    store: clientDockStore,
+    zIndex: 9999,
+  });
+  const chromeStyle: React.CSSProperties = {
+    ...dock.style,
+    userSelect: "none",
+    cursor: dock.dragging ? "grabbing" : "default",
+    filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
   };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Handle dragging event listeners
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    } else {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    }
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging]);
-
   // Size cycling functions
   const cycleSize = (direction: "up" | "down") => {
     const sizes: IndicatorSize[] = ["small", "medium", "large"];
@@ -97,21 +64,9 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = () => {
     switch (size) {
       case "medium":
         return (
-          <div
-            ref={indicatorRef}
-            style={{
-              position: "fixed",
-              left: `${position.x}px`,
-              top: `${position.y}px`,
-              zIndex: 9999,
-              userSelect: "none",
-              cursor: isDragging ? "grabbing" : "default",
-              transition: isDragging ? "none" : "all 0.2s ease",
-              filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
-            }}
-          >
+          <div ref={dock.ref} data-dock="admin-indicator" style={chromeStyle}>
             <MediumIndicator
-              onDragStart={handleMouseDown}
+              onDragStart={dock.handleProps.onPointerDown}
               onSizeUp={() => cycleSize("up")}
               onSizeDown={() => cycleSize("down")}
             />
@@ -126,21 +81,9 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = () => {
         );
       default: // "small" case
         return (
-          <div
-            ref={indicatorRef}
-            style={{
-              position: "fixed",
-              left: `${position.x}px`,
-              top: `${position.y}px`,
-              zIndex: 9999,
-              userSelect: "none",
-              cursor: isDragging ? "grabbing" : "default",
-              transition: isDragging ? "none" : "all 0.2s ease",
-              filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
-            }}
-          >
+          <div ref={dock.ref} data-dock="admin-indicator" style={chromeStyle}>
             <SmallIndicator
-              onDragStart={handleMouseDown}
+              onDragStart={dock.handleProps.onPointerDown}
               onSizeChange={() => cycleSize("up")}
             />
           </div>

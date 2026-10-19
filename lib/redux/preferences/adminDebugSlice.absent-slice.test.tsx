@@ -13,12 +13,8 @@ import { createRoot } from "react-dom/client";
 import adminDebugReducer, {
   selectAdminDebug,
   selectDebugData,
-  selectDebugIndicators,
   selectDebugKey,
-  selectExecutionStateDebug,
   selectIsDebugMode,
-  selectPromptDebugIndicator,
-  selectResourceDebugIndicator,
   selectRouteContext,
 } from "./adminDebugSlice";
 import { useDebugContext } from "@/hooks/useDebugContext";
@@ -39,10 +35,6 @@ describe("admin debug selectors on a store without the adminDebug slice", () => 
     expect(selectDebugData(state)).toEqual(declaredDefault.debugData);
     expect(selectDebugKey("anything")(state)).toBeUndefined();
     expect(selectAdminDebug(state)).toEqual(declaredDefault);
-    expect(selectDebugIndicators(state)).toEqual(declaredDefault.indicators);
-    expect(selectPromptDebugIndicator(state)).toBeUndefined();
-    expect(selectResourceDebugIndicator(state)).toBeUndefined();
-    expect(selectExecutionStateDebug(state)).toBeUndefined();
     // Nothing fails silently: the stand-in announces itself once, with a remedy.
     expect(warn).toHaveBeenCalledTimes(1);
     expect(String(warn.mock.calls[0][0])).toMatch(/mount adminDebugReducer/);

@@ -2,7 +2,9 @@
 
 import { useClipboard } from "@ai-matrx/kit/clipboard";
 import { copyNotify } from "@/lib/clipboard/copy-notify";
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
+import { useDock } from "@ai-matrx/summon/dock";
+import { clientDockStore } from "@/lib/sync/dock-positions";
 import {
   Database,
   ChevronRight,
@@ -31,11 +33,6 @@ interface ResourceDebugIndicatorProps {
 }
 
 type IndicatorSize = "small" | "large" | "preview";
-
-interface Position {
-  x: number;
-  y: number;
-}
 
 function formatAssembledUserInput(
   userInput: AssembledAgentStartRequest["user_input"],
@@ -72,10 +69,14 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
   const assembledRequest = useAppSelector(assembledRequestSelector);
 
   const [size, setSize] = useState<IndicatorSize>("small");
-  const [position, setPosition] = useState<Position>({ x: 50, y: 85 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
-  const indicatorRef = useRef<HTMLDivElement>(null);
+  // Below the prompt debug chip until moved; summon's dock owns drag, clamp, z-lane and memory.
+  const dock = useDock({
+    id: "debug-indicator.resources",
+    corner: "top-left",
+    defaultPosition: { x: 50, y: 85 },
+    store: clientDockStore,
+    zIndex: 9999,
+  });
 
   const [expandedIndices, setExpandedIndices] = useState<Set<number>>(
     new Set(),
@@ -86,50 +87,6 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
     variables: Record<string, unknown>;
   } | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.tagName === "BUTTON" || target.closest("button")) {
-      return;
-    }
-
-    e.stopPropagation();
-    if (indicatorRef.current) {
-      const rect = indicatorRef.current.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-      setIsDragging(true);
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-    } else {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    }
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging]);
 
   const toggleExpanded = (index: number) => {
     setExpandedIndices((prev) => {
@@ -177,18 +134,16 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
   if (size === "small") {
     return (
       <div
-        ref={indicatorRef}
+        ref={dock.ref}
+        data-dock="debug-indicator.resources"
+        {...dock.handleProps}
         style={{
-          position: "fixed",
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          zIndex: 9999,
+          ...dock.style,
+          ...dock.handleProps.style,
           userSelect: "none",
-          cursor: isDragging ? "grabbing" : "move",
-          transition: isDragging ? "none" : "all 0.2s ease",
+          cursor: dock.dragging ? "grabbing" : "move",
           filter: "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25))",
         }}
-        onMouseDown={handleMouseDown}
       >
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-600 text-white shadow-lg">
           <Database size={14} />
@@ -226,21 +181,11 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
 
   if (size === "preview" && previewData) {
     return (
-      <div
-        ref={indicatorRef}
-        style={{
-          position: "fixed",
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-          zIndex: 9999,
-          userSelect: "none",
-          transition: isDragging ? "none" : "all 0.2s ease",
-        }}
-      >
+      <div ref={dock.ref} data-dock="debug-indicator.resources" style={{ ...dock.style, userSelect: "none" }}>
         <Card className="w-[800px] max-h-[80dvh] shadow-2xl">
           <div
             className="flex items-center justify-between p-3 border-b cursor-move bg-muted/50"
-            onMouseDown={handleMouseDown}
+            {...dock.handleProps}
           >
             <div className="flex items-center gap-2">
               <Eye className="h-5 w-5 text-green-600" />
@@ -317,21 +262,11 @@ export const ResourceDebugIndicator: React.FC<ResourceDebugIndicatorProps> = ({
   }
 
   return (
-    <div
-      ref={indicatorRef}
-      style={{
-        position: "fixed",
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        zIndex: 9999,
-        userSelect: "none",
-        transition: isDragging ? "none" : "all 0.2s ease",
-      }}
-    >
+    <div ref={dock.ref} data-dock="debug-indicator.resources" style={{ ...dock.style, userSelect: "none" }}>
       <Card className="w-96 max-h-[80dvh] shadow-2xl">
         <div
           className="flex items-center justify-between p-3 border-b cursor-move bg-muted/50"
-          onMouseDown={handleMouseDown}
+          {...dock.handleProps}
         >
           <div className="flex items-center gap-2">
             <Database className="h-5 w-5 text-green-600" />

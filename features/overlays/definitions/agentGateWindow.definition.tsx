@@ -11,7 +11,9 @@ export const agentGateWindowOverlay = defineOverlay<AgentGateWindowDefinitionDat
   instance: "multi",
   keepAlive: "none",
   closesOnNavigation: false,
+  // One-shot (a gate in front of one run; the run it guards is gone after a reload): never comes back after a reload.
   window: {
+    preservation: false,
     restoreDefaults: { conversationId: null },
     windowId: "agent-gate-window",
     mobile: "fullscreen",

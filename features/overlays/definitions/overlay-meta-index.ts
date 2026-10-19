@@ -243,4 +243,7 @@ export const OVERLAY_META_INDEX: readonly OverlayMetaRow[] = [
   { id: "dataChangesWindow", label: "Data Changes", instance: "single", window: { windowId: "data-changes", mobile: "fullscreen" } },
   { id: "welcomeFoundWindow", label: "We found you", instance: "single", window: { windowId: "welcome-found-window", mobile: "fullscreen" } },
   { id: "meetMatrxWindow", label: "Meet Matrx", instance: "single", window: { windowId: "meet-matrx-window", mobile: "fullscreen" } },
+  { id: "promptDebugIndicator", label: "Prompt Debug Indicator", instance: "single" },
+  { id: "resourceDebugIndicator", label: "Resource Debug Indicator", instance: "single" },
+  { id: "executionStateDebug", label: "Agent Execution State", instance: "single" },
 ];

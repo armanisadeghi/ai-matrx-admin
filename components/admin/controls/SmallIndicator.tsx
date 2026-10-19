@@ -15,7 +15,8 @@ import {
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface SmallIndicatorProps {
-  onDragStart: (e: React.MouseEvent) => void;
+  /** The dock's pointer-down (summon/dock `handleProps.onPointerDown`). */
+  onDragStart: (e: React.PointerEvent<HTMLElement>) => void;
   onSizeChange: () => void;
 }
 
@@ -50,7 +51,7 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({
     return "bg-gray-500";
   };
 
-  const handleElementMouseDown = (e: React.MouseEvent) => {
+  const handleElementMouseDown = (e: React.PointerEvent<HTMLElement>) => {
     let currentElement = e.target as HTMLElement;
     while (currentElement) {
       if (currentElement.tagName === "BUTTON") return;
@@ -66,7 +67,7 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({
   return (
     <div
       className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-white shadow-lg cursor-move"
-      onMouseDown={handleElementMouseDown}
+      onPointerDown={handleElementMouseDown}
       title={tooltipText}
     >
       {/* Server environment dot */}
