@@ -240,4 +240,5 @@ export const APP_OVERLAYS = [
   d.promptDebugIndicatorOverlay,
   d.resourceDebugIndicatorOverlay,
   d.executionStateDebugOverlay,
+  d.shellLayoutEditorWindowOverlay,
 ] as const;

@@ -17,6 +17,7 @@
 
 import { useBackHref } from "@/lib/navigation/useBackHref";
 import { useState } from "react";
+import { useDeclareCurrentRecord } from "@/features/shell/current-record/currentRecord";
 import { useIsMobile } from "@ai-matrx/kit/media-query";
 import { usePhonePageActions } from "@/features/shell/components/header/phone-page-actions";
 import NavLink from "@/components/navigation/NavLink";
@@ -104,6 +105,11 @@ export interface EntityModeHeaderProps {
   backHref?: string;
   /** Current entity's name — small, in the top row, never an h1. */
   entityLabel: string;
+  /**
+   * The record this page shows, by type token and id. With it, "Add to my menu" adds the record itself
+   * (the current-record primitive, features/shell/current-record); without it, the page and its name.
+   */
+  entityRecord?: { token: string; id: string };
   /**
    * The levels ABOVE the entity, in the org/scopes crumb pattern (each a link,
    * each with its own sibling menu). The entity name is the last crumb, on the
@@ -285,6 +291,7 @@ EntitySheetRows.routeHeaderMenu = true as const;
 export function EntityModeHeader({
   backHref,
   entityLabel,
+  entityRecord,
   trail,
   entityStatus,
   entityOptions,
@@ -296,6 +303,8 @@ export function EntityModeHeader({
   right,
   rightEnd,
 }: EntityModeHeaderProps) {
+  // THE CURRENT RECORD: every record page declares what it shows, once, here (custom-experience §5.4).
+  useDeclareCurrentRecord({ label: entityLabel, token: entityRecord?.token ?? null, id: entityRecord?.id ?? null });
   const [sheetOpen, setSheetOpen] = useState(false);
   // On a phone the shell's ⋮ hosts this header's options directly.
   const isPhone = useIsMobile();

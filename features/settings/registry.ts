@@ -47,6 +47,7 @@ import {
   UserCheck,
   Server,
   CalendarClock,
+  LayoutTemplate,
 } from "lucide-react";
 import { Chrome } from "@/components/icons/brand-icons";
 import Placeholder from "./tabs/PlaceholderTab";
@@ -73,6 +74,7 @@ import AiModelsTab from "./tabs/AiModelsTab";
 import AdminServerTab from "./tabs/AdminServerTab";
 import SiteWorkbenchTab from "./tabs/SiteWorkbenchTab";
 import WindowsTab from "./tabs/WindowsTab";
+import LayoutTab from "./tabs/LayoutTab";
 import SystemTab from "./tabs/SystemTab";
 import LanguageTab from "./tabs/LanguageTab";
 import PrivacyTab from "./tabs/PrivacyTab";
@@ -257,6 +259,16 @@ export const settingsRegistry: SettingsTabDef[] = [
     icon: Layers,
     parentId: "appearance",
     component: AppearanceTab,
+    persistence: "synced",
+  },
+  {
+    id: "appearance.layout",
+    label: "Layout",
+    icon: LayoutTemplate,
+    parentId: "appearance",
+    description: "Your sidebar, header, dock and start page.",
+    searchKeywords: ["sidebar", "menu", "header", "dock", "customize", "edit sidebar", "standard view", "landing", "start page"],
+    component: LayoutTab,
     persistence: "synced",
   },
   {

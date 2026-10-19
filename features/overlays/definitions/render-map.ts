@@ -197,6 +197,7 @@ export const RENDER_MAP: OverlayRenderMap = {
   shareLinkDialog: () => import("./shareLinkDialog.render"),
   shareModal: () => import("./shareModal.render"),
   shareModalWindow: () => import("./shareModalWindow.render"),
+  shellLayoutEditorWindow: () => import("./shellLayoutEditorWindow.render"),
   shortcutEditorWindow: () => import("./shortcutEditorWindow.render"),
   singleMessageWindow: () => import("./singleMessageWindow.render"),
   siteAnalyticsWindow: () => import("./siteAnalyticsWindow.render"),

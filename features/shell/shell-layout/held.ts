@@ -18,6 +18,8 @@ export interface HeldShellLayouts {
   standardView: boolean;
   /** The organization lets members use their own layout (knob `shell.members_may_customize`). Absent = true. */
   personAllowed?: boolean;
+  /** The open editor's draft: shown in place of every stored layout while it is set (live preview). */
+  previewBody?: string | null;
 }
 
 export interface ShellViewer {
@@ -43,6 +45,16 @@ function bodyOf(stored: StoredShellLayout | null | undefined, whose: string): Sh
 /** The layout the viewer sees. `enabled: false` (every route group but (core)) is the built-in default. */
 export function resolveHeldShellLayout(held: HeldShellLayouts, viewer: ShellViewer): ResolvedShellLayout {
   const active = held.enabled && !viewer.isGuest;
+  if (active && held.previewBody) {
+    // The editor's live preview wins over everything (Standard view and the lock included) while it is open.
+    return resolveShellLayout({
+      person: parseShellLayoutBody(held.previewBody).body,
+      organization: null,
+      standardView: false,
+      isAdmin: viewer.isAdmin,
+      isGuest: false,
+    });
+  }
   const organization = active && held.organizationId ? held.organizations[held.organizationId] : null;
   return resolveShellLayout({
     person: active ? bodyOf(held.person, "person") : null,

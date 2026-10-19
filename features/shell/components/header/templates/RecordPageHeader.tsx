@@ -62,6 +62,9 @@ export interface RecordPageHeaderProps {
   record: {
     name: string;
     siblings?: CrumbOption[];
+    /** Type token + id of the record: "Add to my menu" then adds the record itself (current-record). */
+    token?: string;
+    id?: string;
   };
   /** One compact status badge beside the name. */
   status?: { label: string; tone?: BadgeTone };
@@ -134,6 +137,7 @@ export function RecordPageHeader({
       backHref={backHref}
       trail={parents}
       entityLabel={record.name}
+      entityRecord={record.token && record.id ? { token: record.token, id: record.id } : undefined}
       entityOptions={record.siblings}
       entityStatus={
         status ? <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge> : undefined

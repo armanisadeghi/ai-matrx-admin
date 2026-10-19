@@ -107,6 +107,36 @@ export const staticSettingsControlIndex = [
     "controlId": "settings-control-office-apps-office-look"
   },
   {
+    "tabId": "appearance.layout",
+    "label": "Sidebar",
+    "description": "Choose, order and group your menu.",
+    "controlId": "settings-control-customize-sidebar"
+  },
+  {
+    "tabId": "appearance.layout",
+    "label": "Header",
+    "description": "Buttons along the top.",
+    "controlId": "settings-control-customize-header"
+  },
+  {
+    "tabId": "appearance.layout",
+    "label": "Dock",
+    "description": "The bar along the bottom on a phone.",
+    "controlId": "settings-control-customize-dock"
+  },
+  {
+    "tabId": "appearance.layout",
+    "label": "Standard view",
+    "description": "Show the built-in layout instead of yours.",
+    "controlId": "settings-control-customize-standard-view"
+  },
+  {
+    "tabId": "appearance.layout",
+    "label": "After you sign in",
+    "description": "Where a sign-in with no page in mind opens.",
+    "controlId": "settings-control-start-page-after-you-sign-in"
+  },
+  {
     "tabId": "appearance.windows",
     "label": "Open windows",
     "controlId": "settings-control-status-open-windows"
@@ -494,15 +524,21 @@ export const staticSettingsControlIndex = [
   },
   {
     "tabId": "integrations.apiKeys",
-    "label": "Organization",
-    "description": "Where the key works when a request names no organization.",
-    "controlId": "settings-control-new-key-organization"
-  },
-  {
-    "tabId": "integrations.apiKeys",
     "label": "Create key",
     "description": "Works until you revoke it or it hits your org's max age.",
     "controlId": "settings-control-new-key-create-key"
+  },
+  {
+    "tabId": "integrations.oauthApps",
+    "label": "Name",
+    "description": "Shown to people when they authorize it.",
+    "controlId": "settings-control-new-app-name"
+  },
+  {
+    "tabId": "integrations.oauthApps",
+    "label": "Register app",
+    "description": "You get a client ID and a one-time secret.",
+    "controlId": "settings-control-new-app-register-app"
   },
   {
     "tabId": "admin.server",

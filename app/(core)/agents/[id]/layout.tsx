@@ -1,6 +1,7 @@
 import { getAgent } from "@/lib/agents/data";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { AgentHydratorServer } from "@ai-matrx/chat/agents/route/AgentHydratorServer";
+import { DeclareCurrentRecord } from "@/features/shell/current-record/currentRecord";
 
 export async function generateMetadata({
   params,
@@ -36,6 +37,8 @@ export default async function AgentDetailLayout({
     <>
       {/* Hydrates Redux store. Runs after paint so layout never blocks on it. */}
       <AgentHydratorServer agentId={id} />
+      {/* The record every page under /agents/[id] shows ("Add to my menu" adds this agent). */}
+      <DeclareCurrentRecord token="agent" id={id} />
       <div className="h-full overflow-y-auto overflow-x-hidden">{children}</div>
     </>
   );
