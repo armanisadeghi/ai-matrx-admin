@@ -22,6 +22,7 @@ import { useEffect, useRef, useState, type ReactNode, type RefObject } from "rea
 import { addCommentAnchorActions, commentAnchorsOf, newCommentAnchorId, removeCommentAnchorActions } from "@ai-matrx/office/docs";
 
 import { AnchoredCommentRail, type AnchoredCommentDraft } from "@/features/rich-document/annotations/AnchoredCommentRail";
+import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { useAnchoredComments } from "@/features/rich-document/annotations/useAnchoredComments";
 import { toast } from "@/lib/toast";
 
@@ -116,6 +117,7 @@ export function useDocComments({
   wrapperRef: RefObject<HTMLElement | null>;
 }): DocComments {
   const href = `/documents/${documentId}`;
+  const mayComment = useCommentAccess("udt_document", documentId, editable);
   const comments = useAnchoredComments("udt_document", documentId, href, ready);
   const [layout, setLayout] = useState<Layout>(EMPTY);
   const [open, setOpen] = useState<boolean>(() => {
@@ -154,8 +156,8 @@ export function useDocComments({
   };
 
   const addComment = () => {
-    if (!editable) {
-      toast.error("You can comment once you can edit this document.");
+    if (!mayComment) {
+      toast.error("You have view access only. Ask the owner for comment access to add a comment.");
       return;
     }
     const sel = layoutRef.current.selection;
@@ -269,7 +271,7 @@ export function useDocComments({
             ))
           : [],
       )}
-      {editable && layout.selection?.box && !draft ? (
+      {mayComment && layout.selection?.box && !draft ? (
         <button
           type="button"
           aria-label="Add comment"
@@ -306,7 +308,7 @@ export function useDocComments({
         } else cancelDraft();
       }}
       onClose={() => setRail(false)}
-      canComment={editable}
+      canComment={mayComment}
     />
   ) : null;
 

@@ -8,6 +8,21 @@
 
 import { anchorIdOfPartAnchor, commentPartAnchor } from "@ai-matrx/office/docs";
 
+/**
+ * The save projection (COLLAB-DESIGN section 8) rewrites a thread's anchor: a sheet thread's key becomes `cell:...` and a docs thread
+ * becomes a `text_anchor`; both keep the id in `anchor_id`. Read it first, so a projected thread stays joined to its anchor even
+ * before the office package that knows it is installed.
+ */
+function anchorIdOf(anchor: unknown): string | null {
+  const a = anchor as { __kind?: unknown; anchor_id?: unknown } | null;
+  if (a && (a.__kind === "part_anchor" || a.__kind === "text_anchor") && typeof a.anchor_id === "string" && a.anchor_id) return a.anchor_id;
+  return anchorIdOfPartAnchor(anchor);
+}
+function quoteOf(anchor: unknown): string {
+  const a = anchor as { label?: unknown; exact?: unknown } | null;
+  return a && typeof a.label === "string" ? a.label : a && typeof a.exact === "string" ? a.exact : "";
+}
+
 import { authorOf, type CommentAuthorRow } from "@/features/rich-document/annotations/comment-author";
 import { humanError } from "@/features/rich-document/annotations/errors";
 import type { AnnotationAuthor } from "@/features/rich-document/annotations/types";
@@ -86,11 +101,10 @@ export async function listAnchoredThreads(token: string, id: string, stale: () =
   const roots = new Map<string, AnchoredThread>();
   for (const row of rows) {
     if (row.parent_id) continue;
-    const label = row.anchor && typeof row.anchor === "object" ? (row.anchor as { label?: unknown }).label : null;
     roots.set(row.id, {
       ...comment(row, me),
-      anchorId: anchorIdOfPartAnchor(row.anchor),
-      quote: typeof label === "string" ? label : "",
+      anchorId: anchorIdOf(row.anchor),
+      quote: quoteOf(row.anchor),
       resolvedAt: row.resolved_at ?? null,
       replies: [],
     });

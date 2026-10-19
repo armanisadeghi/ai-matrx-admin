@@ -23,6 +23,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import type { AwarenessState } from "@ai-matrx/data/realtime/collab";
 
+import { cellBox, injectorOfUniver } from "./sheetCellBox";
+
 // Univer facade is loose at the boundary; narrow with structural types.
 type CellRect = { left: number; top: number; width: number; height: number };
 
@@ -40,6 +42,7 @@ type FWorksheetLike = {
 };
 
 type FWorkbookLike = {
+  getId?: () => string;
   getActiveSheet?: () => FWorksheetLike | null;
   getSheetBySheetId?: (sheetId: string) => FWorksheetLike | null;
 };
@@ -56,6 +59,11 @@ type Props = {
   univerAPI: unknown;
   /** The Univer container element — rect lookups are translated relative to this. */
   containerRef: React.RefObject<HTMLElement | null>;
+  /**
+   * The Univer instance (for its render and scroll state). `FRange.getCellRect()` returns sheet coordinates, not screen
+   * pixels, so peers are placed with the same transform Univer's own cell popups use (see `sheetCellBox.ts`).
+   */
+  univer?: unknown;
   /** Map of clientID → AwarenessState (from the WorkbookCollabSession awareness Map). */
   states: Map<number, AwarenessState>;
   selfUid: string;
@@ -66,6 +74,7 @@ const STALE_AFTER_MS = 30_000;
 export function WorkbookCursorOverlay({
   univerAPI,
   containerRef,
+  univer,
   states,
   selfUid,
 }: Props) {
@@ -150,7 +159,7 @@ export function WorkbookCursorOverlay({
   // Compute cell rects for the visible peers. Recomputed on every render
   // (refreshToken bumps trigger renders); each Univer call is cheap and the
   // peer count is bounded by the room size.
-  const rects = useCellRects(univerAPI, containerRef, peers, refreshToken);
+  const rects = useCellRects(univerAPI, univer, containerRef, peers, refreshToken);
 
   if (peers.length === 0) return null;
 
@@ -203,6 +212,7 @@ export function WorkbookCursorOverlay({
  */
 function useCellRects(
   univerAPI: unknown,
+  univer: unknown,
   containerRef: React.RefObject<HTMLElement | null>,
   peers: AwarenessState[],
   // Read but not used inside; the token forces this hook to re-run whenever
@@ -232,17 +242,17 @@ function useCellRects(
           : wb.getActiveSheet?.();
         if (!sheet) return null;
         if (peer.row === null || peer.col === null) return null;
-        const range = sheet.getRange?.(peer.row, peer.col);
-        const cellDom = range?.getCellRect();
-        if (!cellDom) return null;
-        // getCellRect returns viewport-relative coordinates; translate into
-        // container-local pixels so the overlay div positions correctly even
-        // when the page itself is scrolled or padded.
+        const injector = injectorOfUniver(univer ?? univerAPI);
+        const unitId = wb.getId?.();
+        if (!injector || !unitId) return null;
+        const box = cellBox(injector, unitId, peer.row, peer.col);
+        if (!box) return null;
+        // cellBox is in page (client) coordinates; the overlay layer is container-local.
         return {
-          left: cellDom.left - containerBox.left,
-          top: cellDom.top - containerBox.top,
-          width: cellDom.width,
-          height: cellDom.height,
+          left: box.left - containerBox.left,
+          top: box.top - containerBox.top,
+          width: box.right - box.left,
+          height: box.bottom - box.top,
         };
       } catch {
         return null;
@@ -250,7 +260,7 @@ function useCellRects(
     });
     setRects(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [univerAPI, peers, _refreshToken]);
+  }, [univerAPI, univer, peers, _refreshToken]);
 
   return rects;
 }
