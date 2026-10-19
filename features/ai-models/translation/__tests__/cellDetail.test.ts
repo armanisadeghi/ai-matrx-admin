@@ -3,7 +3,14 @@
  * as `ai.translation_evidence_proven(jsonb)`, and no evidence entry — of any
  * shape the live table holds — is ever dropped.
  */
-import { evidenceProven, normalizeEvidence, readRun, sourceLabel } from "../cellDetail";
+import {
+  evidenceProven,
+  normalizeEvidence,
+  normalizeTestResult,
+  otherMetadata,
+  readRun,
+  sourceLabel,
+} from "../cellDetail";
 
 describe("evidenceProven mirrors ai.translation_evidence_proven", () => {
   it("is false for nothing, a non-array, or docs only", () => {
@@ -51,6 +58,15 @@ describe("normalizeEvidence keeps every entry", () => {
     expect(e).toMatchObject({ kind: "probe", at: "2026-10-04T01:25Z", ref: "x", outcome: "accepted", conversationId: "conv-1" });
     expect(e!.extra).toEqual([]);
   });
+  it("a non-string kind or at stays visible as key/value, never 'vanishes'", () => {
+    const [e] = normalizeEvidence([{ kind: 7, at: { day: "2026-10-18" }, ref: "r" }]);
+    expect(e!.kind).toBeNull();
+    expect(e!.at).toBeNull();
+    expect(e!.extra).toEqual([
+      ["kind", 7],
+      ["at", { day: "2026-10-18" }],
+    ]);
+  });
   it("keeps a non-object entry", () => {
     expect(normalizeEvidence(["just text"])[0]!.extra).toEqual([["value", "just text"]]);
   });
@@ -70,6 +86,56 @@ describe("source and run", () => {
       conversation_id: "c",
       agent_id: "a",
       request_id: null,
+      extra: [],
     });
+    expect(readRun({ run: { conversation_id: "c", note: 1, at: 5 } })!.extra).toEqual([
+      ["note", 1],
+      ["at", 5],
+    ]);
   });
+  it("shows every metadata key other than run", () => {
+    expect(otherMetadata({ run: {}, origin: "x", n: 2 })).toEqual([
+      ["origin", "x"],
+      ["n", 2],
+    ]);
+    expect(otherMetadata(null)).toEqual([]);
+  });
+});
+
+describe("normalizeTestResult renders any reply honestly", () => {
+  it("reads a full reply with no problems", () => {
+    const r = normalizeTestResult({
+      cell_id: "c",
+      summary: "2 accepted",
+      tested_offerings: 1,
+      budget: { per_run: 40, per_day: 150, used_last_24h: 3, allowed_now: 37 },
+      stopped_by_budget: false,
+      outcomes: [
+        { offering_id: "o", model_name: "M", api: "a", setting_key: "k", label: "max", value: "max",
+          wire: { a: 1 }, outcome: "accepted", detail: "ok", provider_message: null, provider_param: null,
+          conversation_id: "conv", cost_usd: 0.01, evidence: "e" },
+      ],
+    });
+    expect(r.problems).toEqual([]);
+    expect(r.outcomes[0]).toMatchObject({ label: "max", outcome: "accepted", conversation_id: "conv" });
+    expect(r.budget?.per_day).toBe(150);
+  });
+  it("names a missing budget and outcome list instead of throwing", () => {
+    const r = normalizeTestResult({ summary: "x" });
+    expect(r.problems).toEqual(["The reply has no budget.", "The reply has no outcome list."]);
+    expect(r.outcomes).toEqual([]);
+  });
+  it("a non-object reply or a junk outcome line is named, raw kept", () => {
+    expect(normalizeTestResult("nope").problems).toEqual(["The server's reply is not an object."]);
+    const r = normalizeTestResult({ summary: "s", budget: {}, outcomes: [3] });
+    expect(r.problems).toEqual(["Some outcome lines are not objects."]);
+    expect(r.outcomes[0]!.outcome).toBeNull();
+  });
+  it("a skipped line keeps the server's detail", () => {
+    const r = normalizeTestResult({
+      summary: "s", budget: {}, outcomes: [{ outcome: "skipped", detail: "Not tested: today's live-test budget is used up (150 of 150)." }],
+    });
+    expect(r.outcomes[0]).toMatchObject({ outcome: "skipped", detail: expect.stringContaining("150 of 150") });
+  });
+});
 });
