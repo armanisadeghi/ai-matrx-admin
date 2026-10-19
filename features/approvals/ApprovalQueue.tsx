@@ -281,11 +281,13 @@ function modeText(item: ApprovalItem): string {
 }
 
 /**
- * A row opens by itself when what it holds must be read before deciding: a
- * review card that IS the authorization, or a sentence about its state.
+ * A row opens by itself when what it holds must be read before deciding: its
+ * body (what the change is), a review card that IS the authorization, or a
+ * sentence about its state — exactly what the list always showed open.
  */
 function opensByItself(item: ApprovalItem): boolean {
   return (
+    Boolean(item.body) ||
     (Boolean(item.individualReview) && !noLiveAction(item)) ||
     statusSentence(item) !== null
   );
@@ -353,6 +355,17 @@ function ApprovalTable({
       header: "Proposal",
       accessorKey: "headline",
       width: 300,
+    },
+    {
+      // The records a row names, each with its door (THE DOOR LAW).
+      id: "records",
+      header: "Records",
+      accessorFn: () => null,
+      sortable: false,
+      // table-filter-off: the cell is the record doors themselves; Proposal and Change carry the words
+      filter: false,
+      width: 220,
+      cell: (item) => (item.doors ? <span className="min-w-0 truncate">{item.doors}</span> : null),
     },
     {
       id: "change",
@@ -561,9 +574,6 @@ function ApprovalRowDetail({ item }: { item: ApprovalItem }) {
   return (
     <div className="min-w-0 space-y-1 px-2 py-2">
       <p className="break-words type-heading text-foreground">{item.headline}</p>
-      {item.doors ? (
-        <div className="break-words type-secondary text-muted-foreground">{item.doors}</div>
-      ) : null}
       <p className="break-words type-secondary text-muted-foreground">
         {item.acceptEffect}
         {item.proposedBy ? ` · proposed by ${item.proposedBy}` : ""}
@@ -1152,8 +1162,7 @@ export function ApprovalQueue({
               ) : null}
               {asksReason && reasonDropped.length > 0 ? (
                 <p className="type-meta text-muted-foreground">
-                  Your reason is kept on every change except{" "}
-                  {reasonDropped.join(", ")}, which does not store one yet.
+                  Reason not kept on {reasonDropped.join(", ")}
                 </p>
               ) : null}
             </div>

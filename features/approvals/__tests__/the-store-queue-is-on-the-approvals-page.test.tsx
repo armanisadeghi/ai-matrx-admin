@@ -294,8 +294,24 @@ async function mountPage() {
   await settle();
 }
 
+/**
+ * One approval on the shared table (2026-10-18): its row, plus the opened detail row under it
+ * (a store change opens by itself — its body is the value now beside the value it would get).
+ */
 function rowOf(approvalId: string): HTMLElement | null {
-  return container!.querySelector(`#approval-row-store_change-${approvalId}`);
+  const tr = container!.querySelector<HTMLElement>(`tr[data-row-id="store_change:${approvalId}"]`);
+  if (!tr) return null;
+  const next = tr.nextElementSibling as HTMLElement | null;
+  const parts = next && !next.hasAttribute("data-row-id") ? [tr, next] : [tr];
+  return {
+    get textContent() {
+      return parts.map((part) => part.textContent ?? "").join(" ");
+    },
+    querySelector: (selector: string) =>
+      parts.map((part) => part.querySelector(selector)).find(Boolean) ?? null,
+    querySelectorAll: (selector: string) =>
+      parts.flatMap((part) => Array.from(part.querySelectorAll(selector))),
+  } as unknown as HTMLElement;
 }
 
 function buttonIn(row: HTMLElement, label: string): HTMLButtonElement {

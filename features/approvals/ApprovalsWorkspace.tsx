@@ -82,8 +82,7 @@ export function ApprovalsWorkspace({
         </p>
         <p className="mt-1 type-secondary text-muted-foreground">
           {/* read-gate-exempt: the signed-out state (no user in the auth session), not a read's answer; the queue is never read without a user */}
-          Approvals are addressed to a person — there is nothing to show without
-          knowing who you are.
+          Approvals are addressed to a person
         </p>
       </div>
     );
@@ -144,6 +143,7 @@ export function ApprovalsWorkspace({
     <div className={className}>
       <ApprovalQueue
         scope={{ key: userId, organizationId, userId }}
+        tableId="approvals"
         title="Waiting on your approval"
         defaultExpanded
         // The one place that must render even when it is empty: "nothing is
@@ -210,7 +210,7 @@ export function ApprovalsWorkspace({
             {/* The banner above already carries the whole answer and its door;
                 the card only has to stop contradicting it. */}
             {waitingElsewhere
-              ? "One item you were sent a link to is still waiting on you — the note above says where it is."
+              ? "One linked item is still waiting — see the note above"
               : APPROVALS_EMPTY_BODY}
           </p>
         </div>
