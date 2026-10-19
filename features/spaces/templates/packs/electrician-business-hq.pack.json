@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 6,
+  "version": 7,
   "title": "Electrician Business HQ",
   "description": "For electrical contractors: estimates, jobs, permits and inspections, materials, invoices.",
   "forWho": "Electrical contractors and electricians",
@@ -779,7 +779,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -787,7 +787,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2657,7 +2657,7 @@
         "Anvil Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2968,7 +2968,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

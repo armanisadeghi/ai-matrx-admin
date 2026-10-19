@@ -1,3 +1,4 @@
+// record-view: none — a public portal record view addressed by link, not the signed-in record page
 // app/(portal)/portal/c/[slug]/r/[recordId]/page.tsx — ONE OF HER RECORDS.
 //
 // The fields the portal allows, with their real labels; the ones it opened for

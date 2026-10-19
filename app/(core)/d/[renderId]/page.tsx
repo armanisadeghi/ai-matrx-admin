@@ -32,6 +32,7 @@
 // refuses somebody who may not see the record this document is about, in
 // English; anything this page wrote over the top would be worse.
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { use, useEffect, useState } from "react";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
@@ -103,7 +104,7 @@ export default function RenderedDocumentRoute({
     return (
         <>
             <RecordPageHeader record={{ name: "Document" }} />
-            <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] p-4">
+            <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] p-4 pb-[var(--matrx-page-runway)]" data-matrx-page-runway="">
                 {refusal ? (
                     // The door's own refusal (or a zero-row answer) goes to the
                     // canonical gate, which prints a server sentence verbatim.
@@ -131,6 +132,7 @@ export default function RenderedDocumentRoute({
                                 actionsVariant="mini-bar"
                             />
                         </div>
+                        <EntityCustomFields entityToken="doc_render" recordId={renderId} />
                     </div>
                 )}
             </div>

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0303",
-  "version": 8,
+  "version": 9,
   "title": "Small Business OS",
   "description": "Owners of 1 to 15 person businesses: sales, projects, money, team and goals in one.",
   "forWho": "Owners of 1 to 15 person businesses",
@@ -3067,7 +3067,7 @@
         "Weatherby Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -3227,14 +3227,27 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "win_chance",
+                  "weighted",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Closing calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "close_on"
+                "dateField": "close_on",
+                "hiddenFields": [
+                  "win_chance",
+                  "weighted",
+                  "created_at",
+                  "won_btn",
+                  "lost_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -3305,14 +3318,30 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "tasks_total",
+                  "tasks_done",
+                  "open_tasks",
+                  "progress",
+                  "pj_done",
+                  "add_task_btn"
+                ]
               },
               {
                 "id": "view-tl",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "tasks_total",
+                  "tasks_done",
+                  "open_tasks",
+                  "progress",
+                  "pj_done",
+                  "add_task_btn"
+                ]
               }
             ],
             "activeViewId": "v-p14"
@@ -3496,7 +3525,13 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "invoice_no",
+                  "updated_at",
+                  "paid_btn",
+                  "sent_btn"
+                ]
               },
               {
                 "id": "view-un",
@@ -3668,7 +3703,13 @@
                 "name": "By quarter",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "quarter"
+                "groupField": "quarter",
+                "hiddenFields": [
+                  "target",
+                  "current",
+                  "progress",
+                  "to_go"
+                ]
               },
               {
                 "id": "view-tbl",

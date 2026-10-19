@@ -12,6 +12,7 @@
 // `__kind` fenced blocks (flashcard_set, diagram_spec, tables, mermaid, …);
 // this is the education-side half of the Content IR integration (Lane C).
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Download, ListChecks, Loader2, Pencil, Trash2 } from "lucide-react";
@@ -245,6 +246,7 @@ export function SummaryDetail({ id, edit = false }: { id: string; edit?: boolean
 
       {/* Where this came from + the rest of the kit made from the same upload. */}
       <MadeFromSource entityType="study_media" entityId={row.id} />
+      <EntityCustomFields entityToken="study_media" recordId={row.id} organizationId={row.organization_id} />
 
       {trust && trust.citations.length > 0 && (
         <div className="space-y-2 border-t border-border pt-4">

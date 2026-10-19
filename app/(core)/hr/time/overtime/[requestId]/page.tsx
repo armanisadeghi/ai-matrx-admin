@@ -1,3 +1,4 @@
+// record-view: none — an overtime request decision workspace, not a record page
 import { Suspense } from "react";
 
 import { HrTimeShell } from "@/features/hr/time/HrTimeShell";

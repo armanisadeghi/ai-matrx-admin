@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 6,
+  "version": 7,
   "title": "Residential Cleaning Service HQ",
   "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
@@ -859,7 +859,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Supplies cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Supplies cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -867,7 +867,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2489,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2800,7 +2800,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

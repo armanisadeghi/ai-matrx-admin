@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 // `/hr/performance/[reviewId]` — one 360 review: both halves side by side once both are in.
 
 import { hrHref, hrPerformance360Href } from "@/features/hr/routes";

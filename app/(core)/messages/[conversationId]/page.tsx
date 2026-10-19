@@ -1,3 +1,4 @@
+// record-view: none — a chat surface; the message list owns the whole screen and there is no page body below it
 "use client";
 
 /**

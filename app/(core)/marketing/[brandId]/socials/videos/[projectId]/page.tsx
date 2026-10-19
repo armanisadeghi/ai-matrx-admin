@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 import { Suspense } from "react";
 
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";

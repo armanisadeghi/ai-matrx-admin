@@ -15,6 +15,7 @@
  * content flows behind the glass header. No in-body title bar.
  */
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -406,6 +407,15 @@ export function WorkflowRunPage({
           }
         >
           {body}
+          {boardMode || failure || !workflow ? null : (
+            <div className="mx-auto w-full max-w-[1500px] px-3 pb-4 sm:px-5">
+              {showingRun && runId ? (
+                <EntityCustomFields entityToken="workflow_run" recordId={runId} />
+              ) : definitionId ? (
+                <EntityCustomFields entityToken="workflow" recordId={definitionId} />
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
     </MasterworkRulesProvider>

@@ -10,6 +10,7 @@
 //
 // React Compiler is on: no manual memo.
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -165,6 +166,7 @@ export function AudioStudyDetail({ mediaId, edit = false }: { mediaId: string; e
       )}
       {/* Where this came from + the rest of the kit made from the same upload. */}
       <MadeFromSource entityType="study_media" entityId={media.id} />
+      <EntityCustomFields entityToken="study_media" recordId={media.id} organizationId={media.organization_id} />
       <TrustPanel media={media} />
     </div>
     </SurfaceRuntimeProvider>

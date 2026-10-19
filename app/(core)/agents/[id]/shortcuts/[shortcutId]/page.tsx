@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 import { getAgent } from "@/lib/agents/data";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";

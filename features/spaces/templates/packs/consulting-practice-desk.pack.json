@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 7,
+  "version": 8,
   "title": "Consulting Practice Desk",
   "description": "For consultants: proposals, engagements, days sold versus used, deliverables and readouts.",
   "forWho": "Management and operations consulting practices",
@@ -2507,7 +2507,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -2701,7 +2701,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "stage"
+                "groupField": "stage",
+                "hiddenFields": [
+                  "chance",
+                  "weighted",
+                  "lead",
+                  "added_at",
+                  "btn_mark_won",
+                  "btn_mark_lost"
+                ]
               },
               {
                 "id": "pro-c",
@@ -2812,7 +2820,22 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days_sold",
+                  "days_logged",
+                  "days_left",
+                  "burn_pct",
+                  "fee_per_day",
+                  "deliv_total",
+                  "deliv_done",
+                  "deliv_open",
+                  "lead",
+                  "owner_me",
+                  "added_at",
+                  "btn_close_engagement",
+                  "add_deliverable"
+                ]
               },
               {
                 "id": "eng-c",
@@ -3052,7 +3075,10 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "worked_on"
+                "dateField": "worked_on",
+                "hiddenFields": [
+                  "days"
+                ]
               },
               {
                 "id": "tim-t",

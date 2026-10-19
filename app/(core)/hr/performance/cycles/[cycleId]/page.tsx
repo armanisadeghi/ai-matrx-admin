@@ -1,3 +1,4 @@
+// record-view: none — its record type is not registered for custom fields
 // `/hr/performance/cycles/[cycleId]` — one standard review cycle: who is in it, who is outstanding,
 // adding people, closing it.
 

@@ -183,6 +183,10 @@ describe("choice colors carry meaning", () => {
   it("accepts finished on green or teal, negative on red or pink, warnings on amber", () => {
     expect(choiceColorFindings({ Paid: "green", Completed: "teal", Cancelled: "red", Overdue: "pink", "At risk": "amber", Draft: "slate" })).toEqual([]);
   });
+  it("flags on hold, paused and waiting states painted green or gray, and accepts them on amber", () => {
+    expect(choiceColorFindings({ "On hold": "green", Paused: "teal", Waiting: "slate", "Waiting on client": "gray", Held: "green" }).map((f) => f.choice)).toEqual(["On hold", "Paused", "Waiting", "Waiting on client"]);
+    expect(choiceColorFindings({ "On hold": "amber", Paused: "orange", Waiting: "amber" })).toEqual([]);
+  });
   it("reports the planted defect at the choice's path in a real pack", () => {
     const p = fresh();
     const field = p.spec.tables.flatMap((t) => t.fields).find((f) => f.choiceColors && Object.keys(f.choiceColors).length);
@@ -195,6 +199,31 @@ describe("choice colors carry meaning", () => {
     for (const file of readdirSync(dir).filter((n) => n.endsWith(".pack.json"))) {
       const pack = JSON.parse(readFileSync(join(dir, file), "utf8")) as SpaceTemplatePack;
       for (const t of pack.spec.tables) for (const f of t.fields) for (const c of choiceColorFindings(f.choiceColors as Record<string, string> | undefined)) bad.push(`${file} ${t.token}.${f.key} ${c.says}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+describe("view tab names", () => {
+  it("refuses two tabs of one database block with the same name, in any letter case", () => {
+    const p = fresh();
+    const views = projectsDb(p).views;
+    views.push({ ...views[0], id: "dup-tab", name: ` ${String(views[0].name).toUpperCase()} ` });
+    const found = checkPack(p).filter((f) => f.says.includes("named"));
+    expect(found.map((f) => f.at)).toEqual([`pages[0] (${p.pages[0].key}).blocks[3].props.views[${views.length - 1}].name`]);
+  });
+  it("refuses two store views of one table with the same name, but not the same name on two tables", () => {
+    const p = fresh();
+    const [a] = p.spec.views ?? [];
+    p.spec.views = [...(p.spec.views ?? []), { ...a, token: "dup_store_view" }];
+    expect(checkPack(p).some((f) => f.at.startsWith("spec.views[") && f.says.includes("named"))).toBe(true);
+  });
+  it("holds for every committed pack", () => {
+    const dir = join(__dirname, "../../../features/spaces/templates/packs");
+    const bad: string[] = [];
+    for (const file of readdirSync(dir).filter((n) => n.endsWith(".pack.json"))) {
+      const pack = JSON.parse(readFileSync(join(dir, file), "utf8")) as SpaceTemplatePack;
+      for (const f of checkPack(pack)) if (/named "/.test(f.says) && /views\[/.test(f.at)) bad.push(`${file} ${f.at} ${f.says}`);
     }
     expect(bad).toEqual([]);
   });

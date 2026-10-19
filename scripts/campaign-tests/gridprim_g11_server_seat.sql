@@ -89,7 +89,7 @@ begin
     exception when others then
       perform set_config('role', 'none', true);
       if v_seat = 'SERVICE' and sqlstate = '42501'
-         and sqlerrm = 'You are not a member of that organization, so custom.scope_table_provision has nothing to do there.' then
+         and sqlerrm = 'You are not a member of that organization, so there is nothing for you to do there.' then
         raise notice 'SERVICE PASS (refused by design) — %', sqlerrm;
       else
         v_fail := v_fail || format(' %s: the insert was ROLLED BACK — %s (%s);', v_seat, sqlerrm, sqlstate);

@@ -2,6 +2,7 @@
 
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useDeclarePageObjectOrganization } from "@/features/shell/pageObjectOrganization";
 import { useOrganizationsWith } from "@/features/organizations/hooks/useOrganizationsWith";
 import { toastWriteFailure } from "@/lib/errors/toastWriteFailure";
@@ -605,6 +606,7 @@ function ScheduleRecordBody({
         <TriggerCard task={task} editHref={editHref} />
       </div>
       <RunHistoryCard taskId={task.id} task={task} />
+      <EntityCustomFields entityToken="sch_task" recordId={task.id} organizationId={task.organizationId} />
     </div>
   );
 }

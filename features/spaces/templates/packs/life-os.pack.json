@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 8,
+  "version": 9,
   "title": "Life OS",
   "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -557,7 +557,7 @@
             "choiceColors": {
               "Planned": "slate",
               "In progress": "blue",
-              "On hold": "green",
+              "On hold": "amber",
               "Done": "teal"
             },
             "default": "Planned",
@@ -2107,7 +2107,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2229,7 +2229,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "estimate_min",
+                  "assignee",
+                  "minutes_tracked",
+                  "days_left",
+                  "due_flag",
+                  "created",
+                  "take_btn"
+                ]
               }
             ],
             "activeViewId": "view-3"
@@ -2273,7 +2282,12 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "task_count",
+                  "tasks_done",
+                  "progress"
+                ]
               },
               {
                 "id": "view-7",
@@ -2321,7 +2335,12 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "milestones_total",
+                  "milestones_done",
+                  "progress"
+                ]
               },
               {
                 "id": "view-10",
@@ -2334,7 +2353,12 @@
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "target_on"
+                "dateField": "target_on",
+                "hiddenFields": [
+                  "milestones_total",
+                  "milestones_done",
+                  "progress"
+                ]
               }
             ],
             "activeViewId": "view-9"

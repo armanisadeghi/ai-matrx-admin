@@ -1,3 +1,4 @@
+// record-view: none — a chat surface; the message list owns the whole screen and there is no page body below it
 import { Suspense } from "react";
 import { ChatNewLandingSkeleton } from "@ai-matrx/chat/agents/components/chat/ChatNewClient";
 import { createClient } from "@/utils/supabase/server";

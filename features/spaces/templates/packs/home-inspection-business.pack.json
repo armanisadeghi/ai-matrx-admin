@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 6,
+  "version": 7,
   "title": "Home Inspection Business",
   "description": "For home inspectors: bookings, agreements, reports, agent referrals and license renewals.",
   "forWho": "Home inspectors and multi-inspector firms",
@@ -2246,7 +2246,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2550,14 +2550,51 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "kind",
+                  "addons",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_at"
+                "dateField": "when_at",
+                "hiddenFields": [
+                  "sqft",
+                  "year_built",
+                  "kind",
+                  "addons",
+                  "status",
+                  "agreement",
+                  "paid",
+                  "utilities",
+                  "fee",
+                  "safety_items",
+                  "inspector",
+                  "scheduler",
+                  "inv_btn",
+                  "confirm_btn",
+                  "onsite_btn",
+                  "writing_btn",
+                  "delivered_btn"
+                ]
               },
               {
                 "id": "vall",
@@ -2655,14 +2692,23 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "total",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "total",
+                  "method",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "vall",

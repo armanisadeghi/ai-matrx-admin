@@ -1,3 +1,4 @@
+// record-view: none — a scope type's page, which lists its scopes; the scope's own page carries the section
 "use client";
 
 import React from "react";

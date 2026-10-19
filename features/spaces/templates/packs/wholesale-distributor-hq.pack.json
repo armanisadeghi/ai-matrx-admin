@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 6,
+  "version": 7,
   "title": "Wholesale Distributor HQ",
   "description": "For distributors: case stock and best-by dates, POs, routes, invoices and collections.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -3144,7 +3144,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3290,7 +3290,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "channel",
+                  "shorts",
+                  "pod",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
@@ -3478,7 +3488,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "po_status"
+                "groupField": "po_status",
+                "hiddenFields": [
+                  "cases",
+                  "added_at"
+                ]
               },
               {
                 "id": "po-t",
@@ -3678,7 +3692,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "terms",
+                "hiddenFields": [
+                  "lead_days",
+                  "product_n",
+                  "on_order",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"

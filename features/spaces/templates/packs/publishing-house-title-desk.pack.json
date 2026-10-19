@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 4,
+  "version": 5,
   "title": "Publishing House Title Desk",
   "description": "Publisher: manuscripts, titles by editorial stage, rights, print runs and royalties.",
   "forWho": "Independent book publishers and small presses",
@@ -3796,7 +3796,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3993,7 +3993,30 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pages",
+                  "list_price",
+                  "royalty_rate",
+                  "units_sold",
+                  "earned",
+                  "unearned",
+                  "copies_printed",
+                  "rights_income",
+                  "rights_open",
+                  "editor",
+                  "steps_open",
+                  "steps_late",
+                  "health",
+                  "btn_copyedit",
+                  "btn_design",
+                  "btn_proofs",
+                  "btn_printer",
+                  "btn_claim",
+                  "add_step",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "tit-c",
@@ -4359,7 +4382,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "words",
+                  "btn_meeting",
+                  "btn_pass",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "ms-c",
@@ -4482,14 +4513,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "run_cost",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "delivery_on"
+                "dateField": "delivery_on",
+                "hiddenFields": [
+                  "quantity",
+                  "run_cost",
+                  "printer",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "pr-t",
@@ -5385,7 +5433,16 @@
                 "name": "Books arriving",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "delivery_on"
+                "dateField": "delivery_on",
+                "hiddenFields": [
+                  "quantity",
+                  "run_cost",
+                  "printer",
+                  "btn_delivered",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "dpb-2"

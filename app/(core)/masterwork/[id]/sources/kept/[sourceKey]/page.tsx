@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(core)/masterwork/[id]/sources/kept/[sourceKey]/page.tsx
 //
 // ONE kept source, in full — the words themselves.

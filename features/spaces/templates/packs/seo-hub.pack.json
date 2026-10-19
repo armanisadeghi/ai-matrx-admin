@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 8,
+  "version": 9,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -1410,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1516,7 +1516,17 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "volume",
+                  "difficulty",
+                  "priority",
+                  "rank",
+                  "rank_change",
+                  "post_count",
+                  "track_btn",
+                  "open_target_url"
+                ]
               },
               {
                 "id": "view-rank-watch",
@@ -1600,14 +1610,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "length_words",
+                  "views",
+                  "comments",
+                  "shares",
+                  "engagement",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "view-calendar",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "publish_on"
+                "dateField": "publish_on",
+                "hiddenFields": [
+                  "length_words",
+                  "views",
+                  "comments",
+                  "shares",
+                  "engagement",
+                  "edited",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "view-all-posts",

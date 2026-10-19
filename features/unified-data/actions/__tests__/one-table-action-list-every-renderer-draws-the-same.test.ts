@@ -138,7 +138,7 @@ describe("one table action list, every renderer", () => {
     const byId = Object.fromEntries(drawnFromItemMenu(toItemMenuConfig(viewer)).map((d) => [d.id, d.reason]));
     expect(byId).toMatchObject({
       duplicate: "Not available here",
-      archive: "Needs Admin access",
+      archive: "Needs Full access",
       open: null,
     });
   });

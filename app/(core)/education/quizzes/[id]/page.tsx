@@ -1,3 +1,4 @@
+// record-view: assessment
 // /education/quizzes/[id] — the quiz detail + shareable take URL. `?start=1`
 // renders the taker directly; `?phase=`/`?gain=` drive learning-gain takings.
 // Gated by the quiz's view access (P7 useAccess, client-side) + RLS.

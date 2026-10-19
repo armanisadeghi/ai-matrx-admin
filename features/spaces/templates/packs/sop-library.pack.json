@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0308",
-  "version": 7,
+  "version": 8,
   "title": "SOP Library",
   "description": "Teams: write down how work gets done, with owners, approvers and review dates.",
   "forWho": "Teams documenting their processes",
@@ -1184,7 +1184,7 @@
         "Cobblestone Drive"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1282,14 +1282,36 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "sop_no",
+                  "days_to_review",
+                  "review_state",
+                  "audit_note",
+                  "tags",
+                  "ack_count",
+                  "updated_at",
+                  "approve_btn",
+                  "archive_btn"
+                ]
               },
               {
                 "id": "view-dept",
                 "name": "By department",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "department"
+                "groupField": "department",
+                "hiddenFields": [
+                  "sop_no",
+                  "days_to_review",
+                  "review_state",
+                  "audit_note",
+                  "tags",
+                  "ack_count",
+                  "updated_at",
+                  "approve_btn",
+                  "archive_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -1308,7 +1330,19 @@
                 "name": "Review calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_review"
+                "dateField": "next_review",
+                "hiddenFields": [
+                  "sop_no",
+                  "approver",
+                  "days_to_review",
+                  "review_state",
+                  "audit_note",
+                  "tags",
+                  "ack_count",
+                  "updated_at",
+                  "approve_btn",
+                  "archive_btn"
+                ]
               },
               {
                 "id": "v-ro",

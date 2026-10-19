@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // One TOPIC by its id alone: /marketing/topical-maps/topics/[topicId].
 //
 // A topic is addressed by SLUG inside a map everywhere else — slugs are the

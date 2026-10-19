@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 "use client";
 
 // /organizations/[orgId]/mandates/[mandateKey] — ONE mandate from the

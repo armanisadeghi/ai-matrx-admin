@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0260",
-  "version": 6,
+  "version": 7,
   "title": "Course & Curriculum Planner",
   "description": "Instructors and course designers: plan units, lessons and outcomes with pacing.",
   "forWho": "Instructors and course designers",
@@ -1582,7 +1582,7 @@
         "Pennywhistle Close"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -1689,7 +1689,15 @@
                 "name": "Pacing",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "starts_on"
+                "dateField": "starts_on",
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "done",
+                  "lesson_total",
+                  "progress",
+                  "add_lesson_btn"
+                ]
               },
               {
                 "id": "v-ug",
@@ -1830,14 +1838,25 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "created",
+                  "ready_btn"
+                ]
               },
               {
                 "id": "v-lb",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "order",
+                  "minutes",
+                  "ready_btn"
+                ]
               },
               {
                 "id": "v-la",

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 9,
+  "version": 10,
   "title": "Workout Log",
   "description": "Lifters and runners: log sessions, exercises and sets, with totals and personal bests.",
   "forWho": "Lifters and runners",
@@ -1695,7 +1695,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1765,7 +1765,17 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "duration",
+                  "effort",
+                  "volume",
+                  "set_count",
+                  "avg_per_set",
+                  "logged",
+                  "done_btn",
+                  "add_set_entry_btn"
+                ]
               },
               {
                 "id": "view-2",
@@ -1784,7 +1794,16 @@
                 "name": "By type",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "type"
+                "groupField": "type",
+                "hiddenFields": [
+                  "duration",
+                  "effort",
+                  "volume",
+                  "set_count",
+                  "avg_per_set",
+                  "done_btn",
+                  "add_set_entry_btn"
+                ]
               },
               {
                 "id": "view-u2",
@@ -1903,7 +1922,11 @@
                 "name": "By muscle group",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "muscle"
+                "groupField": "muscle",
+                "hiddenFields": [
+                  "best_weight",
+                  "total_sets"
+                ]
               },
               {
                 "id": "view-7",

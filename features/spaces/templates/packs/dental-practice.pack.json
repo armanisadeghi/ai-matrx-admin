@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 6,
+  "version": 7,
   "title": "Dental Practice",
   "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
   "forWho": "Dentists, office managers and dental front desks",
@@ -2877,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3181,14 +3181,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "minutes",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_at"
+                "dateField": "when_at",
+                "hiddenFields": [
+                  "minutes",
+                  "status",
+                  "coordinator",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vall",
@@ -3417,14 +3430,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "claim_no",
+                  "payer",
+                  "denial_reason",
+                  "paid_btn",
+                  "submit_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "follow_up_on"
+                "dateField": "follow_up_on",
+                "hiddenFields": [
+                  "claim_no",
+                  "status",
+                  "payer",
+                  "denial_reason",
+                  "paid_btn",
+                  "submit_btn"
+                ]
               },
               {
                 "id": "vall",

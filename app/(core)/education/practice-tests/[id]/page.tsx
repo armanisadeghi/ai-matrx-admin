@@ -1,3 +1,4 @@
+// record-view: assessment
 // /education/practice-tests/[id] — the test detail + shareable take URL.
 // `?start=1` renders the timed taker; `?phase=`/`?gain=` drive learning-gain.
 import type { Metadata } from "next";

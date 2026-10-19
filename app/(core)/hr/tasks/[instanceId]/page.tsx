@@ -1,3 +1,4 @@
+// record-view: none — a restricted HR decision panel whose record may be withheld from the viewer; the record itself is the only place its details render
 import { Suspense } from "react";
 
 import { hrHref, hrTasksHref } from "@/features/hr/routes";

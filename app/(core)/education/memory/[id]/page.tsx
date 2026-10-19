@@ -1,3 +1,4 @@
+// record-view: study_media
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { MemoryDetail } from "@/features/education/memory/components/MemoryDetail";

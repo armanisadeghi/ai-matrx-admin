@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0104",
-  "version": 7,
+  "version": 8,
   "title": "Bug Tracker",
   "description": "Engineering and support teams: report, triage and fix bugs by severity on a board.",
   "forWho": "Engineering and support teams",
@@ -1314,7 +1314,7 @@
         "Tamarack Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1441,14 +1441,50 @@
                 "name": "Board",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "bug_no",
+                  "dup_count",
+                  "assignee",
+                  "reporter",
+                  "environment",
+                  "component",
+                  "link",
+                  "age_days",
+                  "created",
+                  "edited",
+                  "filed_by",
+                  "fixed_btn",
+                  "start_btn",
+                  "open_link",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By severity",
                 "icon": "SquareKanban",
                 "groupField": "severity",
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "bug_no",
+                  "dup_count",
+                  "assignee",
+                  "reporter",
+                  "environment",
+                  "component",
+                  "link",
+                  "age_days",
+                  "created",
+                  "edited",
+                  "filed_by",
+                  "fixed_btn",
+                  "start_btn",
+                  "open_link",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "grid",
@@ -1467,7 +1503,26 @@
                 "name": "Reported",
                 "icon": "Calendar",
                 "dateField": "reported_on",
-                "id": "view-4"
+                "id": "view-4",
+                "hiddenFields": [
+                  "bug_no",
+                  "dup_count",
+                  "priority",
+                  "assignee",
+                  "reporter",
+                  "environment",
+                  "component",
+                  "link",
+                  "age_days",
+                  "created",
+                  "edited",
+                  "filed_by",
+                  "fixed_btn",
+                  "start_btn",
+                  "open_link",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-bug-new-week",
@@ -1543,7 +1598,13 @@
                 "name": "Calendar",
                 "icon": "Calendar",
                 "dateField": "release_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "fixed_count",
+                  "critical_fixed",
+                  "critical_pct",
+                  "add_bug_btn"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -2059,7 +2120,13 @@
                 "name": "Calendar",
                 "icon": "Calendar",
                 "dateField": "release_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "fixed_count",
+                  "critical_fixed",
+                  "critical_pct",
+                  "add_bug_btn"
+                ]
               },
               {
                 "id": "view-release-this-month",

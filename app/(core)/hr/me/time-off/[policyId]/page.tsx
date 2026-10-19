@@ -1,3 +1,4 @@
+// record-view: none — a person's own leave ledger for a policy, not one record
 // `/hr/me/time-off/[policyId]` — SPEC-LEAVE §12, the employee's own leave ledger.
 //
 // 🚨 THE SAME COMPONENT THE MANAGER SURFACE USES. §12 declares two routes over one

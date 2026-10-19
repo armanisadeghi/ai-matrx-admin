@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 6,
+  "version": 7,
   "title": "Translation Agency Desk",
   "description": "For translation project managers: jobs, word counts, linguists, glossaries and reviews.",
   "forWho": "Translation and localization agencies",
@@ -2497,7 +2497,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2747,7 +2747,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "words",
+                  "fuzzy_words",
+                  "repeat_words",
+                  "billable_words",
+                  "price",
+                  "linguist_rate",
+                  "linguist_cost",
+                  "margin_pct",
+                  "po_number",
+                  "days_to_due",
+                  "client",
+                  "linguist",
+                  "pm",
+                  "checks_done",
+                  "avg_score",
+                  "owner_me",
+                  "added_at",
+                  "btn_send_to_client",
+                  "add_review",
+                  "take_btn"
+                ]
               },
               {
                 "id": "job-c",
@@ -2916,14 +2938,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "score",
+                  "errors_critical",
+                  "errors_major",
+                  "errors_minor",
+                  "added_at",
+                  "btn_log_score"
+                ]
               },
               {
                 "id": "rev-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "checked_on"
+                "dateField": "checked_on",
+                "hiddenFields": [
+                  "score",
+                  "errors_critical",
+                  "errors_major",
+                  "errors_minor",
+                  "reviewer",
+                  "added_at",
+                  "btn_log_score"
+                ]
               },
               {
                 "id": "rev-t",

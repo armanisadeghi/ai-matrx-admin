@@ -1,3 +1,4 @@
+// record-view: none — a saved-case calculator, not a record page
 import { SavedCaseLoader } from "@/features/legal/wc/pd-ratings/SavedCaseLoader";
 
 

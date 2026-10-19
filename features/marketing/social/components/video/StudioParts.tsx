@@ -6,7 +6,7 @@
  * CAPTION_PRESETS, the composition preview (the engine's resolver + VideoPlayer) and an output download row.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, CircleAlert, Download, Film } from "lucide-react";
 
 import type { Composition } from "@ai-matrx/media/video";
@@ -271,6 +271,14 @@ export function pendingMediaCount(doc: Composition): number {
  * (a voice not generated yet, a voice edit waiting for a new take) says why instead of showing a broken frame.
  */
 export function CompositionPreview({ doc, className }: { doc: Composition; className?: string }) {
+  const client = useMediaClient();
+  const readMediaBytes = useCallback(async (mediaId: string): Promise<ArrayBuffer | null> => {
+    const source = doc.media[mediaId]?.source;
+    if (source?.type !== "file" || !source.fileId) return null;
+    const handle = await client.getBlob({ file_id: source.fileId });
+    try { return await handle.blob.arrayBuffer(); }
+    finally { handle.release(); }
+  }, [client, doc]);
   const byMedia = mediaFileIds(doc);
   const { facts, pending, failed } = useFileUrls(Object.values(byMedia));
   const resolved = resolveComposition(doc);
@@ -306,7 +314,7 @@ export function CompositionPreview({ doc, className }: { doc: Composition; class
   }
   return (
     <div className={className}>
-      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={mediaUrls} hideTranscript />
+      <VideoPlayer input={programInputFromComposition(doc, resolved.timeline)} mediaUrls={mediaUrls} readMediaBytes={readMediaBytes} hideTranscript />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0516",
-  "version": 6,
+  "version": 7,
   "title": "Online Store Operations Hub",
   "description": "For online shops: SKUs and stock, purchase orders, fulfillment, returns, sales by channel.",
   "forWho": "Small online shops selling their own goods",
@@ -3367,7 +3367,7 @@
         "Cobbler Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3698,7 +3698,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "po_status"
+                "groupField": "po_status",
+                "hiddenFields": [
+                  "units",
+                  "added_at"
+                ]
               },
               {
                 "id": "po-t",
@@ -3905,7 +3909,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "terms",
+                "hiddenFields": [
+                  "lead_days",
+                  "product_n",
+                  "on_order",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"

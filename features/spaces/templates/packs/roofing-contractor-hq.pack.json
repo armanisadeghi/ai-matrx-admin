@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 6,
+  "version": 7,
   "title": "Roofing Contractor HQ",
   "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -841,7 +841,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -849,7 +849,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2553,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2741,7 +2741,27 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "squares",
+                  "priority",
+                  "tech",
+                  "crew",
+                  "claim_no",
+                  "callback",
+                  "quote",
+                  "parts_cost",
+                  "labor_cost",
+                  "hours",
+                  "margin",
+                  "margin_pct",
+                  "margin_flag",
+                  "collected",
+                  "assigned_to",
+                  "done_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "job-c",
@@ -2864,7 +2884,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

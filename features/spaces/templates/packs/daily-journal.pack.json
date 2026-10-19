@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0204",
-  "version": 4,
+  "version": 5,
   "title": "Daily Journal",
   "description": "Journalers: one page a day with mood, energy and gratitude, plus mood charts.",
   "forWho": "Journalers and reflective planners",
@@ -763,7 +763,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -960,20 +960,40 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "energy",
+                  "highlight",
+                  "reviewed",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-6",
                 "name": "By mood",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "mood"
+                "groupField": "mood",
+                "hiddenFields": [
+                  "energy",
+                  "reviewed",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-7",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "energy",
+                  "highlight",
+                  "reviewed",
+                  "created",
+                  "edited"
+                ]
               },
               {
                 "id": "view-8",

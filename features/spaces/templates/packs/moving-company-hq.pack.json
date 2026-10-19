@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 6,
+  "version": 7,
   "title": "Moving Company HQ",
   "description": "For local movers: surveys, hourly quotes, crews and trucks, move day, damage claims.",
   "forWho": "Local moving companies",
@@ -784,7 +784,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Estimate (USD)} - {Materials cost (USD)} - {Labor cost (USD)}"
+            "formula": "IF({Status} = \"Cancelled\", \"\", {Estimate (USD)} - {Materials cost (USD)} - {Labor cost (USD)})"
           },
           {
             "key": "margin_pct",
@@ -792,7 +792,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0)"
+            "formula": "IF({Status} = \"Cancelled\", \"\", IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0))"
           },
           {
             "key": "margin_flag",
@@ -2738,7 +2738,7 @@
         "Depot Lane"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3049,7 +3049,13 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at",
+                  "stock_value",
+                  "added_at"
+                ]
               },
               {
                 "id": "par-t",

@@ -1,3 +1,4 @@
+// record-view: workflow
 // /workflows/[id] — set a workflow up, run it, and watch it live.
 //
 // The run id rides `?run=` the moment the run starts, so a mid-run refresh

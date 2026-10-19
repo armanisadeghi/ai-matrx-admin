@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0562",
-  "version": 4,
+  "version": 5,
   "title": "SaaS Startup Operating System",
   "description": "SaaS operating system: MRR by plan, churn by signup cohort, support SLAs and roadmap.",
   "forWho": "Founders running a small subscription software product",
@@ -2885,7 +2885,7 @@
         "Gantry Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -3282,7 +3282,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "asks",
+                  "asking_mrr",
+                  "btn_plan",
+                  "btn_build",
+                  "btn_shipped",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "fea-c",

@@ -1,3 +1,4 @@
+// record-view: social_profile
 import { AccountDetail } from "@/features/marketing/social/components/AccountDetail";
 
 /** `[accountId]` is the shared profile id (`social.social_profile.id`). */

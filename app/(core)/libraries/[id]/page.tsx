@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 // app/(core)/libraries/[id]/page.tsx
 //
 // One Library: metrics that fill in while the catalog streams, the Sources

@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // app/(core)/o/[id]/page.tsx — ONE ADDRESS THAT OPENS ANY ID THE PLATFORM MINTS.
 //
 // Lane ROUTE-RESOLVER, 2026-09-23. The owner: "a more intelligent routing system that will

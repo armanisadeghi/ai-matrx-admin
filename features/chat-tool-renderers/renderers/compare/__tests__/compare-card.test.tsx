@@ -10,13 +10,30 @@ import { createRoot } from "react-dom/client";
 const followRun = jest.fn();
 const startChatComparison = jest.fn();
 
-jest.mock("@/features/comparison/server", () => ({ followRun: (...a: unknown[]) => followRun(...a) }));
+const quoteComparison = jest.fn(async () => ({ kind: "companies_reviews", kind_label: "Companies", item_count: 2,
+  records_per_item: 10, total_records: 20, points_per_record: 3, total_points: 60, usd_per_record: null, total_usd: null,
+  usd_per_record_display: null, total_usd_display: null, records_by_item: [10, 10], note: "" }));
+jest.mock("@/features/comparison/server", () => ({
+  followRun: (...a: unknown[]) => followRun(...a),
+  quoteComparison: (...a: unknown[]) => (quoteComparison as (...x: unknown[]) => unknown)(...a),
+  lookupItems: jest.fn(),
+}));
+jest.mock("@/components/official/ProInput", () => ({
+  ProInput: ({ wrapperClassName: _w, ...p }: Record<string, unknown>) => <input {...(p as object)} />,
+}));
+jest.mock("@/features/comparison/hooks", () => ({
+  useComparisonKinds: () => ({ isError: false, data: [
+    { key: "companies_reviews", label: "Companies", status: "live", lookup_points: 0, facets: [] },
+    { key: "local_business", label: "Local businesses", status: "live", lookup_points: 0, facets: [] },
+  ] }),
+}));
 jest.mock("@/features/comparison/chat", () => ({ startChatComparison: (...a: unknown[]) => startChatComparison(...a) }));
 jest.mock("@/components/cost/useCostDisplay", () => ({ useSeesDollars: () => false }));
 jest.mock("@/features/organizations/useOrganizationRequired", () => ({
   useOrganizationRequired: () => ({ organizationId: "org-1" }),
 }));
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ComparisonRefusal, type ComparisonResult } from "@/features/comparison/contract";
 import { CompareInline } from "../CompareInline";
 import { parseCompare } from "../parseCompare";
@@ -51,8 +68,11 @@ async function mount(result: unknown) {
   document.body.appendChild(host);
   const root = createRoot(host);
   await act(async () => {
-    root.render(<CompareInline entry={entry(result)} expanded onToggleExpanded={() => {}} {...({} as object)} />);
+    root.render(<QueryClientProvider client={new QueryClient()}>
+      <CompareInline entry={entry(result)} expanded onToggleExpanded={() => {}} {...({} as object)} />
+    </QueryClientProvider>);
   });
+  await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
   return host;
 }
 const confirmButton = (h: HTMLElement) => h.querySelector<HTMLButtonElement>("[data-compare-confirm-button]");
@@ -74,7 +94,7 @@ describe("parseCompare", () => {
 });
 
 describe("no paid run before Confirm", () => {
-  it("an unconfirmed card shows Confirm with its points and starts nothing on its own", async () => {
+  it("an unconfirmed card shows the lineup with its points and Compare, and starts nothing on its own", async () => {
     followRun.mockRejectedValue(new ComparisonRefusal("not_found", "none"));
     const host = await mount(awaiting);
     expect(confirmButton(host)).not.toBeNull();
@@ -91,6 +111,7 @@ describe("no paid run before Confirm", () => {
     expect(startChatComparison).toHaveBeenCalledTimes(1);
     expect(startChatComparison).toHaveBeenCalledWith(awaiting.run_id, REQUEST, { organizationId: "org-1" });
     expect(followRun).toHaveBeenCalledTimes(2); // the first look, then following the started run
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
     expect(host.querySelector("[data-compare-progress]")).not.toBeNull();
     expect(confirmButton(host)).toBeNull();
   });
@@ -135,5 +156,32 @@ describe("results that are not a confirmable quote", () => {
     expect(confirmButton(host)).toBeNull();
     expect(host.textContent).toContain("We could not find zzz.");
     expect(followRun).not.toHaveBeenCalled();
+  });
+});
+
+describe("the card owns picking (live checks 2026-10-19)", () => {
+  it("a miss shows its nearest real matches; picking one enables Compare with exactly the confirmed cards", async () => {
+    followRun.mockRejectedValueOnce(new ComparisonRefusal("not_found", "none")).mockReturnValue(new Promise(() => {}));
+    startChatComparison.mockResolvedValue(undefined);
+    const store = (n: string) => ({ label: n, url: `https://www.google.com/maps/place/data=!4m2!3m1!1s0x${n}:0x1` });
+    const host = await mount({
+      status: "awaiting_confirmation", kind: "local_business", run_id: awaiting.run_id, request: null, message: "Matched 1 of 2.",
+      found: [
+        { typed: "Riddle's Jewelry", city: "Fargo ND", status: "found", name: "Riddle's Jewelry", detail: "4055 13th Ave S",
+          category: "Jewelry store", item: store("a") },
+        { typed: "Sarah O. Jewelry", city: "Denver CO", status: "choose", candidates: [
+          { name: "Sarah O. Jewelry", detail: "Cherry Creek", category: "Jewelry store", item: store("b") }] },
+      ],
+    });
+    expect(host.textContent).toContain("Riddle's Jewelry");
+    expect(host.textContent).toContain("Cherry Creek");
+    expect(confirmButton(host)?.disabled).toBe(true);
+    const pick = Array.from(host.querySelectorAll("button")).find((b) => b.textContent?.includes("Cherry Creek"));
+    await act(async () => { pick!.click(); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+    expect(confirmButton(host)?.disabled).toBe(false);
+    await act(async () => { confirmButton(host)?.click(); });
+    expect(startChatComparison).toHaveBeenCalledWith(awaiting.run_id,
+      { kind: "local_business", items: [store("a"), store("b")] }, { organizationId: "org-1" });
   });
 });

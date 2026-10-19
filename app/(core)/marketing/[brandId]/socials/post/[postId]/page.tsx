@@ -1,3 +1,4 @@
+// record-view: social_post
 import { PostDetailPage } from "@/features/marketing/social/components/PostDetail";
 
 export default async function BrandSocialPostPage({

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 6,
+  "version": 7,
   "title": "Independent Bookstore HQ",
   "description": "For bookstores: titles and stock, special orders, publisher orders and returns, events.",
   "forWho": "Independent bookstores and book sellers",
@@ -3087,7 +3087,7 @@
         "Chapter Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -3240,7 +3240,16 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "quantity",
+                  "deposit",
+                  "channel",
+                  "packer",
+                  "ship_btn",
+                  "take_btn",
+                  "added_at"
+                ]
               },
               {
                 "id": "ord-c",
@@ -3473,7 +3482,11 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "po_status"
+                "groupField": "po_status",
+                "hiddenFields": [
+                  "units",
+                  "added_at"
+                ]
               },
               {
                 "id": "po-t",
@@ -3532,7 +3545,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "ret_status"
+                "groupField": "ret_status",
+                "hiddenFields": [
+                  "units",
+                  "ret_notes",
+                  "added_at"
+                ]
               },
               {
                 "id": "ret-t",
@@ -3620,7 +3638,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "terms",
+                "hiddenFields": [
+                  "lead_days",
+                  "returnable",
+                  "product_n",
+                  "on_order",
+                  "credit_due",
+                  "added_at"
+                ]
               }
             ],
             "activeViewId": "sup-t"

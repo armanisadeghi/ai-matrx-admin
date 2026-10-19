@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0255",
-  "version": 5,
+  "version": 6,
   "title": "Employee Directory",
   "description": "Teams of any size: find anyone by team, manager, skills and time zone.",
   "forWho": "Teams of every size",
@@ -1056,7 +1056,7 @@
         "Emberglass Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1114,7 +1114,20 @@
                 "id": "v-g",
                 "name": "People",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "report_count",
+                  "location",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "status",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               },
               {
                 "id": "v-t",
@@ -1127,14 +1140,38 @@
                 "name": "By location",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "location"
+                "groupField": "location",
+                "hiddenFields": [
+                  "report_count",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "status",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               },
               {
                 "id": "v-s",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "report_count",
+                  "location",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               },
               {
                 "id": "view-u20",
@@ -1180,7 +1217,10 @@
                 "id": "v-tg",
                 "name": "Teams",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "member_count"
+                ]
               },
               {
                 "id": "v-tt",
@@ -1402,7 +1442,19 @@
                 "name": "By team",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "team"
+                "groupField": "team",
+                "hiddenFields": [
+                  "report_count",
+                  "timezone",
+                  "employment",
+                  "skills",
+                  "status",
+                  "chat",
+                  "emergency",
+                  "updated",
+                  "added",
+                  "open_chat"
+                ]
               },
               {
                 "id": "o2",

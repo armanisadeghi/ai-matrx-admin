@@ -132,6 +132,12 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
     if ((t.rows?.length ?? 0) < MIN_SAMPLE_ROWS) say(`spec.tables (${t.token}).rows`, `Seed at least ${MIN_SAMPLE_ROWS} realistic sample rows (it has ${t.rows?.length ?? 0}); every view opens on them.`);
   }
 
+  const storeViewNames = new Set<string>();
+  (spec.views ?? []).forEach((v, i) => {
+    const key = `${v.table}\u0000${String(v.name ?? "").trim().toLowerCase()}`;
+    if (v.name && storeViewNames.has(key)) say(`spec.views[${i}].name`, `Two views of "${v.table}" are named "${v.name}"; give each view its own name.`);
+    storeViewNames.add(key);
+  });
   for (const t of every) checkLookValues(t, say);
   for (const t of every) checkChoiceColors(t, say);
 
@@ -268,7 +274,7 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
 /** State words and the color family each must wear (a choice's color is its meaning, never its position in the list). */
 const FINISHED_STATES = new Set(["paid", "paid in full", "completed", "complete", "done", "closed won", "won", "active", "healthy", "resolved", "achieved", "delivered", "published", "signed", "settled", "funded", "finished", "graduated", "renewed", "on track", "attended"]);
 const NEGATIVE_STATES = new Set(["cancelled", "canceled", "lost", "closed lost", "overdue", "failed", "rejected", "declined", "denied", "churned", "no-show", "no show", "late", "expired", "written off", "missed", "past due"]);
-const WARNING_STATES = new Set(["at risk", "blocked", "refunded", "abandoned", "critical", "unhealthy"]);
+const WARNING_STATES = new Set(["at risk", "blocked", "refunded", "abandoned", "critical", "unhealthy", "on hold", "paused", "waiting", "waiting on client", "waiting on them", "waiting for approval", "on pause"]);
 const GREEN_FAMILY = new Set(["green", "teal"]);
 const RED_FAMILY = new Set(["red", "pink"]);
 const QUIET_FAMILY = new Set(["slate", "gray"]);
@@ -280,7 +286,7 @@ export function choiceColorFindings(choices: Record<string, string> | undefined)
     const word = choice.trim().toLowerCase();
     if (FINISHED_STATES.has(word) && !GREEN_FAMILY.has(color)) out.push({ choice, says: `"${choice}" is a finished state painted ${color}; finished and good states wear green (or teal).` });
     else if (NEGATIVE_STATES.has(word) && !RED_FAMILY.has(color)) out.push({ choice, says: `"${choice}" is a negative state painted ${color}; cancelled, lost, overdue and failed states wear red.` });
-    else if (WARNING_STATES.has(word) && (GREEN_FAMILY.has(color) || QUIET_FAMILY.has(color))) out.push({ choice, says: `"${choice}" is a warning state painted ${color}; warnings wear amber, orange or red.` });
+    else if (WARNING_STATES.has(word) && (GREEN_FAMILY.has(color) || QUIET_FAMILY.has(color))) out.push({ choice, says: `"${choice}" is a warning state painted ${color}; warnings, holds and waiting states wear amber, orange or red.` });
   }
   return out;
 }
@@ -535,9 +541,16 @@ function checkTokens(blocks: PackBlock[], path: string, w: TokenWorld, say: (at:
         const views = Array.isArray(props.views) ? (props.views as Array<Record<string, unknown>>) : [];
         if (!views.length) say(`${at}.props.views`, 'Give the block at least one view: [{ "id": "view-table", "name": "Table", "layout": "grid" }].');
         const ids = new Set<string>();
+        const tabNames = new Set<string>();
         views.forEach((v, k) => {
           const vat = `${at}.props.views[${k}]`;
           if (!isObj(v)) return;
+          // Two tabs of one table wearing the same name cannot be told apart (a grid and a chart both "Value by room").
+          if (typeof v.name === "string" && v.name.trim()) {
+            const tab = v.name.trim().toLowerCase();
+            if (tabNames.has(tab)) say(`${vat}.name`, `Two view tabs of "${src.table}" are named "${v.name}"; give each tab its own name (for example "${v.name} chart").`);
+            tabNames.add(tab);
+          }
           if (typeof v.id === "string") {
             if (ids.has(v.id)) say(`${vat}.id`, `"${v.id}" is used by two views of this block.`);
             ids.add(v.id);

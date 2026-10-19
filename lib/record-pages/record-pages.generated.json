@@ -2,9 +2,9 @@
  "generatedBy": "scripts/record-pages/generate.ts",
  "counts": {
   "list.sourceWithoutCustomFields": 2,
-  "route.pending": 1037,
-  "route.none": 500,
-  "route.tokens": 26,
+  "route.pending": 915,
+  "route.none": 595,
+  "route.tokens": 53,
   "route.host": 1,
   "window.pending": 195,
   "window.none": 1,
@@ -13,7 +13,7 @@
   "peek.tokens": 19,
   "peek.none": 5,
   "peek.any": 1,
-  "table.pending": 368,
+  "table.pending": 369,
   "table.noncanonical": 8,
   "table.none": 6,
   "table.set": 1
@@ -23,35 +23,55 @@
   "agent_shortcut",
   "agent_template",
   "app",
+  "artifact",
+  "assessment",
   "canvas_item",
+  "content_ir_kind_instance",
   "conversation",
   "crm_deal",
   "crm_sending_identity",
+  "doc_render",
   "fc_set",
   "file",
   "hr_employee",
   "hr_pay_period",
   "marketing_initiative",
+  "masterwork_run",
   "meet_meeting",
   "message_template",
   "note",
   "party",
   "pc_show",
+  "pc_studio_run",
   "project",
   "quiz_session",
+  "research_keyword",
+  "research_topic",
+  "rulebook",
   "sandbox_instance",
+  "sch_task",
+  "scope",
   "seo_collection_run",
   "seo_map_topic",
   "skill",
+  "social_post",
+  "social_profile",
+  "study_media",
   "task",
   "transcript",
+  "web_brand",
+  "web_finding",
   "web_page",
   "web_property",
   "web_screenshot",
+  "web_site",
   "workbook",
-  "workflow"
+  "workflow",
+  "workflow_run"
  ],
- "noOrganization": [],
+ "noOrganization": [
+  "scope"
+ ],
  "records": {
   "route:/": {
    "file": "app/page.tsx",
@@ -71,7 +91,7 @@
   },
   "route:/_flashcard/[category]/[id]": {
    "file": "app/(transitional)/_flashcard/[category]/[id]/page.tsx",
-   "pending": true
+   "none": "a transitional flashcard viewer addressed by a category key, not a record page"
   },
   "route:/account/restore": {
    "file": "app/(auth-pages)/account/restore/page.tsx",
@@ -1435,7 +1455,7 @@
   },
   "route:/agents/[id]/shortcuts/[shortcutId]": {
    "file": "app/(core)/agents/[id]/shortcuts/[shortcutId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/agents/[id]/shortcuts/batch": {
    "file": "app/(core)/agents/[id]/shortcuts/batch/page.tsx",
@@ -1579,7 +1599,7 @@
   },
   "route:/agents/builds/[buildId]": {
    "file": "app/(core)/agents/builds/[buildId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/agents/categories": {
    "file": "app/(core)/agents/categories/page.tsx",
@@ -1651,7 +1671,7 @@
   },
   "route:/agents/orchestras/[conductorId]": {
    "file": "app/(core)/agents/orchestras/[conductorId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport builder for an orchestra, not the record view"
   },
   "route:/agents/org-chart": {
    "file": "app/(core)/agents/org-chart/page.tsx",
@@ -1663,7 +1683,7 @@
   },
   "route:/agents/prompt-blocks/[id]": {
    "file": "app/(core)/agents/prompt-blocks/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/agents/prompt-blocks/new": {
    "file": "app/(core)/agents/prompt-blocks/new/page.tsx",
@@ -1675,7 +1695,7 @@
   },
   "route:/agents/shortcuts/[shortcutId]": {
    "file": "app/(core)/agents/shortcuts/[shortcutId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/agents/shortcuts/all": {
    "file": "app/(core)/agents/shortcuts/all/page.tsx",
@@ -1729,7 +1749,7 @@
   },
   "route:/applets/manage/[id]": {
    "file": "app/(core)/applets/manage/[id]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/applets/manage/[id]/code": {
    "file": "app/(core)/applets/manage/[id]/code/page.tsx",
@@ -1773,7 +1793,9 @@
   },
   "route:/artifacts/[id]": {
    "file": "app/(core)/artifacts/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "artifact"
+   ]
   },
   "route:/artifacts/speed-test": {
    "file": "app/(core)/artifacts/speed-test/page.tsx",
@@ -1813,7 +1835,7 @@
   },
   "route:/board/[id]": {
    "file": "app/(core)/board/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/board/all": {
    "file": "app/(core)/board/all/page.tsx",
@@ -1853,7 +1875,7 @@
   },
   "route:/capture/[sheetId]": {
    "file": "app/(link)/capture/[sheetId]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/capture/needs-you": {
    "file": "app/(core)/capture/needs-you/page.tsx",
@@ -1865,11 +1887,11 @@
   },
   "route:/chat/[conversationId]": {
    "file": "app/(core)/chat/[conversationId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/chat/a/[agentId]": {
    "file": "app/(core)/chat/a/[agentId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/chat/message-templates": {
    "file": "app/(core)/chat/message-templates/page.tsx",
@@ -1903,11 +1925,11 @@
   },
   "route:/chat/talk/[conversationId]": {
    "file": "app/(core)/chat/talk/[conversationId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/chat/talk/a/[agentId]": {
    "file": "app/(core)/chat/talk/a/[agentId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/chat/voice": {
    "file": "app/(core)/chat/voice/page.tsx",
@@ -1935,7 +1957,7 @@
   },
   "route:/cms/[siteId]": {
    "file": "app/(core)/cms/[siteId]/page.tsx",
-   "pending": true
+   "none": "a CMS site workspace; CMS tables are not registered for custom fields"
   },
   "route:/cms/[siteId]/collections": {
    "file": "app/(core)/cms/[siteId]/collections/page.tsx",
@@ -1943,7 +1965,7 @@
   },
   "route:/cms/[siteId]/collections/[collectionId]": {
    "file": "app/(core)/cms/[siteId]/collections/[collectionId]/page.tsx",
-   "pending": true
+   "none": "a CMS collection editor; CMS tables are not registered for custom fields"
   },
   "route:/cms/[siteId]/components": {
    "file": "app/(core)/cms/[siteId]/components/page.tsx",
@@ -1951,7 +1973,7 @@
   },
   "route:/cms/[siteId]/pages/[pageId]": {
    "file": "app/(core)/cms/[siteId]/pages/[pageId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/cms/[siteId]/pages/new": {
    "file": "app/(core)/cms/[siteId]/pages/new/page.tsx",
@@ -1971,7 +1993,7 @@
   },
   "route:/cms/html-pages/[pageId]": {
    "file": "app/(core)/cms/html-pages/[pageId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/cms/speed-test": {
    "file": "app/(core)/cms/speed-test/page.tsx",
@@ -2171,7 +2193,7 @@
   },
   "route:/crm/outreach-lists/[listId]": {
    "file": "app/(core)/crm/outreach-lists/[listId]/page.tsx",
-   "pending": true
+   "none": "a viewport-fit list workspace whose members table fills the screen; there is no page body to extend"
   },
   "route:/crm/outreach-lists/[listId]/dial": {
    "file": "app/(core)/crm/outreach-lists/[listId]/dial/page.tsx",
@@ -2193,7 +2215,9 @@
   },
   "route:/d/[renderId]": {
    "file": "app/(core)/d/[renderId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "doc_render"
+   ]
   },
   "route:/dashboard": {
    "file": "app/(core)/dashboard/page.tsx",
@@ -2209,11 +2233,11 @@
   },
   "route:/data/[tableId]": {
    "file": "app/(core)/data/[tableId]/page.tsx",
-   "pending": true
+   "none": "a table page; its fields are the table's own columns"
   },
   "route:/data/[tableId]/r/[recordId]": {
    "file": "app/(core)/data/[tableId]/r/[recordId]/page.tsx",
-   "pending": true
+   "none": "a custom-table record; the record panel's form is the table's own columns, not a second custom-fields layer"
   },
   "route:/data/bases": {
    "file": "app/(core)/data/bases/page.tsx",
@@ -2221,7 +2245,7 @@
   },
   "route:/data/bases/[homeId]": {
    "file": "app/(core)/data/bases/[homeId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/data/connect": {
    "file": "app/(core)/data/connect/page.tsx",
@@ -2237,7 +2261,7 @@
   },
   "route:/data/interfaces/[interfaceId]": {
    "file": "app/(core)/data/interfaces/[interfaceId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/data/library": {
    "file": "app/(core)/data/library/page.tsx",
@@ -2257,7 +2281,7 @@
   },
   "route:/data/pages/[pageId]": {
    "file": "app/(core)/data/pages/[pageId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/data/speed-test": {
    "file": "app/(core)/data/speed-test/page.tsx",
@@ -2321,7 +2345,7 @@
   },
   "route:/documents/[id]": {
    "file": "app/(core)/documents/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport document editor; the editor fills the screen"
   },
   "route:/documents/speed-test": {
    "file": "app/(core)/documents/speed-test/page.tsx",
@@ -2357,7 +2381,9 @@
   },
   "route:/education/audio-study/[id]": {
    "file": "app/(core)/education/audio-study/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "study_media"
+   ]
   },
   "route:/education/audio-study/[id]/edit": {
    "file": "app/(core)/education/audio-study/[id]/edit/page.tsx",
@@ -2381,11 +2407,11 @@
   },
   "route:/education/classes/[classId]": {
    "file": "app/(core)/education/classes/[classId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/education/classes/[classId]/tests/[testId]": {
    "file": "app/(core)/education/classes/[classId]/tests/[testId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/education/classes/[classId]/tests/[testId]/study": {
    "file": "app/(core)/education/classes/[classId]/tests/[testId]/study/page.tsx",
@@ -2417,7 +2443,7 @@
   },
   "route:/education/family/[studentId]": {
    "file": "app/(core)/education/family/[studentId]/page.tsx",
-   "pending": true
+   "none": "a progress view of a person, not a record page"
   },
   "route:/education/fastfire": {
    "file": "app/(core)/education/fastfire/page.tsx",
@@ -2445,7 +2471,9 @@
   },
   "route:/education/flashcards/[setId]": {
    "file": "app/(core)/education/flashcards/[setId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "fc_set"
+   ]
   },
   "route:/education/flashcards/[setId]/edit": {
    "file": "app/(core)/education/flashcards/[setId]/edit/page.tsx",
@@ -2505,7 +2533,7 @@
   },
   "route:/education/flashcards/sessions/[sessionId]": {
    "file": "app/(core)/education/flashcards/sessions/[sessionId]/page.tsx",
-   "pending": true
+   "none": "a practice-session player, not a record page"
   },
   "route:/education/flashcards/weak-areas": {
    "file": "app/(core)/education/flashcards/weak-areas/page.tsx",
@@ -2541,7 +2569,7 @@
   },
   "route:/education/kits/[sourceId]": {
    "file": "app/(core)/education/kits/[sourceId]/page.tsx",
-   "pending": true
+   "none": "a study-kit hub built from a source, not a record page"
   },
   "route:/education/kits/new": {
    "file": "app/(core)/education/kits/new/page.tsx",
@@ -2581,7 +2609,9 @@
   },
   "route:/education/media/[id]": {
    "file": "app/(core)/education/media/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "study_media"
+   ]
   },
   "route:/education/memory": {
    "file": "app/(core)/education/memory/page.tsx",
@@ -2589,7 +2619,9 @@
   },
   "route:/education/memory/[id]": {
    "file": "app/(core)/education/memory/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "study_media"
+   ]
   },
   "route:/education/memory/[id]/edit": {
    "file": "app/(core)/education/memory/[id]/edit/page.tsx",
@@ -2609,7 +2641,9 @@
   },
   "route:/education/mind-maps/[id]": {
    "file": "app/(core)/education/mind-maps/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "study_media"
+   ]
   },
   "route:/education/mind-maps/[id]/edit": {
    "file": "app/(core)/education/mind-maps/[id]/edit/page.tsx",
@@ -2663,7 +2697,9 @@
   },
   "route:/education/practice-tests/[id]": {
    "file": "app/(core)/education/practice-tests/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "assessment"
+   ]
   },
   "route:/education/practice-tests/[id]/edit": {
    "file": "app/(core)/education/practice-tests/[id]/edit/page.tsx",
@@ -2691,7 +2727,9 @@
   },
   "route:/education/quizzes/[id]": {
    "file": "app/(core)/education/quizzes/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "assessment"
+   ]
   },
   "route:/education/quizzes/[id]/edit": {
    "file": "app/(core)/education/quizzes/[id]/edit/page.tsx",
@@ -2749,7 +2787,7 @@
   },
   "route:/education/subjects/quick-math/[id]": {
    "file": "app/(core)/education/subjects/quick-math/[id]/page.tsx",
-   "pending": true
+   "none": "a practice problem player, not a record page"
   },
   "route:/education/subjects/quick-math/admin": {
    "file": "app/(core)/education/subjects/quick-math/admin/page.tsx",
@@ -2761,7 +2799,9 @@
   },
   "route:/education/summaries/[id]": {
    "file": "app/(core)/education/summaries/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "study_media"
+   ]
   },
   "route:/education/summaries/[id]/edit": {
    "file": "app/(core)/education/summaries/[id]/edit/page.tsx",
@@ -2777,7 +2817,7 @@
   },
   "route:/education/tutor/[conversationId]": {
    "file": "app/(core)/education/tutor/[conversationId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/education/tutor/new": {
    "file": "app/(core)/education/tutor/new/page.tsx",
@@ -2793,7 +2833,7 @@
   },
   "route:/esign/[envelopeId]": {
    "file": "app/(core)/esign/[envelopeId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/esign/new": {
    "file": "app/(core)/esign/new/page.tsx",
@@ -2809,7 +2849,7 @@
   },
   "route:/esign/templates/[templateId]": {
    "file": "app/(core)/esign/templates/[templateId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/exports": {
    "file": "app/(core)/exports/page.tsx",
@@ -2829,7 +2869,7 @@
   },
   "route:/f/[formId]": {
    "file": "app/(link)/f/[formId]/page.tsx",
-   "pending": true
+   "none": "a public form addressed by link, not a record page"
   },
   "route:/features": {
    "file": "app/(core)/features/page.tsx",
@@ -2955,7 +2995,7 @@
   },
   "route:/free/zip-code-heatmap/[id]": {
    "file": "app/(public)/free/zip-code-heatmap/[id]/page.tsx",
-   "pending": true
+   "none": "a public free-tool page addressed by link, not a record page"
   },
   "route:/gmail-read-review": {
    "file": "app/(core)/gmail-read-review/page.tsx",
@@ -3023,7 +3063,7 @@
   },
   "route:/hr/leave/balances/[employmentId]/[policyId]": {
    "file": "app/(core)/hr/leave/balances/[employmentId]/[policyId]/page.tsx",
-   "pending": true
+   "none": "a leave ledger for an employment and policy pair, not one record"
   },
   "route:/hr/leave/calendar": {
    "file": "app/(core)/hr/leave/calendar/page.tsx",
@@ -3055,7 +3095,7 @@
   },
   "route:/hr/me/time-off/[policyId]": {
    "file": "app/(core)/hr/me/time-off/[policyId]/page.tsx",
-   "pending": true
+   "none": "a person's own leave ledger for a policy, not one record"
   },
   "route:/hr/me/timesheet": {
    "file": "app/(core)/hr/me/timesheet/page.tsx",
@@ -3103,7 +3143,7 @@
   },
   "route:/hr/people/relations/[caseId]": {
    "file": "app/(core)/hr/people/relations/[caseId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/hr/people/verifications": {
    "file": "app/(core)/hr/people/verifications/page.tsx",
@@ -3115,7 +3155,7 @@
   },
   "route:/hr/performance/[reviewId]": {
    "file": "app/(core)/hr/performance/[reviewId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/hr/performance/[reviewId]/meeting": {
    "file": "app/(core)/hr/performance/[reviewId]/meeting/page.tsx",
@@ -3127,7 +3167,7 @@
   },
   "route:/hr/performance/cycles/[cycleId]": {
    "file": "app/(core)/hr/performance/cycles/[cycleId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/hr/performance/goals": {
    "file": "app/(core)/hr/performance/goals/page.tsx",
@@ -3135,11 +3175,11 @@
   },
   "route:/hr/performance/respond/[trackId]": {
    "file": "app/(core)/hr/performance/respond/[trackId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/hr/performance/reviews/[reviewId]": {
    "file": "app/(core)/hr/performance/reviews/[reviewId]/page.tsx",
-   "pending": true
+   "none": "its record type is not registered for custom fields"
   },
   "route:/hr/reports": {
    "file": "app/(core)/hr/reports/page.tsx",
@@ -3243,7 +3283,7 @@
   },
   "route:/hr/tasks/[instanceId]": {
    "file": "app/(core)/hr/tasks/[instanceId]/page.tsx",
-   "pending": true
+   "none": "a restricted HR decision panel whose record may be withheld from the viewer; the record itself is the only place its details render"
   },
   "route:/hr/time": {
    "file": "app/(core)/hr/time/page.tsx",
@@ -3263,7 +3303,7 @@
   },
   "route:/hr/time/overtime/[requestId]": {
    "file": "app/(core)/hr/time/overtime/[requestId]/page.tsx",
-   "pending": true
+   "none": "an overtime request decision workspace, not a record page"
   },
   "route:/hr/time/periods": {
    "file": "app/(core)/hr/time/periods/page.tsx",
@@ -3285,7 +3325,7 @@
   },
   "route:/hr/time/timesheets/[employmentId]": {
    "file": "app/(core)/hr/time/timesheets/[employmentId]/page.tsx",
-   "pending": true
+   "none": "an employment-period timesheet workspace, not one record"
   },
   "route:/hr/training": {
    "file": "app/(core)/hr/training/page.tsx",
@@ -3441,7 +3481,7 @@
   },
   "route:/kiosk/[deviceId]": {
    "file": "app/(kiosk)/kiosk/[deviceId]/page.tsx",
-   "pending": true
+   "none": "a device punch kiosk, not a record page"
   },
   "route:/knowledge": {
    "file": "app/(core)/knowledge/page.tsx",
@@ -3477,7 +3517,7 @@
   },
   "route:/knowledge/extractions/[id]": {
    "file": "app/(core)/knowledge/extractions/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/knowledge/extractions/admin": {
    "file": "app/(core)/knowledge/extractions/admin/page.tsx",
@@ -3521,7 +3561,7 @@
   },
   "route:/knowledge/sources/[id]": {
    "file": "app/(core)/knowledge/sources/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/knowledge/speed-test": {
    "file": "app/(core)/knowledge/speed-test/page.tsx",
@@ -3579,7 +3619,7 @@
   },
   "route:/legal/ca-wc/pd-ratings-calculator/[claimId]": {
    "file": "app/(core)/legal/ca-wc/pd-ratings-calculator/[claimId]/page.tsx",
-   "pending": true
+   "none": "a saved-case calculator, not a record page"
   },
   "route:/legal/ca-wc/utilities": {
    "file": "app/(core)/legal/ca-wc/utilities/page.tsx",
@@ -3607,7 +3647,7 @@
   },
   "route:/libraries/[id]": {
    "file": "app/(core)/libraries/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/libraries/speed-test": {
    "file": "app/(core)/libraries/speed-test/page.tsx",
@@ -3671,7 +3711,7 @@
   },
   "route:/maps/[id]": {
    "file": "app/(core)/maps/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/maps/speed-test": {
    "file": "app/(core)/maps/speed-test/page.tsx",
@@ -3691,7 +3731,9 @@
   },
   "route:/marketing/[brandId]": {
    "file": "app/(core)/marketing/[brandId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "web_brand"
+   ]
   },
   "route:/marketing/[brandId]/ads": {
    "file": "app/(core)/marketing/[brandId]/ads/page.tsx",
@@ -3711,7 +3753,7 @@
   },
   "route:/marketing/[brandId]/content/map/[mapId]": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/marketing/[brandId]/content/map/[mapId]/graph": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/graph/page.tsx",
@@ -3739,7 +3781,7 @@
   },
   "route:/marketing/[brandId]/content/plan/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/ai-runs": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/ai-runs/page.tsx",
@@ -3883,7 +3925,7 @@
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]/cases": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/cases/page.tsx",
@@ -3907,7 +3949,7 @@
   },
   "route:/marketing/[brandId]/locations/[locationId]": {
    "file": "app/(core)/marketing/[brandId]/locations/[locationId]/page.tsx",
-   "pending": true
+   "none": "one location inside the brand's local-listings workspace, a selection rather than a record page"
   },
   "route:/marketing/[brandId]/locations/[locationId]/grid": {
    "file": "app/(core)/marketing/[brandId]/locations/[locationId]/grid/page.tsx",
@@ -4065,7 +4107,9 @@
   },
   "route:/marketing/[brandId]/seo/[siteId]/findings/[findingId]": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/findings/[findingId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "web_finding"
+   ]
   },
   "route:/marketing/[brandId]/seo/[siteId]/growth-loop": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/growth-loop/page.tsx",
@@ -4169,7 +4213,9 @@
   },
   "route:/marketing/[brandId]/socials/[platform]/[accountId]": {
    "file": "app/(core)/marketing/[brandId]/socials/[platform]/[accountId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "social_profile"
+   ]
   },
   "route:/marketing/[brandId]/socials/accounts": {
    "file": "app/(core)/marketing/[brandId]/socials/accounts/page.tsx",
@@ -4189,7 +4235,9 @@
   },
   "route:/marketing/[brandId]/socials/post/[postId]": {
    "file": "app/(core)/marketing/[brandId]/socials/post/[postId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "social_post"
+   ]
   },
   "route:/marketing/[brandId]/socials/research": {
    "file": "app/(core)/marketing/[brandId]/socials/research/page.tsx",
@@ -4209,7 +4257,7 @@
   },
   "route:/marketing/[brandId]/socials/videos/[projectId]": {
    "file": "app/(core)/marketing/[brandId]/socials/videos/[projectId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/marketing/[brandId]/socials/videos/formats": {
    "file": "app/(core)/marketing/[brandId]/socials/videos/formats/page.tsx",
@@ -4225,7 +4273,9 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "web_site"
+   ]
   },
   "route:/marketing/[brandId]/websites/[siteId]/[...rest]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/[...rest]/page.tsx",
@@ -4237,7 +4287,7 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/page.tsx",
-   "pending": true
+   "none": "a viewport-fit crawl dashboard; there is no page body to extend"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links/page.tsx",
@@ -4295,7 +4345,7 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]/page.tsx",
-   "pending": true
+   "none": "a captured page snapshot, an immutable capture with no registered custom-fields type"
   },
   "route:/marketing/[brandId]/websites/[siteId]/settings": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/settings/page.tsx",
@@ -4319,7 +4369,7 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]/page.tsx",
-   "pending": true
+   "none": "a viewport-fit sitemap table; there is no page body to extend"
   },
   "route:/marketing/[brandId]/websites/[siteId]/structure": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/structure/page.tsx",
@@ -4417,7 +4467,7 @@
   },
   "route:/marketing/changes/[changeId]": {
    "file": "app/(core)/marketing/changes/[changeId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/competitors": {
    "file": "app/(core)/marketing/competitors/page.tsx",
@@ -4445,7 +4495,7 @@
   },
   "route:/marketing/content-plan/[siteId]": {
    "file": "app/(core)/marketing/content-plan/[siteId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/content-plan/nodes/[nodeId]": {
    "file": "app/(core)/marketing/content-plan/nodes/[nodeId]/page.tsx",
@@ -4473,7 +4523,7 @@
   },
   "route:/marketing/growth-loop/[loopRunId]": {
    "file": "app/(core)/marketing/growth-loop/[loopRunId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/initiatives": {
    "file": "app/(core)/marketing/initiatives/page.tsx",
@@ -4501,7 +4551,7 @@
   },
   "route:/marketing/monitoring/[trackerId]": {
    "file": "app/(core)/marketing/monitoring/[trackerId]/page.tsx",
-   "pending": true
+   "none": "a tracker's inputs setup view, not the record page"
   },
   "route:/marketing/operations/approvals": {
    "file": "app/(core)/marketing/operations/approvals/page.tsx",
@@ -4631,7 +4681,7 @@
   },
   "route:/marketing/snapshots/[snapshotId]": {
    "file": "app/(core)/marketing/snapshots/[snapshotId]/page.tsx",
-   "pending": true
+   "none": "an immutable web snapshot (a ledger record) that takes no custom fields"
   },
   "route:/marketing/social": {
    "file": "app/(core)/marketing/social/page.tsx",
@@ -4659,11 +4709,11 @@
   },
   "route:/marketing/tools/youtube/videos/[videoId]": {
    "file": "app/(core)/marketing/tools/youtube/videos/[videoId]/page.tsx",
-   "pending": true
+   "none": "a video preview that hands off to the viewer, not a record page"
   },
   "route:/marketing/topical-maps/[mapId]": {
    "file": "app/(core)/marketing/topical-maps/[mapId]/page.tsx",
-   "pending": true
+   "none": "a door that redirects members into the brand workspace, or a read-only map viewer for a record-only grantee"
   },
   "route:/marketing/topical-maps/start": {
    "file": "app/(core)/marketing/topical-maps/start/page.tsx",
@@ -4671,7 +4721,7 @@
   },
   "route:/marketing/topical-maps/topics/[topicId]": {
    "file": "app/(core)/marketing/topical-maps/topics/[topicId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/masterwork": {
    "file": "app/(core)/masterwork/page.tsx",
@@ -4679,7 +4729,9 @@
   },
   "route:/masterwork/[id]": {
    "file": "app/(core)/masterwork/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "rulebook"
+   ]
   },
   "route:/masterwork/[id]/body-of-work": {
    "file": "app/(core)/masterwork/[id]/body-of-work/page.tsx",
@@ -4739,7 +4791,7 @@
   },
   "route:/masterwork/[id]/sources/kept/[sourceKey]": {
    "file": "app/(core)/masterwork/[id]/sources/kept/[sourceKey]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/masterwork/[id]/teach-back": {
    "file": "app/(core)/masterwork/[id]/teach-back/page.tsx",
@@ -4767,7 +4819,9 @@
   },
   "route:/masterwork/encore/[id]": {
    "file": "app/(core)/masterwork/encore/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "masterwork_run"
+   ]
   },
   "route:/masterwork/new": {
    "file": "app/(core)/masterwork/new/page.tsx",
@@ -4841,7 +4895,7 @@
   },
   "route:/messages/[conversationId]": {
    "file": "app/(core)/messages/[conversationId]/page.tsx",
-   "pending": true
+   "none": "a chat surface; the message list owns the whole screen and there is no page body below it"
   },
   "route:/messages/admin": {
    "file": "app/(core)/messages/admin/page.tsx",
@@ -4901,7 +4955,7 @@
   },
   "route:/o/[id]": {
    "file": "app/(core)/o/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/oauth/callback/[app]": {
    "file": "app/oauth/callback/[app]/page.tsx",
@@ -4917,7 +4971,7 @@
   },
   "route:/open/chat/[conversationId]": {
    "file": "app/(public)/open/chat/[conversationId]/page.tsx",
-   "pending": true
+   "none": "a public chat opener that redirects into the conversation"
   },
   "route:/organizations": {
    "file": "app/(core)/organizations/page.tsx",
@@ -4925,7 +4979,7 @@
   },
   "route:/organizations/[orgId]": {
    "file": "app/(core)/organizations/[orgId]/page.tsx",
-   "pending": true
+   "none": "an organization is a system record that takes no custom fields"
   },
   "route:/organizations/[orgId]/admin": {
    "file": "app/(core)/organizations/[orgId]/admin/page.tsx",
@@ -4941,7 +4995,7 @@
   },
   "route:/organizations/[orgId]/admin/automations/[kind]/[id]": {
    "file": "app/(core)/organizations/[orgId]/admin/automations/[kind]/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/organizations/[orgId]/admin/spend-approvals": {
    "file": "app/(core)/organizations/[orgId]/admin/spend-approvals/page.tsx",
@@ -4957,11 +5011,11 @@
   },
   "route:/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]": {
    "file": "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/organizations/[orgId]/admin/users/[userId]": {
    "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/organizations/[orgId]/admin/users/[userId]/resources": {
    "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/resources/page.tsx",
@@ -4989,7 +5043,7 @@
   },
   "route:/organizations/[orgId]/mandates/[mandateKey]": {
    "file": "app/(core)/organizations/[orgId]/mandates/[mandateKey]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/organizations/[orgId]/mandates/new": {
    "file": "app/(core)/organizations/[orgId]/mandates/new/page.tsx",
@@ -5033,15 +5087,17 @@
   },
   "route:/organizations/[orgId]/scopes/[typeId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/page.tsx",
-   "pending": true
+   "none": "a scope type's page, which lists its scopes; the scope's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/[scopeId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "scope"
+   ]
   },
   "route:/organizations/[orgId]/scopes/[typeId]/[scopeId]/[itemId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/[itemId]/page.tsx",
-   "pending": true
+   "none": "a field editor inside a scope; the scope's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items/page.tsx",
@@ -5057,7 +5113,7 @@
   },
   "route:/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/page.tsx",
-   "pending": true
+   "none": "a context-item editor inside a scope type; the scope's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit/page.tsx",
@@ -5097,7 +5153,7 @@
   },
   "route:/organizations/[orgId]/settings/mandates/[mandateKey]": {
    "file": "app/(core)/organizations/[orgId]/settings/mandates/[mandateKey]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/organizations/[orgId]/settings/payments": {
    "file": "app/(core)/organizations/[orgId]/settings/payments/page.tsx",
@@ -5149,7 +5205,7 @@
   },
   "route:/p/e/[resourceType]/[id]": {
    "file": "app/(public)/p/e/[resourceType]/[id]/page.tsx",
-   "pending": true
+   "none": "a public share link addressed by resource type, not a record page"
   },
   "route:/pick-lists": {
    "file": "app/(core)/pick-lists/page.tsx",
@@ -5157,7 +5213,7 @@
   },
   "route:/pick-lists/[id]": {
    "file": "app/(core)/pick-lists/[id]/page.tsx",
-   "pending": true
+   "none": "a list page whose table fills the screen; its fields are the list's own columns"
   },
   "route:/pick-lists/speed-test": {
    "file": "app/(core)/pick-lists/speed-test/page.tsx",
@@ -5269,7 +5325,9 @@
   },
   "route:/podcast/studio/run/[id]": {
    "file": "app/(core)/podcast/studio/run/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "pc_studio_run"
+   ]
   },
   "route:/podcast/studio/show/[showId]": {
    "file": "app/(core)/podcast/studio/show/[showId]/page.tsx",
@@ -5287,7 +5345,7 @@
   },
   "route:/portal/[orgId]": {
    "file": "app/(portal)/portal/[orgId]/page.tsx",
-   "pending": true
+   "none": "a public portal landing for an organization, not a record page"
   },
   "route:/portal/c/[slug]": {
    "file": "app/(portal)/portal/c/[slug]/page.tsx",
@@ -5295,11 +5353,11 @@
   },
   "route:/portal/c/[slug]/f/[formId]": {
    "file": "app/(portal)/portal/c/[slug]/f/[formId]/page.tsx",
-   "pending": true
+   "none": "a public portal form addressed by link, not a record page"
   },
   "route:/portal/c/[slug]/r/[recordId]": {
    "file": "app/(portal)/portal/c/[slug]/r/[recordId]/page.tsx",
-   "pending": true
+   "none": "a public portal record view addressed by link, not the signed-in record page"
   },
   "route:/presentations": {
    "file": "app/(core)/presentations/page.tsx",
@@ -5307,7 +5365,7 @@
   },
   "route:/presentations/[id]": {
    "file": "app/(core)/presentations/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/presentations/speed-test": {
    "file": "app/(core)/presentations/speed-test/page.tsx",
@@ -5533,7 +5591,9 @@
   },
   "route:/research/topics/[topicId]": {
    "file": "app/(core)/research/topics/[topicId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "research_topic"
+   ]
   },
   "route:/research/topics/[topicId]/agents": {
    "file": "app/(core)/research/topics/[topicId]/agents/page.tsx",
@@ -5581,7 +5641,9 @@
   },
   "route:/research/topics/[topicId]/keywords/[keywordId]": {
    "file": "app/(core)/research/topics/[topicId]/keywords/[keywordId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "research_keyword"
+   ]
   },
   "route:/research/topics/[topicId]/media": {
    "file": "app/(core)/research/topics/[topicId]/media/page.tsx",
@@ -5609,7 +5671,7 @@
   },
   "route:/research/topics/[topicId]/sources/[sourceId]": {
    "file": "app/(core)/research/topics/[topicId]/sources/[sourceId]/page.tsx",
-   "pending": true
+   "none": "a viewport-fit source workspace of panes; there is no page body to extend"
   },
   "route:/research/topics/[topicId]/synthesis": {
    "file": "app/(core)/research/topics/[topicId]/synthesis/page.tsx",
@@ -5621,7 +5683,7 @@
   },
   "route:/research/topics/[topicId]/tags/[tagId]": {
    "file": "app/(core)/research/topics/[topicId]/tags/[tagId]/page.tsx",
-   "pending": true
+   "none": "a viewport-fit consolidation workspace; there is no page body to extend"
   },
   "route:/research/topics/[topicId]/tasks": {
    "file": "app/(core)/research/topics/[topicId]/tasks/page.tsx",
@@ -5665,7 +5727,9 @@
   },
   "route:/sandbox/[id]": {
    "file": "app/(core)/sandbox/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "sandbox_instance"
+   ]
   },
   "route:/sandbox/speed-test": {
    "file": "app/(core)/sandbox/speed-test/page.tsx",
@@ -5677,7 +5741,9 @@
   },
   "route:/schedules/[id]": {
    "file": "app/(core)/schedules/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "sch_task"
+   ]
   },
   "route:/schedules/[id]/edit": {
    "file": "app/(core)/schedules/[id]/edit/page.tsx",
@@ -5701,7 +5767,7 @@
   },
   "route:/scopes/s/[scopeId]": {
    "file": "app/(core)/scopes/s/[scopeId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/scopes/settings": {
    "file": "app/(core)/scopes/settings/page.tsx",
@@ -5849,7 +5915,9 @@
   },
   "route:/shapes/instances/[id]": {
    "file": "app/(core)/shapes/(workspace)/instances/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "content_ir_kind_instance"
+   ]
   },
   "route:/shapes/new": {
    "file": "app/(core)/shapes/(workspace)/new/page.tsx",
@@ -5893,7 +5961,7 @@
   },
   "route:/spaces/[spaceId]": {
    "file": "app/(core)/spaces/[spaceId]/page.tsx",
-   "pending": true
+   "none": "a full-viewport editor for a record, not the record view"
   },
   "route:/spaces/duplicate": {
    "file": "app/(core)/spaces/duplicate/page.tsx",
@@ -5967,7 +6035,7 @@
   },
   "route:/teams/id/[teamId]": {
    "file": "app/(core)/teams/id/[teamId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/templates": {
    "file": "app/(public)/templates/page.tsx",
@@ -6091,7 +6159,7 @@
   },
   "route:/transcripts/scribe/[sessionId]": {
    "file": "app/(core)/transcripts/scribe/[sessionId]/page.tsx",
-   "pending": true
+   "none": "a live capture studio, not a record page"
   },
   "route:/transcripts/scribe/unsorted": {
    "file": "app/(core)/transcripts/scribe/unsorted/page.tsx",
@@ -6171,7 +6239,7 @@
   },
   "route:/war-room/[id]": {
    "file": "app/(core)/war-room/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport workspace that owns the whole screen; there is no page body to extend"
   },
   "route:/war-room/admin": {
    "file": "app/(core)/war-room/admin/page.tsx",
@@ -6219,7 +6287,9 @@
   },
   "route:/work/conversations/[conversationId]": {
    "file": "app/(core)/work/conversations/[conversationId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "conversation"
+   ]
   },
   "route:/work/live": {
    "file": "app/(core)/work/live/page.tsx",
@@ -6243,7 +6313,7 @@
   },
   "route:/workbooks/[id]": {
    "file": "app/(core)/workbooks/[id]/page.tsx",
-   "pending": true
+   "none": "a full-viewport spreadsheet editor; the editor fills the screen"
   },
   "route:/workbooks/speed-test": {
    "file": "app/(core)/workbooks/speed-test/page.tsx",
@@ -6259,7 +6329,9 @@
   },
   "route:/workflows/[id]": {
    "file": "app/(core)/workflows/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "workflow"
+   ]
   },
   "route:/workflows/[id]/design": {
    "file": "app/(core)/workflows/[id]/design/page.tsx",
@@ -6271,7 +6343,7 @@
   },
   "route:/workflows/[id]/review/[issueId]": {
    "file": "app/(core)/workflows/[id]/review/[issueId]/page.tsx",
-   "pending": true
+   "none": "a review flow inside a workflow, not the record page"
   },
   "route:/workflows/[id]/runs": {
    "file": "app/(core)/workflows/[id]/runs/page.tsx",
@@ -6339,7 +6411,9 @@
   },
   "route:/workflows/runs/[runId]": {
    "file": "app/(core)/workflows/runs/[runId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "workflow_run"
+   ]
   },
   "route:/workflows/runs/analyze": {
    "file": "app/(core)/workflows/runs/analyze/page.tsx",
@@ -7411,6 +7485,7 @@
   "features/admin/users/record/UserSecurityTab.tsx": "pending",
   "features/admin/users/record/UserSupportTab.tsx": "pending",
   "features/admin/users/support-sessions/SupportSessionsTableClient.tsx": "pending",
+  "features/admin/watchtower/WatchtowerPage.tsx": "pending",
   "features/administration/batch/components/ProviderBatchesPanel.tsx": "pending",
   "features/administration/batch/components/WorkItemsPanel.tsx": "pending",
   "features/administration/canonicalization/components/AdminAuditTable.tsx": "pending",

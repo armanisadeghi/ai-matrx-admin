@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 6,
+  "version": 7,
   "title": "Day Spa HQ",
   "description": "For day spas: treatment rooms, therapists, gift cards, memberships and retail.",
   "forWho": "Day spas and wellness retreats",
@@ -2446,7 +2446,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2585,7 +2585,12 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "category",
+                "hiddenFields": [
+                  "minutes",
+                  "times_done",
+                  "added_at"
+                ]
               },
               {
                 "id": "pla-t",

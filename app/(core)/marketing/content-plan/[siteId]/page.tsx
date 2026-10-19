@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { permanentRedirect } from "next/navigation";
 
 import { AccessGate } from "@/features/access-gate/components/AccessGate";

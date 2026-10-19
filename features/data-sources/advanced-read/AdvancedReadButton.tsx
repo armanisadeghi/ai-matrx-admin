@@ -30,14 +30,15 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
   const entry = useReadEntry(url);
   const [slow, setSlow] = useState(false);
   const declaredEmpty = Array.isArray(coverage) && parseCoverageList(coverage).length === 0;
-  const fast = useAdvancedQuote([url], "fast", !declaredEmpty && !entry);
+  const read = entry?.status === "done" && entry.item.ok;
+  const fast = useAdvancedQuote([url], "fast", !declaredEmpty && !read);
   const slowOption = slowCoverage(fast.data?.items ?? []);
   const allow: AdvancedAllow = slow && slowOption ? "all" : "fast";
-  const priced = useAdvancedQuote([url], "all", Boolean(slowOption) && slow && !entry);
+  const priced = useAdvancedQuote([url], "all", Boolean(slowOption) && slow && !read);
   const quote = allow === "all" ? priced.data : fast.data;
   const item = quote?.items[0];
 
-  if (entry?.status === "done") {
+  if (read) {
     return (
       <div className={className} data-advanced-read={url}>
         <AdvancedReadResult item={entry.item} />
@@ -57,6 +58,7 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
   if (declaredEmpty || (quote && (!item || item.wouldTry.length === 0) && !slowOption)) return null;
   return (
     <div className={`flex flex-col gap-2 ${className ?? ""}`} data-advanced-read={url}>
+      {entry?.status === "done" ? <AdvancedReadResult item={entry.item} /> : null}
       {entry?.status === "failed" ? (
         <p className="text-sm text-destructive">
           {entry.message}
@@ -71,7 +73,7 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
           disabled={!organizationId || !quote}
           data-action="advanced-read"
         >
-          {entry?.status === "failed" ? "Try again" : "Try advanced reader"}
+          {entry?.status === "failed" || entry?.status === "done" ? "Try again" : "Try advanced reader"}
         </Button>
         {upToPoints(item?.pointsUpTo) ? (
           <span className="text-xs text-muted-foreground" data-advanced-read-quote="">

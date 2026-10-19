@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport editor for a record, not the record view
 // app/(core)/esign/[envelopeId]/page.tsx — one envelope: the editor while it is a draft, the tracking page once sent.
 
 import type { Metadata } from "next";

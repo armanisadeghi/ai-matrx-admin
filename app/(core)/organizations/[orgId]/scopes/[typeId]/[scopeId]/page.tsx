@@ -1,3 +1,4 @@
+// record-view: scope
 "use client";
 
 import React from "react";

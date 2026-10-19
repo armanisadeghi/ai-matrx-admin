@@ -1,3 +1,4 @@
+// record-view: none — a practice-session player, not a record page
 // /education/flashcards/sessions/[sessionId] — one study session's detail:
 // header + aggregate, full-session recording, holistic review, and the per-attempt
 // ledger (result, score, transcribed answer, response audio). Server shell →

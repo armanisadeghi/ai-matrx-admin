@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -294,6 +295,7 @@ export function KeywordDetailView({
             </div>
           )}
         </section>
+        <EntityCustomFields entityToken="research_keyword" recordId={keywordId} />
       </div>
     </div>
   );

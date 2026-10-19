@@ -1,3 +1,4 @@
+// record-view: none — a practice problem player, not a record page
 // /education/subjects/quick-math/[id] — relocated individual algebra lesson.
 // features/math service + MathProblem component unchanged; only the route moved.
 import { Metadata } from "next";

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0105",
-  "version": 8,
+  "version": 9,
   "title": "Scrum Sprint Board",
   "description": "Scrum teams: epics and stories with points, sprint ceremonies and retrospectives.",
   "forWho": "Scrum teams in software or game studios",
@@ -1627,7 +1627,7 @@
         "Quillmere Pier"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1737,7 +1737,22 @@
                 "name": "Board",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "story_no",
+                  "points",
+                  "blocked",
+                  "blocked_by",
+                  "blocks_count",
+                  "pull_request",
+                  "created",
+                  "edited",
+                  "start_btn",
+                  "done_btn",
+                  "open_pull_request",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "list",
@@ -1829,7 +1844,15 @@
                 "name": "Timeline",
                 "icon": "ChartGantt",
                 "dateField": "starts_on",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "number",
+                  "capacity",
+                  "committed",
+                  "completed",
+                  "completion",
+                  "story_count"
+                ]
               },
               {
                 "layout": "list",
@@ -1876,7 +1899,14 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "story_count",
+                  "points_total",
+                  "points_done",
+                  "progress",
+                  "add_story_btn"
+                ]
               },
               {
                 "layout": "grid",

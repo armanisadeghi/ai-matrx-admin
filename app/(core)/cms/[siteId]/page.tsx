@@ -1,3 +1,4 @@
+// record-view: none — a CMS site workspace; CMS tables are not registered for custom fields
 "use client";
 
 import React, { useState } from "react";

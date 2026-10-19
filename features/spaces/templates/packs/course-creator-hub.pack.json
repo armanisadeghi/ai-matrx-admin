@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0312",
-  "version": 8,
+  "version": 9,
   "title": "Course Creator Hub",
   "description": "Course creators: build, film, sell and launch an online course with students.",
   "forWho": "Educators selling courses and cohorts",
@@ -1788,7 +1788,7 @@
         "Beckett Alley"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1880,7 +1880,15 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "student_count",
+                  "paying",
+                  "revenue",
+                  "launch_count",
+                  "module_count",
+                  "add_module_btn"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2086,7 +2094,10 @@
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "opens_on"
+                "dateField": "opens_on",
+                "hiddenFields": [
+                  "target"
+                ]
               },
               {
                 "id": "view-tbl",

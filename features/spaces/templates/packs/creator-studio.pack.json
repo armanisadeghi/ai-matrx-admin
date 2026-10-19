@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 8,
+  "version": 9,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -1928,7 +1928,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -1999,7 +1999,14 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "views",
+                  "ctr",
+                  "sponsor",
+                  "updated_at",
+                  "pub_btn"
+                ]
               },
               {
                 "id": "view-cal",
@@ -2167,14 +2174,34 @@
                 "name": "Pipeline",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pay_days",
+                  "video_count",
+                  "pub_count",
+                  "views_total",
+                  "left_to_make",
+                  "cpm",
+                  "email_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Follow-ups",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "follow_up"
+                "dateField": "follow_up",
+                "hiddenFields": [
+                  "pay_days",
+                  "video_count",
+                  "pub_count",
+                  "views_total",
+                  "left_to_make",
+                  "cpm",
+                  "email_btn",
+                  "paid_btn"
+                ]
               },
               {
                 "id": "view-tbl",

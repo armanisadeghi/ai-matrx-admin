@@ -1,3 +1,4 @@
+// record-view: none — a chat surface; the message list owns the whole screen and there is no page body below it
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { conversationIdOrNull } from "@ai-matrx/chat/agents/utils/conversation-ref";

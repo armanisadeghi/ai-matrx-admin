@@ -19,7 +19,8 @@ export interface CompareRunView {
   result: ComparisonResult | null;
   failure: string | null;
   startedAt: number;
-  confirm: () => void;
+  /** Start the run with this request (the lineup the person confirmed), or the quoted one. */
+  confirm: (request?: unknown) => void;
 }
 
 /**
@@ -70,12 +71,13 @@ export function useCompareRun(args: { runId: string | null; request: unknown; or
     return () => abort.current?.abort();
   }, [follow]);
 
-  const confirm = useCallback(() => {
-    if (!runId || !organizationId || request == null) return;
+  const confirm = useCallback((chosen?: unknown) => {
+    const body = chosen ?? request;
+    if (!runId || !organizationId || body == null) return;
     setPhase("starting");
     setFailure(null);
     setStartedAt(Date.now());
-    startChatComparison(runId, request, { organizationId })
+    startChatComparison(runId, body, { organizationId })
       .then(() => follow())
       .catch((err) => {
         setFailure(err instanceof ComparisonRefusal ? err.userMessage : "The comparison could not be started.");

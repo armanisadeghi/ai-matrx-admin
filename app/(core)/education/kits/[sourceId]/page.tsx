@@ -1,3 +1,4 @@
+// record-view: none — a study-kit hub built from a source, not a record page
 // /education/kits/[sourceId] — ONE study kit: one piece of material and
 // everything made from it. The kit's id IS its source material's id (the durable
 // ingest anchor every artifact already links back to).

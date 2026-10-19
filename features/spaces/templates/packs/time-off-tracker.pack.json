@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0253",
-  "version": 7,
+  "version": 8,
   "title": "Time-Off Tracker",
   "description": "Small teams and HR: request and approve leave, with a team calendar and balances.",
   "forWho": "Small teams and HR managers",
@@ -1258,7 +1258,7 @@
         "Hollowmere Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1415,21 +1415,47 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "days",
+                  "status",
+                  "approver",
+                  "reason",
+                  "updated",
+                  "approve_btn",
+                  "decline_btn"
+                ]
               },
               {
                 "id": "v-tl",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "start_on"
+                "dateField": "start_on",
+                "hiddenFields": [
+                  "days",
+                  "status",
+                  "approver",
+                  "reason",
+                  "updated",
+                  "approve_btn",
+                  "decline_btn"
+                ]
               },
               {
                 "id": "v-bd",
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "days",
+                  "approver",
+                  "reason",
+                  "updated",
+                  "approve_btn",
+                  "decline_btn"
+                ]
               },
               {
                 "id": "v-all",
@@ -1491,7 +1517,16 @@
                 "name": "By team",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "team"
+                "groupField": "team",
+                "hiddenFields": [
+                  "allowance",
+                  "carry",
+                  "total",
+                  "used",
+                  "sick",
+                  "remaining",
+                  "used_pct"
+                ]
               }
             ],
             "activeViewId": "v-b1"

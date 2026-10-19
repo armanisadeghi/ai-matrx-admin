@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 6,
+  "version": 7,
   "title": "Physical Therapy Clinic",
   "description": "For PT clinics: referrals, plans of care, authorized visits, notes and no-shows.",
   "forWho": "Physical therapists, rehab clinics and PT front desks",
@@ -1458,7 +1458,7 @@
             ],
             "choiceColors": {
               "Active": "teal",
-              "On hold": "green",
+              "On hold": "orange",
               "Discharged": "amber"
             },
             "default": "Active"
@@ -2348,7 +2348,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2849,14 +2849,29 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "units",
+                  "copay",
+                  "front_desk",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "when_at"
+                "dateField": "when_at",
+                "hiddenFields": [
+                  "units",
+                  "copay",
+                  "status",
+                  "front_desk",
+                  "checkin_btn",
+                  "complete_btn"
+                ]
               },
               {
                 "id": "vall",

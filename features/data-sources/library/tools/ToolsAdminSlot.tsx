@@ -2,22 +2,18 @@
 
 /**
  * THE SLOT for the admin layer (another lane builds the component and mounts it here). Shown only to an
- * admin who switched the admin view on (`?admin=1`); a member sees nothing, not even a gap. The layer gets
+ * admin with debug mode on (the platform's admin debug mode); a member sees nothing, not even a gap. The layer gets
  * where it is mounted and, on a Tool page, which Tool. Until the component lands the slot renders only its
  * own marker, so the mount point is findable and honest.
  */
 
-import { useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { useAppSelector } from "@/lib/redux/hooks";
-import { selectIsAdminDebugger } from "@/lib/redux/selectors/userSelectors";
+import { useAdminDebugView } from "@/hooks/useAdminDebugView";
 
-/** True for an admin who turned the admin view on. Members are never true. */
+/** True for an admin with the platform's admin debug mode on. Members are never true. */
 export function useToolsAdminView(): boolean {
-  const isAdmin = useAppSelector(selectIsAdminDebugger);
-  const params = useSearchParams();
-  return isAdmin && params.get("admin") === "1";
+  return useAdminDebugView();
 }
 
 /** Mount the admin layer component as `children` (or replace this file's body when it lands). */

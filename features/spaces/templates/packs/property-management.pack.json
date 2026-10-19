@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 7,
+  "version": 8,
   "title": "Property Management",
   "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
   "forWho": "Landlords, property managers and leasing staff",
@@ -2494,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -3080,7 +3080,14 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "lease_count",
+                  "lease_btn",
+                  "req_btn",
+                  "vacant_btn",
+                  "occupied_btn"
+                ]
               },
               {
                 "id": "vall",

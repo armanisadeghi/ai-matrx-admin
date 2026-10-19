@@ -62,6 +62,7 @@ import { StructuredValueView } from "@/components/official/structured-value/Stru
 import type { KindSandboxCeilings } from "./useKindSandboxKnob";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAdminDebugView } from "@/hooks/useAdminDebugView";
 import { useReportKindDraw } from "./kind-draw-report";
 
 /** The sandbox document. Same origin; the `sandbox` attribute opaques it. */
@@ -286,6 +287,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
     const attemptKey = `${frameAttempt}:${loaded ? 1 : 0}`;
     const [silentKey, setSilentKey] = React.useState<string | null>(null);
     const silent = silentKey === attemptKey;
+    const debugView = useAdminDebugView();
     React.useEffect(() => {
         if (heard) return;
         const timer = window.setTimeout(() => {
@@ -790,7 +792,7 @@ export const KindSandboxFrame: React.FC<KindSandboxFrameProps> = ({
                 <ErrorNotice
                     size="inline"
                     className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 p-2 text-xs text-muted-foreground"
-                    message="This view did not load."
+                    message={debugView ? "This view did not load." : "We couldn't show this result"}
                     actions={
                         <button
                             type="button"

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 7,
+  "version": 8,
   "title": "Release Notes & API Docs",
   "description": "Product and developer teams: release notes, a public changelog and an API reference.",
   "forWho": "Product and developer-experience teams",
@@ -1426,7 +1426,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1542,7 +1542,14 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "change_count",
+                  "breaking_count",
+                  "breaking_pct",
+                  "new_endpoints",
+                  "ship_btn"
+                ]
               },
               {
                 "layout": "calendar",

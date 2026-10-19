@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0112",
-  "version": 7,
+  "version": 8,
   "title": "Weekly Agenda",
   "description": "Solo consultants and small teams: tasks and meetings by day, with a Friday review.",
   "forWho": "Solo consultants and small teams",
@@ -1214,7 +1214,7 @@
         "Sumac Hollow Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {
@@ -1738,14 +1738,28 @@
                 "name": "By status",
                 "icon": "SquareKanban",
                 "groupField": "status",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes",
+                  "done_btn",
+                  "start_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "kanban",
                 "name": "By day",
                 "icon": "SquareKanban",
                 "groupField": "day",
-                "id": "view-1"
+                "id": "view-1",
+                "hiddenFields": [
+                  "minutes",
+                  "done_btn",
+                  "start_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "layout": "grid",
@@ -1758,7 +1772,14 @@
                 "name": "By priority",
                 "icon": "SquareKanban",
                 "groupField": "priority",
-                "id": "view-3"
+                "id": "view-3",
+                "hiddenFields": [
+                  "minutes",
+                  "done_btn",
+                  "start_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               }
             ],
             "activeViewId": "view-0"
@@ -1782,7 +1803,10 @@
                 "name": "By day",
                 "icon": "SquareKanban",
                 "groupField": "day",
-                "id": "view-0"
+                "id": "view-0",
+                "hiddenFields": [
+                  "minutes"
+                ]
               },
               {
                 "layout": "grid",
@@ -1795,7 +1819,10 @@
                 "name": "By type",
                 "icon": "SquareKanban",
                 "groupField": "kind",
-                "id": "view-2"
+                "id": "view-2",
+                "hiddenFields": [
+                  "minutes"
+                ]
               }
             ],
             "activeViewId": "view-0"

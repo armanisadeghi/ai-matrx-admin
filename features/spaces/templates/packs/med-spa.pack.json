@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 6,
+  "version": 7,
   "title": "Med Spa",
   "description": "For med spas and aesthetic nurses: bookings, consents, memberships, units and lots.",
   "forWho": "Med spa owners, injectors and aesthetic clinics",
@@ -1962,7 +1962,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
@@ -2409,14 +2409,26 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "credits_total",
+                  "credits_used",
+                  "credits_left",
+                  "cancel_btn"
+                ]
               },
               {
                 "id": "vcal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renews_on"
+                "dateField": "renews_on",
+                "hiddenFields": [
+                  "credits_total",
+                  "credits_used",
+                  "credits_left",
+                  "cancel_btn"
+                ]
               },
               {
                 "id": "vall",
@@ -2475,7 +2487,11 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "expires_on"
+                "dateField": "expires_on",
+                "hiddenFields": [
+                  "on_hand",
+                  "reorder_at"
+                ]
               },
               {
                 "id": "vall",

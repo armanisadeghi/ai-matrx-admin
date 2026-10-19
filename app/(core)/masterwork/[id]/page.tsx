@@ -4,6 +4,7 @@
 
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { use } from "react";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
@@ -38,8 +39,11 @@ export default function RulebookRoute({
           />
         }
       />
-      <div className="h-full overflow-y-auto bg-textured pt-[calc(var(--shell-header-h)+1rem)]">
+      <div className="h-full overflow-y-auto bg-textured pt-[calc(var(--shell-header-h)+1rem)]" data-matrx-page-runway="">
         <RulebookDetailPage rulebookId={id} />
+        <div className="mx-auto max-w-5xl px-4 pb-[var(--matrx-page-runway)]">
+          <EntityCustomFields entityToken="rulebook" recordId={id} />
+        </div>
       </div>
     </>
   );

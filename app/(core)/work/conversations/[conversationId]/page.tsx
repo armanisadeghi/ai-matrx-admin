@@ -1,3 +1,4 @@
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { ProviderConversationHeader } from "@/features/ai-work/components/ProviderConversationHeader";
 import { ProviderConversationTranscript } from "@/features/ai-work/components/ProviderConversationTranscript";
@@ -34,11 +35,14 @@ export default async function WorkConversationPage({
     return (
       <>
         <ProviderConversationHeader title={title} />
-        <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] scrollbar-thin">
+        <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] scrollbar-thin" data-matrx-page-runway="">
           <MatrxConversationDetail
             conversation={read.conversation}
             runnable={Boolean(read.initialAgentId)}
           />
+          <div className="mx-auto max-w-3xl px-4 pb-[var(--matrx-page-runway)]">
+            <EntityCustomFields entityToken="conversation" recordId={conversationId} />
+          </div>
         </div>
       </>
     );
@@ -52,9 +56,14 @@ export default async function WorkConversationPage({
   return (
     <>
       <ProviderConversationHeader title={title} />
-      <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] scrollbar-thin">
+      <div className="h-full overflow-y-auto pt-[var(--shell-header-h)] scrollbar-thin" data-matrx-page-runway="">
         {read.state === "ready" ? (
-          <ProviderConversationTranscript detail={read.detail} />
+          <>
+            <ProviderConversationTranscript detail={read.detail} />
+            <div className="mx-auto max-w-3xl px-4 pb-[var(--matrx-page-runway)]">
+              <EntityCustomFields entityToken="conversation" recordId={conversationId} />
+            </div>
+          </>
         ) : (
           <AccessGate
             token="conversation"

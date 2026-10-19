@@ -1,3 +1,4 @@
+// record-view: none — a door that redirects members into the brand workspace, or a read-only map viewer for a record-only grantee
 // The topical map's ID DOOR: /marketing/topical-maps/[mapId].
 //
 // This is the value of `platform.shareable_resource_registry.url_path_template`

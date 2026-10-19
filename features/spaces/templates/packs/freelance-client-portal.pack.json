@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 9,
+  "version": 10,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -1507,7 +1507,7 @@
         "Tallow Court"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1611,7 +1611,18 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "task_count",
+                  "tasks_done",
+                  "progress",
+                  "open_tasks",
+                  "file_count",
+                  "files_ok",
+                  "approved_pct",
+                  "update_count",
+                  "email_btn"
+                ]
               },
               {
                 "id": "view-tl",

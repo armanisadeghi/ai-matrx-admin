@@ -1,3 +1,4 @@
+// record-view: none — an employment-period timesheet workspace, not one record
 import { Suspense } from "react";
 
 import { HrTimeShell } from "@/features/hr/time/HrTimeShell";

@@ -53,6 +53,8 @@ import { ResultJson } from "@ai-matrx/chat/tool-call-visualization/result-fields
 import { isPlainObject } from "@ai-matrx/chat/tool-call-visualization/result-fields/shape";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
 import { KIND_KEY } from "@ai-matrx/content-ir";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { useAdminDebugView } from "@/hooks/useAdminDebugView";
 
 /**
  * Serialized-character budget above which the document renders in the CAPPED
@@ -136,6 +138,8 @@ export function StructuredValueView({
   className,
 }: StructuredValueViewProps) {
   const [showRaw, setShowRaw] = useState(false);
+  // The raw data and the "no custom view" note are for an admin with debug mode on; everyone else gets one honest line.
+  const debugView = useAdminDebugView();
 
   const shown = useMemo(() => withoutRootKindKey(value), [value]);
 
@@ -148,7 +152,14 @@ export function StructuredValueView({
     <div className={cn("min-w-0 space-y-2", className)}>
       <ResultValue value={shown} density={resolved} />
 
-      {footer ? (
+      {footer && !debugView && kind ? (
+        <div className="flex flex-wrap items-center gap-x-2 border-t border-border/50 pt-1.5 type-meta text-muted-foreground" data-view-fallback-line="">
+          <span>We couldn&apos;t show this result</span>
+          <ErrorAlchemyMenu error={`This result could not be shown: ${kind}`} />
+        </div>
+      ) : null}
+
+      {footer && debugView ? (
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-border/50 pt-1.5 type-meta text-muted-foreground">
           {kind ? (
             <span title={kind}>
@@ -172,7 +183,7 @@ export function StructuredValueView({
         </div>
       ) : null}
 
-      {footer && showRaw ? <ResultJson data={value} showSource /> : null}
+      {footer && debugView && showRaw ? <ResultJson data={value} showSource /> : null}
     </div>
   );
 }

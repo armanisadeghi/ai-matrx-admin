@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0206",
-  "version": 4,
+  "version": 5,
   "title": "Reading List",
   "description": "Readers: a bookshelf with status and ratings, a reading log and genre totals.",
   "forWho": "Readers who like to track",
@@ -1157,7 +1157,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1216,27 +1216,69 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "rating",
+                  "pages",
+                  "pages_read",
+                  "pct_read",
+                  "logged_pages",
+                  "minutes_read",
+                  "pages_left",
+                  "added"
+                ]
               },
               {
                 "id": "view-2",
                 "name": "Gallery",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "rating",
+                  "pages",
+                  "pages_read",
+                  "pct_read",
+                  "review",
+                  "logged_pages",
+                  "minutes_read",
+                  "pages_left",
+                  "added"
+                ]
               },
               {
                 "id": "view-3",
                 "name": "By format",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "format"
+                "groupField": "format",
+                "hiddenFields": [
+                  "rating",
+                  "pages",
+                  "pages_read",
+                  "pct_read",
+                  "logged_pages",
+                  "minutes_read",
+                  "pages_left",
+                  "added"
+                ]
               },
               {
                 "id": "view-4",
                 "name": "Timeline",
                 "layout": "timeline",
                 "icon": "ChartGantt",
-                "dateField": "started_on"
+                "dateField": "started_on",
+                "hiddenFields": [
+                  "rating",
+                  "pages",
+                  "pages_read",
+                  "pct_read",
+                  "review",
+                  "logged_pages",
+                  "minutes_read",
+                  "pages_left",
+                  "added"
+                ]
               },
               {
                 "id": "view-5",
@@ -1395,7 +1437,11 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "read_on"
+                "dateField": "read_on",
+                "hiddenFields": [
+                  "pages",
+                  "minutes"
+                ]
               },
               {
                 "id": "view-10",

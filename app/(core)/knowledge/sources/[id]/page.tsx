@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 import { SourceStudio } from "@/features/source-studio/components/SourceStudio";
 import { parseSourceDeepLink } from "@/features/source-studio/sourceStudioModel";
 

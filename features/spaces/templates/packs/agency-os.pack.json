@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 8,
+  "version": 9,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -2734,7 +2734,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {
@@ -2880,14 +2880,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "estimate",
+                  "done_btn",
+                  "take_btn"
+                ]
               },
               {
                 "id": "view-cal",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "due_on"
+                "dateField": "due_on",
+                "hiddenFields": [
+                  "estimate",
+                  "done_btn",
+                  "take_btn",
+                  "assigned_to"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -2998,7 +3009,15 @@
                 "name": "Renewals",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "renews_on"
+                "dateField": "renews_on",
+                "hiddenFields": [
+                  "hours_included",
+                  "hours_used",
+                  "hours_month",
+                  "hours_left",
+                  "used_pct",
+                  "updated_at"
+                ]
               },
               {
                 "id": "view-tbl",
@@ -3138,7 +3157,15 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "project_count",
+                  "open_props",
+                  "won_props",
+                  "email_btn",
+                  "added_at",
+                  "add_project_btn"
+                ]
               },
               {
                 "id": "view-tbl",

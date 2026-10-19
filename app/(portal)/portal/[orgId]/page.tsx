@@ -1,3 +1,4 @@
+// record-view: none — a public portal landing for an organization, not a record page
 /**
  * `/portal/[orgId]` — one organization's departed-member portal.
  *

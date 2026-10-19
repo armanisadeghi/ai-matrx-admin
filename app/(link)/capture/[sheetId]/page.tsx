@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 "use client";
 
 // app/(link)/capture/[sheetId]/page.tsx — THE LINK THE CREW OPENS ON THEIR PHONES.

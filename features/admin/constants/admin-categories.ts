@@ -970,6 +970,12 @@ export const adminCategoriesData: AdminCategory[] = [
         link: "/administration/agents/tool-control",
       },
       {
+        title: "Watchtower",
+        description: "Every paid feature checked by a real call: last check, success, speed, cost and alarms.",
+        iconName: "Radar",
+        link: "/administration/agents/watchtower",
+      },
+      {
         title: "MCP Servers",
         description:
           "Provision new servers (one-click 4-row insert: server + executor kind + system bundle + lister tool). Per-server tabs for tools / configs / connected users / metadata. Test connection probes the endpoint and persists health.",

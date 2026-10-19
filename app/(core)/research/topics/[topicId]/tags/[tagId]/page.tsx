@@ -1,3 +1,4 @@
+// record-view: none — a viewport-fit consolidation workspace; there is no page body to extend
 import ConsolidationView from '@/features/research/components/consolidation/ConsolidationView';
 
 export default async function TagConsolidationPage({

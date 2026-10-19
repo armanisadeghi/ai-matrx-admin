@@ -1,3 +1,4 @@
+// record-view: none — a live capture studio, not a record page
 "use client";
 
 import { useTransition } from "react";

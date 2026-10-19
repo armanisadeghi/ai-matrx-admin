@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 import { Suspense } from "react";
 
 import { ReputationGate } from "@/features/marketing/components/reputation/ReputationGate";

@@ -1,3 +1,4 @@
+// record-view: none — a full-viewport workspace that owns the whole screen; there is no page body to extend
 import type { Metadata } from "next";
 import { ExtractionDatasetClient } from "@/features/page-extraction/data-review/ExtractionDatasetClient";
 

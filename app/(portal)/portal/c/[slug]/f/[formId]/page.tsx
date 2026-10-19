@@ -1,3 +1,4 @@
+// record-view: none — a public portal form addressed by link, not a record page
 // app/(portal)/portal/c/[slug]/f/[formId]/page.tsx — ONE OF HER PORTAL'S FORMS (lane S6, U12).
 //
 // A property manager opens her supplier's portal and presses "Update a gate code": the form opens

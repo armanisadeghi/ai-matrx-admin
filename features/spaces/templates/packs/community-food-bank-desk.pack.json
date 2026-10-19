@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 4,
+  "version": 5,
   "title": "Community Food Bank Desk",
   "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
@@ -2616,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2755,14 +2755,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "level"
+                "groupField": "level",
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation"
+                ]
               },
               {
                 "id": "sto-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "best_by"
+                "dateField": "best_by",
+                "hiddenFields": [
+                  "on_hand",
+                  "par",
+                  "received_lb",
+                  "gap",
+                  "btn_restocked",
+                  "btn_claim",
+                  "add_donation",
+                  "added_at"
+                ]
               },
               {
                 "id": "sto-t",
@@ -2872,7 +2891,15 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "pounds",
+                  "inkind",
+                  "btn_received",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "don-c",
@@ -2980,14 +3007,33 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim"
+                ]
               },
               {
                 "id": "dis-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "dist_at"
+                "dateField": "dist_at",
+                "hiddenFields": [
+                  "volunteers",
+                  "households",
+                  "pounds_out",
+                  "per_house",
+                  "btn_open",
+                  "btn_done",
+                  "btn_claim",
+                  "added_at"
+                ]
               },
               {
                 "id": "dis-t",
@@ -3114,14 +3160,31 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "people",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-c",
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "next_visit"
+                "dateField": "next_visit",
+                "hiddenFields": [
+                  "people",
+                  "needs_delivery",
+                  "phone",
+                  "btn_active",
+                  "btn_claim",
+                  "owner_me",
+                  "added_at"
+                ]
               },
               {
                 "id": "hou-t",
@@ -3231,7 +3294,10 @@
                 "name": "By status",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "status"
+                "groupField": "status",
+                "hiddenFields": [
+                  "monthly_lb"
+                ]
               },
               {
                 "id": "pa-n",

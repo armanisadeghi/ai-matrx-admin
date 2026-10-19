@@ -8,7 +8,7 @@ for (const org of ORGS) {
   console.log(org.slice(0, 8), "tables:", mine.map((t) => t.id.slice(0, 8) + " " + t.name).join(" ; "));
   for (const t of mine) {
     const subs = await client.subscriptions({ table_id: t.id }); for (const s of subs.data ?? []) console.log("sub", s.name, "last_sent_at=" + s.last_sent_at, "next=" + s.next_digest_at, JSON.stringify(await client.recordDelete({ record_id: s.rule_id })).slice(0, 60));
-    const ds = await client.dashboards({ table_id: t.id }); for (const d of (Array.isArray(ds.data) ? ds.data : ds.data?.dashboards ?? [])) if (/^ATWG /.test(d.name ?? "")) console.log("dashboard", d.name, JSON.stringify(await client.dashboardDelete({ dashboard_id: d.id })).slice(0, 60));
+    const ds = await client.dashboards({ table_id: t.id }); for (const d of (Array.isArray(ds.data) ? ds.data : ds.data?.dashboards ?? [])) if (/^ATWG /.test(d.name ?? "")) console.log("dashboard", d.name, JSON.stringify(await client.dashboardDelete({ dashboard_id: d.dashboard_id })).slice(0, 60));
     const fm = await client.formList?.({ table_id: t.id }); for (const f of fm?.data ?? []) console.log("form", f.title, JSON.stringify(await client.formArchive({ form_id: f.id })).slice(0, 60));
     const vs = await client.views({ table_id: t.id }); for (const v of vs.data ?? []) if (/^ATWG /.test(v.name)) console.log("view", v.name, JSON.stringify(await client.viewArchive({ view_id: v.view_id })).slice(0, 60));
     const au = await client.automations?.({ table_id: t.id }); for (const a of (Array.isArray(au?.data) ? au.data : au?.data?.automations ?? [])) if (/^ATWG /.test(a.name)) console.log("automation", a.name, JSON.stringify(await client.automationArchive({ automation_id: a.id })).slice(0, 60));

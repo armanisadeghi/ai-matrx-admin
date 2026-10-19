@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 9,
+  "version": 10,
   "title": "Study Planner & Flashcards",
   "description": "Students preparing for exams: plan study blocks backwards and drill flashcards.",
   "forWho": "Students preparing for exams",
@@ -1480,7 +1480,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {
@@ -1582,7 +1582,15 @@
                 "name": "Exam dates",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "exam_on"
+                "dateField": "exam_on",
+                "hiddenFields": [
+                  "topics_done",
+                  "topics_total",
+                  "progress",
+                  "minutes_planned",
+                  "cue_count",
+                  "add_cue_btn"
+                ]
               },
               {
                 "id": "v-s",
@@ -1634,14 +1642,23 @@
                 "name": "Calendar",
                 "layout": "calendar",
                 "icon": "Calendar",
-                "dateField": "on"
+                "dateField": "on",
+                "hiddenFields": [
+                  "minutes",
+                  "confidence",
+                  "done_btn"
+                ]
               },
               {
                 "id": "v-pb",
                 "name": "By method",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "method"
+                "groupField": "method",
+                "hiddenFields": [
+                  "minutes",
+                  "done_btn"
+                ]
               },
               {
                 "id": "v-pa",
@@ -1725,13 +1742,32 @@
                 "name": "Boxes",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "box"
+                "groupField": "box",
+                "hiddenFields": [
+                  "card_no",
+                  "days_since",
+                  "known",
+                  "tags",
+                  "added",
+                  "got_btn",
+                  "missed_btn"
+                ]
               },
               {
                 "id": "v-cg",
                 "name": "Deck",
                 "layout": "gallery",
-                "icon": "LayoutGrid"
+                "icon": "LayoutGrid",
+                "hiddenFields": [
+                  "card_no",
+                  "review_flag",
+                  "days_since",
+                  "known",
+                  "tags",
+                  "added",
+                  "got_btn",
+                  "missed_btn"
+                ]
               },
               {
                 "id": "v-ca",

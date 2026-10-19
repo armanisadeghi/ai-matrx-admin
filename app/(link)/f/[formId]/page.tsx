@@ -1,3 +1,4 @@
+// record-view: none — a public form addressed by link, not a record page
 // app/(link)/f/[formId]/page.tsx — THE PUBLIC FORM. PRODUCTS row 1.
 //
 // A person with no account opens an unguessable link and answers a few

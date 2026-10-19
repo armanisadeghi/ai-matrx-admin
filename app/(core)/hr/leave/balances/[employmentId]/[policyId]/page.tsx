@@ -1,3 +1,4 @@
+// record-view: none — a leave ledger for an employment and policy pair, not one record
 import { Suspense } from "react";
 
 import { HrLoading } from "@/features/hr/shared/HrStates";
