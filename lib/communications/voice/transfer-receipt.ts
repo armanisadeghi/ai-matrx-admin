@@ -47,9 +47,7 @@ export function projectVoiceTransferReceipt(
   if (!first.entity_id || !first.organization_id)
     return { ...bounds, state: "conflict" };
   for (const row of rows) {
-    const m = row.metadata;
     if (
-      !isJsonObject(m) ||
       row.entity_type !== "crm_interaction" ||
       !row.entity_id ||
       !row.organization_id ||
@@ -57,30 +55,7 @@ export function projectVoiceTransferReceipt(
       row.organization_id !== first.organization_id
     )
       return { ...bounds, state: "conflict" };
-    if (
-      m.provider !== "twilio" ||
-      m.provider_event_key !==
-        `twilio:${expected.providerAccountId}:${expected.providerDialCallId}` ||
-      typeof m.provider_account_id !== "string" ||
-      typeof m.provider_call_id !== "string" ||
-      typeof m.provider_dial_call_id !== "string" ||
-      typeof m.status !== "string" ||
-      (m.duration_seconds !== null &&
-        (typeof m.duration_seconds !== "number" ||
-          !Number.isInteger(m.duration_seconds))) ||
-      (m.bridged !== null && typeof m.bridged !== "boolean")
-    )
-      return { ...bounds, state: "conflict" };
-    const parsed = parseVoiceTransferResult({
-      AccountSid: m.provider_account_id,
-      CallSid: m.provider_call_id,
-      DialCallSid: m.provider_dial_call_id,
-      DialCallStatus: m.status,
-      ...(m.duration_seconds === null
-        ? {}
-        : { DialCallDuration: String(m.duration_seconds) }),
-      ...(m.bridged === null ? {} : { DialBridged: String(m.bridged) }),
-    });
+    const parsed = parseVoiceTransferObservation(row);
     if (
       !parsed ||
       parsed.providerAccountId !== expected.providerAccountId ||
@@ -105,4 +80,36 @@ export function projectVoiceTransferReceipt(
           ? "not-connected"
           : "unknown",
   };
+}
+
+/** Decode retained evidence without coercing malformed JSON values into valid provider fields. */
+export function parseVoiceTransferObservation(
+  row: TransferObservation,
+): VoiceTransferResult | null {
+  const m = row.metadata;
+  if (
+    !isJsonObject(m) ||
+    m.provider !== "twilio" ||
+    typeof m.provider_account_id !== "string" ||
+    typeof m.provider_call_id !== "string" ||
+    typeof m.provider_dial_call_id !== "string" ||
+    typeof m.status !== "string" ||
+    m.provider_event_key !==
+      `twilio:${m.provider_account_id}:${m.provider_dial_call_id}` ||
+    (m.duration_seconds !== null &&
+      (typeof m.duration_seconds !== "number" ||
+        !Number.isInteger(m.duration_seconds))) ||
+    (m.bridged !== null && typeof m.bridged !== "boolean")
+  )
+    return null;
+  return parseVoiceTransferResult({
+    AccountSid: m.provider_account_id,
+    CallSid: m.provider_call_id,
+    DialCallSid: m.provider_dial_call_id,
+    DialCallStatus: m.status,
+    ...(m.duration_seconds === null
+      ? {}
+      : { DialCallDuration: String(m.duration_seconds) }),
+    ...(m.bridged === null ? {} : { DialBridged: String(m.bridged) }),
+  });
 }

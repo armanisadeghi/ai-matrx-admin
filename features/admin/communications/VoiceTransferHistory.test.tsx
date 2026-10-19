@@ -4,6 +4,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { VoiceTransferHistory } from "./VoiceTransferHistory";
 
+jest.mock("./transfer-receipt-service", () => ({
+  loadTransferReceipt: jest.fn(),
+}));
+
 const conversationId = "44444444-4444-4444-8444-444444444444";
 
 jest.mock("@/utils/supabase/adminLane", () => ({
@@ -36,8 +40,9 @@ jest.mock("@/components/official/InfoHint", () => ({
   InfoHint: () => null,
 }));
 
-(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-  true;
+(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("VoiceTransferHistory", () => {
   let host: HTMLDivElement;
