@@ -1,7 +1,14 @@
 -- target: branch,production
 -- lane: READ-SPEED-2
 -- lock: custom
--- BASED-ON-PLACEHOLDER
+-- based-on: custom.rollup_value(uuid, uuid, jsonb) a5b6b4caa7295c5c5d682adadd7c9e77bd879e2607d6d9727e7aea9667b5620a
+-- based-on: custom.lookup_value(uuid, uuid, jsonb) 1106eb4028725f69e42a4ebd33f519266021f479b777896558e8c2e4c91edcc4
+-- based-on: custom.formula_value(uuid, uuid, jsonb, jsonb) e973d3828045b429629f296ebcd21142c784f1bb7f83fcd91c410321cc1bcf47
+-- based-on: custom.rule_field_key(uuid, uuid) 97cf0a7a6d6b6b1b45b76678aceef642f04734a3ddcf2cf5c9e582462e2364f9
+-- based-on: custom.rule_context(uuid, uuid) 6ebd332694efae1ed87ca75c486973c7c94fc2a49ecd1983966f748b12332fce
+-- based-on: custom._derived_attempt(uuid, uuid, jsonb, jsonb) 20f35391b8b428537674beefa3c03c4a332ed7774883e93cad55670032f70599
+-- based-on: custom.read_records_by_ids(uuid, uuid, uuid[], boolean) 78e8ed135bad40b98b27a4b056f6d43e78263630e7e5d7db7b02e31eb8983b30
+-- based-on: custom.table_type_field(uuid, uuid) af1551cd85c2b95f5d7cc675e7d184d07bf6dd08b7278b72fcd112cbeddab4ee
 -- Inverse of READ-SPEED-2 a: every body back as it was before (per row, no page prefetch, no per-read memo), and the
 -- three new helpers dropped once nothing calls them.
 
@@ -634,6 +641,39 @@ begin
     level := (v_mask ->> 'level')::public.permission_level;
     return next;
   end loop;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION custom.table_type_field(p_organization_id uuid, p_table_id uuid)
+ RETURNS text
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+AS $function$
+declare
+  v_answer text;
+  v_key    text;
+  v_hit    text;
+begin
+  perform custom.assert_client_may_reach(p_organization_id, 'custom.table_type_field');
+  perform custom.assert_may_know_table(p_organization_id, p_table_id, 'custom.table_type_field');
+
+  -- `to_jsonb`/`#>> '{}'` and not the bare text, so a Table that HAS no type field — a null
+  -- answer, which is the common one — is a hit rather than a miss forever.
+  v_key := 'tf:' || coalesce(p_organization_id::text, '-') || ':' || coalesce(p_table_id::text, '-');
+  v_hit := platform.memo_k_get(v_key);
+  if v_hit is not null then
+    return v_hit::jsonb #>> '{}';
+  end if;
+
+  select t.data ->> 'type_field' into v_answer
+    from custom.record t
+   where t.organization_id = p_organization_id
+     and t.id = p_table_id
+     and t.table_id = custom.table_kernel_id()
+     and t.deleted_at is null;
+  perform platform.memo_k_put(v_key, coalesce(to_jsonb(v_answer), 'null'::jsonb)::text);
+  return v_answer;
 end;
 $function$;
 

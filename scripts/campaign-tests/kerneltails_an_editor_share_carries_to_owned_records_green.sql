@@ -17,7 +17,7 @@
 -- RUN IT (clone or production; ONE rolled-back transaction; psql -f needs the sandbox disabled):
 --   psql "<DSN>" -v ON_ERROR_STOP=1 -f scripts/campaign-tests/kerneltails_an_editor_share_carries_to_owned_records_green.sql
 -- ITS RED: before kerneltails_an_editor_share_carries_to_owned_records.sql (and after its inverse)
--- E1 fails: "You have View access on this record, and custom.record_delete needs Edit access."
+-- E1 fails: "Deleting a record needs Edit access; you have View access on this record."
 
 \set ON_ERROR_STOP on
 \timing off
@@ -104,7 +104,7 @@ begin
     perform custom.record_delete(v_org, po4);
   exception when others then get stacked diagnostics v_caught = message_text;
   end;
-  if v_caught is null or v_caught not like 'You have View access on this record%' then
+  if v_caught is null or v_caught not like '%you have View access on this record%' then
     raise exception 'E2 FAILED — PO-5 carries Dana''s own viewer grant and deleting PO-4 was not refused on it (%)', coalesce(v_caught, 'no refusal');
   end if;
   perform set_config('request.jwt.claims', c_admin_j, true);

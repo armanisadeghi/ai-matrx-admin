@@ -9,6 +9,7 @@
 -- based-on: custom.rule_field_key(uuid, uuid) 731294a3c292f3888f123abcd8a09af7e43772113f10fdea805a9e41b27caf0e
 -- based-on: custom.rule_context(uuid, uuid) 8a586c53c943f4e4403f1084d240a20d12e4a8c911089357e831ebd416f4921b
 -- based-on: custom._derived_attempt(uuid, uuid, jsonb, jsonb) 049af5254d7f91b565e9b5fb8f2bcab9efea2c53104cf2664f78043b1492a645
+-- based-on: custom.table_type_field(uuid, uuid) 3ba47fc2e8505abb6dc82e0cd004282412bb387e335aa4a399ebf5a3e57f4bb9
 -- based-on: custom.read_records_by_ids(uuid, uuid, uuid[], boolean) e5ebfef294b44a6806e085609f3e74954cad2c1c950d4ac7fb9b93638731603c
 --
 -- READ-SPEED-2 a — A PAGE'S ROLL-UPS AND LOOKUPS ARE WORKED OUT FOR THE WHOLE PAGE, SET-BASED; EVERY COLUMN OF A
@@ -31,11 +32,11 @@
 --    circle). custom.rule_context likewise; custom.rule_field_key and formula_value's key lists once per statement.
 --  Switches for the proofs: mx.page_prefetch = off, mx.read_memo = off (the per-row path exactly as before).
 -- PROOF (before apply): the first page of every table with a read-time formula / roll-up / lookup in every
--- organization admin@admin.com belongs to (126 tables), read as admin before and after the new bodies in one
--- rolled-back transaction, and after with the prefetch off: 0 differ. Numbers: ~/lane-resume/reports/READ-SPEED-2.md.
+-- organization admin@admin.com belongs to (125 tables), read as admin before and after the new bodies in one
+-- rolled-back REPEATABLE READ transaction, and after with the prefetch off: 0 differ (11 tables refuse identically). Numbers: ~/lane-resume/reports/READ-SPEED-2.md.
 -- Inverse: migrations/inverse/20261019230000_readspeed2_a_page_rollups_lookups_worked_out_set_based_down.sql
 
-CREATE OR REPLACE FUNCTION custom._rollup_agg(p_agg text, p_n integer, p_vals jsonb[], p_nums numeric[])
+CREATE FUNCTION custom._rollup_agg(p_agg text, p_n integer, p_vals jsonb[], p_nums numeric[])
  RETURNS jsonb
  LANGUAGE plpgsql
  STABLE
@@ -95,7 +96,7 @@ begin
 end;
 $function$;
 
-CREATE OR REPLACE FUNCTION custom._far_values(p_organization_id uuid, p_record_ids uuid[], p_key text, p_reader jsonb)
+CREATE FUNCTION custom._far_values(p_organization_id uuid, p_record_ids uuid[], p_key text, p_reader jsonb)
  RETURNS jsonb
  LANGUAGE plpgsql
  STABLE
@@ -160,11 +161,12 @@ begin
         perform platform.memo_k_put(v_mk, v_fd);
       end if;
       if v_fd <> '-' then
-        for v_id in select (e #>> '{}')::uuid from jsonb_array_elements(v_one -> 'ids') e loop
-          f.data := custom.far_value(p_organization_id, v_id, p_key, p_reader);
-          v_out := v_out || jsonb_build_object(v_id::text,
-                     case when f.data is null then '[]'::jsonb else jsonb_build_array(f.data) end);
-        end loop;
+        select v_out || coalesce(jsonb_object_agg(x.id::text,
+                 case when x.v is null then '[]'::jsonb else jsonb_build_array(x.v) end), '{}'::jsonb)
+          into v_out
+          from (select (e #>> '{}')::uuid as id,
+                       custom.far_value(p_organization_id, (e #>> '{}')::uuid, p_key, p_reader) as v
+                  from jsonb_array_elements(v_one -> 'ids') e) x;
       else
         select v_out || coalesce(jsonb_object_agg(r.id::text,
                  case when x.v is null then '[]'::jsonb else jsonb_build_array(x.v) end), '{}'::jsonb)
@@ -182,7 +184,7 @@ begin
 end;
 $function$;
 
-CREATE OR REPLACE FUNCTION custom._page_derived_prefetch(p_organization_id uuid, p_table_id uuid, p_record_ids uuid[])
+CREATE FUNCTION custom._page_derived_prefetch(p_organization_id uuid, p_table_id uuid, p_record_ids uuid[])
  RETURNS integer
  LANGUAGE plpgsql
  STABLE
@@ -391,42 +393,35 @@ begin
         -- THE COLUMN IT READS, FROM EVERY LINKED RECORD IN ONE STATEMENT.
         v_fv := custom._far_values(p_organization_id, v_all, v_key, fd);
 
-        foreach v_rid in array p_record_ids loop
-          v_n := 0;
-          v_vals := '{}'::jsonb[];
-          v_nums := array[]::numeric[];
-          v_out := '[]'::jsonb;
-          for v_t in select (e #>> '{}')::uuid from jsonb_array_elements(coalesce(v_tg -> v_rid::text, '[]'::jsonb)) e loop
-            v_n := v_n + 1;
-            if v_key is not null then
-              v_one := coalesce(v_fv -> v_t::text, '[]'::jsonb) -> 0;
-              if v_par = 'rollup' then
-                v_vals := v_vals || coalesce(v_one, 'null'::jsonb);
-                if v_one is not null and jsonb_typeof(v_one) = 'number' then
-                  v_nums := v_nums || (v_one #>> '{}')::numeric;
-                end if;
-              elsif v_one is not null then
-                v_out := v_out || jsonb_build_array(v_one);
-              end if;
-            end if;
-          end loop;
-          if v_par = 'rollup' then
-            v_val := custom._rollup_agg(v_agg, v_n, v_vals, v_nums);
-          elsif v_multi then
-            v_val := v_out;
-          else
-            v_val := case when jsonb_array_length(v_out) = 0 then null else v_out -> 0 end;
-          end if;
-          v_values := v_values || jsonb_build_object(v_rid::text,
-                        case when v_val is null then '[]'::jsonb else jsonb_build_array(v_val) end);
-        end loop;
+        -- EVERY ROW'S ANSWER IN ONE STATEMENT, in each row's link order (the order custom.relation_targets answers in).
+        if v_par = 'rollup' then
+          select coalesce(jsonb_object_agg(k.key, case when x.v is null then '[]'::jsonb else jsonb_build_array(x.v) end), '{}'::jsonb)
+            into v_values
+            from jsonb_each(v_tg) k
+            cross join lateral (
+              select custom._rollup_agg(v_agg, coalesce(z.n, 0), coalesce(z.vals, '{}'::jsonb[]),
+                                        coalesce(z.nums, array[]::numeric[])) as v
+                from (select count(*)::integer as n,
+                             array_agg(coalesce(v_fv -> e.t -> 0, 'null'::jsonb) order by e.o)
+                               filter (where v_key is not null) as vals,
+                             array_agg(((v_fv -> e.t -> 0) #>> '{}')::numeric order by e.o)
+                               filter (where v_key is not null and jsonb_typeof(v_fv -> e.t -> 0) = 'number') as nums
+                        from jsonb_array_elements_text(k.value) with ordinality e(t, o)) z) x;
+        else
+          select coalesce(jsonb_object_agg(k.key, case when x.v is null then '[]'::jsonb else jsonb_build_array(x.v) end), '{}'::jsonb)
+            into v_values
+            from jsonb_each(v_tg) k
+            cross join lateral (
+              select case when v_multi then coalesce(z.a, '[]'::jsonb) else z.a -> 0 end as v
+                from (select jsonb_agg(v_fv -> e.t -> 0 order by e.o)
+                               filter (where v_key is not null and (v_fv -> e.t -> 0) is not null) as a
+                        from jsonb_array_elements_text(k.value) with ordinality e(t, o)) z) x;
+        end if;
       end if;
 
-      for v_one in select to_jsonb(e) from jsonb_each(v_values) e loop
-        perform platform.memo_k_put('custom.pdv:' || p_organization_id::text || ':' || (v_one ->> 'key') || ':' || v_hash,
-                                    (v_one -> 'value')::text);
-        v_put := v_put + 1;
-      end loop;
+      perform platform.memo_k_put('custom.pdv:' || p_organization_id::text || ':' || e.key || ':' || v_hash, e.value::text)
+         from jsonb_each(v_values) e;
+      v_put := v_put + (select count(*) from jsonb_each(v_values))::integer;
     exception
       when others then
         null;   -- this column is worked out per row, as before, and says its own sentence there.
@@ -952,6 +947,51 @@ exception
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION custom.table_type_field(p_organization_id uuid, p_table_id uuid)
+ RETURNS text
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+AS $function$
+declare
+  v_answer text;
+  v_key    text;
+  v_hit    text;
+  v_ok     text;
+begin
+  -- READ-SPEED-2 (2026-10-19): ONCE PER STATEMENT, THE CHECKS INCLUDED. A sort by a worked-out column asks this for every
+  -- matching record (5,000 asks, 2 s of checks alone); the two checks and the answer depend on the reader, the
+  -- organization and the Table only. Kept in the statement memo after both checks passed (seat + statement +
+  -- transaction + generation stamped): a reader the checks refuse is refused every time, as before.
+  v_ok := 'custom.ttf_ok:' || coalesce(p_organization_id::text, '-') || ':' || coalesce(p_table_id::text, '-');
+  v_hit := platform.memo_k_get(v_ok);
+  if v_hit is not null then
+    return v_hit::jsonb #>> '{}';
+  end if;
+  perform custom.assert_client_may_reach(p_organization_id, 'custom.table_type_field');
+  perform custom.assert_may_know_table(p_organization_id, p_table_id, 'custom.table_type_field');
+
+  -- `to_jsonb`/`#>> '{}'` and not the bare text, so a Table that HAS no type field — a null
+  -- answer, which is the common one — is a hit rather than a miss forever.
+  v_key := 'tf:' || coalesce(p_organization_id::text, '-') || ':' || coalesce(p_table_id::text, '-');
+  v_hit := platform.memo_k_get(v_key);
+  if v_hit is not null then
+    perform platform.memo_k_put(v_ok, v_hit);
+    return v_hit::jsonb #>> '{}';
+  end if;
+
+  select t.data ->> 'type_field' into v_answer
+    from custom.record t
+   where t.organization_id = p_organization_id
+     and t.id = p_table_id
+     and t.table_id = custom.table_kernel_id()
+     and t.deleted_at is null;
+  perform platform.memo_k_put(v_key, coalesce(to_jsonb(v_answer), 'null'::jsonb)::text);
+  perform platform.memo_k_put(v_ok, coalesce(to_jsonb(v_answer), 'null'::jsonb)::text);
+  return v_answer;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION custom.read_records_by_ids(p_organization_id uuid, p_table_id uuid, p_record_ids uuid[], p_by_id boolean DEFAULT false)
  RETURNS TABLE(id uuid, document jsonb, level permission_level)
  LANGUAGE plpgsql
@@ -1128,4 +1168,3 @@ begin
   end loop;
 end;
 $function$;
-

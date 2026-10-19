@@ -23,6 +23,7 @@ import {
 } from "./service";
 import { TOOL_CONTROL_PATH, TOOL_CONTROL_QUERY_KEY } from "./paths";
 import { UptimeStrip } from "./UptimeStrip";
+import { AdminToolLayer } from "@/features/admin/tool-layer";
 import type { EndpointRow, ScorecardRow, StripRow } from "./types";
 import { isCheckRequired, mergeHistory, speedLabel, stateWords, successLabel, type HistoryLine } from "./words";
 
@@ -175,7 +176,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
   const toolWord = data ? stateWords(data.entry.state) : null;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto">
       <div className="flex flex-wrap items-center gap-3">
         <Link href={TOOL_CONTROL_PATH} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground" aria-label="All Tools">
           <ArrowLeft className="h-4 w-4" />
@@ -213,7 +214,8 @@ export function ToolDetail({ toolId }: { toolId: string }) {
           </Button>
         </div>
       </div>
-      <div className="min-h-0 flex-[2]">
+      <AdminToolLayer toolId={toolId} />
+      <div className="min-h-[16rem] flex-[2]">
         <MatrxDataTable
           data={sources}
           columns={sourceColumns}
@@ -235,7 +237,7 @@ export function ToolDetail({ toolId }: { toolId: string }) {
           }}
         />
       </div>
-      <div className="min-h-0 flex-[3]">
+      <div className="min-h-[16rem] flex-[3]">
         <MatrxDataTable
           data={history}
           columns={historyColumns}

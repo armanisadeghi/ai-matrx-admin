@@ -52,7 +52,7 @@ begin
     from pg_proc p join pg_namespace n on n.oid = p.pronamespace
    where n.nspname not in ('pg_catalog', 'information_schema', 'pg_toast')
      and p.prokind = 'f' and p.proname !~* 'selftest'
-     and regexp_replace(p.prosrc, '(^|\n)[ \t]*--[^\n]*', '', 'g') ~* '(admin|viewer|editor|commenter) level|< commenter < editor < admin';
+     and regexp_replace(p.prosrc, '(^|\n)[ \t]*--[^\n]*', '', 'g') ~* '(admin|viewer|editor|commenter) level|< commenter < editor < admin|(^|[^/])\madmin on\M|admins this table|for its admins|admin access required on the party|someone with admin\M';
   if v_bad is not null then
     raise exception 'RED: raw level words still in: %', v_bad;
   end if;

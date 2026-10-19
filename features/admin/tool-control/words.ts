@@ -149,6 +149,7 @@ export function stripCells(rows: readonly StripRow[], now: number = Date.now(), 
 
 /** One log entry as a sentence. A check says whether it changed anything; a state change says to what. */
 export function historyLine(e: ControlLogEntry): string {
+  if (e.kind === "order") return `${actorWords(e)}: order ${e.from ?? "unset"} → ${e.to}${e.note ? ` — ${e.note}` : ""}`;
   if (e.reason === "verification_passed") return `${actorWords(e)} ran a check — it passed, now on`;
   if (e.reason === "verification_failed") return `${actorWords(e)} ran a check — it did not pass, stays off`;
   const label = stateWords(e.to as ToolState).label.toLowerCase();
