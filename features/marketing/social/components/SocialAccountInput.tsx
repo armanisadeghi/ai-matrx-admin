@@ -28,6 +28,7 @@ import {
   type LookupState,
 } from "../account-input";
 import { fetchAccount, findCachedAccount } from "../account-lookup";
+import type { FoundAccount } from "../account-input";
 import { useSocialSpend } from "../cost";
 import type { ParsedAccount } from "../link";
 import { profileAvatarDoor, socialErrorCode, socialErrorMessage } from "../server";
@@ -65,6 +66,8 @@ export function useSocialAccountInput(args: {
   const [raw, dispatch] = useReducer(lookupReducer, { state: "idle" } as LookupState);
   const spend = useSocialSpend(organizationId);
   const cacheChecked = useRef<string | null>(null);
+  // The paid lookup this field started, kept so a Track pressed while it runs waits for it instead of paying again.
+  const fetching = useRef<{ key: string; result: Promise<FoundAccount | null> } | null>(null);
 
   const parsed = useMemo(
     () => resolveAccountInput({ text, picked, contextPlatform }),
@@ -92,21 +95,29 @@ export function useSocialAccountInput(args: {
   const check = useCallback(async () => {
     if (parsed.status !== "ok" || !key || !organizationId) return;
     if (!shouldLookUp(raw, parsed)) return;
+    if (fetching.current?.key === key) return;
     const account = parsed;
-    if (!(await spend.confirmSpend("profile_page", 1, { title: "Look up this account?", confirmLabel: "Look up" }))) return;
-    dispatch({ type: "start", key });
-    try {
-      const found = await fetchAccount({ account, organizationId });
-      dispatch({ type: "found", key, account: found });
-    } catch (error) {
-      const code = socialErrorCode(error);
-      const gone = code === "social_not_found" || code === "social_profile_empty" || code === "social_profile_mismatch";
-      dispatch({
-        type: gone ? "not_found" : "failed",
-        key,
-        message: socialErrorMessage(error, gone ? "Couldn't find that account" : "Couldn't look that account up"),
-      });
-    }
+    const result = (async (): Promise<FoundAccount | null> => {
+      if (!(await spend.confirmSpend("profile_page", 1, { title: "Look up this account?", confirmLabel: "Look up" }))) return null;
+      dispatch({ type: "start", key });
+      try {
+        const found = await fetchAccount({ account, organizationId });
+        dispatch({ type: "found", key, account: found });
+        return found;
+      } catch (error) {
+        const code = socialErrorCode(error);
+        const gone = code === "social_not_found" || code === "social_profile_empty" || code === "social_profile_mismatch";
+        dispatch({
+          type: gone ? "not_found" : "failed",
+          key,
+          message: socialErrorMessage(error, gone ? "Couldn't find that account" : "Couldn't look that account up"),
+        });
+        return null;
+      }
+    })();
+    fetching.current = { key, result };
+    const found = await result;
+    if (!found && fetching.current?.key === key) fetching.current = null; // declined or failed: a later press may try again
   }, [parsed, key, raw, organizationId, spend]);
 
   return {
@@ -118,6 +129,10 @@ export function useSocialAccountInput(args: {
     parsed,
     lookup,
     check,
+    /** The account this field paid to fetch (waiting while that fetch runs), or null. Track passes its profile id so
+     * one press never fetches the same account twice; a profile only read from our store is not returned. */
+    fetchedAccount: async (): Promise<FoundAccount | null> =>
+      fetching.current && fetching.current.key === key ? fetching.current.result : null,
     canFetch: Boolean(organizationId),
     /** What to save, or null while the field is not a complete account. */
     account: savedAccount(parsed, raw),
@@ -125,6 +140,7 @@ export function useSocialAccountInput(args: {
       setText("");
       setPicked(null);
       cacheChecked.current = null;
+      fetching.current = null;
       dispatch({ type: "reset" });
     },
   };
