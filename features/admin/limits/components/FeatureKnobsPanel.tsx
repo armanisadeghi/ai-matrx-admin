@@ -14,7 +14,8 @@
 // `KnobOverrideRow`, so every destination inherits them (law 5).
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { commitUrlParams, stringUrlCodec, useUrlState } from "@ai-matrx/kit/url-state";
 import { AlertTriangle } from "lucide-react";
 import { Chip } from "@ai-matrx/design-system/controls";
 import { SettingsCallout } from "@/components/official/settings/layout/SettingsCallout";
@@ -25,7 +26,6 @@ import { UniversalSettingsRows } from "@/features/settings/universal/UniversalSe
 import { knobMatchesControlSearch } from "@/features/settings/search/controlSearch";
 import { fetchKnobOverrideCounts } from "@/lib/scoped-config/service";
 import { registerDirectiveHandler } from "@/lib/client-directives/directiveRegistry";
-import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { KnobOverridesAdmin } from "./KnobOverridesAdmin";
 import { TEST_REPLAY_CACHE_KNOB, TestReplayCacheClear } from "./TestReplayCacheClear";
@@ -39,7 +39,6 @@ function isOverdue(setBy: string, reviewDue: string | null): boolean {
 
 function SystemKnobRows({ feature }: { feature?: string }) {
   const settings = useUniversalSettings();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const deepLinkedKey = searchParams?.get(KNOB_PARAM)?.trim() ?? "";
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -48,15 +47,13 @@ function SystemKnobRows({ feature }: { feature?: string }) {
   // The ONE key whose every level is open. A deep link opens its key, because
   // the operator who followed it came for that key's overrides too.
   const [openKey, setOpenKey] = useState<string | null>(deepLinkedKey || null);
-  // A deep link ARRIVES as a search: the operator lands on the one row, and the
-  // box holds the key so they can widen it (drop `.failure_threshold` to see
-  // the whole guard) instead of being stuck in a filter they cannot see.
-  const [query, setQuery] = useState(deepLinkedKey);
-  const [syncedDeepLink, setSyncedDeepLink] = useState(deepLinkedKey);
-  if (syncedDeepLink !== deepLinkedKey) {
-    setSyncedDeepLink(deepLinkedKey);
-    setQuery(deepLinkedKey);
-  }
+  // The search lives in the address (`?q=`), so a reload or a shared link lands on the same register
+  // view. A deep link ARRIVES as a search: the operator lands on the one row, and the box holds the
+  // key so they can widen it (drop `.failure_threshold` to see the whole guard) instead of being
+  // stuck in a filter they cannot see. Typing replaces the address entry, never piles one up.
+  const [urlQuery, setUrlQuery] = useUrlState("q", stringUrlCodec());
+  const query = urlQuery !== "" ? urlQuery : deepLinkedKey;
+  const setQuery = (value: string) => setUrlQuery(value, { history: "replace" });
 
   useEffect(() => {
     let current = true;
@@ -95,15 +92,9 @@ function SystemKnobRows({ feature }: { feature?: string }) {
   const trimmed = query.trim();
 
   const clearSearch = () => {
-    setQuery("");
     // Clearing the box must also drop the deep link, or the next render
     // re-seeds the query from the URL and the box refills itself.
-    if (deepLinkedKey) {
-      const next = new URLSearchParams(searchParams?.toString() ?? "");
-      next.delete(KNOB_PARAM);
-      const suffix = next.toString();
-      replaceAddressWithoutNavigating(suffix ? `?${suffix}` : "?");
-    }
+    commitUrlParams({ q: null, [KNOB_PARAM]: null }, "replace");
   };
 
   return (
@@ -117,8 +108,8 @@ function SystemKnobRows({ feature }: { feature?: string }) {
         <SettingsNavigationSearch
           value={query}
           onValueChange={(value) => {
-            setQuery(value);
             if (value.trim() === "") clearSearch();
+            else setQuery(value);
           }}
           label="Search by key, name or description"
         />

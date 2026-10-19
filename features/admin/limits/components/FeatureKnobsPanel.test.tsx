@@ -38,7 +38,7 @@ import { FeatureKnobsPanel } from "./FeatureKnobsPanel";
 describe("FeatureKnobsPanel count refresh", () => {
   let container: HTMLDivElement;
   let root: Root;
-  beforeEach(() => { fetchCounts.mockReset(); refresh.mockReset(); replace.mockReset(); directive = null; knobs = []; searchParams = new URLSearchParams(); container = document.createElement("div"); document.body.append(container); root = createRoot(container); });
+  beforeEach(() => { window.history.replaceState(null, "", "/"); fetchCounts.mockReset(); refresh.mockReset(); replace.mockReset(); directive = null; knobs = []; searchParams = new URLSearchParams(); container = document.createElement("div"); document.body.append(container); root = createRoot(container); });
   afterEach(() => { act(() => root.unmount()); container.remove(); });
 
   it("settles after one mounted count request instead of refreshing itself", async () => {
@@ -74,7 +74,7 @@ const KNOB_FIXTURE = [
 describe("FeatureKnobsPanel register affordances", () => {
   let container: HTMLDivElement;
   let root: Root;
-  beforeEach(() => { isLoading = false; fetchCounts.mockResolvedValue([]); knobs = [...KNOB_FIXTURE]; searchParams = new URLSearchParams(); container = document.createElement("div"); document.body.append(container); root = createRoot(container); });
+  beforeEach(() => { window.history.replaceState(null, "", "/"); isLoading = false; fetchCounts.mockResolvedValue([]); knobs = [...KNOB_FIXTURE]; searchParams = new URLSearchParams(); container = document.createElement("div"); document.body.append(container); root = createRoot(container); });
   afterEach(() => { act(() => root.unmount()); container.remove(); });
 
   const mount = async () => { await act(async () => { root.render(<FeatureKnobsPanel />); }); };
@@ -135,5 +135,28 @@ describe("FeatureKnobsPanel register affordances", () => {
     expect(historyReplace).toHaveBeenCalledWith(null, "", "/administration/users/limits");
     expect(replace).not.toHaveBeenCalled();
     historyReplace.mockRestore();
+  });
+});
+
+describe("FeatureKnobsPanel search lives in the address", () => {
+  it("writes the typed search to ?q= so a reload or a shared link keeps the view", async () => {
+    window.history.replaceState(null, "", "/administration/users/limits");
+    searchParams = new URLSearchParams();
+    knobs = [...KNOB_FIXTURE];
+    isLoading = false;
+    fetchCounts.mockResolvedValue([]);
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => { root.render(<FeatureKnobsPanel />); });
+    const input = container.querySelector("input[type=search]") as HTMLInputElement;
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+      set.call(input, "loop_guard");
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("loop_guard");
+    act(() => root.unmount());
+    container.remove();
   });
 });
