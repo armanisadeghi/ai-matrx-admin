@@ -330,6 +330,7 @@
    "kind": "agent",
    "id": "9f6bf0cd-f555-4c3a-a87c-2a66a6c52453",
    "name": "Settings Desk O",
+   "version_may_advance": true,
    "spec_changed": [
     "tools: send_message added 2026-10-18 06:32:45Z by platform migration agent_call_to_agent_migration (every agent holding the agent tool); the playbook text names agent/agent_call only",
     "reasoning_effort restored to high (the spec) 2026-10-18 through PATCH /agent-service/agents after aidream migration 20261018120000_agent_factory_birth_effort_knobs set it to low at 07:00:16Z; settings now equal the spec version key for key"

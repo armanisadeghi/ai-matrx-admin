@@ -19,8 +19,13 @@ export interface HostValueSite {
   status: "wired" | "open";
   /** Open only: why it is not wired yet. */
   reason?: string;
-  /** Wired through a carrier other than the channel itself. */
-  via?: "contextItems";
+  /**
+   * Wired through a carrier other than the channel itself. `pageGuidanceRecord`:
+   * the file calls `usePageGuidanceRecord(…, { everyTurn: true })` — the record
+   * id rides every turn and the server resolves the record (Education record
+   * screens, `study_record` packet, 2026-10-19).
+   */
+  via?: "contextItems" | "pageGuidanceRecord";
 }
 
 export const HOST_VALUE_SITES: readonly HostValueSite[] = [
@@ -106,6 +111,54 @@ export const HOST_VALUE_SITES: readonly HostValueSite[] = [
     provision: "seo.backlinks_assist_sweep",
     file: "features/marketing/components/backlinks/BacklinksAssistStrip.tsx",
     status: "wired",
+  },
+  {
+    site: "education flashcards guide, open set",
+    mandateKey: "education.flashcards_guidance",
+    provision: "education.flashcards_guidance",
+    file: "features/flashcards/components/set-detail/SetDetailView.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
+  },
+  {
+    site: "education quizzes guide, open quiz",
+    mandateKey: "education.quizzes_guidance",
+    provision: "education.quizzes_guidance",
+    file: "features/education/assessment/components/AssessmentDetail.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
+  },
+  {
+    site: "education practice tests guide, open test",
+    mandateKey: "education.practice_tests_guidance",
+    provision: "education.practice_tests_guidance",
+    file: "features/education/assessment/components/AssessmentDetail.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
+  },
+  {
+    site: "education summaries guide, open summary",
+    mandateKey: "education.summaries_guidance",
+    provision: "education.summaries_guidance",
+    file: "features/education/onboard/components/SummaryDetail.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
+  },
+  {
+    site: "education mind maps guide, open map",
+    mandateKey: "education.mind_maps_guidance",
+    provision: "education.mind_maps_guidance",
+    file: "features/education/media/mindmap/components/MindMapDetail.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
+  },
+  {
+    site: "education notes guide, open study note",
+    mandateKey: "education.notes_guidance",
+    provision: "education.notes_guidance",
+    file: "features/education/notes/EduNoteWorkspace.tsx",
+    status: "wired",
+    via: "pageGuidanceRecord",
   },
 ];
 

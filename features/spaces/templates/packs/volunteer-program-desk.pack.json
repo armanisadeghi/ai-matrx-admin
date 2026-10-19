@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0551",
-  "version": 1,
+  "version": 2,
   "title": "Volunteer Program Desk",
-  "description": "Recruit, onboard, schedule and thank volunteers, and see hours given.",
+  "description": "Recruit, screen, schedule and thank volunteers; track hours, checks and group days.",
   "forWho": "Volunteer coordinators at nonprofits and community groups",
   "icon": {
     "emoji": "🙌"
@@ -14,10 +14,12 @@
   },
   "category": "nonprofit",
   "tags": [
+    "volunteer coordinator",
+    "program manager",
     "volunteers",
     "shifts",
-    "hours",
-    "onboarding"
+    "background checks",
+    "nonprofit"
   ],
   "spec": {
     "specVersion": 1,
@@ -126,6 +128,90 @@
             "contextPolicy": "include"
           },
           {
+            "key": "available",
+            "label": "Available on",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+              "Sun"
+            ],
+            "choiceColors": {
+              "Mon": "blue",
+              "Tue": "green",
+              "Wed": "amber",
+              "Thu": "violet",
+              "Fri": "teal",
+              "Sat": "orange",
+              "Sun": "pink"
+            }
+          },
+          {
+            "key": "skills",
+            "label": "Skills",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Spanish speaker",
+              "Lifting",
+              "Carpentry and repair",
+              "Reading with children",
+              "Cash handling",
+              "Driving",
+              "Data entry"
+            ],
+            "choiceColors": {
+              "Spanish speaker": "blue",
+              "Lifting": "orange",
+              "Carpentry and repair": "amber",
+              "Reading with children": "green",
+              "Cash handling": "violet",
+              "Driving": "teal",
+              "Data entry": "slate"
+            }
+          },
+          {
+            "key": "check",
+            "label": "Background check",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not needed for this role",
+              "Requested",
+              "Cleared",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Not needed for this role": "slate",
+              "Requested": "amber",
+              "Cleared": "green",
+              "Expired": "red"
+            }
+          },
+          {
+            "key": "check_expires",
+            "label": "Check expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "waiver",
+            "label": "Liability waiver signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "email",
             "label": "Email",
             "parityType": "email",
@@ -136,6 +222,13 @@
             "key": "phone",
             "label": "Phone",
             "parityType": "phone",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "emergency",
+            "label": "Emergency contact",
+            "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
           },
@@ -168,6 +261,15 @@
             "filter": {
               "status": "Attended"
             }
+          },
+          {
+            "key": "time_value",
+            "label": "Value of time given (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Hours given} * 34.79, 0)",
+            "description": "Hours times $34.79, a widely used national value of a volunteer hour. Change the rate to your own state figure."
           },
           {
             "key": "shifts_done",
@@ -388,7 +490,18 @@
               "phone": "(206) 555-0111",
               "start_by": "@today-300d",
               "coordinator": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Sat",
+                "Sun"
+              ],
+              "skills": [
+                "Cash handling",
+                "Spanish speaker"
+              ],
+              "check": "Not needed for this role",
+              "waiver": true,
+              "emergency": "Erik Karlsson, (206) 555-0191"
             }
           },
           {
@@ -400,7 +513,18 @@
               "email": "theo.a@mailbox.net",
               "phone": "(206) 555-0112",
               "start_by": "@today-250d",
-              "coordinator": "tm-4"
+              "coordinator": "tm-4",
+              "available": [
+                "Tue",
+                "Thu"
+              ],
+              "skills": [
+                "Carpentry and repair",
+                "Lifting"
+              ],
+              "check": "Not needed for this role",
+              "waiver": true,
+              "emergency": "Ada Abernathy, (206) 555-0192"
             }
           },
           {
@@ -413,7 +537,17 @@
               "phone": "(206) 555-0113",
               "start_by": "@today+2d",
               "coordinator": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Wed",
+                "Thu"
+              ],
+              "skills": [
+                "Reading with children"
+              ],
+              "check": "Requested",
+              "waiver": true,
+              "emergency": "Piotr Polanski, (206) 555-0193"
             }
           },
           {
@@ -425,7 +559,16 @@
               "email": "dashiell.o@mailbox.net",
               "phone": "(206) 555-0114",
               "start_by": "@today+6d",
-              "coordinator": "tm-1"
+              "coordinator": "tm-1",
+              "available": [
+                "Sat"
+              ],
+              "skills": [
+                "Lifting",
+                "Driving"
+              ],
+              "check": "Not needed for this role",
+              "waiver": false
             }
           },
           {
@@ -438,7 +581,19 @@
               "phone": "(206) 555-0115",
               "start_by": "@today-400d",
               "coordinator": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Mon",
+                "Wed"
+              ],
+              "skills": [
+                "Reading with children",
+                "Spanish speaker"
+              ],
+              "check": "Cleared",
+              "waiver": true,
+              "check_expires": "@today+330d",
+              "emergency": "Rosa Estrada, (206) 555-0195"
             }
           },
           {
@@ -450,7 +605,17 @@
               "email": "bram.vdl@mailbox.net",
               "phone": "(206) 555-0116",
               "start_by": "@today",
-              "coordinator": "tm-4"
+              "coordinator": "tm-4",
+              "available": [
+                "Tue",
+                "Fri"
+              ],
+              "skills": [
+                "Carpentry and repair"
+              ],
+              "check": "Not needed for this role",
+              "waiver": true,
+              "emergency": "Lotte van der Linden, (206) 555-0196"
             }
           },
           {
@@ -463,7 +628,18 @@
               "phone": "(206) 555-0117",
               "start_by": "@today-90d",
               "coordinator": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Sat",
+                "Sun"
+              ],
+              "skills": [
+                "Cash handling",
+                "Data entry"
+              ],
+              "check": "Not needed for this role",
+              "waiver": true,
+              "emergency": "Sami Haddad, (206) 555-0197"
             }
           },
           {
@@ -475,7 +651,18 @@
               "email": "cordelia.f@mailbox.net",
               "phone": "(206) 555-0118",
               "start_by": "@today-500d",
-              "coordinator": "tm-1"
+              "coordinator": "tm-1",
+              "available": [
+                "Fri",
+                "Sat"
+              ],
+              "skills": [
+                "Driving"
+              ],
+              "check": "Expired",
+              "waiver": true,
+              "check_expires": "@today-40d",
+              "emergency": "Liam Fitzgerald, (206) 555-0198"
             }
           },
           {
@@ -488,7 +675,17 @@
               "phone": "(206) 555-0119",
               "start_by": "@today-3d",
               "coordinator": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Mon",
+                "Tue",
+                "Wed"
+              ],
+              "skills": [
+                "Data entry"
+              ],
+              "check": "Not needed for this role",
+              "waiver": false
             }
           },
           {
@@ -500,7 +697,18 @@
               "email": "aurelio.m@mailbox.net",
               "phone": "(206) 555-0120",
               "start_by": "@today-20d",
-              "coordinator": "tm-4"
+              "coordinator": "tm-4",
+              "available": [
+                "Thu",
+                "Sat"
+              ],
+              "skills": [
+                "Carpentry and repair",
+                "Lifting"
+              ],
+              "check": "Not needed for this role",
+              "waiver": true,
+              "emergency": "Gemma Montague, (206) 555-0190"
             }
           },
           {
@@ -511,7 +719,17 @@
               "area": "Reading program",
               "start_by": "@today-900d",
               "coordinator": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "available": [
+                "Wed"
+              ],
+              "skills": [
+                "Reading with children"
+              ],
+              "check": "Expired",
+              "waiver": true,
+              "check_expires": "@today-200d",
+              "emergency": "Femi Oyelowo, (206) 555-0189"
             }
           },
           {
@@ -523,9 +741,23 @@
               "email": "prudence.l@mailbox.net",
               "phone": "(206) 555-0122",
               "start_by": "@today+4d",
-              "coordinator": "tm-3"
+              "coordinator": "tm-3",
+              "available": [
+                "Sun"
+              ],
+              "skills": [
+                "Cash handling"
+              ],
+              "check": "Not needed for this role",
+              "waiver": false
             }
           }
+        ],
+        "before": [
+          [
+            "start_by",
+            "check_expires"
+          ]
         ]
       },
       {
@@ -603,6 +835,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "where",
+            "label": "Where",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "shift_at",
             "label": "Starts",
             "parityType": "datetime",
@@ -628,6 +867,23 @@
             "contextPolicy": "include"
           },
           {
+            "key": "min_age",
+            "label": "Minimum age",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 21
+              }
+            ]
+          },
+          {
             "key": "signed_up",
             "label": "People signed up",
             "parityType": "rollup",
@@ -641,6 +897,24 @@
                 "Signed up",
                 "Attended"
               ]
+            }
+          },
+          {
+            "key": "dropped",
+            "label": "Dropped (no-show or cancelled)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "signups",
+            "pick": "signup_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Signed up",
+                  "Attended"
+                ]
+              }
             }
           },
           {
@@ -843,7 +1117,9 @@
               "shift_at": "@today+1d 07:00",
               "needed": 6,
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Cedar Row parking lot, booth row B",
+              "min_age": 14
             }
           },
           {
@@ -854,7 +1130,9 @@
               "area": "Tool library",
               "shift_at": "@today 16:00",
               "needed": 3,
-              "lead": "tm-4"
+              "lead": "tm-4",
+              "where": "Tool library, 410 Alder Lane",
+              "min_age": 18
             }
           },
           {
@@ -866,7 +1144,9 @@
               "shift_at": "@today+2d 15:30",
               "needed": 4,
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Branch library community room",
+              "min_age": 18
             }
           },
           {
@@ -877,7 +1157,9 @@
               "area": "Weekend market",
               "shift_at": "@today+1d 13:00",
               "needed": 5,
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "where": "Cedar Row parking lot, booth row B",
+              "min_age": 14
             }
           },
           {
@@ -889,7 +1171,9 @@
               "shift_at": "@today+4d 18:00",
               "needed": 4,
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Tool library, 410 Alder Lane",
+              "min_age": 18
             }
           },
           {
@@ -900,7 +1184,9 @@
               "area": "Reading program",
               "shift_at": "@today+3d 16:00",
               "needed": 6,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "where": "Branch library community room",
+              "min_age": 18
             }
           },
           {
@@ -912,7 +1198,9 @@
               "shift_at": "@today+6d 09:00",
               "needed": 15,
               "lead": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Cedar Row Park, north lawn",
+              "min_age": 12
             }
           },
           {
@@ -923,7 +1211,9 @@
               "area": "Weekend market",
               "shift_at": "@today-3d 09:00",
               "needed": 2,
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "where": "Cedar Row parking lot, booth row B",
+              "min_age": 14
             }
           },
           {
@@ -935,7 +1225,9 @@
               "shift_at": "@today-5d 16:00",
               "needed": 3,
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Tool library, 410 Alder Lane",
+              "min_age": 18
             }
           },
           {
@@ -946,7 +1238,9 @@
               "area": "Reading program",
               "shift_at": "@today-4d 16:00",
               "needed": 6,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "where": "Branch library community room",
+              "min_age": 18
             }
           },
           {
@@ -958,7 +1252,9 @@
               "shift_at": "@today-1d 10:00",
               "needed": 5,
               "lead": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "where": "Alliance office, upstairs",
+              "min_age": 16
             }
           },
           {
@@ -969,7 +1265,9 @@
               "area": "Events",
               "shift_at": "@today-8d 11:00",
               "needed": 10,
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "where": "Cedar Row Park, north lawn",
+              "min_age": 12
             }
           }
         ]
@@ -1594,6 +1892,388 @@
             }
           }
         ]
+      },
+      {
+        "token": "groupday",
+        "name": "Group volunteer days",
+        "labelSingular": "Group day",
+        "labelPlural": "Group volunteer days",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "users",
+        "titleField": "group_name",
+        "describes": "Company teams, school clubs and faith groups who volunteer together for a day.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "done_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New group day",
+            "values": {
+              "group_name": "New group day",
+              "status": "Inquiry"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before the day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Project agreed and enough work for every person"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Waiver link sent to the group contact two weeks ahead"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Parking, gloves, water and a sign-in sheet"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "On the day"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Welcome and safety talk (ten minutes)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Photo for the group, with permission"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "After"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Hours given, what got done, and a thank-you note to the contact."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "before": [
+          [
+            "day_on",
+            "done_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "group_name",
+            "label": "Group day",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "org",
+            "label": "Organization",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "kind",
+            "label": "Kind of group",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Company team",
+              "School or youth group",
+              "Faith group",
+              "Service club"
+            ],
+            "choiceColors": {
+              "Company team": "blue",
+              "School or youth group": "green",
+              "Faith group": "violet",
+              "Service club": "amber"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Inquiry",
+              "Confirmed",
+              "Done",
+              "Cancelled"
+            ],
+            "choiceColors": {
+              "Inquiry": "slate",
+              "Confirmed": "blue",
+              "Done": "green",
+              "Cancelled": "red"
+            },
+            "required": true,
+            "statusGroups": {
+              "Inquiry": "todo",
+              "Confirmed": "in_progress",
+              "Done": "done",
+              "Cancelled": "done"
+            }
+          },
+          {
+            "key": "day_on",
+            "label": "Day",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "done_on",
+            "label": "Marked done on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "headcount",
+            "label": "People coming",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "contact",
+            "label": "Group contact",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "waivers_in",
+            "label": "All waivers collected",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "btn_done",
+            "label": "Mark done",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "groupday_done"
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "groupday_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "groupday-1",
+            "values": {
+              "group_name": "Brightline Software team day",
+              "org": "Brightline Software",
+              "kind": "Company team",
+              "status": "Confirmed",
+              "day_on": "@today+3d",
+              "headcount": 18,
+              "contact": "Hollis Brandt, people team",
+              "waivers_in": false
+            }
+          },
+          {
+            "key": "groupday-2",
+            "values": {
+              "group_name": "Garfield High service club",
+              "org": "Garfield High School",
+              "kind": "School or youth group",
+              "status": "Confirmed",
+              "day_on": "@today",
+              "headcount": 12,
+              "contact": "Ms. Adebayo, club adviser",
+              "waivers_in": true
+            }
+          },
+          {
+            "key": "groupday-3",
+            "values": {
+              "group_name": "Northlake Credit Union day of service",
+              "org": "Northlake Credit Union",
+              "kind": "Company team",
+              "status": "Inquiry",
+              "day_on": "@today+5d",
+              "headcount": 25,
+              "contact": "Rena Kowal, community manager",
+              "waivers_in": false
+            }
+          },
+          {
+            "key": "groupday-4",
+            "values": {
+              "group_name": "St. Columba youth group",
+              "org": "St. Columba Parish",
+              "kind": "Faith group",
+              "status": "Inquiry",
+              "day_on": "@today-2d",
+              "headcount": 9,
+              "contact": "Deacon Morrow",
+              "waivers_in": false
+            }
+          },
+          {
+            "key": "groupday-5",
+            "values": {
+              "group_name": "Pacific Rim Rotary clean-up",
+              "org": "Pacific Rim Rotary",
+              "kind": "Service club",
+              "status": "Done",
+              "day_on": "@today-12d",
+              "done_on": "@today-12d",
+              "headcount": 22,
+              "contact": "Gwen Tanaka",
+              "waivers_in": true
+            }
+          },
+          {
+            "key": "groupday-6",
+            "values": {
+              "group_name": "Halvorsen Design spring team day",
+              "org": "Halvorsen Design",
+              "kind": "Company team",
+              "status": "Cancelled",
+              "day_on": "@today-30d",
+              "headcount": 10,
+              "contact": "Sigrid Halvorsen",
+              "waivers_in": false
+            }
+          },
+          {
+            "key": "groupday-7",
+            "values": {
+              "group_name": "UW nursing students orientation day",
+              "org": "University nursing program",
+              "kind": "School or youth group",
+              "status": "Done",
+              "day_on": "@today-40d",
+              "done_on": "@today-40d",
+              "headcount": 15,
+              "contact": "Prof. Ilse Marten",
+              "waivers_in": true
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1872,6 +2552,39 @@
         "kind": "row_action",
         "token": "training_claim",
         "table": "training",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "groupday_done",
+        "table": "groupday",
+        "name": "Mark done",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Done"
+          },
+          {
+            "field": "done_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "groupday_claim",
+        "table": "groupday",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2214,6 +2927,89 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_groupday",
+        "name": "All group days",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "day_on",
+        "allDay": true,
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "day_on": {
+            "relative": "before_today"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed"
+          ]
+        },
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "day_on": {
+            "relative": "this_week"
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed"
+          ]
+        },
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "day_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "anyOf": {
+          "status": [
+            "Inquiry",
+            "Confirmed"
+          ]
+        },
+        "table": "groupday"
+      },
+      {
+        "token": "groupday_mine",
+        "name": "My group days",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "groupday"
       }
     ],
     "agent": {
@@ -2286,6 +3082,18 @@
           "surface": "signup_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open group volunteer days.",
+        "action": {
+          "kind": "open",
+          "surface": "groupday_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "groupday_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2302,7 +3110,7 @@
         "Marlowe Court"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2324,12 +3132,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the whole volunteer program here: applications, onboarding, shifts and sign-ups, and hours given. Check the Dashboard at the start of each week for short shifts and unfinished training. Press Mark attended after every shift so hours stay true. Thank people in the week they helped."
+              "text": "The volunteer office in one place. New people move from applicant to active through Training; Shifts shows where you are short; Sign-ups record who came and for how long; Group volunteer days holds company and school teams. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2864,6 +3678,371 @@
             ],
             "activeViewId": "tra-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Group volunteer days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Company teams, school clubs and faith groups who come for a day together."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "groupday",
+              "view": "groupday_board"
+            },
+            "inline": true,
+            "title": "Group volunteer days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gd-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gd-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "day_on"
+              },
+              {
+                "id": "gd-t",
+                "name": "All group days",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "gd-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "day_on": {
+                    "relative": "before_today"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gd-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "day_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gd-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "day_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Inquiry",
+                    "Confirmed"
+                  ]
+                }
+              },
+              {
+                "id": "gd-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "gd-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "volunteer-program-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the volunteer program in this workspace. Share it with the volunteer coordinator, each program lead and anyone who runs a shift."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Volunteers",
+              "bold": true
+            },
+            {
+              "text": ": every applicant and volunteer, their area, the days they can come, skills, background check and waiver, emergency contact and total hours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shifts",
+              "bold": true
+            },
+            {
+              "text": ": every shift with its place, people needed, minimum age, spots left and hours given."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sign-ups",
+              "bold": true
+            },
+            {
+              "text": ": who signed up for which shift, whether they came, and their hours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Training",
+              "bold": true
+            },
+            {
+              "text": ": the onboarding steps each new volunteer still needs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Group volunteer days",
+              "bold": true
+            },
+            {
+              "text": ": company teams, school clubs and faith groups who come together."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "New applicants are called within three days and their training steps added."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On Monday the coordinator fills the week's short shifts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Shift leads take attendance and hours at the end of every shift."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On Friday the coordinator reviews the Dashboard: short shifts, checks to chase, hours given."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: shifts today and sign-ups to confirm"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: shifts with spots left this week and next"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: background checks requested or expired, volunteers on break"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: hours and value of volunteer time for funders and the board"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The coordinator owns recruiting, screening and the schedule. Program leads own their shifts and their volunteers' training. Shift leads take attendance. The program manager reads the hours report for grants."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy and safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Phone numbers, emails and emergency contacts are confidential. Keep only the status and the date of a background check here, never the report itself. Share the workspace with staff and leads, not with every volunteer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename areas, skills and training steps to match your program and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns; every total updates by itself."
+            }
+          ]
         }
       ]
     },
@@ -3272,6 +4451,98 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Screening"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "volunteer",
+              "view": "all_volunteer"
+            },
+            "inline": true,
+            "title": "Background checks to chase",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dv-1",
+                "name": "Requested or expired",
+                "layout": "list",
+                "icon": "ShieldAlert",
+                "anyOf": {
+                  "check": [
+                    "Requested",
+                    "Expired"
+                  ]
+                }
+              },
+              {
+                "id": "dv-2",
+                "name": "Checks by status",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "check",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dv-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hours by area"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "shift",
+              "view": "all_shift"
+            },
+            "inline": true,
+            "title": "Hours by area",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dh-1",
+                "name": "Hours given by area",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "area",
+                  "op": "sum",
+                  "field": "hours_given"
+                }
+              }
+            ],
+            "activeViewId": "dh-1"
+          }
         }
       ]
     },
@@ -3290,7 +4561,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A good first month decides whether someone stays for years. Keep it short, specific and warm."
+              "text": "Most volunteers who quit do so in their first month, usually because nobody called them back or their first shift was confusing. A quick, warm onboarding fixes both."
             }
           ],
           "background": "blue",
@@ -3302,7 +4573,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week 1: welcome"
+              "text": "The path"
             }
           ],
           "props": {
@@ -3313,7 +4584,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reply to the application within three working days and offer a short call."
+              "text": "Applicant.",
+              "bold": true
+            },
+            {
+              "text": " The person fills in the volunteer form. Call or email within three days; a week of silence loses half of them."
             }
           ]
         },
@@ -3321,7 +4596,18 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Move the volunteer to Onboarding and add their training rows from the Training table."
+              "text": "Onboarding.",
+              "bold": true
+            },
+            {
+              "text": " Press "
+            },
+            {
+              "text": "Approve",
+              "bold": true
+            },
+            {
+              "text": " and add their training steps: orientation for everyone, a safety walk-through for the tool library and market, the safeguarding module and a background check for anyone working with children."
             }
           ]
         },
@@ -3329,7 +4615,18 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pair them with a named buddy for the first two shifts."
+              "text": "Active.",
+              "bold": true
+            },
+            {
+              "text": " Once every training step is Done or Waived, press "
+            },
+            {
+              "text": "Mark active",
+              "bold": true
+            },
+            {
+              "text": ". Book their first shift with an experienced volunteer beside them."
             }
           ]
         },
@@ -3337,42 +4634,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Week 2 to 4: practice"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "They shadow a shift, then run a task with the buddy beside them."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Ask after each shift what felt confusing. Fix the confusing thing for the next person."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "When training is done and two shifts are attended, press Mark active."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Not a fit"
+              "text": "Background checks"
             }
           ],
           "props": {
@@ -3383,7 +4645,161 @@
           "type": "text",
           "text": [
             {
-              "text": "If the role is wrong, offer another one before saying goodbye. If nothing fits, thank them and set the stage to Retired with a note."
+              "text": "Anyone who will be alone with children, handle money on their own, or drive for the alliance needs a cleared check before their first shift. Set "
+            },
+            {
+              "text": "Background check",
+              "bold": true
+            },
+            {
+              "text": " to Requested when you send the form and to Cleared when the result comes back, then write the "
+            },
+            {
+              "text": "Check expires",
+              "bold": true
+            },
+            {
+              "text": " date (most programs renew every two or three years). The Dashboard lists every check that is requested or expired. Never put the check results themselves in this workspace; keep only the status and the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waivers and emergency contacts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every volunteer signs the liability waiver before their first shift. Tick "
+            },
+            {
+              "text": "Liability waiver signed",
+              "bold": true
+            },
+            {
+              "text": " and fill in the "
+            },
+            {
+              "text": "Emergency contact",
+              "bold": true
+            },
+            {
+              "text": ". Volunteers under 18 need a parent or guardian to sign as well."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fitting the person to the work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask about the days they are free and what they are good at, then fill in "
+            },
+            {
+              "text": "Available on",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Skills",
+              "bold": true
+            },
+            {
+              "text": ". A retired carpenter belongs at the repair evening; a Spanish speaker is gold at the market info table. People stay when the work fits them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First-shift checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Name tag ready and the shift lead told who is coming"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Where to park, what to wear, who to ask for"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A real task for the first hour, not standing around"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A thank-you text the same evening"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Marguerite applies to read with children. The coordinator calls her the next day, books orientation for Thursday, sends the background check form and the safeguarding module, and pencils her into story hour beside Lupe. Two weeks later her check is cleared, every training step is done, and she is active."
             }
           ]
         }
@@ -3404,7 +4820,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A shift runs well when the lead arrives first and everyone leaves knowing they mattered."
+              "text": "A good shift starts before anyone arrives. The lead knows who is coming, the work is ready, and every hour is written down at the end."
             }
           ],
           "background": "blue",
@@ -3416,7 +4832,70 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before people arrive"
+              "text": "Two days before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open "
+            },
+            {
+              "text": "Shifts",
+              "bold": true
+            },
+            {
+              "text": " and look at "
+            },
+            {
+              "text": "Spots left",
+              "bold": true
+            },
+            {
+              "text": ". If a shift is short, message volunteers whose "
+            },
+            {
+              "text": "Available on",
+              "bold": true
+            },
+            {
+              "text": " includes that day and whose skills fit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send a reminder to everyone signed up, with the place, the start time and what to bring."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the "
+            },
+            {
+              "text": "Minimum age",
+              "bold": true
+            },
+            {
+              "text": " for the shift; parents bringing children need to know ahead."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When people arrive"
             }
           ],
           "props": {
@@ -3427,7 +4906,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Open the shift row and read the sign-up list"
+              "text": "Sign-in sheet or tablet at the door"
             }
           ],
           "props": {
@@ -3438,7 +4917,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Print or open the task list and the contact sheet"
+              "text": "Name tags and a five-minute welcome, with the safety points for the task"
             }
           ],
           "props": {
@@ -3449,7 +4928,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Set up the space, tools and sign-in sheet"
+              "text": "New volunteers paired with someone experienced"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Water, gloves and a place for bags"
             }
           ],
           "props": {
@@ -3460,7 +4950,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When they arrive"
+              "text": "During the shift"
             }
           ],
           "props": {
@@ -3468,43 +4958,34 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Greet each person by name"
+              "text": "Keep everyone busy; idle volunteers do not come back."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Brief the team on the plan and any safety points"
+              "text": "Take a photo of the work, with permission, for the newsletter."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Pair new volunteers with someone experienced"
+              "text": "Thank people by name before they leave."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "At the end"
+              "text": "After the shift"
             }
           ],
           "props": {
@@ -3512,48 +4993,115 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Press Mark attended on each sign-up and type the hours given"
+              "text": "Open each sign-up and press "
+            },
+            {
+              "text": "Attended",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": ". Write the "
+            },
+            {
+              "text": "Hours",
+              "bold": true
+            },
+            {
+              "text": " for each person who came."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " on the shift. "
+            },
+            {
+              "text": "Hours given",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Dropped",
+              "bold": true
+            },
+            {
+              "text": " add up by themselves."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Anyone who did not show: a friendly message, not a scolding. Two no-shows in a row and the coordinator checks in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Why hours matter"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Press Mark no-show for anyone who did not come or call"
+              "text": "Funders and city grants ask for volunteer hours and their value. Each volunteer's "
+            },
+            {
+              "text": "Value of time given",
+              "bold": true
+            },
+            {
+              "text": " multiplies hours by a national value of a volunteer hour; change the rate in the formula to your state's figure. Hours recorded the same day are accurate; hours guessed a month later are not."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Thank everyone before they leave"
+              "text": "Saturday market setup needs six people and has four. On Thursday the coordinator messages three weekend regulars who list lifting as a skill; two say yes. On Saturday the lead marks five attended and one no-show, enters three hours each, and the market report for the city grant fills itself in."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Note anything that needs fixing before the next shift"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3572,7 +5120,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "People stay when they are noticed. Recognition costs little and should never be skipped."
+              "text": "Volunteers do not stay for the pizza. They stay because the work matters, someone noticed what they did, and they made friends. Plan all three."
             }
           ],
           "background": "blue",
@@ -3584,7 +5132,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "A simple calendar"
+              "text": "Thank people often and specifically"
             }
           ],
           "props": {
@@ -3592,114 +5140,149 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A text after a first shift: what they did and why it helped."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A handwritten card at 25, 50 and 100 hours. Sort Volunteers by hours given to see who is close."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A short story in the newsletter each month about one volunteer, with their permission."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch for drift"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "When"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Within 24 hours of a first shift"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A short personal message"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Shift lead"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "After 10 shifts"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A handwritten card"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Coordinator"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Each quarter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "A thank-you note listing hours given"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Coordinator"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Each year"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "An appreciation event with the whole team"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Program manager"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Reliability",
+              "bold": true
+            },
+            {
+              "text": " column reads each person's attended shifts against no-shows. \"Check in\" means it is time for a friendly call: schedules change, and the fix is often a different day or area. Volunteers on "
+            },
+            {
+              "text": "On break",
+              "bold": true
+            },
+            {
+              "text": " get a note every three months with no pressure to return."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Give people more"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Long-time volunteers want responsibility. Ask your steadiest people to lead a shift, train newcomers, or run a group volunteer day. Leading is the strongest reason people stay for years."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Group volunteer days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Company teams and school clubs bring many hands at once. Treat the group contact like a donor: confirm the project two weeks out, send the waiver link, have work ready for every person, and send photos and the hours afterward. Many companies match their employees' hours with a grant; ask."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Once a year"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "An appreciation evening during national volunteer week in April"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A one-page report to every volunteer: hours given, what changed because of them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A short survey: what to keep, what to change, what they wish they could do"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Spotting people who drift"
+              "text": "Saying goodbye well"
             }
           ],
           "props": {
@@ -3707,26 +5290,36 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Open the Volunteers table and sort by Reliability. Anyone showing Check in gets a call this week."
+              "text": "When someone retires, thank them in person and mark them "
+            },
+            {
+              "text": "Retired",
+              "bold": true
+            },
+            {
+              "text": " rather than deleting them. Their history stays, and many return."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Look for active volunteers with no shifts in the last 60 days."
+              "text": "Example"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Ask what would make the next month easier, then act on the answer."
+              "text": "Theo reaches 100 hours at the tool library. The lead mentions it at the Thursday desk, the coordinator sends a card, and Theo is asked to run the next repair evening. He says yes and brings a friend who signs up the same night."
             }
           ]
         }

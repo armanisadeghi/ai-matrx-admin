@@ -13,7 +13,10 @@ import type { PackBlock, PackPage } from "@/lib/spaces-blocks/template-pack";
 
 import { GridShow, namesOf, type ShowSpec } from "./TemplateShowcase";
 
+/** Sample rows per table on the page the preview opens on; the other pages' outlines (hidden until the live preview
+ * loads, read by crawlers) carry fewer (GALLERY-PERF: every row ships twice, the HTML and the RSC payload). */
 const FIRST_ROWS = 8;
+const OTHER_ROWS = 3;
 
 const textOf = (b: PackBlock) => (b.text ?? []).map((s) => s.text).join("");
 
@@ -25,6 +28,7 @@ interface Ctx {
   spec: ShowSpec;
   names: ReturnType<typeof namesOf>;
   pageTitle: (key: string) => string | null;
+  rows: number;
 }
 
 function Block({ block: b, ctx }: { block: PackBlock; ctx: Ctx }): ReactNode {
@@ -40,7 +44,7 @@ function Block({ block: b, ctx }: { block: PackBlock; ctx: Ctx }): ReactNode {
       <figure className="my-3 flex min-w-0 flex-col gap-1.5" data-space-outline-table={table.token}>
         <figcaption className="text-sm font-semibold text-foreground">{title}</figcaption>
         <div className="rounded-lg border border-border">
-          <GridShow table={table} view={view} names={ctx.names} limit={FIRST_ROWS} />
+          <GridShow table={table} view={view} names={ctx.names} limit={ctx.rows} />
         </div>
       </figure>
     );
@@ -95,12 +99,12 @@ function Block({ block: b, ctx }: { block: PackBlock; ctx: Ctx }): ReactNode {
 /** Each page's outline by page key, for TemplatePackPreview's first paint. */
 export function spacePageOutlines(pages: PackPage[], spec: ShowSpec): Record<string, ReactNode> {
   const titles = new Map(pages.map((p) => [p.key, p.title]));
-  const ctx: Ctx = { spec, names: namesOf(spec), pageTitle: (k) => titles.get(k) ?? null };
+  const ctx: Ctx = { spec, names: namesOf(spec), pageTitle: (k) => titles.get(k) ?? null, rows: FIRST_ROWS };
   return Object.fromEntries(
-    pages.map((p) => [
+    pages.map((p, i) => [
       p.key,
       <div key={p.key} className="flex flex-col pb-12" data-space-template-outline={p.key}>
-        <Blocks blocks={p.blocks} ctx={ctx} />
+        <Blocks blocks={p.blocks} ctx={i === 0 ? ctx : { ...ctx, rows: OTHER_ROWS }} />
       </div>,
     ]),
   );

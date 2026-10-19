@@ -208,6 +208,7 @@ import {
 
 import { Tile } from "@ai-matrx/design-system/controls";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
+import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 const EDU_BASE = "/education/flashcards";
 
 /** Every way to study a deck besides classic Study — the Study button's menu
@@ -744,6 +745,9 @@ export function SetDetailView({
   const data: SetWithCards | null = deckRead.isError ? null : (deckRead.data ?? null);
   const loading = !deckRead.hasData && !deckRead.isError;
   const currentName = data?.set.name ?? null;
+  // The open set, by id, on every turn of the page guide: the server reads the cards, what the set was made
+  // from, related items and the class (`study_record` packet) — the browser never ships them.
+  usePageGuidanceRecord(() => ({ id: setId, type: "fc_set", title: currentName }), { everyTurn: true });
   useEffect(() => {
     if (currentName) onNameKnown?.(currentName);
   }, [currentName, onNameKnown]);

@@ -19,7 +19,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { ambientAssistantMandateChain } from "@ai-matrx/chat/agents/components/ambient-assistant/ambientAssistantMandates";
-import { provideHostValues, type HostValuesFor } from "./host-values";
+import { provideHostValues, type HostValuesFor, type ProvideOptions } from "./host-values";
 
 export interface PageGuidanceRecord {
   id: string | null | undefined;
@@ -27,7 +27,16 @@ export interface PageGuidanceRecord {
   title?: string | null;
 }
 
-export function usePageGuidanceRecord(read: () => PageGuidanceRecord | null): void {
+/**
+ * `options.everyTurn`: every turn goes through the mandate door with the
+ * record id, so the server re-resolves the record (Education record screens:
+ * the `study_record` packet) and the guide always reads the record on screen.
+ */
+export function usePageGuidanceRecord(
+  read: () => PageGuidanceRecord | null,
+  options: Pick<ProvideOptions, "everyTurn"> = {},
+): void {
+  const everyTurn = Boolean(options.everyTurn);
   const pathname = usePathname() ?? "/";
   const latest = useRef(read);
   useEffect(() => {
@@ -45,7 +54,9 @@ export function usePageGuidanceRecord(read: () => PageGuidanceRecord | null): vo
       };
     };
     const keys = [...new Set([chain.page, chain.module, chain.system].filter((k) => k != null))];
-    const releases = keys.map((key) => provideHostValues(key, "ambient.page_guidance", values));
+    const releases = keys.map((key) =>
+      provideHostValues(key, "ambient.page_guidance", values, { everyTurn }),
+    );
     return () => releases.forEach((release) => release());
-  }, [pathname]);
+  }, [pathname, everyTurn]);
 }

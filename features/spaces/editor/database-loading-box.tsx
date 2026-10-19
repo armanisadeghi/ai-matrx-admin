@@ -8,9 +8,11 @@
 // so the box is the loaded frame's height: title, view bar, the grid's wrap, header, one row each, the footer.
 
 import { SKELETON_EMBEDDED_PAGE_ROWS, embeddedGridBodyPx, skeletonRowsFor, ExpectedRows } from "@ai-matrx/records-ui/skeleton";
-import type { ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
+import { DatabaseFrameShape } from "../data/database-frame-shape";
 import { useBlockExpectedGroups, useBlockExpectedRows } from "../page/space-seed-context";
+import { useStructureEdit } from "../page/structure";
 import { activeLayout, paintedSizesOf, pickPainted } from "./database-host";
 
 /** The database frame's own chrome (spaces.css `.spaces-db-frame`): 1 px border and 14 + 10 px padding. */
@@ -35,14 +37,23 @@ export function databaseFramePx(p: Record<string, unknown>, rows: number | null)
 }
 
 /**
- * The loading box of a database block: the loaded frame's height when the server told us the rows, else the
- * size the block was last painted at (its stored `paintedSize`, the same on server and client), else the
- * default box. A block still loading after its hold ends (SETTLE_MAX_MS) keeps its size, so nothing under
- * it moves when the rows land (ADVERSARIAL-1 #2: a new template page's blocks filled in seconds later).
+ * The loading box of a database block. A table source draws its FRAME (data/database-frame-shape.tsx): the
+ * live frame's own chrome for this person's role and records-ui's skeleton painting the rows the server said
+ * they see, so the live mount changes nothing geometric (DB-BLOCK-CHROME). While the rows are not known it
+ * holds the size the block was last painted at (its stored `paintedSize`, the same on server and client). A
+ * built-in source keeps the plain box. `editable` = the page takes edits for this person (false on the
+ * server's read-only first paint); structure controls follow `useStructureEdit` like the live frame's.
  */
-export function DatabaseLoadingBox({ blockId, p }: { blockId: string; p: Record<string, unknown> }) {
+export function DatabaseLoadingBox({ blockId, p, editable = false, published = false }: { blockId: string; p: Record<string, unknown>; editable?: boolean; published?: boolean }) {
+  const rows = useBlockExpectedRows(blockId);
+  const groups = useBlockExpectedGroups(blockId);
+  const structure = useStructureEdit();
   const painted = pickPainted(paintedSizesOf(p), {}, true)?.h;
-  const framePx = databaseFramePx(p, useBlockExpectedRows(blockId)) ?? (painted ? Math.max(0, painted - 2 * FRAME_MARGIN_PX) : null);
+  const held = rows === null && painted ? Math.max(0, painted - 2 * FRAME_MARGIN_PX) : null;
+  const source = p["source"] as { kind?: unknown } | undefined;
+  if (source?.kind === "table")
+    return <DatabaseFrameShape p={p} role={{ shape: editable && structure, published }} rows={rows} groups={groups} minHeight={held} />;
+  const framePx = databaseFramePx(p, rows) ?? held;
   if (framePx === null) return <div className="spaces-db-loading" />;
   return <div className="spaces-db-loading" style={{ minHeight: framePx, margin: `${FRAME_MARGIN_PX}px 0` }} data-expected-frame={framePx} />;
 }
@@ -54,4 +65,17 @@ export function WithExpectedRows({ blockId, children }: { blockId: string; child
       {children}
     </ExpectedRows>
   );
+}
+
+/**
+ * The loading box a database block's code chunk draws while it loads (next/dynamic's `loading` gets no
+ * props): the host puts the block's own DatabaseLoadingBox here, so the chunk's wait is the frame's shape
+ * too, never a bare 120 px box (DB-BLOCK-CHROME).
+ */
+const LoadingSlotContext = createContext<ReactNode>(null);
+export function DatabaseLoadingSlot({ box, children }: { box: ReactNode; children: ReactNode }) {
+  return <LoadingSlotContext.Provider value={box}>{children}</LoadingSlotContext.Provider>;
+}
+export function DatabaseChunkLoading() {
+  return <>{useContext(LoadingSlotContext) ?? <div className="spaces-db-loading" />}</>;
 }

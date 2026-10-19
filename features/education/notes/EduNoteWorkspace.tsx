@@ -10,8 +10,12 @@
 
 import { NotesView } from "@/features/notes/components/NotesView";
 import { EduNoteActionBar } from "./EduNoteActionBar";
+import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 
 export function EduNoteWorkspace({ noteId }: { noteId: string }) {
+  // The open study note, by id, on every guide turn (server-resolved `study_record` packet). Registered after
+  // NotesView's own turn-1 provider (child effects run first), so this one — the newest — answers.
+  usePageGuidanceRecord(() => ({ id: noteId, type: "note" }), { everyTurn: true });
   // Full-height editors own their internal scroll. Marking this viewport as
   // clipped keeps the education layout's reading-page end padding off it.
   return (

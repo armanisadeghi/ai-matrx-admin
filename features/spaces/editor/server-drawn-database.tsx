@@ -7,12 +7,12 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 import { ResolvedBlockSeed, useAwaitedBlockSeed } from "../page/space-seed-context";
-import { DatabaseLoadingBox, WithExpectedRows } from "./database-loading-box";
+import { DatabaseChunkLoading, DatabaseLoadingBox, DatabaseLoadingSlot, WithExpectedRows } from "./database-loading-box";
 import { DATABASE_HOST_CLASS, DatabaseHost, activeLayout, paintedSizesOf } from "./database-host";
 
 // The same chunk the editor's database node view loads, rendered on the server only (rows in the HTML).
 const DatabaseBlock = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
-  loading: () => <div className="spaces-db-loading" />,
+  loading: () => <DatabaseChunkLoading />,
 });
 
 /** The server's answers for this block (its own seed, awaited inside the block's own Suspense). */
@@ -51,9 +51,11 @@ export function ServerDrawnDatabase({ blockId, p }: { blockId: string; p: Record
     return <div className={DATABASE_HOST_CLASS} contentEditable={false} data-layout={layout} data-block-id={blockId} suppressHydrationWarning dangerouslySetInnerHTML={KEPT_AS_SERVED} />;
   return (
     <DatabaseHost blockId={blockId} layout={layout} painted={paintedSizesOf(p)} serverDrawn>
-      <Suspense fallback={<DatabaseLoadingBox blockId={blockId} p={p} />}>
-        <SeededDatabase blockId={blockId} p={p} />
-      </Suspense>
+      <DatabaseLoadingSlot box={<DatabaseLoadingBox blockId={blockId} p={p} />}>
+        <Suspense fallback={<DatabaseLoadingBox blockId={blockId} p={p} />}>
+          <SeededDatabase blockId={blockId} p={p} />
+        </Suspense>
+      </DatabaseLoadingSlot>
     </DatabaseHost>
   );
 }

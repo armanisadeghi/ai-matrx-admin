@@ -46,6 +46,9 @@ describe("host-value sites guard", () => {
         expect(source).toMatch(new RegExp(`mandateKey=\\{MANDATE_KEYS\\.${site.mandateKey.replace(/\./g, "__")}\\}`));
         const panel = readFileSync(path.join(ROOT, "components/official/proTextareaAgentActions.ts"), "utf8");
         expect(panel).toMatch(/byMandate\s*\?\s*\{\s*variables:/);
+      } else if (site.via === "pageGuidanceRecord") {
+        // The record id rides EVERY turn; the server resolves the record by id.
+        expect(source).toMatch(/usePageGuidanceRecord\([\s\S]*?\{\s*everyTurn:\s*true\s*\}\s*,?\s*\)/);
       } else {
         expect(channelCallFor(source, site.provision)).toBe(true);
       }

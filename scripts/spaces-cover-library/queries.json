@@ -1,0 +1,838 @@
+{
+ "packs": {
+  "SP0002": [
+   "projects",
+   "sticky notes planning wall"
+  ],
+  "SP0003": [
+   "meetings",
+   "empty meeting room table"
+  ],
+  "SP0100": [
+   "projects",
+   "kanban board sticky notes"
+  ],
+  "SP0101": [
+   "docs",
+   "modern office interior plants"
+  ],
+  "SP0102": [
+   "planning",
+   "winding road aerial"
+  ],
+  "SP0103": [
+   "planning",
+   "mountain summit trail"
+  ],
+  "SP0104": [
+   "projects",
+   "computer code screen"
+  ],
+  "SP0105": [
+   "projects",
+   "whiteboard markers office"
+  ],
+  "SP0106": [
+   "docs",
+   "library bookshelves"
+  ],
+  "SP0107": [
+   "projects",
+   "notebook checklist desk"
+  ],
+  "SP0108": [
+   "docs",
+   "blueprint technical drawing"
+  ],
+  "SP0109": [
+   "operations",
+   "server room lights"
+  ],
+  "SP0110": [
+   "operations",
+   "data center corridor"
+  ],
+  "SP0111": [
+   "docs",
+   "laptop code dark"
+  ],
+  "SP0112": [
+   "planning",
+   "desk calendar coffee"
+  ],
+  "SP0150": [
+   "sales",
+   "city skyline business district"
+  ],
+  "SP0151": [
+   "marketing",
+   "calendar planner flat lay"
+  ],
+  "SP0152": [
+   "marketing",
+   "colorful paper confetti"
+  ],
+  "SP0153": [
+   "marketing",
+   "smartphone flat lay pastel"
+  ],
+  "SP0154": [
+   "sales",
+   "financial chart screen"
+  ],
+  "SP0155": [
+   "clients",
+   "modern glass office lobby"
+  ],
+  "SP0156": [
+   "marketing",
+   "envelopes letters stack"
+  ],
+  "SP0157": [
+   "marketing",
+   "magnifying glass map"
+  ],
+  "SP0158": [
+   "sales",
+   "telephone desk vintage"
+  ],
+  "SP0159": [
+   "clients",
+   "handshake coffee cups table"
+  ],
+  "SP0160": [
+   "sales",
+   "fountain pen document"
+  ],
+  "SP0161": [
+   "sales",
+   "bridge connecting city"
+  ],
+  "SP0162": [
+   "marketing",
+   "color swatches palette"
+  ],
+  "SP0163": [
+   "marketing",
+   "neon lights abstract"
+  ],
+  "SP0200": [
+   "personal",
+   "sunrise over lake calm"
+  ],
+  "SP0201": [
+   "personal",
+   "minimal desk notebook pen"
+  ],
+  "SP0202": [
+   "personal",
+   "morning coffee window light"
+  ],
+  "SP0203": [
+   "planning",
+   "mountain peak sunrise"
+  ],
+  "SP0204": [
+   "personal",
+   "open journal pen"
+  ],
+  "SP0205": [
+   "planning",
+   "weekly planner desk"
+  ],
+  "SP0206": [
+   "personal",
+   "stack of books cozy"
+  ],
+  "SP0207": [
+   "personal",
+   "wooden drawers organized"
+  ],
+  "SP0208": [
+   "finance",
+   "coins jar savings"
+  ],
+  "SP0209": [
+   "personal",
+   "fresh vegetables kitchen table"
+  ],
+  "SP0210": [
+   "personal",
+   "dumbbells gym floor"
+  ],
+  "SP0211": [
+   "personal",
+   "airplane window clouds"
+  ],
+  "SP0212": [
+   "personal",
+   "office building windows"
+  ],
+  "SP0213": [
+   "personal",
+   "wedding flowers table"
+  ],
+  "SP0214": [
+   "personal",
+   "cardboard moving boxes"
+  ],
+  "SP0215": [
+   "personal",
+   "cozy living room interior"
+  ],
+  "SP0250": [
+   "education",
+   "university campus building"
+  ],
+  "SP0251": [
+   "team",
+   "bright open plan office"
+  ],
+  "SP0252": [
+   "team",
+   "empty chairs waiting room"
+  ],
+  "SP0253": [
+   "team",
+   "beach hammock vacation"
+  ],
+  "SP0254": [
+   "education",
+   "exam paper pencil"
+  ],
+  "SP0255": [
+   "team",
+   "office building atrium"
+  ],
+  "SP0256": [
+   "team",
+   "growth plant sprout"
+  ],
+  "SP0257": [
+   "meetings",
+   "two coffee cups table"
+  ],
+  "SP0258": [
+   "education",
+   "index cards study desk"
+  ],
+  "SP0259": [
+   "team",
+   "open book pages"
+  ],
+  "SP0260": [
+   "education",
+   "school classroom empty"
+  ],
+  "SP0261": [
+   "education",
+   "chalkboard classroom"
+  ],
+  "SP0262": [
+   "education",
+   "library reading room"
+  ],
+  "SP0263": [
+   "team",
+   "cabin in the woods lake"
+  ],
+  "SP0300": [
+   "clients",
+   "laptop cafe table"
+  ],
+  "SP0301": [
+   "marketing",
+   "camera on tripod studio"
+  ],
+  "SP0302": [
+   "clients",
+   "home office desk window"
+  ],
+  "SP0303": [
+   "operations",
+   "small shop storefront"
+  ],
+  "SP0304": [
+   "sales",
+   "business cards desk"
+  ],
+  "SP0305": [
+   "marketing",
+   "ring light studio setup"
+  ],
+  "SP0306": [
+   "operations",
+   "creative studio workspace"
+  ],
+  "SP0307": [
+   "operations",
+   "warehouse shelves boxes"
+  ],
+  "SP0308": [
+   "docs",
+   "binders shelf office"
+  ],
+  "SP0309": [
+   "marketing",
+   "podcast microphone"
+  ],
+  "SP0310": [
+   "sales",
+   "product packaging minimal"
+  ],
+  "SP0311": [
+   "marketing",
+   "typewriter paper"
+  ],
+  "SP0312": [
+   "education",
+   "online course laptop headphones"
+  ],
+  "SP0313": [
+   "finance",
+   "receipts calculator desk"
+  ],
+  "SP0314": [
+   "operations",
+   "event hall string lights"
+  ],
+  "SP0315": [
+   "operations",
+   "headset customer support desk"
+  ],
+  "SP0350": [
+   "finance",
+   "wallet receipts"
+  ],
+  "SP0351": [
+   "projects",
+   "light bulb idea"
+  ],
+  "SP0352": [
+   "projects",
+   "research notes wall"
+  ],
+  "SP0353": [
+   "projects",
+   "road signs direction"
+  ],
+  "SP0354": [
+   "projects",
+   "rocket launch"
+  ],
+  "SP0355": [
+   "marketing",
+   "chess pieces board"
+  ],
+  "SP0356": [
+   "finance",
+   "credit card laptop"
+  ],
+  "SP0357": [
+   "sales",
+   "glass skyscrapers looking up"
+  ],
+  "SP0358": [
+   "finance",
+   "calculator spreadsheet"
+  ],
+  "SP0359": [
+   "finance",
+   "invoice paper stack"
+  ],
+  "SP0360": [
+   "docs",
+   "geometric shapes colorful"
+  ],
+  "SP0361": [
+   "meetings",
+   "cafe interior quiet"
+  ],
+  "SP0362": [
+   "finance",
+   "stock market graph"
+  ],
+  "SP0400": [
+   "healthcare",
+   "dental clinic chair"
+  ],
+  "SP0401": [
+   "healthcare",
+   "physiotherapy clinic equipment"
+  ],
+  "SP0402": [
+   "healthcare",
+   "spine model anatomy"
+  ],
+  "SP0403": [
+   "healthcare",
+   "spa skincare products marble"
+  ],
+  "SP0404": [
+   "healthcare",
+   "dog paw close up"
+  ],
+  "SP0405": [
+   "healthcare",
+   "armchair plant calm room"
+  ],
+  "SP0406": [
+   "healthcare",
+   "cozy home interior armchair"
+  ],
+  "SP0407": [
+   "healthcare",
+   "eyeglasses display optician"
+  ],
+  "SP0408": [
+   "legal",
+   "law books shelf"
+  ],
+  "SP0409": [
+   "legal",
+   "passport travel documents"
+  ],
+  "SP0410": [
+   "legal",
+   "courthouse columns"
+  ],
+  "SP0411": [
+   "legal",
+   "family home exterior"
+  ],
+  "SP0412": [
+   "legal",
+   "gavel desk"
+  ],
+  "SP0413": [
+   "realestate",
+   "modern house exterior"
+  ],
+  "SP0414": [
+   "realestate",
+   "apartment building facade"
+  ],
+  "SP0415": [
+   "realestate",
+   "vacation rental cabin"
+  ],
+  "SP0416": [
+   "realestate",
+   "construction site crane"
+  ],
+  "SP0417": [
+   "realestate",
+   "interior design living room"
+  ],
+  "SP0418": [
+   "realestate",
+   "house attic roof beams"
+  ],
+  "SP0419": [
+   "realestate",
+   "keys house model"
+  ],
+  "SP0450": [
+   "agencies",
+   "creative agency office"
+  ],
+  "SP0451": [
+   "agencies",
+   "web design wireframe sketch"
+  ],
+  "SP0452": [
+   "agencies",
+   "office chairs row"
+  ],
+  "SP0453": [
+   "agencies",
+   "newspapers stack"
+  ],
+  "SP0454": [
+   "agencies",
+   "film clapperboard"
+  ],
+  "SP0455": [
+   "agencies",
+   "photography studio lights"
+  ],
+  "SP0456": [
+   "services",
+   "architecture model building"
+  ],
+  "SP0457": [
+   "services",
+   "accounting ledger desk"
+  ],
+  "SP0458": [
+   "services",
+   "boardroom table"
+  ],
+  "SP0459": [
+   "services",
+   "umbrella rain city"
+  ],
+  "SP0460": [
+   "services",
+   "network cables switch"
+  ],
+  "SP0461": [
+   "services",
+   "world map globe"
+  ],
+  "SP0462": [
+   "services",
+   "banquet table setting"
+  ],
+  "SP0463": [
+   "hospitality",
+   "restaurant interior dining"
+  ],
+  "SP0464": [
+   "hospitality",
+   "catering buffet food"
+  ],
+  "SP0465": [
+   "hospitality",
+   "boutique hotel lobby"
+  ],
+  "SP0466": [
+   "hospitality",
+   "event venue hall chandelier"
+  ],
+  "SP0467": [
+   "hospitality",
+   "coffee shop counter espresso"
+  ],
+  "SP0468": [
+   "hospitality",
+   "food truck street"
+  ],
+  "SP0469": [
+   "hospitality",
+   "beer taps brewery"
+  ],
+  "SP0500": [
+   "trades",
+   "air conditioning units rooftop"
+  ],
+  "SP0501": [
+   "trades",
+   "copper pipes plumbing"
+  ],
+  "SP0502": [
+   "trades",
+   "green lawn garden"
+  ],
+  "SP0503": [
+   "trades",
+   "clean bright kitchen"
+  ],
+  "SP0504": [
+   "trades",
+   "auto repair garage"
+  ],
+  "SP0505": [
+   "trades",
+   "electrical wires panel"
+  ],
+  "SP0506": [
+   "trades",
+   "roof shingles"
+  ],
+  "SP0507": [
+   "trades",
+   "garden hedge backyard"
+  ],
+  "SP0508": [
+   "trades",
+   "moving truck"
+  ],
+  "SP0509": [
+   "wellness",
+   "gym interior equipment"
+  ],
+  "SP0510": [
+   "wellness",
+   "yoga mat studio"
+  ],
+  "SP0511": [
+   "wellness",
+   "kettlebells floor"
+  ],
+  "SP0512": [
+   "wellness",
+   "hair salon interior"
+  ],
+  "SP0513": [
+   "wellness",
+   "barbershop chair"
+  ],
+  "SP0514": [
+   "wellness",
+   "spa stones towels"
+  ],
+  "SP0515": [
+   "wellness",
+   "massage room candles"
+  ],
+  "SP0516": [
+   "retail",
+   "parcels packages shipping"
+  ],
+  "SP0517": [
+   "retail",
+   "clothing rack boutique"
+  ],
+  "SP0518": [
+   "retail",
+   "pallets warehouse"
+  ],
+  "SP0519": [
+   "retail",
+   "gift box packaging"
+  ],
+  "SP0520": [
+   "retail",
+   "t-shirts folded printing"
+  ],
+  "SP0521": [
+   "retail",
+   "bookstore shelves"
+  ],
+  "SP0550": [
+   "nonprofit",
+   "hands heart charity"
+  ],
+  "SP0551": [
+   "nonprofit",
+   "community garden"
+  ],
+  "SP0552": [
+   "nonprofit",
+   "documents folders desk"
+  ],
+  "SP0553": [
+   "nonprofit",
+   "church interior light"
+  ],
+  "SP0554": [
+   "nonprofit",
+   "canned food shelves"
+  ],
+  "SP0555": [
+   "nonprofit",
+   "puppy shelter"
+  ],
+  "SP0556": [
+   "education",
+   "school hallway lockers"
+  ],
+  "SP0557": [
+   "education",
+   "desk lamp books study"
+  ],
+  "SP0558": [
+   "education",
+   "colorful toy blocks"
+  ],
+  "SP0559": [
+   "education",
+   "piano keys"
+  ],
+  "SP0560": [
+   "education",
+   "empty road dashed lines"
+  ],
+  "SP0561": [
+   "education",
+   "laptop online learning"
+  ],
+  "SP0562": [
+   "tech",
+   "empty modern office desks"
+  ],
+  "SP0563": [
+   "tech",
+   "ui sketch notebook"
+  ],
+  "SP0564": [
+   "tech",
+   "cyber security padlock"
+  ],
+  "SP0565": [
+   "media",
+   "newsroom printing press"
+  ],
+  "SP0566": [
+   "media",
+   "studio microphones headphones"
+  ],
+  "SP0567": [
+   "media",
+   "old books printing"
+  ],
+  "SP0568": [
+   "media",
+   "cinema seats theater"
+  ],
+  "SP0569": [
+   "manufacturing",
+   "factory machinery"
+  ],
+  "SP0570": [
+   "manufacturing",
+   "warehouse forklift"
+  ],
+  "SP0571": [
+   "manufacturing",
+   "truck highway"
+  ]
+ },
+ "extras": [
+  [
+   "healthcare",
+   "stethoscope desk"
+  ],
+  [
+   "healthcare",
+   "hospital corridor"
+  ],
+  [
+   "legal",
+   "scales of justice"
+  ],
+  [
+   "legal",
+   "old library wood"
+  ],
+  [
+   "realestate",
+   "city apartments evening"
+  ],
+  [
+   "realestate",
+   "suburban street houses"
+  ],
+  [
+   "agencies",
+   "design studio desk"
+  ],
+  [
+   "services",
+   "office desk minimal"
+  ],
+  [
+   "hospitality",
+   "hotel room bed"
+  ],
+  [
+   "hospitality",
+   "wine glasses bar"
+  ],
+  [
+   "trades",
+   "toolbox tools wall"
+  ],
+  [
+   "trades",
+   "workshop workbench"
+  ],
+  [
+   "wellness",
+   "running track"
+  ],
+  [
+   "wellness",
+   "bamboo zen"
+  ],
+  [
+   "retail",
+   "shop window display"
+  ],
+  [
+   "retail",
+   "market stall"
+  ],
+  [
+   "nonprofit",
+   "volunteers sunrise field"
+  ],
+  [
+   "education",
+   "graduation caps"
+  ],
+  [
+   "tech",
+   "circuit board"
+  ],
+  [
+   "tech",
+   "code monitor night"
+  ],
+  [
+   "media",
+   "film reel"
+  ],
+  [
+   "media",
+   "cassette tapes"
+  ],
+  [
+   "manufacturing",
+   "shipping containers port"
+  ],
+  [
+   "manufacturing",
+   "steel factory sparks"
+  ],
+  [
+   "finance",
+   "piggy bank"
+  ],
+  [
+   "sales",
+   "conference table city view"
+  ],
+  [
+   "marketing",
+   "megaphone yellow background"
+  ],
+  [
+   "planning",
+   "compass map"
+  ],
+  [
+   "team",
+   "office lounge sofa"
+  ],
+  [
+   "docs",
+   "archive drawers"
+  ],
+  [
+   "operations",
+   "conveyor belt"
+  ],
+  [
+   "meetings",
+   "notebook laptop coffee table"
+  ],
+  [
+   "clients",
+   "reception desk modern"
+  ],
+  [
+   "projects",
+   "drafting tools"
+  ],
+  [
+   "personal",
+   "forest path autumn"
+  ],
+  [
+   "personal",
+   "starry night sky"
+  ]
+ ]
+}

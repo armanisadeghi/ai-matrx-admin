@@ -71,6 +71,7 @@ import {
   seedRunRow,
   refreshHeartbeatTails,
   setLastEventSeq,
+  setRunReplaying,
   noteRunReadFailure,
   setTransportMode,
 } from "./workflow-runs.slice";
@@ -625,7 +626,15 @@ export function adoptWorkflowRun(
           const throughRestart = <T,>(read: () => Promise<T>) => readThroughRestart(read, { isStopped: () => stopped });
           const rowRead = throughRestart(() => fetchJson<RunRow>(adminDoorPath(`/runs/${runId}`)));
           rowRead.catch(() => undefined); // a failure is raised below, where it is awaited
-          const cursor = await replayDurableLog(runId, depth, () => stopped);
+          // History first, flagged: a card watching this run paints where the run IS once the
+          // refold ends, never a bar re-walking the log from zero (Arman, 2026-10-19).
+          dispatch(setRunReplaying({ runId, replaying: true }));
+          let cursor: number | null;
+          try {
+            cursor = await replayDurableLog(runId, depth, () => stopped);
+          } finally {
+            dispatch(setRunReplaying({ runId, replaying: false }));
+          }
           const row = await rowRead;
           if (stopped) return;
           // Seed AFTER replay: the heartbeat tails only land on node

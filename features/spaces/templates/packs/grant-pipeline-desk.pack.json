@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0552",
-  "version": 1,
+  "version": 2,
   "title": "Grant Pipeline and Reporting Desk",
-  "description": "Track funders, applications, awards and the reports each grant owes.",
+  "description": "Grant pipeline: funders, LOIs, applications, awards, budgets vs. spending and reports due.",
   "forWho": "Nonprofit grant writers and development directors",
   "icon": {
     "emoji": "📑"
@@ -14,10 +14,12 @@
   },
   "category": "nonprofit",
   "tags": [
-    "grants",
+    "grants manager",
+    "grant writer",
+    "executive director",
     "funders",
-    "reports",
-    "deadlines"
+    "grant reports",
+    "nonprofit"
   ],
   "spec": {
     "specVersion": 1,
@@ -94,6 +96,67 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "focus",
+            "label": "Funds",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Arts education",
+              "Youth",
+              "Rural communities",
+              "Equipment",
+              "Operating support",
+              "Festivals and events"
+            ],
+            "choiceColors": {
+              "Arts education": "blue",
+              "Youth": "green",
+              "Rural communities": "amber",
+              "Equipment": "orange",
+              "Operating support": "violet",
+              "Festivals and events": "pink"
+            }
+          },
+          {
+            "key": "cycle",
+            "label": "Funding cycle",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Rolling",
+              "Once a year",
+              "Twice a year",
+              "By invitation only"
+            ],
+            "choiceColors": {
+              "Rolling": "green",
+              "Once a year": "blue",
+              "Twice a year": "teal",
+              "By invitation only": "slate"
+            }
+          },
+          {
+            "key": "typical",
+            "label": "Typical grant (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
           },
           {
             "key": "relationship",
@@ -190,6 +253,60 @@
                 "Drafting",
                 "Submitted"
               ]
+            }
+          },
+          {
+            "key": "decided",
+            "label": "Decided applications",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "grants",
+            "pick": "grant_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Awarded",
+                "Declined"
+              ]
+            }
+          },
+          {
+            "key": "won",
+            "label": "Awarded applications",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "grants",
+            "pick": "grant_name",
+            "agg": "count",
+            "filter": {
+              "status": "Awarded"
+            }
+          },
+          {
+            "key": "win_rate",
+            "label": "Win rate (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Decided applications} > 0, ROUND({Awarded applications} / {Decided applications} * 100, 0), 0)"
+          },
+          {
+            "key": "ever_asked",
+            "label": "Asked, all time (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "grants",
+            "pick": "ask",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Researching"
+                ]
+              }
             }
           },
           {
@@ -341,7 +458,13 @@
               "email": "grants@halvorsenfdn.net",
               "next_check_in": "@today+9d",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "focus": [
+                "Arts education",
+                "Youth"
+              ],
+              "cycle": "Once a year",
+              "typical": 25000
             }
           },
           {
@@ -352,7 +475,13 @@
               "relationship": "Funder",
               "email": "programs@greatlakescf.net",
               "next_check_in": "@today+30d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "focus": [
+                "Operating support",
+                "Youth"
+              ],
+              "cycle": "Twice a year",
+              "typical": 30000
             }
           },
           {
@@ -364,7 +493,13 @@
               "email": "grants@statearts.net",
               "next_check_in": "@today",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "focus": [
+                "Arts education",
+                "Rural communities"
+              ],
+              "cycle": "Once a year",
+              "typical": 40000
             }
           },
           {
@@ -375,7 +510,12 @@
               "relationship": "Warm",
               "email": "community@tallgrassbank.net",
               "next_check_in": "@today+4d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "focus": [
+                "Festivals and events"
+              ],
+              "cycle": "Rolling",
+              "typical": 7500
             }
           },
           {
@@ -387,7 +527,13 @@
               "email": "info@meridianlearning.net",
               "next_check_in": "@today-3d",
               "owner": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "focus": [
+                "Equipment",
+                "Arts education"
+              ],
+              "cycle": "By invitation only",
+              "typical": 15000
             }
           },
           {
@@ -398,7 +544,12 @@
               "relationship": "Researching",
               "email": "office@okaforstrand.net",
               "next_check_in": "@today+6d",
-              "owner": "tm-1"
+              "owner": "tm-1",
+              "focus": [
+                "Youth"
+              ],
+              "cycle": "Rolling",
+              "typical": 10000
             }
           },
           {
@@ -410,7 +561,13 @@
               "email": "grants@npculture.net",
               "next_check_in": "@today+45d",
               "owner": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "focus": [
+                "Operating support",
+                "Rural communities"
+              ],
+              "cycle": "Once a year",
+              "typical": 50000
             }
           },
           {
@@ -421,7 +578,13 @@
               "relationship": "Funder",
               "email": "culture@cityparksoffice.net",
               "next_check_in": "@today+14d",
-              "owner": "tm-4"
+              "owner": "tm-4",
+              "focus": [
+                "Festivals and events",
+                "Operating support"
+              ],
+              "cycle": "Once a year",
+              "typical": 9000
             }
           },
           {
@@ -433,7 +596,12 @@
               "email": "giving@birchwoodind.net",
               "next_check_in": "@today+90d",
               "owner": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "focus": [
+                "Equipment"
+              ],
+              "cycle": "Rolling",
+              "typical": 5000
             }
           }
         ]
@@ -457,6 +625,10 @@
         },
         "statusImplies": [],
         "before": [
+          [
+            "loi_due",
+            "deadline"
+          ],
           [
             "deadline",
             "decision_on"
@@ -506,6 +678,27 @@
             "contextPolicy": "include"
           },
           {
+            "key": "grant_type",
+            "label": "Grant type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Project",
+              "General operating",
+              "Capacity building",
+              "Capital",
+              "Multi-year"
+            ],
+            "choiceColors": {
+              "Project": "blue",
+              "General operating": "violet",
+              "Capacity building": "teal",
+              "Capital": "orange",
+              "Multi-year": "green"
+            }
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -534,6 +727,14 @@
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "loi_due",
+            "label": "Letter of inquiry due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "deadline",
@@ -588,6 +789,50 @@
               }
             ],
             "contextPolicy": "include"
+          },
+          {
+            "key": "restricted",
+            "label": "Restricted to the project",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "match",
+            "label": "Match we must raise (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "spent",
+            "label": "Spent to date (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "budget_lines",
+            "pick": "spent",
+            "agg": "sum"
+          },
+          {
+            "key": "left",
+            "label": "Left to spend (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Awarded\", {Amount awarded (USD)} - {Spent to date (USD)}, 0)"
           },
           {
             "key": "starts_on",
@@ -848,7 +1093,9 @@
               "starts_on": "@today-200d",
               "ends_on": "@today+165d",
               "writer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "Project",
+              "restricted": true
             }
           },
           {
@@ -861,7 +1108,11 @@
               "deadline": "@today-20d",
               "decision_on": "@today+25d",
               "ask": 45000,
-              "writer": "tm-1"
+              "writer": "tm-1",
+              "grant_type": "Multi-year",
+              "restricted": true,
+              "loi_due": "@today-80d",
+              "match": 15000
             }
           },
           {
@@ -875,7 +1126,9 @@
               "decision_on": "@today+60d",
               "ask": 12000,
               "writer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "Project",
+              "restricted": true
             }
           },
           {
@@ -888,7 +1141,11 @@
               "deadline": "@today",
               "decision_on": "@today+90d",
               "ask": 60000,
-              "writer": "tm-2"
+              "writer": "tm-2",
+              "grant_type": "Project",
+              "restricted": true,
+              "loi_due": "@today-30d",
+              "match": 20000
             }
           },
           {
@@ -902,7 +1159,11 @@
               "decision_on": "@today+120d",
               "ask": 18000,
               "writer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "Capital",
+              "restricted": true,
+              "loi_due": "@today-12d",
+              "match": 6000
             }
           },
           {
@@ -917,7 +1178,9 @@
               "awarded": 50000,
               "starts_on": "@today-60d",
               "ends_on": "@today+305d",
-              "writer": "tm-1"
+              "writer": "tm-1",
+              "grant_type": "General operating",
+              "restricted": false
             }
           },
           {
@@ -933,7 +1196,9 @@
               "starts_on": "@today-20d",
               "ends_on": "@today+160d",
               "writer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "Project",
+              "restricted": true
             }
           },
           {
@@ -946,7 +1211,10 @@
               "deadline": "@today-2d",
               "decision_on": "@today+150d",
               "ask": 15000,
-              "writer": "tm-2"
+              "writer": "tm-2",
+              "grant_type": "Capacity building",
+              "restricted": true,
+              "loi_due": "@today-40d"
             }
           },
           {
@@ -959,7 +1227,9 @@
               "decision_on": "@today-120d",
               "ask": 25000,
               "writer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "General operating",
+              "restricted": false
             }
           },
           {
@@ -972,7 +1242,9 @@
               "deadline": "@today-10d",
               "decision_on": "@today+14d",
               "ask": 8000,
-              "writer": "tm-1"
+              "writer": "tm-1",
+              "grant_type": "Project",
+              "restricted": true
             }
           },
           {
@@ -986,7 +1258,10 @@
               "decision_on": "@today+75d",
               "ask": 22000,
               "writer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "grant_type": "Project",
+              "restricted": true,
+              "loi_due": "@today-25d"
             }
           }
         ]
@@ -1049,6 +1324,13 @@
               "Final report": "amber",
               "Site visit": "violet"
             },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "measures",
+            "label": "Numbers to report",
+            "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1240,7 +1522,8 @@
               "status": "Drafting",
               "due_on": "@today+4d",
               "author": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "measures": "Students enrolled, classes held, attendance rate"
             }
           },
           {
@@ -1251,7 +1534,8 @@
               "kind": "Financial report",
               "status": "Not started",
               "due_on": "@today+20d",
-              "author": "tm-3"
+              "author": "tm-3",
+              "measures": "Budget against actual by line"
             }
           },
           {
@@ -1263,7 +1547,8 @@
               "status": "Not started",
               "due_on": "@today+90d",
               "author": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "measures": "Students served, schools reached"
             }
           },
           {
@@ -1274,7 +1559,8 @@
               "kind": "Financial report",
               "status": "Not started",
               "due_on": "@today",
-              "author": "tm-3"
+              "author": "tm-3",
+              "measures": "Permit and safety spending by line"
             }
           },
           {
@@ -1286,7 +1572,8 @@
               "status": "Not started",
               "due_on": "@today-5d",
               "author": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "measures": "Board minutes, program walk-through"
             }
           },
           {
@@ -1297,7 +1584,8 @@
               "kind": "Final report",
               "status": "Not started",
               "due_on": "@today+170d",
-              "author": "tm-2"
+              "author": "tm-2",
+              "measures": "Attendance, incidents, final spending"
             }
           },
           {
@@ -1309,7 +1597,8 @@
               "status": "Accepted",
               "due_on": "@today-40d",
               "author": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "measures": "Enrollment after twelve weeks"
             }
           },
           {
@@ -1320,7 +1609,8 @@
               "kind": "Financial report",
               "status": "Submitted",
               "due_on": "@today-12d",
-              "author": "tm-3"
+              "author": "tm-3",
+              "measures": "Operating budget against actual"
             }
           }
         ]
@@ -1604,6 +1894,303 @@
             }
           }
         ]
+      },
+      {
+        "token": "budgetline",
+        "name": "Grant budget lines",
+        "labelSingular": "Budget line",
+        "labelPlural": "Grant budget lines",
+        "type": "entity",
+        "display": "table",
+        "weight": "light",
+        "ordered": false,
+        "icon": "wallet",
+        "titleField": "line_name",
+        "describes": "What each awarded grant may be spent on, what has been spent, and what is left.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New budget line",
+            "values": {
+              "line_name": "New budget line"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "What this line pays for"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Write it the way the funder's budget form words it, so the report matches."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Spending notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Receipts filed for every charge"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Any move of money between lines approved by the funder in writing"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "grant": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "line_name",
+            "label": "Budget line",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "grant",
+            "label": "Grant",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "grant",
+            "relationMax": 1
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Personnel",
+              "Artist fees",
+              "Supplies",
+              "Equipment",
+              "Rent and utilities",
+              "Permits and fees",
+              "Indirect costs"
+            ],
+            "choiceColors": {
+              "Personnel": "blue",
+              "Artist fees": "violet",
+              "Supplies": "green",
+              "Equipment": "orange",
+              "Rent and utilities": "slate",
+              "Permits and fees": "amber",
+              "Indirect costs": "teal"
+            }
+          },
+          {
+            "key": "budgeted",
+            "label": "Budgeted (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "spent",
+            "label": "Spent (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ]
+          },
+          {
+            "key": "remaining",
+            "label": "Remaining (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Budgeted (USD)} - {Spent (USD)}"
+          },
+          {
+            "key": "pct_spent",
+            "label": "Spent (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Budgeted (USD)} > 0, ROUND({Spent (USD)} / {Budgeted (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "note",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "budgetline-1",
+            "values": {
+              "line_name": "Teaching artist fees, studio classes",
+              "grant": "grant-1",
+              "category": "Artist fees",
+              "budgeted": 14000,
+              "spent": 9100,
+              "note": "Seven artists, two terms paid"
+            }
+          },
+          {
+            "key": "budgetline-2",
+            "values": {
+              "line_name": "Clay, glaze and supplies",
+              "grant": "grant-1",
+              "category": "Supplies",
+              "budgeted": 6000,
+              "spent": 4350,
+              "note": "Spring order in, autumn order pending"
+            }
+          },
+          {
+            "key": "budgetline-3",
+            "values": {
+              "line_name": "Studio coordinator, part time",
+              "grant": "grant-1",
+              "category": "Personnel",
+              "budgeted": 8000,
+              "spent": 5400,
+              "note": "Paid monthly"
+            }
+          },
+          {
+            "key": "budgetline-4",
+            "values": {
+              "line_name": "Executive and finance salaries share",
+              "grant": "grant-6",
+              "category": "Personnel",
+              "budgeted": 30000,
+              "spent": 8100,
+              "note": "Charged quarterly"
+            }
+          },
+          {
+            "key": "budgetline-5",
+            "values": {
+              "line_name": "Rent and utilities share",
+              "grant": "grant-6",
+              "category": "Rent and utilities",
+              "budgeted": 15000,
+              "spent": 3800,
+              "note": "Two months charged"
+            }
+          },
+          {
+            "key": "budgetline-6",
+            "values": {
+              "line_name": "Audit and insurance",
+              "grant": "grant-6",
+              "category": "Indirect costs",
+              "budgeted": 5000,
+              "spent": 1200,
+              "note": "Insurance paid, audit in spring"
+            }
+          },
+          {
+            "key": "budgetline-7",
+            "values": {
+              "line_name": "Festival safety staffing",
+              "grant": "grant-7",
+              "category": "Personnel",
+              "budgeted": 4500,
+              "spent": 900,
+              "note": "Deposit to security company"
+            }
+          },
+          {
+            "key": "budgetline-8",
+            "values": {
+              "line_name": "Fencing and barrier rental",
+              "grant": "grant-7",
+              "category": "Equipment",
+              "budgeted": 2500,
+              "spent": 0,
+              "note": "Booked, paid on delivery"
+            }
+          },
+          {
+            "key": "budgetline-9",
+            "values": {
+              "line_name": "Event permit fees",
+              "grant": "grant-7",
+              "category": "Permits and fees",
+              "budgeted": 1500,
+              "spent": 1500,
+              "note": "Paid in full"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1666,6 +2253,16 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "touches"
+      },
+      {
+        "describes": "Each budget line belongs to one grant.",
+        "fromTable": "budgetline",
+        "fromField": "grant",
+        "toTable": "grant",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "budget_lines"
       }
     ],
     "sharedBlocks": [
@@ -2202,6 +2799,20 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_budgetline",
+        "name": "All budget lines",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "budgetline"
+      },
+      {
+        "token": "budgetline_board",
+        "name": "By category",
+        "kind": "kanban",
+        "groupBy": "category",
+        "table": "budgetline"
       }
     ],
     "agent": {
@@ -2274,6 +2885,18 @@
           "surface": "report_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open grant budget lines.",
+        "action": {
+          "kind": "open",
+          "surface": "budgetline_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "budgetline_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2290,7 +2913,7 @@
         "Tamarack Street"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2312,12 +2935,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan every application, keep every deadline and never miss a report. Start with the Dashboard each Monday. Work the Overdue and Mine views, then check what is due in the next 7 days. When a grant is awarded, add its reports straight away so the dates are never lost."
+              "text": "Your grants office in one place. Funders holds every relationship and its win rate; Grants moves each request from research to a decision; Grant budget lines shows what is left to spend; Funder reports lists every report owed and when. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2853,6 +3482,284 @@
             ],
             "activeViewId": "tou-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Grant budget lines"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What each awarded grant may be spent on and what is left."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budgetline",
+              "view": "all_budgetline"
+            },
+            "inline": true,
+            "title": "Grant budget lines",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "bl-t",
+                "name": "All lines",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "bl-b",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              }
+            ],
+            "activeViewId": "bl-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "grant-pipeline-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the grants office in this workspace. Share it with the grants manager, the program director, the finance manager and the executive director."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Funders",
+              "bold": true
+            },
+            {
+              "text": ": every foundation, agency and company you have or want a relationship with, what they fund, their cycle, typical grant, the totals asked and awarded, and your win rate with them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Grants",
+              "bold": true
+            },
+            {
+              "text": ": every request from research to decision, with the letter of inquiry date, deadline, ask, award, required match, restrictions and spending to date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Grant budget lines",
+              "bold": true
+            },
+            {
+              "text": ": the approved budget of each award, line by line, with what is spent and what is left."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Funder reports",
+              "bold": true
+            },
+            {
+              "text": ": every report and site visit owed, the numbers each must cover, its author and due date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Conversations",
+              "bold": true
+            },
+            {
+              "text": ": calls, meetings and site visits with funders."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The month in grants"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The first Monday: deadlines and reports due in the next 30 days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mid-month: finance updates spending on every budget line."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Through the month: drafting, reviews and submissions, always two days early."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Month end: the director reviews the Dashboard with the board treasurer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: overdue and this week's reports and deadlines"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: budget lines updated, grants ending soon flagged for renewal"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: new funders researched, win rates reviewed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every year: the ready file refreshed after the audit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The grants manager owns the calendar and the writing. The program director supplies the numbers and stories. The finance manager owns budgets and financial reports. The executive director signs, calls funders and hosts site visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename programs, categories and report kinds to match your organization and delete the sample rows once your own are in. Edit any cell in place and drag cards between columns; every total and win rate updates by itself."
+            }
+          ]
         }
       ]
     },
@@ -3258,6 +4165,127 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Next 30 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "report",
+              "view": "all_report"
+            },
+            "inline": true,
+            "title": "Reports due in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dr-1",
+                "name": "Reports due",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "due_on": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Not started",
+                    "Drafting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dr-1"
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "grant",
+              "view": "all_grant"
+            },
+            "inline": true,
+            "title": "Deadlines in the next 30 days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dg-1",
+                "name": "Application deadlines",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "deadline": {
+                    "relative": "next_days",
+                    "n": 30
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "Researching",
+                    "Drafting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dg-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spending against awards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "budgetline",
+              "view": "all_budgetline"
+            },
+            "inline": true,
+            "title": "Spending by category",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "db-1",
+                "name": "Spent by category",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "category",
+                  "op": "sum",
+                  "field": "spent"
+                }
+              }
+            ],
+            "activeViewId": "db-1"
+          }
         }
       ]
     },
@@ -3276,7 +4304,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Funders reject careless applications faster than weak ideas. This checklist keeps the basics from sinking a good proposal."
+              "text": "A strong application is mostly done before the funder's form opens. Keep a ready file, start six weeks out, and never submit on the last day."
             }
           ],
           "background": "blue",
@@ -3288,7 +4316,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before writing"
+              "text": "Six weeks out"
             }
           ],
           "props": {
@@ -3296,10 +4324,82 @@
           }
         },
         {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Read the guidelines twice. Write in the grant's notes the three things this funder cares about most, in their words."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the funder asks for a "
+            },
+            {
+              "text": "letter of inquiry",
+              "bold": true
+            },
+            {
+              "text": " first, put its date in "
+            },
+            {
+              "text": "Letter of inquiry due",
+              "bold": true
+            },
+            {
+              "text": ". Send the letter, and only draft the full proposal when they invite one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the program officer if they take calls. Ask whether your project fits; it saves weeks when the answer is no."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Agree the budget with the finance manager, including any "
+            },
+            {
+              "text": "match",
+              "bold": true
+            },
+            {
+              "text": " the funder requires you to raise from others."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The ready file"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep these current all year so no application waits on them:"
+            }
+          ]
+        },
+        {
           "type": "todo",
           "text": [
             {
-              "text": "Read the guidelines twice and note page limits"
+              "text": "Mission statement and a one-paragraph history"
             }
           ],
           "props": {
@@ -3310,7 +4410,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm eligibility and the geographic area"
+              "text": "Board list with affiliations"
             }
           ],
           "props": {
@@ -3321,7 +4421,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Call the program officer if anything is unclear"
+              "text": "This year's operating budget and last year's actuals"
             }
           ],
           "props": {
@@ -3332,7 +4432,29 @@
           "type": "todo",
           "text": [
             {
-              "text": "Put the due date and two internal deadlines on the calendar"
+              "text": "Most recent audit or financial review, and the tax-exempt letter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Program numbers: people served, sessions held, outcomes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Two or three short stories, with permission, and photos"
             }
           ],
           "props": {
@@ -3343,7 +4465,57 @@
           "type": "heading",
           "text": [
             {
-              "text": "Writing"
+              "text": "Writing it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lead with the need and the people, not with your organization."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Make the outcomes measurable: \"120 students complete twelve weeks of clay\" beats \"students will grow\"."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The budget and the narrative must tell the same story: every line in one appears in the other."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for an amount that fits the funder's "
+            },
+            {
+              "text": "Typical grant",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two weeks out"
             }
           ],
           "props": {
@@ -3354,7 +4526,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "State the need with one number a stranger would remember"
+              "text": "Narrative reviewed by someone who did not write it"
             }
           ],
           "props": {
@@ -3365,7 +4537,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Describe what will change and how you will know"
+              "text": "Budget checked by finance"
             }
           ],
           "props": {
@@ -3376,7 +4548,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Match the budget lines to the narrative"
+              "text": "Signatures and attachments collected"
             }
           ],
           "props": {
@@ -3387,7 +4559,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Ask a colleague outside the program to read it cold"
+              "text": "Portal login tested"
             }
           ],
           "props": {
@@ -3398,7 +4570,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before submitting"
+              "text": "Submitting"
             }
           ],
           "props": {
@@ -3406,48 +4578,38 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Attach every document asked for, with the requested file names"
+              "text": "Submit at least two days early; portals slow down on deadline day. Set the grant to "
+            },
+            {
+              "text": "Submitted",
+              "bold": true
+            },
+            {
+              "text": ", write the expected decision date, and add a thank-you note to the program officer to your Conversations."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Check the portal limit on characters and file size"
+              "text": "The State Arts Board's access grant is due next week. The grants manager drafted from the ready file, the program director added this year's school numbers, and finance confirmed the $20,000 match. The executive director signs on Monday, and it goes in Tuesday, three days early."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Submit one day early"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Press Mark submitted and add the decision date"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3466,7 +4628,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A grant is only finished when the final report is accepted. The funder remembers late reports at renewal time."
+              "text": "Every award comes with promises: reports, spending rules and sometimes a site visit. Funders renew organizations that report on time and honestly. This page is how you never miss one."
             }
           ],
           "background": "blue",
@@ -3478,7 +4640,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The day the award arrives"
+              "text": "The day an award arrives"
             }
           ],
           "props": {
@@ -3489,7 +4651,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Mark awarded and enter the amount and the grant period dates."
+              "text": "Set the grant to "
+            },
+            {
+              "text": "Awarded",
+              "bold": true
+            },
+            {
+              "text": ", enter the amount, the start and end dates, and tick "
+            },
+            {
+              "text": "Restricted to the project",
+              "bold": true
+            },
+            {
+              "text": " if the money may only be spent on what you proposed."
             }
           ]
         },
@@ -3497,7 +4673,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Read the agreement and list every report with its due date in the Reports table."
+              "text": "Read the award letter and add every report it asks for to "
+            },
+            {
+              "text": "Funder reports",
+              "bold": true
+            },
+            {
+              "text": ": interim narratives, financial reports, the final report and any site visit, each with its due date and author."
             }
           ]
         },
@@ -3505,7 +4688,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Tell the program director what the money must be spent on, in plain words."
+              "text": "Enter the approved budget in "
+            },
+            {
+              "text": "Grant budget lines",
+              "bold": true
+            },
+            {
+              "text": ", line by line, in the funder's own categories."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank the funder within a week, by letter and by a call from the executive director."
             }
           ]
         },
@@ -3513,42 +4711,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each reporting period"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Collect numbers monthly so the report is a summary, not a research project."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Keep two stories and two photos with permission on file."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Send the draft to finance two weeks before the due date."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "If something changes"
+              "text": "Track spending as you go"
             }
           ],
           "props": {
@@ -3559,7 +4722,160 @@
           "type": "text",
           "text": [
             {
-              "text": "If a program changes or money cannot be spent as planned, email the program officer before the change, not after. Note the answer on the grant row."
+              "text": "Each month the finance manager updates "
+            },
+            {
+              "text": "Spent",
+              "bold": true
+            },
+            {
+              "text": " on every budget line. The grant shows "
+            },
+            {
+              "text": "Spent to date",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Left to spend",
+              "bold": true
+            },
+            {
+              "text": ". If a line will run more than about 10 percent over, ask the funder in writing before you move money between lines; most say yes when asked first."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing a report"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start from "
+            },
+            {
+              "text": "Numbers to report",
+              "bold": true
+            },
+            {
+              "text": " on the report row, and pull the figures from your program records."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Answer the outcomes you promised in the application, in the same words."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tell one real story, with permission."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say plainly what did not go to plan and what you changed. Funders trust honesty far more than perfect results."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reports due in the next 30 days have an author and a draft date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Budget lines updated by finance"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Grants ending in the next 90 days: renewal conversation booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Site visits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Treat a site visit like a class open house: let the funder see the program running, meet a participant or teacher, and leave with one page of numbers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The studio classes grant asks for a six-month narrative. The grants manager opens the report, sees it must cover enrollment and attendance, pulls 118 students and 91 percent attendance from the class records, adds a story from a teaching artist, and submits it four days early. Finance's report follows two weeks later from the budget lines."
             }
           ]
         }
@@ -3580,7 +4896,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The best use of a grant writer's time is a short list of funders who already care about your work."
+              "text": "Good grant research finds funders who already give to work like yours, in your area, at the size you need. Spend your time on the few who fit rather than the many who might."
             }
           ],
           "background": "blue",
@@ -3592,7 +4908,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What to look for"
+              "text": "Where to look"
             }
           ],
           "props": {
@@ -3600,83 +4916,44 @@
           }
         },
         {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Question"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Where to find it"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "What do they fund and what have they said no to?"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Their guidelines and recent award list"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "How big is a typical grant?"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Annual report or tax filing"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Who decides and when?"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Program page and the deadline calendar"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Who do we already know there?"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Board, volunteers, past funders"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Funders that support organizations like yours nearby: read the annual reports and grant lists of similar groups."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Your community foundation's open programs and its donor-advised funds."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Your state arts board and city cultural office for government grants."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Banks and large local employers with community giving programs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Foundations' public tax filings, which list every grant they made, to whom and for how much."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3690,26 +4967,233 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Add the funder to the Funders table as Researching."
+              "text": "For each new funder, add a row in "
+            },
+            {
+              "text": "Funders",
+              "bold": true
+            },
+            {
+              "text": " with the kind, what they "
+            },
+            {
+              "text": "Fund",
+              "bold": true
+            },
+            {
+              "text": ", their "
+            },
+            {
+              "text": "Funding cycle",
+              "bold": true
+            },
+            {
+              "text": " and their "
+            },
+            {
+              "text": "Typical grant",
+              "bold": true
+            },
+            {
+              "text": ". Set the relationship to "
+            },
+            {
+              "text": "Researching",
+              "bold": true
+            },
+            {
+              "text": ". If their typical grant is a tenth of what you need, they are a supporter, not the answer."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Log the first conversation in Conversations."
+              "text": "Qualify before you write"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask four questions:"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Move the funder to Warm only after a real conversation."
+              "text": "Do they fund our kind of work, in our area?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do they accept applications, or give by invitation only?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Is their typical grant the right size?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Do we know anyone who knows them?"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Two yes answers is worth a call or a letter of inquiry. Four yes answers goes on this quarter's plan."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Warming up a funder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Log every call, meeting and event in "
+            },
+            {
+              "text": "Conversations",
+              "bold": true
+            },
+            {
+              "text": ". Invite them to a class or the festival before you ask. Move them to "
+            },
+            {
+              "text": "Warm",
+              "bold": true
+            },
+            {
+              "text": " after a real conversation and to "
+            },
+            {
+              "text": "Funder",
+              "bold": true
+            },
+            {
+              "text": " when the first award arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching the pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each funder shows how many applications are in play, the total asked, what was awarded and the "
+            },
+            {
+              "text": "Win rate",
+              "bold": true
+            },
+            {
+              "text": ". A funder with three declines in a row deserves a frank conversation, or a pause."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quarterly review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Three new funders researched and qualified"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Warm funder has a next check-in date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Paused funders reviewed: is it time to try again?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The equipment trust funds kilns by invitation only. The grants manager finds that a board member's former colleague sits on its committee, asks for an introduction, and logs a call. Two months later the trust invites a proposal for the kiln upgrade."
             }
           ]
         }

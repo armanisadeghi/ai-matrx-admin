@@ -11,7 +11,7 @@ import { Plugin } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import type { Node as PmNode } from "@tiptap/pm/model";
 import { DATABASE_EVENT_CLAIMS, DatabaseHost, activeLayout, paintedSizesOf, pickPainted } from "./database-host";
-import { DatabaseLoadingBox, WithExpectedRows } from "./database-loading-box";
+import { DatabaseChunkLoading, DatabaseLoadingBox, DatabaseLoadingSlot, WithExpectedRows } from "./database-loading-box";
 import DisplayMath from "@/features/math/components/DisplayMath";
 import InlineMathText from "@/features/math/components/InlineMathText";
 import { AlignCenter, AlignLeft, AlignRight, Captions, FileText, Paperclip, Replace, TriangleAlert } from "lucide-react";
@@ -36,7 +36,7 @@ import { SiteIcon } from "@ai-matrx/design-system/site-icon";
 
 const DatabaseBlockView = dynamic(() => import("../data/DatabaseBlock").then((m) => m.DatabaseBlock), {
   ssr: false,
-  loading: () => <div className="spaces-db-loading" />,
+  loading: () => <DatabaseChunkLoading />,
 });
 
 /** A database block's table owns its own presses and keys (`database-host.tsx`); the editor leaves them be. */
@@ -518,17 +518,24 @@ export const storedBlockSpecs = {
   equation: storedSpec("equation", (p) => <EquationBlock p={p} />),
   tableOfContents: storedSpec("tableOfContents", (_p, ctx) => <TableOfContents editor={ctx.editor} />),
   breadcrumb: storedSpec("breadcrumb", () => <Breadcrumb />),
-  database: storedSpec("database", (p, ctx) => (
-    <DatabaseHost blockId={ctx.blockId} layout={activeLayout(p)} painted={paintedSizesOf(p)}>
-      <BlockBoundary>
-        <LateSeedRecords blockId={ctx.blockId} fallback={<DatabaseLoadingBox blockId={ctx.blockId} p={p} />}>
-          <WithExpectedRows blockId={ctx.blockId}>
-            <DatabaseBlockView blockId={ctx.blockId} props={p} onChange={ctx.update} editable={(ctx.editor as unknown as { isEditable: boolean }).isEditable} />
-          </WithExpectedRows>
-        </LateSeedRecords>
-      </BlockBoundary>
-    </DatabaseHost>
-   ), [databaseOwnsItsEvents, databasePaintedGeometry]),
+  database: storedSpec("database", (p, ctx) => {
+    const editable = (ctx.editor as unknown as { isEditable: boolean }).isEditable;
+    // Every wait (the late seed, the block's code chunk) draws the frame's own shape for this person's role.
+    const box = <DatabaseLoadingBox blockId={ctx.blockId} p={p} editable={editable} />;
+    return (
+      <DatabaseHost blockId={ctx.blockId} layout={activeLayout(p)} painted={paintedSizesOf(p)}>
+        <BlockBoundary>
+          <DatabaseLoadingSlot box={box}>
+            <LateSeedRecords blockId={ctx.blockId} fallback={box}>
+              <WithExpectedRows blockId={ctx.blockId}>
+                <DatabaseBlockView blockId={ctx.blockId} props={p} onChange={ctx.update} editable={editable} />
+              </WithExpectedRows>
+            </LateSeedRecords>
+          </DatabaseLoadingSlot>
+        </BlockBoundary>
+      </DatabaseHost>
+    );
+  }, [databaseOwnsItsEvents, databasePaintedGeometry]),
   unknownBlock: createReactBlockSpec(
     { type: "unknownBlock", propSchema: dataProp, content: "none" },
     {

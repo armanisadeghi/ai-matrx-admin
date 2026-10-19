@@ -21,6 +21,10 @@
  *   3. HOW FAR ALONG — the canonical `ProgressRailReadout`, the same steps
  *      rail the full page draws, so the float and the page can never narrate
  *      one run two different ways.
+ *   4. WHAT IT ALREADY DID — the run page's own `RunActivityFeed`: every prior
+ *      step and progress line, refolded from the run's saved event log when the
+ *      window adopts it, then the live lines after them (Arman, 2026-10-19: the
+ *      facts are there, only NEW activity is live).
  *
  * Everything is read from the workflowRuns selectors by `runId`. Nothing here
  * adopts the run — the window root owns that (`useWorkflowRun`), which is what
@@ -41,6 +45,7 @@ import { runIsOver } from "../types";
 import { useCanWatchAi } from "@/features/ai-watch/useCanWatchAi";
 import { useRunStepLabels } from "./useRunStepLabels";
 import { ProgressRailReadout } from "../components/ProgressRailReadout";
+import { RunActivityFeed } from "../components/run/RunActivityFeed";
 import { parseInterruptPayload } from "../interrupt/interrupt-view";
 import { currentLivenessLine } from "./run-liveness";
 
@@ -116,6 +121,7 @@ export function FloatingRunBody({
       </div>
 
       <ProgressRailReadout runId={runId} nodeLabels={stepLabels} />
+      <RunActivityFeed runId={runId} stepLabels={stepLabels} />
     </div>
   );
 }

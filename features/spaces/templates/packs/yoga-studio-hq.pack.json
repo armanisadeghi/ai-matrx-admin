@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 3,
+  "version": 4,
   "title": "Yoga Studio HQ",
-  "description": "Manage class passes and memberships, teachers and schedules, and payments.",
+  "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
   "icon": {
     "emoji": "🧘"
@@ -14,10 +14,12 @@
   },
   "category": "wellness",
   "tags": [
-    "yoga",
-    "classes",
-    "teachers",
-    "passes"
+    "yoga teacher",
+    "yoga studio",
+    "class schedule",
+    "memberships",
+    "class packs",
+    "wellness"
   ],
   "spec": {
     "specVersion": 1,
@@ -147,7 +149,7 @@
           },
           {
             "key": "valid_days",
-            "label": "Valid for (days)",
+            "label": "Expires after (days)",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -164,14 +166,14 @@
           },
           {
             "key": "includes",
-            "label": "Includes",
+            "label": "What's included",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
-            "key": "active_n",
-            "label": "Active students",
+            "key": "holders",
+            "label": "Active holders",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -181,35 +183,6 @@
             "filter": {
               "client_status": "Active"
             }
-          },
-          {
-            "key": "cancelled_n",
-            "label": "Cancelled",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
-            "agg": "count",
-            "filter": {
-              "client_status": "Cancelled"
-            }
-          },
-          {
-            "key": "churn",
-            "label": "Churn (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Active students} + {Cancelled} > 0, ROUND({Cancelled} / ({Active students} + {Cancelled}) * 100, 0), 0)"
-          },
-          {
-            "key": "recurring",
-            "label": "Recurring value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Active students} * {Price (USD)}"
           },
           {
             "key": "added_at",
@@ -292,8 +265,7 @@
               "price": 108,
               "billing": "Monthly",
               "minutes": 0,
-              "valid_days": 30,
-              "includes": "membership, monthly"
+              "includes": "Every group class, 10% off workshops, freeze up to 2 months a year"
             }
           },
           {
@@ -304,8 +276,8 @@
               "price": 70,
               "billing": "One-time",
               "minutes": 75,
-              "valid_days": 75,
-              "includes": "class pack, one-time"
+              "includes": "Any 5 group classes",
+              "valid_days": 60
             }
           },
           {
@@ -316,8 +288,8 @@
               "price": 130,
               "billing": "One-time",
               "minutes": 75,
-              "valid_days": 90,
-              "includes": "class pack, one-time"
+              "includes": "Any 10 group classes, shareable with one family member",
+              "valid_days": 120
             }
           },
           {
@@ -328,8 +300,7 @@
               "price": 20,
               "billing": "Per visit",
               "minutes": 75,
-              "valid_days": 1,
-              "includes": "drop-in, per visit"
+              "includes": "One group class"
             }
           },
           {
@@ -340,8 +311,7 @@
               "price": 95,
               "billing": "Per visit",
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "private, per visit"
+              "includes": "One-to-one session, at the studio or at home"
             }
           },
           {
@@ -352,8 +322,7 @@
               "price": 45,
               "billing": "Per visit",
               "minutes": 150,
-              "valid_days": 1,
-              "includes": "workshop, per visit"
+              "includes": "Two-hour themed workshop"
             }
           }
         ]
@@ -412,25 +381,65 @@
             "choices": [
               "Active",
               "Frozen",
-              "Cancelled",
+              "Lapsed",
               "Lead"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Frozen": "blue",
-              "Cancelled": "red",
-              "Lead": "amber"
+              "Active": "green",
+              "Frozen": "amber",
+              "Lapsed": "slate",
+              "Lead": "blue"
             },
             "default": "Active"
           },
           {
             "key": "plan",
-            "label": "Pass",
+            "label": "Current pass",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
             "relationMax": 1
+          },
+          {
+            "key": "classes_left",
+            "label": "Classes left on pack",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ]
+          },
+          {
+            "key": "pack_expires",
+            "label": "Pack expires",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "injuries",
+            "label": "Injuries and cautions",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "waiver_on",
+            "label": "Waiver signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "phone",
@@ -501,25 +510,12 @@
             }
           },
           {
-            "key": "failed_n",
-            "label": "Failed payments",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "payments",
-            "pick": "amount",
-            "agg": "count",
-            "filter": {
-              "status": "Failed"
-            }
-          },
-          {
-            "key": "risk",
-            "label": "Retention check",
+            "key": "flag",
+            "label": "Next step",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+            "formula": "IF({Classes left on pack} = 1, \"Offer the next pack\", IF({No-shows} >= 3, \"Talk about late cancels\", \"None\"))"
           },
           {
             "key": "add_booking_btn",
@@ -651,7 +647,8 @@
               "phone": "(828) 555-0107",
               "email": "teodor.ibarra@inbox-mail.net",
               "joined_on": "@today-30d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "waiver_on": "@today-300d"
             }
           },
           {
@@ -664,7 +661,11 @@
               "phone": "(828) 555-0144",
               "email": "odette.prescott@inbox-mail.net",
               "joined_on": "@today-77d",
-              "area": "Maple Hollow"
+              "area": "Maple Hollow",
+              "classes_left": 3,
+              "pack_expires": "@today+40d",
+              "injuries": "Tight hamstrings",
+              "waiver_on": "@today-80d"
             }
           },
           {
@@ -677,7 +678,10 @@
               "phone": "(828) 555-0181",
               "email": "rafael.zuberi@inbox-mail.net",
               "joined_on": "@today-124d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "classes_left": 7,
+              "pack_expires": "@today+95d",
+              "waiver_on": "@today-30d"
             }
           },
           {
@@ -690,7 +694,9 @@
               "phone": "(828) 555-0118",
               "email": "saoirse.hartigan@inbox-mail.net",
               "joined_on": "@today-171d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "injuries": "Pregnant, 20 weeks: no deep twists",
+              "waiver_on": "@today-200d"
             }
           },
           {
@@ -703,7 +709,11 @@
               "phone": "(828) 555-0155",
               "email": "ravi.okafor@inbox-mail.net",
               "joined_on": "@today-218d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "classes_left": 1,
+              "pack_expires": "@today+12d",
+              "injuries": "Left wrist: fists in plank",
+              "waiver_on": "@today-120d"
             }
           },
           {
@@ -716,7 +726,8 @@
               "phone": "(828) 555-0192",
               "email": "zainab.vasquez@inbox-mail.net",
               "joined_on": "@today-265d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "waiver_on": "@today-400d"
             }
           },
           {
@@ -729,7 +740,10 @@
               "phone": "(828) 555-0129",
               "email": "jamal.eriksen@inbox-mail.net",
               "joined_on": "@today-312d",
-              "area": "Lakeview"
+              "area": "Lakeview",
+              "classes_left": 2,
+              "pack_expires": "@today+5d",
+              "waiver_on": "@today-60d"
             }
           },
           {
@@ -742,7 +756,9 @@
               "phone": "(828) 555-0166",
               "email": "liesel.lowry@inbox-mail.net",
               "joined_on": "@today-359d",
-              "area": "Foxglove Court"
+              "area": "Foxglove Court",
+              "injuries": "Low back: bent knees in forward folds",
+              "waiver_on": "@today-150d"
             }
           },
           {
@@ -755,7 +771,8 @@
               "phone": "(828) 555-0103",
               "email": "okonkwo.tennant@inbox-mail.net",
               "joined_on": "@today-406d",
-              "area": "Stonebridge"
+              "area": "Stonebridge",
+              "waiver_on": "@today-20d"
             }
           },
           {
@@ -768,7 +785,9 @@
               "phone": "(828) 555-0140",
               "email": "ingrid.dunmore@inbox-mail.net",
               "joined_on": "@today-453d",
-              "area": "Harbor Heights"
+              "area": "Harbor Heights",
+              "injuries": "Frozen while travelling",
+              "waiver_on": "@today-250d"
             }
           },
           {
@@ -776,12 +795,13 @@
             "values": {
               "client_name": "Basil Kowalczyk",
               "kind": "Drop-in",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-5",
               "phone": "(828) 555-0177",
               "email": "basil.kowalczyk@inbox-mail.net",
               "joined_on": "@today-500d",
-              "area": "Willow Creek"
+              "area": "Willow Creek",
+              "waiver_on": "@today-500d"
             }
           },
           {
@@ -789,12 +809,13 @@
             "values": {
               "client_name": "Mirela Rosenthal",
               "kind": "Teacher trainee",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-6",
               "phone": "(828) 555-0114",
               "email": "mirela.rosenthal@inbox-mail.net",
               "joined_on": "@today-547d",
-              "area": "North Ridge"
+              "area": "North Ridge",
+              "waiver_on": "@today-365d"
             }
           },
           {
@@ -807,7 +828,8 @@
               "phone": "(828) 555-0151",
               "email": "winston.abernathy@inbox-mail.net",
               "joined_on": "@today-594d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "waiver_on": "@today-3d"
             }
           },
           {
@@ -823,7 +845,8 @@
               "area": "Maple Hollow"
             }
           }
-        ]
+        ],
+        "datesIndependent": "A pack expiry and the waiver date follow purchases and visits, not the join date."
       },
       {
         "token": "booking",
@@ -909,6 +932,15 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
+            "relationMax": 1
+          },
+          {
+            "key": "class_slot",
+            "label": "Class",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "class",
             "relationMax": 1
           },
           {
@@ -1107,116 +1139,126 @@
           {
             "key": "bookin-1",
             "values": {
-              "booking_name": "Weekend workshop - Prescott",
+              "booking_name": "Sunrise flow, mat by the window",
               "status": "Completed",
-              "client": "client-2",
-              "plan": "plan-6",
-              "staff": "tm-1",
-              "when_on": "@today-12d",
-              "visit_type": "Group class",
-              "minutes": 150,
-              "price": 45,
-              "completed_on": "@today-12d"
-            }
-          },
-          {
-            "key": "bookin-2",
-            "values": {
-              "booking_name": "Private - Okafor",
-              "status": "Completed",
-              "client": "client-5",
-              "plan": "plan-2",
+              "client": "client-1",
+              "plan": "plan-1",
+              "class_slot": "cls-1",
               "staff": "tm-3",
               "when_on": "@today-9d",
-              "visit_type": "Private",
+              "visit_type": "Group class",
               "minutes": 60,
               "price": 0,
               "completed_on": "@today-9d"
             }
           },
           {
+            "key": "bookin-2",
+            "values": {
+              "booking_name": "Power hour",
+              "status": "Completed",
+              "client": "client-3",
+              "plan": "plan-3",
+              "class_slot": "cls-4",
+              "staff": "tm-5",
+              "when_on": "@today-8d",
+              "visit_type": "Group class",
+              "minutes": 60,
+              "price": 0,
+              "completed_on": "@today-8d"
+            }
+          },
+          {
             "key": "bookin-3",
             "values": {
-              "booking_name": "Drop-in class - Lowry",
+              "booking_name": "Prenatal",
               "status": "Completed",
-              "client": "client-8",
-              "plan": "plan-4",
-              "staff": "tm-4",
+              "client": "client-4",
+              "plan": "plan-1",
+              "class_slot": "cls-6",
+              "staff": "tm-1",
               "when_on": "@today-7d",
-              "visit_type": "Workshop",
+              "visit_type": "Group class",
               "minutes": 75,
-              "price": 20,
+              "price": 0,
               "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Weekend workshop - Kowalczyk",
+              "booking_name": "Drop-in, first class ever",
               "status": "Completed",
-              "client": "client-11",
-              "plan": "plan-6",
-              "staff": "tm-5",
-              "when_on": "@today-5d",
-              "visit_type": "Teacher training",
-              "minutes": 150,
-              "price": 45,
-              "completed_on": "@today-5d"
+              "client": "client-13",
+              "plan": "plan-4",
+              "class_slot": "cls-3",
+              "staff": "tm-1",
+              "when_on": "@today-7d",
+              "visit_type": "Group class",
+              "minutes": 60,
+              "price": 20,
+              "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-5",
             "values": {
-              "booking_name": "Group class - Halvorsen",
+              "booking_name": "Yin and breath",
               "status": "Completed",
-              "client": "client-14",
+              "client": "client-5",
               "plan": "plan-2",
-              "staff": "tm-1",
-              "when_on": "@today-3d",
+              "class_slot": "cls-5",
+              "staff": "tm-4",
+              "when_on": "@today-6d",
               "visit_type": "Group class",
-              "minutes": 60,
+              "minutes": 75,
               "price": 0,
-              "completed_on": "@today-3d"
+              "completed_on": "@today-6d"
             }
           },
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Drop-in class - Zuberi",
-              "status": "No-show",
-              "client": "client-3",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@today-4d",
+              "booking_name": "Private: shoulder-friendly practice",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-5",
+              "class_slot": "cls-9",
+              "staff": "tm-1",
+              "when_on": "@today-5d",
               "visit_type": "Private",
-              "minutes": 75,
-              "price": 20
+              "minutes": 60,
+              "price": 95,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-7",
             "values": {
-              "booking_name": "Weekend workshop - Vasquez",
-              "status": "Cancelled",
-              "client": "client-6",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today-2d",
-              "visit_type": "Workshop",
-              "minutes": 150,
-              "price": 45
+              "booking_name": "Weekend flow",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-2",
+              "class_slot": "cls-9",
+              "staff": "tm-1",
+              "when_on": "@today-4d",
+              "visit_type": "Group class",
+              "minutes": 75,
+              "price": 0,
+              "completed_on": "@today-4d"
             }
           },
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "Teacher training - Tennant",
-              "status": "Booked",
-              "client": "client-9",
+              "booking_name": "Hot vinyasa",
+              "status": "No-show",
+              "client": "client-7",
               "plan": "plan-2",
+              "class_slot": "cls-8",
               "staff": "tm-5",
-              "when_on": "@today-1d",
-              "visit_type": "Teacher training",
+              "when_on": "@today-3d",
+              "visit_type": "Group class",
               "minutes": 60,
               "price": 0
             }
@@ -1224,202 +1266,185 @@
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Drop-in class - Rosenthal",
-              "status": "Booked",
-              "client": "client-12",
-              "plan": "plan-4",
-              "staff": "tm-1",
+              "booking_name": "Slow flow",
+              "status": "Cancelled",
+              "client": "client-9",
+              "plan": "plan-1",
+              "class_slot": "cls-7",
+              "staff": "tm-3",
               "when_on": "@today-2d",
               "visit_type": "Group class",
-              "minutes": 75,
-              "price": 20
-            }
-          },
-          {
-            "key": "bookin-10",
-            "values": {
-              "booking_name": "Weekend workshop - Ibarra",
-              "status": "Checked in",
-              "client": "client-1",
-              "plan": "plan-6",
-              "staff": "tm-3",
-              "when_on": "@mon",
-              "visit_type": "Private",
-              "minutes": 150,
-              "price": 45,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-11",
-            "values": {
-              "booking_name": "Workshop - Hartigan",
-              "status": "Booked",
-              "client": "client-4",
-              "plan": "plan-2",
-              "staff": "tm-4",
-              "when_on": "@tue",
-              "visit_type": "Workshop",
               "minutes": 60,
               "price": 0
             }
           },
           {
+            "key": "bookin-10",
+            "values": {
+              "booking_name": "Inversions workshop",
+              "status": "Completed",
+              "client": "client-6",
+              "plan": "plan-6",
+              "class_slot": "cls-9",
+              "staff": "tm-5",
+              "when_on": "@today-12d",
+              "visit_type": "Workshop",
+              "minutes": 120,
+              "price": 45,
+              "completed_on": "@today-12d"
+            }
+          },
+          {
+            "key": "bookin-11",
+            "values": {
+              "booking_name": "Lunch express",
+              "status": "Booked",
+              "client": "client-1",
+              "plan": "plan-1",
+              "class_slot": "cls-2",
+              "staff": "tm-4",
+              "when_on": "@today",
+              "visit_type": "Group class",
+              "minutes": 45,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
             "key": "bookin-12",
             "values": {
-              "booking_name": "Drop-in class - Eriksen",
-              "status": "Booked",
-              "client": "client-7",
+              "booking_name": "Gentle hatha",
+              "status": "Checked in",
+              "client": "client-12",
               "plan": "plan-4",
-              "staff": "tm-5",
-              "when_on": "@wed",
-              "visit_type": "Teacher training",
-              "minutes": 75,
-              "price": 20,
-              "mine": "@installer"
+              "class_slot": "cls-3",
+              "staff": "tm-1",
+              "when_on": "@today",
+              "visit_type": "Group class",
+              "minutes": 60,
+              "price": 20
             }
           },
           {
             "key": "bookin-13",
             "values": {
-              "booking_name": "Weekend workshop - Dunmore",
+              "booking_name": "Power hour, back row spot",
               "status": "Booked",
-              "client": "client-10",
-              "plan": "plan-6",
-              "staff": "tm-1",
-              "when_on": "@thu",
+              "client": "client-3",
+              "plan": "plan-3",
+              "class_slot": "cls-4",
+              "staff": "tm-5",
+              "when_on": "@today+1d",
               "visit_type": "Group class",
-              "minutes": 150,
-              "price": 45
-            }
-          },
-          {
-            "key": "bookin-14",
-            "values": {
-              "booking_name": "Private - Abernathy",
-              "status": "Booked",
-              "client": "client-13",
-              "plan": "plan-2",
-              "staff": "tm-3",
-              "when_on": "@fri",
-              "visit_type": "Private",
               "minutes": 60,
               "price": 0,
               "mine": "@installer"
             }
           },
           {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Prenatal, 24 weeks",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-1",
+              "class_slot": "cls-6",
+              "staff": "tm-1",
+              "when_on": "@today+2d",
+              "visit_type": "Group class",
+              "minutes": 75,
+              "price": 0
+            }
+          },
+          {
             "key": "bookin-15",
             "values": {
-              "booking_name": "Drop-in class - Prescott",
+              "booking_name": "Yin, bring a blanket",
               "status": "Booked",
-              "client": "client-2",
-              "plan": "plan-4",
+              "client": "client-5",
+              "plan": "plan-2",
+              "class_slot": "cls-5",
               "staff": "tm-4",
-              "when_on": "@sat",
-              "visit_type": "Workshop",
+              "when_on": "@today+3d",
+              "visit_type": "Group class",
               "minutes": 75,
-              "price": 20,
+              "price": 0,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-16",
             "values": {
-              "booking_name": "Weekend workshop - Okafor",
+              "booking_name": "Restorative",
               "status": "Booked",
-              "client": "client-5",
-              "plan": "plan-6",
-              "staff": "tm-5",
-              "when_on": "@sun",
-              "visit_type": "Teacher training",
-              "minutes": 150,
-              "price": 45
+              "client": "client-11",
+              "plan": "plan-4",
+              "class_slot": "cls-10",
+              "staff": "tm-4",
+              "when_on": "@today+5d",
+              "visit_type": "Group class",
+              "minutes": 75,
+              "price": 20
             }
           },
           {
             "key": "bookin-17",
             "values": {
-              "booking_name": "Group class - Lowry",
+              "booking_name": "Teacher training module 3",
               "status": "Booked",
-              "client": "client-8",
-              "plan": "plan-2",
+              "client": "client-10",
+              "plan": "plan-6",
+              "class_slot": "cls-9",
               "staff": "tm-1",
-              "when_on": "@mon+1w",
-              "visit_type": "Group class",
-              "minutes": 60,
+              "when_on": "@today+6d",
+              "visit_type": "Teacher training",
+              "minutes": 240,
               "price": 0
             }
           },
           {
             "key": "bookin-18",
             "values": {
-              "booking_name": "Drop-in class - Kowalczyk",
+              "booking_name": "Backbends workshop",
               "status": "Booked",
-              "client": "client-11",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@wed+1w",
-              "visit_type": "Private",
-              "minutes": 75,
-              "price": 20
+              "client": "client-6",
+              "plan": "plan-6",
+              "class_slot": "cls-9",
+              "staff": "tm-5",
+              "when_on": "@today+10d",
+              "visit_type": "Workshop",
+              "minutes": 120,
+              "price": 45
             }
           },
           {
             "key": "bookin-19",
             "values": {
-              "booking_name": "Weekend workshop - Halvorsen",
+              "booking_name": "Weekend flow with a friend",
               "status": "Booked",
-              "client": "client-14",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today",
-              "visit_type": "Workshop",
-              "minutes": 150,
-              "price": 45,
-              "mine": "@installer"
+              "client": "client-7",
+              "plan": "plan-2",
+              "class_slot": "cls-9",
+              "staff": "tm-1",
+              "when_on": "@today+4d",
+              "visit_type": "Group class",
+              "minutes": 75,
+              "price": 0
             }
           },
           {
             "key": "bookin-20",
             "values": {
-              "booking_name": "Teacher training - Zuberi",
+              "booking_name": "Sunrise flow",
               "status": "Booked",
-              "client": "client-3",
-              "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@today+2d",
-              "visit_type": "Teacher training",
-              "minutes": 60,
-              "price": 0
-            }
-          },
-          {
-            "key": "bookin-21",
-            "values": {
-              "booking_name": "Drop-in class - Vasquez",
-              "status": "Booked",
-              "client": "client-6",
+              "client": "client-14",
               "plan": "plan-4",
-              "staff": "tm-1",
-              "when_on": "@today+4d",
-              "visit_type": "Group class",
-              "minutes": 75,
-              "price": 20
-            }
-          },
-          {
-            "key": "bookin-22",
-            "values": {
-              "booking_name": "Weekend workshop - Tennant",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-6",
+              "class_slot": "cls-1",
               "staff": "tm-3",
-              "when_on": "@today+1d",
-              "visit_type": "Private",
-              "minutes": 150,
-              "price": 45
+              "when_on": "@today-1d",
+              "visit_type": "Group class",
+              "minutes": 60,
+              "price": 20
             }
           }
         ],
@@ -1576,142 +1601,465 @@
           {
             "key": "paymen-1",
             "values": {
-              "payment_name": "PAY-2210",
+              "payment_name": "SW-4401",
+              "status": "Paid",
+              "client": "client-1",
+              "amount": 108.0,
+              "due_on": "@today-20d",
+              "method": "Card on file",
+              "paid_on": "@today-20d"
+            }
+          },
+          {
+            "key": "paymen-2",
+            "values": {
+              "payment_name": "SW-4402",
               "status": "Paid",
               "client": "client-3",
-              "amount": 130,
+              "amount": 130.0,
               "due_on": "@today-30d",
               "method": "Card on file",
               "paid_on": "@today-30d"
             }
           },
           {
-            "key": "paymen-2",
-            "values": {
-              "payment_name": "PAY-2211",
-              "status": "Paid",
-              "client": "client-8",
-              "amount": 70,
-              "due_on": "@today-28d",
-              "method": "Cash",
-              "paid_on": "@today-28d"
-            }
-          },
-          {
             "key": "paymen-3",
             "values": {
-              "payment_name": "PAY-2212",
+              "payment_name": "SW-4403",
               "status": "Paid",
               "client": "client-13",
-              "amount": 108,
-              "due_on": "@today-14d",
-              "method": "Bank transfer",
-              "paid_on": "@today-14d"
+              "amount": 20.0,
+              "due_on": "@today-7d",
+              "method": "Cash",
+              "paid_on": "@today-7d"
             }
           },
           {
             "key": "paymen-4",
             "values": {
-              "payment_name": "PAY-2213",
+              "payment_name": "SW-4404",
               "status": "Paid",
-              "client": "client-4",
-              "amount": 20,
-              "due_on": "@today-10d",
-              "method": "Gift card",
-              "paid_on": "@today-10d"
+              "client": "client-8",
+              "amount": 95.0,
+              "due_on": "@today-5d",
+              "method": "Card on file",
+              "paid_on": "@today-5d"
             }
           },
           {
             "key": "paymen-5",
             "values": {
-              "payment_name": "PAY-2214",
+              "payment_name": "SW-4405",
               "status": "Failed",
               "client": "client-9",
-              "amount": 130,
-              "due_on": "@today-3d",
-              "method": "Card on file"
+              "amount": 108.0,
+              "due_on": "@today-2d"
             }
           },
           {
             "key": "paymen-6",
             "values": {
-              "payment_name": "PAY-2215",
-              "status": "Failed",
-              "client": "client-14",
-              "amount": 70,
-              "due_on": "@today-1d",
-              "method": "Cash"
+              "payment_name": "SW-4406",
+              "status": "Paid",
+              "client": "client-2",
+              "amount": 70.0,
+              "due_on": "@today-45d",
+              "method": "Card on file",
+              "paid_on": "@today-45d"
             }
           },
           {
             "key": "paymen-7",
             "values": {
-              "payment_name": "PAY-2216",
+              "payment_name": "SW-4407",
               "status": "Pending",
-              "client": "client-5",
-              "amount": 95,
-              "due_on": "@fri",
-              "method": "Bank transfer"
+              "client": "client-4",
+              "amount": 108.0,
+              "due_on": "@today+3d"
             }
           },
           {
             "key": "paymen-8",
             "values": {
-              "payment_name": "PAY-2217",
-              "status": "Pending",
-              "client": "client-10",
-              "amount": 20,
-              "due_on": "@today+3d",
-              "method": "Gift card"
+              "payment_name": "SW-4408",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 45.0,
+              "due_on": "@today-12d",
+              "method": "Gift card",
+              "paid_on": "@today-12d"
             }
           },
           {
             "key": "paymen-9",
             "values": {
-              "payment_name": "PAY-2218",
+              "payment_name": "SW-4409",
               "status": "Pending",
-              "client": "client-1",
-              "amount": 108,
-              "due_on": "@today+5d",
-              "method": "Card on file"
+              "client": "client-10",
+              "amount": 650.0,
+              "due_on": "@today+6d"
             }
           },
           {
             "key": "paymen-10",
             "values": {
-              "payment_name": "PAY-2219",
-              "status": "Paid",
-              "client": "client-6",
-              "amount": 45,
-              "due_on": "@today-6d",
-              "method": "Cash",
-              "paid_on": "@today-6d"
+              "payment_name": "SW-4410",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 20.0,
+              "due_on": "@today-15d",
+              "method": "Card on file",
+              "paid_on": "@today-14d"
             }
           },
           {
             "key": "paymen-11",
             "values": {
-              "payment_name": "PAY-2220",
-              "status": "Refunded",
-              "client": "client-11",
-              "amount": 95,
-              "due_on": "@today-9d",
-              "method": "Bank transfer"
+              "payment_name": "SW-4411",
+              "status": "Paid",
+              "client": "client-12",
+              "amount": 20.0,
+              "due_on": "@today",
+              "method": "Cash",
+              "paid_on": "@today"
             }
           },
           {
             "key": "paymen-12",
             "values": {
-              "payment_name": "PAY-2221",
-              "status": "Pending",
-              "client": "client-2",
-              "amount": 70,
-              "due_on": "@today+6d",
-              "method": "Gift card"
+              "payment_name": "SW-4412",
+              "status": "Failed",
+              "client": "client-1",
+              "amount": 108.0,
+              "due_on": "@today-1d"
             }
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "class",
+        "name": "Class schedule",
+        "labelSingular": "Class",
+        "labelPlural": "Class schedule",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "calendar-clock",
+        "titleField": "class_name",
+        "describes": "The weekly timetable: each class, its teacher, time, room, cap and what the teacher is paid for it.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "class_name",
+            "label": "Class",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "teacher",
+            "label": "Teacher",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "weekday",
+            "label": "Day",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday",
+              "Sunday"
+            ],
+            "choiceColors": {
+              "Monday": "blue",
+              "Tuesday": "green",
+              "Wednesday": "amber",
+              "Thursday": "violet",
+              "Friday": "teal",
+              "Saturday": "orange",
+              "Sunday": "pink"
+            }
+          },
+          {
+            "key": "start_time",
+            "label": "Starts",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "style",
+            "label": "Style",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Vinyasa",
+              "Hatha",
+              "Power",
+              "Yin",
+              "Restorative",
+              "Prenatal"
+            ],
+            "choiceColors": {
+              "Vinyasa": "blue",
+              "Hatha": "green",
+              "Power": "amber",
+              "Yin": "violet",
+              "Restorative": "teal",
+              "Prenatal": "orange"
+            }
+          },
+          {
+            "key": "level",
+            "label": "Level",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Beginner",
+              "All levels",
+              "Intermediate"
+            ],
+            "choiceColors": {
+              "Beginner": "blue",
+              "All levels": "green",
+              "Intermediate": "amber"
+            }
+          },
+          {
+            "key": "capacity",
+            "label": "Spots",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Main room",
+              "Garden room"
+            ],
+            "choiceColors": {
+              "Main room": "blue",
+              "Garden room": "green"
+            }
+          },
+          {
+            "key": "pay_per_class",
+            "label": "Teacher pay per class (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "booked_n",
+            "label": "Bookings so far",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "cls-1",
+            "values": {
+              "class_name": "Sunrise flow",
+              "teacher": "tm-3",
+              "weekday": "Monday",
+              "start_time": "6:30 am",
+              "style": "Vinyasa",
+              "level": "All levels",
+              "capacity": 22,
+              "room": "Main room",
+              "pay_per_class": 45
+            }
+          },
+          {
+            "key": "cls-2",
+            "values": {
+              "class_name": "Lunch express",
+              "teacher": "tm-4",
+              "weekday": "Monday",
+              "start_time": "12:15 pm",
+              "style": "Vinyasa",
+              "level": "All levels",
+              "capacity": 18,
+              "room": "Main room",
+              "pay_per_class": 40
+            }
+          },
+          {
+            "key": "cls-3",
+            "values": {
+              "class_name": "Gentle hatha",
+              "teacher": "tm-1",
+              "weekday": "Tuesday",
+              "start_time": "9:30 am",
+              "style": "Hatha",
+              "level": "Beginner",
+              "capacity": 16,
+              "room": "Garden room",
+              "pay_per_class": 45
+            }
+          },
+          {
+            "key": "cls-4",
+            "values": {
+              "class_name": "Power hour",
+              "teacher": "tm-5",
+              "weekday": "Tuesday",
+              "start_time": "6:00 pm",
+              "style": "Power",
+              "level": "Intermediate",
+              "capacity": 24,
+              "room": "Main room",
+              "pay_per_class": 55
+            }
+          },
+          {
+            "key": "cls-5",
+            "values": {
+              "class_name": "Yin and breath",
+              "teacher": "tm-4",
+              "weekday": "Wednesday",
+              "start_time": "7:30 pm",
+              "style": "Yin",
+              "level": "All levels",
+              "capacity": 18,
+              "room": "Garden room",
+              "pay_per_class": 45
+            }
+          },
+          {
+            "key": "cls-6",
+            "values": {
+              "class_name": "Prenatal",
+              "teacher": "tm-1",
+              "weekday": "Thursday",
+              "start_time": "10:00 am",
+              "style": "Prenatal",
+              "level": "All levels",
+              "capacity": 12,
+              "room": "Garden room",
+              "pay_per_class": 50
+            }
+          },
+          {
+            "key": "cls-7",
+            "values": {
+              "class_name": "Slow flow",
+              "teacher": "tm-3",
+              "weekday": "Thursday",
+              "start_time": "5:30 pm",
+              "style": "Vinyasa",
+              "level": "Beginner",
+              "capacity": 20,
+              "room": "Main room",
+              "pay_per_class": 45
+            }
+          },
+          {
+            "key": "cls-8",
+            "values": {
+              "class_name": "Hot vinyasa",
+              "teacher": "tm-5",
+              "weekday": "Friday",
+              "start_time": "6:00 pm",
+              "style": "Power",
+              "level": "Intermediate",
+              "capacity": 20,
+              "room": "Main room",
+              "pay_per_class": 55
+            }
+          },
+          {
+            "key": "cls-9",
+            "values": {
+              "class_name": "Weekend flow",
+              "teacher": "tm-1",
+              "weekday": "Saturday",
+              "start_time": "9:00 am",
+              "style": "Vinyasa",
+              "level": "All levels",
+              "capacity": 28,
+              "room": "Main room",
+              "pay_per_class": 60
+            }
+          },
+          {
+            "key": "cls-10",
+            "values": {
+              "class_name": "Restorative",
+              "teacher": "tm-4",
+              "weekday": "Sunday",
+              "start_time": "5:00 pm",
+              "style": "Restorative",
+              "level": "All levels",
+              "capacity": 14,
+              "room": "Garden room",
+              "pay_per_class": 45
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1764,6 +2112,26 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "payments"
+      },
+      {
+        "describes": "Each class on the timetable has one regular teacher.",
+        "fromTable": "class",
+        "fromField": "teacher",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "classes_taught"
+      },
+      {
+        "describes": "A booking is for one class on the timetable.",
+        "fromTable": "booking",
+        "fromField": "class_slot",
+        "toTable": "class",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "bookings"
       }
     ],
     "sharedBlocks": [
@@ -1965,8 +2333,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1979,8 +2350,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1994,8 +2368,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2072,6 +2449,20 @@
             "Failed"
           ]
         }
+      },
+      {
+        "token": "all_class",
+        "name": "Full timetable",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "class"
+      },
+      {
+        "token": "class_by_day",
+        "name": "By day",
+        "kind": "kanban",
+        "groupBy": "weekday",
+        "table": "class"
       }
     ],
     "agent": {
@@ -2144,6 +2535,18 @@
           "surface": "booking_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open class schedule.",
+        "action": {
+          "kind": "open",
+          "surface": "class_by_day"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "class_by_day",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2161,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2183,12 +2586,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the studio from one page. Students, their passes and payments are linked, every class or private session is a Class booking, and each teacher sees their own list under Mine. The Passes table shows how many students hold each pass and the churn rate."
+              "text": "Run the studio from here. The Class schedule is your weekly timetable with each teacher and their pay per class. Students carry their pass, classes left, pack expiry, waiver date and any injuries. Class bookings fill each class; the Dashboard shows failed member payments and packs about to run out."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2417,8 +2826,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2431,8 +2843,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2446,8 +2861,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2563,6 +2981,310 @@
             ],
             "activeViewId": "pay-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Class schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The weekly timetable. Change a teacher or a time here and every page shows it."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class",
+              "view": "class_by_day"
+            },
+            "inline": true,
+            "title": "Class schedule",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cs-b",
+                "name": "By day",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "weekday"
+              },
+              {
+                "id": "cs-t",
+                "name": "Full timetable",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cs-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "yoga-studio-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the studio runs in this workspace. Share it with the studio manager, the front desk and every teacher."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Passes and prices",
+              "bold": true
+            },
+            {
+              "text": ": memberships, class packs, drop-ins, privates and workshops, with price, what is included, expiry and how many students hold each."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Students",
+              "bold": true
+            },
+            {
+              "text": ": current pass, classes left, pack expiry, waiver date, injuries and cautions, visits, no-shows and payments."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Class schedule",
+              "bold": true
+            },
+            {
+              "text": ": the weekly timetable with teacher, time, style, level, room, spots and pay per class."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Class bookings",
+              "bold": true
+            },
+            {
+              "text": ": who is booked into which class on which day, and whether they came."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payments",
+              "bold": true
+            },
+            {
+              "text": ": member charges, pack sales, drop-ins, failed charges and refunds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A class from booking to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A student books a class (or walks in). The booking links to the class on the timetable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At the door, the desk checks them in and updates their pack."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After class, "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": "; no-shows marked as such."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Drop-in and pack payments are taken at the desk; member charges run monthly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, failed payments, today's first-timers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every week: packs expiring in 14 days, waitlists"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every pay period: teacher pay from the bookings"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every season: timetable review from bookings by style"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the passes, prices and timetable to your own, and delete the sample students once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Injuries and privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Injury notes are confidential: teachers read them before class and never mention them in front of others."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Waitlists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a class is full, add the student as a booking and tell them they are on the waitlist. When someone cancels in time, the first person waiting gets a text and the spot. Classes that fill every week with a waitlist are your signal to add a second time."
+            }
+          ]
         }
       ]
     },
@@ -2740,7 +3462,8 @@
                 },
                 "anyOf": {
                   "status": [
-                    "Booked"
+                    "Booked",
+                    "Checked in"
                   ]
                 }
               }
@@ -2821,6 +3544,86 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packs running out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Students",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l6",
+                "name": "Expiring in 14 days",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "pack_expires": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                }
+              }
+            ],
+            "activeViewId": "view-l6"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bookings by class style"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "class",
+              "view": "all_class"
+            },
+            "inline": true,
+            "title": "Class schedule",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c7",
+                "name": "Bookings by style",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "style",
+                  "op": "sum",
+                  "field": "booked_n"
+                }
+              }
+            ],
+            "activeViewId": "view-c7"
+          }
         }
       ]
     },
@@ -2836,7 +3639,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Clear rules on packs save arguments. Put them in writing and keep them short."
+              "text": "Students should never be surprised by what their pass allows. Clear, written rules, applied the same way by everyone at the desk, prevent nearly every awkward conversation."
             }
           ],
           "background": "blue",
@@ -2848,7 +3651,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules we use"
+              "text": "The passes"
             }
           ],
           "props": {
@@ -2859,7 +3662,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "A 5-class pack lasts 3 months, a 10-class pack 6 months"
+              "text": "Monthly unlimited",
+              "bold": true
+            },
+            {
+              "text": ": every group class, billed monthly on the card on file. Can be frozen for up to two months a year (travel, injury). Thirty days' notice to cancel."
             }
           ]
         },
@@ -2867,7 +3674,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Passes are not shared and not refundable, but can be paused for illness"
+              "text": "5-class pack",
+              "bold": true
+            },
+            {
+              "text": ": expires 60 days after purchase."
             }
           ]
         },
@@ -2875,7 +3686,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Monthly unlimited renews on the first of the month"
+              "text": "10-class pack",
+              "bold": true
+            },
+            {
+              "text": ": expires 120 days after purchase; can be shared with one family member."
             }
           ]
         },
@@ -2883,7 +3698,52 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "A late cancel under 12 hours uses a class"
+              "text": "Drop-in",
+              "bold": true
+            },
+            {
+              "text": ": one class, paid at the door."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Private session",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "workshops",
+              "bold": true
+            },
+            {
+              "text": ": priced and paid separately; members get 10 percent off workshops."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set your own rules in "
+            },
+            {
+              "text": "Passes and prices",
+              "bold": true
+            },
+            {
+              "text": ": "
+            },
+            {
+              "text": "Expires after (days)",
+              "bold": true
+            },
+            {
+              "text": " is filled only for passes that expire."
             }
           ]
         },
@@ -2891,7 +3751,78 @@
           "type": "heading",
           "text": [
             {
-              "text": "Handling exceptions"
+              "text": "When a student buys a pack"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set their "
+            },
+            {
+              "text": "Current pass",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Classes left on pack",
+              "bold": true
+            },
+            {
+              "text": " to the number of classes, and "
+            },
+            {
+              "text": "Pack expires",
+              "bold": true
+            },
+            {
+              "text": " to the purchase date plus the expiry days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each class they attend, take one off Classes left."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When one class is left, the student card says "
+            },
+            {
+              "text": "Offer the next pack",
+              "bold": true
+            },
+            {
+              "text": ". Mention it kindly at check-in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expiry"
             }
           ],
           "props": {
@@ -2902,7 +3833,101 @@
           "type": "text",
           "text": [
             {
-              "text": "The studio manager can extend a pass once for a documented reason. Note it on the student record."
+              "text": "The Dashboard lists packs expiring in the next 14 days. Send a friendly note a week before: \"You have two classes left before the 20th.\" Many studios allow one extension of two weeks on request; decide your rule, write it here, and apply it to everyone."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Freezes and cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A freeze needs a request in writing (a text or email is fine) and a restart date. Set the student to "
+            },
+            {
+              "text": "Frozen",
+              "bold": true
+            },
+            {
+              "text": "; no charge is taken while frozen."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cancellations need thirty days' notice; set the student to "
+            },
+            {
+              "text": "Lapsed",
+              "bold": true
+            },
+            {
+              "text": " after the last charge."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Failed card charges show on the Dashboard: contact the student the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late cancels and no-shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for twelve hours' notice to cancel a booked class, so someone on the waitlist can take the spot. A no-show on a pack uses up the class. After three no-shows the card suggests a conversation; most students just need a reminder of the rule."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A student buys a 5-class pack on the 1st. Her card shows 5 classes left and an expiry 60 days out. By the 40th day she has used four; at check-in the desk sees "
+            },
+            {
+              "text": "Offer the next pack",
+              "bold": true
+            },
+            {
+              "text": " and mentions that the 10-class pack works out cheaper per class. She buys it before her last class."
             }
           ]
         }
@@ -2920,7 +3945,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Teachers are paid per class plus a small bonus for attendance. Keep the schedule steady."
+              "text": "Teachers stay where the schedule is predictable and pay is right, on time, every time. Keep the timetable in one place and pay from it."
             }
           ],
           "background": "blue",
@@ -2932,7 +3957,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each month"
+              "text": "The timetable"
             }
           ],
           "props": {
@@ -2940,26 +3965,75 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Publish next month schedule by the 20th."
+              "text": "Every regular class is one row in "
+            },
+            {
+              "text": "Class schedule",
+              "bold": true
+            },
+            {
+              "text": ": day, start time, style, level, room, spots and teacher."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Tally classes taught on the Class bookings board."
+              "text": "Build the week around what students actually book. The Dashboard chart shows bookings by style; a class that runs under a third full for six weeks is a candidate to move or change."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Pay on the 5th and send a short summary."
+              "text": "Publish the schedule a month ahead and change it at most once a season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pay"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each class has a "
+            },
+            {
+              "text": "Teacher pay per class",
+              "bold": true
+            },
+            {
+              "text": ". Common models are a flat rate, a flat rate plus a per-student bonus above a headcount, or a share of the class revenue. Pick one and write it in the teacher's agreement."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "At the end of each pay period, filter Class bookings to the period and teacher, count the classes taught, and multiply by the class rate. Add privates and workshops at their agreed share."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pay on the same day every period."
             }
           ]
         },
@@ -2975,10 +4049,134 @@
           }
         },
         {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A teacher who cannot teach finds a sub from the studio's sub list and tells the manager at least 48 hours ahead."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The manager changes the teacher on that day's bookings, not on the timetable."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The sub is paid for the class; the regular teacher is not."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What a good class needs from the teacher"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Arrive 15 minutes early; room warm, lights and music set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask about injuries and pregnancy; check the student card for "
+            },
+            {
+              "text": "Injuries and cautions",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Offer options at every level"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Start and finish on time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark everyone attended or no-show before leaving"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
-              "text": "If a teacher cannot teach, they find a substitute from the approved list and tell the manager. Update the booking with the new teacher."
+              "text": "At the end of the month the manager filters bookings to Kenji: twelve classes (lunch express and yin), at $40 and $45, plus one private at half the price. The total goes to payroll that afternoon. Yin has averaged 16 of 18 spots, so she adds a second yin class on Sundays next season."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "New teachers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A new teacher assists two classes, then teaches a community class with the owner present, then joins the sub list before getting a regular slot."
             }
           ]
         }
@@ -2996,7 +4194,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The room should feel calm when the first student walks in."
+              "text": "The first five minutes in the studio set the tone of the class. A calm, warm, clean room and a friendly desk are worth more than any marketing."
             }
           ],
           "background": "blue",
@@ -3008,7 +4206,91 @@
           "type": "heading",
           "text": [
             {
-              "text": "Opening"
+              "text": "Opening, 30 minutes before the first class"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lights on, heat or air set (hot classes: preheat 45 minutes)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors swept, mats and props straightened, blocks and straps in their bins"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check today's bookings and the waitlist; note any first-timers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Waivers ready for new students; "
+            },
+            {
+              "text": "Waiver signed on",
+              "bold": true
+            },
+            {
+              "text": " must be filled before they practice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Music and speaker tested"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bathroom stocked and clean"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At check-in"
             }
           ],
           "props": {
@@ -3019,7 +4301,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Lights, heat or cooling and music set."
+              "text": "Greet every student by name. First-timers get a tour: cubbies, bathroom, mats, where to sit."
             }
           ]
         },
@@ -3027,7 +4309,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mats wiped and aligned, props stocked."
+              "text": "Set the booking to "
+            },
+            {
+              "text": "Checked in",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3035,9 +4324,98 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Sign-in sheet or tablet ready."
+              "text": "Pack holders: take one class off "
+            },
+            {
+              "text": "Classes left on pack",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Drop-ins pay at the desk; press "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the teacher about first-timers and any new injury notes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After each class"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark the class done; set anyone booked who did not come to "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wipe down loaner mats with a mat cleaner; air them out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Return props, open windows if the room is stuffy"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Five minutes between classes to reset the room before the next group arrives"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
@@ -3051,34 +4429,95 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Mats cleaned and stacked."
+              "text": "Every class of the day marked done; payments match the payment list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Loaner mats cleaned and hung"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors swept or mopped"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Heat and lights off, doors locked, alarm set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lost and found tidied; items older than 30 days donated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A Tuesday evening: the desk sees three first-timers for Power hour. Each signs the waiver, gets a tour and a mat near the front. After class the desk marks the two who did not show, wipes the loaner mats and resets the room for the 7:30 yin class with five minutes to spare."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Laundry started."
+              "text": "Safety"
             }
-          ]
+          ],
+          "props": {
+            "level": 2
+          }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Cash drawer counted."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Doors locked and alarm set."
+              "text": "Know where the first aid kit and the defibrillator are. If a student feels faint, stop them, help them lie down, and call for help if it does not pass in a minute."
             }
           ]
         }

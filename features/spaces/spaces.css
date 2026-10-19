@@ -1363,17 +1363,24 @@
   }
 }
 
-/* A page narrower than 560px (a phone, or a tablet beside the sidebar) stacks its columns like the phone does:
-   SpacePage sets data-narrow from the content's own width, never the window's. */
-.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group {
-  flex-direction: column;
-}
-.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group > .bn-block-outer {
-  padding: 0;
-  flex-grow: 1 !important;
-}
-.spaces-content[data-narrow="true"] .spaces-editor .bn-block:has(> .react-renderer.node-column) > .react-renderer > .bn-block-content {
-  display: none;
+/* A page narrower than 560px (a phone, or a tablet beside the sidebar) stacks its columns like the phone does,
+   decided by the content's own width, never the window's. A CONTAINER QUERY, so the server's first paint and
+   the live page stack the same (DB-BLOCK-CHROME, 2026-10-19): SpacePage used to set data-narrow from a
+   ResizeObserver after hydration, and at 768 px every column row was drawn side by side, then re-laid out
+   stacked (the chart tiles in it widened, CLS 0.029). 368px = 560px less the 96px gutters each side; under
+   768px the phone rule above stacks columns at any width. */
+.spaces-content { container: spaces-content / inline-size; }
+@container spaces-content (max-width: 367.98px) {
+  .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group {
+    flex-direction: column;
+  }
+  .spaces-editor .bn-block:has(> .react-renderer.node-columnList) > .bn-block-group > .bn-block-outer {
+    padding: 0;
+    flex-grow: 1 !important;
+  }
+  .spaces-editor .bn-block:has(> .react-renderer.node-column) > .react-renderer > .bn-block-content {
+    display: none;
+  }
 }
 
 /* The app's global h1–h3 rules must not reach block headings. */

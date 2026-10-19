@@ -317,6 +317,12 @@ export interface WorkflowRunState {
    * ago. A screen is absent or honest, never fake progress (law 4).
    */
   readFailure: string | null;
+  /**
+   * True while the adapter is refolding the run's durable event log (attach / rejoin after a
+   * refresh). Every event in that window is HISTORY arriving in order, not the run moving: a
+   * surface that animates progress waits for it to clear and paints the run where it really is.
+   */
+  replaying: boolean;
   /** Why a pending run has not started yet (`start_wait.says` on the run
    * read), re-read while it waits. Null once it starts, or when nothing is said. */
   startWait: string | null;
@@ -495,6 +501,7 @@ function makeRunState(
     lastEventSeq: null,
     transportMode: "idle",
     readFailure: null,
+    replaying: false,
     startWait: null,
     attachedAt: null,
     stepsExecuted: 0,
@@ -1556,6 +1563,15 @@ const workflowRunsSlice = createSlice({
       state.surfaceByRunId[action.payload.runId] = action.payload.surface;
     },
 
+    /** The durable-log refold started (true) or finished (false); see `replaying`. */
+    setRunReplaying(
+      state,
+      action: PayloadAction<{ runId: string; replaying: boolean }>,
+    ) {
+      const run = state.byRunId[action.payload.runId];
+      if (run) run.replaying = action.payload.replaying;
+    },
+
     /** Monotonic — a lower/equal seq never rolls the cursor back. */
     setLastEventSeq(
       state,
@@ -1583,6 +1599,7 @@ export const {
   setTransportMode,
   refreshHeartbeatTails,
   setLastEventSeq,
+  setRunReplaying,
   runSurfaceLoaded,
 } = workflowRunsSlice.actions;
 

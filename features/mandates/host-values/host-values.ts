@@ -24,8 +24,12 @@
  *  - Mandate door only: a conversation without `mandateKey` (agent door) is
  *    never bridged — a mapped-only value sent to an agent door would reach the
  *    agent by name, which is exactly what `mapped_offer` forbids.
- *  - Turn 1 only: once the conversation has an answer, the gate adds nothing
- *    (later turns do not pass the mandate door).
+ *  - Turn 1 only by default: once the conversation has an answer, the gate
+ *    adds nothing (later turns do not pass the mandate door). A provider with
+ *    `everyTurn` instead sends EVERY turn through the mandate door
+ *    (`everyTurnThroughMandate`), so a value that changes while the person
+ *    talks (the record open on the screen) is current on each turn and the
+ *    server re-resolves what it names — context per turn, never a turn-1 copy.
  *  - One direction: the client sends what it holds; nothing comes back.
  *  - A conversation that already has host hooks (the workflow studio) is left
  *    alone — its host owns its gate.
@@ -57,6 +61,7 @@ interface Provider {
   provision: ProvisionKey;
   read: () => Record<string, unknown>;
   once: boolean;
+  everyTurn: boolean;
   expiresAt: number | null;
 }
 
@@ -65,6 +70,8 @@ export interface ProvideOptions {
   once?: boolean;
   /** Forget the values after this long even if never sent. */
   ttlMs?: number;
+  /** Send on every turn, through the mandate door (not only turn 1). */
+  everyTurn?: boolean;
 }
 
 const providers = new Map<string, Provider[]>();
@@ -120,19 +127,21 @@ export function hostValuesForTurn(
   const mandateKey = state.conversations?.byConversationId?.[conversationId]?.mandateKey;
   if (!mandateKey) return {};
   const provider = liveProvider(mandateKey);
-  if (!provider || hasAnswer(state, conversationId)) return {};
+  if (!provider || (!provider.everyTurn && hasAnswer(state, conversationId))) return {};
   const variables = presentHostValues(provider.read());
   if (provider.once) releaseProvider(mandateKey, provider);
   return Object.keys(variables).length ? { variables } : {};
 }
 
-function bridge(conversationId: string): void {
+function bridge(conversationId: string, mandateKey: string): void {
   if (bridged.has(conversationId) || getConversationHooks(conversationId)) return;
+  const everyTurn = (providers.get(mandateKey) ?? []).some((p) => p.everyTurn);
   const release = registerConversationHooks(conversationId, {
     beforeSend: async () => {
       const store = getStoreSingleton();
       return store ? hostValuesForTurn(store.getState() as StoreShape, conversationId) : {};
     },
+    ...(everyTurn ? { everyTurnThroughMandate: true } : {}),
   });
   bridged.set(conversationId, release);
 }
@@ -143,7 +152,7 @@ function sweep(): void {
   const byId = (store.getState() as StoreShape).conversations?.byConversationId ?? {};
   for (const [conversationId, instance] of Object.entries(byId)) {
     const key = instance?.mandateKey;
-    if (key && providers.has(key)) bridge(conversationId);
+    if (key && providers.has(key)) bridge(conversationId, key);
   }
 }
 
@@ -184,6 +193,7 @@ export function provideHostValues<P extends ProvisionKey>(
     provision,
     read: read as () => Record<string, unknown>,
     once: Boolean(options.once),
+    everyTurn: Boolean(options.everyTurn),
     expiresAt: options.ttlMs ? Date.now() + options.ttlMs : null,
   };
   providers.set(mandateKey, [...(providers.get(mandateKey) ?? []), provider]);

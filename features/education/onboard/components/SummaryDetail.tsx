@@ -32,6 +32,7 @@ import { createEducationSummariesScope } from "@/features/surfaces/manifests/edu
 import { useAccess } from "@/utils/permissions/access";
 import { ShareButton } from "@/features/sharing/components/ShareButton";
 import { canEditAccess } from "@/utils/permissions/access-core";
+import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { toast } from "@/lib/toast";
 import { useStudyMediaAuthReady } from "@/features/education/media/authLoad";
@@ -56,6 +57,8 @@ interface SummaryEnvelope {
 export function SummaryDetail({ id, edit = false }: { id: string; edit?: boolean }) {
   const router = useRouter();
   const [row, setRow] = useState<StudyMediaRow | null>(null);
+  // The open summary, by id, on every guide turn (server-resolved `study_record` packet).
+  usePageGuidanceRecord(() => ({ id, type: "study_media", title: row?.title ?? null }), { everyTurn: true });
   // The raw failure, never a sentence — the gate decides what it means.
   const [loadError, setLoadError] = useState<unknown>(null);
   const [reloadKey, setReloadKey] = useState(0);

@@ -326,6 +326,10 @@ export function readBackgroundRun(run: WorkflowRunState | null, hint: Background
     report: null, stoppedBecause: null, readFailure: null, ask: null, wakeAt: null,
   };
   if (!run) return empty;
+  // The adapter is refolding the run's saved history (a refresh, a rejoin): those events are the
+  // past arriving in order, not the run moving. Hold the opening shimmer until it lands, then the
+  // first sample IS where the run is — the bar never re-walks the log from zero.
+  if (run.replaying) return empty;
   if (kind === "workflow") return readWorkflowRun(run, empty);
   const input = run.input ?? {};
   const name = kind === "import" ? str(input.name) : str(obj(input.map)?.name);

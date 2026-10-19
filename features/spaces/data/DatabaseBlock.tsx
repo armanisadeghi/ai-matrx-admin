@@ -71,6 +71,8 @@ import { NewPropertyPanel } from "./NewProperty";
 import { LAYOUTS, viewIcon, type Layout } from "./view-icons";
 import { useUrlView } from "./url-view";
 import { useStructureEdit } from "../page/structure";
+import { DatabaseLoadingBox } from "../editor/database-loading-box";
+import { frameControls, type TabControl, type ToolControl } from "./database-frame-shape";
 import { newViewId, readDatabaseProps, type ChartSettings, type DatabaseBlockProps, type SpaceDbView, type SpaceViewLayout } from "./sources";
 
 export interface DatabaseBlockViewProps {
@@ -91,6 +93,7 @@ export function DatabaseBlock({ blockId, props: stored, onChange: write, editabl
   };
   const props = readDatabaseProps(raw);
   const publishedEntities = usePublishedEntities();
+  const publishedRows = usePublishedRows() !== null;
   if (!props) return <div className="spaces-db-frame spaces-db-note">This database has no source.</div>;
   if (props.source.kind === "entity") {
     // A page on the web: the rows the page itself published for this block, never a live read.
@@ -104,14 +107,19 @@ export function DatabaseBlock({ blockId, props: stored, onChange: write, editabl
       sample={props.sample ?? null}
       tableId={tableId}
       held={(line, retry) => (
-        <div className="spaces-db-frame spaces-db-note">
-          {line || <span className="spaces-db-loading" />}
-          {retry && line ? (
-            <Button variant="quiet" onClick={retry}>
-              Try again
-            </Button>
-          ) : null}
-        </div>
+        // Still resolving where the table opens: the frame's own shape, never a bare box (DB-BLOCK-CHROME).
+        line ? (
+          <div className="spaces-db-frame spaces-db-note">
+            {line}
+            {retry ? (
+              <Button variant="quiet" onClick={retry}>
+                Try again
+              </Button>
+            ) : null}
+          </div>
+        ) : (
+          <DatabaseLoadingBox blockId={blockId} p={raw} editable={editable} published={publishedRows} />
+        )
       )}
     >
       <BlockRecordsSeed>
@@ -196,6 +204,10 @@ function DatabaseFrame({
   const save = (patch: Partial<DatabaseBlockProps>) => onChange({ ...raw, ...patch });
   const saveView = (patch: Partial<SpaceDbView>) => save({ views: views.map((v) => (v.id === active.id ? { ...v, ...patch } : v)), activeViewId: active.id });
   const isChart = active.layout === "chart";
+  // The controls this frame draws for this person: the same decision its loading shape draws from.
+  const controls = frameControls(isChart, { shape, published });
+  const tabControl = (c: TabControl) => controls.tabs.includes(c);
+  const tool = (c: ToolControl) => controls.tools?.includes(c) ?? false;
 
   // "+ New record" (F7): Notion adds a row in place and opens it. A refused empty row (a required
   // column, a read-only sample) falls back to the whole-record form, which says why.
@@ -337,10 +349,10 @@ function DatabaseFrame({
               />
             );
           })}
-          {isChart && shape ? (
+          {tabControl("settings") ? (
             <ViewSettings tableId={tableId} sample={sample} view={active} fields={fields} props={props} onView={saveView} onBlock={save} editable={shape} compact />
           ) : null}
-          {isChart ? (
+          {tabControl("chartTools") ? (
             // Notion's chart view keeps its view's filter and sort: the tile counts and orders what they show.
             <span className="spaces-db-chart-tools">
               <FilterButton
@@ -362,14 +374,14 @@ function DatabaseFrame({
               />
             </span>
           ) : null}
-          {shape && !isChart ? (
+          {tabControl("addView") ? (
             <Button variant="quiet" icon={<Plus size={14} />} aria-label="Add view" onClick={() => {
                 const v: SpaceDbView = { id: newViewId(), name: "Table", layout: "grid" };
                 save({ views: [...views, v], activeViewId: v.id });
               }} />
           ) : null}
         </div>
-        {!isChart ? (
+        {controls.tools ? (
           <div className="spaces-db-tools">
             <FilterButton
               view={active}
@@ -389,7 +401,7 @@ function DatabaseFrame({
               onSave={(sorts) => saveView({ sorts })}
               icon={<ArrowDownUp size={15} strokeWidth={1.8} />}
             />
-            {published || !shape ? null : <AutomationsButton tableId={tableId} sample={sample} fields={fields} organizationId={(table.data as { organization_id?: string } | null)?.organization_id ?? null} />}
+            {!tool("automations") ? null : <AutomationsButton tableId={tableId} sample={sample} fields={fields} organizationId={(table.data as { organization_id?: string } | null)?.organization_id ?? null} />}
             {/* Notion's magnifier sits in this icon row and opens in place (records-ui's own box is hidden by spaces.css). */}
             {searchOpen[active.id] || search.value ? (
               <div className="spaces-db-search">
@@ -427,8 +439,8 @@ function DatabaseFrame({
               <Button variant="quiet" icon={<Search size={15} strokeWidth={1.8} />} aria-label="Search" title="Search" onClick={() => setSearchOpen((all) => ({ ...all, [active.id]: true }))} />
             )}
             <Button variant="quiet" icon={<Maximize2 size={15} strokeWidth={1.8} />} aria-label="Open as full page" title="Open as full page" onClick={() => setExpanded(true)} />
-            {shape ? <ViewSettings tableId={tableId} sample={sample} view={active} fields={fields} props={props} onView={saveView} onBlock={save} editable={shape} /> : null}
-            {published ? null : (
+            {tool("settings") ? <ViewSettings tableId={tableId} sample={sample} view={active} fields={fields} props={props} onView={saveView} onBlock={save} editable={shape} /> : null}
+            {!tool("new") ? null : (
               <NewButton
                 onNew={(pick) => addRow(pick)}
                 loadTemplates={loadTemplates}

@@ -34,6 +34,7 @@ import { collectionWriteHandlers } from "@ai-matrx/chat/surfaces/runtime/collect
 import { refuseSurfaceWrite } from "@ai-matrx/chat/surfaces/runtime/surface-writeback";
 import { parseCreateMindMaps, parseMindMapIds, parseUpdateMindMaps, trustAfterMindMapEdit } from "../mindMapWrites";
 import { MindMapEditor } from "./MindMapEditor";
+import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 
 /**
  * Read the stored diagram's size + node labels for the surface scope. Pure and
@@ -78,6 +79,8 @@ function readMapConfig(config: unknown): {
 export function MindMapDetail({ mediaId, edit = false }: { mediaId: string; edit?: boolean }) {
   const router = useRouter();
   const [media, setMedia] = useState<StudyMediaRow | null>(null);
+  // The open mind map, by id, on every guide turn (server-resolved `study_record` packet).
+  usePageGuidanceRecord(() => ({ id: mediaId, type: "study_media", title: media?.title ?? null }), { everyTurn: true });
   const [loading, setLoading] = useState(true);
   // The raw failure, never a sentence — the access gate decides what it means.
   const [loadError, setLoadError] = useState<unknown>(null);

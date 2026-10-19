@@ -10,13 +10,8 @@ import { cache } from "react";
 
 import { getScriptSupabaseClient } from "@/utils/supabase/getScriptClient";
 
-import { resolveRelativeDates, type TemplateSpec } from "@ai-matrx/records/templates";
-import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
-
-import type { ShowSpec } from "./TemplateShowcase";
-
-import type { GalleryCard } from "./catalogue";
 import { closedReason, platformFilter, readPublicCatalogueWith, type PublicRead } from "./publicGallery";
+import { shapeTemplatePage, type PublicTemplatePage } from "./templatePage";
 
 async function readOnce(): Promise<PublicRead> {
   const sb = getScriptSupabaseClient();
@@ -63,14 +58,7 @@ export const readPublicCatalogue = cache(async (): Promise<PublicRead> => {
   return read;
 });
 
-/** One template's public page: its card and its spec with every relative date resolved to today. */
-export interface PublicTemplatePage {
-  card: GalleryCard;
-  spec: ShowSpec;
-  /** A Space template's page pack (`spec.spacePack`): its page tree, drawn over the spec's sample rows. Null for a table template. */
-  pack: Omit<SpaceTemplatePack, "spec"> | null;
-  updatedAt: string | null;
-}
+export type { PublicTemplatePage } from "./templatePage";
 
 /**
  * THE PAGE READ (`public.template_public_page`): one published platform template by its readable
@@ -84,11 +72,5 @@ export const readTemplatePage = cache(async (key: string): Promise<PublicTemplat
     if (closedReason(error)) return null;
     throw new Error(`The template page could not be read: ${error.message ?? error.code ?? "unknown error"}`);
   }
-  const answer = data as { card: GalleryCard; spec: TemplateSpec; updated_at: string | null } | null;
-  if (!answer?.card) return null;
-  const today = new Date().toISOString().slice(0, 10);
-  const { spacePack, ...tables } = answer.spec as TemplateSpec & { spacePack?: Omit<SpaceTemplatePack, "spec"> };
-  const spec = resolveRelativeDates(tables as TemplateSpec, today) as unknown as ShowSpec;
-  const pack = spacePack?.pages?.length ? spacePack : null;
-  return { card: answer.card, spec, pack, updatedAt: answer.updated_at };
+  return shapeTemplatePage(data);
 });

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1558,
+  "routeCount": 1560,
   "routes": [
     {
       "pattern": "/",
@@ -1032,6 +1032,16 @@
       "pattern": "/administration/intelligence/mandates/window",
       "status": "live",
       "source": "app/(admin)/administration/intelligence/mandates/window/page.tsx"
+    },
+    {
+      "pattern": "/administration/intelligence/memory-lab",
+      "status": "live",
+      "source": "app/(admin)/administration/intelligence/memory-lab/page.tsx"
+    },
+    {
+      "pattern": "/administration/intelligence/memory-lab/[trialId]",
+      "status": "live",
+      "source": "app/(admin)/administration/intelligence/memory-lab/[trialId]/page.tsx"
     },
     {
       "pattern": "/administration/intelligence/system-processes",

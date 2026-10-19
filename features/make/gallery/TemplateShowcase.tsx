@@ -182,7 +182,7 @@ function Chip({ color, children }: { color?: string; children: ReactNode }) {
 }
 
 export function ValueText({ field, value, names }: { field: ShowField | undefined; value: unknown; names: Names }): ReactNode {
-  if (value === null || value === undefined || value === "") return <span className="text-muted-foreground/60">—</span>;
+  if (value === null || value === undefined || value === "") return "—";
   const type = field?.parityType ?? "text";
   if (type === "select" && typeof value === "string") return <Chip color={field?.choiceColors?.[value]}>{value}</Chip>;
   if (type === "multi_select" && Array.isArray(value)) {
@@ -198,9 +198,9 @@ export function ValueText({ field, value, names }: { field: ShowField | undefine
   }
   if (type === "relation" || type === "member") {
     const keys = Array.isArray(value) ? value : [value];
-    return <span>{keys.map((k) => names.get(String(k)) ?? String(k)).join(", ")}</span>;
+    return keys.map((k) => names.get(String(k)) ?? String(k)).join(", ");
   }
-  if (type === "checkbox") return <span>{value ? "Yes" : "No"}</span>;
+  if (type === "checkbox") return value ? "Yes" : "No";
   if (type === "currency" && typeof value === "number") return <span className="tabular-nums">{formatUsd(value, { digits: "whole" })}</span>;
   if (type === "percent" && typeof value === "number") return <span className="tabular-nums">{value}%</span>;
   if ((type === "number" || type === "integer" || type === "decimal") && typeof value === "number") {
@@ -208,9 +208,9 @@ export function ValueText({ field, value, names }: { field: ShowField | undefine
   }
   if (type === "datetime" && typeof value === "string") return <span className="tabular-nums">{dateText(value)}</span>;
   if (typeof value === "string" && DATE_ONLY.test(value)) return <span className="tabular-nums">{dateText(value)}</span>;
-  if (Array.isArray(value)) return <span>{value.map(String).join(", ")}</span>;
-  if (typeof value === "object") return <span className="text-muted-foreground/60">—</span>;
-  return <span>{String(value)}</span>;
+  if (Array.isArray(value)) return value.map(String).join(", ");
+  if (typeof value === "object") return "—";
+  return String(value);
 }
 
 const NOT_IN_GRID = new Set(["long_text", "attachment", "signature", "formula", "rollup", "lookup", "entity_reference"]);
@@ -268,13 +268,15 @@ function Frame({ title, meta, children, attr }: { title: string; meta?: string; 
 export function GridShow({ table, view, names, limit = 12 }: { table: ShowTable; view: ShowView | null; names: Names; limit?: number }) {
   const fields = gridFields(table);
   const rows = viewRows(table, view);
+  // The cell styling lives once on the table (GALLERY-PERF: a template page draws dozens of these grids, and every
+  // element ships twice — the HTML and the RSC payload).
   return (
     <div className="overflow-x-auto" data-template-show="grid">
-      <table className="w-full min-w-[36rem] border-collapse text-left type-secondary">
+      <table className={GRID_TABLE}>
         <thead className="bg-muted/50 text-muted-foreground">
           <tr>
             {fields.map((f) => (
-              <th key={f.key} scope="col" className="whitespace-nowrap border-b border-border px-3 py-2 font-medium">
+              <th key={f.key} scope="col">
                 {f.label}
               </th>
             ))}
@@ -282,9 +284,9 @@ export function GridShow({ table, view, names, limit = 12 }: { table: ShowTable;
         </thead>
         <tbody>
           {rows.slice(0, limit).map((r) => (
-            <tr key={r.key} className="border-b border-border/60 last:border-0">
-              {fields.map((f, i) => (
-                <td key={f.key} className={cn("max-w-[16rem] truncate px-3 py-1.5", i === 0 && "font-medium text-foreground")}>
+            <tr key={r.key}>
+              {fields.map((f) => (
+                <td key={f.key}>
                   <ValueText field={f} value={r.values[f.key]} names={names} />
                 </td>
               ))}
@@ -296,6 +298,12 @@ export function GridShow({ table, view, names, limit = 12 }: { table: ShowTable;
     </div>
   );
 }
+
+const GRID_TABLE =
+  "w-full min-w-[36rem] border-collapse text-left type-secondary " +
+  "[&_th]:whitespace-nowrap [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:font-medium " +
+  "[&_tbody_tr]:border-b [&_tbody_tr]:border-border [&_tbody_tr:last-child]:border-0 " +
+  "[&_td]:max-w-[16rem] [&_td]:truncate [&_td]:px-3 [&_td]:py-1.5 [&_td:first-child]:font-medium [&_td:first-child]:text-foreground";
 
 function cardFields(table: ShowTable, skip: Array<string | undefined>): ShowField[] {
   return gridFields(table, 10)
@@ -549,12 +557,18 @@ export function TemplateShowcase({ spec, today }: { spec: ShowSpec; today: strin
   );
 }
 
-/** A gallery card's live thumbnail: the main table's first rows as a tiny grid. */
+/**
+ * A gallery card's live thumbnail: the main table's first rows as a tiny grid.
+ *
+ * GALLERY-PERF (2026-10-19): a gallery page draws dozens of these and every element is shipped twice (the HTML and
+ * the RSC payload), so the cell styling lives ONCE on the frame (`[&_td]:…`, `[&_b]:…`) and each cell is bare text
+ * or one `<b>` chip — a quarter of the bytes of the full grid cells (ValueText). The guard is
+ * features/make/__tests__/gallery-pages-stay-light.test.tsx.
+ */
 export function TemplateThumb({ thumb }: { thumb: GalleryThumb | null | undefined }) {
   if (!thumb || !thumb.columns.length) return null;
-  const names: Names = new Map();
   return (
-    <div className="pointer-events-none overflow-hidden rounded-md border border-border bg-background" aria-hidden="true" data-template-thumb="">
+    <div className={THUMB_FRAME} aria-hidden="true" data-template-thumb="">
       <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/50 px-2 py-1">
         <span className="truncate type-meta font-medium text-foreground">{thumb.table}</span>
         {thumb.view ? <span className="shrink-0 type-meta text-muted-foreground">{VIEW_WORD[thumb.view] ?? thumb.view}</span> : null}
@@ -562,14 +576,10 @@ export function TemplateThumb({ thumb }: { thumb: GalleryThumb | null | undefine
       <table className="w-full table-fixed type-meta">
         <tbody>
           {thumb.rows.map((r, i) => (
-            <tr key={i} className="border-b border-border/50 last:border-0">
-              {thumb.columns.map((c, j) => (
-                <td key={c.key} className={cn("truncate px-2 py-0.5", j === 0 ? "w-1/2 text-foreground" : "text-muted-foreground")}>
-                  <ValueText
-                    field={{ key: c.key, label: c.label, parityType: c.type, choiceColors: c.colors ?? undefined }}
-                    value={typeof r[c.key] === "string" && String(r[c.key]).startsWith("@") ? null : r[c.key]}
-                    names={names}
-                  />
+            <tr key={i}>
+              {thumb.columns.map((c) => (
+                <td key={c.key}>
+                  <ThumbValue type={c.type} colors={c.colors} value={typeof r[c.key] === "string" && String(r[c.key]).startsWith("@") ? null : r[c.key]} />
                 </td>
               ))}
             </tr>
@@ -578,6 +588,29 @@ export function TemplateThumb({ thumb }: { thumb: GalleryThumb | null | undefine
       </table>
     </div>
   );
+}
+
+const THUMB_FRAME =
+  "pointer-events-none overflow-hidden rounded-md border border-border bg-background [&_tr]:border-b [&_tr]:border-border [&_tr:last-child]:border-0 " +
+  "[&_td]:truncate [&_td]:px-2 [&_td]:py-0.5 [&_td]:text-muted-foreground [&_td:first-child]:w-1/2 [&_td:first-child]:text-foreground " +
+  "[&_b]:inline-flex [&_b]:max-w-full [&_b]:truncate [&_b]:rounded [&_b]:px-1.5 [&_b]:py-0.5 [&_b]:font-medium";
+
+/** One thumbnail cell: a chip for a choice, else the value as text (the same words ValueText writes). */
+function ThumbValue({ type, colors, value }: { type: string; colors: Record<string, string> | null; value: unknown }): ReactNode {
+  if (value === null || value === undefined || value === "") return "—";
+  const first = Array.isArray(value) ? value[0] : value;
+  if ((type === "select" || type === "multi_select") && (typeof first === "string" || typeof first === "number")) {
+    return <b className={CHIP[colors?.[String(first)] ?? "gray"] ?? CHIP.gray}>{String(first)}</b>;
+  }
+  if (type === "relation" || type === "member") return null;
+  if (type === "checkbox") return value ? "Yes" : "No";
+  if (type === "currency" && typeof value === "number") return formatUsd(value, { digits: "whole" });
+  if (type === "percent" && typeof value === "number") return `${value}%`;
+  if (typeof value === "number") return value.toLocaleString("en-US");
+  if (typeof value === "string" && (type === "datetime" || DATE_ONLY.test(value))) return dateText(value);
+  if (Array.isArray(value)) return value.map(String).join(", ");
+  if (typeof value === "object") return "—";
+  return String(value);
 }
 
 const VIEW_WORD: Record<string, string> = { kanban: "Board", calendar: "Calendar", timeline: "Timeline", gallery: "Gallery" };

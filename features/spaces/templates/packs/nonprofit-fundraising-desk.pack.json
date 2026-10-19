@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0550",
-  "version": 1,
+  "version": 2,
   "title": "Nonprofit Fundraising Desk",
-  "description": "Donors, gifts, pledges, campaigns and stewardship follow-ups in one place.",
+  "description": "Donor CRM for nonprofits: gifts, pledges, monthly donors, campaigns and thank-you letters.",
   "forWho": "Small and mid-size nonprofits with a development team",
   "icon": {
     "emoji": "💛"
@@ -14,10 +14,11 @@
   },
   "category": "nonprofit",
   "tags": [
+    "development director",
+    "fundraiser",
+    "executive director",
     "donors",
-    "fundraising",
-    "gifts",
-    "campaigns",
+    "pledges",
     "nonprofit"
   ],
   "spec": {
@@ -103,6 +104,46 @@
             "contextPolicy": "include"
           },
           {
+            "key": "recurring",
+            "label": "Recurring gift",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Not recurring",
+              "Monthly",
+              "Quarterly",
+              "Paused",
+              "Card declined"
+            ],
+            "choiceColors": {
+              "Not recurring": "slate",
+              "Monthly": "green",
+              "Quarterly": "teal",
+              "Paused": "amber",
+              "Card declined": "red"
+            }
+          },
+          {
+            "key": "recurring_amount",
+            "label": "Recurring amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
             "key": "stage",
             "label": "Stage",
             "parityType": "status",
@@ -145,6 +186,25 @@
             "parityType": "phone",
             "sensitivity": "confidential",
             "contextPolicy": "include"
+          },
+          {
+            "key": "comms",
+            "label": "Prefers",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Mail",
+              "Email",
+              "Phone",
+              "No solicitations"
+            ],
+            "choiceColors": {
+              "Mail": "slate",
+              "Email": "blue",
+              "Phone": "violet",
+              "No solicitations": "red"
+            }
           },
           {
             "key": "first_gift_on",
@@ -208,6 +268,22 @@
             "contextPolicy": "include",
             "filter": {
               "status": "Pledged"
+            }
+          },
+          {
+            "key": "committed",
+            "label": "Given and pledged (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Pledged",
+                "Received"
+              ]
             }
           },
           {
@@ -404,7 +480,9 @@
               "first_gift_on": "@today-4y",
               "next_touch": "@today+3d",
               "steward": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Not recurring",
+              "comms": "Mail"
             }
           },
           {
@@ -417,7 +495,9 @@
               "phone": "(253) 555-0102",
               "first_gift_on": "@today-3y",
               "next_touch": "@today+5d",
-              "steward": "tm-2"
+              "steward": "tm-2",
+              "recurring": "Not recurring",
+              "comms": "Phone"
             }
           },
           {
@@ -431,7 +511,10 @@
               "first_gift_on": "@today-2y",
               "next_touch": "@today",
               "steward": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Monthly",
+              "comms": "Email",
+              "recurring_amount": 50
             }
           },
           {
@@ -444,7 +527,10 @@
               "phone": "(253) 555-0104",
               "first_gift_on": "@today-200d",
               "next_touch": "@today-6d",
-              "steward": "tm-1"
+              "steward": "tm-1",
+              "recurring": "Monthly",
+              "comms": "Email",
+              "recurring_amount": 20
             }
           },
           {
@@ -458,7 +544,9 @@
               "first_gift_on": "@today-5y",
               "next_touch": "@today+12d",
               "steward": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Not recurring",
+              "comms": "Mail"
             }
           },
           {
@@ -469,7 +557,9 @@
               "stage": "Prospect",
               "phone": "(253) 555-0106",
               "next_touch": "@today+2d",
-              "steward": "tm-2"
+              "steward": "tm-2",
+              "recurring": "Not recurring",
+              "comms": "Phone"
             }
           },
           {
@@ -483,7 +573,10 @@
               "first_gift_on": "@today-6y",
               "next_touch": "@today+20d",
               "steward": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Quarterly",
+              "comms": "Mail",
+              "recurring_amount": 1000
             }
           },
           {
@@ -496,7 +589,9 @@
               "phone": "(253) 555-0108",
               "first_gift_on": "@today-300d",
               "next_touch": "@today+1d",
-              "steward": "tm-5"
+              "steward": "tm-5",
+              "recurring": "Not recurring",
+              "comms": "Mail"
             }
           },
           {
@@ -510,7 +605,10 @@
               "first_gift_on": "@today-7y",
               "next_touch": "@today-20d",
               "steward": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Paused",
+              "comms": "Phone",
+              "recurring_amount": 40
             }
           },
           {
@@ -523,7 +621,10 @@
               "phone": "(253) 555-0110",
               "first_gift_on": "@today-18m",
               "next_touch": "@today+9d",
-              "steward": "tm-1"
+              "steward": "tm-1",
+              "recurring": "Monthly",
+              "comms": "Email",
+              "recurring_amount": 100
             }
           },
           {
@@ -537,7 +638,9 @@
               "first_gift_on": "@today-100d",
               "next_touch": "@today+4d",
               "steward": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Not recurring",
+              "comms": "Email"
             }
           },
           {
@@ -547,7 +650,9 @@
               "kind": "Individual",
               "stage": "Declined",
               "phone": "(253) 555-0112",
-              "steward": "tm-2"
+              "steward": "tm-2",
+              "recurring": "Not recurring",
+              "comms": "No solicitations"
             }
           },
           {
@@ -561,7 +666,10 @@
               "first_gift_on": "@today-9m",
               "next_touch": "@today-2d",
               "steward": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "recurring": "Card declined",
+              "comms": "Email",
+              "recurring_amount": 25
             }
           },
           {
@@ -573,7 +681,9 @@
               "email": "owner@pier9coffee.net",
               "phone": "(253) 555-0114",
               "next_touch": "@today+6d",
-              "steward": "tm-4"
+              "steward": "tm-4",
+              "recurring": "Not recurring",
+              "comms": "Email"
             }
           }
         ]
@@ -723,6 +833,35 @@
             "contextPolicy": "include",
             "filter": {
               "status": "Pledged"
+            }
+          },
+          {
+            "key": "committed",
+            "label": "Given and pledged (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "campaign_gifts",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Pledged",
+                "Received"
+              ]
+            }
+          },
+          {
+            "key": "open_pledges",
+            "label": "Open pledges",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "campaign_pledges",
+            "pick": "pledge_name",
+            "agg": "count",
+            "filter": {
+              "status": "Open"
             }
           },
           {
@@ -987,7 +1126,8 @@
         "subject": "thing",
         "independentOf": {
           "donor": "Either record can be created or change status before the other.",
-          "campaign": "Either record can be created or change status before the other."
+          "campaign": "Either record can be created or change status before the other.",
+          "pledge": "Either record can be created or change status before the other."
         },
         "statusImplies": [
           {
@@ -1004,6 +1144,10 @@
           [
             "due_on",
             "received_on"
+          ],
+          [
+            "received_on",
+            "ack_on"
           ]
         ],
         "fields": [
@@ -1034,6 +1178,15 @@
             "contextPolicy": "include"
           },
           {
+            "key": "pledge",
+            "label": "Pays toward pledge",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "pledge",
+            "relationMax": 1
+          },
+          {
             "key": "amount",
             "label": "Amount (USD)",
             "parityType": "currency",
@@ -1051,6 +1204,29 @@
               }
             ],
             "contextPolicy": "include"
+          },
+          {
+            "key": "gift_type",
+            "label": "Gift type",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "One-time",
+              "Recurring",
+              "Pledge payment",
+              "Matching gift",
+              "Tribute",
+              "In-kind"
+            ],
+            "choiceColors": {
+              "One-time": "blue",
+              "Recurring": "green",
+              "Pledge payment": "violet",
+              "Matching gift": "teal",
+              "Tribute": "pink",
+              "In-kind": "orange"
+            }
           },
           {
             "key": "status",
@@ -1116,11 +1292,47 @@
             "contextPolicy": "include"
           },
           {
+            "key": "tribute",
+            "label": "In honor or memory of",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "thanked",
             "label": "Thank-you sent",
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "ack_letter",
+            "label": "Acknowledgment",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Standard thank-you letter",
+              "Personal note from the director",
+              "Tribute card to the family",
+              "Year-end tax receipt",
+              "No letter (asked to stay anonymous)"
+            ],
+            "choiceColors": {
+              "Standard thank-you letter": "blue",
+              "Personal note from the director": "violet",
+              "Tribute card to the family": "pink",
+              "Year-end tax receipt": "slate",
+              "No letter (asked to stay anonymous)": "amber"
+            }
+          },
+          {
+            "key": "ack_on",
+            "label": "Letter sent on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
           },
           {
             "key": "btn_received",
@@ -1260,7 +1472,10 @@
               "received_on": "@today-12d",
               "method": "Check",
               "thanked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "One-time",
+              "ack_letter": "Personal note from the director",
+              "ack_on": "@today-10d"
             }
           },
           {
@@ -1273,7 +1488,9 @@
               "status": "Pledged",
               "due_on": "@today+2d",
               "method": "Bank transfer",
-              "thanked": false
+              "thanked": false,
+              "gift_type": "Pledge payment",
+              "pledge": "pledge-1"
             }
           },
           {
@@ -1287,7 +1504,10 @@
               "received_on": "@today-3d",
               "method": "Card",
               "thanked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "Recurring",
+              "ack_letter": "Standard thank-you letter",
+              "ack_on": "@today-2d"
             }
           },
           {
@@ -1299,7 +1519,9 @@
               "amount": 3000,
               "status": "Pledged",
               "due_on": "@today",
-              "thanked": false
+              "thanked": false,
+              "gift_type": "Pledge payment",
+              "pledge": "pledge-4"
             }
           },
           {
@@ -1313,7 +1535,10 @@
               "received_on": "@today-20d",
               "method": "Check",
               "thanked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "One-time",
+              "ack_letter": "Personal note from the director",
+              "ack_on": "@today-17d"
             }
           },
           {
@@ -1326,7 +1551,10 @@
               "status": "Received",
               "received_on": "@today-5d",
               "method": "Card",
-              "thanked": true
+              "thanked": true,
+              "gift_type": "Recurring",
+              "ack_letter": "Standard thank-you letter",
+              "ack_on": "@today-4d"
             }
           },
           {
@@ -1340,7 +1568,11 @@
               "received_on": "@today-150d",
               "method": "Check",
               "thanked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "Tribute",
+              "ack_letter": "Tribute card to the family",
+              "ack_on": "@today-146d",
+              "tribute": "In memory of Arlene Prewitt"
             }
           },
           {
@@ -1353,7 +1585,9 @@
               "status": "Pledged",
               "due_on": "@today-4d",
               "method": "Bank transfer",
-              "thanked": false
+              "thanked": false,
+              "gift_type": "Pledge payment",
+              "pledge": "pledge-2"
             }
           },
           {
@@ -1367,7 +1601,9 @@
               "received_on": "@today-9d",
               "method": "Online",
               "thanked": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "One-time",
+              "ack_letter": "Standard thank-you letter"
             }
           },
           {
@@ -1380,7 +1616,9 @@
               "status": "Pledged",
               "due_on": "@today+5d",
               "method": "Bank transfer",
-              "thanked": false
+              "thanked": false,
+              "gift_type": "Matching gift",
+              "pledge": "pledge-3"
             }
           },
           {
@@ -1394,7 +1632,10 @@
               "received_on": "@today-100d",
               "method": "Check",
               "thanked": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "One-time",
+              "ack_letter": "Standard thank-you letter",
+              "ack_on": "@today-97d"
             }
           },
           {
@@ -1407,7 +1648,10 @@
               "status": "Received",
               "received_on": "@today-270d",
               "method": "Card",
-              "thanked": true
+              "thanked": true,
+              "gift_type": "One-time",
+              "ack_letter": "Year-end tax receipt",
+              "ack_on": "@today-265d"
             }
           },
           {
@@ -1421,7 +1665,9 @@
               "received_on": "@today-1d",
               "method": "Online",
               "thanked": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "gift_type": "One-time",
+              "ack_letter": "Standard thank-you letter"
             }
           },
           {
@@ -1434,7 +1680,8 @@
               "status": "Written off",
               "due_on": "@today-90d",
               "method": "Check",
-              "thanked": false
+              "thanked": false,
+              "gift_type": "One-time"
             }
           },
           {
@@ -1448,7 +1695,94 @@
               "due_on": "@today+6d",
               "method": "Card",
               "thanked": false,
+              "owner_me": "@installer",
+              "gift_type": "Pledge payment",
+              "pledge": "pledge-5"
+            }
+          },
+          {
+            "key": "gift-16",
+            "values": {
+              "gift_name": "Roof fund pledge payment 1, Lindqvist",
+              "donor": "donor-2",
+              "campaign": "campaign-4",
+              "pledge": "pledge-1",
+              "amount": 2500,
+              "gift_type": "Pledge payment",
+              "status": "Received",
+              "due_on": "@today-95d",
+              "received_on": "@today-92d",
+              "method": "Bank transfer",
+              "thanked": true,
+              "ack_letter": "Standard thank-you letter",
+              "ack_on": "@today-90d"
+            }
+          },
+          {
+            "key": "gift-17",
+            "values": {
+              "gift_name": "Roof fund pledge payment 1, Nakashima",
+              "donor": "donor-8",
+              "campaign": "campaign-4",
+              "pledge": "pledge-2",
+              "amount": 12500,
+              "gift_type": "Pledge payment",
+              "status": "Received",
+              "due_on": "@today-300d",
+              "received_on": "@today-298d",
+              "method": "Bank transfer",
+              "thanked": true,
+              "ack_letter": "Personal note from the director",
+              "ack_on": "@today-295d"
+            }
+          },
+          {
+            "key": "gift-18",
+            "values": {
+              "gift_name": "Pier 9 roof pledge, October payment",
+              "donor": "donor-14",
+              "campaign": "campaign-4",
+              "pledge": "pledge-5",
+              "amount": 100,
+              "gift_type": "Pledge payment",
+              "status": "Received",
+              "due_on": "@today-30d",
+              "received_on": "@today-29d",
+              "method": "Card",
+              "thanked": false,
+              "ack_letter": "Year-end tax receipt"
+            }
+          },
+          {
+            "key": "gift-19",
+            "values": {
+              "gift_name": "Matching gift from Sunita's employer",
+              "donor": "donor-10",
+              "campaign": "campaign-5",
+              "amount": 600,
+              "gift_type": "Matching gift",
+              "status": "Received",
+              "received_on": "@today-6d",
+              "method": "Bank transfer",
+              "thanked": false,
+              "ack_letter": "Standard thank-you letter",
               "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "gift-20",
+            "values": {
+              "gift_name": "Gift in honor of Coach Ruiz",
+              "donor": "donor-6",
+              "campaign": "campaign-7",
+              "amount": 300,
+              "gift_type": "Tribute",
+              "status": "Received",
+              "received_on": "@today-2d",
+              "method": "Online",
+              "thanked": false,
+              "tribute": "In honor of Coach Emilio Ruiz",
+              "ack_letter": "Tribute card to the family"
             }
           }
         ]
@@ -1761,6 +2095,420 @@
             }
           }
         ]
+      },
+      {
+        "token": "pledge",
+        "name": "Pledges",
+        "labelSingular": "Pledge",
+        "labelPlural": "Pledges",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "pledge_name",
+        "describes": "Promises to give over time, with the schedule, what has been paid and what is still owed.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid in full"
+            ],
+            "filled": [
+              "paid_off_on"
+            ]
+          }
+        ],
+        "rowTemplates": [
+          {
+            "name": "New pledge",
+            "values": {
+              "pledge_name": "New pledge",
+              "status": "Open",
+              "schedule": "Monthly"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Pledge agreement"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Signed pledge card or letter saved to the donor's file"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Schedule and first due date agreed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Reminder plan agreed (letter, email or call a week before each payment)"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Who asked, what the gift will fund, and anything the donor asked us to remember."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "donor": "Either record can be created or change status before the other.",
+          "campaign": "Either record can be created or change status before the other."
+        },
+        "before": [
+          [
+            "pledged_on",
+            "next_due"
+          ],
+          [
+            "pledged_on",
+            "paid_off_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "pledge_name",
+            "label": "Pledge",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "donor",
+            "label": "Donor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "donor",
+            "relationMax": 1
+          },
+          {
+            "key": "campaign",
+            "label": "Campaign",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "campaign",
+            "relationMax": 1
+          },
+          {
+            "key": "total",
+            "label": "Total pledged (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ]
+          },
+          {
+            "key": "schedule",
+            "label": "Payment schedule",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Single payment",
+              "Monthly",
+              "Quarterly",
+              "Yearly"
+            ],
+            "choiceColors": {
+              "Single payment": "slate",
+              "Monthly": "green",
+              "Quarterly": "teal",
+              "Yearly": "violet"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Open",
+              "Paid in full",
+              "Written off"
+            ],
+            "choiceColors": {
+              "Open": "blue",
+              "Paid in full": "green",
+              "Written off": "red"
+            },
+            "required": true,
+            "statusGroups": {
+              "Open": "in_progress",
+              "Paid in full": "done",
+              "Written off": "done"
+            }
+          },
+          {
+            "key": "pledged_on",
+            "label": "Pledged on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_due",
+            "label": "Next payment due",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_off_on",
+            "label": "Paid in full on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid",
+            "label": "Paid so far (USD)",
+            "parityType": "rollup",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "via": "payments",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": "Received"
+            }
+          },
+          {
+            "key": "balance",
+            "label": "Still owed (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Status} = \"Open\", MAX(0, {Total pledged (USD)} - {Paid so far (USD)}), 0)"
+          },
+          {
+            "key": "btn_paid",
+            "label": "Mark paid in full",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pledge_paid"
+            }
+          },
+          {
+            "key": "add_payment",
+            "label": "Record a payment",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "add_row",
+              "table": "gift",
+              "template": "New gift",
+              "prefill": {
+                "pledge": "@row"
+              }
+            }
+          },
+          {
+            "key": "btn_claim",
+            "label": "Assign to me",
+            "parityType": "button",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "button": {
+              "do": "run_action",
+              "action": "pledge_claim"
+            }
+          },
+          {
+            "key": "owner_me",
+            "label": "Assigned to",
+            "parityType": "member",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "pledge-1",
+            "values": {
+              "pledge_name": "Lindqvist Hardware roof fund pledge",
+              "donor": "donor-2",
+              "campaign": "campaign-4",
+              "total": 10000,
+              "schedule": "Quarterly",
+              "status": "Open",
+              "pledged_on": "@today-100d",
+              "next_due": "@today+2d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pledge-2",
+            "values": {
+              "pledge_name": "Nakashima Foundation roof grant pledge",
+              "donor": "donor-8",
+              "campaign": "campaign-4",
+              "total": 25000,
+              "schedule": "Yearly",
+              "status": "Open",
+              "pledged_on": "@today-310d",
+              "next_due": "@today-4d"
+            }
+          },
+          {
+            "key": "pledge-3",
+            "values": {
+              "pledge_name": "Brightwater Giving Tuesday match",
+              "donor": "donor-11",
+              "campaign": "campaign-3",
+              "total": 5000,
+              "schedule": "Single payment",
+              "status": "Open",
+              "pledged_on": "@today-20d",
+              "next_due": "@today+5d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pledge-4",
+            "values": {
+              "pledge_name": "Westshore Rotary spring appeal pledge",
+              "donor": "donor-5",
+              "campaign": "campaign-1",
+              "total": 3000,
+              "schedule": "Single payment",
+              "status": "Open",
+              "pledged_on": "@today-40d",
+              "next_due": "@today"
+            }
+          },
+          {
+            "key": "pledge-5",
+            "values": {
+              "pledge_name": "Pier 9 Coffee monthly roof pledge",
+              "donor": "donor-14",
+              "campaign": "campaign-4",
+              "total": 1200,
+              "schedule": "Monthly",
+              "status": "Open",
+              "pledged_on": "@today-60d",
+              "next_due": "@today+6d",
+              "owner_me": "@installer"
+            }
+          },
+          {
+            "key": "pledge-6",
+            "values": {
+              "pledge_name": "Ostrander Family Fund scholarship pledge",
+              "donor": "donor-1",
+              "campaign": "campaign-7",
+              "total": 6000,
+              "schedule": "Yearly",
+              "status": "Paid in full",
+              "pledged_on": "@today-3y",
+              "next_due": "@today-60d",
+              "paid_off_on": "@today-60d"
+            }
+          },
+          {
+            "key": "pledge-7",
+            "values": {
+              "pledge_name": "Prewitt family youth center pledge",
+              "donor": "donor-9",
+              "campaign": "campaign-6",
+              "total": 1500,
+              "schedule": "Quarterly",
+              "status": "Written off",
+              "pledged_on": "@today-2y",
+              "next_due": "@today-200d"
+            }
+          },
+          {
+            "key": "pledge-8",
+            "values": {
+              "pledge_name": "Evergreen Fellowship summer camp pledge",
+              "donor": "donor-7",
+              "campaign": "campaign-7",
+              "total": 2400,
+              "schedule": "Monthly",
+              "status": "Open",
+              "pledged_on": "@today-150d",
+              "next_due": "@today-2d",
+              "owner_me": "@installer"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1813,6 +2561,36 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "tasks"
+      },
+      {
+        "describes": "Each pledge is made by one donor.",
+        "fromTable": "pledge",
+        "fromField": "donor",
+        "toTable": "donor",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "pledges"
+      },
+      {
+        "describes": "Each pledge counts toward one campaign.",
+        "fromTable": "pledge",
+        "fromField": "campaign",
+        "toTable": "campaign",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "campaign_pledges"
+      },
+      {
+        "describes": "A gift can be a payment toward one pledge.",
+        "fromTable": "gift",
+        "fromField": "pledge",
+        "toTable": "pledge",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "payments"
       }
     ],
     "sharedBlocks": [
@@ -2009,20 +2787,6 @@
       },
       {
         "kind": "row_action",
-        "token": "gift_thanked",
-        "table": "gift",
-        "name": "Mark thanked",
-        "actionKind": "update",
-        "steps": [
-          {
-            "field": "thanked",
-            "set": "value",
-            "value": true
-          }
-        ]
-      },
-      {
-        "kind": "row_action",
         "token": "gift_claim",
         "table": "gift",
         "name": "Assign to me",
@@ -2053,6 +2817,58 @@
         "kind": "row_action",
         "token": "task_claim",
         "table": "task",
+        "name": "Assign to me",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "owner_me",
+            "set": "value",
+            "value": "@me"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "gift_thanked",
+        "table": "gift",
+        "name": "Mark thanked",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "thanked",
+            "set": "value",
+            "value": true
+          },
+          {
+            "field": "ack_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pledge_paid",
+        "table": "pledge",
+        "name": "Mark paid in full",
+        "actionKind": "update",
+        "steps": [
+          {
+            "field": "status",
+            "set": "value",
+            "value": "Paid in full"
+          },
+          {
+            "field": "paid_off_on",
+            "set": "value",
+            "value": "@today"
+          }
+        ]
+      },
+      {
+        "kind": "row_action",
+        "token": "pledge_claim",
+        "table": "pledge",
         "name": "Assign to me",
         "actionKind": "update",
         "steps": [
@@ -2381,6 +3197,80 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_pledge",
+        "name": "All pledges",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_board",
+        "name": "By status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "next_due",
+        "allDay": true,
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_over",
+        "name": "Overdue",
+        "kind": "grid",
+        "within": {
+          "next_due": {
+            "relative": "before_today"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        },
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_week",
+        "name": "This week",
+        "kind": "grid",
+        "within": {
+          "next_due": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "status": "Open"
+        },
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_next7",
+        "name": "Next 7 days",
+        "kind": "grid",
+        "within": {
+          "next_due": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "filters": {
+          "status": "Open"
+        },
+        "table": "pledge"
+      },
+      {
+        "token": "pledge_mine",
+        "name": "My pledges",
+        "kind": "grid",
+        "me": [
+          "owner_me"
+        ],
+        "table": "pledge"
       }
     ],
     "agent": {
@@ -2453,6 +3343,18 @@
           "surface": "gift_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open pledges.",
+        "action": {
+          "kind": "open",
+          "surface": "pledge_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "pledge_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2469,7 +3371,7 @@
         "Larkspur Lane"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2491,12 +3393,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Everything the development team runs on: donors and their giving, gifts and pledges, campaigns against goal and the thank-you calls that keep people giving. Start with the Dashboard each Monday, then work the Overdue and Mine views. Record every gift the day it arrives, and mark the thank-you done the same week."
+              "text": "Your development office in one place. Record every gift the day it arrives, send the thank-you within two days, and keep pledges paid on schedule. Donors holds the relationship, Gifts the money, Pledges the promises, Campaigns the goals, and Follow-ups the next touch. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -3017,6 +3925,362 @@
             ],
             "activeViewId": "tas-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pledges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Promises to give over time. Open pledges show what is still owed and when the next payment is due."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pledge",
+              "view": "pledge_board"
+            },
+            "inline": true,
+            "title": "Pledges",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pl-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pl-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "next_due"
+              },
+              {
+                "id": "pl-t",
+                "name": "All pledges",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "pl-o",
+                "name": "Overdue",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "pl-w",
+                "name": "This week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "next_due": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "pl-n",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_due": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "pl-m",
+                "name": "Mine",
+                "layout": "list",
+                "icon": "User",
+                "me": [
+                  "owner_me"
+                ]
+              }
+            ],
+            "activeViewId": "pl-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "nonprofit-fundraising-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the development office in this workspace. Share it with the executive director, the gift officers, whoever processes gifts and the events coordinator."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Donors",
+              "bold": true
+            },
+            {
+              "text": ": every individual, family, business, foundation and faith group, with their steward, giving level, recurring gift, how they like to be contacted and the next planned touch."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gifts",
+              "bold": true
+            },
+            {
+              "text": ": every gift and pledge payment, with method, campaign, gift type, tribute and the thank-you letter that went out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pledges",
+              "bold": true
+            },
+            {
+              "text": ": promises to give over time, with the payment schedule, what has been paid and what is still owed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Campaigns",
+              "bold": true
+            },
+            {
+              "text": ": each appeal, gala, giving day or capital project, with its goal and progress."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Follow-ups",
+              "bold": true
+            },
+            {
+              "text": ": thank-you calls, visits, updates and asks, each with a due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week in development"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Gifts are recorded the day they arrive and thanked within two days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pledge payments due this week get a friendly reminder."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Stewards work their follow-ups: calls, visits and updates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On Friday the director reviews the Dashboard: received, pledged, unthanked gifts and campaign progress."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Gifts waiting for a thank-you"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: follow-ups due this week and pledge payments due"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: recurring gifts with a declined card, lapsed donors to win back"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every January: year-end receipts for every donor who gave last year"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Giving amounts and contact details are marked confidential. Share the workspace with staff and board members who need it, and never export a donor list for anyone outside the office."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The director of development owns campaign goals and the major-gift list. Gift officers steward their own donors and keep follow-ups current. The person who processes gifts records, matches and thanks. The events coordinator logs every guest who gives at an event as a donor, so nobody is thanked twice or missed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename campaigns, gift types and acknowledgment letters to match your organization, then delete the sample rows once your own are in. Any cell can be edited in place, cards drag between columns, and every total updates on its own."
+            }
+          ]
         }
       ]
     },
@@ -3415,6 +4679,154 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pledge payments due"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "pledge",
+              "view": "pledge_next7"
+            },
+            "inline": true,
+            "title": "Pledge payments due",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dp-1",
+                "name": "Due in the next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_due": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              },
+              {
+                "id": "dp-2",
+                "name": "Past due",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "within": {
+                  "next_due": {
+                    "relative": "before_today"
+                  }
+                },
+                "filters": {
+                  "status": "Open"
+                }
+              }
+            ],
+            "activeViewId": "dp-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gifts waiting for a thank-you"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "gift",
+              "view": "all_gift"
+            },
+            "inline": true,
+            "title": "Gifts waiting for a thank-you",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dg-1",
+                "name": "Not yet thanked",
+                "layout": "list",
+                "icon": "Mail",
+                "filters": {
+                  "status": "Received",
+                  "thanked": false
+                }
+              }
+            ],
+            "activeViewId": "dg-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recurring donors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "donor",
+              "view": "all_donor"
+            },
+            "inline": true,
+            "title": "Recurring donors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dd-1",
+                "name": "Recurring",
+                "layout": "list",
+                "icon": "Repeat",
+                "anyOf": {
+                  "recurring": [
+                    "Monthly",
+                    "Quarterly",
+                    "Card declined"
+                  ]
+                }
+              },
+              {
+                "id": "dd-2",
+                "name": "By recurring status",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "recurring",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "dd-1"
+          }
         }
       ]
     },
@@ -3433,7 +4845,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A gift is not finished until it is recorded, receipted and thanked. This routine keeps all three inside one week."
+              "text": "A gift is processed the same day it arrives and thanked within 48 hours. Donors who are thanked quickly give again far more often than donors who wait two weeks for a letter."
             }
           ],
           "background": "blue",
@@ -3445,7 +4857,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The same day a gift arrives"
+              "text": "Every gift, the same five steps"
             }
           ],
           "props": {
@@ -3456,7 +4868,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the Gifts table and add a row. Name it with the campaign and donor, and fill in amount, method and date."
+              "text": "Record it.",
+              "bold": true
+            },
+            {
+              "text": " Open the donor (or add them), then add the gift: amount, method, campaign, and the gift type. A check gets its check number in the notes; a card or online gift gets the processor's receipt number."
             }
           ]
         },
@@ -3464,7 +4880,39 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Link the gift to the donor and the campaign it counts toward. If the donor is new, add them first from the intake form."
+              "text": "Match it.",
+              "bold": true
+            },
+            {
+              "text": " If the gift pays toward a promise, link it to the pledge in "
+            },
+            {
+              "text": "Pays toward pledge",
+              "bold": true
+            },
+            {
+              "text": ". The pledge's "
+            },
+            {
+              "text": "Paid so far",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Still owed",
+              "bold": true
+            },
+            {
+              "text": " update by themselves. If an employer will match it, add a second gift of type "
+            },
+            {
+              "text": "Matching gift",
+              "bold": true
+            },
+            {
+              "text": " when the match arrives."
             }
           ]
         },
@@ -3472,7 +4920,18 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set Status to Received. A pledge stays Pledged until the money is actually in hand."
+              "text": "Mark it received.",
+              "bold": true
+            },
+            {
+              "text": " Press "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": ". The received date is stamped and the donor's lifetime total moves."
             }
           ]
         },
@@ -3480,7 +4939,37 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Deposit checks within two working days and note any restriction the donor wrote on the check or card."
+              "text": "Choose the letter.",
+              "bold": true
+            },
+            {
+              "text": " Pick the "
+            },
+            {
+              "text": "Acknowledgment",
+              "bold": true
+            },
+            {
+              "text": ": a standard letter for most gifts, a personal note from the director above your major-gift line, a tribute card when someone gave in honor or memory of another person, or no letter when the donor asked to stay anonymous."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send it and press Mark thanked.",
+              "bold": true
+            },
+            {
+              "text": " The letter date is stamped in "
+            },
+            {
+              "text": "Letter sent on",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3488,7 +4977,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Within a week"
+              "text": "Tax receipts"
             }
           ],
           "props": {
@@ -3496,26 +4985,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Send the tax receipt. Use the standard receipt wording your accountant approved."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Make the thank-you call or write the letter, then press Mark thanked on the gift."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add a follow-up for the donor if they asked a question or mentioned a program they love."
+              "text": "In the United States, any single gift of $250 or more needs a written acknowledgment that names the amount and says whether the donor received anything in return. Put that sentence in every letter so you never have to think about it. Donors who give through the year get one year-end receipt in January listing every gift."
             }
           ]
         },
@@ -3523,7 +4996,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Common mistakes"
+              "text": "Tribute gifts"
             }
           ],
           "props": {
@@ -3531,26 +5004,106 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Counting a pledge as received: the campaign total will look better than the bank balance."
+              "text": "When a gift is made in honor or memory of someone, write the person's name in "
+            },
+            {
+              "text": "In honor or memory of",
+              "bold": true
+            },
+            {
+              "text": ". Send the donor their thank-you and send a card to the family or the honoree. Never mention the amount on the family's card."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Recording one gift against two campaigns: split it into two rows with the right amounts."
+              "text": "Recurring donors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Monthly and quarterly donors are your steadiest income. When a card is declined, set "
+            },
+            {
+              "text": "Recurring gift",
+              "bold": true
+            },
+            {
+              "text": " to Card declined and call or email within a week; most lapsed monthly gifts are simply expired cards. Thank recurring donors once a year with a note about what their year of giving did, not with twelve letters."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Forgetting matching gifts: ask every business donor whether their employer matches."
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dashboard: every received gift is thanked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deposits match the gifts recorded this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pledge payments due in the next seven days have had their reminder"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A check for $1,000 arrives from a donor who pledged $4,000 over a year. The gift processor records it as a pledge payment linked to her pledge, marks it received, chooses the director's note, and the director signs it that afternoon. The pledge now shows $3,000 still owed and the next payment due in three months."
             }
           ]
         }
@@ -3571,7 +5124,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Donors rarely leave because of a mistake. They leave because nobody told them what their gift did. Stewardship is the plan that prevents that."
+              "text": "Stewardship is everything that happens between asks. The aim is simple: every donor should hear what their money did before they hear the next request."
             }
           ],
           "background": "blue",
@@ -3583,7 +5136,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What every donor should hear"
+              "text": "The rule of seven"
             }
           ],
           "props": {
@@ -3591,26 +5144,17 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "A personal thank-you within 48 hours of any gift."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Plan about seven touches a year for each major and mid-level donor, and only one or two of them are asks. The rest are thank-yous, updates, invitations and small personal notes. Put each one in "
+            },
             {
-              "text": "An honest update on the program their gift supports, at least twice a year."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Follow-ups",
+              "bold": true
+            },
             {
-              "text": "An invitation to see the work in person, once a year."
+              "text": " with a due date and the steward who owns it."
             }
           ]
         },
@@ -3618,7 +5162,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "By giving level"
+              "text": "Levels"
             }
           ],
           "props": {
@@ -3626,95 +5170,180 @@
           }
         },
         {
-          "type": "table",
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Major",
+              "bold": true
+            },
+            {
+              "text": " (lifetime giving $5,000 and up): a named steward, a visit or call each quarter, a personal update from the program team twice a year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mid-level",
+              "bold": true
+            },
+            {
+              "text": " ($500 to $4,999): a call after each gift, an invitation to see the work, a year-end note from the director."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Annual",
+              "bold": true
+            },
+            {
+              "text": " (under $500): a prompt letter, the newsletter, and an invitation to give monthly."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Giving level",
+              "bold": true
+            },
+            {
+              "text": " on each donor works itself out from lifetime giving."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Thank-you calls"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Level"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Contact rhythm"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Who owns it"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Major"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Visit or call each quarter, plus a personal note after every gift"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Director of development"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Mid-level"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Call after each gift, update email every two months, one invitation a year"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Gift officer"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Annual"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Letter after each gift, newsletter and one appeal a quarter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Gift processing"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call within a week of a first gift. Board members are great at this: a two-minute call that says only thank you, with no ask, is the single best thing you can do to bring a donor back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lapsed donors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A donor is lapsed when they have not given in about 14 months. Before you ask again, send something about what their last gift did. Ask what they care about now; some have moved, some have changed causes, and some were waiting to be asked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Respect their wishes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use "
+            },
+            {
+              "text": "Prefers",
+              "bold": true
+            },
+            {
+              "text": " on the donor. Some want mail, some email, some a phone call, and some want no solicitations at all. Honor it every time; a donor who asked for no calls and gets one is a donor you lose."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Open the Follow-ups that are due this week and overdue"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Make the thank-you calls for last week's first-time donors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Send one program update with a photo to your top ten donors"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Move donors whose next touch has passed to a new date"
+            }
+          ],
+          "props": {
+            "checked": false
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "When a donor goes quiet"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3722,34 +5351,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Check the donor row. If Lapsed, look at the last gift date and the last follow-up."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Make one warm call that asks nothing. Ask what they thought of the last update."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "If they want to stop, set the stage to Declined and note why."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "If they come back, set Active and thank them like a new donor."
+              "text": "A business gave $2,000 to last winter's drive and has not given since. The steward sends a short email with a photo of the families the drive served, then calls a week later to invite the owner to the harvest supper. The owner comes, meets a family, and gives $3,000 to the spring appeal."
             }
           ]
         }
@@ -3770,7 +5375,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every campaign gets a row, a goal and a lead before the first message goes out. A goal nobody wrote down cannot be missed or met."
+              "text": "A campaign is a goal, a deadline and a list of people who will be asked. Plan it on paper first; the Campaigns table then keeps score."
             }
           ],
           "background": "blue",
@@ -3782,7 +5387,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before launch"
+              "text": "Set the goal"
             }
           ],
           "props": {
@@ -3790,34 +5395,10 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Create the campaign row. Write the purpose in one sentence a donor would repeat."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Set a goal from last year's result plus a realistic stretch, not a wish."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Name a lead and list every follow-up in the Follow-ups table with a due date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Build the thank-you plan first. Who calls whom, and when."
+              "text": "Start with what you need to fund and what you raised last time. A good goal is a stretch, not a wish: last year's total plus 10 to 20 percent for an annual appeal. For a capital project, secure about half of the goal in large gifts and pledges before you announce it publicly."
             }
           ]
         },
@@ -3825,7 +5406,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "During the campaign"
+              "text": "Build the gift chart"
             }
           ],
           "props": {
@@ -3833,26 +5414,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Check Goal reached (%) every Monday."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Move the campaign to Live only when the first message is ready to send."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Chase pledges due this week before asking for anything new."
+              "text": "Write down how many gifts of each size you need. A common shape: the top gift is about a tenth of the goal, the next two together are another tenth, and about 80 percent of the money comes from the top 20 percent of donors. Match real names from Donors to each line before the campaign goes live."
             }
           ]
         },
@@ -3860,7 +5425,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After it closes"
+              "text": "Timeline"
             }
           ],
           "props": {
@@ -3871,7 +5436,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Close campaign once the last gift is recorded."
+              "text": "Planning",
+              "bold": true
+            },
+            {
+              "text": " (6 to 8 weeks out): goal, gift chart, letter, landing page, board asks."
             }
           ]
         },
@@ -3879,7 +5448,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count thank-yous done against gifts received. Anything missing goes on this week's list."
+              "text": "Quiet phase",
+              "bold": true
+            },
+            {
+              "text": ": major donors and the board are asked in person first."
             }
           ]
         },
@@ -3887,7 +5460,164 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write three lines on what worked and what to change, in the campaign row's page."
+              "text": "Live",
+              "bold": true
+            },
+            {
+              "text": ": press "
+            },
+            {
+              "text": "Go live",
+              "bold": true
+            },
+            {
+              "text": ". The letter and emails go out; the team calls the mid-level donors."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Last week",
+              "bold": true
+            },
+            {
+              "text": ": a reminder to everyone who has not given, with the progress so far."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Close",
+              "bold": true
+            },
+            {
+              "text": ": press "
+            },
+            {
+              "text": "Close",
+              "bold": true
+            },
+            {
+              "text": ", thank every donor, and report the result."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each campaign shows "
+            },
+            {
+              "text": "Received so far",
+              "bold": true
+            },
+            {
+              "text": ", what is still pledged, "
+            },
+            {
+              "text": "Given and pledged",
+              "bold": true
+            },
+            {
+              "text": ", open pledges, and the percent of goal. Pledges count toward the goal when they are signed, but your budget should count only what is received."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matching gifts and challenges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A business that agrees to match gifts up to a set amount gives donors a reason to give now. Record the business's promise as a pledge on the campaign, and its payment as a matching gift when it arrives."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the campaign"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every gift thanked within 48 hours"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A results note to all donors within two weeks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "A short write-up for next year: what worked, who gave for the first time, what to change"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The youth center roof needs $60,000. The director secures a $25,000 foundation pledge and a $10,000 business pledge in the quiet phase, then goes public. Six weeks later the campaign shows $41,500 given and pledged, and a giving day challenge closes the gap."
             }
           ]
         }

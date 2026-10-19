@@ -53,6 +53,7 @@ import type {
 } from "../data/types";
 import { archiveConfirmSentence } from "@/features/trash/archiveCopy";
 import { ReadFailure } from "@ai-matrx/design-system";
+import { usePageGuidanceRecord } from "@/features/mandates/host-values/usePageGuidanceRecord";
 
 export function AssessmentDetail({
   assessmentId,
@@ -72,6 +73,11 @@ export function AssessmentDetail({
   const pathname = usePathname();
   const [assessment, setAssessment] = useState<AssessmentRow | null>(null);
   const [items, setItems] = useState<AssessmentItemRow[]>([]);
+  // The open quiz or practice test, by id, on every guide turn (server-resolved `study_record` packet).
+  usePageGuidanceRecord(
+    () => ({ id: assessmentId, type: "assessment", title: assessment?.title ?? null }),
+    { everyTurn: true },
+  );
   const [results, setResults] = useState<AssessmentResultRow[]>([]);
   const [loading, setLoading] = useState(true);
   // The raw failure, never a sentence: a zero-row read is four different

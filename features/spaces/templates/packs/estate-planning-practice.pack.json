@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 4,
+  "version": 5,
   "title": "Estate Planning Practice",
   "description": "For estate planning lawyers: engagements, instruments, signings, trust funding, reviews.",
   "forWho": "Estate planning attorneys and their paralegals",
@@ -2608,7 +2608,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -4994,6 +4994,25 @@
           "text": [
             {
               "text": "Clients do not like to think about this. Keep reminders short, warm and free of pressure, and make booking easy."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the review costs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Decide your answer before the first call: many practices offer the review call free and quote any amendment or new plan as a fixed fee. Write the fee on the engagement so the client knows the number before any drafting starts."
             }
           ]
         }

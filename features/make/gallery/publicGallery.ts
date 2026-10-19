@@ -91,21 +91,28 @@ export function publicCards(cards: readonly GalleryCard[]): GalleryCard[] {
 
 type Rpc = (offset: number) => PromiseLike<{ data: unknown; error: DoorError | null }>;
 
-/** Reads every platform card, page by page, and classifies a closed door. */
+/**
+ * Reads every platform card and classifies a closed door. The first page says how many there are; the rest are
+ * asked at once (GALLERY-PERF: six pages one after another were most of a cold /templates?q= answer).
+ */
 export async function readPublicCatalogueWith(rpc: Rpc): Promise<PublicRead> {
-  const cards: GalleryCard[] = [];
-  let offset = 0;
-  for (;;) {
-    const { data, error } = await rpc(offset);
-    if (error) {
-      const reason = closedReason(error);
-      if (reason) return { state: "closed", reason };
-      throw new Error(`The template catalog could not be read: ${error.message ?? error.code ?? "unknown error"}`);
+  const classify = (error: DoorError): PublicRead => {
+    const reason = closedReason(error);
+    if (reason) return { state: "closed", reason };
+    throw new Error(`The template catalog could not be read: ${error.message ?? error.code ?? "unknown error"}`);
+  };
+  const first = await rpc(0);
+  if (first.error) return classify(first.error);
+  const head = first.data as GalleryAnswer;
+  const cards: GalleryCard[] = [...head.cards];
+  if (head.cards.length >= GALLERY_PAGE) {
+    const offsets: number[] = [];
+    for (let offset = GALLERY_PAGE; offset < head.total; offset += GALLERY_PAGE) offsets.push(offset);
+    const rest = await Promise.all(offsets.map((offset) => rpc(offset)));
+    for (const { data, error } of rest) {
+      if (error) return classify(error);
+      cards.push(...(data as GalleryAnswer).cards);
     }
-    const answer = data as GalleryAnswer;
-    cards.push(...answer.cards);
-    offset += GALLERY_PAGE;
-    if (answer.cards.length < GALLERY_PAGE || offset >= answer.total) break;
   }
   return { state: "open", cards: publicCards(cards) };
 }
