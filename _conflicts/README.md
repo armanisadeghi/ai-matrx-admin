@@ -31,6 +31,8 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-19-121519/lib/record-pages/pending.json.held — LOCAL latest 2026-10-19 12:24; GITHUB latest 2026-10-19 12:17; LOCAL lacks 66 of GITHUB's 403 new lines; GITHUB lacks 1 of LOCAL's 338 new lines; recover: git show 9906637fb8:'lib/record-pages/pending.json' / a7ef95a1c9:'lib/record-pages/pending.json'
+- _conflicts/2026-10-19-121519/lib/record-pages/record-pages.generated.json.held — LOCAL latest 2026-10-19 12:25; GITHUB latest 2026-10-19 12:17; LOCAL lacks 2 of GITHUB's 446 new lines; GITHUB lacks 466 of LOCAL's 910 new lines; recover: git show 9906637fb8:'lib/record-pages/record-pages.generated.json' / a7ef95a1c9:'lib/record-pages/record-pages.generated.json'
 
 ## Resolution log
 
