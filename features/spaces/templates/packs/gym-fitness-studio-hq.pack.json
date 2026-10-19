@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 6,
+  "version": 7,
   "title": "Gym and Fitness Studio HQ",
   "description": "For gyms: memberships, freezes, class capacity, PT packages, failed dues.",
   "forWho": "Gyms and boutique fitness studios",
@@ -668,10 +668,10 @@
             ],
             "default": "Active",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "teal",
               "Frozen": "blue",
               "Cancelling": "amber",
-              "Cancelled": "violet",
+              "Cancelled": "red",
               "Lead": "green"
             }
           },
@@ -861,7 +861,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows and late cancels} >= 2, \"Call about attendance\", \"None\"))"
+            "formula": "IF({Status} = \"Cancelled\", \"None\", IF({Failed payments} > 0, \"Fix payment\", IF({No-shows and late cancels} >= 2, \"Call about attendance\", \"None\")))"
           },
           {
             "key": "add_booking_btn",
@@ -1521,9 +1521,9 @@
             ],
             "default": "Active",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Used up": "blue",
-              "Expired": "amber",
+              "Expired": "red",
               "Refunded": "violet"
             }
           },
@@ -1867,9 +1867,9 @@
               "Booked": "slate",
               "Waitlist": "blue",
               "Checked in": "amber",
-              "No-show": "violet",
+              "No-show": "red",
               "Late cancel": "green",
-              "Cancelled": "teal"
+              "Cancelled": "pink"
             },
             "default": "Booked"
           },
@@ -2326,8 +2326,8 @@
             },
             "choiceColors": {
               "Pending": "slate",
-              "Failed": "blue",
-              "Paid": "amber",
+              "Failed": "red",
+              "Paid": "green",
               "Refunded": "violet"
             },
             "default": "Pending"
@@ -2786,10 +2786,10 @@
             },
             "choiceColors": {
               "Requested": "slate",
-              "Approved": "blue",
+              "Approved": "teal",
               "Saved": "amber",
-              "Completed": "violet",
-              "Withdrawn": "green"
+              "Completed": "green",
+              "Withdrawn": "violet"
             },
             "default": "Requested"
           },
@@ -3617,7 +3617,7 @@
         "Mercer Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

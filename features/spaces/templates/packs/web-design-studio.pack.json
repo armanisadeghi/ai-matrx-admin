@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 6,
+  "version": 7,
   "title": "Web Design Studio HQ",
   "description": "For web studios: site projects by phase, page content, change requests and invoices.",
   "forWho": "Web design and development studios",
@@ -1911,7 +1911,7 @@
               "Overdue": "red",
               "Draft": "slate",
               "Sent": "green",
-              "Paid": "blue"
+              "Paid": "teal"
             },
             "required": true,
             "default": "Draft",
@@ -2825,7 +2825,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 5,
+  "version": 6,
   "title": "Print on Demand Shop HQ",
   "description": "For print-on-demand shops: designs, listings, print partners, production, reprints.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -633,7 +633,7 @@
             "choiceColors": {
               "Live": "slate",
               "Sample ordered": "blue",
-              "Draft": "amber",
+              "Draft": "gray",
               "Retired": "violet"
             }
           },
@@ -1383,10 +1383,10 @@
               "New": "slate",
               "Sent to partner": "blue",
               "In production": "amber",
-              "Shipped": "violet",
+              "Shipped": "teal",
               "Delivered": "green",
               "Refunded": "orange",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "New"
           },
@@ -2097,7 +2097,7 @@
               "Open": "slate",
               "Claim filed": "blue",
               "Reprinting": "amber",
-              "Resolved": "violet"
+              "Resolved": "green"
             },
             "default": "Open"
           },
@@ -2744,7 +2744,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

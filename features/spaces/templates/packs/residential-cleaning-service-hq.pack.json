@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 5,
+  "version": 6,
   "title": "Residential Cleaning Service HQ",
   "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -875,7 +875,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1808,7 +1808,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2489,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

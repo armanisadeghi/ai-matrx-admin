@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0200",
-  "version": 7,
+  "version": 8,
   "title": "Life OS",
   "description": "Anyone: tasks, projects, notes and goals in one home, with a daily view.",
   "forWho": "Anyone running their whole life from one place",
@@ -558,7 +558,7 @@
               "Planned": "slate",
               "In progress": "blue",
               "On hold": "green",
-              "Done": "amber"
+              "Done": "teal"
             },
             "default": "Planned",
             "statusGroups": {
@@ -2107,7 +2107,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

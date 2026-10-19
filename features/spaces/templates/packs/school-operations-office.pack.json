@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0556",
-  "version": 3,
+  "version": 4,
   "title": "School Operations Office",
   "description": "School front office: enrollment, daily attendance, staff licenses, events, sub cover.",
   "forWho": "Principals and office managers at K-12 schools",
@@ -474,7 +474,7 @@
             "choiceColors": {
               "Planned": "slate",
               "Confirmed": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -1222,7 +1222,7 @@
             "choiceColors": {
               "New": "slate",
               "In progress": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Declined": "red"
             },
             "required": true,
@@ -1945,7 +1945,7 @@
             "choiceColors": {
               "Current": "green",
               "Renewal due": "amber",
-              "Renewed": "blue",
+              "Renewed": "teal",
               "Expired": "red"
             },
             "required": true,
@@ -3439,7 +3439,7 @@
         "Sycamore Drive"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

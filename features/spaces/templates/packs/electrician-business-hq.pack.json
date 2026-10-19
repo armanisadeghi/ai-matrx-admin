@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 5,
+  "version": 6,
   "title": "Electrician Business HQ",
   "description": "For electrical contractors: estimates, jobs, permits and inspections, materials, invoices.",
   "forWho": "Electrical contractors and electricians",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -795,7 +795,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1692,7 +1692,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2657,7 +2657,7 @@
         "Anvil Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

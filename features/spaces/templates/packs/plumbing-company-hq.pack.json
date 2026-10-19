@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0501",
-  "version": 5,
+  "version": 6,
   "title": "Plumbing Company HQ",
   "description": "For plumbing shops: dispatch calls, price jobs, stock vans and collect what is owed.",
   "forWho": "Plumbing companies and drain and pipe contractors",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -708,7 +708,7 @@
             "choiceColors": {
               "Not needed": "slate",
               "Applied": "amber",
-              "Approved": "blue",
+              "Approved": "teal",
               "Inspected": "green"
             },
             "default": "Not needed",
@@ -844,7 +844,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1827,7 +1827,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2528,7 +2528,7 @@
         "Kettle Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

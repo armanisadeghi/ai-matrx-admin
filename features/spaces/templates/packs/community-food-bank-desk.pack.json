@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 3,
+  "version": 4,
   "title": "Community Food Bank Desk",
   "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
@@ -547,7 +547,7 @@
             ],
             "choiceColors": {
               "Expected": "slate",
-              "Received": "blue",
+              "Received": "green",
               "Turned away": "amber"
             },
             "required": true,
@@ -926,7 +926,7 @@
             "choiceColors": {
               "Planned": "slate",
               "Open now": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -1337,7 +1337,7 @@
             ],
             "choiceColors": {
               "Registered": "slate",
-              "Active": "blue",
+              "Active": "green",
               "Paused": "amber",
               "Moved": "violet"
             },
@@ -2616,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

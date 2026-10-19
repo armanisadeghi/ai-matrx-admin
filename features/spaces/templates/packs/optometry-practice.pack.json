@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0407",
-  "version": 5,
+  "version": 6,
   "title": "Optometry Practice",
   "description": "For optometrists and opticians: exams, recalls, vision plans, frames and lab orders.",
   "forWho": "Optometrists, opticians and eye care practices",
@@ -171,7 +171,7 @@
             ],
             "choiceColors": {
               "No-show": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Booked": "blue",
               "Checked in": "amber",
               "In exam": "violet",
@@ -2174,7 +2174,7 @@
         "Piedmont Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

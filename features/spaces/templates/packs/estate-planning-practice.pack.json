@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 6,
+  "version": 7,
   "title": "Estate Planning Practice",
   "description": "For estate planning lawyers: engagements, instruments, signings, trust funding, reviews.",
   "forWho": "Estate planning attorneys and their paralegals",
@@ -1000,7 +1000,7 @@
               "Filed"
             ],
             "choiceColors": {
-              "Not started": "blue",
+              "Not started": "gray",
               "Drafting": "amber",
               "Client review": "violet",
               "Ready to sign": "teal",
@@ -2608,7 +2608,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

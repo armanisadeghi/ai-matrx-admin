@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 5,
+  "version": 6,
   "title": "Wholesale Distributor HQ",
   "description": "For distributors: case stock and best-by dates, POs, routes, invoices and collections.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -398,9 +398,9 @@
             ],
             "default": "Draft",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Seasonal": "blue",
-              "Draft": "amber",
+              "Draft": "slate",
               "Discontinued": "violet"
             }
           },
@@ -1455,7 +1455,7 @@
               "On truck": "blue",
               "Delivered": "green",
               "Returned": "orange",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "New"
           },
@@ -2054,7 +2054,7 @@
               "Confirmed": "violet",
               "Partly received": "amber",
               "Received": "green",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Draft"
           },
@@ -3144,7 +3144,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

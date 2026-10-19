@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0552",
-  "version": 4,
+  "version": 5,
   "title": "Grant Pipeline and Reporting Desk",
   "description": "Grant pipeline: funders, LOIs, applications, awards, budgets vs. spending and reports due.",
   "forWho": "Nonprofit grant writers and development directors",
@@ -1348,7 +1348,7 @@
               "Not started": "slate",
               "Drafting": "blue",
               "Submitted": "amber",
-              "Accepted": "violet"
+              "Accepted": "green"
             },
             "required": true,
             "default": "Not started",
@@ -2902,7 +2902,7 @@
         "Tamarack Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

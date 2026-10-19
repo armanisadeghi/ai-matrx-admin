@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 5,
+  "version": 6,
   "title": "Moving Company HQ",
   "description": "For local movers: surveys, hourly quotes, crews and trucks, move day, damage claims.",
   "forWho": "Local moving companies",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -800,7 +800,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1830,7 +1830,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2115,7 +2115,7 @@
               "Inspecting": "amber",
               "Repaired": "teal",
               "Paid out": "green",
-              "Denied": "slate"
+              "Denied": "red"
             }
           },
           {
@@ -2738,7 +2738,7 @@
         "Depot Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

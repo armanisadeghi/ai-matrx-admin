@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0419",
-  "version": 5,
+  "version": 6,
   "title": "Mortgage Broker Pipeline",
   "description": "For mortgage brokers: loan files by stage, rate locks, conditions, closings and partners.",
   "forWho": "Mortgage brokers, loan officers and processors",
@@ -251,7 +251,7 @@
               "Processing": "violet",
               "Underwriting": "teal",
               "Clear to close": "slate",
-              "Funded": "yellow"
+              "Funded": "green"
             },
             "statusGroups": {
               "Pre-approval": "in_progress",
@@ -892,7 +892,7 @@
             "choiceColors": {
               "Open": "blue",
               "Requested": "amber",
-              "Received": "violet",
+              "Received": "teal",
               "Cleared": "green"
             },
             "statusGroups": {
@@ -2394,7 +2394,7 @@
         "Fenmore Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

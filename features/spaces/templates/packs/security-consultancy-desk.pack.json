@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0564",
-  "version": 3,
+  "version": 4,
   "title": "Security Consultancy Engagement Desk",
   "description": "Security consultancy: engagements, scope, findings by severity, fixes and retests.",
   "forWho": "Cybersecurity consultancies and assessment firms",
@@ -88,7 +88,7 @@
             ],
             "choiceColors": {
               "Prospect": "slate",
-              "Active": "blue",
+              "Active": "green",
               "Between engagements": "amber",
               "Past client": "violet"
             },
@@ -1168,7 +1168,7 @@
               "Informational"
             ],
             "choiceColors": {
-              "Critical": "slate",
+              "Critical": "orange",
               "High": "blue",
               "Medium": "amber",
               "Low": "violet",
@@ -2265,7 +2265,7 @@
               "Scheduled": "amber",
               "Passed": "green",
               "Failed": "red",
-              "Cancelled": "slate"
+              "Cancelled": "pink"
             }
           },
           {
@@ -3386,7 +3386,7 @@
         "Sentinel Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

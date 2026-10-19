@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 6,
+  "version": 7,
   "title": "Consulting Practice Desk",
   "description": "For consultants: proposals, engagements, days sold versus used, deliverables and readouts.",
   "forWho": "Management and operations consulting practices",
@@ -445,7 +445,7 @@
               "Draft": "slate",
               "Sent": "green",
               "Negotiating": "blue",
-              "Won": "amber"
+              "Won": "teal"
             },
             "required": true,
             "default": "Draft",
@@ -886,8 +886,8 @@
               "Off track"
             ],
             "choiceColors": {
-              "On track": "blue",
-              "At risk": "green",
+              "On track": "teal",
+              "At risk": "orange",
               "Off track": "amber"
             },
             "sensitivity": "internal",
@@ -2507,7 +2507,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

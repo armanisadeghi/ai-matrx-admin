@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0504",
-  "version": 5,
+  "version": 6,
   "title": "Auto Repair Shop HQ",
   "description": "For independent auto repair shops: repair orders, vehicles, parts, and pickups.",
   "forWho": "Independent auto repair shops and garages",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -772,7 +772,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1708,7 +1708,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2730,7 +2730,7 @@
         "Foundry Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

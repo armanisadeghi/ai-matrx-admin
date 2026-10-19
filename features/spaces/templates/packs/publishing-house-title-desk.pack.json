@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0567",
-  "version": 3,
+  "version": 4,
   "title": "Publishing House Title Desk",
   "description": "Publisher: manuscripts, titles by editorial stage, rights, print runs and royalties.",
   "forWho": "Independent book publishers and small presses",
@@ -483,8 +483,8 @@
               "Copyedit": "amber",
               "Design": "violet",
               "Proofs": "teal",
-              "At printer": "green",
-              "Published": "orange",
+              "At printer": "orange",
+              "Published": "green",
               "Out of print": "pink"
             },
             "required": true,
@@ -1240,7 +1240,7 @@
               "To do": "slate",
               "In progress": "blue",
               "Blocked": "amber",
-              "Done": "violet"
+              "Done": "green"
             },
             "required": true,
             "default": "To do",
@@ -1614,7 +1614,7 @@
             "choiceColors": {
               "Draft": "slate",
               "Ready to pay": "blue",
-              "Paid": "amber",
+              "Paid": "green",
               "Disputed": "violet"
             },
             "required": true,
@@ -3796,7 +3796,7 @@
         "Bookbinder Alley"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

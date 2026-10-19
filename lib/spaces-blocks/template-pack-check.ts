@@ -133,6 +133,7 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
 
   for (const t of every) checkLookValues(t, say);
+  for (const t of every) checkChoiceColors(t, say);
 
   // ── 3. the page tree ───────────────────────────────────────────────────────
   const pages = Array.isArray(pack.pages) ? pack.pages : [];
@@ -262,6 +263,34 @@ export function checkPack(raw: unknown, options: PackCheckOptions = {}): PackFin
   }
   waivers.forEach((w, i) => (used.has(i) || !isObj(w) ? null : say(`waivers[${i}]`, `No finding at "${String(w.at)}" any more; remove the waiver.`)));
   return out;
+}
+
+/** State words and the color family each must wear (a choice's color is its meaning, never its position in the list). */
+const FINISHED_STATES = new Set(["paid", "paid in full", "completed", "complete", "done", "closed won", "won", "active", "healthy", "resolved", "achieved", "delivered", "published", "signed", "settled", "funded", "finished", "graduated", "renewed", "on track", "attended"]);
+const NEGATIVE_STATES = new Set(["cancelled", "canceled", "lost", "closed lost", "overdue", "failed", "rejected", "declined", "denied", "churned", "no-show", "no show", "late", "expired", "written off", "missed", "past due"]);
+const WARNING_STATES = new Set(["at risk", "blocked", "refunded", "abandoned", "critical", "unhealthy"]);
+const GREEN_FAMILY = new Set(["green", "teal"]);
+const RED_FAMILY = new Set(["red", "pink"]);
+const QUIET_FAMILY = new Set(["slate", "gray"]);
+
+/** A finished state wears green, a negative one red, and a warning is never green or gray. Names the choice and the fix. */
+export function choiceColorFindings(choices: Record<string, string> | undefined): Array<{ choice: string; says: string }> {
+  const out: Array<{ choice: string; says: string }> = [];
+  for (const [choice, color] of Object.entries(choices ?? {})) {
+    const word = choice.trim().toLowerCase();
+    if (FINISHED_STATES.has(word) && !GREEN_FAMILY.has(color)) out.push({ choice, says: `"${choice}" is a finished state painted ${color}; finished and good states wear green (or teal).` });
+    else if (NEGATIVE_STATES.has(word) && !RED_FAMILY.has(color)) out.push({ choice, says: `"${choice}" is a negative state painted ${color}; cancelled, lost, overdue and failed states wear red.` });
+    else if (WARNING_STATES.has(word) && (GREEN_FAMILY.has(color) || QUIET_FAMILY.has(color))) out.push({ choice, says: `"${choice}" is a warning state painted ${color}; warnings wear amber, orange or red.` });
+  }
+  return out;
+}
+
+function checkChoiceColors(t: TemplateSpec["tables"][number], say: (at: string, says: string) => void) {
+  for (const f of t.fields) {
+    for (const c of choiceColorFindings(f.choiceColors as Record<string, string> | undefined)) {
+      say(`spec.tables (${t.token}).fields (${f.key}).choiceColors`, c.says);
+    }
+  }
 }
 
 /** The design looks a seed value must be readable by (a value its look cannot read draws as raw JSON). */

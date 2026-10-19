@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0561",
-  "version": 3,
+  "version": 4,
   "title": "Online Academy Operations Desk",
   "description": "Online academy: courses, cohorts, enrollments, completion, refunds and live sessions.",
   "forWho": "Online course academies and cohort-based programs",
@@ -589,7 +589,7 @@
               "Planned": "slate",
               "Enrolling": "blue",
               "Running": "amber",
-              "Finished": "violet",
+              "Finished": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -1127,10 +1127,10 @@
             ],
             "choiceColors": {
               "Applied": "slate",
-              "Active": "blue",
-              "Completed": "amber",
+              "Active": "green",
+              "Completed": "teal",
               "Refunded": "violet",
-              "Dropped": "teal"
+              "Dropped": "red"
             },
             "required": true,
             "default": "Applied",
@@ -2146,9 +2146,9 @@
             ],
             "choiceColors": {
               "Requested": "amber",
-              "Approved": "blue",
+              "Approved": "green",
               "Refunded": "violet",
-              "Declined": "slate"
+              "Declined": "red"
             }
           },
           {
@@ -2397,7 +2397,7 @@
             "choiceColors": {
               "Scheduled": "amber",
               "Held": "green",
-              "Cancelled": "slate"
+              "Cancelled": "red"
             }
           },
           {
@@ -3547,7 +3547,7 @@
         "Pembroke Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

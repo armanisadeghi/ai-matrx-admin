@@ -3,10 +3,10 @@
 // a raw table id, a block the stored schema refuses, a records-store rule) is reported at its exact path.
 // resolvePackBlocks swaps every token and gives fresh ids.
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { checkPack } from "../template-pack-check";
+import { checkPack, choiceColorFindings } from "../template-pack-check";
 import { relativeWindowDays, resolvePackBlocks, type SpaceTemplatePack } from "../template-pack";
 
 const PACK = JSON.parse(readFileSync(join(__dirname, "../../../features/spaces/templates/packs/projects-and-tasks.pack.json"), "utf8")) as SpaceTemplatePack;
@@ -170,5 +170,32 @@ describe("relativeWindowDays", () => {
     expect(relativeWindowDays({ relative: "last_month" }, t)).toEqual({ from: "2026-09-01", to: "2026-10-01" });
     expect(relativeWindowDays({ relative: "before_today" }, t)).toEqual({ to: t });
     expect(relativeWindowDays({ relative: "past_days", n: 3 }, t)).toEqual({ from: "2026-10-12", to: t });
+  });
+});
+
+describe("choice colors carry meaning", () => {
+  it("flags a finished state painted amber or gray, and a negative state painted green or gray", () => {
+    expect(choiceColorFindings({ Sent: "blue", Paid: "amber" }).map((f) => f.choice)).toEqual(["Paid"]);
+    expect(choiceColorFindings({ Active: "slate", Lead: "blue" }).map((f) => f.choice)).toEqual(["Active"]);
+    expect(choiceColorFindings({ Done: "amber", Cancelled: "gray", "Closed won": "violet" }).map((f) => f.choice)).toEqual(["Done", "Cancelled", "Closed won"]);
+    expect(choiceColorFindings({ "At risk": "green" }).map((f) => f.choice)).toEqual(["At risk"]);
+  });
+  it("accepts finished on green or teal, negative on red or pink, warnings on amber", () => {
+    expect(choiceColorFindings({ Paid: "green", Completed: "teal", Cancelled: "red", Overdue: "pink", "At risk": "amber", Draft: "slate" })).toEqual([]);
+  });
+  it("reports the planted defect at the choice's path in a real pack", () => {
+    const p = fresh();
+    const field = p.spec.tables.flatMap((t) => t.fields).find((f) => f.choiceColors && Object.keys(f.choiceColors).length);
+    field!.choiceColors = { ...field!.choiceColors, Paid: "amber" };
+    expect(checkPack(p).some((f) => f.says.includes('"Paid" is a finished state painted amber'))).toBe(true);
+  });
+  it("holds for every committed pack", () => {
+    const dir = join(__dirname, "../../../features/spaces/templates/packs");
+    const bad: string[] = [];
+    for (const file of readdirSync(dir).filter((n) => n.endsWith(".pack.json"))) {
+      const pack = JSON.parse(readFileSync(join(dir, file), "utf8")) as SpaceTemplatePack;
+      for (const t of pack.spec.tables) for (const f of t.fields) for (const c of choiceColorFindings(f.choiceColors as Record<string, string> | undefined)) bad.push(`${file} ${t.token}.${f.key} ${c.says}`);
+    }
+    expect(bad).toEqual([]);
   });
 });

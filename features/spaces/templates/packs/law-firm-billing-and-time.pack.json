@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 5,
+  "version": 6,
   "title": "Law Firm Billing and Time",
   "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
   "forWho": "Law firm billing staff, office managers and attorneys",
@@ -601,7 +601,7 @@
             ],
             "choiceColors": {
               "Overdue": "red",
-              "Draft": "blue",
+              "Draft": "slate",
               "Sent": "amber",
               "Part paid": "violet",
               "Paid": "green"
@@ -1223,7 +1223,7 @@
               "Former"
             ],
             "choiceColors": {
-              "Active": "blue",
+              "Active": "teal",
               "Slow payer": "green",
               "Former": "amber"
             },
@@ -1894,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 3,
+  "version": 4,
   "title": "Faith Community Operations Hub",
   "description": "For congregations: members, attendance, giving, care requests, rooms and volunteers.",
   "forWho": "Churches, temples, mosques and other faith communities",
@@ -702,7 +702,7 @@
             "choiceColors": {
               "Planned": "slate",
               "Confirmed": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -813,7 +813,7 @@
             "key": "fits",
             "label": "Room check",
             "parityType": "formula",
-            "formula": "IF({Expected attendance} > 0, \"Check capacity\", \"No count yet\")",
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Expected attendance} > 0, \"Check capacity\", \"No count yet\"))",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1734,7 +1734,7 @@
             "choiceColors": {
               "Requested": "slate",
               "Scheduled": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Declined": "red"
             },
             "required": true,
@@ -3101,7 +3101,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

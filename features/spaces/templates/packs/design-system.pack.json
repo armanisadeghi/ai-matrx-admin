@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0360",
-  "version": 5,
+  "version": 6,
   "title": "Design System Docs",
   "description": "Design and front-end teams: document components, usage rules, owners and status.",
   "forWho": "Design and front-end teams",
@@ -155,7 +155,7 @@
               "Deprecated"
             ],
             "choiceColors": {
-              "Draft": "amber",
+              "Draft": "slate",
               "Stable": "green",
               "Deprecated": "red"
             },
@@ -1418,7 +1418,7 @@
         "Sallow Fen Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

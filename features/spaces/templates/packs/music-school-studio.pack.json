@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0559",
-  "version": 3,
+  "version": 4,
   "title": "Music School Studio Desk",
   "description": "Music school desk: students, weekly lessons, tuition owed, recitals, exams and rentals.",
   "forWho": "Music schools, studios and lesson programs",
@@ -88,7 +88,7 @@
             ],
             "choiceColors": {
               "Trial lesson": "slate",
-              "Active": "blue",
+              "Active": "green",
               "On break": "amber",
               "Left": "violet"
             },
@@ -673,8 +673,8 @@
             ],
             "choiceColors": {
               "Scheduled": "slate",
-              "Done": "blue",
-              "Missed": "amber",
+              "Done": "green",
+              "Missed": "red",
               "Rescheduled": "violet"
             },
             "required": true,
@@ -1078,7 +1078,7 @@
             "choiceColors": {
               "Draft": "slate",
               "Due": "blue",
-              "Paid": "amber",
+              "Paid": "green",
               "Overdue": "red",
               "Waived": "violet"
             },
@@ -2876,7 +2876,7 @@
         "Cantor Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

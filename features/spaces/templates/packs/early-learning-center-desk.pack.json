@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0558",
-  "version": 3,
+  "version": 4,
   "title": "Early Learning Center Desk",
   "description": "Childcare center desk: rooms and ratios, enrollment, waitlist, tuition, licensing checks.",
   "forWho": "Daycares, preschools and early learning centers",
@@ -409,7 +409,7 @@
             "choiceColors": {
               "Enrolled": "slate",
               "On leave": "blue",
-              "Graduated": "amber",
+              "Graduated": "green",
               "Withdrawn": "red"
             },
             "required": true,
@@ -1310,7 +1310,7 @@
             ],
             "choiceColors": {
               "To do": "slate",
-              "Done": "blue",
+              "Done": "green",
               "Skipped": "amber"
             },
             "required": true,
@@ -2662,7 +2662,7 @@
         "Meadowlark Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

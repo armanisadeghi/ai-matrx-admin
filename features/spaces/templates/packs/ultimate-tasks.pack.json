@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0107",
-  "version": 7,
+  "version": 8,
   "title": "Ultimate Tasks",
   "description": "People who run on tasks: inbox, focus lists, projects, daily journal and repeating tasks.",
   "forWho": "Individuals and tiny teams who run on tasks",
@@ -85,7 +85,7 @@
             ],
             "choiceColors": {
               "Planning": "slate",
-              "Active": "blue",
+              "Active": "teal",
               "Done": "green"
             },
             "required": true,
@@ -1427,7 +1427,7 @@
         "Millbrook Terrace"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

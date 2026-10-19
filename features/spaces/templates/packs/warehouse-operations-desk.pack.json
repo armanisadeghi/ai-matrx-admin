@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0570",
-  "version": 3,
+  "version": 4,
   "title": "Warehouse Operations Desk",
   "description": "Warehouse: SKUs and locations, receiving, picks, cycle counts and the dock schedule.",
   "forWho": "Warehouses, 3PLs and distribution centers",
@@ -712,7 +712,7 @@
             "choiceColors": {
               "Expected": "slate",
               "Arrived": "blue",
-              "Received": "amber",
+              "Received": "green",
               "Problem": "violet"
             },
             "required": true,
@@ -1240,7 +1240,7 @@
               "Pending": "slate",
               "Picking": "blue",
               "Packed": "amber",
-              "Shipped": "violet",
+              "Shipped": "green",
               "On hold": "teal"
             },
             "required": true,
@@ -3668,7 +3668,7 @@
         "Cargo Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

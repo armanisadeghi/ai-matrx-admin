@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0161",
-  "version": 7,
+  "version": 8,
   "title": "Partnerships Tracker",
   "description": "Partner and business development teams: partners, milestones and referral revenue share.",
   "forWho": "Business development and partner teams",
@@ -555,7 +555,7 @@
             "choiceColors": {
               "To do": "blue",
               "In progress": "green",
-              "Done": "amber",
+              "Done": "teal",
               "Blocked": "violet"
             },
             "required": true,
@@ -1317,7 +1317,7 @@
         "Embarcadero Mews"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 6,
+  "version": 7,
   "title": "Digital Marketing Agency HQ",
   "description": "For marketing agencies: retainers, scope, hours, campaigns, approvals and monthly reports.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -1404,7 +1404,7 @@
             "choiceColors": {
               "Not needed": "blue",
               "Waiting on client": "green",
-              "Approved": "amber",
+              "Approved": "teal",
               "Changes requested": "violet"
             },
             "sensitivity": "internal",
@@ -3168,7 +3168,7 @@
         "Alder Quay"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

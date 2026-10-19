@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0311",
-  "version": 7,
+  "version": 8,
   "title": "Newsletter Growth & Sponsors",
   "description": "Independent writers: write issues, sell sponsor slots and watch subscriber growth.",
   "forWho": "Independent newsletter writers",
@@ -123,7 +123,7 @@
             "choiceColors": {
               "Open": "slate",
               "Booked": "green",
-              "Paid": "blue"
+              "Paid": "teal"
             },
             "required": true,
             "default": "Open",
@@ -404,7 +404,7 @@
             "choiceColors": {
               "Idea": "slate",
               "Outline": "blue",
-              "Draft": "amber",
+              "Draft": "gray",
               "Edit": "violet",
               "Scheduled": "green",
               "Sent": "teal"
@@ -1666,7 +1666,7 @@
         "Quillfeather Road"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

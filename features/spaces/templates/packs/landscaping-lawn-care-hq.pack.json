@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 5,
+  "version": 6,
   "title": "Landscaping and Lawn Care HQ",
   "description": "For lawn care and landscaping companies: weekly routes, projects, crews and billing.",
   "forWho": "Landscaping and lawn care companies",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -828,7 +828,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1728,7 +1728,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2758,7 +2758,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

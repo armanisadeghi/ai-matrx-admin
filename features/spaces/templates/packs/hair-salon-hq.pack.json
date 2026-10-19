@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 5,
+  "version": 6,
   "title": "Hair Salon HQ",
   "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
@@ -889,7 +889,7 @@
             "choiceColors": {
               "Booked": "slate",
               "Checked in": "blue",
-              "Completed": "amber",
+              "Completed": "green",
               "No-show": "red",
               "Cancelled": "pink"
             },
@@ -1564,7 +1564,7 @@
             "choiceColors": {
               "Pending": "slate",
               "Failed": "red",
-              "Paid": "blue",
+              "Paid": "green",
               "Refunded": "pink"
             },
             "required": true,
@@ -2552,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

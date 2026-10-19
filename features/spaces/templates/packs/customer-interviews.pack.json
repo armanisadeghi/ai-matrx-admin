@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0361",
-  "version": 5,
+  "version": 6,
   "title": "Customer Interview Notes",
   "description": "Product and success teams: log customer calls with themes, mood and follow-ups.",
   "forWho": "Product and customer success teams",
@@ -135,7 +135,7 @@
             "choiceColors": {
               "Prospect": "blue",
               "Customer": "green",
-              "Churned": "gray"
+              "Churned": "red"
             }
           },
           {
@@ -809,7 +809,7 @@
         "Piper Cove Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

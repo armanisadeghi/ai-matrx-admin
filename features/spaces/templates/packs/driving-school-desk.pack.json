@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0560",
-  "version": 3,
+  "version": 4,
   "title": "Driving School Desk",
   "description": "Driving school desk: learners' permits and hours, lessons, cars, classroom and road tests.",
   "forWho": "Driving schools and driver-education programs",
@@ -794,9 +794,9 @@
             ],
             "choiceColors": {
               "Booked": "slate",
-              "Done": "blue",
+              "Done": "green",
               "No-show": "red",
-              "Cancelled": "amber"
+              "Cancelled": "pink"
             },
             "required": true,
             "default": "Booked",
@@ -1509,7 +1509,7 @@
               "Booked": "slate",
               "Passed": "blue",
               "Failed": "red",
-              "Cancelled": "amber"
+              "Cancelled": "pink"
             },
             "required": true,
             "default": "Booked",
@@ -1856,7 +1856,7 @@
             "choiceColors": {
               "Scheduled": "blue",
               "Held": "green",
-              "Cancelled": "slate"
+              "Cancelled": "red"
             },
             "required": true,
             "statusGroups": {
@@ -2907,7 +2907,7 @@
         "Mesquite Plaza"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

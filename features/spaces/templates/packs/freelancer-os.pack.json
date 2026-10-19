@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 7,
+  "version": 8,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -1666,7 +1666,7 @@
             "choiceColors": {
               "Draft": "slate",
               "Sent": "green",
-              "Paid": "blue",
+              "Paid": "teal",
               "Overdue": "red"
             },
             "required": true,
@@ -2945,7 +2945,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

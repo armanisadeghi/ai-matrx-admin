@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0452",
-  "version": 6,
+  "version": 7,
   "title": "Recruiting Agency Desk",
   "description": "For recruiters: job orders, candidates by stage, placements, fees and guarantees.",
   "forWho": "Recruiting, staffing and executive search firms",
@@ -1667,7 +1667,7 @@
               "Replacement owed"
             ],
             "choiceColors": {
-              "Not started": "blue",
+              "Not started": "slate",
               "In guarantee": "green",
               "Passed": "amber",
               "Replacement owed": "violet"
@@ -1687,7 +1687,7 @@
             "choiceColors": {
               "Not invoiced": "blue",
               "Invoiced": "green",
-              "Paid": "amber"
+              "Paid": "teal"
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -2385,7 +2385,7 @@
         "Morrow Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

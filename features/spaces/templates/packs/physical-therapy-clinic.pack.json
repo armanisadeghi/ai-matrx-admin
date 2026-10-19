@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0401",
-  "version": 5,
+  "version": 6,
   "title": "Physical Therapy Clinic",
   "description": "For PT clinics: referrals, plans of care, authorized visits, notes and no-shows.",
   "forWho": "Physical therapists, rehab clinics and PT front desks",
@@ -524,7 +524,7 @@
             ],
             "choiceColors": {
               "Evaluation booked": "blue",
-              "Active": "amber",
+              "Active": "teal",
               "Recert due": "violet",
               "Discharged": "green"
             },
@@ -1057,7 +1057,7 @@
             ],
             "choiceColors": {
               "No-show": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Scheduled": "blue",
               "Checked in": "amber",
               "Completed": "green"
@@ -1457,7 +1457,7 @@
               "Discharged"
             ],
             "choiceColors": {
-              "Active": "blue",
+              "Active": "teal",
               "On hold": "green",
               "Discharged": "amber"
             },
@@ -2348,7 +2348,7 @@
         "Millbrook Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

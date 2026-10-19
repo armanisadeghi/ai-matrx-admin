@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 5,
+  "version": 6,
   "title": "Personal Injury Intake and Cases",
   "description": "For injury lawyers: intakes, limitations dates, records, liens, offers and net to client.",
   "forWho": "Personal injury attorneys and case managers",
@@ -769,7 +769,7 @@
             "key": "net",
             "label": "Net to client at best offer",
             "parityType": "formula",
-            "formula": "{Highest offer} - ROUND({Highest offer} * {Fee percent} / 100, 0) - {Costs advanced} - {Liens claimed}",
+            "formula": "IF({Highest offer} > 0, {Highest offer} - ROUND({Highest offer} * {Fee percent} / 100, 0) - {Costs advanced} - {Liens claimed}, \"\")",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1228,7 +1228,7 @@
             "choiceColors": {
               "To request": "blue",
               "Requested": "amber",
-              "Received": "violet",
+              "Received": "teal",
               "Chased": "green"
             },
             "statusGroups": {
@@ -1606,8 +1606,8 @@
             "choiceColors": {
               "Pending": "blue",
               "Countered": "green",
-              "Rejected": "amber",
-              "Accepted": "violet"
+              "Rejected": "red",
+              "Accepted": "teal"
             },
             "default": "Pending"
           }
@@ -2350,7 +2350,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

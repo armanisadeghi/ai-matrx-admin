@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0309",
-  "version": 7,
+  "version": 8,
   "title": "Podcast Production Hub",
   "description": "Podcasters: plan episodes, book guests, manage sponsors and track production tasks.",
   "forWho": "Podcasters and small audio teams",
@@ -90,7 +90,7 @@
               "Invited": "blue",
               "Confirmed": "green",
               "Recorded": "amber",
-              "Published": "violet"
+              "Published": "teal"
             },
             "required": true,
             "default": "Prospect",
@@ -352,7 +352,7 @@
             "choiceColors": {
               "Prospect": "slate",
               "Negotiating": "blue",
-              "Signed": "amber",
+              "Signed": "teal",
               "Complete": "green"
             },
             "required": true,
@@ -1819,7 +1819,7 @@
         "Dovecote Mews"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

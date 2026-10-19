@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0566",
-  "version": 3,
+  "version": 4,
   "title": "Podcast Network Operations Desk",
   "description": "Podcast network: shows, episodes, ad inventory, downloads and sponsor deals.",
   "forWho": "Podcast networks and multi-show audio studios",
@@ -88,7 +88,7 @@
             ],
             "choiceColors": {
               "In development": "slate",
-              "Active": "blue",
+              "Active": "green",
               "On break": "amber",
               "Ended": "violet"
             },
@@ -1525,7 +1525,7 @@
               "Pitched": "slate",
               "Booked": "blue",
               "Delivering": "amber",
-              "Delivered": "violet",
+              "Delivered": "green",
               "Lost": "red"
             },
             "required": true,
@@ -3556,7 +3556,7 @@
         "Vinyl Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

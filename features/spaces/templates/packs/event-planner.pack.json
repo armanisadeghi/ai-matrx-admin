@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0314",
-  "version": 7,
+  "version": 8,
   "title": "Event Planner",
   "description": "Event organisers: guests and RSVPs, vendors, tasks, budget and run of show.",
   "forWho": "Small organisers and event planners",
@@ -106,7 +106,7 @@
             "choiceColors": {
               "Planning": "slate",
               "Confirmed": "green",
-              "Done": "blue",
+              "Done": "teal",
               "Cancelled": "red"
             },
             "required": true,
@@ -924,7 +924,7 @@
             "choiceColors": {
               "Quote": "slate",
               "Booked": "green",
-              "Paid": "blue"
+              "Paid": "teal"
             },
             "required": true,
             "default": "Quote",
@@ -2401,7 +2401,7 @@
         "Starling Passage"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

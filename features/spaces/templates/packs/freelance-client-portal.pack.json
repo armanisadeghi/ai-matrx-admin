@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0302",
-  "version": 8,
+  "version": 9,
   "title": "Freelance Client Portal",
   "description": "Solo freelancers: a private page per client for deliverables, approvals and invoices.",
   "forWho": "Solo freelancers delivering work to clients",
@@ -94,7 +94,7 @@
               "Onboarding": "slate",
               "Active": "green",
               "On hold": "blue",
-              "Complete": "amber"
+              "Complete": "teal"
             },
             "required": true,
             "default": "Onboarding",
@@ -1507,7 +1507,7 @@
         "Tallow Court"
       ]
     },
-    "version": 8
+    "version": 9
   },
   "pages": [
     {

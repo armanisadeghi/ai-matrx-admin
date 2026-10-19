@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0409",
-  "version": 5,
+  "version": 6,
   "title": "Immigration Practice",
   "description": "For immigration lawyers: cases by form, receipt notices, RFEs, evidence and status dates.",
   "forWho": "Immigration attorneys, paralegals and accredited reps",
@@ -495,8 +495,8 @@
               "Preparing": "amber",
               "Filed": "violet",
               "Request for evidence": "teal",
-              "Approved": "slate",
-              "Closed": "green"
+              "Approved": "green",
+              "Closed": "slate"
             },
             "statusGroups": {
               "Intake": "todo",
@@ -1075,7 +1075,7 @@
             "choiceColors": {
               "Needed": "blue",
               "Requested": "amber",
-              "Received": "violet",
+              "Received": "teal",
               "Verified": "green"
             },
             "statusGroups": {
@@ -2206,7 +2206,7 @@
         "Alder Way"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

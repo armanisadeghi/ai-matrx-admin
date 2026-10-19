@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0155",
-  "version": 6,
+  "version": 7,
   "title": "Agency Client Portal",
   "description": "Agencies: a private home page per client with projects, deliverables and invoices.",
   "forWho": "Agencies sharing work with several clients",
@@ -230,7 +230,7 @@
               "Planned": "blue",
               "In progress": "green",
               "In review": "amber",
-              "Complete": "violet"
+              "Complete": "teal"
             },
             "required": true,
             "default": "Planned",
@@ -391,9 +391,9 @@
               "Approved"
             ],
             "choiceColors": {
-              "Not started": "blue",
+              "Not started": "slate",
               "In review": "green",
-              "Approved": "amber"
+              "Approved": "teal"
             },
             "required": true,
             "default": "Not started",
@@ -664,10 +664,10 @@
               "Overdue"
             ],
             "choiceColors": {
-              "Draft": "blue",
+              "Draft": "slate",
               "Sent": "green",
-              "Paid": "amber",
-              "Overdue": "violet"
+              "Paid": "teal",
+              "Overdue": "red"
             },
             "required": true,
             "default": "Draft",
@@ -1479,7 +1479,7 @@
         "Moss Lantern Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

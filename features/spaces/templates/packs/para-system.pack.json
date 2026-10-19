@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0207",
-  "version": 5,
+  "version": 6,
   "title": "PARA System",
   "description": "Second-brain builders: projects, areas, resources and archive, with an inbox.",
   "forWho": "People organising a second brain",
@@ -107,7 +107,7 @@
               "Paused"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Paused": "blue"
             }
           },
@@ -286,7 +286,7 @@
               "Not started": "slate",
               "In progress": "blue",
               "Waiting": "green",
-              "Done": "amber"
+              "Done": "teal"
             },
             "default": "Not started",
             "statusGroups": {
@@ -1331,7 +1331,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

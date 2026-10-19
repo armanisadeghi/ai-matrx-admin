@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 5,
+  "version": 6,
   "title": "Subscription Box Business HQ",
   "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
@@ -1134,7 +1134,7 @@
               "Paused": "amber",
               "Failed payment": "red",
               "Gift ending": "violet",
-              "Cancelled": "gray"
+              "Cancelled": "pink"
             }
           },
           {
@@ -1275,7 +1275,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Failed or retrying (USD)} > 0, \"Update card\", IF({Boxes received} >= 6, \"Thank-you gift\", \"None\"))"
+            "formula": "IF({Status} = \"Cancelled\", \"None\", IF({Failed or retrying (USD)} > 0, \"Update card\", IF({Boxes received} >= 6, \"Thank-you gift\", \"None\")))"
           },
           {
             "key": "add_order_btn",
@@ -1606,11 +1606,11 @@
             "choiceColors": {
               "Queued": "slate",
               "Packing": "amber",
-              "Shipped": "blue",
+              "Shipped": "teal",
               "Delivered": "green",
               "Reshipped": "violet",
               "Undeliverable": "red",
-              "Cancelled": "gray"
+              "Cancelled": "pink"
             },
             "default": "Queued"
           },
@@ -2509,7 +2509,7 @@
               "Sent": "blue",
               "Confirmed": "violet",
               "Received": "green",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Draft"
           },
@@ -3201,7 +3201,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

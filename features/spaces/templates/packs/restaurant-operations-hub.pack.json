@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0463",
-  "version": 6,
+  "version": 7,
   "title": "Restaurant Operations Hub",
   "description": "For chefs and restaurant owners: recipe costs, food cost, pars, prep lists, inspections.",
   "forWho": "Independent restaurants and small restaurant groups",
@@ -1275,7 +1275,7 @@
             "choiceColors": {
               "Draft": "slate",
               "Sent": "green",
-              "Received": "blue"
+              "Received": "teal"
             },
             "required": true,
             "default": "Draft",
@@ -3283,7 +3283,7 @@
         "Foundry Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 5,
+  "version": 6,
   "title": "Roofing Contractor HQ",
   "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -104,9 +104,9 @@
               "Inactive"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Lead": "blue",
-              "Inactive": "amber"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -857,7 +857,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Margin (%)} < 20, \"Thin\", \"Healthy\")"
+            "formula": "IF({Status} = \"Cancelled\", \"Cancelled\", IF({Margin (%)} < 20, \"Thin\", \"Healthy\"))"
           },
           {
             "key": "collected",
@@ -1850,7 +1850,7 @@
               "Draft": "slate",
               "Sent": "blue",
               "Overdue": "red",
-              "Paid": "amber",
+              "Paid": "green",
               "Void": "pink"
             },
             "required": true,
@@ -2553,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

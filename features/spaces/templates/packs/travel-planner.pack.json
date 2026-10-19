@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0211",
-  "version": 5,
+  "version": 6,
   "title": "Travel Planner",
   "description": "Travelers: plan each trip with an itinerary, bookings, a packing list and places.",
   "forWho": "Travelers planning trips",
@@ -101,7 +101,7 @@
               "Dreaming": "slate",
               "Planning": "blue",
               "Booked": "green",
-              "Done": "amber"
+              "Done": "teal"
             },
             "default": "Dreaming",
             "statusGroups": {
@@ -1663,7 +1663,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0156",
-  "version": 6,
+  "version": 7,
   "title": "Newsletter Planner",
   "description": "Newsletter editors: keep an idea bank and a send calendar for every issue.",
   "forWho": "Newsletter editors and small publishers",
@@ -86,9 +86,9 @@
             ],
             "choiceColors": {
               "Prospect": "blue",
-              "Booked": "green",
-              "Delivered": "amber",
-              "Paid": "violet"
+              "Booked": "violet",
+              "Delivered": "teal",
+              "Paid": "green"
             },
             "required": true,
             "default": "Prospect",
@@ -255,7 +255,7 @@
             ],
             "choiceColors": {
               "Idea": "blue",
-              "Draft": "green",
+              "Draft": "slate",
               "Ready": "amber",
               "Scheduled": "violet",
               "Published": "teal"
@@ -1076,7 +1076,7 @@
         "Salt Marsh Court"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

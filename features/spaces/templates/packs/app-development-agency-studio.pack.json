@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0563",
-  "version": 3,
+  "version": 4,
   "title": "App Development Agency Studio",
   "description": "App agency: projects, sprints, change requests, store releases, retainers and bugs.",
   "forWho": "App and software development agencies",
@@ -90,7 +90,7 @@
             "choiceColors": {
               "Lead": "slate",
               "Proposal sent": "blue",
-              "Active": "amber",
+              "Active": "green",
               "Maintenance only": "violet",
               "Finished": "teal"
             },
@@ -693,7 +693,7 @@
             "key": "release_ready",
             "label": "Release check",
             "parityType": "formula",
-            "formula": "IF({Open critical bugs} > 0, \"Blocked by critical bugs\", IF({Delivery progress (%)} >= 90, \"Ready to ship\", \"In progress\"))",
+            "formula": "IF({Stage} = \"Cancelled\", \"Cancelled\", IF({Open critical bugs} > 0, \"Blocked by critical bugs\", IF({Delivery progress (%)} >= 90, \"Ready to ship\", \"In progress\")))",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -1175,7 +1175,7 @@
               "To do": "slate",
               "In progress": "blue",
               "Blocked": "amber",
-              "Done": "violet"
+              "Done": "green"
             },
             "required": true,
             "default": "To do",
@@ -1499,7 +1499,7 @@
               "Low"
             ],
             "choiceColors": {
-              "Critical": "slate",
+              "Critical": "orange",
               "High": "blue",
               "Medium": "amber",
               "Low": "violet"
@@ -1953,7 +1953,7 @@
             ],
             "choiceColors": {
               "Planned": "slate",
-              "Active": "blue",
+              "Active": "teal",
               "Done": "green"
             }
           },
@@ -2289,7 +2289,7 @@
               "Requested": "amber",
               "Estimated": "blue",
               "Approved": "green",
-              "Declined": "slate",
+              "Declined": "red",
               "Built": "teal"
             }
           },
@@ -2582,7 +2582,7 @@
               "Preparing": "slate",
               "In review": "amber",
               "Rejected": "red",
-              "Approved": "blue",
+              "Approved": "teal",
               "Live": "green"
             }
           },
@@ -4064,7 +4064,7 @@
         "Cobbler Way"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

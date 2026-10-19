@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0521",
-  "version": 5,
+  "version": 6,
   "title": "Independent Bookstore HQ",
   "description": "For bookstores: titles and stock, special orders, publisher orders and returns, events.",
   "forWho": "Independent bookstores and book sellers",
@@ -1264,11 +1264,11 @@
               "Special order placed": "blue",
               "Arrived, call customer": "amber",
               "To ship": "violet",
-              "Picked up": "green",
+              "Picked up": "slate",
               "Sold": "teal",
-              "Shipped": "slate",
+              "Shipped": "green",
               "Returned": "orange",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Special order placed"
           },
@@ -1873,7 +1873,7 @@
               "Placed": "blue",
               "Partly received": "amber",
               "Received": "green",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Draft"
           },
@@ -2347,7 +2347,7 @@
               "Confirmed": "blue",
               "Promoted": "amber",
               "Held": "green",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Pitched"
           },
@@ -3087,7 +3087,7 @@
         "Chapter Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

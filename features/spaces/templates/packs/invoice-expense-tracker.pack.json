@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0313",
-  "version": 6,
+  "version": 7,
   "title": "Invoicing & Expenses for Small Business",
   "description": "Small business owners: bill clients, chase late payers and watch monthly spending.",
   "forWho": "Small business owners",
@@ -402,7 +402,7 @@
             "choiceColors": {
               "Draft": "slate",
               "Sent": "green",
-              "Paid": "blue",
+              "Paid": "teal",
               "Overdue": "red"
             },
             "required": true,
@@ -1396,7 +1396,7 @@
         "Linnet Row"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

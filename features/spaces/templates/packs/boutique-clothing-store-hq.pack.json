@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0517",
-  "version": 5,
+  "version": 6,
   "title": "Boutique Clothing Store HQ",
   "description": "For clothing boutiques: sizes and stock, seasonal buys, markdowns, holds, consignment.",
   "forWho": "Independent clothing and accessory boutiques",
@@ -438,7 +438,7 @@
             ],
             "default": "Coming soon",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "On markdown": "blue",
               "Coming soon": "amber",
               "Sold through": "violet"
@@ -1694,7 +1694,7 @@
               "Shipped": "teal",
               "Completed": "green",
               "Returned": "orange",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "On hold"
           },
@@ -2373,7 +2373,7 @@
               "Confirmed": "violet",
               "Partly delivered": "amber",
               "Delivered": "green",
-              "Cancelled": "gray"
+              "Cancelled": "red"
             },
             "default": "Planned"
           },
@@ -2665,8 +2665,8 @@
             "choiceColors": {
               "Asked": "slate",
               "Item back": "amber",
-              "Settled": "violet",
-              "Declined": "gray"
+              "Settled": "green",
+              "Declined": "red"
             },
             "default": "Asked"
           },
@@ -3346,7 +3346,7 @@
         "Willow Passage"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

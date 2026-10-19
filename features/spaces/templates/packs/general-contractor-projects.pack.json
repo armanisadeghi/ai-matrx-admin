@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 5,
+  "version": 6,
   "title": "General Contractor Projects",
   "description": "For builders and remodelers: jobs, subs, permits, change orders, punch lists and closeout.",
   "forWho": "General contractors, remodelers and project managers",
@@ -765,7 +765,7 @@
               "Delayed"
             ],
             "choiceColors": {
-              "Not started": "blue",
+              "Not started": "slate",
               "In progress": "amber",
               "Done": "green",
               "Delayed": "violet"
@@ -795,7 +795,7 @@
               "To schedule": "green",
               "Scheduled": "amber",
               "Passed": "violet",
-              "Failed": "teal"
+              "Failed": "red"
             },
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -2900,7 +2900,7 @@
         "Quarry Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

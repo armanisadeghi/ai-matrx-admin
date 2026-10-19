@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 9,
+  "version": 10,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -163,7 +163,7 @@
               "Lead": "blue",
               "Active": "green",
               "Customer": "amber",
-              "Churned": "violet"
+              "Churned": "red"
             },
             "required": true,
             "default": "Lead",
@@ -1074,7 +1074,7 @@
               "Upcoming"
             ],
             "choiceColors": {
-              "Done": "blue",
+              "Done": "teal",
               "Upcoming": "green"
             },
             "required": true,
@@ -1882,7 +1882,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 9
+    "version": 10
   },
   "pages": [
     {

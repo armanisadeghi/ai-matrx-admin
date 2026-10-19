@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
-  "version": 6,
+  "version": 7,
   "title": "Photography Studio Desk",
   "description": "For photographers: inquiries, packages, contracts, deposits, shoots and gallery delivery.",
   "forWho": "Portrait, wedding and brand photographers",
@@ -764,7 +764,7 @@
               "Booked": "green",
               "Shot": "blue",
               "Editing": "amber",
-              "Delivered": "violet"
+              "Delivered": "teal"
             },
             "required": true,
             "default": "Inquiry",
@@ -2193,7 +2193,7 @@
         "Weaver Close"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0457",
-  "version": 6,
+  "version": 7,
   "title": "Accounting Firm Desk",
   "description": "For accounting firms: clients, monthly close checklists, tax deadlines, document requests.",
   "forWho": "Bookkeeping, tax and accounting firms",
@@ -1322,7 +1322,7 @@
             "choiceColors": {
               "Requested": "slate",
               "Reminded": "blue",
-              "Received": "amber"
+              "Received": "green"
             },
             "required": true,
             "default": "Requested",
@@ -2125,7 +2125,7 @@
         "Linden Terrace"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

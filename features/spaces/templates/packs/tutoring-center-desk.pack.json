@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0557",
-  "version": 3,
+  "version": 4,
   "title": "Tutoring Center Desk",
   "description": "Tutoring center desk: students, sessions, hour packages used, assessments and progress.",
   "forWho": "Tutoring centers and independent tutor groups",
@@ -90,7 +90,7 @@
             "choiceColors": {
               "Inquiry": "slate",
               "Assessment booked": "blue",
-              "Active": "amber",
+              "Active": "green",
               "Paused": "violet",
               "Finished": "teal"
             },
@@ -700,8 +700,8 @@
             ],
             "choiceColors": {
               "Scheduled": "slate",
-              "Done": "blue",
-              "Missed": "amber",
+              "Done": "green",
+              "Missed": "pink",
               "Cancelled": "red"
             },
             "required": true,
@@ -1177,9 +1177,9 @@
               "Refunded"
             ],
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Used up": "blue",
-              "Expired": "amber",
+              "Expired": "red",
               "Refunded": "violet"
             },
             "required": true,
@@ -1450,7 +1450,7 @@
             "choiceColors": {
               "Needs support": "slate",
               "Getting there": "blue",
-              "On track": "amber",
+              "On track": "green",
               "Ahead": "violet"
             },
             "sensitivity": "internal",
@@ -2684,7 +2684,7 @@
         "Quarry Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

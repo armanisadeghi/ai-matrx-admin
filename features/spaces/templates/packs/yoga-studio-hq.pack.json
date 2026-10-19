@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 5,
+  "version": 6,
   "title": "Yoga Studio HQ",
   "description": "For yoga studios: class schedule, memberships and class packs, teacher pay, students.",
   "forWho": "Yoga and pilates studios",
@@ -902,7 +902,7 @@
             "choiceColors": {
               "Booked": "slate",
               "Checked in": "blue",
-              "Completed": "amber",
+              "Completed": "green",
               "No-show": "red",
               "Cancelled": "pink"
             },
@@ -1502,7 +1502,7 @@
             "choiceColors": {
               "Pending": "slate",
               "Failed": "red",
-              "Paid": "blue",
+              "Paid": "green",
               "Refunded": "pink"
             },
             "required": true,
@@ -2564,7 +2564,7 @@
         "Alder Walk"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 5,
+  "version": 6,
   "title": "Dental Practice",
   "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
   "forWho": "Dentists, office managers and dental front desks",
@@ -183,7 +183,7 @@
             ],
             "choiceColors": {
               "No-show": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Scheduled": "blue",
               "Confirmed": "amber",
               "Checked in": "violet",
@@ -625,7 +625,7 @@
               "New": "blue",
               "Active": "green",
               "Recall due": "amber",
-              "Inactive": "violet"
+              "Inactive": "slate"
             },
             "default": "Active"
           },
@@ -1744,7 +1744,7 @@
             ],
             "choiceColors": {
               "Denied": "red",
-              "Draft": "blue",
+              "Draft": "slate",
               "Submitted": "amber",
               "Paid": "green",
               "Appealed": "orange"
@@ -2877,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

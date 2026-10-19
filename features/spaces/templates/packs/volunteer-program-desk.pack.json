@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0551",
-  "version": 3,
+  "version": 4,
   "title": "Volunteer Program Desk",
   "description": "Recruit, screen, schedule and thank volunteers; track hours, checks and group days.",
   "forWho": "Volunteer coordinators at nonprofits and community groups",
@@ -90,7 +90,7 @@
             "choiceColors": {
               "Applicant": "slate",
               "Onboarding": "blue",
-              "Active": "amber",
+              "Active": "green",
               "On break": "violet",
               "Retired": "teal"
             },
@@ -799,7 +799,7 @@
             "choiceColors": {
               "Open": "slate",
               "Filled": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -1329,9 +1329,9 @@
             ],
             "choiceColors": {
               "Signed up": "slate",
-              "Attended": "blue",
+              "Attended": "green",
               "No-show": "red",
-              "Cancelled": "amber"
+              "Cancelled": "pink"
             },
             "required": true,
             "default": "Signed up",
@@ -1674,7 +1674,7 @@
             ],
             "choiceColors": {
               "To do": "slate",
-              "Done": "blue",
+              "Done": "green",
               "Waived": "amber"
             },
             "required": true,
@@ -3110,7 +3110,7 @@
         "Marlowe Court"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

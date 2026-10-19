@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 5,
+  "version": 6,
   "title": "Day Spa HQ",
   "description": "For day spas: treatment rooms, therapists, gift cards, memberships and retail.",
   "forWho": "Day spas and wellness retreats",
@@ -860,7 +860,7 @@
             "choiceColors": {
               "Booked": "slate",
               "Checked in": "blue",
-              "Completed": "amber",
+              "Completed": "green",
               "No-show": "red",
               "Cancelled": "pink"
             },
@@ -1521,7 +1521,7 @@
             "choiceColors": {
               "Pending": "slate",
               "Failed": "red",
-              "Paid": "blue",
+              "Paid": "green",
               "Refunded": "pink"
             },
             "required": true,
@@ -2446,7 +2446,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

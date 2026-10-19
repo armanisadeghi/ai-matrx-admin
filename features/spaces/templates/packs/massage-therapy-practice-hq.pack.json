@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 5,
+  "version": 6,
   "title": "Massage Therapy Practice HQ",
   "description": "For massage therapists: intake, session notes, memberships, rooms and reminders.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -361,7 +361,7 @@
             "choiceColors": {
               "Active": "green",
               "Paused": "amber",
-              "Cancelled": "slate",
+              "Cancelled": "red",
               "Not a member": "blue"
             },
             "default": "Active"
@@ -507,7 +507,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({No-shows} >= 2, \"Card required to book\", \"Book as usual\")"
+            "formula": "IF({Membership} = \"Cancelled\", \"None\", IF({No-shows} >= 2, \"Card required to book\", \"Book as usual\"))"
           },
           {
             "key": "add_booking_btn",
@@ -925,7 +925,7 @@
             "choiceColors": {
               "Booked": "slate",
               "Checked in": "blue",
-              "Completed": "amber",
+              "Completed": "green",
               "No-show": "red",
               "Cancelled": "pink"
             },
@@ -1641,7 +1641,7 @@
             "choiceColors": {
               "Pending": "slate",
               "Failed": "red",
-              "Paid": "blue",
+              "Paid": "green",
               "Refunded": "pink"
             },
             "required": true,
@@ -2323,7 +2323,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

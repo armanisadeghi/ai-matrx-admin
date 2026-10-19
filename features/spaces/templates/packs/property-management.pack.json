@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0414",
-  "version": 6,
+  "version": 7,
   "title": "Property Management",
   "description": "For landlords and property managers: units, leases, rent roll, repairs and renewals.",
   "forWho": "Landlords, property managers and leasing staff",
@@ -169,7 +169,7 @@
             "choiceColors": {
               "Due": "blue",
               "Paid": "green",
-              "Late": "amber",
+              "Late": "red",
               "Partial": "violet"
             },
             "statusGroups": {
@@ -563,7 +563,7 @@
               "Past"
             ],
             "choiceColors": {
-              "Active": "blue",
+              "Active": "teal",
               "Renewal offered": "amber",
               "Notice given": "violet",
               "Past": "green"
@@ -2494,7 +2494,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

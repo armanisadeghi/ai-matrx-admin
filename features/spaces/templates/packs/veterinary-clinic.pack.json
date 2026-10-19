@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0404",
-  "version": 5,
+  "version": 6,
   "title": "Veterinary Clinic",
   "description": "For vets and clinic staff: appointments, pets, owners, vaccine reminders and phone triage.",
   "forWho": "Veterinarians, vet techs and animal hospital front desks",
@@ -164,7 +164,7 @@
             ],
             "choiceColors": {
               "No-show": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Booked": "blue",
               "Checked in": "amber",
               "In exam": "violet",
@@ -1025,8 +1025,8 @@
               "Remembered"
             ],
             "choiceColors": {
-              "Active": "blue",
-              "Inactive": "green",
+              "Active": "teal",
+              "Inactive": "slate",
               "Remembered": "amber"
             },
             "default": "Active"
@@ -1967,7 +1967,7 @@
         "Tamarack Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

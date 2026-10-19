@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0569",
-  "version": 3,
+  "version": 4,
   "title": "Small Manufacturer Production Desk",
   "description": "Small manufacturer: orders, bill of materials, unit cost, work orders, scrap, QC holds.",
   "forWho": "Small manufacturers and workshops making products to order",
@@ -145,7 +145,7 @@
               "Quoted": "slate",
               "Confirmed": "blue",
               "In production": "amber",
-              "Shipped": "violet",
+              "Shipped": "green",
               "Cancelled": "red"
             },
             "required": true,
@@ -618,7 +618,7 @@
             "choiceColors": {
               "Planned": "slate",
               "Running": "blue",
-              "Done": "amber",
+              "Done": "green",
               "Stopped": "violet"
             },
             "required": true,
@@ -1098,7 +1098,7 @@
             ],
             "choiceColors": {
               "In development": "slate",
-              "Active": "blue",
+              "Active": "green",
               "Discontinued": "amber"
             },
             "required": true,
@@ -3160,7 +3160,7 @@
         "Foundry Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

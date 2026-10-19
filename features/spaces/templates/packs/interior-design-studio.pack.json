@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 5,
+  "version": 6,
   "title": "Interior Design Studio",
   "description": "For interior designers: projects by phase, furnishings orders, client approvals and fees.",
   "forWho": "Interior designers and design studios",
@@ -1811,7 +1811,7 @@
             ],
             "choiceColors": {
               "Overdue": "red",
-              "Draft": "blue",
+              "Draft": "slate",
               "Sent": "amber",
               "Paid": "green"
             },
@@ -2995,7 +2995,7 @@
         "Wexcombe Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 5,
+  "version": 6,
   "title": "Personal Trainer Business HQ",
   "description": "For personal trainers: client programs, sessions left, weekly check-ins, renewals.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -513,9 +513,9 @@
             ],
             "default": "Active",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Paused": "blue",
-              "Finished": "amber",
+              "Finished": "teal",
               "Lead": "violet"
             }
           },
@@ -989,9 +989,9 @@
             ],
             "default": "Active",
             "choiceColors": {
-              "Active": "slate",
+              "Active": "green",
               "Used up": "blue",
-              "Expired": "amber",
+              "Expired": "red",
               "Refunded": "violet"
             }
           },
@@ -1382,7 +1382,7 @@
               "Draft": "slate",
               "Running": "blue",
               "Due for review": "amber",
-              "Finished": "violet"
+              "Finished": "green"
             },
             "default": "Draft"
           },
@@ -2072,7 +2072,7 @@
               "Done": "green",
               "No-show": "red",
               "Late cancel": "orange",
-              "Cancelled": "gray"
+              "Cancelled": "pink"
             },
             "default": "Booked"
           },
@@ -2581,8 +2581,8 @@
             },
             "choiceColors": {
               "Pending": "slate",
-              "Failed": "blue",
-              "Paid": "amber",
+              "Failed": "red",
+              "Paid": "green",
               "Refunded": "violet"
             },
             "default": "Pending"
@@ -3514,7 +3514,7 @@
         "Granary Row"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

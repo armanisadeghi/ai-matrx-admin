@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 5,
+  "version": 6,
   "title": "Barbershop HQ",
   "description": "For barbershops: walk-in queue, bookings, chair rent and commission, memberships.",
   "forWho": "Barbershops and grooming studios",
@@ -879,7 +879,7 @@
             "choiceColors": {
               "Booked": "slate",
               "Checked in": "blue",
-              "Completed": "amber",
+              "Completed": "green",
               "No-show": "red",
               "Cancelled": "pink"
             },
@@ -1514,7 +1514,7 @@
             "choiceColors": {
               "Pending": "slate",
               "Failed": "red",
-              "Paid": "blue",
+              "Paid": "green",
               "Refunded": "pink"
             },
             "required": true,
@@ -2437,7 +2437,7 @@
         "Tannery Square"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

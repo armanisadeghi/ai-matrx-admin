@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 5,
+  "version": 6,
   "title": "Home Inspection Business",
   "description": "For home inspectors: bookings, agreements, reports, agent referrals and license renewals.",
   "forWho": "Home inspectors and multi-inspector firms",
@@ -224,7 +224,7 @@
               "Confirmed": "amber",
               "On site": "violet",
               "Writing report": "teal",
-              "Delivered": "slate"
+              "Delivered": "green"
             },
             "statusGroups": {
               "Booked": "todo",
@@ -2246,7 +2246,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0158",
-  "version": 6,
+  "version": 7,
   "title": "Lead Tracker",
   "description": "Small sales teams: capture leads, follow up on time and turn the best into deals.",
   "forWho": "Small sales teams and agencies",
@@ -110,7 +110,7 @@
               "Discovery": "blue",
               "Proposal": "green",
               "Negotiation": "amber",
-              "Won": "violet"
+              "Won": "teal"
             },
             "required": true,
             "default": "Discovery",
@@ -988,7 +988,7 @@
         "Peachtree Hollow"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {

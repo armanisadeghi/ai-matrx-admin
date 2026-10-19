@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0406",
-  "version": 5,
+  "version": 6,
   "title": "Home Care Agency",
   "description": "For home care agencies: referrals, clients, caregiver shifts, visit checks, credentials.",
   "forWho": "Home care and home health agencies",
@@ -522,7 +522,7 @@
             ],
             "choiceColors": {
               "Missed": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Scheduled": "blue",
               "In progress": "amber",
               "Completed": "green"
@@ -2225,7 +2225,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

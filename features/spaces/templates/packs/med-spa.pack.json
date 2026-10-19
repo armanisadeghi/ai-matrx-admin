@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 5,
+  "version": 6,
   "title": "Med Spa",
   "description": "For med spas and aesthetic nurses: bookings, consents, memberships, units and lots.",
   "forWho": "Med spa owners, injectors and aesthetic clinics",
@@ -208,7 +208,7 @@
             ],
             "choiceColors": {
               "No-show": "red",
-              "Cancelled": "orange",
+              "Cancelled": "pink",
               "Booked": "blue",
               "Confirmed": "amber",
               "In room": "violet",
@@ -1116,7 +1116,7 @@
             ],
             "choiceColors": {
               "Cancelled": "red",
-              "Active": "blue",
+              "Active": "green",
               "Paused": "amber"
             },
             "statusGroups": {
@@ -1962,7 +1962,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

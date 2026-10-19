@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0460",
-  "version": 6,
+  "version": 7,
   "title": "IT Managed Services Desk",
   "description": "For MSP owners and techs: clients, devices, patching, tickets on SLA and agreements.",
   "forWho": "Managed IT service providers and IT consultancies",
@@ -87,7 +87,7 @@
             "choiceColors": {
               "At risk": "red",
               "Onboarding": "slate",
-              "Healthy": "blue",
+              "Healthy": "green",
               "Ended": "amber"
             },
             "required": true,
@@ -2520,7 +2520,7 @@
         "Bellamy Street"
       ]
     },
-    "version": 6
+    "version": 7
   },
   "pages": [
     {
