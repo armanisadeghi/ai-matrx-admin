@@ -4,7 +4,8 @@
 // document), find the quoted passage, name its section. See documentPassage.ts.
 
 import { useEffect, useState } from "react";
-import { getDocument, getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
+import { getDocument } from "@ai-matrx/office/docs";
+import { readCurrentDocument } from "@/lib/collab/current-record";
 import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 import { loadDocument } from "@/features/rich-document/annotations/documentSource";
 import { findDocumentPassage, type DocumentPassage } from "./documentPassage";
@@ -27,11 +28,10 @@ export async function readCloudDocumentBody(id: string): Promise<LoadedBody | nu
   try {
     const doc = await getDocument(id);
     if (!doc.success) return null;
-    const snap = await getLatestDocumentSnapshot(id);
-    if (!snap.success) return null;
+    const snap = await readCurrentDocument(id);
     return {
       title: doc.data.document_name || "Untitled document",
-      body: univerDocToMarkdown(snap.data?.snapshot),
+      body: univerDocToMarkdown(snap.snapshot),
     };
   } catch {
     return null;
