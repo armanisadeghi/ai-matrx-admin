@@ -18,13 +18,8 @@ export function AdvancedReadResult({ item }: { item: AdvancedItem }) {
   const [limit, setLimit] = useState(RENDER_CHARS);
   const body = item.markdown ?? item.text;
   const shown = body.length <= limit ? body : body.slice(0, limit);
-  const facts = [
-    item.reader ? capitalize(item.reader) : null,
-    `${item.seconds.toFixed(1)} s`,
-    `${item.points.toLocaleString()} point${item.points === 1 ? "" : "s"}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  // Reader and seconds only: a result is a "doing" surface and never shows points (law 14).
+  const facts = [item.reader ? capitalize(item.reader) : null, `${item.seconds.toFixed(1)} s`].filter(Boolean).join(" · ");
   if (!item.ok) {
     return (
       <div className="flex flex-col gap-1" data-advanced-read-result="failed">

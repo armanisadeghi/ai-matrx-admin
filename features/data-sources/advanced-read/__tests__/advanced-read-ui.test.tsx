@@ -63,9 +63,10 @@ describe("advanced reader UI", () => {
     expect(container.querySelector("[data-action=advanced-read]")).not.toBeNull();
   });
 
-  it("shows reader, seconds and points billed on a success", () => {
+  it("shows reader and seconds on a success, never points (law 14)", () => {
     mount(<AdvancedReadResult item={item()} />);
-    expect(container.textContent).toContain("Advanced reader · 27.0 s · 12 points");
+    expect(container.textContent).toContain("Advanced reader · 27.0 s");
+    expect(container.textContent).not.toContain("point");
   });
 
   it("draws a huge page in slices with Show more", () => {
