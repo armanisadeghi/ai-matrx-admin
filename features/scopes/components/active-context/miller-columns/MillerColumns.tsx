@@ -207,7 +207,7 @@ function ColRow({
         <CheckGlyph on={on} />
       </span>
       <KindGlyph node={node} />
-      <span className="min-w-0 flex-1 truncate text-xs text-foreground">
+      <span className="min-w-0 flex-1 truncate text-xs text-foreground" data-user-content>
         <NodeLabel node={node} />
       </span>
     </button>
