@@ -20,7 +20,7 @@ export interface KeywordSerpIntentAnalysisBlockProps {
 }
 
 interface ProviderFinding {
-  provider: "google" | "brave";
+  provider: "google" | "web";
   apparentIntent: string;
   confidence: number | null;
   dominantFormats: string[];
@@ -79,8 +79,15 @@ export function readKeywordSerpIntentAnalysis(
   if (Array.isArray(serverData.provider_findings)) {
     for (const item of serverData.provider_findings) {
       if (!isJsonObject(item)) continue;
-      const provider = item.provider;
-      if (provider !== "google" && provider !== "brave") continue;
+      const rawProvider = item.provider;
+      // The server now emits "web"; analyses stored before that say "brave".
+      if (
+        rawProvider !== "google" &&
+        rawProvider !== "web" &&
+        rawProvider !== "brave"
+      )
+        continue;
+      const provider = rawProvider === "google" ? "google" : "web";
       providers.push({
         provider,
         apparentIntent: text(item.apparent_intent) ?? "Unclear",
@@ -213,7 +220,7 @@ export default function KeywordSerpIntentAnalysisBlock({
             >
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold capitalize text-foreground">
-                  {provider.provider}
+                  {provider.provider === "web" ? "Web search" : "Google"}
                 </span>
                 <Badge variant="outline" className="capitalize">
                   {humanizeIdentifier(provider.apparentIntent)}
