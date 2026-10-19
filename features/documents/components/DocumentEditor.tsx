@@ -137,6 +137,7 @@ import { registerUniverFacadeDependencies } from "@ai-matrx/office/univer";
 import { readCollabAntiEntropyMs } from "@/lib/knobs/collabAntiEntropy";
 import { readCollabOtRooms } from "@/lib/knobs/collabOtRooms";
 import { chooseRoom } from "@/lib/collab/choose-room";
+import { useCommentAccess } from "@/features/rich-document/annotations/useCommentAccess";
 import { showOfflineNotice } from "@/lib/collab/offlineNotice";
 import { RemotePeerChips as RemoteCursorsLayer } from "@ai-matrx/data/realtime/collab/react";
 import { documentHistoryToggleInput } from "@ai-matrx/office/univer/history";
@@ -172,6 +173,8 @@ import { formatCount } from "@ai-matrx/kit/format";
 if (typeof window !== "undefined") performance.mark("load:heavy:Univer docs editor", { detail: { home: ["/documents"] } });
 
 const VIEWING_MODE_NOTICE = "Viewing mode — switch to Editing to change";
+const COMMENT_ONLY_NOTICE = "You can comment on this document, but changing it needs edit access. Ask its owner.";
+const VIEW_ONLY_NOTICE = "You have view access only. Ask the owner for edit access to change this document.";
 
 type Props = {
   documentId: string;
@@ -273,6 +276,13 @@ export default function DocumentEditor({
   useEffect(() => {
     editableRef.current = editable;
   }, [editable]);
+  // A commenter's seat is read-only for text but still sends its comment anchors to the room (the door accepts only those).
+  const mayComment = useCommentAccess("udt_document", documentId, editable);
+  const commentOnly = !editable && mayComment;
+  const commentOnlyRef = useRef(commentOnly);
+  useEffect(() => {
+    commentOnlyRef.current = commentOnly;
+  }, [commentOnly]);
   useEffect(() => {
     collabRef.current = collab;
   }, [collab]);
@@ -431,6 +441,7 @@ export default function DocumentEditor({
           );
         },
         editable: () => editableRef.current,
+        commentOnly: () => commentOnlyRef.current,
         unitId: () => apiRef.current?.getActiveDocument()?.getId?.() ?? null,
         undoRedo: () => resolveUndoRedoService(kept.univer),
         selection: docSelectionPort(kept.univer),
@@ -687,22 +698,23 @@ export default function DocumentEditor({
     el.addEventListener("paste", onPaste, true);
     return () => el.removeEventListener("paste", onPaste, true);
   }, [bootState, editable, docMode, editOps]);
-  // Viewing mode is Univer's own read-only permission on this document; a refused edit says so in our words.
+  // Viewing mode (and a seat without edit access) is Univer's own read-only permission on this document; a refused edit says so in our words.
   useEffect(() => {
     if (bootState !== "ready") return undefined;
-    const viewing = docMode === "viewing";
+    const viewing = docMode === "viewing" || !editable;
+    const refusal = !editable ? (commentOnly ? COMMENT_ONLY_NOTICE : VIEW_ONLY_NOTICE) : VIEWING_MODE_NOTICE;
     void editOps.setViewOnly(viewing);
     if (!viewing) return undefined;
     let stop: (() => void) | null = null;
     let gone = false;
     void editOps
-      .onEditDenied(() => notice.info(VIEWING_MODE_NOTICE, { id: "doc-viewing-mode" }))
+      .onEditDenied(() => notice.info(refusal, { id: "doc-viewing-mode" }))
       .then((unsubscribe) => (gone ? unsubscribe() : (stop = unsubscribe)));
     return () => {
       gone = true;
       stop?.();
     };
-  }, [bootState, docMode, editOps, unitId]);
+  }, [bootState, docMode, editable, commentOnly, editOps, unitId]);
   useEffect(() => {
     if (bootState !== "ready") return;
     const style = (apiRef.current as unknown as PageSetupApiLike | null)?.getActiveDocument?.()?.getDocumentDataModel?.()?.getSnapshot().documentStyle;
