@@ -4,10 +4,7 @@ Paste a YouTube channel, `@handle`, playlist or any video link into one box and
 the whole catalog lists in seconds, split into long videos, Shorts and live,
 with metrics, transcripts, and the server's Actions on any selection.
 
-Arman, 2026-09-17: *"provide a youtube channel and have the system get a list of
-all videos in seconds, then separate shorts from longs, provide metrics on
-counts, dates, lengths… then transcribe and organize all, some… especially the
-experience a human has and how quickly and easily we can do things."*
+(owner's words, 2026-09-17, in `common-docs/systems/media/media-source-catalog/VISION.md`)
 
 **Routes:** `/libraries` (front door) · `/libraries/[id]` (one Library).
 **Settings:** `/user-settings/organizations/media-catalog`.

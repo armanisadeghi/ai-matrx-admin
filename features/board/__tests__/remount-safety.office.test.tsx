@@ -24,6 +24,9 @@ jest.mock("@/features/workbooks/components/WorkbookEditor", () => {
   };
 });
 
+// The records engine (a grid the CRM record offers behind a tab) is the package's own; it has no bearing on the tile.
+jest.mock("@ai-matrx/records-ui", () => new Proxy({ __esModule: true }, { get: (target, key) => (key in target ? (target as Record<PropertyKey, unknown>)[key] : () => null) }));
+
 import "@/lib/sheets-host";
 import { BOARD_ITEM_TYPES } from "../items/catalog";
 import { expectRemountSafe, runCycle } from "./remount-safety/harness";
@@ -86,4 +89,39 @@ remountType(
       kept: (tile) => ({ editor: tile.container.querySelector('[data-editor="workbook"]') !== null, name: shows(tile.container, WORKBOOK_NAME) }),
     }),
   (r) => expectRemountSafe(r, { editor: true, name: true }, [/^workbench\.udt_workbooks$/]),
+);
+
+// ─── Person or company (CRM) ─────────────────────────────────────────────────
+const PARTY_ID = "c7e1a4d9-5b32-4f68-9d0a-2e8b6c3f1a75";
+const PARTY_NAME = "Priya Raman";
+const partyRow = {
+  id: PARTY_ID,
+  organization_id: ORGANIZATION.id,
+  party_kind: "person",
+  display_name: PARTY_NAME,
+  first_name: "Priya",
+  last_name: "Raman",
+  job_title: "Property owner",
+  record_class: "primary",
+  canonical_id: null,
+  deleted_at: null,
+  created_at: "2026-09-30T19:00:00.000Z",
+  updated_at: "2026-09-30T19:00:00.000Z",
+  employer: null,
+};
+
+// Break: the CRM record keeps its detail (contact points, employment, timeline) in component state
+// and re-reads all of it on wake / remount, dropping to its skeleton while it does.
+remountType(
+  "party",
+  () =>
+    runCycle(type("party"), { kind: "entity", entity: "party", id: PARTY_ID }, {
+      title: PARTY_NAME,
+      prepare: () => {
+        seed("crm.party", [partyRow]);
+      },
+      loadMs: 1500,
+      kept: (tile) => ({ record: shows(tile.container, PARTY_NAME), loading: tile.container.querySelector('[aria-busy="true"]') !== null }),
+    }),
+  (r) => expectRemountSafe(r, { record: true, loading: false }, [/^crm\./]),
 );

@@ -37,7 +37,7 @@ build plan this feature is part of (project P5).
   `history.replaceState` at the buffer grain (`html`/`css`/`js` while on Code), so any tab is
   deep-linkable and pre-fold `?tab=html|css|js` links land on the right buffer. **Plan**
   (`components/PagePlanTab.tsx`, `React.lazy` in-gate) is the page's BEFORE per
-  `/Users/armanisadeghi/code/common-docs/systems/publish/cms/HANDOFF.md`, and it is the REAL editor, not a partial view (Arman ruling
+  `/Users/armanisadeghi/code/common-docs/systems/publish/cms/HANDOFF.md`, and it is the REAL editor, not a partial view (ruling
   2026-08-16): with `plan_node_id` set it mounts the canonical
   `features/marketing/content-plan/components/NodePanel` (hosted) with the workspace's own hook
   composition — full control, pipeline rail at the top, identical to the plan workspace. (The
@@ -82,7 +82,7 @@ build plan this feature is part of (project P5).
 - `POST /api/cms/assets` — `list/get/create/update/usage/delete` (owner-scoped) + `admin_list` (requireSuperAdmin). W2-B asset library over `client_assets`. **Bytes never pass through this route** — the client uploads through the canonical `fileHandler.upload({preset:'web', visibility:'public'})` → aidream `POST /assets` (durable public CDN URL), then `create` registers the metadata row. `create` re-enforces the durability doctrine (second layer): refuses a `file_path` that isn't absolute https or that carries a signed/expiring-link signature (`isSignedExpiringUrl`, mirrors aidream's validator). `delete` LIVE-scans pages+components (live + draft columns) and returns 409 `asset_in_use` with the exact reference list unless `force`; `usage` returns the same scan and re-syncs `used_in_pages`. aidream twin: `services/cms_assets/`.
 - `POST /api/cms/collections` — W2-C collections (CMS migration 0015): `list` (per site, with live item/unread counts) / `get` / `create` / `update` / `archive` / `delete` (soft) / `rotate_key` (owner-scoped) + item ops `items_list` (filters + search + pagination) / `items_get` / `items_set_flags` (seen/spam/archive, row or bulk) / `items_delete` (soft) / `items_create` + `items_update` (ADMIN AUTHORING — see below) / `items_export` (rows for client-side CSV; stops on EITHER cap — 10,000 rows or ~3.5 MB serialized, returning `{truncated, reason}` because a row cap alone never bounded unbounded jsonb under Vercel's 4.5 MB response limit) + `admin_list` (requireSuperAdmin). Server rules mirrored in-route: slug `^[a-z0-9][a-z0-9_-]{0,62}$`; a field_schema containing `richtext` is REJECTED while `public_write` is true (checked on the MERGED result on update). First collection create mints `client_sites.data_api_key` (`'mk_' + 32 hex`); `rotate_key` re-mints it (old key dies immediately, published pages pick the new one up at next SSR render). Search on non-searchable collections is a capped in-route scan (2,000 newest; `searchTruncated` flag) — PostgREST cannot ilike a jsonb column; searchable collections use `textSearch` on `search_vector`.
   Flipping `searchable` false→true calls `backfill_collection_search_vectors` (CMS migration 0019) — the tsvector trigger only fires on insert/`UPDATE OF data`, so existing rows were silently unfindable; the row count rides back on `searchBackfill` and screams at the cap.
-  **Admin item authoring (`items_create` / `items_update`)** — Arman's ruling is that client sites RENDER collection data (events, testimonials, FAQ entries, practitioner profiles) "curated by a human OR authored by an agent"; these are the human half, twinning aidream's `collection_item_service.create/update` (CONTRACT §CW2). They run the SAME canonical validator as the visitor path (`features/cms/collections/validateItem.ts`), so a `strict` collection refuses an admin-authored item for exactly the reasons it refuses a visitor's — 422 with field-level `validationErrors`; advisory warnings ride back on success. The route is the size authority (CW3): 65,536 bytes default, `settings.max_item_bytes` override, 524,288 ceiling, 200 keys after flatten. Quota is a QUARANTINE, never a rejection — at `settings.max_items` the row lands `status='archived'`.
+  **Admin item authoring (`items_create` / `items_update`)** — the ruling is that client sites RENDER collection data (events, testimonials, FAQ entries, practitioner profiles) "curated by a human OR authored by an agent"; these are the human half, twinning aidream's `collection_item_service.create/update` (CONTRACT §CW2). They run the SAME canonical validator as the visitor path (`features/cms/collections/validateItem.ts`), so a `strict` collection refuses an admin-authored item for exactly the reasons it refuses a visitor's — 422 with field-level `validationErrors`; advisory warnings ride back on success. The route is the size authority (CW3): 65,536 bytes default, `settings.max_item_bytes` override, 524,288 ceiling, 200 keys after flatten. Quota is a QUARANTINE, never a rejection — at `settings.max_items` the row lands `status='archived'`.
   **These MUST NOT use the `submit_collection_item` RPC.** That is the visitor path: it carries the rate windows, quota quarantine and the `visitor_write_at` stamp the limiter counts (`visitor_write_at > now() - interval '1 hour'`). Admin writes are plain inserts, so an admin adding 30 events cannot burn the window and 429 the site's public contact form. Admin rows carry NO visitor provenance (no ip/user_agent/source_url), are never `is_spam`, and record `submitted_by`.
 - `POST /api/html-pages` — standalone `html_pages` CRUD (see `features/html-pages/README.md`)
 
@@ -131,7 +131,7 @@ a matching `use<Surface>SurfaceScope` hook under `features/cms/hooks/` /
 `features/html-pages/hooks/` returning `() => SurfaceScopePayload` so menus read live editor state at
 click time, not a stale snapshot.
 
-**In-place AI buttons (Arman ruling 2026-08-13 — "everything needs to be agent driven"):** every
+**In-place AI buttons ((owner's words, 2026-08-13, in `common-docs/systems/publish/cms/VISION.md`)):** every
 CMS editing surface offers its agent IN PLACE via
 `../aidream/apps/shared/chat/src/surfaces/components/chrome/SurfaceRoleAgentButton.tsx` (launches the surface role's
 effective agent with the live runtime scope — the exact header-panel launch path, never a second
@@ -213,7 +213,7 @@ Supabase MCP at the wrong project for this feature.
 
 **Cross-repo system-of-record: `/Users/armanisadeghi/code/common-docs/systems/publish/cms/STATE.md` § Ownership and access — read it before touching this in ANY repo.**
 
-Arman, 2026-08-15: _"of course they should be ORG scoped and shareable."_ Before
+(owner's words, 2026-08-15, in `common-docs/systems/publish/cms/VISION.md`) Before
 that, `client_sites` had `owner_user_id` and nothing else — which is exactly why a
 MAIN `web.site` could carry a valid `settings.cms.site_id` and `resolveCmsLink`
 would still refuse it for a teammate. The pointer was never dangling; the reader
@@ -593,7 +593,7 @@ UI-complete here but only take effect once P1's service layer reads them.
   its registered inline action admits the requester through the canonical
   membership RPC and then completes the durable request.
 
-- `2026-08-15` — **CMS sites became ORG-SCOPED and SHAREABLE** (Arman: "of course
+- `2026-08-15` — **CMS sites became ORG-SCOPED and SHAREABLE** ("of course
   they should be"). `client_sites` was the last entity on private-ownership-only,
   and because MAIN `web.site` rows carry `settings.cms.site_id` into this project,
   an org's marketing site could name a CMS site **no teammate could open** — the
@@ -693,7 +693,7 @@ UI-complete here but only take effect once P1's service layer reads them.
   path) and every plan CMS badge (Draft/Published) opens its page in a new tab. Work order:
   `/Users/armanisadeghi/code/common-docs/systems/publish/cms/HANDOFF.md` W3.
 
-- `2026-08-14` — **THE PAGE-HUB RULING (Arman): everything that makes a page is PART of the
+- `2026-08-14` — **THE PAGE-HUB RULING: everything that makes a page is PART of the
   page.** The page editor becomes the page's hub — Plan / Measure tabs reusing the canonical
   plan-node and PageWorkspace components via the `plan_node_id` / `web_page_id` joins, plus
   reverse doors from workspace and plan. Work order + before/during/after doctrine:

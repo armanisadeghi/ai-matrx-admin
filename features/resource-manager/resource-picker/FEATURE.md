@@ -54,8 +54,7 @@ Of ~16 sub-pickers:
   `WebpageResourcePickerCore`'s `onSelect` gets a second argument `{ processedDocumentId }` — the Source the
   scraper landed (null when none landed or the person edited/cut the text), so a host never scrapes twice.
   Existing hosts are unchanged (both optional / ignorable).
-- 2026-09-29 — **Notes opens without downloading every note** (Arman: "it took a long time … fetch the
-  last 10 most active plus some counts"). `NotesResourcePicker` opens on the N most recently changed
+- 2026-09-29 — **Notes opens without downloading every note** ((owner's words, 2026-09-29, in `common-docs/systems/platform/ui-shell/VISION.md`)). `NotesResourcePicker` opens on the N most recently changed
   notes (knob `resource_picker.notes_recent_count`, default 10) (2026-10-11: the picker is grouped by home, not folder; the folder counts RPC is retired); a home loads its notes when opened; search runs in the database
   (knob `resource_picker.notes_search_limit`); the body is read only for a previewed or picked note, so
   a pick still hands the host the whole `Note`. Measured on admin@admin.com: open payload 1.3 MB → ~6.6 KB.

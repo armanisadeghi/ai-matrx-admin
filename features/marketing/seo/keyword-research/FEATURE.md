@@ -76,7 +76,7 @@ The site-scoped surface is
     the completed run (`seo.research_completed {reused_completed_run: true}`) — zero
     duplicate paid calls.
 
-## Autosave + library management (Arman ruling 2026-07-29)
+## Autosave + library management (ruling 2026-07-29)
 
 **Every keyword surfaced by research is ALREADY auto-saved — server-side.**
 `POST /seo/keywords/research` calls `seo.fn_ingest_keyword_research`, which
@@ -85,7 +85,7 @@ upserts the primary AND every phrase in every `keyword_lists` label into
 (`origin='ai_research'`). No client-side save exists or is needed; selection
 on page-bound surfaces only controls what ATTACHES to the page.
 
-Management (the ruling's other half — autosave must not become clutter):
+Management (ruling's other half — autosave must not become clutter):
 
 - **Removal is soft-archive, ONLY via `seo.fn_archive_keywords` /
   `seo.fn_restore_keywords`** (SECURITY DEFINER, authenticated-granted;
@@ -298,10 +298,7 @@ and the same block renders read-only in chat.
   leaves unrelated panel tokens untouched; opening the link never auto-runs the
   paid research pipeline.
 
-- 2026-08-26 — **Sites column + bulk site assignment** (Arman: _"I'm seeing a bunch of things
-  that are from the past, and they're still showing up and creating confusion… if you don't
-  have any simple way of properly associating them with the right site, then you just need to
-  make sure you update the page to properly allow for bulk edits"_). The keyword library is
+- 2026-08-26 — **Sites column + bulk site assignment** ((owner's words, 2026-08-26, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`)). The keyword library is
   global by design (one row per phrase+language, shared by every site), so the only place a
   site can live is the `seo.site_keyword_value` association — which the library never showed.
   Now: a **Sites** column (sorts and filters, with `Unassigned` as a filterable value —
@@ -335,7 +332,7 @@ and the same block renders read-only in chat.
   Intelligence and archive menu, and share the desktop table's selection state
   so bulk archive remains directly reachable.
 
-- 2026-08-25 — **MSR-26 (Arman's ruling): keyword research belongs to a SITE, never
+- 2026-08-25 — **MSR-26 (ruling): keyword research belongs to a SITE, never
   the organization.** Supersedes the MSR-14 entry below — the derivative
   "does any phrase already have a `site_keyword_value` row" heuristic is
   retired; there is now a REAL binding.
@@ -397,7 +394,7 @@ p_dry_run)` — sibling of `seo.site_meaning_copy`, same dry-run-then-write
   - Verified live: a real (non-mocked) research run bound to a site persisted
     the run ledger, the association edge, and `site_keyword_value` rows; the
     saved-research library reopened scoped to exactly that site.
-- 2026-08-25 — **MSR-14 + MSR-15 (Arman's marketing-surface-repair walkthrough).**
+- 2026-08-25 — **MSR-14 + MSR-15 (The marketing-surface-repair walkthrough).**
   MSR-14: `SavedResearchLibrary` gained a real text search over `primary_keyword`
   and a **Site** filter (grouped by brand). Investigated first: neither the
   saved artifact (`content_ir.kind_instance`) nor `seo.keyword` carries a
@@ -562,7 +559,7 @@ stage` / `Opportunity` / `Not tracked`, with hover explanations and one-line
   explicit-entry restore in `ensureKeywordId`. Archive is durable against
   research re-runs; every archive is confirmable + undoable.
 - 2026-07-28 — **`LiveResearchFeed` condemned: bespoke stream rendering is banned
-  platform-wide (Arman ruling).** Every doc that blessed this surface as "the
+  platform-wide (ruling).** Every doc that blessed this surface as "the
   canonical non-chat `useLiveJsonRegion` consumer" now names it as the one violation
   to delete; the rule lives in CLAUDE.md + `features/content-ir/FEATURE.md` § No
   bespoke stream renderers, and `useLiveJsonRegion` is marked internal to content-ir.

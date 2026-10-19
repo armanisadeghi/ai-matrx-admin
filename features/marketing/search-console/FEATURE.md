@@ -216,7 +216,7 @@ DigStampPanel.tsx` ("Saves matches as") attaches it via
   (word-boundary unspaced form, or exact name + a legal entity token) —
   datadestruction.com's "data destruction" IS its money vocabulary, so
   only "datadestruction.com" / "data destruction inc"-shaped queries are
-  brand there (Arman's ruling); the threshold + match rules live ONLY in
+  brand there (ruling); the threshold + match rules live ONLY in
   the migration's header) beats universal
   `seo.keyword.intent_class` (transactional + commercial_investigation →
   `money`, informational → `educational`, navigational → `brand`) beats
@@ -464,9 +464,7 @@ Server half: `aidream/services/seo/keyword_classification_backfill.py`.
 
 ## KW business guidelines — the doctrine the AI classifies under (2026-08-21)
 
-D35, ratified by Arman 2026-08-21: _"the agent wouldn't know CRT is a horrible
-keyword unless there's some document that guides it and we keep these things up
-to date."_ ONE per-site prose document, versioned, read by every AI
+D35, ratified by (owner's words, 2026-08-21, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) ONE per-site prose document, versioned, read by every AI
 classification and valuation run for that site.
 
 - **Storage:** `web.site.settings.kw_guidelines`
@@ -722,7 +720,7 @@ the partial-index predicate identical.
 should this be?" question is asked in that calendar — never UTC's, never the
 viewer's. Three places do the conversion and must agree: `gsc_today()` in
 aidream (`packages/matrx-seo/matrx_seo/providers/gsc.py`, the ingestion side),
-`v_gsc_timezone` in `seo.gsc_ingestion_health` (the verdict), and
+`v_gsc_timezone` in `seo.gsc_ingestion_health` (verdict), and
 [`lib/gsc-day.ts`](./lib/gsc-day.ts)'s `gscToday()` (every frontend freshness
 read). Deriving the day from UTC overstates staleness by one for the 7-8 hours
 between UTC and Pacific midnight. `GSC_DATA_LAG_DAYS` in
@@ -796,7 +794,7 @@ its dismiss-layer race — the input "flashed and disappeared").
   the status line, and renders a first-screen banner naming every affected
   site with one **Fix Google connection** door. A cause without its door is
   the defect class this entry exists to prevent.
-  **THE DOMAIN-PROPERTY RULE (Arman's ruling, same day):** when discovery
+  **THE DOMAIN-PROPERTY RULE (ruling, same day):** when discovery
   holds `sc-domain:<site domain>`, that property IS the binding. Site
   Integrations now: auto-binds it on connect (`preferredGscProperty` — it
   used to bind whichever matching version discovery returned first),
@@ -921,8 +919,7 @@ its dismiss-layer race — the input "flashed and disappeared").
   All verified live against All Green Recycling's 27,439-row Queries table.
   Full register: `../../../../common-docs/systems/marketing/seo/projects/marketing-surface-repair/REGISTER.md`.
 
-- 2026-08-25 — **MSR-13 (Arman): the portfolio cards "look dead… floating text
-  in a card."** `SearchConsolePortfolio` cards now lead with Clicks (largest
+- 2026-08-25 — **MSR-13 ((owner's words, 2026-08-25, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) `SearchConsolePortfolio` cards now lead with Clicks (largest
   number, its own row) and a real 28-day trend line underneath it — the
   reused `KeywordTrendSparkline` (`keyword-research/components/
 KeywordMetrics.tsx`), which gained an optional `tooltipLabel` prop so a
@@ -945,7 +942,7 @@ KeywordMetrics.tsx`), which gained an optional `tooltipLabel` prop so a
   `gsc_ingestion_health`; large-site health reads no longer sort/aggregate the
   full multi-profile corpus through the wrong index.
 
-- 2026-08-24 — **Class is editable IN THE CELL** on the query dimension table (Arman's ruling:
+- 2026-08-24 — **Class is editable IN THE CELL** on the query dimension table (ruling:
   "anything that's editable, I should be able to directly edit from the list… a dropdown and pick
   the option"). `buildGscValueColumns` takes an optional `editing.keywordIdOf`; `GscDimensionTable`
   wires `edit={{ enabled, onSave }}` → `setGscKeywordClass` (`seo.gsc_set_keyword_class`), batching
@@ -954,7 +951,7 @@ KeywordMetrics.tsx`), which gained an optional `tooltipLabel` prop so a
   reason for it, which a select cannot collect, so it remains in the ruling surfaces that ask.
   Verified live: cell → dropdown → Save → `seo.site_keyword_value.traffic_class` updated.
 - 2026-08-24 — Insights drilldowns (cannibalization, shifts) moved off the side drawer onto the
-  canonical table-owned WindowPanel (`detail` disabled, `window.renderView`), per Arman's ruling:
+  canonical table-owned WindowPanel (`detail` disabled, `window.renderView`), per the ruling:
   side drawers are out, the window panel is the panel primitive (SEO VISION §2.7b). Portfolio
   width cap (`max-w-6xl`) removed — business-dashboard tables use the full page width.
 
@@ -1204,7 +1201,7 @@ KeywordMetrics.tsx`), which gained an optional `tooltipLabel` prop so a
   every dig/insight empty state names its window; new `lib/format.ts`
   UTC-safe date formatting replaces `formatCompactDate` in the header +
   portfolio (was rendering GSC days a day early with a bogus time).
-- 2026-08-08 — Brand identity round 2 (Arman's rulings): `brand_aliases`
+- 2026-08-08 — Brand identity round 2 (rulings): `brand_aliases`
   profile source (people/legal names — seeded for All Green, Titanium,
   IOPBM), word-boundary strong matching (competitor domains excluded),
   exact-name + legal-suffix strong rule ("data destruction inc" = brand,

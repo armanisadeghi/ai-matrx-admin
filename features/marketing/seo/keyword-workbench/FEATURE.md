@@ -28,7 +28,7 @@ old `?view=classification` link lands here now, never a crash. See
 
 **Cross-repo SoR:** `common-docs/systems/marketing/seo/seo-keywords/value-system.md`
 § THE KEYWORD WORKBENCH · principles **P23–P28** in `keyword-system-decisions.md`
-· Arman's words in `VISION.md` § "Assignment, tables, and panels" · the campaign
+· (owner's words, undated, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) · the campaign
 plan in `common-docs/systems/marketing/seo/seo-keywords/value-system.md` (C13/C14).
 
 ## The four laws this surface exists to satisfy
@@ -62,8 +62,7 @@ mutation; it is not a second placement system.
 > Change Log below keeps the period-accurate name for entries written before
 > the rename.
 
-Arman: *"What I've lost is my ability to set the service or product or main
-thing that this relates to. That's gone."* And: *"when I look at all green
+(owner's words, undated, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) And: *"when I look at all green
 electronics recycling, the first thing I wanna know is what service they map
 to… I wanna know what maps to e-waste recycling, what maps to ITAD, and what
 maps to data destruction."*
@@ -309,7 +308,7 @@ placement case, reads it back through both RPCs, and rolls the plant back.
   read `seo.keyword_placement_resolve` beside `gsc_keyword_topics_for` over the
   same page of ids so every placement carried its governing rung (superseded the
   same day by the one-read entry above); `ServiceCell` marks an INHERITED one with a single tiny (i)
-  (Arman's ruling — never a column of tier badges) whose popover names the rung,
+  (ruling — never a column of tier badges) whose popover names the rung,
   says what it means, and offers "Make it this site's own" through the SAME one
   placement write. A site's own ruling wears nothing. Live-verified on Data
   Destruction, Inc. (site `38eff4c9…`): "best way to destroy a hard drive" read

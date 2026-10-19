@@ -5,7 +5,7 @@
 
 ## There is NO commerce-local configuration surface — by ruling
 
-Arman (2026-08-29): the `/commerce/settings` page "makes no sense" — a user-level page doing
+2026-08-29: the `/commerce/settings` page was judged senseless (owner's words, 2026-08-29, in `common-docs/systems/platform/feature-knobs/VISION.md`) — a user-level page doing
 org configuration — and broke the (core) route chrome. It was **deleted** per no-legacy
 (page, layout, admin map, `ScopedConfigPanel`). Never rebuild a commerce lens over the
 scoped-configuration primitive. Commerce knobs are ordinary registry rows
@@ -30,7 +30,7 @@ Reads ride `platform.knob_index`; writes ride `platform.knob_override_set` — v
 ## Change Log
 
 - 2026-08-29 — Deleted the parallel `/commerce/settings` surface (page + layout + admin map +
-  `ScopedConfigPanel`) per Arman's ruling and no-legacy; repointed the store-connect onboarding
+  `ScopedConfigPanel`) per the ruling and no-legacy; repointed the store-connect onboarding
   step to `/organizations/[orgId]/settings/configuration`; registered `billing-dimensions.ts`
   in the Commerce Review admin map. This feature now holds only the billing-dimensions
   vocabulary module.

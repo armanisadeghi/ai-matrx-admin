@@ -974,6 +974,8 @@ Interaction content and last_touch_at are withheld from model context until the 
 </surface_intro>`,
   groups,
   values,
+  // Which record, at a glance (a board tile that is not live).
+  briefValues: ["display_name", "party_kind", "job_title", "lifecycle_stage"],
   writeTargets,
   skipBaselineValues: false,
 };

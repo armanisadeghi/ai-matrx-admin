@@ -78,8 +78,7 @@ never a TOGGLE).
 
 ## Where it is wired
 
-- `scripts/run-release-gates.sh` — **advisory in both modes**, per Arman's
-  standing rule (scream, never block). Deliberately advisory even in `--strict`:
+- `scripts/run-release-gates.sh` — **advisory in both modes**, per the standing rule (scream, never block). Deliberately advisory even in `--strict`:
   this is the only gate whose subject is the calendar rather than the diff, and a
   release unrelated to `history.row_versions` must not be blocked because a
   partition expires in seven weeks.

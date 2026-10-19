@@ -8,7 +8,7 @@
 
 ## Purpose
 
-The reusable **provider gallery + hand-holding guide** pattern (HOUSE DOCTRINE for external-source onboarding, Arman 2026-08-17): big recognizable provider cards, each opening a dedicated public guide page that teaches a brilliant, absolutely non-technical Expert exactly how to get their data OUT of an external provider so they can bring it INTO AI Matrx. The first gallery is **ai-chats** (ChatGPT, Claude, Gemini, Grok, Meta AI, Cursor, VS Code Copilot, Claude Code, AI Matrx, Matrx Local, Other), feeding Masterwork Distillation's chat-import lane.
+The reusable **provider gallery + hand-holding guide** pattern (HOUSE DOCTRINE for external-source onboarding, 2026-08-17): big recognizable provider cards, each opening a dedicated public guide page that teaches a brilliant, absolutely non-technical Expert exactly how to get their data OUT of an external provider so they can bring it INTO AI Matrx. The first gallery is **ai-chats** (ChatGPT, Claude, Gemini, Grok, Meta AI, Cursor, VS Code Copilot, Claude Code, AI Matrx, Matrx Local, Other), feeding Masterwork Distillation's chat-import lane.
 
 A gallery is **config, not code**: future galleries (meeting platforms — Google Meet/Teams/Zoom; message threads — iCloud/Google/WhatsApp) are a new `SourceGalleryConfig` + provider files, **zero new components**.
 

@@ -4,7 +4,7 @@
 
 > ## 🚨 There is no attorney, and there is no ratification. Read this before you trust the gate.
 >
-> **2026-08-20.** Arman ruled that counsel is not affordable right now, and that the work we would
+> **2026-08-20.** Ruled that counsel is not affordable right now, and that the work we would
 > have handed to an attorney becomes an internal agent review instead: read the actual laws and
 > the actual code, loop on the feedback, then let fresh agents with no prior context attack the
 > result. That review ran. **It is diligence, not legal advice, and it clears nothing.**

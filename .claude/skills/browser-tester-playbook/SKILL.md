@@ -40,8 +40,8 @@ section you need, not the whole file.
    `?ai_test_mode=stand_in` (saved answers, no spend). When the brief tests the AI itself, never.
    Results badged "Baseline replay" / "Stand-in" are saved answers, never report them as AI output.
    [ai-test-mode](/policies/ai-test-mode.md).
-7. AI replies: never test through General Chat (Arman, 2026-10-17: "General chat is for users who
-   chat"). Any test that needs an AI reply uses Test Reply (agent `8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f`,
+7. AI replies: never test through General Chat (it is for people who chat;
+   [owner's words](/systems/chat/conversations/VISION.md)). Any test that needs an AI reply uses Test Reply (agent `8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f`,
    the cheapest plumbing model). The test seats (admin@admin.com, test@test.com) already default
    a new chat to it through a user binding of `chat.default_new_chat`; for any other seat open
    `/ai?agent=8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f` or pass that agent id. Send a short message

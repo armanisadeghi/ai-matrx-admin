@@ -47,6 +47,7 @@ export const BOARD_ADDABLE_ITEM_KEYS = [
   "social-outlier-feed",
   "social-ad",
   "social-swipe-collection",
+  "party",
 ] as const;
 
 /** Item types `board_find_records` searches (each has a search token or a finder). */
@@ -67,6 +68,7 @@ export const BOARD_FINDABLE_ITEM_KEYS = [
   "meeting",
   "workflow-run",
   "study-kit",
+  "party",
 ] as const;
 
 /** Most entries one `board_add_items` call places. */

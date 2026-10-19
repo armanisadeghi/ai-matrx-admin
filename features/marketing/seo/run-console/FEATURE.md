@@ -20,7 +20,7 @@ is **KI-014**.
 
 ---
 
-## Arman's ruling (2026-08-25) — this feature IS the record of it
+## the ruling (2026-08-25) — this feature IS the record of it
 
 > _"Instead of running it nightly, you create an admin dashboard for me where I
 > can go, and I can trigger it manually and indicate how many keywords per brand
@@ -369,7 +369,7 @@ do".
   322**, and wrote nothing at all — not even `last_evaluated_at`, which would
   have claimed a re-derivation that did not happen.
 
-- `2026-08-25` — 🚨 **THE DISPATCHER. Saved schedules now run themselves, and the cascade has ONE implementation.** Arman approved exactly one scheduled task for this — `seo_engine_schedule_dispatcher`, every 15 minutes — and ruled that a row saved in this console IS the approval record for that engine on that brand.
+- `2026-08-25` — 🚨 **THE DISPATCHER. Saved schedules now run themselves, and the cascade has ONE implementation.** Approved exactly one scheduled task for this — `seo_engine_schedule_dispatcher`, every 15 minutes — and ruled that a row saved in this console IS the approval record for that engine on that brand.
   **In the database** (`migrations/seo_engine_schedule_dispatcher.sql`): `seo.engine_schedule.last_dispatched_at`; `seo.engine_schedule_resolve` (invoker-rights, the ONE cascade — site > organization > system, nearest wins, enabled state carried not filtered so a brand's OFF still governs); `seo.engine_schedules_due` (definer, service-role only — enabled winner + window open + not fired this window + site owes work + no in-flight run, ordered by most owed clicks via `seo.fn_topic_placement_sites_owing`, capped by the winning row's `sites_per_run`); `seo.engine_schedules_claim` (stamps `last_dispatched_at` under `FOR UPDATE SKIP LOCKED` in the same statement it selects, so two overlapping ticks cannot double-spend).
   **In aidream**: `services/seo/engine_schedule_dispatch.py` — claims, then runs each site in sequence through `run_placement_command` (the Run now path), with an `ENGINE_RUNNERS` dict so the next engine is one line, not a new task. Per-site failures are caught, named and reported; the rest of the tick continues. `run_placement_command` now returns its `PlacementPassResult` so the headless caller can report real counts without forking the command path.
   **Here**: `resolveScheduleForSite` DELETED; `resolveSchedulesForSites` reads the DB function. `NO_DISPATCHER_NOTICE` → `DISPATCHER_NOTICE`, and the panel no longer claims nothing runs.
@@ -380,10 +380,7 @@ do".
   from 0 to 1,080 output characters.
 
 - `2026-08-25` — **Organization and site tiers mounted; v1 is now all three
-  tiers, live.** Arman: _"the question is if we already have this set up so
-  that organizations and users can use them as well for their websites and
-  clients… the organizations will be able to set their own that will then
-  override our system one."_ Answer: yes, mostly — the shape (`RunConsole`
+  tiers, live.** (owner's words, 2026-08-25, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) Answer: yes, mostly — the shape (`RunConsole`
   scope prop, the cascade, `listConsoleSites`'s site-tier filter) already
   supported it; only the mounts were missing. Added
   `/marketing/automations` (organization tier — fulfills the former
@@ -402,9 +399,7 @@ do".
   cascade override end to end. Site-tier mount verified reachable from the
   site's own sidebar nav (NO DEAD ENDS) and renders scoped to that one site.
 - `2026-08-25` — **The two hand-rolled `<table>`s became the canonical
-  `MatrxDataTable`, and the page names its AI.** Arman: _"you're showing
-  tabular data, but you're not using our canonical table... you've handled
-  this new shitty table that doesn't do what we needed to do."_ The brand
+  `MatrxDataTable`, and the page names its AI.** (owner's words, 2026-08-25, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) The brand
   list (left panel) and `RunDecisions` (what the AI decided per keyword)
   each rendered a hand-rolled `<table>` with zero sort/filter/search. Both
   now render `MatrxDataTable` in its default `local` (client-side)
@@ -434,7 +429,7 @@ keyword-table` (`<KeywordTable>`) since these rows are keyword-shaped, but
   keyword's dossier from the sorted+searched decisions table, and confirmed
   the mandate link opens Mandates pre-selected on `seo.topic_assigner`.
 
-- `2026-08-25` — **Run history + AI-call-by-call detail (KI-049 addendum).** Arman: _"I need a place where I can go and I can look at the actual runs. And if we made fifty AI calls, I need to be able to click through them one by one and see what they generated."_ New right-side tab, `RunHistoryPanel.tsx` + `runHistoryData.ts`: a master list of recent `scheduler.sch_run` + `seo.collection_run` runs (newest first, status/duration/summary/error, AI-call-count + cost badge), click-through to every `chat.request` row attributed to that run — model, full prompt, the full generated output text (recovered from `chat.request_snapshot`, since these internal calls never write `chat.message`), tokens, cost, duration, status, error. Required an aidream-side attribution fix first: `chat.request.execution_kind`/`execution_id` was only ever stamped for `workflow_run`; `run_agent_for_scheduler` and `command_runs.run_streamed_command` now stamp `sch_run` / `seo_collection_run` on the same columns (aidream `agent_runner_adapter.py`, `command_runs.py`). Two new admin-gated RPCs: `admin_list_run_history`, `admin_list_run_ai_calls` (`migrations/run_console_attribution_rpcs.sql`). `migrations/run_console_ai_call_text_blocks.sql` fixes structured-output calls whose first assistant block is empty extended thinking by selecting the first non-empty text block instead. Manual trigger reuses the console's existing "Run now" — no second run mechanism.
+- `2026-08-25` — **Run history + AI-call-by-call detail (KI-049 addendum).** (owner's words, 2026-08-25, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`) New right-side tab, `RunHistoryPanel.tsx` + `runHistoryData.ts`: a master list of recent `scheduler.sch_run` + `seo.collection_run` runs (newest first, status/duration/summary/error, AI-call-count + cost badge), click-through to every `chat.request` row attributed to that run — model, full prompt, the full generated output text (recovered from `chat.request_snapshot`, since these internal calls never write `chat.message`), tokens, cost, duration, status, error. Required an aidream-side attribution fix first: `chat.request.execution_kind`/`execution_id` was only ever stamped for `workflow_run`; `run_agent_for_scheduler` and `command_runs.run_streamed_command` now stamp `sch_run` / `seo_collection_run` on the same columns (aidream `agent_runner_adapter.py`, `command_runs.py`). Two new admin-gated RPCs: `admin_list_run_history`, `admin_list_run_ai_calls` (`migrations/run_console_attribution_rpcs.sql`). `migrations/run_console_ai_call_text_blocks.sql` fixes structured-output calls whose first assistant block is empty extended thinking by selecting the first non-empty text block instead. Manual trigger reuses the console's existing "Run now" — no second run mechanism.
 
 - `2026-08-24` — **Nothing the AI decides is hidden, and the tab strip stops lying.** Three faults reported together: (1) the live window narrated steps but showed no output — my own regression, since progress was rendered INSTEAD of content; the window now carries stages as a strip with the model's output owning the body. (2) `Schedule` sat in the brand-keyed tab strip while being global, so selecting a brand changed three tabs and not the fourth; Schedule is now a LEFT-side tab beside Brands, and everything on the right is the selected brand's own data. (3) "This run" reported only counts — useless for judging the machine. It now renders **RunDecisions**: one row per keyword the assigner touched, with the Offering it chose, everything else it considered, its own confidence, whether the row is a proposal under the site's floor, and who decided. Read from the durable placement rows (`seo.keyword_topic`), not the stream, so the analysis survives a reload and can be studied later; every keyword opens its dossier (no dead ends).
 

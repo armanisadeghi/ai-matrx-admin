@@ -189,7 +189,7 @@ nothing, because a blank line is the silent failure this guards.
   top-right corner to the band directly above Smart Agent. Replaced its
   blocking right Sheet with the ephemeral `agentTestCasesWindow` and reduced
   empty-state and section copy to compact labels.
-- 2026-08-26 — Chip strip removed same day on Arman's ruling ("worst place
+- 2026-08-26 — Chip strip removed same day on the ruling ("worst place
   possible"): entry point is now the single floating `AgentSamplesLauncher`
   icon, builder-only; the runner carries no sample affordance.
 - 2026-08-26 — Feature created: `agent.mandate_exemplar` generalized to

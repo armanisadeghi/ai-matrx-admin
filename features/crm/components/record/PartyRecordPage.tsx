@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { contactPointBlockReason } from "../../reachability";
 import RouteHeader from "@/features/shell/components/header/RouteHeader";
+import { EmbeddedRecordHeader } from "./EmbeddedRecordHeader";
 import { ChevronLeftTapButton } from "@ai-matrx/design-system/tap-target/buttons";
 import { TapTargetButton } from "@ai-matrx/design-system/tap-target";
 import { showManualCopy } from "@/components/dialogs/clipboard-fallback/manualCopyOpener";
@@ -89,6 +90,14 @@ interface Props {
   /** The record's name + kind read on the server, so the header title is in
    *  the first HTML; the live record replaces it once loaded. */
   initialHeading?: { name: string; kind: string | null } | null;
+  /**
+   * The record is inside something else (a board tile): its header row (name, Send email, Copy link,
+   * Log an activity, Move to trash) draws at the top of the record instead of the shell's header, there
+   * is no Back, and trashing it stays where it is instead of going to the list.
+   */
+  embedded?: boolean;
+  /** The record's current name once loaded (a tile names itself after it). */
+  onName?: (name: string) => void;
 }
 
 function RecordSkeleton() {
@@ -107,7 +116,7 @@ function RecordSkeleton() {
   );
 }
 
-export function PartyRecordPage({ partyId, initialHeading }: Props) {
+export function PartyRecordPage({ partyId, initialHeading, embedded = false, onName }: Props) {
   const { copyText } = useClipboard({
     notify: copyNotify,
   });
@@ -150,6 +159,10 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
   const headingIsPerson = party
     ? isPerson
     : initialHeading?.kind === "person";
+  const loadedName = party?.display_name ?? null;
+  useEffect(() => {
+    if (loadedName) onName?.(loadedName);
+  }, [loadedName, onName]);
 
   // HONEST EMAIL ACTION. A record with a usable address offers "Send email";
   // one whose addresses are all blocked says so; one with no address at all
@@ -236,7 +249,7 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
     try {
       await deleteParty(party.id);
       toast.success(`${party.display_name} moved to trash`);
-      router.push("/crm");
+      if (!embedded) router.push("/crm");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Delete failed");
     }
@@ -309,7 +322,7 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
         if (!party) throw new Error("The record has not loaded yet.");
         await deleteParty(party.id);
         toast.success(`${party.display_name} moved to trash`);
-        router.push("/crm");
+        if (!embedded) router.push("/crm");
         return { summary: `Moved ${party.display_name} to trash (restorable from Trash).` };
       },
     },
@@ -383,18 +396,22 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
     },
   });
 
+  const PageHeader = embedded ? EmbeddedRecordHeader : RouteHeader;
+
   return (
     <SurfaceRuntimeProvider
       surfaceName={CRM_RECORD_SURFACE_NAME}
       getScope={getScope}
     >
-      <RouteHeader
+      <PageHeader
         left={
           <>
-            <ChevronLeftTapButton
-              onClick={() => router.back()}
-              ariaLabel="Back"
-            />
+            {embedded ? null : (
+              <ChevronLeftTapButton
+                onClick={() => router.back()}
+                ariaLabel="Back"
+              />
+            )}
             {headingName && (
               <span className="ml-1 flex min-w-0 items-center gap-1.5">
                 {headingIsPerson ? (
@@ -538,7 +555,7 @@ export function PartyRecordPage({ partyId, initialHeading }: Props) {
 
       <div
         className="h-full overflow-y-auto bg-textured px-3 pb-6"
-        style={{ paddingTop: "calc(var(--shell-header-h) + 0.5rem)" }}
+        style={{ paddingTop: embedded ? "0.5rem" : "calc(var(--shell-header-h) + 0.5rem)" }}
       >
         {/* No record to show: denied / deleted / missing / signed-out /
             transient each render their TRUE state — never a raw DB message. */}

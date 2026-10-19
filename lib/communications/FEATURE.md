@@ -29,7 +29,7 @@ single home); `outbound-guard.test.ts` fails when they disagree. aidream's twin:
 
 `admin@admin.com` / `test@test.com` sit on domains strangers own. `sendEmail` (every app-email
 route reaches Resend through it) runs `routeRecipients`: a test-account address goes to
-`DESIGNATED_TEST_INBOX` (info@aimatrx.com, Arman 2026-10-01) with `[Test → <account>]` in the
+`DESIGNATED_TEST_INBOX` (info@aimatrx.com, 2026-10-01) with `[Test → <account>]` in the
 subject and an `X-Matrx-Original-Recipient` header; real people are untouched. The list mirrors
 `aidream/aidream/designated_test_recipients.py` (add accounts there first); `lib/email/test-inbox.test.ts`
 and aidream's `scripts/check_test_accounts_never_email_a_stranger.py` fail on drift or on a new

@@ -42,7 +42,7 @@ that is the exit-test surface.
 | Trigger points | `trigger-points.ts` | Ruling R2: named, enumerable moments derived from the DEFINITION (`run:*`, `node:<id>:*`, `edge:<id>:traversed` — client-DERIVED, the engine emits no edge events — `deliverable:ready`, `mark:<name>`), resolved against run state. Pure module. |
 | Hooks | `hooks/useWorkflowRun.ts`, `hooks/useWorkflowRunControls.ts` | Adoption is refcounted per runId (two watchers share one adapter). Controls are the ONLY lifecycle verbs — start/pause/resume/cancel/answer-interrupt/retry/skip via `callApi`. |
 | **THE LIVE RUN EXPERIENCE** | `components/run/RunStage.tsx` | The surface a person actually watches, composed like the podcast studio: hero + promise → journey rail + activity feed → authored readouts → deliverables. Hoists the authored progress rails into the always-visible journey (`hideProgressRails`) and renders the failure/interrupt cards itself (`hideRunStatusCards`), so nothing is drawn twice. Falls back to `deriveDefaultSurfaceConfig` when a workflow has no authored surface. |
-| **The picker** | `listings/` → `WorkflowListDropdown` | 🚨 **THE canonical control for CHOOSING one workflow**, and the full equal of `AgentListDropdown` — Arman ruled (2026-09-08) that a workflow holder gets *"absolutely everything agents do and more"*. Self-contained by design: the TRIGGER names the assigned workflow (the host prints no second name, no id and no link beside it), and the panel carries search (optionally reaching inside the steps), the four scope tabs with true counts, sort / category / tag / favorite / archived filters, a hover DETAIL card (delivers-kind, steps, runs, last run, access, owner, org, dates, favorite toggle), a SNEAK PEEK that reads the graph (steps in order with their spec types, takes/delivers, variables, copy-as-JSON), and the doors — open it, open in a new tab. Reads go through the SAME `wfx_list_scoped` family as the catalog below (`listings/service.ts` delegates to `browse/service.ts`); a picker with its own query would be a second reading of "which workflows exist". A failed read SAYS SO, with a retry. |
+| **The picker** | `listings/` → `WorkflowListDropdown` | 🚨 **THE canonical control for CHOOSING one workflow**, and the full equal of `AgentListDropdown` — (owner's words, 2026-09-08, in `common-docs/systems/workflows/workflow-runtime/VISION.md`). Self-contained by design: the TRIGGER names the assigned workflow (the host prints no second name, no id and no link beside it), and the panel carries search (optionally reaching inside the steps), the four scope tabs with true counts, sort / category / tag / favorite / archived filters, a hover DETAIL card (delivers-kind, steps, runs, last run, access, owner, org, dates, favorite toggle), a SNEAK PEEK that reads the graph (steps in order with their spec types, takes/delivers, variables, copy-as-JSON), and the doors — open it, open in a new tab. Reads go through the SAME `wfx_list_scoped` family as the catalog below (`listings/service.ts` delegates to `browse/service.ts`); a picker with its own query would be a second reading of "which workflows exist". A failed read SAYS SO, with a retry. |
 | **The catalog** | `browse/` → `app/(core)/workflows/all/page.tsx` | `/workflows/all` on the CANONICAL entity-list shell (`lib/entity-list`) — not a bespoke grid. Config in `browse/listConfig.tsx`; rows from `public.wfx_list_scoped` read DIRECT via supabase-js (`browse/service.ts`), never through the Python server. Table-first with every column sorting AND filtering server-side, card + dense views, Mine / My Orgs / Shared / Public / System with true server counts, the shared usage columns (runs, last used, success rate, cost) and a Type column; the admin System Workflows page (`/administration/automation/workflows`) is the same list on the System scope, relevance-ranked search. ONE `ItemMenuConfig` builder (`browse/workflowActionRegistry.tsx`) feeds the table kebab, the card kebab, the dense-row kebab and right-click, so the three-drifting-action-lists failure that hit agents cannot happen here. |
 | **Discovery — the inbox + the runs lists** | `discovery/` → `app/(core)/workflows/{waiting,runs}/page.tsx`, `app/(core)/workflows/[id]/runs/page.tsx` | Census #38/#39. `/workflows/waiting` is THE "waiting on you" inbox over `GET /runs/waiting` — `interrupted` AND `awaiting_input` in one list (a surface listing one and not the other is wrong), every row opening its run. `/workflows/runs` + `/workflows/[id]/runs` are the runs lists over `GET /runs`, on the canonical `MatrxDataTable` over ONE bounded page. 🚨 **ONE announce subscription for all of them**: `useRunAnnouncements` refcounts a module-singleton `startAnnounceChannel` over `GET /runs/stream`, so four mounted surfaces share one socket — and **never Supabase Realtime**, since `workflow.run` is not in the publication (a Postgres-Changes subscription there delivers nothing and reports no error). Frames are ephemeral with no replay, so a listed run's status patches in place while anything else refetches, and every reconnect refetches the snapshot to close the hole. 🚨 **The inbox never answers anything** — a row opens the RUN, where `InterruptCard` and the resumable start form already live; a second answer form here would be a second renderer of the same question. Pure halves (`waiting.ts`, `runs.ts`) are tested; `waiting.ts`'s generated-schema aliases + `__tests__/waiting-contract.test.ts` are the tripwires that make a type regen against a stale production loud instead of silent. |
 | **The front door** | `app/(core)/workflows/page.tsx` → `features/auth/components/module-landing/landings/WorkflowsLanding.tsx` | `/workflows` is the PUBLIC marketing page for the product (module-landing-pages doctrine): a guest never hits a login wall, a signed-in visitor is redirected to `/workflows/all`. Built on the shared `<ModuleLanding>` — no hero clone — and registered in `MODULE_LANDING_DIRECTORY`, which is what puts it on `/features` and now, via `app/sitemap.xml/route.ts`, in the sitemap. The old placeholder's destination-preserving login bounce survives as the landing's `signInDestination` (`loginHref('/workflows/all')`). |
@@ -285,8 +285,7 @@ that is the exit-test surface.
 - 2026-09-08 — **A workflow can be PICKED like an agent (`listings/`).** The mandate
   Holder screen chose a workflow from an always-expanded inline list with no search,
   no scopes, no filters, no detail, no peek and no doors, while the agent branch beside
-  it used the rich `AgentListDropdown`. Arman: *"you must ABSOLUTELY duplicate
-  everything agents do and more so we don't lose anything."* `listings/` is that
+  it used the rich `AgentListDropdown`. (owner's words, undated, in `common-docs/systems/workflows/workflow-runtime/VISION.md`) `listings/` is that
   control — same geometry, same hover-grace, same fixed-footprint popover, same mobile
   drawer, reusing the agent listing core's primitives and constants rather than forking
   them, and built on the canonical `wfx_list_scoped` RPC instead of a second query.
@@ -612,7 +611,7 @@ that is the exit-test surface.
   so "every readout source names a real node" was being checked against a definition that no
   longer existed. The test was not weakened; it is stricter now that the skeleton is real.
 
-- 2026-08-18 — **the live run experience rebuilt** after Arman's verdict ("ugly and terrible",
+- 2026-08-18 — **the live run experience rebuilt** after the verdict ((owner's words, 2026-08-18, in `common-docs/systems/workflows/workflow-runtime/VISION.md`),
   "treats you like an idiot who's waiting", "none of the excitement of the podcast page"). The
   failure was presentational and INFORMATIONAL, not structural: the slice/adapter/lanes were
   untouched except to stop throwing truth away.
@@ -657,8 +656,7 @@ that is the exit-test surface.
     not swallowed — the fallback stops firing by itself the moment that lands.
 
 - 2026-08-18 — **the builder was rebuilt from scratch** at `/workflows/[id]/design` after
-  Arman tested the old one and rejected it outright ("no alignment, no consideration of how a
-  human would interact with this"). `components/SurfaceBuilder.tsx` and
+  (owner's words, 2026-08-18, in `common-docs/systems/workflows/workflow-runtime/VISION.md`)). `components/SurfaceBuilder.tsx` and
   `components/SurfaceLayoutPreview.tsx` are DELETED — with them went the drag-to-place grid,
   the x/y/w/h steppers, the raw trigger-id dropdowns, and the absence of any preview. The
   replacement lives in `builder/**` (rows above) and holds the paradigm: **build on the left,
@@ -729,7 +727,7 @@ that is the exit-test surface.
   `childRunsByNode` (subgraph_run_linked node→child map) + selectors
   `selectChildRunIdForNode` and `selectNodeAggregatePhases`.
 - 2026-08-18 — **the catalog moved to `/workflows/all` and was rebuilt on the canonical
-  entity-list shell** (Arman's ruling after testing production). `/workflows` is now RESERVED for
+  entity-list shell** (ruling after testing production). `/workflows` is now RESERVED for
   a future marketing page and redirects signed-in visitors to the catalog (signed-out ones go
   through `loginHref`, so the destination survives sign-in); `/workflows/[id]` and
   `/workflows/[id]/design` are untouched. What the bespoke card grid could not do and the shell

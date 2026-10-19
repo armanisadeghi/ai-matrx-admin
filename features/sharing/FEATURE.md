@@ -258,7 +258,7 @@ the FILE lens lives in `lenses/file-lens.tsx` (see below).
 
 ### 🚨 A SHARE PAGE NEVER SENDS ITS RECIPIENT TO `/sign-up` OR `/login`
 
-**Arman's ruling, 2026-08-13.** Everything basic on this platform is free up front — keyword
+**The ruling, 2026-08-13.** Everything basic on this platform is free up front — keyword
 research, page audits, AI visibility checks, chat. A recipient impressed by a shared report is
 the exact prospect the whole sharing system exists to win, and a login wall at that moment
 throws them away. It also misreads the product: gating belongs on ADVANCED capability, never on
@@ -518,7 +518,7 @@ NULL`. 181 of the 192 `internal` rows sit in personal or single-member orgs wher
     calls `has_permission`**, so an `iam.permissions` grant on a context item conveys **nothing**;
     `iam.permissions` has **zero** `context_item` rows across 203 live items; and the row's own note
     admitted it was auto-registered "from the Relationship Manager drift report" — a naming-
-    convention guess, never a sharing decision. Arman's 2026-08-15 ruling is already satisfied _by
+    convention guess, never a sharing decision. The 2026-08-15 ruling is already satisfied _by
     the parent_: every member of the owning org sees every context item on that org's scope types.
     Adding a per-item `visibility` enum would create a **second access authority no policy reads**
     and contradict THE COMPONENT OWNERSHIP LAW (on a component the owner is the parent).
@@ -632,12 +632,12 @@ context.context_items` → **`42703: column context_items.visibility does not ex
     `featureDocViewHref`. The emptied `feature_doc` registry row stays empty — that viewer is
     keyed by repo PATH, which no `{id}`/`{slug}` template can express.)_
 - 2026-08-13 — **D158 key shape hardened.** Sharing and organization-module RPCs now accept canonical entity tokens only; bare physical table aliases were removed. Unknown tokens raise. The frontend resolver and visibility service removed their table-name fallback, and module catalog keys no longer fall back to a physical table name. Guard/queue identities use exact `schema.table` pairs.
-- 2026-08-13 — **No share page sends its recipient to an auth wall** (Arman ruling, above). New
+- 2026-08-13 — **No share page sends its recipient to an auth wall** (ruling, above). New
   `lenses/source-surface.ts` resolves the per-share-type destination; consumed by the `/s/[token]`
   shell CTA, the keyword-research report CTA, the AI-visibility report CTA (now `/seo/ai-visibility`
   — the free public tool an anonymous recipient can run immediately), and both `/p/e/` CTAs. Four
   `/sign-up` dead ends removed; `DuplicateToEditButton` deliberately keeps its auth route.
-- 2026-08-13 — **The shared-file landing became a real product surface** (Arman's critique: a
+- 2026-08-13 — **The shared-file landing became a real product surface** (critique: a
   cramped iframe in a max-w-3xl column offering nothing but Download). New `lenses/file-lens.tsx`
   replaces `FileRenderer`: full-bleed layout (new registry `FULL_BLEED_LENSES` +
   `shareLensIsFullBleed`, honored by `SharedResourceView`), PDFs through the canonical

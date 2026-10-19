@@ -33,7 +33,7 @@ Deleted by the switch (any doc that names them is stale): `OverlayController`, `
 
 > **A user must never watch a spinner while AI works. The run streams, and it streams in `LiveRunWindow`.**
 
-Arman's ruling, 2026-08-11. Two halves, both absolute:
+The ruling, 2026-08-11. Two halves, both absolute:
 
 **1. Never a top-of-page block.** Inserting a live-run block above the page's content shifts everything down the instant a run starts and puts the model's output above the thing the user is editing. **Banned on every page, no size threshold.** The canonical surface is the floating `@ai-matrx/chat/window-panels/windows/agents/LiveRunWindow` (the window now ships from the chat package; its overlay is `features/overlays/definitions/liveRunWindow.overlay.tsx`) — opened via `useOpenLiveRunWindow()` / `<LiveRunWindowController>` (`features/overlays/definitions/liveRunWindow.overlay.tsx`). Token output renders through [`LiveRunDisplay`](../../../aidream/apps/shared/chat/src/agents/components/live-run/LiveRunDisplay.tsx). A multi-lane surface passes a stable `runSetKey` via [`RunSetWindowController`](../../../aidream/apps/shared/chat/src/agents/components/live-run/RunSetDisplay.tsx), and the same window renders every retained entry through `RunSetDisplay`; a host remount therefore rebinds the set instead of forgetting component-local request ids. Non-token pipelines pass `progress` and render [`LiveRunProgress`](../../../aidream/apps/shared/chat/src/agents/components/live-run/LiveRunProgress.tsx): stable rows update in place; event narration is banned.
 
@@ -49,7 +49,7 @@ Arman's ruling, 2026-08-11. Two halves, both absolute:
 
 ## 🚨 A PANEL WRAPS THE CANONICAL COMPONENT — never a hand-rolled copy
 
-**Arman, 2026-08-25**, on a cannibalization drill panel that re-rendered its own partial
+**2026-08-25**, on a cannibalization drill panel that re-rendered its own partial
 page list:
 
 > "Whenever we get a window panel of something, it needs to just wrap the actual identical
@@ -72,10 +72,7 @@ The rule, and why it is not a style preference:
   Search Console page for one slice — `KpiBand` + `PerformanceChart` + `GscDimensionTable`.
   Every insight table's panel action opens it with `filters: { query_eq: row.query }` instead
   of rendering its own list.
-- 🚨 **AND THE PANEL REPLACES THE TRIP, IT DOES NOT LINK TO IT.** Arman, 2026-08-26: _"We
-  don't ever want to send the user off of the page, over to a route like the agent's mandate
-  route. Instead, you should do the same thing that we do when the user clicks on the settings
-  icon for the agents that are assigned into roles."_ A working surface that names a record
+- 🚨 **AND THE PANEL REPLACES THE TRIP, IT DOES NOT LINK TO IT.** (owner's words, 2026-08-26, in `common-docs/systems/platform/ui-shell/VISION.md`) A working surface that names a record
   OPENS its window; a `<Link>` to that record's route from such a surface is the regression
   this law exists to stop. The route keeps existing for browsing the whole list.
 - Worked example: `MandateWindow` (`windows/mandates/MandateWindow.tsx`) — the mandate twin of
@@ -90,8 +87,7 @@ The rule, and why it is not a style preference:
 
 ## The Detail primitive — ONE core, three presentations (window · docked · page)
 
-**Arman, 2026-09-17:** *"a core component that then shows up as a Page, a flexible drawer, and a
-window panel. The default is the window."* The primitive is `lib/detail` (package-shaped; read
+**(owner's words, 2026-09-17, in `common-docs/systems/platform/ui-shell/VISION.md`)** The primitive is `lib/detail` (package-shaped; read
 [`lib/detail/README.md`](../../lib/detail/README.md) and [`lib/detail/FEATURE.md`](../../lib/detail/FEATURE.md)).
 A record type registers ONE `DetailRecordType`; the wrapper yields the `detailWindow` overlay
 (a `WindowPanel`, the default), a `record-peek` canvas tab (docked) and the

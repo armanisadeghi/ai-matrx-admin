@@ -228,8 +228,7 @@ owned by the connecting user (`definition_key='oauth_token_set'` or
   controls, and 44px buttons so variable content cannot trigger iOS zoom or
   hide Save below an unscrollable sheet.
 
-- **2026-08-21** — The website-login create flow is now the ONE recipe (Arman's
-  ruling: username + password + 2FA captured together; SoR
+- **2026-08-21** — The website-login create flow is now the ONE recipe (ruling: username + password + 2FA captured together; SoR
   `/Users/armanisadeghi/code/common-docs/systems/account/vault-secrets/FEATURE.md`):
   `VaultCreateDialog` adds a two-factor section (off / authenticator app —
   seed enrolls on the SAME item right after create / SMS / push-other — the

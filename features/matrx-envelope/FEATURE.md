@@ -187,7 +187,7 @@ render through the SAME live chip renderer.
 
 ## 🚨 THE DIRECTIVE⇄KIND SEAM — the item is a kind, so the kind system draws it
 
-**Arman, 2026-08-26:** the envelope / Matrx-Actions system and the Shape (kind) system are
+**2026-08-26:** the envelope / Matrx-Actions system and the Shape (kind) system are
 **ONE system with several methods inside it.** They meet at the ITEM.
 
 A directive is a container; its items are the payload. `matrxDirectiveItemKind`

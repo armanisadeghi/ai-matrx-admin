@@ -3,7 +3,7 @@
 Cross-repo system-of-record: /Users/armanisadeghi/code/common-docs/systems/masterwork/STATE.md — read it before touching this feature in ANY repo.
 
 Product truth, the page IA law, the review-verb state matrix, the Approach catalog contract,
-the Record/corpus contract, the Checkup window's five rules and every Arman ruling now live in
+the Record/corpus contract, the Checkup window's five rules and every ruling now live in
 the node kit, NOT here:
 
 - `common-docs/systems/masterwork/rulebooks/rulebook-surface-contract.md` — this feature's own contract
@@ -483,7 +483,7 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
 - 2026-10-02 — `MasterworkRulesProvider` remembers what each leg answered for, so an effect re-run with the same inputs (a woken board tile) re-reads neither the run's definition nor the Rulebook; the board's workflow-run tile passes `masterworkId` (it already holds the definition) instead of `runId`.
 - 2026-09-30 — Claude (Opus): **A Masterwork run is priced before the click** (cold walk 23, defect F). `TryMasterworkBox` shows `Last run` + `CostBadge` beside Run it, from `runPrice.tsx`, which asks the Bench's own `last_run_cost_usd` question (newest of the last three finished, non-archived runs with summed node cost > 0) and re-reads when a run ends. Guard: `components/masterworks/__tests__/a-run-is-priced-before-the-click.test.tsx`.
 
-- 2026-09-26 — Claude (Opus): **The Rulebook doors lost the organization switch offer** (Arman's ruling: an org notice only where a mistake is possible). `RulebookLaneRoute` / `RulebookDetailPage` no longer render it; the capture-plan reminders — the one Rulebook child the server still filed under the request's organization — now carry the Rulebook's organization via `scopeOverrides`. Rule 19 rewritten.
+- 2026-09-26 — Claude (Opus): **The Rulebook doors lost the organization switch offer** (ruling: an org notice only where a mistake is possible). `RulebookLaneRoute` / `RulebookDetailPage` no longer render it; the capture-plan reminders — the one Rulebook child the server still filed under the request's organization — now carry the Rulebook's organization via `scopeOverrides`. Rule 19 rewritten.
 
 - 2026-09-22 — Claude (Opus): **Two Rulebooks with one name are told apart, and
   the sentence that says so survives the navigation** (jobs-bar cold-walk-21,
@@ -1368,8 +1368,7 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
   map, which still described the deleted home as the live authed landing, now describes the
   redirect.
 
-- 2026-09-30 — **`/masterwork` renders the home dashboard for signed-in Experts** (Arman
-  2026-09-30: "signed-in Experts land on the Masterwork home dashboard; approved"); guests keep
+- 2026-09-30 — **`/masterwork` renders the home dashboard for signed-in Experts** ((owner's words, 2026-09-30, in `common-docs/systems/masterwork/VISION.md`)); guests keep
   the marketing page and `/masterwork/all` is linked from the page header. The restored page was
   brought up to date: Masterworks and recent runs are read across every readable Rulebook (they
   were bounded to the first twelve Rulebooks' ids, so the count and the run list silently omitted

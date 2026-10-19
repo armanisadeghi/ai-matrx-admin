@@ -618,7 +618,7 @@ edit it, which `iam.has_access` already confers — nothing invented).
   party column). No per-view member counts on the bar — counting every view on
   every load is a query per chip.
 
-## Deals + pipelines (`/crm/deals`) — ruled twice by Arman, built 2026-08-20
+## Deals + pipelines (`/crm/deals`) — ruled twice, built 2026-08-20
 
 **The unit of money.** `crm.deal` + `crm.deal_stage_event`, the `/crm/deals`
 list + kanban board, and `/crm/deals/[dealId]`. Feature code:
@@ -632,7 +632,7 @@ Rules paid for once:
   are the stages in `position` order (the `web_entity_type` nesting shape).
   Stage semantics ride category `metadata`: `{outcome: "won"|"lost",
 probability: 0..100}`. A new pipeline or stage is a ROW, never a migration —
-  Arman's roles-are-categories ruling applied to stages. `cat_list` was widened
+  the roles-are-categories ruling applied to stages. `cat_list` was widened
   to return `metadata` (`migrations/cat_list_metadata.sql`) so the canonical
   category reader serves it; never read `platform.categories` directly.
 - **THE STAGE IS THE AUTHORITY; `status` IS DERIVED.** Every writer — the board
@@ -683,7 +683,7 @@ probability: 0..100}`. A new pipeline or stage is a ROW, never a migration —
 
 ## Dedup + merge review (`/crm/duplicates`)
 
-Detection is `crm_detect_merge_candidates` per org (the review page's Scan
+Detection is `crm_detect_merge_candidates` per org (review page's Scan
 button, and once per session from `CrmAssistStrip` on `/crm`). UI in
 `features/crm/components/dedup/`: `DuplicateReviewPage` (queue + recent merges
 with exact undo), `CandidatePairCard` (side-by-side comparison stating exactly
@@ -1436,7 +1436,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   app's one toast module, which also feeds the Error Inspector. Both fixes
   are red-then-green (`send-authority.test.ts`, `the-card-sends-and-reports-
   real-addresses.test.tsx`). Left open for the round's owner: V2 (the agent's
-  contact import is a second, review-free path) and V4 (the reviewed-send
+  contact import is a second, review-free path) and V4 (reviewed-send
   endpoint asks no send authority) — neither is `features/crm/gmail/`'s file.
 - 2026-09-17 — **F-20: round 2's Gmail findings, fixed**
   (`common-docs/systems/integrations/google/FEATURE.md` N2/N7/N8/N9/N10, A1,
@@ -1611,7 +1611,7 @@ Settings → Configuration, Marketing → Public Relations). 🚨 `service.ts` c
   **D246 remainder:** `migrations/crm_12_merge_fidelity.sql` (exact
   merge/unmerge round trip) is written but NOT applied — MCP DDL was
   permission-blocked; see FOUND_DEFECTS.md D246.
-- 2026-08-20 — **Deals + pipelines shipped (Arman's ruling ×2 — STATE.md P4/Q2).**
+- 2026-08-20 — **Deals + pipelines shipped (ruling ×2 — STATE.md P4/Q2).**
   DB: `crm.deal` (entity, versioned) + `crm.deal_stage_event` (hand-built
   component per the crm_02 recipe), the `deal_pipeline` category dimension
   (pipeline = top-level row, stages = children with `metadata.outcome`/

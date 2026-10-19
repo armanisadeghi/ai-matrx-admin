@@ -416,8 +416,7 @@ Write | Review | Build | Publish`. Every chip is always clickable — an
    `title` never appears on touch and cannot be styled): the step's name,
    what the step IS (`PIPELINE_STEPS[].what`), where it stands, and what a
    click does. **The tab strip is ONE contained segmented control**
-   (2026-08-20, after Arman called the pill row "one of the ugliest UI
-   elements"): geometry lives in `stepSegmentClass` (`NodeStepRail.tsx`), the
+   (2026-08-20, after (owner's words, 2026-08-20, in `common-docs/systems/marketing/VISION.md`)): geometry lives in `stepSegmentClass` (`NodeStepRail.tsx`), the
    "Page" segment rides inside the rail via its `leading` prop, and at most
    ONE run arrow is visible — the ACTIVE segment's (non-tab hosts keep every
    arrow; `STEP_CHIP_CLASS` / `STEP_RUN_BUTTON_CLASS` still own that mode).
@@ -427,7 +426,7 @@ Write | Review | Build | Publish`. Every chip is always clickable — an
 
 3. **Site map** (`SiteMap.tsx`, `?view=map`, code-split behind the view
    switch) — the plan drawn the way a WEBSITE is shaped, rebuilt 2026-08-20 to
-   Arman's live direction after he ruled the React Flow dot graph garbage
+   the live direction after he ruled the React Flow dot graph garbage
    (Q14): home at the top, pages branching below on visible connector lines,
    every page a rectangular card whose TITLE WRAPS AND READS (never
    middle-truncated) with its route beneath. Plain DOM + CSS — native
@@ -490,7 +489,7 @@ Write | Review | Build | Publish`. Every chip is always clickable — an
      per-page results + `remaining_candidates` shown verbatim, and linked plan
      nodes advance to `published`).
 
-   **THE EFFORT TIER (rung 4, 2026-08-19).** Arman's ruling: effort is a
+   **THE EFFORT TIER (rung 4, 2026-08-19).** the ruling: effort is a
    PATHWAY, not a cap. The rung's picker names four tiers — Quick (1 call/page,
    the original one-shot authoring call), Standard (2), Thorough (3), Advanced
    (4, today's whole pipeline and the default) — and **changing it IS the
@@ -1058,12 +1057,12 @@ always took `page_ids`. The defect was a surface ignoring what it had.
   segmented control (`stepSegmentClass`, Page as the rail's `leading`
   segment, run arrow only on the active segment); the SEO-plan tab and p1
   segment gained "Research SEO with AI" via the existing Deepen seam.
-- 2026-08-20 — **Site map round 2** (Arman's live feedback): semantic zoom
+- 2026-08-20 — **Site map round 2** (The live feedback): semantic zoom
   (details hide, deep branches auto-collapse far out), drag-to-reparent
   restored via the tree's dnd-kit pattern, click lights the selected page's
   edges + reveals its full URL, NodePanel widened to 760px with the pipeline
   strip as one horizontal scrolling row (`NodeStepRail` tab mode nowrap).
-- 2026-08-20 — **Map view REBUILT as the site map** (Arman's Q14 ruling +
+- 2026-08-20 — **Map view REBUILT as the site map** (The Q14 ruling +
   live direction the same day). React Flow dot graph deleted wholesale
   (`PillarMap.tsx` + `pillar-map/`); new `SiteMap.tsx` draws home → branches
   as readable wrapped-title cards on visible connectors, DOM-only. Shared
@@ -1524,8 +1523,7 @@ z-[10000]` `aria-hidden` overlay covers the header "Agents for this page"
   interactions originating inside a `[role="alertdialog"]`. Deleting an
   entity, attaching entities to nodes, and editing an existing row's
   `attributes` stay human by doctrine.
-- 2026-08-10 — Claude: **Setup "Make it real" clarity overhaul** (Arman's
-  confused-buttons feedback). Every rung now carries an always-visible plain-
+- 2026-08-10 — Claude: **Setup "Make it real" clarity overhaul** (The confused-buttons feedback). Every rung now carries an always-visible plain-
   language description AND a server-derived status on load — rungs 3/5 hydrate
   from the existing `useCmsPageMap` read (plan-linked page count, published
   count) so returning to Setup never looks like day zero; done-state no longer
@@ -1541,7 +1539,7 @@ z-[10000]` `aria-hidden` overlay covers the header "Agents for this page"
   26-page plan lived on the sibling record). Commit report gained a
   "View your plan" door that switches to the tree view.
 - 2026-08-10 — Claude: **Every AI action in this feature now renders LIVE — no
-  spinner-while-AI-works anywhere** (Arman's platform-wide ruling; campaign
+  spinner-while-AI-works anywhere** (The platform-wide ruling; campaign
   doc `docs/handoffs/live-stream-everywhere.md`). Draft brief + all 7 setup
   agents run through the new `useLiveAgentRun` primitive and stream into
   `<LiveRunDisplay>` (NodePanel, SetupView strip under the AI bar,
@@ -1558,7 +1556,7 @@ z-[10000]` `aria-hidden` overlay covers the header "Agents for this page"
   site-filtered, mounted in `ContentPlanWorkbench` under the generate bar on
   plan-bearing views). See `features/assists/FEATURE.md`.
 - 2026-08-08 — Claude: **Build with AI live progress + in-dialog research
-  picker** (Arman's first-test feedback). The dialog stays open through its
+  picker** (The first-test feedback). The dialog stays open through its
   draft run as a live activity feed. The historical research-stream portion
   was removed on 2026-08-26 when Setup stopped running research. The dialog
   still embeds `ResearchTopicSelect` so an existing completed topic is pickable
@@ -1610,7 +1608,7 @@ z-[10000]` `aria-hidden` overlay covers the header "Agents for this page"
   the paired CMS site (WF-12).
 - 2026-07-30 — Claude (round 6): **every step now has an agent; keyword
   strategy is TOP-DOWN.** Three more platform agents (six total):
-  **Keyword Strategist** (`e063ded1-…`) — Arman's ruling that keywords are
+  **Keyword Strategist** (`e063ded1-…`) — the ruling that keywords are
   never per-page: it takes the WHOLE plan + keyword library + research report
   and returns per-page role (money / supporting / navigational), a distinct
   primary per money page, the secondary cluster, the money routes each

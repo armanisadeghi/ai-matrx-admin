@@ -139,8 +139,7 @@ connection from its management surface.
 
 ### (d2) Two kinds of connection, and choosing what rides this chat
 
-Arman, 2026-09-15: *"You are not differentiating between things that are just
-purely a connection to an MCP and those that allow us to select something."*
+(owner's words, 2026-09-15, in `common-docs/systems/integrations/connector-catalog/VISION.md`)
 
 The server's availability payload carries `attachable: [{resource_type, source,
 label}]` per server — `github` → `github_repository` from our synced inventory;
@@ -1141,8 +1140,7 @@ One entry in `registry.ts`: id (generic to the provider, permanent), name (today
   Tools picker wore the same name-plus-state treatment, which is the whole
   truth for a pure MCP server and half the truth for GitHub or Google, where
   the useful act is choosing WHICH repositories or files ride this chat
-  (Arman: *"You are not differentiating between things that are just purely a
-  connection to an MCP and those that allow us to select something"*). The
+  ((owner's words, undated, in `common-docs/systems/integrations/connector-catalog/VISION.md`)). The
   split is driven only by the server's `attachable` payload, so no slug is
   special-cased: `attachable-resources.ts` decides the chip kind and writes the
   chooser's label in the provider's own words, `ResourceAttachPicker` is the
@@ -1166,9 +1164,7 @@ One entry in `registry.ts`: id (generic to the provider, permanent), name (today
   indicator in the chat hierarchy decided from `tool.mcp_user_conn.status`
   alone, so eight of admin@admin.com's servers whose access token expired days
   earlier — and GitHub, whose bearer comes from the first-party GitHub App
-  connection rather than any MCP grant — all rendered as Connected (Arman:
-  "the ui lies as well since I see a checkmark for git but don't actually have
-  the mcp connected according to the agent"). `connection-state.ts` now
+  connection rather than any MCP grant — all rendered as Connected ((owner's words, undated, in `common-docs/systems/integrations/connector-catalog/VISION.md`)). `connection-state.ts` now
   derives exactly three states (`connected` / `needs_reauth` /
   `not_connected`) with a plain-English reason, preferring aidream's
   `GET /api/mcp-connections/availability` (only the server can see whether a

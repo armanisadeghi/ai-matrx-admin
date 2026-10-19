@@ -1,8 +1,7 @@
 # Review search results (`features/search-review`)
 
 A window panel any feature opens when it has web results and needs a person to say what each one is.
-Arman, 2026-10-14: "a strong primitive as a window panel we can use in all sorts of places where we do a
-websearch and we need someone to tell us what's what."
+(owner's words, 2026-10-14, in `common-docs/systems/web/web-search/VISION.md`)
 
 ## What it is
 

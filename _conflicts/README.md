@@ -31,10 +31,10 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
-- _conflicts/2026-10-19-143802/features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts.held — LOCAL latest 2026-10-19 14:34; GITHUB latest 2026-10-19 14:34; LOCAL lacks 10 of GITHUB's 114 new lines; GITHUB lacks 16 of LOCAL's 119 new lines; recover: git show 393c4b390d:'features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts' / 95961a6800:'features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts'
 
 ## Resolution log
 
+- 2026-10-19 14:59 PDT — Codex resolved `_conflicts/2026-10-19-143802/features/unified-data/__tests__/a-custom-value-never-needs-the-tables-update-grant.live.test.ts.held`: kept GITHUB's deterministic `platform.categories` member fixture and refusal/no-write assertions. LOCAL's `workflow.run` candidate search tested the same access rule but depended on existing rows and threw when none qualified. Existing live test source already has the retained version; removed the held copy. Owner 4aca9d01 notified 14:43 PDT.
 - 2026-10-19 PDT — Claude resolver resolved `_conflicts/2026-10-19-132707/migrations/LEDGER.json.held` by regenerating the snapshot (`pnpm refresh:ledger-snapshot`): LOCAL (3a999e2830) and GITHUB (82add9cd3e) held the identical 1932-file key set with identical entries; the regenerated file matches production (1935 files, `--check` OK) and so contains every entry of both. Owner: none found.
 - 2026-10-19 12:31 PDT — Codex resolved the two `2026-10-19-121519` record-page census held files. Owner: none found; active ship-all owner notified 12:28 PDT. Kept LOCAL's later 458 route classifications, six tokens and two records; declared the two newly added tool/search routes as non-record views; regenerated the map. `pnpm exec tsx scripts/record-pages/generate.ts` and the focused Jest census (9 tests) pass.
 

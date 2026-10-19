@@ -10,9 +10,7 @@
 
 The platform's public search engine at `/search`: one box, and the web comes
 back as the `web_search_results` kind family rendered through its registered
-kind components. It exists because Arman (2026-08-21), on seeing the Stage B
-search-kinds demo, ruled _"I want to make this our official public search
-engine that we can make available for now."_
+kind components. It exists because, on seeing the Stage B search-kinds demo (2026-08-21), the owner ruled it the official public search engine (owner's words, 2026-08-21, in `common-docs/systems/web/web-search/VISION.md`)
 
 **The rendering is not ours.** This feature owns the box, the URL contract, and
 the waiting/empty/error states. Every result on screen is drawn by the

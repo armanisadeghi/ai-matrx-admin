@@ -43,8 +43,8 @@ Section shell (the route-tab bar) is `HrPeopleShell.tsx`, mounted by
 5. **A refusal is DATA.** `supabase.rpc()` does not throw on `{granted:false}` / `{ok:false}`. Empty,
    filtered-empty, and refused are three different screens.
 6. **Table ⇄ cards is a per-user preference** (`useListViewPrefs`), platform default **cards**
-   (Arman's Q2 ruling). Contractors are marked **quietly, as a fact** — one small neutral chip,
-   never a lesser status (Arman's Q3 ruling); the marketplace of record shows only in the Job tab.
+   (The Q2 ruling). Contractors are marked **quietly, as a fact** — one small neutral chip,
+   never a lesser status (The Q3 ruling); the marketplace of record shows only in the Job tab.
 7. **Capability-gated actions are ABSENT**, never disabled.
 8. **Malformed IDs 404 before any read — on EVERY dynamic HR route, not just this lane's.** Each
    `app/(core)/hr/**/[id]/page.tsx` validates with `isFullUuid` before mounting its client reader,

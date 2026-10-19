@@ -325,7 +325,7 @@ Invariants the template carries, all of them learned the hard way:
   list offers the filter. `agx_list_scoped` / `agx_list_scope_counts` converted; every `*_list_scoped`
   client call migrated.
 
-- 2026-09-29 — **Where a list opens is its own knob, never its visibility.** `resolveListScope` (and so every `registryToken` list, `defaultListFilter`, `defaultListScopeFor`) now resolves the Feature Knob `lists.landing_tab/<token>` (`mine` | `organization`; organization and person may override) through `lib/list-scope` `resolveListScope` and the one knob snapshot; it no longer derives from `access.shown_to_default`. Each of the 580 rows was seeded once from the old derivation, so nothing moved except flashcard decks (`fc_set`) and quizzes/practice tests (`assessment`), which open on Mine while their visibility default stays "everyone" (Arman 2026-09-29: never tighten a visibility default to change a tab). A URL-carried or clicked scope still wins. Test: `lib/list-scope/__tests__/defaultListFilter.test.ts` (red on the old reader, green now).
+- 2026-09-29 — **Where a list opens is its own knob, never its visibility.** `resolveListScope` (and so every `registryToken` list, `defaultListFilter`, `defaultListScopeFor`) now resolves the Feature Knob `lists.landing_tab/<token>` (`mine` | `organization`; organization and person may override) through `lib/list-scope` `resolveListScope` and the one knob snapshot; it no longer derives from `access.shown_to_default`. Each of the 580 rows was seeded once from the old derivation, so nothing moved except flashcard decks (`fc_set`) and quizzes/practice tests (`assessment`), which open on Mine while their visibility default stays "everyone" (2026-09-29: never tighten a visibility default to change a tab). A URL-carried or clicked scope still wins. Test: `lib/list-scope/__tests__/defaultListFilter.test.ts` (red on the old reader, green now).
 - 2026-09-28 — Invariants 10 and 11 (lane-only Shown-to context, cross-token
   teammate cache, plpgsql `iam.team_members_resolved`, materialized join keys,
   one read per row-secured table): see the numbers in
@@ -339,7 +339,7 @@ Invariants the template carries, all of them learned the hard way:
   (per-type knob) replace `default_list_scope` for lists; all list RPCs and
   `applyListScope` honor it.
 
-- 2026-09-26 — MANAGEMENT vs SUPPORT (Arman): an admin MANAGEMENT page has no
+- 2026-09-26 — MANAGEMENT vs SUPPORT: an admin MANAGEMENT page has no
   scope lanes — it shows the platform's own records (`system` alone, rendered
   with `EntityListPage scopeTabs={false}`). The tenant lanes `platform_orgs` /
   `platform_users` / `platform_all` are exported as `ADMIN_SUPPORT_LIST_SCOPES`

@@ -514,7 +514,7 @@ The frontend primitive uses only five RPCs: `cat_list(p_dimension?)`, `cat_creat
   unloaded catalog "ready" with one row, and drops an inactive row. Deleted
   `agent-context/redux/scope/{scopeTypesSlice,scopesSlice,types}.ts` + reducer keys + allowlist entries.
 - 2026-09-25 — **Two modes of the one picker family replace the last two bespoke pickers.**
-  Lane HIERARCHY-CASCADE (Arman: the canonical scope selection family is the one set of pickers;
+  Lane HIERARCHY-CASCADE (the canonical scope selection family is the one set of pickers;
   primitives first). Engine: `EngagementSelection` + `applyEngagementPick` + `useEngagementEngine`
   (organization → project → task, scopes as TAGS — a tag never filters or clears the project/task)
   and `SingleNodeValue` + `useSingleNodeEngine` (exactly one node of an accepted kind);
@@ -527,7 +527,7 @@ The frontend primitive uses only five RPCs: `cat_list(p_dimension?)`, `cat_creat
   (Surface A), `binding-target/BindingTargetPicker` (global / user / one org, project or task).
   Suite: `quick-pick/__tests__/engagementAndSingleNode.test.ts` (13 red against the prior engine).
 - 2026-09-25 — **Miller Columns and DrillDeck search their own columns; a drill-path engine.**
-  Lane CONTEXT-INSPECTOR-3 (Arman: use the existing scope selection components, never
+  Lane CONTEXT-INSPECTOR-3 (use the existing scope selection components, never
   hand-rolled pickers). A column with more than 8 rows shows a search box that narrows that
   column only and clears when its source changes; `useDrillPathEngine` gives hosts one pick per
   column. The context inspector now mounts `MillerColumnsCore` (full, `includeEngagements`

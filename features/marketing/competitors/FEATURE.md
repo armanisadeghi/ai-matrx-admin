@@ -109,10 +109,7 @@ classification without buying a page-crawl autopsy. Everything lands `proposed`.
   manual competitor entry moved to Review. Site inventory now uses `readAllRows` and joins
   brand identity so the switcher remains complete and brand-led.
 
-- 2026-08-25 — **The autopsy asks WHICH competitor universe — national or local (MSR-25).** Arman,
-  walking the page: *"when it says run a fresh autopsy, we're missing one of the most important
-  things… offer the national search, and then offer a local search so that they can search their
-  local area."* The "Run a fresh autopsy" card now opens with a two-button choice (National ·
+- 2026-08-25 — **The autopsy asks WHICH competitor universe — national or local (MSR-25).** (owner's words, 2026-08-25, in `common-docs/systems/marketing/competitor-classification/VISION.md`) The "Run a fresh autopsy" card now opens with a two-button choice (National ·
   Local) plus the one line that explains the stake: if you serve an area rather than the whole
   country, the businesses you actually compete with are the ones Google puts on the map for a local
   search, not the national sites that happen to rank for your keywords. Choosing **Local** reveals
@@ -131,8 +128,7 @@ classification without buying a page-crawl autopsy. Everything lands `proposed`.
   the *useful* one, since an ambiguous place name comes back from the provider's location catalog
   naming the candidates to choose between. It now becomes the run's visible error.
 
-- 2026-08-24 — **Layout/table repair pass — MSR-16 through MSR-24** (Arman: "by far the worst… the
-  page is a disaster"). `CompetitorAutopsyWorkspace.tsx`: dropped the `max-w-[1800px]` cap on the
+- 2026-08-24 — **Layout/table repair pass — MSR-16 through MSR-24** ((owner's words, 2026-08-24, in `common-docs/systems/marketing/competitor-classification/VISION.md`)). `CompetitorAutopsyWorkspace.tsx`: dropped the `max-w-[1800px]` cap on the
   page `<main>` (MSR-24); the hero section now groups the three KPI tiles and
   "Add a competitor you already know" into one left column, with "Run a fresh autopsy" alone in its
   own right column, instead of the giant run card fighting three small tiles for space (MSR-17).
@@ -159,7 +155,7 @@ classification without buying a page-crawl autopsy. Everything lands `proposed`.
   timestamp on hover, instead of the raw machine timestamp (MSR-23). MSR-25 (national + local
   search across every paid provider) is a separate, larger build and was not attempted here.
 
-- 2026-08-24 — **Local competitor search** (Arman's ruling, SEO VISION §2.7a): the Review tab
+- 2026-08-24 — **Local competitor search** (ruling, SEO VISION §2.7a): the Review tab
   gained a keyword + geographic-area search (`POST /seo/sites/{site_id}/competitors/discover-local`,
   `discoverLocalCompetitors` in `landscapeBrief.ts`). Runs the real Google local-pack search a
   customer would run; the whole pack renders inline (own listing + no-website businesses included)

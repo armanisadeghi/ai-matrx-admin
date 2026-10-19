@@ -301,8 +301,7 @@ is easy to fill in.
 
 - 2026-08-09 — **Host count capped at 10, and that is final.** ElevenLabs
   `text_to_dialogue` accepts at most 10 DISTINCT voices per request and every
-  speaker gets their own voice, so 10 is the largest renderable cast. Arman's
-  ruling: cap it rather than build multi-request render + stitch. Server
+  speaker gets their own voice, so 10 is the largest renderable cast. The ruling: cap it rather than build multi-request render + stitch. Server
   `_MAX_SPEAKER_COUNT` 20 → 10 (the API request model now imports it instead of
   a hardcoded `le=20`), the interim voice-SHARING workaround was deleted (two
   speakers never share a voice again, unconditionally), the roundtable agent +

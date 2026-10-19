@@ -15,7 +15,7 @@ per-PR CI (`.github/workflows/ci.yml` job `settings-guards`), gated on the Supab
 aidream checkout and SKIPPED with an UNMEASURED warning without them: `check:settings-env-toggles`
 and `check:settings-unregistered` fail the job; `check:settings-hardcoded`, `check:settings-orphans`
 and `check:settings-ladder-ui` are **signals** (`continue-on-error`, never required checks —
-Arman's ruling: CI is a signal, never a gate). The job also checks out `matrx-sandbox`
+The ruling: CI is a signal, never a gate). The job also checks out `matrx-sandbox`
 (`orchestrator/orchestrator`, the only reader of `infrastructure.sandbox`) for the orphan scan;
 `MATRX_SANDBOX_DIR` overrides the `../matrx-sandbox` default, and its absence is a loud `[WARN]`
 followed by 13 NEW orphans — never a silent pass.

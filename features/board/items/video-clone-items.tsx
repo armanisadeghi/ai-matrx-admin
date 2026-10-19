@@ -24,6 +24,7 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import { SocialsContext } from "@/features/marketing/social/components/SocialsContext";
 import { CloneWorkspace } from "@/features/marketing/social/components/video/VideoCloneNew";
 import { VideoProjectStudio } from "@/features/marketing/social/components/video/VideoProjectStudio";
+import { parseBriefDraft } from "@/features/marketing/social/video/brief-draft";
 import { videoKeys } from "@/features/marketing/social/video/hooks";
 import { classifySocialLink } from "@/features/marketing/social/link";
 import { ingestPost } from "@/features/marketing/social/server";
@@ -88,19 +89,29 @@ function Frame({ value, children }: { value: MarketingBrandContextValue; childre
   );
 }
 
-/** The clone's far-zoom card: its name, where it stands and the link it clones, read from caches the body filled (never a fetch). */
-function VideoCloneFace({ source, title }: { source: NodeSource; title: string }) {
+/**
+ * The clone's far-zoom card: the product it is for (so two clone tiles differ), where it stands, the link it clones, and
+ * the rendered video's first frame once there is one. Read only from caches the body filled (never a fetch). Text is sized
+ * in tile-relative units (`cqmin`), so at 32-50% zoom it is still readable.
+ */
+export function VideoCloneFace({ source, title }: { source: NodeSource; title: string }) {
   const meta = metaOf(source);
   const projectId = source.kind === "entity" ? source.id : null;
-  const cached = useQueryClient().getQueryData<{ name?: string; status?: string; output_file_ids?: string[] }>(projectId ? videoKeys.project(projectId) : ["video-clone-tile", "none"]);
+  const qc = useQueryClient();
+  const cached = qc.getQueryData<{ name?: string; status?: string; output_file_ids?: string[] }>(projectId ? videoKeys.project(projectId) : ["video-clone-tile", "none"]);
   const stage = !projectId ? (meta.brief ? "Brief in progress" : "Not planned yet") : cached?.output_file_ids?.length ? "Rendered" : "Planned";
   const link = (meta.url ?? "").replace(/^https?:\/\/(www\.)?/, "");
+  const product = parseBriefDraft(meta.brief).productName?.trim();
+  const headline = product || cached?.name || title;
+  const newest = cached?.output_file_ids?.[cached.output_file_ids.length - 1];
+  const thumb = newest ? qc.getQueryData<{ url: string | null }>(["files", "loadable-url", newest])?.url ?? null : null;
   return (
-    <span className="absolute inset-0 flex flex-col items-center justify-center gap-[4%] bg-gradient-to-br from-muted via-muted to-accent p-[6%] text-center text-foreground/80">
-      <Clapperboard style={{ width: "min(24px, 14cqmin)", height: "min(24px, 14cqmin)" }} aria-hidden />
-      <span className="line-clamp-2 text-[min(14px,8cqmin)] font-medium leading-tight">{cached?.name || title}</span>
-      <span className="text-[min(12px,7cqmin)] leading-tight text-foreground/60">{stage}</span>
-      {link ? <span className="line-clamp-1 break-all text-[min(11px,6cqmin)] text-foreground/50">{link}</span> : null}
+    <span className="absolute inset-0 flex flex-col items-center justify-center gap-[3%] overflow-hidden bg-gradient-to-br from-muted via-muted to-accent p-[6%] text-center text-foreground/80">
+      {thumb ? <video src={`${thumb}#t=0.1`} muted playsInline preload="metadata" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-40" /> : null}
+      <Clapperboard className="relative" style={{ width: "12cqmin", height: "12cqmin" }} aria-hidden />
+      <span className="relative line-clamp-3 font-semibold leading-tight text-foreground" style={{ fontSize: "8cqmin" }}>{headline}</span>
+      <span className="relative leading-tight text-foreground/70" style={{ fontSize: "5.5cqmin" }}>{stage}</span>
+      {link ? <span className="relative line-clamp-1 break-all text-foreground/60" style={{ fontSize: "4.5cqmin" }}>{link}</span> : null}
     </span>
   );
 }

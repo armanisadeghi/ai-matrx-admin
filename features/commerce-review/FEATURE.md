@@ -68,7 +68,7 @@ a faux in-body header bar.
   instead of pointing at a personal-workspace settings page
   (`common-docs/policies/context-is-carried-never-rebuilt.md`).
 
-- 2026-08-29 — Deleted the `/commerce/settings` parallel config surface (Arman's ruling;
+- 2026-08-29 — Deleted the `/commerce/settings` parallel config surface (ruling;
   no-legacy): the store-connect step 1 now opens `/organizations/[orgId]/settings/configuration`
   (the SELECTED active org, `/organizations` when none — see the 2026-09-17 entry). Added
   `pt-[var(--shell-header-h)]` clearance to the triage/drafts/attention/stores bodies —

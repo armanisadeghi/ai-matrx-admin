@@ -9,9 +9,7 @@
 ## Purpose
 
 THE panel docked to one edge of a layout: it **slides** open and closed (never a jump), the person **drags its
-inner edge** to any width between its min and max, and that width is **remembered** per panel. Arman,
-2026-09-27: *"opening and closing … animated with a nice smooth slide instead of being jumpy"* and *"all side
-panels … adjustable, with a sensible default, min and max"*.
+inner edge** to any width between its min and max, and that width is **remembered** per panel. (owner's words, 2026-09-27, in `common-docs/systems/platform/ui-shell/VISION.md`).
 
 **Which primitive:** a panel docked to an edge that opens and closes → this. Split panes that share a route's
 space (percent layouts, header toggles) → `features/resizable-panels` (react-resizable-panels v4 — its collapse

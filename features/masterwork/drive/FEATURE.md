@@ -4,9 +4,7 @@
 `/masterwork/<id>/drive`, reached by the short link `/drive` (or
 `/drive?r=<id>`) that a person texts themselves, and by a door on "Your words".
 
-Arman, 2026-09-17: *"a little mobile page that is specifically for extracting
-knowledge and expertise from someone while they're driving somewhere. So it's
-net zero time."*
+(owner's words, 2026-09-17, in `common-docs/systems/masterwork/VISION.md`)
 
 Product truth for the Masterwork node lives in
 `../../../../common-docs/systems/masterwork/`; the voice system of record is

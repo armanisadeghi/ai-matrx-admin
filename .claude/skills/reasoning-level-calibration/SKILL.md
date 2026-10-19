@@ -44,19 +44,13 @@ timestamp: 2026-10-16T00:00:00Z
 | `high` | Rare. Open-ended hard reasoning where one miss cascades into many downstream things: adversarial appraisal, structure other agents inherit, orchestration with authority to refuse. Arman tunes these himself. | Do not set it on your own; propose it |
 | `very_high` | A scorer label only, not a setting. It maps to `high`. | none set directly |
 
-Opus and Sonnet think as much as the task needs. `high` on a simple task is a pure waste. Run counts are meaningless until test runs are removed: about 90 percent of runs are tests.
+Opus and Sonnet think as much as the task needs. `high` on a simple task is a pure waste.
 
 ## 2. Hard rules
 
 1. **Never touch an agent created by arman@armansadeghi.com** (user id `4cf62e4e-2679-484f-b652-034e697418df`). Check `created_by` before every write. You may score his agents and report the gap; you may not change them.
-2. **Effort calibration never changes the model.** Model and effort are separate decisions. Never swap a model down for cost without Arman's say. Premium stays when the agent:
-   - does extremely high-level intellectual work;
-   - has ripple effects into many other AI processes (a goal writer feeds 50 agents, 200 runs a day);
-   - is specialized and only triggered by a human doing a specialized task;
-   - is guaranteed one-shot with short output, so cost is bounded anyway;
-   - was purpose-built with high-quality analysis and detail.
-3. **Anything that creates agents or sits in that flow is never Sonnet.**
-4. **Show, then change, when the change is a model.** For effort, the A/B in section 5 is the show.
+2. **Effort calibration never changes the model.** Model and effort are separate decisions; who may change a model, and when premium stays, is stamped rule 3 above (which also covers agents that create agents).
+3. **Show, then change, when the change is a model.** For effort, the A/B in section 5 is the show.
 
 ## 3. Score a batch (Sonnet scorer)
 

@@ -158,9 +158,7 @@ row (~1,800) and a bare call stopped at 1000, showing the rest as "default".
   `UniversalSettingsRows`) and may add only REGISTER affordances — search, the
   deep link, the overdue-review banner. Anything about how a row reads or
   writes belongs in `KnobOverrideRow`, where every destination inherits it.
-- 🚨 **EVERY LEVEL OF A KEY FROM ONE PLACE** (Arman 2026-09-26: *"defaults for
-  everyone in the admin dashboard, then overridden per-org and per-user as
-  needed"*). The row's meta line ends in an **All levels** opener; opened, the
+- 🚨 **EVERY LEVEL OF A KEY FROM ONE PLACE** ((owner's words, 2026-09-26, in `common-docs/systems/platform/feature-knobs/VISION.md`)). The row's meta line ends in an **All levels** opener; opened, the
   key shows `KnobOverridesAdmin`: every override on the platform (level, who,
   organization, value, set by, when — change or remove in place), an add line
   (organization or person, searchable name pickers, never ids), and "what does

@@ -67,7 +67,21 @@ export function outputRows(answer: { output_file_ids: string[]; output_versions?
 
 /** A file name for one variant's video: the project's name and the variant's label. */
 export function variantDownloadName(projectName: string, variantLabel: string): string {
-  return downloadName(`${projectName} ${variantLabel}`);
+  return nameWithSuffix(projectName, variantLabel);
+}
+
+const NAME_BUDGET = 80;
+const unsafeName = (s: string): string => s.replace(/[\\/:*?"<>|\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim();
+
+/**
+ * THE one place a "project name + suffix" file name is built: the suffix (variant label, version, id tail) is kept whole
+ * and the project's name is the part that gets shortened to fit.
+ */
+export function nameWithSuffix(projectName: string, suffix: string): string {
+  const tail = unsafeName(suffix);
+  const head = unsafeName(projectName).slice(0, Math.max(8, NAME_BUDGET - tail.length - 1)).trim();
+  const joined = [head, tail].filter(Boolean).join(" ").slice(0, Math.max(NAME_BUDGET, tail.length)).trim();
+  return `${joined || "video"}.mp4`;
 }
 
 /** A file name for a saved video: the video's name, safe for a file system. */
@@ -81,9 +95,9 @@ export function downloadName(name: string): string {
  * always made unique among `taken` by the file's own id so two downloads never share a name.
  */
 export function finishedDownloadName(projectName: string, row: Pick<OutputRow, "fileId" | "version" | "variantLabel">, taken: Set<string>): string {
-  const base = row.variantLabel ? `${projectName} ${row.variantLabel}` : `${projectName}${row.version !== null ? ` v${row.version}` : ""}`;
-  let name = downloadName(base);
-  if (taken.has(name)) name = downloadName(`${base} ${row.fileId.slice(0, 6)}`);
+  const suffix = row.variantLabel ?? (row.version !== null ? `v${row.version}` : "");
+  let name = nameWithSuffix(projectName, suffix);
+  if (taken.has(name)) name = nameWithSuffix(projectName, `${suffix} ${row.fileId.slice(0, 6)}`.trim());
   taken.add(name);
   return name;
 }

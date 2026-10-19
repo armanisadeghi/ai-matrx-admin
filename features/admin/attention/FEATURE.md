@@ -114,7 +114,7 @@ in-app surface for spend alarms; aidream e-mails critical ones and nothing else 
 
 ## Who an item is for (2026-10-11)
 
-Arman: "What do I do with these?" Every item may carry `audience` (`types.ts` `AttentionAudience`):
+The owner's question (words in `common-docs/systems/architecture/observability/error-surfaces/VISION.md`) is answered by `audience`: every item may carry `audience` (`types.ts` `AttentionAudience`):
 `owner_decision` (absent = this) is a row; `agent_fix` is never a row: the source sets
 `delegated: {count, href}` and the section shows one quiet line "N being fixed by agents" (not in the
 pill; at zero owner decisions the card is absent); `info_only` stays on the review page. Spend alarms
@@ -159,8 +159,7 @@ request, loud vs silent failure, never an all-clear, expired mute ignored).
 
 ## Anti-noise: audience, readiness, budget, signal (2026-10-11)
 
-Arman: "they bombard me so the important things get missed ... I stop looking, and eventually I
-turn the feature off." The DATABASE triages every dock item once, for this dock and for the agents'
+(owner's words, 2026-10-11, in `common-docs/systems/architecture/observability/error-surfaces/VISION.md`) The DATABASE triages every dock item once, for this dock and for the agents'
 `attention` MCP tool (aidream `aidream/services/attention`, `aidream/api/mcp/agent_service/attention_tools.py`):
 
 | Piece | Where |
@@ -240,8 +239,7 @@ Files: `sources/dev-server-freshness.ts`, `sources/useDevServerFreshnessSource.t
 
 - **2026-10-10** — Spend alarms join the dock (source `spend-alarms`) and the loud in-app notice
   rail is deleted (`features/notifications/components/LoudNotices*`, `loud/`, `/demos/loud-notices`,
-  `communication.my_loud_notices`). Arman: "I need this thing to be on the proper admin
-  notification system so I can snooze it." Kept from the alarm system and made dock primitives
+  `communication.my_loud_notices`). (owner's words, undated, in `common-docs/systems/architecture/observability/error-surfaces/VISION.md`) Kept from the alarm system and made dock primitives
   for every source: `info` severity, a fix line, Copy / Copy for AI (schedules and outages supply
   it too), and a per-section cap with "+N more" for ~30 rows. Tests: `spend-alarm-items.test.ts`,
   `build-notice.test.ts` (info, cap), `AdminAttentionDock.test.tsx` (spend rows, 1-hour mute →
@@ -254,7 +252,7 @@ Files: `sources/dev-server-freshness.ts`, `sources/useDevServerFreshnessSource.t
   organization selected".
 
 - **2026-09-29** — Dated changes: quiet until the lead window, loud inside it (owner's ruling
-  joining Arman's "super annoying, always gets my attention" with the 2026-09-28 rule below, whose
+  joining (owner's words, 2026-09-29, in `common-docs/systems/architecture/observability/error-surfaces/VISION.md`) with the 2026-09-28 rule below, whose
   reason still holds: no permanent global alert months before the date). The database decides
   (`platform.dated_changes_for_attention`): a scheduled change raises NOTHING until
   `dated_changes.remind_days` before its effective time (the knob, read live per organization and

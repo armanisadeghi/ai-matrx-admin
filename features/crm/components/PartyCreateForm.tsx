@@ -52,7 +52,8 @@ export interface PartyCreateFormProps {
    * record instead of re-typing one somebody else already read to them.
    */
   initialName?: string | null;
-  onCancel: () => void;
+  /** Omit where there is nothing to go back to (a board tile): the Cancel button is then not drawn. */
+  onCancel?: () => void;
   onCreated: (partyId: string) => void;
 }
 
@@ -491,13 +492,15 @@ export function PartyCreateForm({
         </div>
 
         <div className="flex shrink-0 justify-end gap-2 border-t border-border/60 bg-muted/20 px-4 py-2">
-          <Button
-            variant="quiet"
-            onClick={onCancel}
-            disabled={saving}
-          >
-            Cancel
-          </Button>
+          {onCancel ? (
+            <Button
+              variant="quiet"
+              onClick={onCancel}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+          ) : null}
           <Button variant="primary" onClick={submit} disabled={saving || !formValid}>
             {saving ? "Creating…" : "Create record"}
           </Button>

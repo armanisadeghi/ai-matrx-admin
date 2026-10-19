@@ -185,7 +185,7 @@ guard `pnpm check:cost-display` P1); where it shows, render it via `<Cost>`/`use
 
 - 2026-09-26 — Removed the old direct "Google managed agents" card
   (`GoogleBackgroundAgentCard.tsx` + `service/google-background.ts`) and its mount in
-  `TopicAgentsPage.tsx` (Arman approved; common-docs mandates UI-REGISTER, BYPASS-CENSUS row 34).
+  `TopicAgentsPage.tsx` (Approved; common-docs mandates UI-REGISTER, BYPASS-CENSUS row 34).
   Its Antigravity sandbox option went with it. The Agents tab now shows only the "Deep research"
   card (`DeepResearchMandateCard.tsx`), which runs `research.topic_deep_research`. aidream removed
   the `POST/GET /ai/google/background-interactions` endpoint and its service
@@ -200,7 +200,7 @@ guard `pnpm check:cost-display` P1); where it shows, render it via `<Cost>`/`use
   runs the mandate `research.topic_deep_research` (topic + up to 40 included sources + the question,
   as variables) through `launchMandate` into the flexible agent panel; listed as the "Agents" place in
   `components/intelligence/places.ts`. The old `GoogleBackgroundAgentCard` (direct Google call, model
-  picked in the browser) was removed the same day, once Arman approved it — see the entry above.
+  picked in the browser) was removed the same day, once Approved it — see the entry above.
 - 2026-09-20 — New derived resource kind `page.entities` (what every analyzed, kept page NAMED —
   products/services, organizations, places — with its URL), fed by a parallel `rs_source.page_analysis`
   read beside the manifest like the experts; the topical-map output card now names the bundle it reads

@@ -22,7 +22,7 @@ server-side.
 
 **The improvement workspace (2026-08-16).** The product surface is a
 three-pane workspace, not a dashboard panel — **the conversation with the
-reviewer is the center of the experience** (Arman's directive): tell the
+reviewer is the center of the experience** (The directive): tell the
 intelligence watching your agent what it got right or wrong, and watch better
 proposals appear.
 

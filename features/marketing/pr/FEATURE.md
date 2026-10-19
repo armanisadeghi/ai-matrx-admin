@@ -14,7 +14,7 @@ grafted, and from where, is listed at the bottom.
 
 ## Known gaps — the honest list
 
-**1. CLOSED — ingestion is built and the scoping is ruled** (Arman 2026-08-22: one row per
+**1. CLOSED — ingestion is built and the scoping is ruled** (2026-08-22: one row per
 matched site, no shared pool). "Add requests" in the Journalist requests rail takes a pasted
 HARO-style digest, streams the durable ingest command (`api.ts::ingestSourceRequests` →
 `POST /seo/press/source-requests/ingest`), and every row lands site-scoped — `site_id` is never

@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Shows how an organization's agents are arranged: who sits under whom. Arman, 2026-09-27: a high-value
+Shows how an organization's agents are arranged: who sits under whom. 2026-09-27: a high-value
 employee becomes 50–100 agents, and Orchestras already work like an org chart (managers over managers
 over the ones doing the work), so the chart is real structure, not decoration.
 

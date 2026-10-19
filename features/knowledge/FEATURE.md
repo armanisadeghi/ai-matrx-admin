@@ -31,7 +31,7 @@ keep working until H6 and link to the hub.
   starts processing). Keys: `s` keep · `e` archive · `i` back to Inbox · `m` file under · `t` tag ·
   `?` the shortcut sheet — `k`/`f` stay Linear's move-up / filter. The toast's Undo puts each item back.
 - `features/knowledge/hub/tags/` — tags are filing (§4): `t` / Tag calls `platform.file_under_tag`
-  (a `platform.tag` row by slug in the item's org; a tag is a platform table, never a scope — Arman 2026-10-02). `#tag` resolves client-side in `withMentionResolution`
+  (a `platform.tag` row by slug in the item's org; a tag is a platform table, never a scope — 2026-10-02). `#tag` resolves client-side in `withMentionResolution`
   (hub and ⌘K): tags by slug first, else a scope of that exact name, else every section says
   no tag has the name. Container refs go out as `{type, id}` (the service's `EntityRef` forbids
   `name`). Sidebar Tags group counts live associations per tag; rows and the peek show `#tag` chips

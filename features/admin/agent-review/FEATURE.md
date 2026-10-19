@@ -94,11 +94,7 @@ The agent contract is `.claude/skills/agent-review-queue/SKILL.md`; this documen
   a copy when a copy actually happened.
 
 - 🚨 **Approve and raise — approving is never the reason a thread dies.**
-  Arman, 2026-09-16, on a row he had already fixed himself: *"this exposes a
-  problem with this system where I have no way of closing this out but then
-  starting a conversation about the problem I'm actually having here. So the
-  only option is to not approve it, even though it's ok to approve now that I
-  fixed it myself."* Approve and Request changes were the only two doors, so a
+  (owner's words, 2026-09-16, in `common-docs/systems/platform/ui-shell/VISION.md`) Approve and Request changes were the only two doors, so a
   row that deserved approval BUT exposed a separate problem got left
   un-approved purely to keep a thread alive. **Approve and raise** is one
   action: it approves through the EXACT path Approve uses
@@ -141,8 +137,7 @@ Both routes are agent-aware surfaces, and they are TWO surfaces on purpose: the 
 
 ## The middle stage — the queue's structural weakness
 
-Arman, 2026-09-07: _"I'm trying to find what you need me to review in agent-review
-but I can't seem to find it — it's one of the biggest weaknesses of the system."_
+(owner's words, 2026-09-07, in `common-docs/systems/platform/ui-shell/VISION.md`)
 Measured that day: **573 rows at `submitted` against 74 at `ready_for_human`**,
 oldest submission 2026-07-24. Only `ready_for_human` reaches him, and the single
 recurring promoter (`agent-review-first-pass`) then moved ONE row per 30 minutes and

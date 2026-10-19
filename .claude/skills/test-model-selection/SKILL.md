@@ -33,7 +33,7 @@ timestamp: 2026-10-10T00:00:00Z
 12. **Every agent we build starts on Haiku (Claude Haiku 5.5).** Sonnet is tried only when tests PROVE Haiku cannot do the job, on the same agent definition with only the model changed, and the failing runs are the evidence. Opus is tried only if Sonnet also fails, and if Opus truly beats both Haiku and Sonnet, Arman approves it before it is used. An agent born on Opus is a defect to explain, never a starting point. Jobs that run per row or repeat (AI columns, enrichment, classification, anything that can happen 1,000 times) get the most scrutiny: the cost per run times the volume is what is judged. A column, mandate or knob never pins a premium model as a platform default; the bound agent's model decides unless a person picks one. Arman's words: [VISION](/policies/VISION.md#ai-model-and-spend-rules) (2026-10-19).
 <!-- rules:stamp-end -->
 
-Arman, 2026-10-10: "The point is to know what is being tested and adjust accordingly." Never pick a
+Know what is being tested and adjust accordingly ([owner's words](/policies/VISION.md#ai-model-and-spend-rules)). Never pick a
 test model from memory. Ask what the test is for, then ask the catalog.
 
 ## 1. What are you testing?
@@ -63,8 +63,8 @@ owe one `real` run before calling an AI-backed flow done. [ai-test-mode](/polici
 
 ## 2b. Never test through General Chat
 
-Arman, 2026-10-17: "General chat is for users who chat ... if you want a test agent, create a super
-cheap, fast simple agent." When a test needs any AI reply, run **Test Reply**
+General Chat is for people who chat; a test gets its own super cheap, fast agent
+([owner's words](/systems/chat/conversations/VISION.md)). When a test needs any AI reply, run **Test Reply**
 (agent `8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f`, plumbing model, reasoning low, 300 output tokens,
 no tools, about $0.00002 a reply): `agent_run agent_id=8a4b7c8e-144f-4391-b5f0-3d2cd2ecee0f
 user_message="ok"`. The test seats' new-chat default is already Test Reply (user binding of

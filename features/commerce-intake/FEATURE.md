@@ -190,7 +190,7 @@ live certifications for the stock in hand (`listCertificationsForTemplate`, comp
 `readAllRows`) and the org-configurable knob
 **`commerce.printer_certification` / `failed_printer_behavior`** (enum `warn` | `block`, platform
 default **`warn`**, `overridable_by = {organization}`, registered live with a 2026-10-26 review)
-through the canonical client path (`useScopedKnobs` → `platform.knob_index`). Arman, 2026-09-11:
+through the canonical client path (`useScopedKnobs` → `platform.knob_index`). 2026-09-11:
 *"I don't want us to keep putting these live money gates up… settings and configurations that do
 it."*
 
@@ -324,7 +324,7 @@ On a phone, logged into an org:
 
 - 2026-09-19 — **THE FOURTH ORGANIZATION STATE (R37).** The "choose an organization" state on `AssetsList`, `IntakeAnswerQueue`, `LabelBatchesPage` and `CertifiedPrintersPage` was gated on `selectOrgBootstrapResolved`, which `setOrgBootstrapFailure` sets TRUE — so a FAILED organization read showed the refusal. All four now read `useOrganizationRequired().organizationState` and render `OrganizationContextNotice`: `required` carries the picker, `unavailable` says we could not check and carries Try again. Guard: `pnpm check:org-three-states` rule 5.
 - 2026-09-17 — **Removed a double `decodeURIComponent` on `code`** in `app/(public)/l/[code]/page.tsx` (the label resolver) — the App Router already decodes the value, so a code carrying a literal `%` threw `URIError` on the second decode. Part of the repo-wide `pnpm check:route-param-decode` census/guard; see `lib/detail/FEATURE.md` Change Log.
-- 2026-09-11 — **The failed-printer gate is a knob, not a refusal in code** (Arman's ruling the
+- 2026-09-11 — **The failed-printer gate is a knob, not a refusal in code** (ruling the
   same day: stop putting live gates in the code, make them settings that show what is happening).
   Both label print flows mount `useFailedPrinterGate` + `PrinterCertificationNotice`: this org's
   certifications for the stock in hand, a per-device "Printing on" choice when any exist, and the
@@ -404,7 +404,7 @@ On a phone, logged into an org:
   twins and the cast-only `CommerceIntakeSchema`. Persistence now compiles against
   `Database["commerce"]` directly.
 - 2026-08-29 — Ported the product-capture trial's two newest lanes into this canonical
-  feature (Arman's directive; product-capture itself untouched): (1) the upload lane
+  feature (The directive; product-capture itself untouched): (1) the upload lane
   (`addUploads`, equal-width Photo·Video·Upload control, camera-blocked Upload button,
   video-duration probe for the artifact CHECK); (2) the instant lane —
   `/commerce/intake/instant`, `useInstantIntakeAnalysis`, mandate row

@@ -81,7 +81,7 @@ questions with different information.
 
 ## LOUD, NEVER BLOCKING
 
-Arman's standing rule: no check may block a build or a commit. `check-dead-ends`
+The standing rule: no check may block a build or a commit. `check-dead-ends`
 **always exits 0**. It is wired into `scripts/run-release-gates.sh` as advisory
 in **both** modes — including `--strict` — because the tree carries a known
 backlog and hard-failing would block every release until the sweep lands.

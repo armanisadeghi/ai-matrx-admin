@@ -12,7 +12,7 @@
 
 ## The question this answers
 
-Arman, 2026-08-09, after seeing the Growth Loop map at
+2026-08-09, after seeing the Growth Loop map at
 `/administration/knowledge/growth-loop`: _we already let agents make diagrams in
 chat — should users be able to CREATE maps like this from a UI? And should that
 be a new feature, or part of the workflow package (which already has a node

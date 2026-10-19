@@ -177,6 +177,15 @@ describe("finished videos say which version they are", () => {
     expect(new Set(names).size).toBe(3);
     expect(names[0]).toBe("Organic cotton tee Hook friendly reminder.mp4");
   });
+  it("keeps the whole variant label and shortens a long project name instead", () => {
+    const long = "Hand-painted ceramic butterfly plate from our Albuquerque pottery studio clone";
+    for (const l of ["Hook: Every plate here is painted by hand.", "Captions: Bold", "Shape 1:1"]) {
+      const n = variantDownloadName(long, l);
+      expect(n.length).toBeLessThanOrEqual(84);
+      expect(n.replace(/[:]/g, " ").replace(/\s+/g, " ")).toContain(l.replace(/[:]/g, " ").replace(/\s+/g, " ").replace(/\s+/g, " "));
+    }
+    expect(variantDownloadName(long, "Captions: Bold")).toMatch(/Captions Bold\.mp4$/);
+  });
   it("saves under the video's name", () => {
     expect(downloadName('Tuft: "Pillow" / v2')).toBe("Tuft Pillow v2.mp4");
     expect(downloadName("  ")).toBe("video.mp4");

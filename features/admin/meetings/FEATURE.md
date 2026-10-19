@@ -1,7 +1,7 @@
 # Meetings admin (platform)
 
 **Route:** `/administration/users/meetings` (Users & Access › Communications › Meetings), one meeting at `/administration/users/meetings/<id>`.
-**Status:** built 2026-09-29 (Meet wave 5, admin lane). Meet's own mechanics: [`features/meet/FEATURE.md`](../../meet/FEATURE.md); parity board: `../common-docs/systems/communications/meet/PARITY.md` §1.6.
+**Status:** built 2026-09-29 (Meet wave 5, admin lane). Meet's own mechanics: [`features/meet/FEATURE.md`](../../meet/FEATURE.md); product truth: `../common-docs/systems/communications/meet/FEATURE.md`.
 
 ## What it is
 

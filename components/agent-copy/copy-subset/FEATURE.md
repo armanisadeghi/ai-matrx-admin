@@ -6,7 +6,7 @@
 
 ## What it is
 
-Arman (2026-09-11): *"a repeatable badass way to get exactly what you want from a subset of data using your own custom sort and filter only for the purpose of copying … it takes whatever data you had and puts it into a popover with the table for you to mess with then click copy and when you go back to the original table you were on, it's unaffected … it could even be that the ui you were on didn't have a tabular setup."*
+(owner's words, 2026-09-11, in `common-docs/systems/platform/ui-shell/VISION.md`)
 
 Every Copy-for-AI control gets one more menu row, **Filter & sort before copying…**, which opens a non-blocking window holding the canonical `MatrxDataTable` over a **snapshot** of the caller's rows: global search (contains / whole words), per-column filters, layered advanced filters, sort, pagination, checkbox row selection, a column chooser (show/hide), a format switch (**For AI** · Markdown · CSV · JSON), a live count, and a live size estimate (chars · bytes · ~tokens) of the exact text the Copy button writes. Copy writes the visible columns × (the ticked rows, else every match). The origin surface is never touched. Champions judged against: Airtable (view export with field toggles), Notion (database export with format choice), Linear (filter-then-export).
 

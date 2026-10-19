@@ -251,6 +251,7 @@ export function AgentFormItemBody({ tileId, source, title, onSource }: ItemBodyP
             conversationId={conversationId}
             surfaceKey={surfaceKey}
             compact
+            uncappedVariables
             variablesPanelStyle={inputStyle}
             composer={{ size: "compact", mode: "chat", meta: "none" }}
           />

@@ -84,7 +84,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   save onto passes a no-op `onViewChange`, so records-ui's "nowhere to save" line is gone.
 
 - 2026-10-18 — The former built-in sample (a stranger's Notion page, pack T-SPACES-1, retired in the database) is gone
-  from the product (Arman). "Add a sample" (empty state) and the source picker's sample tables now install library pack
+  from the product. "Add a sample" (empty state) and the source picker's sample tables now install library pack
   SP0002 Projects & Tasks through the Use template door (`templates/use-pack.ts` `readStarterTemplate`). Deleted:
   `data/agency-spec.ts`, `store/seed.ts`, `store/sample.ts`, `state/template-plan.ts`, `templates/build-agency-pack.ts`, its pack
   file and their tests. Shared install helpers live in `data/install-host.ts`; `saveOnCurrent` in `store/save-on-current.ts`.
@@ -159,7 +159,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   (the page gallery passes its `spaces-*` classes, so its look is unchanged; the board gallery uses plain tokens
   and lives in `features/board/templates`). Test: `state/__tests__/templates-source.test.ts`.
 
-- 2026-10-09 — Applet block (lane B1, the "one roof" first piece; Arman 2026-10-09: "we add the power of applets").
+- 2026-10-09 — Applet block (lane B1, the "one roof" first piece; (owner's words, 2026-10-09, in `common-docs/systems/content/spaces/VISION.md`)).
   Stored `applet {appletId uuid, height? whole px}` (lib/spaces-blocks; live `content.space_snapshot_schema()` regenerated).
   "/" → Embeds › Applet (aliases applet, app) opens `editor/applet-picker.tsx` FIRST (search; opens to "Yours", else "All";
   every Applet she can open, never narrowed by the active organization; "Build a new Applet") and the block lands only
@@ -223,7 +223,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   page with no synced block. `load-perf.walk.mjs` prints `spacesReads` per load. Measured: admin sample 5
   (space_sidebar 1, synced_source 1, the grid's `reverse_links_many` 3 — records-ui, one per link field);
   member page 1b5eb9af 2. CLS <= 0.0022, no hydration warnings. Test `page/__tests__/linked-pages.test.ts`.
-- 2026-10-08 — emoji (Arman 2026-10-08: a person may choose emoji for their own content): `SpaceMedia` gains `{ emoji }`
+- 2026-10-08 — emoji (2026-10-08: a person may choose emoji for their own content): `SpaceMedia` gains `{ emoji }`
   (types, schema, jsonSchema; live `content.space_snapshot_schema()` updated, drift guard OK). The icon picker opens on an
   Emoji tab (emoji-picker-react: search, categories, recently used, skin tone) with Random; Icons / Upload / Link stay.
   A callout stores its emoji as the icon text itself (a Lucide name is plain letters). `:` then a name offers emoji
@@ -598,7 +598,7 @@ Block document: a tree of `SpaceBlock` (`id`, `type`, `text: RichSpan[]`, `color
   Lucide name draws (DynamicIcon) and the icon search reaches all of Lucide; Use template into another organization
   copies its tables (`state/template-tables.ts`); collab resync rebuild removed, teardown synchronous. Walk tooling:
   `__tests__/walk/lib.mjs` (dev-login, org pick, sample-page guard, block menu / color helpers).
-- 2026-10-06 — builder round 20 (Arman: Use template on the former built-in sample "set up" but the first page was empty):
+- 2026-10-06 — builder round 20 (Use template on the former built-in sample "set up" but the first page was empty):
   the sample page gets its content the moment it is made and every later write lands on its CURRENT version
   (`store/sample.ts` `saveOnCurrent`) — opening it mid-install used to write the editor's empty starting line and the
   last-step fill was refused ("This Space changed since it was opened"), leaving it blank for good. Opening a page

@@ -15,7 +15,7 @@ stamp) and **P27** (the Back button is undo) all apply here too.
 
 ## Why this exists
 
-Arman, 2026-08-24, on the topic tree's unplaced queue:
+2026-08-24, on the topic tree's unplaced queue:
 
 > *"Whoever made this table didn't bring over the full functionality of our
 > table system. So now we have this thing where for this company, I'm staring at
@@ -131,9 +131,7 @@ Guard: `pnpm check:one-table-law`.
   metric headers use `CLICK · IMPR · CTR · POS · SCORE · LEVEL`.
 
 - 2026-08-25 — Claude: **the Offering column became a shared builder
-  (MSR-06).** Search Console → Queries now carries the same column (Arman: "the
-  other critical thing to put here would be the one where you map it to an
-  offering"), so its definition moved out of `buildKeywordColumns` into an
+  (MSR-06).** Search Console → Queries now carries the same column ((owner's words, 2026-08-25, in `common-docs/systems/marketing/seo/seo-keywords/VISION.md`)), so its definition moved out of `buildKeywordColumns` into an
   exported `buildKeywordOfferingColumn` that both tables call. P26 with a
   second consumer: one column, one set of filter options, one word for an
   unplaced keyword, one placement write. Behavior here is unchanged except

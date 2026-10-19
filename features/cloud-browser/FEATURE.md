@@ -163,8 +163,7 @@ live form. When an agent-raised capture card is open, it takes precedence.
 
 ## 🚨 As many browsers as the user wants — and exactly one default (D-28)
 
-**Arman, 2026-08-23:** *"if the user wants multiple, we give them multiple… they can
-have as many as they want… make it easy to start."* This panel used to only SELECT a
+**(owner's words, 2026-08-23, in `common-docs/systems/web/persistent-cloud-browser/VISION.md`)** This panel used to only SELECT a
 browser — no create affordance existed here or anywhere in the platform — so a person
 had one browser forever.
 
@@ -344,7 +343,7 @@ The frontend never receives a password, seed, or generated code from that path.
   `hooks/useCloudBrowserProfileContextSync.test.tsx`.
 
 - **2026-09-18 — consent defaults flipped ON** (`unattendedLogin`, `sessionHealthChecks`,
-  `totpDelegation`), per Arman's ruling that signed-in sites stay signed in and the
+  `totpDelegation`), per the ruling that signed-in sites stay signed in and the
   platform logs back in on its own wherever a person is not truly required. A saved
   explicit `false` still wins; `sensitiveActionsRequireHuman` is unchanged and always on;
   `AccountSettings` copy and `fixtures.ts` updated to match.

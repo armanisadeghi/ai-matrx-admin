@@ -250,10 +250,7 @@ in `PLAN_MODEL.md`; this page does not keep a second list. Rationale:
 
 ## AI spend budgets — entitlement vs guardrail (2026-09-11)
 
-Arman, 2026-08-27: *"we do need those caps … the UI needs to be at multiple levels. One is
-the admin UI where I can determine what these budgets are gonna be in the big picture … then
-you need the org to be able to impose their own overrides where they can set their own
-budgets, and then the users as well."*
+(owner's words, 2026-08-27, in `common-docs/systems/platform/entitlements-knobs/VISION.md`)
 
 Two different questions, two different tables — never conflated:
 
@@ -283,7 +280,7 @@ micro-dollars; the card is points-only.
 
 ## 🚨 D-5 — THE CORE-PRACTICE LAW: core practice is never metered
 
-> **Source:** Arman, education program law **D-5** — recorded in
+> **Source:** education program law **D-5** — recorded in
 > [`common-docs/systems/education/STATE.md`](../../../common-docs/systems/education/STATE.md)
 > §4.1 E. Restated: **unlimited studying, review and all study modes stay free
 > forever; gating applies to DEPTH and CONVENIENCE only.**
@@ -330,7 +327,7 @@ decision — STATE.md Q2, with staged numbers already sitting in
 `billing.capability_limit` for 15 of the 16. D-5 is orthogonal: it says which
 capabilities may exist at all, not which of the existing ones are switched on.
 
-## Metering model (Arman decisions, 2026-07-07)
+## Metering model (decisions, 2026-07-07)
 
 - **Meter AI generation, NEVER saved content.** Storage + studying + keeping decks
   are free forever — capping what a user already made is the exact Quizlet/Chegg
@@ -531,7 +528,7 @@ webhook handlers in `app/api/stripe/webhook/route.ts`. FE consumers:
 - [ ] **Blocked on Arman:** aidream-side spend re-check per capability → then flip `enforced` per
       capability (never flip without both the limit row and the re-check).
 - [ ] **Blocked on Arman:** trial pre-renewal reminder email (wire the platform email path).
-- [ ] **FYI-with-veto (Arman):** the free-tier matrix numbers get one look before enforcement flips.
+- [ ] **FYI-with-veto:** the free-tier matrix numbers get one look before enforcement flips.
 - [ ] **Needs Arman sign-off — `/pricing/pledge` final wording.** Two of the six pledge bullets are
       forward COMMITMENTS, not live capabilities, and are now marked "Before paid launch" on the page
       rather than claimed present-tense (a trust page over-promising is the inverted dark pattern P8
@@ -573,7 +570,7 @@ real (F6, 2026-07-13).
 
 - **2026-10-04** — Coupon client (rule 18). `coupons/`: a new-account link `/sign-up?coupon=<token>` shows an offer banner (`billing.coupon_preview`) and prefills the coupon's email (editable; every sign-up method incl. OAuth); the token rides the canonical destination as `redirectTo=/redeem?code=<token>` (`utils/auth/coupon-links.ts`), so confirm / OAuth / error re-renders / an authed bounce keep it. `/redeem?code=` (auth-required) redeems once through `POST /api/billing/coupons/redeem` (`redeemCoupon` dedupes per code) and shows "Pro free until …" or a one-line refusal; Settings → Plan & usage has the "Redeem code" field. The usage-gate slice carries `free_period` (`selectUsageGateFreePeriod`); `UsageGateBridge` raises a dismissible notice `billing/free_period_warning_days` (knob, 14, created live) before `ends_at`, and a "choose a plan" prompt once ended → `/pricing`; marked seen per day on dismiss/action. Removed Coming Soon `billing.plan-checkout` (checkout is live for every priced plan). Tests: `utils/auth/__tests__/coupon-links.test.ts`, `coupons/__tests__/*` (red on planted breaks).
 
-- **2026-10-04** — Free time is never endless (Arman). DB (live, via MCP): `billing._free_months_grant` (stacking + `billing/free_period_max_months` ceiling, ledger `billing.free_period_grant`), doors `free_months_grant` / `free_months_apply` / `free_months_apply_to_all_current` (not run), coupons `billing.coupon` + `billing.coupon_redemption` with `coupon_create` / `coupon_redeem` / `coupon_revoke` / `coupon_preview` / `coupon_claim_for_subscription` / `coupon_claim_settle`, signup trigger `billing.signup_free_months` (knob `new_signup_free_months` = 0), `user_usage_state().free_period`. New route `POST /api/billing/coupons/redeem` (+ `route.test.ts`, red on a planted break). `PRELAUNCH_COMPLIMENTARY_PREMIUM` and `pricingPolicy.ts` deleted; signed-out Premium card says "Sign in to upgrade". Live checks: 28 rolled-back DB forcing cases, two parallel PostgREST redemptions (one granted, one `coupon_already_redeemed`), the subscriber path end to end on localhost in Stripe TEST mode (2-month 100% coupon on the test subscription, settled `stripe_applied`, discount removed after).
+- **2026-10-04** — Free time is never endless. DB (live, via MCP): `billing._free_months_grant` (stacking + `billing/free_period_max_months` ceiling, ledger `billing.free_period_grant`), doors `free_months_grant` / `free_months_apply` / `free_months_apply_to_all_current` (not run), coupons `billing.coupon` + `billing.coupon_redemption` with `coupon_create` / `coupon_redeem` / `coupon_revoke` / `coupon_preview` / `coupon_claim_for_subscription` / `coupon_claim_settle`, signup trigger `billing.signup_free_months` (knob `new_signup_free_months` = 0), `user_usage_state().free_period`. New route `POST /api/billing/coupons/redeem` (+ `route.test.ts`, red on a planted break). `PRELAUNCH_COMPLIMENTARY_PREMIUM` and `pricingPolicy.ts` deleted; signed-out Premium card says "Sign in to upgrade". Live checks: 28 rolled-back DB forcing cases, two parallel PostgREST redemptions (one granted, one `coupon_already_redeemed`), the subscriber path end to end on localhost in Stripe TEST mode (2-month 100% coupon on the test subscription, settled `stripe_applied`, discount removed after).
 
 - **2026-10-03** — Usage gate review fixes: guest refusals reach only the guest reminder (HTTP 402/403 and mid-stream); a mid-stream `usage_limit_reached` error holds `over` + opens the dialog; notice keyed per window (rolling resets ignored); after-call refresh 8 s and canceled by the settled directive; `callApi` pre-check covers the paid-AI census; Settings → Plan & usage leads with the person's own usage card.
 

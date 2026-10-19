@@ -2,7 +2,7 @@
 
 A battle mode that answers one question with real data: **for a brand the person knows, which system
 tells its own presence from everything else best — measured against the person's truth, not against
-anyone's confidence.** Arman, 2026-10-16: "the key is not to look at confidence but rather truth."
+anyone's confidence.** (owner's words, 2026-10-16, in `common-docs/systems/marketing/websites-and-brands/projects/smart-add-brand/VISION.md`)
 
 ## Flow
 

@@ -46,7 +46,7 @@ Does ONLY what makes the build, in this order:
    finding. `--no-migrate` skips it.
 3. `git fetch origin main` — three tries, then the ONE honest stop.
 4. Resolve the base tree on `origin/main` **with git plumbing, in the object
-   database — no worktree, no branch, no stash** (Arman 2026-09-20: local
+   database — no worktree, no branch, no stash** (2026-09-20: local
    worktrees and branches are forbidden; `git worktree list` shows exactly one
    entry). The shared checkout's files are never touched, so other lanes'
    uncommitted files, a diverged branch or a half-done merge cannot reach the
@@ -128,7 +128,7 @@ v0.4.2991 lost theirs. Output is appended to the same dated log; it holds its ow
   row, or a declared class that disagrees with detection = `[FAIL]`, exit 1) +
   `:self-test` (red on a mismatched manifest, green on the real one) — in CI
   (`marker-law` job) and as rows of `run-release-gates.sh`.
-- **Heavy checks no longer default to the clone (ruling 2026-10-03, Arman: test on live as `admin@admin.com`; the clone is only for rehearsing destructive migrations and jobs that lock live 10+ minutes).** A heavy check runs on live, bounded by the production guard (every statement capped at 30 s, no loosening); it plants fixtures only as `admin@admin.com`'s disposable records. The text below is the 2026-09-27 design that defaulted them to the clone, kept as history until the code lane removes `defaultTarget: "clone"` and the `check:heavy-checks-target-the-clone` guard. Original text (2026-09-27, incident
+- **Heavy checks no longer default to the clone (ruling 2026-10-03, test on live as `admin@admin.com`; the clone is only for rehearsing destructive migrations and jobs that lock live 10+ minutes).** A heavy check runs on live, bounded by the production guard (every statement capped at 30 s, no loosening); it plants fixtures only as `admin@admin.com`'s disposable records. The text below is the 2026-09-27 design that defaulted them to the clone, kept as history until the code lane removes `defaultTarget: "clone"` and the `check:heavy-checks-target-the-clone` guard. Original text (2026-09-27, incident
   `common-docs/systems/architecture/database/projects/database-workload-safety/PLAN.md`:
   every warm live connection costs ~66 MB and our own censuses held them for
   minutes). A check that scans, censuses, sweeps for equivalence, plants
@@ -258,7 +258,7 @@ Shrink-only census (ALC-20) of raw clipboard, hand-built downloads, direct forma
   `test-release-ship-path.sh` releases 5–6 (red against the previous release.sh, green now) and
   `test_sync_main_lockfile_guard.py`.
 - 2026-10-06 — added `check:alchemy-doors` (+ `:self-test`), advisory row in `run-release-gates.sh`.
-- 2026-10-03 — Arman: checks and tests run on live as `admin@admin.com`; the clone is only for destructive-migration rehearsal. The clone checks leg, `--db-only --target clone` and the heavy-checks-default-to-clone rule are retired (docs only; code lane removes the code).
+- 2026-10-03 — checks and tests run on live as `admin@admin.com`; the clone is only for destructive-migration rehearsal. The clone checks leg, `--db-only --target clone` and the heavy-checks-default-to-clone rule are retired (docs only; code lane removes the code).
 - 2026-09-30 — `run.mjs --db-only --target clone` + `clone-target-guard.cjs` (checks-run-in-the-app P3, the
   database-reading leg): the frontend's database rows run from aidream's private `clone-db-checks.yml`
   against the nightly copy only. Tests in `run.test.mjs` (red against the old runner, green now).

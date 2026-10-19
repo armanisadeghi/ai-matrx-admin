@@ -143,7 +143,7 @@ move added ~190 chunk groups and OOM-killed 14 straight production builds
 
 ## LOUD, NEVER BLOCKING
 
-Arman's standing rule: no check may block a build or a commit. `check-lint-debt`
+The standing rule: no check may block a build or a commit. `check-lint-debt`
 **always exits 0**. It is deliberately NOT wired into `run-release-gates.sh` —
 a 6-minute full-repo ESLint pass is not a release gate, and with a 2,483-error
 backlog it could only ever be advisory noise on every release. Promote it when

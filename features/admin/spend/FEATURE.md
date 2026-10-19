@@ -6,12 +6,7 @@ the 80/20 view, the "dig here" signals and click-to-drill — and a floating
 window that puts today's number in front of a Super Admin once a day whether or
 not they went looking for it.
 
-**Why it exists.** Arman, 2026-09-11: _"a dashboard where I can easily and
-quickly see where money is being spent… The key is to scare me by showing me how
-much money we spent so far today, not by putting blocks in the code."_ Arman,
-2026-09-12, after two $100+ days he did not drive: _"it's not being registered
-under any user. It's not being registered under any organization. So where the
-heck is all this money going?"_ and _"where do I go where I can see a line item
+**Why it exists.** (owner's words, 2026-09-11, in `common-docs/systems/platform/feature-knobs/VISION.md`) (owner's words, 2026-09-12, in `common-docs/systems/platform/feature-knobs/VISION.md`) and _"where do I go where I can see a line item
 and then click it and then see that data with the other dimensions?"_ Nothing
 in this feature blocks, throttles or refuses anything. The whole intervention is
 a number, made large, made red when it is high — and now made explorable.

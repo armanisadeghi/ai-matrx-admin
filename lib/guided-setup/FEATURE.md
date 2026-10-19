@@ -5,11 +5,7 @@
 `marketing.site_setup` on `/marketing/brands/[brandId]/sites/[siteId]/integrations`
 and as the gate on `…/intake`.
 
-> **Arman's ruling, 2026-08-14:** _"anything we can do on their behalf we'll do on
-> their behalf, and anything we can't, we'll teach them how to do it… if there are
-> things they have to do themselves, we create a checklist for them that has
-> persistence… if there are things we can programmatically check, we check it for
-> them."_
+> **(owner's words, 2026-08-14, in `common-docs/systems/platform/ui-shell/VISION.md`)**
 
 That ruling is the whole spec, and it produces exactly **three kinds of step and
 no others**:
