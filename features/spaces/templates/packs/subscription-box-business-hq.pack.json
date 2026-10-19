@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 4,
+  "version": 5,
   "title": "Subscription Box Business HQ",
-  "description": "Plan each box cycle, track subscribers and churn, stock and shipments in one place.",
+  "description": "For subscription boxes: monthly editions, subscribers, renewals, failed charges, pauses.",
   "forWho": "Subscription box and curated gift businesses",
   "icon": {
     "emoji": "🎁"
@@ -14,8 +14,10 @@
   },
   "category": "retail",
   "tags": [
-    "subscription",
-    "boxes",
+    "subscription box",
+    "box curator",
+    "subscribers",
+    "renewals",
     "churn",
     "fulfillment"
   ],
@@ -23,7 +25,7 @@
     "specVersion": 1,
     "id": "spaces-subscription-box-business-hq",
     "catalogueId": "SP0519",
-    "useCase": "The owner of Fieldnotes Snack Club uses this to see what is booked, what is owed and what needs ordering.",
+    "useCase": "The founder of Fieldnotes Snack Club uses this to plan each month's box, see who renews or fails a charge, who paused, and what still has to be sourced and packed.",
     "industry": "retail_ecommerce",
     "vertical": "Subscription box business",
     "job": "inventory",
@@ -33,7 +35,7 @@
     "requires": [],
     "business": {
       "name": "Fieldnotes Snack Club",
-      "describes": "A monthly curated snack and pantry box shipped to about 600 subscribers, with a gift option, a pause button and a small add-on shop.",
+      "describes": "A monthly curated snack and pantry box from Bend, Oregon, shipped to about 600 subscribers on monthly, prepaid and gift plans, with a pause option and a small add-on shop.",
       "address": {
         "line1": "27 Dovecote Lane",
         "city": "Bend",
@@ -59,9 +61,10 @@
         "ordered": false,
         "icon": "truck",
         "titleField": "supplier_name",
-        "describes": "The makers and packers behind each box, with lead times and terms.",
+        "describes": "Small makers and suppliers: contact, lead time, terms, minimum order and what is on order.",
         "subject": "thing",
         "statusImplies": [],
+        "rowTemplates": [],
         "fields": [
           {
             "key": "supplier_name",
@@ -70,6 +73,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "email",
@@ -120,8 +130,27 @@
             }
           },
           {
+            "key": "min_order",
+            "label": "Minimum order (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
             "key": "product_n",
-            "label": "Box items active",
+            "label": "Items in rotation",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -129,20 +158,27 @@
             "pick": "product_name",
             "agg": "count",
             "filter": {
-              "status": "Active"
+              "status": {
+                "not": [
+                  "Retired"
+                ]
+              }
             }
           },
           {
-            "key": "draft_n",
-            "label": "Box items in draft",
+            "key": "on_order",
+            "label": "On order (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "products",
-            "pick": "product_name",
-            "agg": "count",
+            "via": "purchase_orders",
+            "pick": "po_total",
+            "agg": "sum",
             "filter": {
-              "status": "Draft"
+              "po_status": [
+                "Sent",
+                "Confirmed"
+              ]
             }
           },
           {
@@ -153,46 +189,341 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [],
         "rows": [
           {
             "key": "suppli-1",
             "values": {
               "supplier_name": "Salt and Summit Snacks",
-              "email": "teodor.underhill@fieldnotessnackclub.net",
+              "contact": "Teodor Underhill",
+              "email": "teodor@saltandsummit.net",
               "phone": "(541) 555-0160",
               "lead_days": 14,
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "min_order": 600
             }
           },
           {
             "key": "suppli-2",
             "values": {
               "supplier_name": "Pinecone Pantry",
-              "email": "odette.abernathy@fieldnotessnackclub.net",
+              "contact": "Odette Abernathy",
+              "email": "odette@pineconepantry.net",
               "phone": "(541) 555-0197",
               "lead_days": 10,
-              "terms": "Prepaid"
+              "terms": "Prepaid",
+              "min_order": 400
             }
           },
           {
             "key": "suppli-3",
             "values": {
               "supplier_name": "Gilded Crate Packaging",
-              "email": "imelda.fontaine@fieldnotessnackclub.net",
+              "contact": "Imelda Fontaine",
+              "email": "imelda@gildedcrate.net",
               "phone": "(541) 555-0134",
               "lead_days": 9,
-              "terms": "Net 15"
+              "terms": "Net 15",
+              "min_order": 500
             }
           },
           {
             "key": "suppli-4",
             "values": {
               "supplier_name": "Ridgeback Roasters",
-              "email": "ravi.kellerman@fieldnotessnackclub.net",
+              "contact": "Ravi Kellerman",
+              "email": "ravi@ridgebackroasters.net",
               "phone": "(541) 555-0171",
               "lead_days": 12,
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "min_order": 300
+            }
+          }
+        ]
+      },
+      {
+        "token": "edition",
+        "name": "Box editions",
+        "labelSingular": "Box edition",
+        "labelPlural": "Box editions",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gift",
+        "titleField": "edition_name",
+        "describes": "Each month's box: theme, curator, lineup, lock and ship dates, cost and retail value per box.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "lock_on",
+            "ship_on"
+          ]
+        ],
+        "independentOf": {
+          "curator": "Either record can be created or change status before the other."
+        },
+        "fields": [
+          {
+            "key": "edition_name",
+            "label": "Box edition",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "theme",
+            "label": "Theme",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "curator",
+            "label": "Curator",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "ed_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Planning",
+              "Sourcing",
+              "Packing",
+              "Shipped"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Planning": "todo",
+              "Sourcing": "in_progress",
+              "Packing": "in_progress",
+              "Shipped": "done"
+            },
+            "choiceColors": {
+              "Planning": "slate",
+              "Sourcing": "blue",
+              "Packing": "amber",
+              "Shipped": "green"
+            },
+            "default": "Planning"
+          },
+          {
+            "key": "lock_on",
+            "label": "Lineup locked",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "ship_on",
+            "label": "Ships",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "boxes",
+            "label": "Boxes to pack",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "cost_per_box",
+            "label": "Cost per box (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "value_per_box",
+            "label": "Retail value per box (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "box_price",
+            "label": "Box price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "key": "value_ratio",
+            "label": "Value against price (x)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Box price (USD)} > 0, ROUND({Retail value per box (USD)} / {Box price (USD)}, 1), 0)"
+          },
+          {
+            "key": "box_margin",
+            "label": "Margin per box (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Box price (USD)} > 0, ROUND(({Box price (USD)} - {Cost per box (USD)}) / {Box price (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "lineup",
+            "label": "Items in the lineup",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "lineup_items",
+            "pick": "product_name",
+            "agg": "count"
+          },
+          {
+            "key": "sent_n",
+            "label": "Boxes sent",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "box_orders",
+            "pick": "order_name",
+            "agg": "count"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "ed-1",
+            "values": {
+              "edition_name": "August: Trail Mix Summit",
+              "theme": "Hiking snacks and electrolyte drinks",
+              "curator": "tm-3",
+              "ed_status": "Shipped",
+              "lock_on": "@today-11w",
+              "ship_on": "@today-8w",
+              "boxes": 588,
+              "cost_per_box": 13.9,
+              "value_per_box": 46,
+              "box_price": 34
+            }
+          },
+          {
+            "key": "ed-2",
+            "values": {
+              "edition_name": "September: Harvest Table",
+              "theme": "Pantry staples and a spice blend",
+              "curator": "tm-3",
+              "ed_status": "Shipped",
+              "lock_on": "@today-7w",
+              "ship_on": "@today-4w",
+              "boxes": 602,
+              "cost_per_box": 14.6,
+              "value_per_box": 49,
+              "box_price": 34
+            }
+          },
+          {
+            "key": "ed-3",
+            "values": {
+              "edition_name": "October: Campfire",
+              "theme": "Smoky snacks, cold brew, a recipe card",
+              "curator": "tm-3",
+              "ed_status": "Packing",
+              "lock_on": "@today-3w",
+              "ship_on": "@today+2d",
+              "boxes": 611,
+              "cost_per_box": 14.2,
+              "value_per_box": 51,
+              "box_price": 34
+            }
+          },
+          {
+            "key": "ed-4",
+            "values": {
+              "edition_name": "November: Cabin Pantry",
+              "theme": "Hot sauce, honey, granola, holiday tea",
+              "curator": "tm-3",
+              "ed_status": "Sourcing",
+              "lock_on": "@today+1w",
+              "ship_on": "@today+5w",
+              "boxes": 620,
+              "cost_per_box": 15.1,
+              "value_per_box": 54,
+              "box_price": 34
+            }
+          },
+          {
+            "key": "ed-5",
+            "values": {
+              "edition_name": "December: Gift Edition",
+              "theme": "Bigger box, festive packaging",
+              "curator": "tm-1",
+              "ed_status": "Planning",
+              "lock_on": "@today+5w",
+              "ship_on": "@today+9w",
+              "boxes": 700,
+              "cost_per_box": 19.5,
+              "value_per_box": 68,
+              "box_price": 45
             }
           }
         ]
@@ -208,12 +539,101 @@
         "ordered": false,
         "icon": "package",
         "titleField": "product_name",
-        "describes": "Every item that can go in a box, with cost, stock and what is left.",
+        "describes": "Every item you have used or are testing: vendor, which box it is in, cost, retail value, stock against what the box needs, allergens.",
         "subject": "thing",
-        "independentOf": {
-          "supplier_rel": "Either record can be created or change status before the other."
-        },
         "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Item",
+            "values": {
+              "status": "Sampling"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Tasting notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "What it tastes like and who on the team liked it."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Before it goes in a box"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Allergens and ingredients checked against the label"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Best-by date at least three months after ship day"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Fits the mailer with the rest of the lineup"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Vendor can supply the full quantity on time"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "supplier_rel": "Either record can be created or change status before the other.",
+          "edition": "Either record can be created or change status before the other."
+        },
         "fields": [
           {
             "key": "product_name",
@@ -225,7 +645,7 @@
           },
           {
             "key": "sku",
-            "label": "SKU",
+            "label": "Vendor item code",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -248,31 +668,52 @@
               "Sweet": "blue",
               "Drinks": "amber",
               "Pantry": "violet",
-              "Packaging": "teal"
+              "Packaging": "green"
             }
           },
           {
-            "key": "price",
-            "label": "Price (USD)",
-            "parityType": "currency",
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "unit": "USD",
-            "format": "currency",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 0
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
+            "choices": [
+              "In next box",
+              "Available",
+              "Add-on shop",
+              "Sampling",
+              "Retired"
+            ],
+            "default": "Sampling",
+            "choiceColors": {
+              "In next box": "slate",
+              "Available": "blue",
+              "Add-on shop": "amber",
+              "Sampling": "violet",
+              "Retired": "green"
+            }
+          },
+          {
+            "key": "supplier_rel",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "edition",
+            "label": "Box edition",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "edition",
+            "relationMax": 1
           },
           {
             "key": "cost",
-            "label": "Cost (USD)",
+            "label": "Cost per unit (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -285,14 +726,33 @@
               },
               {
                 "kind": "max",
-                "value": 5000
+                "value": 200
+              }
+            ]
+          },
+          {
+            "key": "price",
+            "label": "Retail value (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
               }
             ]
           },
           {
             "key": "on_hand",
-            "label": "On hand",
-            "parityType": "number",
+            "label": "Units on hand",
+            "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "rules": [
@@ -302,14 +762,14 @@
               },
               {
                 "kind": "max",
-                "value": 50000
+                "value": 20000
               }
             ]
           },
           {
             "key": "reorder_at",
-            "label": "Reorder at",
-            "parityType": "number",
+            "label": "Units needed",
+            "parityType": "integer",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "rules": [
@@ -319,85 +779,65 @@
               },
               {
                 "kind": "max",
-                "value": 50000
+                "value": 20000
               }
             ]
           },
           {
-            "key": "supplier_rel",
-            "label": "Vendor",
-            "parityType": "relation",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "relationTarget": "supplier",
-            "relationMax": 1
-          },
-          {
-            "key": "status",
-            "label": "Status",
-            "parityType": "select",
+            "key": "allergens",
+            "label": "Allergens",
+            "parityType": "multi_select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Active",
-              "Draft",
-              "Discontinued"
+              "Tree nuts",
+              "Peanuts",
+              "Dairy",
+              "Gluten",
+              "Soy",
+              "None"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Draft": "blue",
-              "Discontinued": "amber"
-            },
-            "default": "Active"
-          },
-          {
-            "key": "margin_pct",
-            "label": "Margin (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Price (USD)} > 0, ROUND(({Price (USD)} - {Cost (USD)}) / {Price (USD)} * 100, 0), 0)"
-          },
-          {
-            "key": "reorder_flag",
-            "label": "Reorder?",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
-          },
-          {
-            "key": "stock_value",
-            "label": "Stock value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{On hand} * {Cost (USD)}"
-          },
-          {
-            "key": "sold",
-            "label": "Units delivered",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "orders",
-            "pick": "quantity",
-            "agg": "sum",
-            "filter": {
-              "status": "Delivered"
+              "Tree nuts": "slate",
+              "Peanuts": "blue",
+              "Dairy": "amber",
+              "Gluten": "violet",
+              "Soy": "green",
+              "None": "teal"
             }
           },
           {
-            "key": "revenue",
-            "label": "Revenue (USD)",
+            "key": "best_by",
+            "label": "Best-by date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Enough for the box",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Units on hand} >= {Units needed}, \"Yes\", \"Order more\")"
+          },
+          {
+            "key": "sold",
+            "label": "Add-on units sold",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "orders",
-            "pick": "total",
-            "agg": "sum",
+            "pick": "order_name",
+            "agg": "count",
             "filter": {
-              "status": "Delivered"
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              },
+              "kind": "Add-on order"
             }
           },
           {
@@ -408,222 +848,195 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Box item",
-            "values": {
-              "status": "Draft"
-            },
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Item details"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Flavor notes, allergens and storage."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Curation"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Sampled by the curator"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Cost per unit entered"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Fits the box theme"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "produc-1",
             "values": {
               "product_name": "Smoked almond clusters",
-              "sku": "FS-101",
+              "sku": "SS-ALM-CL",
               "category": "Snacks",
-              "price": 9,
-              "cost": 3.6,
-              "on_hand": 420,
-              "reorder_at": 150,
+              "status": "In next box",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "edition": "ed-3",
+              "cost": 3.6,
+              "price": 9,
+              "on_hand": 640,
+              "reorder_at": 611,
+              "allergens": [
+                "Tree nuts"
+              ],
+              "best_by": "@today+5m"
             }
           },
           {
             "key": "produc-2",
             "values": {
               "product_name": "Dark chocolate bar, sea salt",
-              "sku": "FS-108",
+              "sku": "PP-DK-SALT",
               "category": "Sweet",
-              "price": 7,
-              "cost": 2.9,
-              "on_hand": 310,
-              "reorder_at": 150,
+              "status": "Add-on shop",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "edition": "ed-2",
+              "cost": 2.9,
+              "price": 7,
+              "on_hand": 310,
+              "reorder_at": 0,
+              "allergens": [
+                "Dairy",
+                "Soy"
+              ],
+              "best_by": "@today+8m"
             }
           },
           {
             "key": "produc-3",
             "values": {
               "product_name": "Cold-brew coffee sachets",
-              "sku": "FS-115",
+              "sku": "RR-CB-10",
               "category": "Drinks",
-              "price": 8,
-              "cost": 3.1,
-              "on_hand": 260,
-              "reorder_at": 120,
+              "status": "In next box",
               "supplier_rel": "suppli-4",
-              "status": "Active"
+              "edition": "ed-3",
+              "cost": 3.1,
+              "price": 8,
+              "on_hand": 620,
+              "reorder_at": 611,
+              "allergens": [
+                "None"
+              ],
+              "best_by": "@today+11m"
             }
           },
           {
             "key": "produc-4",
             "values": {
               "product_name": "Hot sauce, small bottle",
-              "sku": "FS-122",
+              "sku": "PP-HOT-5",
               "category": "Pantry",
-              "price": 6,
-              "cost": 2.4,
-              "on_hand": 190,
-              "reorder_at": 120,
+              "status": "In next box",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "edition": "ed-4",
+              "cost": 2.4,
+              "price": 6,
+              "on_hand": 190,
+              "reorder_at": 620,
+              "allergens": [
+                "None"
+              ],
+              "best_by": "@today+14m"
             }
           },
           {
             "key": "produc-5",
             "values": {
               "product_name": "Honey sticks, 6 pack",
-              "sku": "FS-129",
+              "sku": "PP-HNY-6",
               "category": "Sweet",
-              "price": 5,
-              "cost": 1.8,
-              "on_hand": 48,
-              "reorder_at": 100,
+              "status": "In next box",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "edition": "ed-4",
+              "cost": 1.8,
+              "price": 5,
+              "on_hand": 48,
+              "reorder_at": 620,
+              "allergens": [
+                "None"
+              ],
+              "best_by": "@today+2y"
             }
           },
           {
             "key": "produc-6",
             "values": {
               "product_name": "Granola pouch",
-              "sku": "FS-136",
+              "sku": "SS-GRN-PCH",
               "category": "Snacks",
-              "price": 8,
-              "cost": 3.2,
-              "on_hand": 350,
-              "reorder_at": 150,
+              "status": "In next box",
               "supplier_rel": "suppli-1",
-              "status": "Active"
+              "edition": "ed-4",
+              "cost": 3.2,
+              "price": 8,
+              "on_hand": 350,
+              "reorder_at": 620,
+              "allergens": [
+                "Gluten",
+                "Tree nuts"
+              ],
+              "best_by": "@today+4m"
             }
           },
           {
             "key": "produc-7",
             "values": {
               "product_name": "Spice blend tin",
-              "sku": "FS-143",
+              "sku": "PP-SPC-TIN",
               "category": "Pantry",
-              "price": 9,
-              "cost": 3.5,
-              "on_hand": 205,
-              "reorder_at": 100,
+              "status": "Add-on shop",
               "supplier_rel": "suppli-2",
-              "status": "Active"
+              "edition": "ed-2",
+              "cost": 3.5,
+              "price": 9,
+              "on_hand": 205,
+              "reorder_at": 0,
+              "allergens": [
+                "None"
+              ],
+              "best_by": "@today+18m"
             }
           },
           {
             "key": "produc-8",
             "values": {
               "product_name": "Mailer box, large",
-              "sku": "FS-150",
+              "sku": "GC-MLR-L",
               "category": "Packaging",
-              "price": 2.8,
-              "cost": 1.1,
-              "on_hand": 640,
-              "reorder_at": 300,
+              "status": "Available",
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "edition": "ed-3",
+              "cost": 1.1,
+              "price": 0,
+              "on_hand": 640,
+              "reorder_at": 611,
+              "allergens": [
+                "None"
+              ]
             }
           },
           {
             "key": "produc-9",
             "values": {
               "product_name": "Recipe card pack",
-              "sku": "FS-157",
+              "sku": "GC-RCP-PK",
               "category": "Packaging",
-              "price": 0.6,
-              "cost": 0.15,
-              "on_hand": 900,
-              "reorder_at": 400,
+              "status": "In next box",
               "supplier_rel": "suppli-3",
-              "status": "Active"
+              "edition": "ed-3",
+              "cost": 0.15,
+              "price": 1,
+              "on_hand": 900,
+              "reorder_at": 611,
+              "allergens": [
+                "None"
+              ]
             }
           },
           {
             "key": "produc-10",
             "values": {
               "product_name": "Limited holiday tea",
-              "sku": "FS-164",
+              "sku": "RR-HOL-TEA",
               "category": "Drinks",
-              "price": 10,
-              "cost": 4.2,
-              "on_hand": 0,
-              "reorder_at": 100,
+              "status": "Sampling",
               "supplier_rel": "suppli-4",
-              "status": "Draft"
+              "edition": "ed-4",
+              "cost": 4.2,
+              "price": 10,
+              "on_hand": 0,
+              "reorder_at": 620,
+              "allergens": [
+                "None"
+              ],
+              "best_by": "@today+12m"
             }
           }
         ]
@@ -639,9 +1052,41 @@
         "ordered": false,
         "icon": "users",
         "titleField": "customer_name",
-        "describes": "Subscribers with plan, shipments, returns and lifetime value.",
+        "describes": "Everyone who subscribes or has: plan, status, next renewal, pause date, allergies, boxes received and money.",
         "subject": "thing",
         "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "Subscriber card",
+            "values": {},
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Allergies, gift messages, feedback on past boxes."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "datesIndependent": "Renewal and pause dates are set by the subscriber's plan and choices, not by the date they joined.",
         "fields": [
           {
             "key": "customer_name",
@@ -653,21 +1098,43 @@
           },
           {
             "key": "segment",
-            "label": "Segment",
+            "label": "Plan",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
               "Monthly",
-              "Quarterly",
-              "Gift",
-              "Paused"
+              "3-month prepaid",
+              "6-month gift",
+              "Annual"
             ],
             "choiceColors": {
               "Monthly": "slate",
-              "Quarterly": "blue",
-              "Gift": "amber",
-              "Paused": "violet"
+              "3-month prepaid": "blue",
+              "6-month gift": "amber",
+              "Annual": "violet"
+            }
+          },
+          {
+            "key": "sub_status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Active",
+              "Paused",
+              "Failed payment",
+              "Gift ending",
+              "Cancelled"
+            ],
+            "default": "Active",
+            "choiceColors": {
+              "Active": "green",
+              "Paused": "amber",
+              "Failed payment": "red",
+              "Gift ending": "violet",
+              "Cancelled": "gray"
             }
           },
           {
@@ -686,22 +1153,82 @@
           },
           {
             "key": "first_order",
-            "label": "Customer since",
+            "label": "Subscribed since",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
           },
           {
-            "key": "area",
-            "label": "Neighborhood",
+            "key": "renews_on",
+            "label": "Next renewal",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paused_until",
+            "label": "Paused until",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "avoid",
+            "label": "Avoid",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Tree nuts",
+              "Peanuts",
+              "Dairy",
+              "Gluten",
+              "Soy"
+            ],
+            "choiceColors": {
+              "Tree nuts": "slate",
+              "Peanuts": "blue",
+              "Dairy": "amber",
+              "Gluten": "violet",
+              "Soy": "green"
+            }
+          },
+          {
+            "key": "ship_state",
+            "label": "Ships to (state)",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
+            "key": "cancel_reason",
+            "label": "Why they left",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Too expensive",
+              "Too much food",
+              "Did not like the items",
+              "Moving",
+              "Gift ended",
+              "Other"
+            ],
+            "choiceColors": {
+              "Too expensive": "slate",
+              "Too much food": "blue",
+              "Did not like the items": "amber",
+              "Moving": "violet",
+              "Gift ended": "green",
+              "Other": "teal"
+            }
+          },
+          {
             "key": "order_n",
-            "label": "Shipments delivered",
+            "label": "Boxes received",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -709,53 +1236,57 @@
             "pick": "order_name",
             "agg": "count",
             "filter": {
-              "status": "Delivered"
+              "status": "Delivered",
+              "kind": "Subscription box"
             }
           },
           {
             "key": "spent",
-            "label": "Spent to date",
+            "label": "Paid to date (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "orders",
-            "pick": "total",
+            "via": "charges",
+            "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Delivered"
+              "charge_status": "Paid"
             }
           },
           {
-            "key": "returns_n",
-            "label": "Returns",
+            "key": "owed",
+            "label": "Failed or retrying (USD)",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "orders",
-            "pick": "order_name",
-            "agg": "count",
+            "via": "charges",
+            "pick": "amount",
+            "agg": "sum",
             "filter": {
-              "status": "Returned"
+              "charge_status": [
+                "Failed",
+                "Retrying"
+              ]
             }
           },
           {
             "key": "tier",
-            "label": "Tier",
+            "label": "Next step",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Spent to date} >= 250, \"Best\", IF({Spent to date} > 0, \"Regular\", \"New\"))"
+            "formula": "IF({Failed or retrying (USD)} > 0, \"Update card\", IF({Boxes received} >= 6, \"Thank-you gift\", \"None\"))"
           },
           {
             "key": "add_order_btn",
-            "label": "New shipment",
+            "label": "Add a shipment",
             "parityType": "button",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "button": {
               "do": "add_row",
               "table": "order",
-              "template": "Order sheet",
+              "template": "Shipment",
               "prefill": {
                 "customer": "@row"
               }
@@ -769,99 +1300,63 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Subscriber record",
-            "values": {},
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Preferences"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Likes, dislikes and allergies."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Notes"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Gift messages and past issues."
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "custom-1",
             "values": {
               "customer_name": "Winston Vasquez",
               "segment": "Monthly",
+              "sub_status": "Active",
               "email": "winston.vasquez@inbox-mail.net",
               "phone": "(541) 555-0110",
               "first_order": "@today-20d",
-              "area": "Harbor Heights"
+              "ship_state": "OR",
+              "renews_on": "@today+11d",
+              "avoid": [
+                "Tree nuts"
+              ]
             }
           },
           {
             "key": "custom-2",
             "values": {
               "customer_name": "Nadia Delacroix",
-              "segment": "Quarterly",
+              "segment": "3-month prepaid",
+              "sub_status": "Active",
               "email": "nadia.delacroix@inbox-mail.net",
               "phone": "(541) 555-0147",
               "first_order": "@today-63d",
-              "area": "Willow Creek"
+              "ship_state": "WA",
+              "renews_on": "@today+40d"
             }
           },
           {
             "key": "custom-3",
             "values": {
               "customer_name": "Emeka Kellerman",
-              "segment": "Gift",
+              "segment": "6-month gift",
+              "sub_status": "Gift ending",
               "email": "emeka.kellerman@inbox-mail.net",
               "phone": "(541) 555-0184",
               "first_order": "@today-106d",
-              "area": "North Ridge"
+              "ship_state": "CA",
+              "renews_on": "@today+9d",
+              "avoid": [
+                "Gluten"
+              ]
             }
           },
           {
             "key": "custom-4",
             "values": {
               "customer_name": "Solveig Tennant",
-              "segment": "Paused",
+              "segment": "Monthly",
+              "sub_status": "Paused",
               "email": "solveig.tennant@inbox-mail.net",
               "phone": "(541) 555-0121",
               "first_order": "@today-149d",
-              "area": "Sunset Flats"
+              "ship_state": "OR",
+              "paused_until": "@today+3w"
             }
           },
           {
@@ -869,43 +1364,58 @@
             "values": {
               "customer_name": "Stellan Castellanos",
               "segment": "Monthly",
+              "sub_status": "Failed payment",
               "email": "stellan.castellanos@inbox-mail.net",
               "phone": "(541) 555-0158",
               "first_order": "@today-192d",
-              "area": "Maple Hollow"
+              "ship_state": "ID",
+              "renews_on": "@today-2d",
+              "avoid": [
+                "Dairy"
+              ]
             }
           },
           {
             "key": "custom-6",
             "values": {
               "customer_name": "Marisol Jankowski",
-              "segment": "Quarterly",
+              "segment": "Annual",
+              "sub_status": "Active",
               "email": "marisol.jankowski@inbox-mail.net",
               "phone": "(541) 555-0195",
               "first_order": "@today-235d",
-              "area": "Eastgate"
+              "ship_state": "CO",
+              "renews_on": "@today+7m"
             }
           },
           {
             "key": "custom-7",
             "values": {
               "customer_name": "Callum Rosenthal",
-              "segment": "Gift",
+              "segment": "6-month gift",
+              "sub_status": "Active",
               "email": "callum.rosenthal@inbox-mail.net",
               "phone": "(541) 555-0132",
               "first_order": "@today-278d",
-              "area": "Riverbend"
+              "ship_state": "NY",
+              "renews_on": "@today+3m",
+              "avoid": [
+                "Peanuts",
+                "Tree nuts"
+              ]
             }
           },
           {
             "key": "custom-8",
             "values": {
               "customer_name": "Lucinda Zielinski",
-              "segment": "Paused",
+              "segment": "Monthly",
+              "sub_status": "Cancelled",
               "email": "lucinda.zielinski@inbox-mail.net",
               "phone": "(541) 555-0169",
               "first_order": "@today-321d",
-              "area": "Old Mill"
+              "ship_state": "OR",
+              "cancel_reason": "Too much food"
             }
           },
           {
@@ -913,43 +1423,57 @@
             "values": {
               "customer_name": "Kwame Grayson",
               "segment": "Monthly",
+              "sub_status": "Active",
               "email": "kwame.grayson@inbox-mail.net",
               "phone": "(541) 555-0106",
               "first_order": "@today-364d",
-              "area": "Cedar Park"
+              "ship_state": "MT",
+              "renews_on": "@today+4d"
             }
           },
           {
             "key": "custom-10",
             "values": {
               "customer_name": "Fenella Oyelaran",
-              "segment": "Quarterly",
+              "segment": "3-month prepaid",
+              "sub_status": "Active",
               "email": "fenella.oyelaran@inbox-mail.net",
               "phone": "(541) 555-0143",
               "first_order": "@today-407d",
-              "area": "Lakeview"
+              "ship_state": "OR",
+              "renews_on": "@today+2d",
+              "avoid": [
+                "Soy"
+              ]
             }
           },
           {
             "key": "custom-11",
             "values": {
               "customer_name": "Leopold Yoshida",
-              "segment": "Gift",
+              "segment": "6-month gift",
+              "sub_status": "Cancelled",
               "email": "leopold.yoshida@inbox-mail.net",
               "phone": "(541) 555-0180",
               "first_order": "@today-450d",
-              "area": "Foxglove Court"
+              "ship_state": "TX",
+              "cancel_reason": "Gift ended"
             }
           },
           {
             "key": "custom-12",
             "values": {
               "customer_name": "Imelda Fairbairn",
-              "segment": "Paused",
+              "segment": "Monthly",
+              "sub_status": "Paused",
               "email": "imelda.fairbairn@inbox-mail.net",
               "phone": "(541) 555-0117",
               "first_order": "@today-493d",
-              "area": "Stonebridge"
+              "ship_state": "WA",
+              "paused_until": "@today+6d",
+              "avoid": [
+                "Gluten"
+              ]
             }
           }
         ]
@@ -963,26 +1487,88 @@
         "display": "board",
         "weight": "light",
         "ordered": false,
-        "icon": "shopping-bag",
+        "icon": "send",
         "titleField": "order_name",
-        "describes": "Every box shipment by cycle, with who is packing it and the ship date.",
+        "describes": "Every box and add-on sent: subscriber, edition, kind, postage, tracking and who packed it.",
         "subject": "thing",
-        "independentOf": {
-          "customer": "Either record can be created or change status before the other.",
-          "product": "Either record can be created or change status before the other.",
-          "handler": "Either record can be created or change status before the other."
-        },
         "statusImplies": [
           {
             "field": "status",
             "when": [
-              "Shipped"
+              "Shipped",
+              "Delivered"
             ],
             "filled": [
               "shipped_on"
             ]
           }
         ],
+        "rowTemplates": [
+          {
+            "name": "Shipment",
+            "values": {
+              "status": "Queued",
+              "order_name": "New shipment"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Packing"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Allergies checked; swap items if needed"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Gift message card in"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Box weighed and labelled"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other.",
+          "box": "Either record can be created or change status before the other.",
+          "product": "Either record can be created or change status before the other.",
+          "handler": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The ship-by date is the edition's ship day; the shipped date is stamped when the label is printed.",
         "fields": [
           {
             "key": "order_name",
@@ -999,34 +1585,34 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "New",
-              "Paid",
+              "Queued",
               "Packing",
               "Shipped",
               "Delivered",
-              "Returned",
+              "Reshipped",
+              "Undeliverable",
               "Cancelled"
             ],
-            "choiceColors": {
-              "New": "slate",
-              "Paid": "blue",
-              "Packing": "amber",
-              "Shipped": "violet",
-              "Delivered": "teal",
-              "Returned": "red",
-              "Cancelled": "pink"
-            },
             "required": true,
-            "default": "New",
             "statusGroups": {
-              "New": "todo",
-              "Paid": "todo",
+              "Queued": "todo",
               "Packing": "in_progress",
               "Shipped": "in_progress",
               "Delivered": "done",
-              "Returned": "done",
+              "Reshipped": "done",
+              "Undeliverable": "done",
               "Cancelled": "done"
-            }
+            },
+            "choiceColors": {
+              "Queued": "slate",
+              "Packing": "amber",
+              "Shipped": "blue",
+              "Delivered": "green",
+              "Reshipped": "violet",
+              "Undeliverable": "red",
+              "Cancelled": "gray"
+            },
+            "default": "Queued"
           },
           {
             "key": "customer",
@@ -1038,8 +1624,17 @@
             "relationMax": 1
           },
           {
+            "key": "box",
+            "label": "Box edition",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "edition",
+            "relationMax": 1
+          },
+          {
             "key": "product",
-            "label": "Box item",
+            "label": "Add-on item",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1048,7 +1643,7 @@
           },
           {
             "key": "handler",
-            "label": "Packer (staff)",
+            "label": "Packed by",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1056,25 +1651,27 @@
             "relationMax": 1
           },
           {
-            "key": "quantity",
-            "label": "Quantity",
-            "parityType": "number",
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 5000
-              }
-            ]
+            "choices": [
+              "Subscription box",
+              "Gift box",
+              "Add-on order",
+              "Replacement"
+            ],
+            "choiceColors": {
+              "Subscription box": "slate",
+              "Gift box": "blue",
+              "Add-on order": "amber",
+              "Replacement": "violet"
+            }
           },
           {
             "key": "total",
-            "label": "Total (USD)",
+            "label": "Charged (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -1087,28 +1684,28 @@
               },
               {
                 "kind": "max",
-                "value": 100000
+                "value": 1000
               }
             ]
           },
           {
-            "key": "channel",
-            "label": "Channel",
-            "parityType": "select",
-            "sensitivity": "internal",
+            "key": "postage",
+            "label": "Postage (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
             "contextPolicy": "include",
-            "choices": [
-              "Website",
-              "Gift purchase",
-              "Wholesale",
-              "Referral"
-            ],
-            "choiceColors": {
-              "Website": "slate",
-              "Gift purchase": "blue",
-              "Wholesale": "amber",
-              "Referral": "violet"
-            }
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ]
           },
           {
             "key": "ship_by",
@@ -1125,6 +1722,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "tracking",
+            "label": "Tracking number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "packer",
@@ -1163,95 +1767,6 @@
             "contextPolicy": "include"
           }
         ],
-        "rowTemplates": [
-          {
-            "name": "Order sheet",
-            "values": {
-              "status": "New",
-              "order_name": "New shipment"
-            },
-            "default": true,
-            "body": {
-              "v": 1,
-              "blocks": [
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Box contents"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "text",
-                  "text": [
-                    {
-                      "text": "Items and any customization."
-                    }
-                  ]
-                },
-                {
-                  "type": "heading",
-                  "text": [
-                    {
-                      "text": "Before it ships"
-                    }
-                  ],
-                  "props": {
-                    "level": 2
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Contents checked against the packing list"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Gift note included if needed"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Presentation check passed"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                },
-                {
-                  "type": "todo",
-                  "text": [
-                    {
-                      "text": "Tracking added"
-                    }
-                  ],
-                  "props": {
-                    "checked": false
-                  }
-                }
-              ]
-            }
-          }
-        ],
         "rows": [
           {
             "key": "order-1",
@@ -1259,12 +1774,14 @@
               "order_name": "BX-4100",
               "status": "Delivered",
               "customer": "custom-2",
-              "product": "produc-2",
-              "handler": "tm-3",
-              "quantity": 1,
-              "total": 7,
-              "channel": "Website",
-              "ship_by": "@today-17d"
+              "box": "ed-2",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2201"
             }
           },
           {
@@ -1273,12 +1790,14 @@
               "order_name": "BX-4103",
               "status": "Delivered",
               "customer": "custom-7",
-              "product": "produc-5",
-              "handler": "tm-4",
-              "quantity": 2,
-              "total": 10,
-              "channel": "Gift purchase",
-              "ship_by": "@today-13d"
+              "box": "ed-2",
+              "handler": "tm-5",
+              "kind": "Gift box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2214"
             }
           },
           {
@@ -1287,12 +1806,14 @@
               "order_name": "BX-4106",
               "status": "Delivered",
               "customer": "custom-12",
-              "product": "produc-8",
+              "box": "ed-2",
               "handler": "tm-5",
-              "quantity": 3,
-              "total": 8.4,
-              "channel": "Wholesale",
-              "ship_by": "@today-10d"
+              "kind": "Subscription box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2236"
             }
           },
           {
@@ -1301,12 +1822,14 @@
               "order_name": "BX-4109",
               "status": "Delivered",
               "customer": "custom-5",
-              "product": "produc-1",
-              "handler": "tm-1",
-              "quantity": 1,
-              "total": 9,
-              "channel": "Referral",
-              "ship_by": "@today-7d"
+              "box": "ed-2",
+              "handler": "tm-2",
+              "kind": "Subscription box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2240"
             }
           },
           {
@@ -1315,26 +1838,30 @@
               "order_name": "BX-4112",
               "status": "Delivered",
               "customer": "custom-10",
-              "product": "produc-4",
-              "handler": "tm-2",
-              "quantity": 2,
-              "total": 12,
-              "channel": "Website",
-              "ship_by": "@today-5d"
+              "product": "produc-2",
+              "handler": "tm-5",
+              "kind": "Add-on order",
+              "total": 14,
+              "postage": 4.9,
+              "ship_by": "@today-12d",
+              "shipped_on": "@today-12d",
+              "tracking": "9405 5110 7781 2307"
             }
           },
           {
             "key": "order-6",
             "values": {
               "order_name": "BX-4115",
-              "status": "Returned",
+              "status": "Reshipped",
               "customer": "custom-3",
-              "product": "produc-7",
-              "handler": "tm-3",
-              "quantity": 3,
-              "total": 27,
-              "channel": "Gift purchase",
-              "ship_by": "@today-6d"
+              "box": "ed-2",
+              "handler": "tm-2",
+              "kind": "Replacement",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-3w",
+              "shipped_on": "@today-3w",
+              "tracking": "9405 5110 7781 2319"
             }
           },
           {
@@ -1343,11 +1870,11 @@
               "order_name": "BX-4118",
               "status": "Cancelled",
               "customer": "custom-8",
-              "product": "produc-10",
-              "handler": "tm-4",
-              "quantity": 1,
-              "total": 10,
-              "channel": "Wholesale"
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
+              "ship_by": "@today+2d"
             }
           },
           {
@@ -1356,11 +1883,10 @@
               "order_name": "BX-4121",
               "status": "Packing",
               "customer": "custom-1",
-              "product": "produc-3",
+              "box": "ed-3",
               "handler": "tm-5",
-              "quantity": 2,
-              "total": 16,
-              "channel": "Referral",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@today-1d"
             }
           },
@@ -1368,13 +1894,12 @@
             "key": "order-9",
             "values": {
               "order_name": "BX-4124",
-              "status": "Paid",
+              "status": "Packing",
               "customer": "custom-6",
-              "product": "produc-6",
-              "handler": "tm-1",
-              "quantity": 3,
-              "total": 24,
-              "channel": "Website",
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@today",
               "packer": "@installer"
             }
@@ -1383,28 +1908,28 @@
             "key": "order-10",
             "values": {
               "order_name": "BX-4127",
-              "status": "Shipped",
+              "status": "Delivered",
               "customer": "custom-11",
-              "product": "produc-9",
+              "box": "ed-2",
               "handler": "tm-2",
-              "quantity": 1,
-              "total": 0.6,
-              "channel": "Gift purchase",
-              "ship_by": "@today",
-              "shipped_on": "@today-7d"
+              "kind": "Gift box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2388"
             }
           },
           {
             "key": "order-11",
             "values": {
               "order_name": "BX-4130",
-              "status": "Packing",
+              "status": "Queued",
               "customer": "custom-4",
-              "product": "produc-2",
-              "handler": "tm-3",
-              "quantity": 2,
-              "total": 14,
-              "channel": "Wholesale",
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@mon",
               "packer": "@installer"
             }
@@ -1413,13 +1938,12 @@
             "key": "order-12",
             "values": {
               "order_name": "BX-4133",
-              "status": "Paid",
+              "status": "Queued",
               "customer": "custom-9",
-              "product": "produc-5",
-              "handler": "tm-4",
-              "quantity": 3,
-              "total": 15,
-              "channel": "Referral",
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@tue"
             }
           },
@@ -1427,13 +1951,12 @@
             "key": "order-13",
             "values": {
               "order_name": "BX-4136",
-              "status": "New",
+              "status": "Queued",
               "customer": "custom-2",
-              "product": "produc-8",
+              "box": "ed-3",
               "handler": "tm-5",
-              "quantity": 1,
-              "total": 2.8,
-              "channel": "Website",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@wed",
               "packer": "@installer"
             }
@@ -1442,13 +1965,12 @@
             "key": "order-14",
             "values": {
               "order_name": "BX-4139",
-              "status": "Paid",
+              "status": "Queued",
               "customer": "custom-7",
-              "product": "produc-1",
-              "handler": "tm-1",
-              "quantity": 2,
-              "total": 18,
-              "channel": "Gift purchase",
+              "box": "ed-3",
+              "handler": "tm-2",
+              "kind": "Gift box",
+              "total": 0,
               "ship_by": "@thu"
             }
           },
@@ -1456,13 +1978,12 @@
             "key": "order-15",
             "values": {
               "order_name": "BX-4142",
-              "status": "New",
+              "status": "Queued",
               "customer": "custom-12",
-              "product": "produc-4",
-              "handler": "tm-2",
-              "quantity": 3,
-              "total": 18,
-              "channel": "Wholesale",
+              "product": "produc-7",
+              "handler": "tm-5",
+              "kind": "Add-on order",
+              "total": 9,
               "ship_by": "@fri",
               "packer": "@installer"
             }
@@ -1471,13 +1992,12 @@
             "key": "order-16",
             "values": {
               "order_name": "BX-4145",
-              "status": "Paid",
+              "status": "Queued",
               "customer": "custom-5",
-              "product": "produc-7",
-              "handler": "tm-3",
-              "quantity": 1,
-              "total": 9,
-              "channel": "Referral",
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@sat"
             }
           },
@@ -1485,13 +2005,12 @@
             "key": "order-17",
             "values": {
               "order_name": "BX-4148",
-              "status": "New",
+              "status": "Queued",
               "customer": "custom-10",
-              "product": "produc-10",
-              "handler": "tm-4",
-              "quantity": 2,
-              "total": 20,
-              "channel": "Website",
+              "box": "ed-3",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
               "ship_by": "@sun"
             }
           },
@@ -1499,13 +2018,12 @@
             "key": "order-18",
             "values": {
               "order_name": "BX-4151",
-              "status": "Paid",
+              "status": "Queued",
               "customer": "custom-3",
-              "product": "produc-3",
-              "handler": "tm-5",
-              "quantity": 3,
-              "total": 24,
-              "channel": "Gift purchase",
+              "box": "ed-3",
+              "handler": "tm-2",
+              "kind": "Gift box",
+              "total": 0,
               "ship_by": "@tue+1w"
             }
           },
@@ -1513,27 +2031,28 @@
             "key": "order-19",
             "values": {
               "order_name": "BX-4154",
-              "status": "New",
+              "status": "Undeliverable",
               "customer": "custom-8",
-              "product": "produc-6",
-              "handler": "tm-1",
-              "quantity": 1,
-              "total": 8,
-              "channel": "Wholesale",
-              "ship_by": "@thu+1w"
+              "box": "ed-2",
+              "handler": "tm-5",
+              "kind": "Subscription box",
+              "total": 0,
+              "postage": 7.4,
+              "ship_by": "@today-4w",
+              "shipped_on": "@today-4w",
+              "tracking": "9405 5110 7781 2455"
             }
           },
           {
             "key": "order-20",
             "values": {
               "order_name": "BX-4157",
-              "status": "Paid",
+              "status": "Queued",
               "customer": "custom-1",
-              "product": "produc-9",
-              "handler": "tm-2",
-              "quantity": 2,
-              "total": 1.2,
-              "channel": "Referral",
+              "product": "produc-2",
+              "handler": "tm-5",
+              "kind": "Add-on order",
+              "total": 7,
               "ship_by": "@today+1d",
               "packer": "@installer"
             }
@@ -1542,13 +2061,12 @@
             "key": "order-21",
             "values": {
               "order_name": "BX-4160",
-              "status": "New",
+              "status": "Queued",
               "customer": "custom-6",
-              "product": "produc-2",
-              "handler": "tm-3",
-              "quantity": 3,
-              "total": 21,
-              "channel": "Website",
+              "product": "produc-7",
+              "handler": "tm-5",
+              "kind": "Add-on order",
+              "total": 18,
               "ship_by": "@today+3d"
             }
           },
@@ -1556,23 +2074,613 @@
             "key": "order-22",
             "values": {
               "order_name": "BX-4163",
-              "status": "New",
+              "status": "Shipped",
               "customer": "custom-11",
-              "product": "produc-5",
-              "handler": "tm-4",
-              "quantity": 1,
-              "total": 5,
-              "channel": "Gift purchase",
-              "ship_by": "@today+4d"
+              "product": "produc-2",
+              "handler": "tm-2",
+              "kind": "Add-on order",
+              "total": 7,
+              "postage": 4.9,
+              "ship_by": "@today-2d",
+              "shipped_on": "@today-2d",
+              "tracking": "9405 5110 7781 2490"
             }
           }
+        ]
+      },
+      {
+        "token": "charge",
+        "name": "Renewals and charges",
+        "labelSingular": "Charge",
+        "labelPlural": "Renewals and charges",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "credit-card",
+        "titleField": "charge_name",
+        "describes": "Every renewal and charge: scheduled, paid, failed or retrying, with attempts and the decline reason.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "charge_status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
         ],
-        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+        "rowTemplates": [],
+        "independentOf": {
+          "customer": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The charge date is the renewal date; the paid date is stamped when the charge clears.",
+        "fields": [
+          {
+            "key": "charge_name",
+            "label": "Charge",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "customer",
+            "label": "Subscriber",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "customer",
+            "relationMax": 1
+          },
+          {
+            "key": "for_what",
+            "label": "For",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Monthly renewal",
+              "Prepaid plan",
+              "Gift plan",
+              "Annual plan",
+              "Add-on"
+            ],
+            "choiceColors": {
+              "Monthly renewal": "slate",
+              "Prepaid plan": "blue",
+              "Gift plan": "amber",
+              "Annual plan": "violet",
+              "Add-on": "green"
+            }
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "charge_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Scheduled",
+              "Retrying",
+              "Failed",
+              "Paid",
+              "Refunded"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Scheduled": "todo",
+              "Retrying": "in_progress",
+              "Failed": "in_progress",
+              "Paid": "done",
+              "Refunded": "done"
+            },
+            "choiceColors": {
+              "Scheduled": "slate",
+              "Retrying": "amber",
+              "Failed": "red",
+              "Paid": "green",
+              "Refunded": "violet"
+            },
+            "default": "Scheduled"
+          },
+          {
+            "key": "charge_on",
+            "label": "Charge date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "attempts",
+            "label": "Attempts",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "decline",
+            "label": "Decline reason",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "chg-1",
+            "values": {
+              "charge_name": "Vasquez - October renewal",
+              "customer": "custom-1",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Paid",
+              "charge_on": "@today-19d",
+              "paid_on": "@today-19d",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-2",
+            "values": {
+              "charge_name": "Delacroix - 3-month prepaid",
+              "customer": "custom-2",
+              "for_what": "Prepaid plan",
+              "amount": 96,
+              "charge_status": "Paid",
+              "charge_on": "@today-50d",
+              "paid_on": "@today-50d",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-3",
+            "values": {
+              "charge_name": "Kellerman - 6-month gift (from Ada K)",
+              "customer": "custom-3",
+              "for_what": "Gift plan",
+              "amount": 186,
+              "charge_status": "Paid",
+              "charge_on": "@today-5m",
+              "paid_on": "@today-5m",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-4",
+            "values": {
+              "charge_name": "Castellanos - October renewal",
+              "customer": "custom-5",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Failed",
+              "charge_on": "@today-2d",
+              "attempts": 3,
+              "decline": "Card expired"
+            }
+          },
+          {
+            "key": "chg-5",
+            "values": {
+              "charge_name": "Jankowski - annual plan",
+              "customer": "custom-6",
+              "for_what": "Annual plan",
+              "amount": 360,
+              "charge_status": "Paid",
+              "charge_on": "@today-5m",
+              "paid_on": "@today-5m",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-6",
+            "values": {
+              "charge_name": "Grayson - October renewal",
+              "customer": "custom-9",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Retrying",
+              "charge_on": "@today-5d",
+              "attempts": 2,
+              "decline": "Insufficient funds"
+            }
+          },
+          {
+            "key": "chg-7",
+            "values": {
+              "charge_name": "Oyelaran - add-on chocolate",
+              "customer": "custom-10",
+              "for_what": "Add-on",
+              "amount": 14,
+              "charge_status": "Paid",
+              "charge_on": "@today-12d",
+              "paid_on": "@today-12d",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-8",
+            "values": {
+              "charge_name": "Zielinski - final month",
+              "customer": "custom-8",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Refunded",
+              "charge_on": "@today-40d",
+              "paid_on": "@today-40d",
+              "attempts": 1
+            }
+          },
+          {
+            "key": "chg-9",
+            "values": {
+              "charge_name": "Grayson - November renewal",
+              "customer": "custom-9",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Scheduled",
+              "charge_on": "@today+4d",
+              "attempts": 0
+            }
+          },
+          {
+            "key": "chg-10",
+            "values": {
+              "charge_name": "Oyelaran - 3-month prepaid renewal",
+              "customer": "custom-10",
+              "for_what": "Prepaid plan",
+              "amount": 96,
+              "charge_status": "Scheduled",
+              "charge_on": "@today+2d",
+              "attempts": 0
+            }
+          },
+          {
+            "key": "chg-11",
+            "values": {
+              "charge_name": "Vasquez - November renewal",
+              "customer": "custom-1",
+              "for_what": "Monthly renewal",
+              "amount": 34,
+              "charge_status": "Scheduled",
+              "charge_on": "@today+11d",
+              "attempts": 0
+            }
+          },
+          {
+            "key": "chg-12",
+            "values": {
+              "charge_name": "Kellerman - gift renewal offer",
+              "customer": "custom-3",
+              "for_what": "Gift plan",
+              "amount": 186,
+              "charge_status": "Scheduled",
+              "charge_on": "@today+9d",
+              "attempts": 0
+            }
+          },
+          {
+            "key": "chg-13",
+            "values": {
+              "charge_name": "Rosenthal - add-on spice tin",
+              "customer": "custom-7",
+              "for_what": "Add-on",
+              "amount": 18,
+              "charge_status": "Scheduled",
+              "charge_on": "@today",
+              "attempts": 0
+            }
+          }
+        ]
+      },
+      {
+        "token": "purchase_order",
+        "name": "Sourcing orders",
+        "labelSingular": "Sourcing order",
+        "labelPlural": "Sourcing orders",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "clipboard-list",
+        "titleField": "po_name",
+        "describes": "What you have ordered from vendors for each box, and when it arrives.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "po_status",
+            "when": [
+              "Received"
+            ],
+            "filled": [
+              "received_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "before": [
+          [
+            "ordered_on",
+            "expected_on"
+          ]
+        ],
+        "independentOf": {
+          "supplier": "Either record can be created or change status before the other.",
+          "for_box": "Either record can be created or change status before the other."
+        },
+        "datesIndependent": "The received date is stamped when the cartons are counted in.",
+        "fields": [
+          {
+            "key": "po_name",
+            "label": "Sourcing order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "supplier",
+            "label": "Vendor",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "supplier",
+            "relationMax": 1
+          },
+          {
+            "key": "for_box",
+            "label": "For box",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "edition",
+            "relationMax": 1
+          },
+          {
+            "key": "po_status",
+            "label": "Status",
+            "parityType": "status",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Draft",
+              "Sent",
+              "Confirmed",
+              "Received",
+              "Cancelled"
+            ],
+            "required": true,
+            "statusGroups": {
+              "Draft": "todo",
+              "Sent": "in_progress",
+              "Confirmed": "in_progress",
+              "Received": "done",
+              "Cancelled": "done"
+            },
+            "choiceColors": {
+              "Draft": "slate",
+              "Sent": "blue",
+              "Confirmed": "violet",
+              "Received": "green",
+              "Cancelled": "gray"
+            },
+            "default": "Draft"
+          },
+          {
+            "key": "ordered_on",
+            "label": "Ordered",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expected_on",
+            "label": "Expected",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "received_on",
+            "label": "Received on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "units",
+            "label": "Units",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "po_total",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "po_notes",
+            "label": "What is on it",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "po-1",
+            "values": {
+              "po_name": "Pinecone - hot sauce and honey sticks",
+              "supplier": "suppli-2",
+              "for_box": "ed-4",
+              "po_status": "Sent",
+              "ordered_on": "@today-3d",
+              "expected_on": "@today+7d",
+              "units": 1240,
+              "po_total": 3720,
+              "po_notes": "620 hot sauce, 620 honey six-packs"
+            }
+          },
+          {
+            "key": "po-2",
+            "values": {
+              "po_name": "Salt and Summit - granola pouches",
+              "supplier": "suppli-1",
+              "for_box": "ed-4",
+              "po_status": "Confirmed",
+              "ordered_on": "@today-6d",
+              "expected_on": "@today+8d",
+              "units": 300,
+              "po_total": 960,
+              "po_notes": "Top up to 650 with what is on hand"
+            }
+          },
+          {
+            "key": "po-3",
+            "values": {
+              "po_name": "Ridgeback - holiday tea",
+              "supplier": "suppli-4",
+              "for_box": "ed-4",
+              "po_status": "Draft",
+              "ordered_on": "@today",
+              "expected_on": "@today+12d",
+              "units": 640,
+              "po_total": 2690,
+              "po_notes": "Waiting on the sample tasting"
+            }
+          },
+          {
+            "key": "po-4",
+            "values": {
+              "po_name": "Gilded Crate - mailers for December",
+              "supplier": "suppli-3",
+              "for_box": "ed-5",
+              "po_status": "Sent",
+              "ordered_on": "@today-2d",
+              "expected_on": "@today+5d",
+              "units": 750,
+              "po_total": 900,
+              "po_notes": "Festive print, large"
+            }
+          },
+          {
+            "key": "po-5",
+            "values": {
+              "po_name": "Ridgeback - cold brew for October",
+              "supplier": "suppli-4",
+              "for_box": "ed-3",
+              "po_status": "Received",
+              "ordered_on": "@today-4w",
+              "expected_on": "@today-2w",
+              "received_on": "@today-15d",
+              "units": 620,
+              "po_total": 1922,
+              "po_notes": "Cold-brew sachets"
+            }
+          },
+          {
+            "key": "po-6",
+            "values": {
+              "po_name": "Salt and Summit - almond clusters",
+              "supplier": "suppli-1",
+              "for_box": "ed-3",
+              "po_status": "Received",
+              "ordered_on": "@today-5w",
+              "expected_on": "@today-3w",
+              "received_on": "@today-3w",
+              "units": 640,
+              "po_total": 2304,
+              "po_notes": "Smoked almond clusters"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
       {
-        "describes": "Each box item belongs to one vendor.",
+        "describes": "Each item comes from one vendor.",
         "fromTable": "product",
         "fromField": "supplier_rel",
         "toTable": "supplier",
@@ -1582,17 +2690,47 @@
         "inverseKey": "products"
       },
       {
-        "describes": "Each shipment belongs to one subscriber.",
+        "describes": "An item is in one box edition's lineup.",
+        "fromTable": "product",
+        "fromField": "edition",
+        "toTable": "edition",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "lineup_items"
+      },
+      {
+        "describes": "One person curates each edition.",
+        "fromTable": "edition",
+        "fromField": "curator",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "editions_curated"
+      },
+      {
+        "describes": "Each shipment goes to one subscriber.",
         "fromTable": "order",
         "fromField": "customer",
         "toTable": "customer",
         "flavor": "referenced",
         "cardinality": "one",
-        "onDelete": "restrict",
+        "onDelete": "set_null",
         "inverseKey": "orders"
       },
       {
-        "describes": "Each shipment belongs to one box item.",
+        "describes": "A box shipment is one edition.",
+        "fromTable": "order",
+        "fromField": "box",
+        "toTable": "edition",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "box_orders"
+      },
+      {
+        "describes": "An add-on shipment is one item.",
         "fromTable": "order",
         "fromField": "product",
         "toTable": "product",
@@ -1602,7 +2740,7 @@
         "inverseKey": "orders"
       },
       {
-        "describes": "Each shipment belongs to one packer (staff).",
+        "describes": "One person packs each shipment.",
         "fromTable": "order",
         "fromField": "handler",
         "toTable": "team_member",
@@ -1610,6 +2748,36 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "orders_handled"
+      },
+      {
+        "describes": "Each charge is to one subscriber.",
+        "fromTable": "charge",
+        "fromField": "customer",
+        "toTable": "customer",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "charges"
+      },
+      {
+        "describes": "Each sourcing order goes to one vendor.",
+        "fromTable": "purchase_order",
+        "fromField": "supplier",
+        "toTable": "supplier",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "purchase_orders"
+      },
+      {
+        "describes": "A sourcing order is for one edition.",
+        "fromTable": "purchase_order",
+        "fromField": "for_box",
+        "toTable": "edition",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "sourcing"
       }
     ],
     "sharedBlocks": [
@@ -1671,33 +2839,32 @@
     ],
     "forms": [
       {
-        "token": "order_request",
-        "name": "Place an order",
-        "describes": "How a customer or the team enters a new order.",
+        "token": "intake",
+        "name": "Pause or cancel request",
+        "describes": "What support fills in when a subscriber asks to pause or leave.",
         "audience": "staff",
-        "table": "order",
+        "table": "customer",
         "fields": [
           {
-            "fieldKey": "order_name",
-            "ask": "Order reference?",
+            "fieldKey": "customer_name",
+            "ask": "Which subscriber is asking?",
             "required": true
           },
           {
-            "fieldKey": "customer",
-            "ask": "Who is it for?",
-            "required": true
+            "fieldKey": "sub_status",
+            "ask": "Are they pausing or cancelling?"
           },
           {
-            "fieldKey": "product",
-            "ask": "Which item?"
+            "fieldKey": "paused_until",
+            "ask": "If pausing, until when?"
           },
           {
-            "fieldKey": "quantity",
-            "ask": "How many?"
+            "fieldKey": "cancel_reason",
+            "ask": "If cancelling, what reason did they give?"
           }
         ],
-        "submitLabel": "Send the order",
-        "confirmation": "Thanks. The order is on the board as New."
+        "submitLabel": "Save",
+        "confirmation": "Saved. Support confirms by email within a day."
       }
     ],
     "dimensions": [],
@@ -1746,10 +2913,24 @@
       },
       {
         "token": "supplier_board",
-        "name": "Vendors board",
+        "name": "Vendors by terms",
         "table": "supplier",
         "kind": "kanban",
         "groupBy": "terms"
+      },
+      {
+        "token": "all_edition",
+        "name": "All editions",
+        "table": "edition",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "edition_board",
+        "name": "Editions by status",
+        "table": "edition",
+        "kind": "kanban",
+        "groupBy": "ed_status"
       },
       {
         "token": "all_product",
@@ -1760,10 +2941,10 @@
       },
       {
         "token": "product_board",
-        "name": "Box items board",
+        "name": "Box items by status",
         "table": "product",
         "kind": "kanban",
-        "groupBy": "category"
+        "groupBy": "status"
       },
       {
         "token": "all_customer",
@@ -1774,10 +2955,22 @@
       },
       {
         "token": "customer_board",
-        "name": "Subscribers board",
+        "name": "Subscribers by status",
         "table": "customer",
         "kind": "kanban",
-        "groupBy": "segment"
+        "groupBy": "sub_status"
+      },
+      {
+        "token": "customer_renew",
+        "name": "Renewing in the next 7 days",
+        "table": "customer",
+        "kind": "grid",
+        "within": {
+          "renews_on": {
+            "relative": "next_days",
+            "n": 7
+          }
+        }
       },
       {
         "token": "all_order",
@@ -1795,7 +2988,7 @@
       },
       {
         "token": "order_cal",
-        "name": "Shipments calendar",
+        "name": "Shipping calendar",
         "table": "order",
         "kind": "calendar",
         "dateField": "ship_by",
@@ -1803,7 +2996,7 @@
       },
       {
         "token": "order_over",
-        "name": "Overdue",
+        "name": "Late to ship",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1813,15 +3006,14 @@
         },
         "anyOf": {
           "status": [
-            "New",
-            "Paid",
+            "Queued",
             "Packing"
           ]
         }
       },
       {
         "token": "order_week",
-        "name": "Due this week",
+        "name": "Ship this week",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1831,15 +3023,14 @@
         },
         "anyOf": {
           "status": [
-            "New",
-            "Paid",
+            "Queued",
             "Packing"
           ]
         }
       },
       {
         "token": "order_next7",
-        "name": "Next 7 days",
+        "name": "Ship in the next 7 days",
         "table": "order",
         "kind": "grid",
         "within": {
@@ -1850,20 +3041,61 @@
         },
         "anyOf": {
           "status": [
-            "New",
-            "Paid",
+            "Queued",
             "Packing"
           ]
         }
       },
       {
         "token": "order_mine",
-        "name": "My shipments",
+        "name": "My shipments to pack",
         "table": "order",
         "kind": "grid",
         "me": [
           "packer"
         ]
+      },
+      {
+        "token": "all_charge",
+        "name": "All charges",
+        "table": "charge",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "charge_board",
+        "name": "Charges board",
+        "table": "charge",
+        "kind": "kanban",
+        "groupBy": "charge_status"
+      },
+      {
+        "token": "charge_week",
+        "name": "Charging this week",
+        "table": "charge",
+        "kind": "grid",
+        "within": {
+          "charge_on": {
+            "relative": "this_week"
+          }
+        },
+        "filters": {
+          "charge_status": "Scheduled"
+        }
+      },
+      {
+        "token": "all_po",
+        "name": "All sourcing orders",
+        "table": "purchase_order",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "po_board",
+        "name": "Sourcing board",
+        "table": "purchase_order",
+        "kind": "kanban",
+        "groupBy": "po_status"
       }
     ],
     "agent": {
@@ -1875,53 +3107,41 @@
       "variables": [
         {
           "name": "primary_table",
-          "table": "product",
-          "describes": "Every item that can go in a box, with cost, stock and what is left."
+          "table": "customer",
+          "describes": "Subscribers with plan, status, renewal date and money."
         },
         {
           "name": "related_tables",
-          "table": "supplier",
-          "describes": "The records the first table connects to."
+          "table": "charge",
+          "describes": "Renewals and charges with status and attempts."
         }
       ],
       "question": {
-        "ask": "How many shipments are still waiting to be packed?",
-        "whyItMatters": "The packer starts each day with these.",
+        "ask": "How many subscribers are active right now?",
+        "whyItMatters": "The curator orders items for next month's box from this count.",
         "expect": {
-          "table": "order",
+          "table": "customer",
           "measure": {
             "op": "count"
           },
           "filter": {
-            "status": "Packing"
+            "sub_status": "Active"
           },
-          "answer": 2,
-          "unit": "shipments"
+          "answer": 6,
+          "unit": "subscribers"
         }
       }
     },
     "walk": [
       {
-        "says": "Open vendors.",
+        "says": "Open box editions.",
         "action": {
           "kind": "open",
-          "surface": "supplier_board"
+          "surface": "edition_board"
         },
         "expect": {
           "kind": "renders",
-          "surface": "supplier_board",
-          "minItems": 3
-        }
-      },
-      {
-        "says": "Open box items.",
-        "action": {
-          "kind": "open",
-          "surface": "product_board"
-        },
-        "expect": {
-          "kind": "renders",
-          "surface": "product_board",
+          "surface": "edition_board",
           "minItems": 3
         }
       },
@@ -1936,24 +3156,52 @@
           "surface": "customer_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open shipments.",
+        "action": {
+          "kind": "open",
+          "surface": "order_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "order_board",
+          "minItems": 3
+        }
+      },
+      {
+        "says": "Open charges.",
+        "action": {
+          "kind": "open",
+          "surface": "charge_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "charge_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
     "provenance": {
       "kind": "synthesized",
       "authoredBy": "Spaces industry template author (Claude)",
-      "authoredOn": "2026-10-18",
+      "authoredOn": "2026-10-19",
       "noRealPeople": true,
       "sources": [],
       "fictionalDomains": [
         "fieldnotessnackclub.net",
-        "inbox-mail.net"
+        "gildedcrate.net",
+        "inbox-mail.net",
+        "pineconepantry.net",
+        "ridgebackroasters.net",
+        "saltandsummit.net"
       ],
       "fictionalStreets": [
         "Dovecote Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1963,24 +3211,51 @@
       "icon": {
         "emoji": "🎁"
       },
-      "cover": {
-        "url": "gallery:retail-gift-box-packaging",
-        "offsetY": 50
-      },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Run the club from one page. Subscribers, box items, vendors and shipments are linked. Shipments move from New to Delivered, the packer sees their own boxes under Mine, and Box items flags what to reorder before the next cycle."
+              "text": "Run the club from here. "
+            },
+            {
+              "text": "Box editions",
+              "bold": true
+            },
+            {
+              "text": " holds each month's box from idea to shipped. "
+            },
+            {
+              "text": "Box items",
+              "bold": true
+            },
+            {
+              "text": " shows whether you have enough of each item, "
+            },
+            {
+              "text": "Subscribers",
+              "bold": true
+            },
+            {
+              "text": " who is active, paused or failing a charge, and "
+            },
+            {
+              "text": "Renewals and charges",
+              "bold": true
+            },
+            {
+              "text": " what bills when. Start with the tour below."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -1997,15 +3272,7 @@
                   "props": {
                     "spaceId": "page:dashboard"
                   }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2013,12 +3280,7 @@
                   }
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "columnList",
-          "children": [
+            },
             {
               "type": "column",
               "props": {
@@ -2030,15 +3292,7 @@
                   "props": {
                     "spaceId": "page:churn-and-pauses"
                   }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.5
-              },
-              "children": [
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2053,7 +3307,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Vendors"
+              "text": "Box editions"
             }
           ],
           "props": {
@@ -2061,41 +3315,39 @@
           }
         },
         {
-          "type": "text",
-          "text": [
-            {
-              "text": "The makers and packers behind each box, with lead times and terms."
-            }
-          ]
-        },
-        {
           "type": "database",
           "props": {
             "source": {
               "kind": "template",
-              "table": "supplier",
-              "view": "supplier_board"
+              "table": "edition",
+              "view": "edition_board"
             },
             "inline": true,
-            "title": "Vendors",
+            "title": "Box editions",
             "linked": true,
             "showTitle": false,
             "views": [
               {
-                "id": "sup-b",
+                "id": "ed-b",
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "terms"
+                "groupField": "ed_status"
               },
               {
-                "id": "sup-t",
-                "name": "All vendors",
+                "id": "ed-t",
+                "name": "All editions",
                 "layout": "grid",
-                "icon": "Table"
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "ship_on",
+                    "direction": "asc"
+                  }
+                ]
               }
             ],
-            "activeViewId": "sup-b"
+            "activeViewId": "ed-b"
           }
         },
         {
@@ -2113,7 +3365,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Every item that can go in a box, with cost, stock and what is left."
+              "text": "Enough for the box reads Order more when units on hand are below what the next box needs."
             }
           ]
         },
@@ -2135,65 +3387,25 @@
                 "name": "Board",
                 "layout": "kanban",
                 "icon": "SquareKanban",
-                "groupField": "category"
+                "groupField": "status"
               },
               {
                 "id": "pro-t",
                 "name": "All box items",
                 "layout": "grid",
                 "icon": "Table"
+              },
+              {
+                "id": "pro-r",
+                "name": "Order more",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "reorder_flag": "Order more"
+                }
               }
             ],
             "activeViewId": "pro-b"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Subscribers"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Subscribers with plan, shipments, returns and lifetime value."
-            }
-          ]
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "customer",
-              "view": "customer_board"
-            },
-            "inline": true,
-            "title": "Subscribers",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "cus-b",
-                "name": "Board",
-                "layout": "kanban",
-                "icon": "SquareKanban",
-                "groupField": "segment"
-              },
-              {
-                "id": "cus-t",
-                "name": "All subscribers",
-                "layout": "grid",
-                "icon": "Table"
-              }
-            ],
-            "activeViewId": "cus-b"
           }
         },
         {
@@ -2206,14 +3418,6 @@
           "props": {
             "level": 2
           }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Every box shipment by cycle, with who is packing it and the ship date."
-            }
-          ]
         },
         {
           "type": "database",
@@ -2250,7 +3454,7 @@
               },
               {
                 "id": "ord-o",
-                "name": "Overdue",
+                "name": "Late to ship",
                 "layout": "list",
                 "icon": "TriangleAlert",
                 "within": {
@@ -2260,15 +3464,14 @@
                 },
                 "anyOf": {
                   "status": [
-                    "New",
-                    "Paid",
+                    "Queued",
                     "Packing"
                   ]
                 }
               },
               {
                 "id": "ord-w",
-                "name": "Due this week",
+                "name": "Ship this week",
                 "layout": "list",
                 "icon": "CalendarDays",
                 "within": {
@@ -2278,15 +3481,14 @@
                 },
                 "anyOf": {
                   "status": [
-                    "New",
-                    "Paid",
+                    "Queued",
                     "Packing"
                   ]
                 }
               },
               {
                 "id": "ord-n",
-                "name": "Next 7 days",
+                "name": "Ship in the next 7 days",
                 "layout": "list",
                 "icon": "Clock",
                 "within": {
@@ -2297,15 +3499,14 @@
                 },
                 "anyOf": {
                   "status": [
-                    "New",
-                    "Paid",
+                    "Queued",
                     "Packing"
                   ]
                 }
               },
               {
                 "id": "ord-m",
-                "name": "Mine",
+                "name": "My shipments to pack",
                 "layout": "list",
                 "icon": "User",
                 "me": [
@@ -2315,6 +3516,534 @@
             ],
             "activeViewId": "ord-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Subscribers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "customer_board"
+            },
+            "inline": true,
+            "title": "Subscribers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cus-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "sub_status"
+              },
+              {
+                "id": "cus-t",
+                "name": "All subscribers",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "cus-r",
+                "name": "Renewing in the next 7 days",
+                "layout": "list",
+                "icon": "RefreshCw",
+                "within": {
+                  "renews_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                }
+              }
+            ],
+            "activeViewId": "cus-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Renewals and charges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "charge",
+              "view": "charge_board"
+            },
+            "inline": true,
+            "title": "Renewals and charges",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "chg-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "charge_status"
+              },
+              {
+                "id": "chg-t",
+                "name": "All charges",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "chg-f",
+                "name": "Failed or retrying",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "anyOf": {
+                  "charge_status": [
+                    "Failed",
+                    "Retrying"
+                  ]
+                }
+              },
+              {
+                "id": "chg-w",
+                "name": "Charging this week",
+                "layout": "list",
+                "icon": "CalendarDays",
+                "within": {
+                  "charge_on": {
+                    "relative": "this_week"
+                  }
+                },
+                "filters": {
+                  "charge_status": "Scheduled"
+                }
+              }
+            ],
+            "activeViewId": "chg-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sourcing orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "purchase_order",
+              "view": "po_board"
+            },
+            "inline": true,
+            "title": "Sourcing orders",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "po-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "po_status"
+              },
+              {
+                "id": "po-t",
+                "name": "All sourcing orders",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "po-b"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Vendors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "supplier",
+              "view": "all_supplier"
+            },
+            "inline": true,
+            "title": "Vendors",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "sup-t",
+                "name": "All vendors",
+                "layout": "grid",
+                "icon": "Table"
+              },
+              {
+                "id": "sup-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "terms"
+              }
+            ],
+            "activeViewId": "sup-t"
+          }
+        }
+      ],
+      "settings": {
+        "fullWidth": true
+      },
+      "cover": {
+        "url": "gallery:retail-gift-box-packaging",
+        "offsetY": 50
+      }
+    },
+    {
+      "key": "start-here",
+      "parent": "subscription-box-business-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour for the curator, the packers and support. Read it once; the monthly cycle page is the calendar you work to."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Box editions",
+              "bold": true
+            },
+            {
+              "text": ": one row per month's box: theme, curator, the date the lineup locks, ship day, boxes to pack, cost and retail value per box. The lineup count and boxes shipped add up from the other tables."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Box items",
+              "bold": true
+            },
+            {
+              "text": ": every item you use or are tasting: vendor, which edition it is in, cost, retail value, units on hand against units the box needs, allergens and best-by date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Subscribers",
+              "bold": true
+            },
+            {
+              "text": ": plan, status, next renewal, pause date, what they must avoid, boxes received, paid to date and anything failed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Renewals and charges",
+              "bold": true
+            },
+            {
+              "text": ": every renewal and add-on charge, scheduled, paid, failed or retrying."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Shipments",
+              "bold": true
+            },
+            {
+              "text": ": every box, gift box, add-on and replacement sent, with postage and tracking."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sourcing orders",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Vendors",
+              "bold": true
+            },
+            {
+              "text": ": what you have ordered for each box, from whom."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A month in the club"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Curate the next box: taste samples, pick the lineup, link each item to the edition."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Lock the lineup on the lock date and send the sourcing orders. Units needed is the expected box count plus 3 percent for damages."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Renewals charge on each subscriber's renewal date. Failed charges retry and the subscriber gets a friendly email."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Packing week: shipments are created for every active subscriber; packers work the "
+            },
+            {
+              "text": "Ship this week",
+              "bold": true
+            },
+            {
+              "text": " list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ship day: labels printed, "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": ", tracking emailed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After delivery: replacements for damaged or missing boxes, and a look at feedback for the next edition."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Founder",
+              "bold": true
+            },
+            {
+              "text": ": themes, pricing, the December gift edition."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Curator",
+              "bold": true
+            },
+            {
+              "text": ": tasting, lineup, vendor relationships."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Operations lead",
+              "bold": true
+            },
+            {
+              "text": ": sourcing orders, stock, packing schedule."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Support",
+              "bold": true
+            },
+            {
+              "text": ": pauses, cancellations, failed charges, replacements."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Packers",
+              "bold": true
+            },
+            {
+              "text": ": packing and shipping."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: failed or retrying charges; late shipments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: items marked Order more; sourcing orders due this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: lock the lineup, pack, ship, review churn"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Replace the sample vendors, items and editions with your own, then import your subscribers. Allergy notes and payment details are private: use them only to pack safely and bill correctly."
+            }
+          ]
         }
       ]
     },
@@ -2325,15 +4054,12 @@
       "icon": {
         "emoji": "📊"
       },
-      "settings": {
-        "fullWidth": true
-      },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Shipments by status, sales by channel and products by category."
+              "text": "Subscribers, charges, stock and shipping at a glance."
             }
           ],
           "background": "gray",
@@ -2347,7 +4073,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2355,28 +4081,28 @@
                   "props": {
                     "source": {
                       "kind": "template",
-                      "table": "order",
-                      "view": "all_order"
+                      "table": "customer",
+                      "view": "all_customer"
                     },
                     "inline": true,
-                    "title": "Shipments",
+                    "title": "Subscribers",
                     "linked": true,
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c0",
-                        "name": "Shipments by status",
+                        "id": "d-c1",
+                        "name": "Subscribers by status",
                         "layout": "chart",
+                        "icon": "ChartPie",
                         "chart": {
                           "type": "donut",
-                          "groupBy": "status",
+                          "groupBy": "sub_status",
                           "op": "count",
                           "centerValue": true
-                        },
-                        "icon": "ChartPie"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c0"
+                    "activeViewId": "d-c1"
                   }
                 }
               ]
@@ -2384,7 +4110,7 @@
             {
               "type": "column",
               "props": {
-                "width": 0.33
+                "width": 0.5
               },
               "children": [
                 {
@@ -2392,70 +4118,227 @@
                   "props": {
                     "source": {
                       "kind": "template",
-                      "table": "order",
-                      "view": "all_order"
+                      "table": "customer",
+                      "view": "all_customer"
                     },
                     "inline": true,
-                    "title": "Shipments",
+                    "title": "Subscribers",
                     "linked": true,
                     "showTitle": false,
                     "views": [
                       {
-                        "id": "view-c1",
-                        "name": "Sales by channel",
+                        "id": "d-c2",
+                        "name": "Subscribers by plan",
                         "layout": "chart",
+                        "icon": "ChartColumn",
                         "chart": {
-                          "type": "bar",
-                          "groupBy": "channel",
-                          "op": "sum",
-                          "field": "total"
-                        },
-                        "icon": "ChartColumn"
+                          "type": "hbar",
+                          "groupBy": "segment",
+                          "op": "count"
+                        }
                       }
                     ],
-                    "activeViewId": "view-c1"
-                  }
-                }
-              ]
-            },
-            {
-              "type": "column",
-              "props": {
-                "width": 0.34
-              },
-              "children": [
-                {
-                  "type": "database",
-                  "props": {
-                    "source": {
-                      "kind": "template",
-                      "table": "product",
-                      "view": "all_product"
-                    },
-                    "inline": true,
-                    "title": "Box items",
-                    "linked": true,
-                    "showTitle": false,
-                    "views": [
-                      {
-                        "id": "view-c2",
-                        "name": "Box items by category",
-                        "layout": "chart",
-                        "chart": {
-                          "type": "donut",
-                          "groupBy": "category",
-                          "op": "count",
-                          "centerValue": true
-                        },
-                        "icon": "ChartPie"
-                      }
-                    ],
-                    "activeViewId": "view-c2"
+                    "activeViewId": "d-c2"
                   }
                 }
               ]
             }
           ]
+        },
+        {
+          "type": "columnList",
+          "children": [
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "charge",
+                      "view": "all_charge"
+                    },
+                    "inline": true,
+                    "title": "Renewals and charges",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d-c3",
+                        "name": "Charges by status",
+                        "layout": "chart",
+                        "icon": "ChartPie",
+                        "chart": {
+                          "type": "donut",
+                          "groupBy": "charge_status",
+                          "op": "count",
+                          "centerValue": true
+                        }
+                      }
+                    ],
+                    "activeViewId": "d-c3"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "column",
+              "props": {
+                "width": 0.5
+              },
+              "children": [
+                {
+                  "type": "database",
+                  "props": {
+                    "source": {
+                      "kind": "template",
+                      "table": "customer",
+                      "view": "all_customer"
+                    },
+                    "inline": true,
+                    "title": "Subscribers",
+                    "linked": true,
+                    "showTitle": false,
+                    "views": [
+                      {
+                        "id": "d-c4",
+                        "name": "Why subscribers left",
+                        "layout": "chart",
+                        "icon": "ChartColumn",
+                        "chart": {
+                          "type": "hbar",
+                          "groupBy": "cancel_reason",
+                          "op": "count"
+                        }
+                      }
+                    ],
+                    "activeViewId": "d-c4"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed or retrying charges"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "charge",
+              "view": "all_charge"
+            },
+            "inline": true,
+            "title": "Renewals and charges",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l1",
+                "name": "Failed or retrying",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "anyOf": {
+                  "charge_status": [
+                    "Failed",
+                    "Retrying"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "d-l1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Items to order for the next box"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "all_product"
+            },
+            "inline": true,
+            "title": "Box items",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l2",
+                "name": "Order more",
+                "layout": "list",
+                "icon": "TriangleAlert",
+                "filters": {
+                  "reorder_flag": "Order more"
+                }
+              }
+            ],
+            "activeViewId": "d-l2"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Coming back from a pause"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "customer",
+              "view": "all_customer"
+            },
+            "inline": true,
+            "title": "Subscribers",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "d-l3",
+                "name": "Pauses ending in 14 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "paused_until": {
+                    "relative": "next_days",
+                    "n": 14
+                  }
+                }
+              }
+            ],
+            "activeViewId": "d-l3"
+          }
         },
         {
           "type": "heading",
@@ -2482,10 +4365,10 @@
             "showTitle": false,
             "views": [
               {
-                "id": "view-l0",
+                "id": "d-l4",
                 "name": "Late to ship",
                 "layout": "list",
-                "icon": "Table",
+                "icon": "TriangleAlert",
                 "within": {
                   "ship_by": {
                     "relative": "before_today"
@@ -2493,105 +4376,33 @@
                 },
                 "anyOf": {
                   "status": [
-                    "New",
-                    "Paid",
+                    "Queued",
                     "Packing"
                   ]
                 }
               }
             ],
-            "activeViewId": "view-l0"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "My shipments"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "order",
-              "view": "all_order"
-            },
-            "inline": true,
-            "title": "Shipments",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l1",
-                "name": "My shipments",
-                "layout": "list",
-                "icon": "Table",
-                "me": [
-                  "packer"
-                ]
-              }
-            ],
-            "activeViewId": "view-l1"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Returns"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "database",
-          "props": {
-            "source": {
-              "kind": "template",
-              "table": "order",
-              "view": "all_order"
-            },
-            "inline": true,
-            "title": "Shipments",
-            "linked": true,
-            "showTitle": false,
-            "views": [
-              {
-                "id": "view-l2",
-                "name": "Returns",
-                "layout": "list",
-                "icon": "Table",
-                "filters": {
-                  "status": "Returned"
-                }
-              }
-            ],
-            "activeViewId": "view-l2"
+            "activeViewId": "d-l4"
           }
         }
-      ]
+      ],
+      "settings": {
+        "fullWidth": true
+      }
     },
     {
       "key": "monthly-cycle",
       "parent": "subscription-box-business-hq",
       "title": "The monthly box cycle",
       "icon": {
-        "emoji": "🗓️"
+        "emoji": "🔄"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Run the same calendar every month so nothing is rushed."
+              "text": "Every box runs on the same five-week clock. Working to it is what lets a small team ship 600 boxes on the same day every month."
             }
           ],
           "background": "blue",
@@ -2603,7 +4414,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The calendar"
+              "text": "The clock"
             }
           ],
           "props": {
@@ -2620,26 +4431,17 @@
                 "cells": [
                   [
                     {
-                      "text": "Days before ship"
+                      "text": "When"
                     }
                   ],
                   [
                     {
                       "text": "What happens"
                     }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "45"
-                    }
                   ],
                   [
                     {
-                      "text": "Choose the theme and shortlist items"
+                      "text": "Who"
                     }
                   ]
                 ]
@@ -2648,12 +4450,17 @@
                 "cells": [
                   [
                     {
-                      "text": "30"
+                      "text": "Five weeks before ship day"
                     }
                   ],
                   [
                     {
-                      "text": "Order items and packaging"
+                      "text": "Taste samples, choose the theme"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Curator, founder"
                     }
                   ]
                 ]
@@ -2662,12 +4469,17 @@
                 "cells": [
                   [
                     {
-                      "text": "14"
+                      "text": "Four weeks before"
                     }
                   ],
                   [
                     {
-                      "text": "Receive, count and quality check"
+                      "text": "Lineup locked; sourcing orders sent"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Curator, operations"
                     }
                   ]
                 ]
@@ -2676,12 +4488,17 @@
                 "cells": [
                   [
                     {
-                      "text": "7"
+                      "text": "Two weeks before"
                     }
                   ],
                   [
                     {
-                      "text": "Pack and label in batches"
+                      "text": "Stock arrives and is counted; mailers and cards in"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Operations"
                     }
                   ]
                 ]
@@ -2690,12 +4507,55 @@
                 "cells": [
                   [
                     {
-                      "text": "0"
+                      "text": "Renewal dates through the month"
                     }
                   ],
                   [
                     {
-                      "text": "Ship, then email tracking"
+                      "text": "Charges run; failed charges retried"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Support"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ship week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pack, label, ship"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Packers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Week after"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Replacements, feedback review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Support, curator"
                     }
                   ]
                 ]
@@ -2707,7 +4567,171 @@
           "type": "heading",
           "text": [
             {
-              "text": "After ship"
+              "text": "Choosing the lineup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Five or six items, one hero item everyone will talk about."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A balance: something sweet, something savoury, a drink, a pantry item."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retail value at least 1.5 times the box price. The edition shows cost and value per box; aim for cost under 45 percent of the price."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Allergens checked: every item's allergens on its row, so support can swap items for subscribers who avoid them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Best-by dates at least three months after ship day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Locking it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link each item to the edition. The lineup count on the edition updates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Units needed",
+              "bold": true
+            },
+            {
+              "text": " on each item to the boxes to pack plus 3 percent."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every item that reads "
+            },
+            {
+              "text": "Order more",
+              "bold": true
+            },
+            {
+              "text": " gets a sourcing order the same day, linked to the edition."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the edition to "
+            },
+            {
+              "text": "Sourcing",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Packing week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count stock against the lineup. Anything short: call the vendor, or choose the substitute you agreed in advance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Create a shipment for every active subscriber and gift recipient. Paused and cancelled subscribers do not get one."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the edition to "
+            },
+            {
+              "text": "Packing",
+              "bold": true
+            },
+            {
+              "text": ". Packers work the "
+            },
+            {
+              "text": "Ship this week",
+              "bold": true
+            },
+            {
+              "text": " list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ship day"
             }
           ],
           "props": {
@@ -2718,7 +4742,40 @@
           "type": "text",
           "text": [
             {
-              "text": "Watch the Returns list and the pause and cancel requests for two weeks."
+              "text": "Print labels in batches, press "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": ", and send the tracking email. Set the edition to "
+            },
+            {
+              "text": "Shipped",
+              "bold": true
+            },
+            {
+              "text": ". Keep ten spare boxes for replacements."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Read every reply to the shipping email. A hero item people loved is a candidate for the add-on shop. An item many disliked should not come back, and tells the curator something for next time."
             }
           ]
         }
@@ -2736,7 +4793,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Many cancellations are really I have too much. Offer a pause or a smaller box first."
+              "text": "Every subscriber who stays one more month is worth more than a new one, because you have already paid to find them."
             }
           ],
           "background": "blue",
@@ -2748,50 +4805,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Offer to skip a month before cancelling."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Ask why in one line and record the reason."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Offer a quarterly plan if monthly feels like too much."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Tag cancellations by reason every month."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Late or wrong boxes"
+              "text": "Know your number"
             }
           ],
           "props": {
@@ -2802,7 +4816,210 @@
           "type": "text",
           "text": [
             {
-              "text": "Fix them fast and send a small gift. A late box is the most common reason for cancelling."
+              "text": "Churn is the share of subscribers who leave in a month. Count cancellations this month and divide by active subscribers at the start of the month. A box at 8 percent a month keeps a subscriber about a year; at 5 percent, nearly two years. Look at the "
+            },
+            {
+              "text": "Why subscribers left",
+              "bold": true
+            },
+            {
+              "text": " chart on the Dashboard every month."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Failed charges are churn you did not choose"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Many cancellations are not decisions: a card expired. Work "
+            },
+            {
+              "text": "Failed or retrying",
+              "bold": true
+            },
+            {
+              "text": " every morning:"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "First failure: an automatic retry in three days and a friendly email with a link to update the card."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Second failure: a personal email from support. Keep the box queued for now."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Third failure: hold the box, set the subscriber to "
+            },
+            {
+              "text": "Failed payment",
+              "bold": true
+            },
+            {
+              "text": ", and send one last note. If nothing comes back in a week, cancel with a door left open."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Offer a pause before a cancel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When someone asks to cancel, offer a pause of one, two or three months first, with no fee. Log it on the pause or cancel form. Many pausers come back on their own; send a short email a week before the pause ends showing what is in the next box."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The reason matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Too much food",
+              "bold": true
+            },
+            {
+              "text": ": offer the every-other-month option."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Too expensive",
+              "bold": true
+            },
+            {
+              "text": ": the 3-month prepaid plan costs less per box."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Did not like the items",
+              "bold": true
+            },
+            {
+              "text": ": ask which ones. Their answer is free curation advice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gift ended",
+              "bold": true
+            },
+            {
+              "text": ": email the recipient a month before the gift ends with a first-month discount."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Thank the loyal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At six boxes, the "
+            },
+            {
+              "text": "Next step",
+              "bold": true
+            },
+            {
+              "text": " column says Thank-you gift. Put a small extra in their next box with a handwritten card. It costs little and it is what people mention when they recommend you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Each month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Churn rate and how many cancellations were failed charges."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How many pauses came back."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gift recipients who became paying subscribers."
             }
           ]
         }
@@ -2813,14 +5030,14 @@
       "parent": "subscription-box-business-hq",
       "title": "Packing and quality control",
       "icon": {
-        "emoji": "✅"
+        "emoji": "📦"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Presentation is the product. Check it like a customer would."
+              "text": "The box arriving perfect is the whole product. Packing is where it is won or lost."
             }
           ],
           "background": "blue",
@@ -2832,7 +5049,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Set up the line"
             }
           ],
           "props": {
@@ -2843,7 +5060,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pack in batches of 50 from a pick list."
+              "text": "Clear the table. Lay out the lineup in packing order: heavy and sturdy at the bottom, fragile on top, the card last."
             }
           ]
         },
@@ -2851,7 +5068,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "One person checks every tenth box against the list."
+              "text": "Count stock for the shift against the number of shipments in "
+            },
+            {
+              "text": "My shipments to pack",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2859,15 +5083,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Photograph a finished box for the record."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Print the allergy swap list: subscribers whose "
+            },
             {
-              "text": "Hold any box with a damaged item."
+              "text": "Avoid",
+              "bold": true
+            },
+            {
+              "text": " matches an item in this box, and what goes in instead."
             }
           ]
         },
@@ -2875,7 +5098,119 @@
           "type": "heading",
           "text": [
             {
-              "text": "Targets"
+              "text": "Packing each box"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the shipment's subscriber against the swap list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Items in, in order; tissue around the glass"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recipe card and the edition card on top"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gift boxes: gift message card, no price on anything"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Close, shake gently: nothing should rattle"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Weigh, label, move the shipment to Packing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Quality checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every tenth box, the lead opens it and checks it against the lineup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any item with a damaged seal, a dent or a short best-by date is set aside, not packed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Temperature: chocolate does not ship when the forecast on the route is above 80 degrees without a cold pack."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Labels and shipping"
             }
           ],
           "props": {
@@ -2886,9 +5221,118 @@
           "type": "text",
           "text": [
             {
-              "text": "Order accuracy above 99 percent and boxes ready one week before the ship date."
+              "text": "Print labels in batches of fifty, apply, and press "
+            },
+            {
+              "text": "Mark shipped",
+              "bold": true
+            },
+            {
+              "text": " for the batch. Paste tracking where the label service does not do it for you. Postage goes on each shipment so you can see the cost per box over the month."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a box goes wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Support logs a "
+            },
+            {
+              "text": "Replacement",
+              "bold": true
+            },
+            {
+              "text": " shipment for the subscriber, linked to the same edition."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for one photo; do not ask for the box back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ship it within two working days with a short apology note."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note what went wrong. Three of the same problem in a month means the packing needs to change."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Undeliverable boxes come back to you. Email the subscriber for a corrected address, then reship. If the same address fails twice, call them: a wrong apartment number is the usual cause."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "End of the shift"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every shipment packed this shift is marked and labelled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Set-aside items logged on the item's page with the reason"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Leftover stock counted and Units on hand updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }
