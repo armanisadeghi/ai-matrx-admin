@@ -1,7 +1,6 @@
 "use client";
 
 // Intelligence › System processes: the durable queue behind platform AI work nobody sees (naming a chat today).
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
@@ -85,25 +84,20 @@ export function SystemProcessesBoard() {
     queryKey: ["system-process-queue"],
     queryFn: fetchQueue,
   });
-  const items = useMemo(() => data?.items ?? [], [data]);
-  const knobs = useMemo(() => new Map((data?.knobs ?? []).map((k) => [k.key, k.value])), [data]);
+  const items = data?.items ?? [];
+  const knobs = new Map((data?.knobs ?? []).map((k) => [k.key, k.value]));
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = {};
-    for (const i of items) c[i.state] = (c[i.state] ?? 0) + 1;
-    return c;
-  }, [items]);
+  const counts: Record<string, number> = {};
+  for (const i of items) counts[i.state] = (counts[i.state] ?? 0) + 1;
 
-  const processes = useMemo(() => {
-    const by = new Map<string, { total: number; outcomes: Map<string, number> }>();
-    for (const i of items) {
-      const p = by.get(i.process) ?? { total: 0, outcomes: new Map<string, number>() };
-      p.total += 1;
-      if (i.outcome) p.outcomes.set(i.outcome, (p.outcomes.get(i.outcome) ?? 0) + 1);
-      by.set(i.process, p);
-    }
-    return [...by.entries()].sort(([a], [b]) => a.localeCompare(b));
-  }, [items]);
+  const byProcess = new Map<string, { total: number; outcomes: Map<string, number> }>();
+  for (const i of items) {
+    const p = byProcess.get(i.process) ?? { total: 0, outcomes: new Map<string, number>() };
+    p.total += 1;
+    if (i.outcome) p.outcomes.set(i.outcome, (p.outcomes.get(i.outcome) ?? 0) + 1);
+    byProcess.set(i.process, p);
+  }
+  const processes = [...byProcess.entries()].sort(([a], [b]) => a.localeCompare(b));
 
   const read = readOf({ loading: isLoading, error: error ? String(error) : null }, { what: "the queue" });
   const globalOn = knobOn(knobs.get("enabled"));
