@@ -3,6 +3,7 @@ import { AgentViewContent } from "@/features/agents/route/AgentViewContent";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import { SystemAgentWriteTargets } from "@/features/agents/components/admin/SystemAgentWriteTargets";
 import PageHeader from "@/features/shell/components/header/PageHeader";
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 
 export const metadata = { title: "View | System Agents" };
@@ -49,7 +50,10 @@ export default async function AdminSystemAgentViewPage({
       */}
       <SystemAgentWriteTargets agentId={id} />
       <div className="h-full overflow-y-auto">
-        <AgentViewContent agentId={id} />
+        <AgentViewContent
+          agentId={id}
+          recordSections={<EntityCustomFields entityToken="agent" recordId={id} organizationId={agent.organizationId} />}
+        />
       </div>
     </>
   );

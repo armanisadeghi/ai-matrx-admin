@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (table) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/table — the kind's RECORDS, org-wide.
 //
 // The sibling `instances/` tab answers "what have I saved?"; THIS one answers

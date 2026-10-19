@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import { RunRefineView } from "./_components/RunRefineView";
 
 export default async function RunRefinePage({

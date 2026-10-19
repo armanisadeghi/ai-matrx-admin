@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (teach-back) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/teach-back/page.tsx
 //
 // "The Teach-Back" as a REAL PAGE. Every creation/working mode gets a URL route

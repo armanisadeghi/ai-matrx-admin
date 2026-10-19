@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (category), not a record id
 // app/(public)/templates/workspaces/[category]/page.tsx — ONE CATEGORY: its workspaces and the single-table
 // templates of the industries filed under it (publicGallery.ts INDUSTRY_CATEGORY: one category system).
 // Categories come from the catalog itself, so a category the template library adds later gets its page. A category

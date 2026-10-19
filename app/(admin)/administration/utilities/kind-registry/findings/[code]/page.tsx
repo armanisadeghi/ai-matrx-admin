@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 /**
  * ONE Shape Doctor finding class, with what it takes to resolve it.
  *

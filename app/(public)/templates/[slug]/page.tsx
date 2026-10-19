@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(public)/templates/[slug]/page.tsx — ONE TEMPLATE'S PAGE, the same for everyone (lane CHAIR-GALLERY,
 // 2026-10-05). Arman: "a nice page with a good url, the nice description it has and then showing the
 // actual 'Stuff' that comes out of it." The address is the template's readable slug; a catalog id or

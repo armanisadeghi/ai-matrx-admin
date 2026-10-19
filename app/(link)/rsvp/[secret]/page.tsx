@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(link)/rsvp/[secret]/page.tsx — THE ANSWER TO A MEETING INVITATION.
 //
 // Every invitation email carries three links here (Yes / No / Maybe, the answer

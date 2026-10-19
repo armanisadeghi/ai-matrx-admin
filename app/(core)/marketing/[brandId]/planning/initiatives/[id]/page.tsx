@@ -1,3 +1,4 @@
+// record-view: marketing_initiative
 // One initiative, opened inside its client's Planning section. `[id]` is a
 // plain initiative UUID (initiatives carry no URL key), so it is passed
 // straight through to the canonical detail component.

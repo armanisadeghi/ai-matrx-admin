@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (payments) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
 // /organizations/[orgId]/settings/payments — the organization collects payments into ITS OWN

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (drip) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/drip/page.tsx
 //
 // THE DAILY DRIP's answer page — the URL every daily question links to.

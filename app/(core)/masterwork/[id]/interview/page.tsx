@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (interview) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/interview/page.tsx
 //
 // The Scout interview as a REAL PAGE. Arman's ruling (2026-08-17): "it doesn't

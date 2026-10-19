@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (outreach) inside a record or scope, not the record page; the record's own page carries the section
 // The Outreach front door for one client — link and PR prospecting doors with
 // live counts into the CRM (which owns contact machinery) and the sites'
 // backlink prospecting.

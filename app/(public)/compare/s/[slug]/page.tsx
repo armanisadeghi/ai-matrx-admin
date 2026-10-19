@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(public)/compare/s/[slug]/page.tsx — a shared comparison, public. Anyone, signed out, can open it.
 // Server-rendered from the public payload: title, description and the social card come from the result,
 // and search engines may index it (the comparison.public.share_indexable knob, on by default).

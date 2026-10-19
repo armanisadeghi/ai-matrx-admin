@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";

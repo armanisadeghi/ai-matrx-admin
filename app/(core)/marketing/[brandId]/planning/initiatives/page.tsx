@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (initiatives) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/planning/initiatives/page.tsx
 //
 // Initiatives — the container above channels — for this client.

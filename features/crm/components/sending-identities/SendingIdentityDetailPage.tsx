@@ -48,6 +48,7 @@ import { DnsRecordCard } from "./DnsRecordCard";
 import { HealthPanel } from "./HealthPanel";
 import { IssueList } from "./IssueList";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 function AuthRow({
   name,
@@ -469,6 +470,11 @@ export function SendingIdentityDetailPage({ identityId }: { identityId: string }
             )}
           </CardContent>
         </Card>
+        <EntityCustomFields
+          entityToken="crm_sending_identity"
+          recordId={identity.id}
+          organizationId={identity.organization_id}
+        />
       </div>
     </div>
   );

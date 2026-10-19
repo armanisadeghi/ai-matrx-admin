@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 /**
  * /agents/go/<id> — the always-valid agent address (`agentGoHref`). A member
  * page, so it resolves for the member view; admin surfaces link through

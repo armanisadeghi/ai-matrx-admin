@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { notFound, permanentRedirect } from "next/navigation";
 import { mapLegacySiteRest } from "@/features/marketing/lib/legacy-marketing-urls";
 

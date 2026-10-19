@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // app/(admin)/administration/automation/scheduling/tasks/[id]/page.tsx
 //
 // The ADMIN seat's record page for one scheduled task. It renders the same

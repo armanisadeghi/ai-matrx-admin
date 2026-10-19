@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";

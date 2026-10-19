@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
 import { BrandOfferingsWorkspace } from "@/features/marketing/offerings/BrandOfferingsWorkspace";
 import { resolveBrandParam } from "@/features/marketing/lib/keys-server";

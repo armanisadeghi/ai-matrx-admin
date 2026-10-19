@@ -4,6 +4,7 @@
 //   pnpm tsx scripts/record-pages/generate.ts                    regenerate the map (offline)
 //   pnpm tsx scripts/record-pages/generate.ts --refresh-registry first re-read platform.entity_types
 //                                                                from production (read-only, reader role)
+//   pnpm tsx scripts/record-pages/generate.ts --rebaseline        pin every open class at today's membership + count
 //   pnpm tsx scripts/record-pages/generate.ts --shrink           drop now-declared entries from the ledger
 //   pnpm tsx scripts/record-pages/generate.ts --seed-ledger      write today's pending units into the
 //                                                                ledger (FIRST COUNT ONLY — the ledger
@@ -72,6 +73,23 @@ async function main() {
   if (args.has("--seed-list-queue") && !ledger.listQueue) {
     // FIRST COUNT of the I2 queue only.
     ledger = { ...ledger, listQueue: census.tables.filter((t) => t.rowToken === "noncanonical").map((t) => t.file) };
+    writeFileSync(join(ROOT, LEDGER), JSON.stringify(ledger, null, 1) + "\n");
+    census = buildCensus({ root: ROOT, entityTypes, ledger });
+  }
+  if (args.has("--rebaseline")) {
+    // ONE-TIME re-seed after the guard went unrun: every open class is pinned at today's membership and
+    // count (stale entries drop, undeclared units enter). From here the ledger only shrinks (--shrink).
+    const probe = buildCensus({ root: ROOT, entityTypes, ledger: { ...ledger, listSourcesWithoutCustomFields: [] } });
+    const pending = census.units.filter((u) => u.declaration.kind === "pending").map((u) => u.key);
+    ledger = {
+      exemptCeiling: pending.length,
+      pending,
+      tablesPending: census.tables.filter((t) => t.rowToken === "pending").map((t) => t.file),
+      listQueue: census.tables.filter((t) => t.rowToken === "noncanonical").map((t) => t.file),
+      listSourcesWithoutCustomFields: probe.problems
+        .filter((p) => p.includes("whose source returns no custom_fields"))
+        .map((p) => p.split(":")[0]),
+    };
     writeFileSync(join(ROOT, LEDGER), JSON.stringify(ledger, null, 1) + "\n");
     census = buildCensus({ root: ROOT, entityTypes, ledger });
   }

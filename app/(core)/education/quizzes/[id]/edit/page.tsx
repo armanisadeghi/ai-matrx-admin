@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 // /education/quizzes/[id]/edit — authoring surface (view↔edit split).
 //
 // Gating (P7, ROUTING.md §2): EDIT-gated on the SERVER via requireAccess — a

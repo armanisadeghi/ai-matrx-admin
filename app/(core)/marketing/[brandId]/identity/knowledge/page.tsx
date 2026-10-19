@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (knowledge) inside a record or scope, not the record page; the record's own page carries the section
 import { Suspense } from "react";
 
 import { BrandIdentitySiteSurface } from "@/features/marketing/components/brand/BrandIdentitySiteSurface";

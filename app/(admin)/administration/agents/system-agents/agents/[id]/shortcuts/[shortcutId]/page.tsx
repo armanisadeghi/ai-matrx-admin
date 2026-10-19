@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";

@@ -1,3 +1,4 @@
+// record-view: note
 // /education/notes/[id] — the Smart Notes editor + convert/capture surface.
 // Editable rich note (workbench-backed) with one-click conversion to study
 // artifacts. Access is gated client-side (P7 useAccess) inside the reused notes

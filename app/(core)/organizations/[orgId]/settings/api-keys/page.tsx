@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (api-keys) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
 // /organizations/[orgId]/settings/api-keys — the API-key management surface

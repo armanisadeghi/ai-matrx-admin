@@ -1,3 +1,4 @@
+// record-view: none — a builder (editor) over a table, not a record page
 // /workflows/builder/[tableId] — the simple Workflow builder for one table (lane 11 wave 2).
 // The whole surface is `WorkflowBuilderPage`; it reads `?workflow=` and `?tab=`, so it sits in a
 // Suspense boundary.

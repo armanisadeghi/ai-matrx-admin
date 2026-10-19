@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/test — the magic moment: fill the canonical KindInputForm
 // and watch YOUR component render the instance live through the real route.
 

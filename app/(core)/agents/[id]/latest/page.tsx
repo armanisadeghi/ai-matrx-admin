@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (latest) inside a record or scope, not the record page; the record's own page carries the section
 import { getAgent } from "@/lib/agents/data";
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";
 import PageHeader from "@/features/shell/components/header/PageHeader";

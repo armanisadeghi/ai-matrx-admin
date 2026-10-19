@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (write) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/write — Phase 1B "Write" mode: free-typed
 // recall graded against the back text (Levenshtein similarity), method='write'.
 import type { Metadata } from "next";

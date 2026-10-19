@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // /administration/database/relationships/explorer/[token] — Entity relationship explorer.
 //
 // One entity_types token: what targets it (sources, left) and what it

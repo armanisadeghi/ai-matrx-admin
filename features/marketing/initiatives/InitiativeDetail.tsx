@@ -15,6 +15,7 @@ import { InitiativeEditorDialog } from "./InitiativeEditorDialog";
 import type { Initiative } from "./types";
 import { QueryError } from "@/features/marketing/components/shared/MarketingUi";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 export function InitiativeDetail({ id }: { id: string }) {
   const [row, setRow] = useState<Initiative | null>(null);
@@ -140,6 +141,7 @@ export function InitiativeDetail({ id }: { id: string }) {
             </Info>
             <Info label="Budget">{budget}</Info>
           </div>
+          <EntityCustomFields entityToken="marketing_initiative" recordId={row.id} organizationId={row.organization_id} />
         </div>
       </main>
       <InitiativeEditorDialog

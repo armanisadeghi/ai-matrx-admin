@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import { RunDenseView } from "./_components/RunDenseView";
 
 export default async function RunDensePage({

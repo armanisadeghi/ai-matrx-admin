@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(link)/v/[slug]/page.tsx — A PUBLISHED VIEW, OPENED BY SOMEBODY WHO IS NOT SIGNED IN.
 //
 // `custom.publish_bind(kind => 'view')` gives a saved view a public address; this is the page that

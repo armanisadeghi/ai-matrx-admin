@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (publications) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/publications/page.tsx
 //
 // One reputation screen, one route. `view` fixes the screen from the route

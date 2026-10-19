@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (monitoring) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/monitoring/page.tsx
 //
 // Coverage, link changes, AI visibility and reputation all live in a WEBSITE's

@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 import { SettingsTabContent } from "@/features/settings/route-shell/SettingsTabContent";
 import {
   SETTINGS_BASE,

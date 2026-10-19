@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { mapLegacySiteRest } from "@/features/marketing/lib/legacy-marketing-urls";

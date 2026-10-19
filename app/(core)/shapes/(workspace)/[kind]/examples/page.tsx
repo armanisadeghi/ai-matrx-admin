@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (examples) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/examples — author and curate this shape's saved samples.
 // Was admin-only; one set of tabs for everyone (2026-08-29).
 

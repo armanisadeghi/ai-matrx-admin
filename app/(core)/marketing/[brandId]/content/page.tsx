@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (content) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/content/page.tsx
 //
 // The Content section's HOME — this brand's topical maps (placement decision

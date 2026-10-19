@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (valuation) inside a record or scope, not the record page; the record's own page carries the section
 import { LinkValuationWorkspace } from "@/features/marketing/link-valuation/components/LinkValuationWorkspace";
 
 /**

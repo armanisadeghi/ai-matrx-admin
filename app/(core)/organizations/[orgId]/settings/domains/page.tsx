@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (domains) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
 // /organizations/[orgId]/settings/domains — the organization serves its forms, booking pages and

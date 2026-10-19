@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 import type { Metadata } from "next";
 import { NOT_INDEXED_ROBOTS } from "@/lib/seo/search-engine-indexed";
 import { searchEngineRobots } from "@/lib/seo/search-engine-indexed.server";

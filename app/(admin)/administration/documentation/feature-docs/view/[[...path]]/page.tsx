@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import AppLink from "@/components/navigation/AppLink";
 import { notFound } from "next/navigation";
 import { ArrowLeft, FileText, GitCommit } from "lucide-react";

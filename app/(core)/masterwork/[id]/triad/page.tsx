@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (triad) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/triad/page.tsx
 //
 // THE TRIAD GAME as a real page (Arman, 2026-08-17: every creation/working mode

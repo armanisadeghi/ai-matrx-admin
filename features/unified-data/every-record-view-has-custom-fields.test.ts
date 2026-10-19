@@ -125,6 +125,13 @@ describe("G1 self-test: the guard can fail", () => {
     expect(c.problems.join("\n")).toMatch(/"no_such_token", which is not a registry token/);
   });
 
+  it("a prose marker is red, never read as tokens", () => {
+    const route = "app/(core)/crm/[partyId]/page.tsx";
+    const text = readFileSync(join(ROOT, route), "utf8").replace("// record-view: party", "// record-view: PartyView — one party, kind + id");
+    const c = buildCensus({ root: ROOT, entityTypes, ledger, overrides: { [route]: text } });
+    expect(c.problems.join("\n")).toMatch(/the "record-view:" marker is prose, not a token/);
+  });
+
   it("a reason-less exemption is red", () => {
     const route = "app/(core)/crm/[partyId]/page.tsx";
     const text = readFileSync(join(ROOT, route), "utf8").replace("// record-view: party", "// record-view: none");

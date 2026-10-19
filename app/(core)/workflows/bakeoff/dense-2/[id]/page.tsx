@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 // /workflows/bakeoff/dense-2/[id] — ui-dense wave-2 bake-off entry.
 //
 // The auto-generated workflow run page as an operations desk: the whole

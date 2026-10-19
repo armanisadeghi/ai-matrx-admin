@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (provider), not a record id
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SourceGuidePage } from "@/features/source-onboarding/components/SourceGuidePage";

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (ai-runs) inside a record or scope, not the record page; the record's own page carries the section
 // The Content Plan workspace for one site — the AI RUNS view.
 //
 // Not in the restructure spec's list of five, but it is the sixth entry in

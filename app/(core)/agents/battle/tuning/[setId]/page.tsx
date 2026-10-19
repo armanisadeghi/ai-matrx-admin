@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import { BattleSurfaceRuntime } from "@/features/agent-comparison/shared/BattleSurfaceRuntime";
 import { TuningBattlePage } from "@/features/agent-comparison/modes/tuning/components/TuningBattlePage";
 

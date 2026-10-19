@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (stream) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/stream — the stream simulator: replay the shape's canonical
 // example through the REAL chat streaming pipeline (StreamBlockAccumulator →
 // SafeBlockRenderer) and verify loading state, progressive fill, final swap.

@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (build) for a record; the record's own page carries the section
 import { getAgent } from "@/lib/agents/data";
 import { AgentBuilderPage } from "@/features/agents/components/builder/AgentBuilderPage";
 import PageHeader from "@/features/shell/components/header/PageHeader";

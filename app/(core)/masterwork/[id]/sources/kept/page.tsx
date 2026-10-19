@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (kept) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/sources/kept/page.tsx
 //
 // WHAT THIS RULEBOOK KEPT — the Expert's own words, listed.

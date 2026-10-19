@@ -1,3 +1,4 @@
+// record-view: hr_employee
 // Route 14 — `/hr/people/[employeeId]/[tab]` (SPEC-UI-IA §3.2 row 14, §4;
 // SPEC-EMPLOYEES §2.3).
 //

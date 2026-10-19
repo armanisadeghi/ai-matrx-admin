@@ -1,3 +1,4 @@
+// record-view: none — an interview wizard session, not a record page
 // app/(core)/vision-interview/[sessionId]/page.tsx
 //
 // Server Component wrapper — the room itself is fully interactive

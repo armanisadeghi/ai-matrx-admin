@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (template) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/template — the wire shape an agent emits for this kind.
 // Moved out of Preview, where it was never a preview of anything.
 

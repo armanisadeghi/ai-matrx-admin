@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import { StudioStage } from "./_components/StudioStage";
 
 // REIMAGINED run surface (ui-reimagine bake-off entry).

@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // ADMIN SEAT mirror of /workflows/runs/[runId] — same surface, on an admin route.
 // /workflows/runs/[runId] — the permalink for one workflow run.
 //

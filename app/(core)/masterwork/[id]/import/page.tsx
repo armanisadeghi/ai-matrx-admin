@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (import) for a record; the record's own page carries the section
 // app/(core)/masterwork/[id]/import/page.tsx
 //
 // "Import your AI chats" — the chat-import Distillation Approach as a REAL

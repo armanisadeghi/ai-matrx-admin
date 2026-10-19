@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 import { NOT_INDEXED_ROBOTS } from "@/lib/seo/search-engine-indexed";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";

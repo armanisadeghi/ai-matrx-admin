@@ -2,35 +2,41 @@
  "generatedBy": "scripts/record-pages/generate.ts",
  "counts": {
   "list.sourceWithoutCustomFields": 2,
-  "route.pending": 1342,
-  "route.none": 41,
-  "route.tokens": 16,
+  "route.pending": 1039,
+  "route.none": 498,
+  "route.tokens": 26,
   "route.host": 1,
-  "window.pending": 181,
+  "window.pending": 195,
   "window.none": 1,
   "window.host": 1,
   "window.tokens": 2,
   "peek.tokens": 19,
   "peek.none": 5,
   "peek.any": 1,
-  "table.pending": 311,
-  "table.noncanonical": 9,
-  "table.none": 5,
+  "table.pending": 368,
+  "table.noncanonical": 8,
+  "table.none": 6,
   "table.set": 1
  },
  "tokens": [
   "agent",
   "agent_shortcut",
+  "agent_template",
   "app",
   "canvas_item",
   "conversation",
   "crm_deal",
+  "crm_sending_identity",
   "fc_set",
   "file",
+  "hr_employee",
+  "hr_pay_period",
+  "marketing_initiative",
   "meet_meeting",
   "message_template",
   "note",
   "party",
+  "pc_show",
   "project",
   "quiz_session",
   "sandbox_instance",
@@ -61,7 +67,7 @@
   },
   "route:/_flashcard/[category]": {
    "file": "app/(transitional)/_flashcard/[category]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (category), not a record id"
   },
   "route:/_flashcard/[category]/[id]": {
    "file": "app/(transitional)/_flashcard/[category]/[id]/page.tsx",
@@ -77,6 +83,10 @@
   },
   "route:/acquisition/blocks": {
    "file": "app/(core)/acquisition/blocks/page.tsx",
+   "pending": true
+  },
+  "route:/acquisition/speed-test": {
+   "file": "app/(core)/acquisition/speed-test/page.tsx",
    "pending": true
   },
   "route:/administration": {
@@ -101,7 +111,7 @@
   },
   "route:/administration/agents/factory/[buildId]": {
    "file": "app/(admin)/administration/agents/factory/[buildId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/hindsight": {
    "file": "app/(admin)/administration/agents/hindsight/page.tsx",
@@ -109,7 +119,7 @@
   },
   "route:/administration/agents/hindsight/recipes/[id]": {
    "file": "app/(admin)/administration/agents/hindsight/recipes/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/lookups": {
    "file": "app/(admin)/administration/agents/lookups/page.tsx",
@@ -125,19 +135,19 @@
   },
   "route:/administration/agents/mcp-tools/[toolId]": {
    "file": "app/(admin)/administration/agents/mcp-tools/[toolId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/mcp-tools/[toolId]/edit": {
    "file": "app/(admin)/administration/agents/mcp-tools/[toolId]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/administration/agents/mcp-tools/[toolId]/incidents": {
    "file": "app/(admin)/administration/agents/mcp-tools/[toolId]/incidents/page.tsx",
-   "pending": true
+   "none": "a sub-view (incidents) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/mcp-tools/[toolId]/ui": {
    "file": "app/(admin)/administration/agents/mcp-tools/[toolId]/ui/page.tsx",
-   "pending": true
+   "none": "a sub-view (ui) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/mcp-tools/new": {
    "file": "app/(admin)/administration/agents/mcp-tools/new/page.tsx",
@@ -177,55 +187,73 @@
   },
   "route:/administration/agents/system-agents/agents/[id]": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "agent"
+   ]
+  },
+  "route:/administration/agents/system-agents/agents/[id]/approvals": {
+   "file": "app/(admin)/administration/agents/system-agents/agents/[id]/approvals/page.tsx",
+   "none": "a spend approval (billing.run_approval) takes no custom fields"
   },
   "route:/administration/agents/system-agents/agents/[id]/build": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/build/page.tsx",
-   "pending": true
+   "none": "an editor or builder (build) for a record; the record's own page carries the section"
+  },
+  "route:/administration/agents/system-agents/agents/[id]/hindsight": {
+   "file": "app/(admin)/administration/agents/system-agents/agents/[id]/hindsight/page.tsx",
+   "none": "a sub-view (hindsight) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/latest": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/latest/page.tsx",
-   "pending": true
+   "none": "a sub-view (latest) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/run": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/run/page.tsx",
-   "pending": true
+   "none": "a sub-view (run) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/administration/agents/system-agents/agents/[id]/runs": {
+   "file": "app/(admin)/administration/agents/system-agents/agents/[id]/runs/page.tsx",
+   "none": "a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/samples": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/samples/page.tsx",
-   "pending": true
+   "none": "a sub-view (samples) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/shortcuts": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/shortcuts/page.tsx",
-   "pending": true
+   "none": "a sub-view (shortcuts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/shortcuts/[shortcutId]": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/shortcuts/[shortcutId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/system-agents/agents/[id]/shortcuts/batch": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/shortcuts/batch/page.tsx",
-   "pending": true
+   "none": "an editor or builder (batch) for a record; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/shortcuts/new": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/shortcuts/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/surfaces": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/surfaces/page.tsx",
-   "pending": true
+   "none": "a sub-view (surfaces) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/surfaces/batch": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/surfaces/batch/page.tsx",
-   "pending": true
+   "none": "an editor or builder (batch) for a record; the record's own page carries the section"
+  },
+  "route:/administration/agents/system-agents/agents/[id]/test": {
+   "file": "app/(admin)/administration/agents/system-agents/agents/[id]/test/page.tsx",
+   "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/[id]/v/[version]": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/v/[version]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/system-agents/agents/[id]/widgets": {
    "file": "app/(admin)/administration/agents/system-agents/agents/[id]/widgets/page.tsx",
-   "pending": true
+   "none": "a sub-view (widgets) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/agents/system-agents/agents/new": {
    "file": "app/(admin)/administration/agents/system-agents/agents/new/page.tsx",
@@ -249,7 +277,7 @@
   },
   "route:/administration/agents/system-agents/edit/[id]": {
    "file": "app/(admin)/administration/agents/system-agents/edit/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/system-agents/lineage": {
    "file": "app/(admin)/administration/agents/system-agents/lineage/page.tsx",
@@ -261,7 +289,7 @@
   },
   "route:/administration/agents/system-agents/shortcuts/[shortcutId]": {
    "file": "app/(admin)/administration/agents/system-agents/shortcuts/[shortcutId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/agents/system-agents/shortcuts/agents": {
    "file": "app/(admin)/administration/agents/system-agents/shortcuts/agents/page.tsx",
@@ -287,6 +315,18 @@
    "file": "app/(admin)/administration/agents/system-agents/shortcuts/lineage/page.tsx",
    "pending": true
   },
+  "route:/administration/agents/tests": {
+   "file": "app/(admin)/administration/agents/tests/page.tsx",
+   "pending": true
+  },
+  "route:/administration/agents/tool-control": {
+   "file": "app/(admin)/administration/agents/tool-control/page.tsx",
+   "pending": true
+  },
+  "route:/administration/agents/tool-control/alerts/[id]": {
+   "file": "app/(admin)/administration/agents/tool-control/alerts/[id]/page.tsx",
+   "none": "a tool-control alarm is a system record with no registry token"
+  },
   "route:/administration/ai": {
    "file": "app/(admin)/administration/ai/page.tsx",
    "pending": true
@@ -305,6 +345,10 @@
   },
   "route:/administration/ai/ai-models/deprecated-audit": {
    "file": "app/(admin)/administration/ai/ai-models/deprecated-audit/page.tsx",
+   "pending": true
+  },
+  "route:/administration/ai/ai-models/discovery": {
+   "file": "app/(admin)/administration/ai/ai-models/discovery/page.tsx",
    "pending": true
   },
   "route:/administration/ai/ai-models/endpoints": {
@@ -329,10 +373,14 @@
   },
   "route:/administration/ai/ai-models/translations": {
    "file": "app/(admin)/administration/ai/ai-models/translations/page.tsx",
-   "none": "an admin catalogue of model name translations, no single record"
+   "none": "an admin catalog of model name translations, no single record"
   },
   "route:/administration/ai/ai-tasks": {
    "file": "app/(admin)/administration/ai/ai-tasks/page.tsx",
+   "pending": true
+  },
+  "route:/administration/ai/ai-test-mode": {
+   "file": "app/(admin)/administration/ai/ai-test-mode/page.tsx",
    "pending": true
   },
   "route:/administration/applets": {
@@ -353,7 +401,7 @@
   },
   "route:/administration/applets/edit/[id]": {
    "file": "app/(admin)/administration/applets/edit/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/applets/executions": {
    "file": "app/(admin)/administration/applets/executions/page.tsx",
@@ -369,6 +417,10 @@
   },
   "route:/administration/applications": {
    "file": "app/(admin)/administration/applications/page.tsx",
+   "pending": true
+  },
+  "route:/administration/applications/attestation": {
+   "file": "app/(admin)/administration/applications/attestation/page.tsx",
    "pending": true
   },
   "route:/administration/applications/catalogs": {
@@ -409,7 +461,7 @@
   },
   "route:/administration/automation/scheduling/costs/[kind]/[id]": {
    "file": "app/(admin)/administration/automation/scheduling/costs/[kind]/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/automation/scheduling/cron-tester": {
    "file": "app/(admin)/administration/automation/scheduling/cron-tester/page.tsx",
@@ -445,7 +497,7 @@
   },
   "route:/administration/automation/scheduling/tasks/[id]": {
    "file": "app/(admin)/administration/automation/scheduling/tasks/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/automation/scheduling/templates": {
    "file": "app/(admin)/administration/automation/scheduling/templates/page.tsx",
@@ -465,31 +517,55 @@
   },
   "route:/administration/automation/workflows/[id]": {
    "file": "app/(admin)/administration/automation/workflows/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
+  },
+  "route:/administration/automation/workflows/[id]/approvals": {
+   "file": "app/(admin)/administration/automation/workflows/[id]/approvals/page.tsx",
+   "none": "a spend approval (billing.run_approval) takes no custom fields"
   },
   "route:/administration/automation/workflows/[id]/design": {
    "file": "app/(admin)/administration/automation/workflows/[id]/design/page.tsx",
-   "pending": true
+   "none": "an editor or builder (design) for a record; the record's own page carries the section"
   },
   "route:/administration/automation/workflows/[id]/runs": {
    "file": "app/(admin)/administration/automation/workflows/[id]/runs/page.tsx",
-   "pending": true
+   "none": "a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/automation/workflows/[id]/triggers": {
    "file": "app/(admin)/administration/automation/workflows/[id]/triggers/page.tsx",
-   "pending": true
+   "none": "a sub-view (triggers) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/automation/workflows/runs/[runId]": {
    "file": "app/(admin)/administration/automation/workflows/runs/[runId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/billing": {
    "file": "app/(admin)/administration/billing/page.tsx",
    "pending": true
   },
+  "route:/administration/billing/alarms": {
+   "file": "app/(admin)/administration/billing/alarms/page.tsx",
+   "pending": true
+  },
+  "route:/administration/billing/alarms/[id]": {
+   "file": "app/(admin)/administration/billing/alarms/[id]/page.tsx",
+   "none": "billing_spend_alarm takes no custom fields (no registry type)"
+  },
   "route:/administration/billing/approvals": {
    "file": "app/(admin)/administration/billing/approvals/page.tsx",
-   "none": "an admin approval register"
+   "none": "a list of approvals; each opens its own record page"
+  },
+  "route:/administration/billing/approvals/[kind]/[subjectId]": {
+   "file": "app/(admin)/administration/billing/approvals/[kind]/[subjectId]/page.tsx",
+   "none": "a spend approval (billing.run_approval) takes no custom fields"
+  },
+  "route:/administration/billing/build-waste": {
+   "file": "app/(admin)/administration/billing/build-waste/page.tsx",
+   "pending": true
+  },
+  "route:/administration/billing/held-runs/[id]": {
+   "file": "app/(admin)/administration/billing/held-runs/[id]/page.tsx",
+   "none": "billing_held_run takes no custom fields (no registry type)"
   },
   "route:/administration/billing/plans": {
    "file": "app/(admin)/administration/billing/plans/page.tsx",
@@ -513,7 +589,7 @@
   },
   "route:/administration/chat/cx-dashboard/conversations/[id]": {
    "file": "app/(admin)/administration/chat/cx-dashboard/conversations/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/chat/cx-dashboard/errors": {
    "file": "app/(admin)/administration/chat/cx-dashboard/errors/page.tsx",
@@ -525,10 +601,18 @@
   },
   "route:/administration/chat/cx-dashboard/requests/[id]": {
    "file": "app/(admin)/administration/chat/cx-dashboard/requests/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/chat/cx-dashboard/usage": {
    "file": "app/(admin)/administration/chat/cx-dashboard/usage/page.tsx",
+   "pending": true
+  },
+  "route:/administration/communications": {
+   "file": "app/(admin)/administration/communications/page.tsx",
+   "pending": true
+  },
+  "route:/administration/communications/voice": {
+   "file": "app/(admin)/administration/communications/voice/page.tsx",
    "pending": true
   },
   "route:/administration/compute": {
@@ -553,7 +637,7 @@
   },
   "route:/administration/compute/sandbox/[id]": {
    "file": "app/(admin)/administration/compute/sandbox/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/compute/server-logs": {
    "file": "app/(admin)/administration/compute/server-logs/page.tsx",
@@ -561,7 +645,7 @@
   },
   "route:/administration/compute/server-logs/[app]": {
    "file": "app/(admin)/administration/compute/server-logs/[app]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/database": {
    "file": "app/(admin)/administration/database/page.tsx",
@@ -633,7 +717,7 @@
   },
   "route:/administration/database/relationships/explorer/[token]": {
    "file": "app/(admin)/administration/database/relationships/explorer/[token]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/database/relationships/exposure-audit": {
    "file": "app/(admin)/administration/database/relationships/exposure-audit/page.tsx",
@@ -701,11 +785,11 @@
   },
   "route:/administration/documentation/feature-docs/dotdirs/[slug]": {
    "file": "app/(admin)/administration/documentation/feature-docs/dotdirs/[slug]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/documentation/feature-docs/view/[[...path]]": {
    "file": "app/(admin)/administration/documentation/feature-docs/view/[[...path]]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/documentation/feature-maps": {
    "file": "app/(admin)/administration/documentation/feature-maps/page.tsx",
@@ -729,7 +813,7 @@
   },
   "route:/administration/hr/jurisdiction-rules/[ruleId]": {
    "file": "app/(admin)/administration/hr/jurisdiction-rules/[ruleId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/hr/jurisdiction-rules/verification": {
    "file": "app/(admin)/administration/hr/jurisdiction-rules/verification/page.tsx",
@@ -741,7 +825,7 @@
   },
   "route:/administration/intelligence/go/[...slug]": {
    "file": "app/(admin)/administration/intelligence/go/[...slug]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/intelligence/mandates": {
    "file": "app/(admin)/administration/intelligence/mandates/page.tsx",
@@ -749,11 +833,15 @@
   },
   "route:/administration/intelligence/mandates/[mandateKey]": {
    "file": "app/(admin)/administration/intelligence/mandates/[mandateKey]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
+  },
+  "route:/administration/intelligence/mandates/[mandateKey]/approvals": {
+   "file": "app/(admin)/administration/intelligence/mandates/[mandateKey]/approvals/page.tsx",
+   "none": "a redirect to the page that shows the record"
   },
   "route:/administration/intelligence/mandates/[mandateKey]/overrides": {
    "file": "app/(admin)/administration/intelligence/mandates/[mandateKey]/overrides/page.tsx",
-   "pending": true
+   "none": "a sub-view (overrides) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/administration/intelligence/mandates/advanced": {
    "file": "app/(admin)/administration/intelligence/mandates/advanced/page.tsx",
@@ -781,7 +869,7 @@
   },
   "route:/administration/intelligence/mandates/support/[mandateId]": {
    "file": "app/(admin)/administration/intelligence/mandates/support/[mandateId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/intelligence/mandates/unconverted": {
    "file": "app/(admin)/administration/intelligence/mandates/unconverted/page.tsx",
@@ -789,6 +877,22 @@
   },
   "route:/administration/intelligence/mandates/window": {
    "file": "app/(admin)/administration/intelligence/mandates/window/page.tsx",
+   "pending": true
+  },
+  "route:/administration/intelligence/memory-lab": {
+   "file": "app/(admin)/administration/intelligence/memory-lab/page.tsx",
+   "pending": true
+  },
+  "route:/administration/intelligence/memory-lab/[trialId]": {
+   "file": "app/(admin)/administration/intelligence/memory-lab/[trialId]/page.tsx",
+   "none": "an admin support view; the admin seat never edits an organization's fields"
+  },
+  "route:/administration/intelligence/run-evidence": {
+   "file": "app/(admin)/administration/intelligence/run-evidence/page.tsx",
+   "pending": true
+  },
+  "route:/administration/intelligence/system-processes": {
+   "file": "app/(admin)/administration/intelligence/system-processes/page.tsx",
    "pending": true
   },
   "route:/administration/knowledge": {
@@ -829,11 +933,11 @@
   },
   "route:/administration/knowledge/podcasts/shows/[showId]": {
    "file": "app/(admin)/administration/knowledge/podcasts/shows/[showId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/knowledge/podcasts/shows/[showId]/episodes/[episodeId]": {
    "file": "app/(admin)/administration/knowledge/podcasts/shows/[showId]/episodes/[episodeId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/knowledge/podcasts/shows/new": {
    "file": "app/(admin)/administration/knowledge/podcasts/shows/new/page.tsx",
@@ -905,7 +1009,7 @@
   },
   "route:/administration/question-desk/[interviewId]": {
    "file": "app/(admin)/administration/question-desk/[interviewId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/reporting": {
    "file": "app/(admin)/administration/reporting/page.tsx",
@@ -973,7 +1077,7 @@
   },
   "route:/administration/scopes-context/organizations/[orgId]": {
    "file": "app/(admin)/administration/scopes-context/organizations/[orgId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/scopes-context/system-context": {
    "file": "app/(admin)/administration/scopes-context/system-context/page.tsx",
@@ -981,6 +1085,22 @@
   },
   "route:/administration/shared-knowledge": {
    "file": "app/(admin)/administration/shared-knowledge/page.tsx",
+   "pending": true
+  },
+  "route:/administration/speed-test": {
+   "file": "app/(admin)/administration/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/administration/tool-battle": {
+   "file": "app/(admin)/administration/tool-battle/page.tsx",
+   "pending": true
+  },
+  "route:/administration/tool-battle/[battleId]": {
+   "file": "app/(admin)/administration/tool-battle/[battleId]/page.tsx",
+   "none": "an admin support view; the admin seat never edits an organization's fields"
+  },
+  "route:/administration/tool-battle/new": {
+   "file": "app/(admin)/administration/tool-battle/new/page.tsx",
    "pending": true
   },
   "route:/administration/ui": {
@@ -1001,7 +1121,7 @@
   },
   "route:/administration/ui/official-components/[componentId]": {
    "file": "app/(admin)/administration/ui/official-components/[componentId]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/ui/official-components/alchemy": {
    "file": "app/(admin)/administration/ui/official-components/alchemy/page.tsx",
@@ -1015,8 +1135,8 @@
    "file": "app/(admin)/administration/ui/official-components/to-be-added/toggle-menu-demo/toggle-with-categories/page.tsx",
    "pending": true
   },
-  "route:/administration/ui/persistence-test": {
-   "file": "app/(admin)/administration/ui/persistence-test/page.tsx",
+  "route:/administration/ui/style-guide": {
+   "file": "app/(admin)/administration/ui/style-guide/page.tsx",
    "pending": true
   },
   "route:/administration/ui/surfaces": {
@@ -1025,7 +1145,7 @@
   },
   "route:/administration/ui/surfaces/[...name]": {
    "file": "app/(admin)/administration/ui/surfaces/[...name]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/usage": {
    "file": "app/(admin)/administration/usage/page.tsx",
@@ -1047,6 +1167,10 @@
    "file": "app/(admin)/administration/users/page.tsx",
    "pending": true
   },
+  "route:/administration/users/[id]/[[...tab]]": {
+   "file": "app/(admin)/administration/users/[id]/[[...tab]]/page.tsx",
+   "none": "the user record is a system table (token user), which takes no custom fields"
+  },
   "route:/administration/users/acquisition": {
    "file": "app/(admin)/administration/users/acquisition/page.tsx",
    "pending": true
@@ -1061,7 +1185,7 @@
   },
   "route:/administration/users/agent-review/[id]": {
    "file": "app/(admin)/administration/users/agent-review/[id]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/users/announcements": {
    "file": "app/(admin)/administration/users/announcements/page.tsx",
@@ -1111,6 +1235,10 @@
    "file": "app/(admin)/administration/users/preferences/page.tsx",
    "pending": true
   },
+  "route:/administration/users/support-sessions": {
+   "file": "app/(admin)/administration/users/support-sessions/page.tsx",
+   "pending": true
+  },
   "route:/administration/users/usage": {
    "file": "app/(admin)/administration/users/usage/page.tsx",
    "pending": true
@@ -1139,13 +1267,17 @@
    "file": "app/(admin)/administration/utilities/content-blocks/page.tsx",
    "pending": true
   },
+  "route:/administration/utilities/converters": {
+   "file": "app/(admin)/administration/utilities/converters/page.tsx",
+   "pending": true
+  },
   "route:/administration/utilities/kind-registry": {
    "file": "app/(admin)/administration/utilities/kind-registry/page.tsx",
    "pending": true
   },
   "route:/administration/utilities/kind-registry/[kind]": {
    "file": "app/(admin)/administration/utilities/kind-registry/[kind]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/utilities/kind-registry/build": {
    "file": "app/(admin)/administration/utilities/kind-registry/build/page.tsx",
@@ -1153,7 +1285,7 @@
   },
   "route:/administration/utilities/kind-registry/findings/[code]": {
    "file": "app/(admin)/administration/utilities/kind-registry/findings/[code]/page.tsx",
-   "pending": true
+   "none": "an admin support view; the admin seat never edits an organization's fields"
   },
   "route:/administration/utilities/local-storage": {
    "file": "app/(admin)/administration/utilities/local-storage/page.tsx",
@@ -1243,6 +1375,10 @@
    "file": "app/(core)/agent-connections/skills/page.tsx",
    "pending": true
   },
+  "route:/agent-connections/speed-test": {
+   "file": "app/(core)/agent-connections/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/agent-connections/sub-agents": {
    "file": "app/(core)/agent-connections/sub-agents/page.tsx",
    "pending": true
@@ -1263,35 +1399,39 @@
   },
   "route:/agents/[id]/answers": {
    "file": "app/(core)/agents/[id]/answers/page.tsx",
-   "pending": true
+   "none": "a sub-view (answers) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/answers/calibration": {
    "file": "app/(core)/agents/[id]/answers/calibration/page.tsx",
-   "pending": true
+   "none": "a sub-view (calibration) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/agents/[id]/approvals": {
+   "file": "app/(core)/agents/[id]/approvals/page.tsx",
+   "none": "a spend approval (billing.run_approval) takes no custom fields"
   },
   "route:/agents/[id]/build": {
    "file": "app/(core)/agents/[id]/build/page.tsx",
-   "pending": true
+   "none": "an editor or builder (build) for a record; the record's own page carries the section"
   },
   "route:/agents/[id]/hindsight": {
    "file": "app/(core)/agents/[id]/hindsight/page.tsx",
-   "pending": true
+   "none": "a sub-view (hindsight) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/latest": {
    "file": "app/(core)/agents/[id]/latest/page.tsx",
-   "pending": true
+   "none": "a sub-view (latest) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/run": {
    "file": "app/(core)/agents/[id]/run/page.tsx",
-   "pending": true
+   "none": "a sub-view (run) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/runs": {
    "file": "app/(core)/agents/[id]/runs/page.tsx",
-   "pending": true
+   "none": "a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/shortcuts": {
    "file": "app/(core)/agents/[id]/shortcuts/page.tsx",
-   "pending": true
+   "none": "a sub-view (shortcuts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/shortcuts/[shortcutId]": {
    "file": "app/(core)/agents/[id]/shortcuts/[shortcutId]/page.tsx",
@@ -1299,35 +1439,39 @@
   },
   "route:/agents/[id]/shortcuts/batch": {
    "file": "app/(core)/agents/[id]/shortcuts/batch/page.tsx",
-   "pending": true
+   "none": "an editor or builder (batch) for a record; the record's own page carries the section"
   },
   "route:/agents/[id]/shortcuts/new": {
    "file": "app/(core)/agents/[id]/shortcuts/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/agents/[id]/shortcuts/old/edit/[shortcutId]": {
    "file": "app/(core)/agents/[id]/shortcuts/old/edit/[shortcutId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/[id]/shortcuts/old/new": {
    "file": "app/(core)/agents/[id]/shortcuts/old/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/agents/[id]/surfaces": {
    "file": "app/(core)/agents/[id]/surfaces/page.tsx",
-   "pending": true
+   "none": "a sub-view (surfaces) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/surfaces/batch": {
    "file": "app/(core)/agents/[id]/surfaces/batch/page.tsx",
-   "pending": true
+   "none": "an editor or builder (batch) for a record; the record's own page carries the section"
+  },
+  "route:/agents/[id]/test": {
+   "file": "app/(core)/agents/[id]/test/page.tsx",
+   "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/[id]/v/[version]": {
    "file": "app/(core)/agents/[id]/v/[version]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (version), not a record id"
   },
   "route:/agents/[id]/widgets": {
    "file": "app/(core)/agents/[id]/widgets/page.tsx",
-   "pending": true
+   "none": "a sub-view (widgets) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/agents/admin": {
    "file": "app/(core)/agents/admin/page.tsx",
@@ -1347,7 +1491,7 @@
   },
   "route:/agents/battle/conversation/[setId]": {
    "file": "app/(core)/agents/battle/conversation/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/matrix": {
    "file": "app/(core)/agents/battle/matrix/page.tsx",
@@ -1355,7 +1499,7 @@
   },
   "route:/agents/battle/matrix/[setId]": {
    "file": "app/(core)/agents/battle/matrix/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/model": {
    "file": "app/(core)/agents/battle/model/page.tsx",
@@ -1363,7 +1507,7 @@
   },
   "route:/agents/battle/model/[setId]": {
    "file": "app/(core)/agents/battle/model/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/open": {
    "file": "app/(core)/agents/battle/open/page.tsx",
@@ -1371,7 +1515,7 @@
   },
   "route:/agents/battle/open/[setId]": {
    "file": "app/(core)/agents/battle/open/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/request-mod": {
    "file": "app/(core)/agents/battle/request-mod/page.tsx",
@@ -1379,7 +1523,7 @@
   },
   "route:/agents/battle/request-mod/[setId]": {
    "file": "app/(core)/agents/battle/request-mod/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/settings": {
    "file": "app/(core)/agents/battle/settings/page.tsx",
@@ -1387,7 +1531,15 @@
   },
   "route:/agents/battle/settings/[setId]": {
    "file": "app/(core)/agents/battle/settings/[setId]/page.tsx",
+   "none": "an editor or experiment surface for a record, not the record view"
+  },
+  "route:/agents/battle/smart-add": {
+   "file": "app/(core)/agents/battle/smart-add/page.tsx",
    "pending": true
+  },
+  "route:/agents/battle/smart-add/[setId]": {
+   "file": "app/(core)/agents/battle/smart-add/[setId]/page.tsx",
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/system-prompt": {
    "file": "app/(core)/agents/battle/system-prompt/page.tsx",
@@ -1395,7 +1547,7 @@
   },
   "route:/agents/battle/system-prompt/[setId]": {
    "file": "app/(core)/agents/battle/system-prompt/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/tools": {
    "file": "app/(core)/agents/battle/tools/page.tsx",
@@ -1403,7 +1555,7 @@
   },
   "route:/agents/battle/tools/[setId]": {
    "file": "app/(core)/agents/battle/tools/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/tuning": {
    "file": "app/(core)/agents/battle/tuning/page.tsx",
@@ -1411,7 +1563,7 @@
   },
   "route:/agents/battle/tuning/[setId]": {
    "file": "app/(core)/agents/battle/tuning/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/battle/variations": {
    "file": "app/(core)/agents/battle/variations/page.tsx",
@@ -1419,7 +1571,7 @@
   },
   "route:/agents/battle/variations/[setId]": {
    "file": "app/(core)/agents/battle/variations/[setId]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/browse": {
    "file": "app/(core)/agents/browse/page.tsx",
@@ -1443,7 +1595,7 @@
   },
   "route:/agents/go/[...slug]": {
    "file": "app/(core)/agents/go/[...slug]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/agents/new": {
    "file": "app/(core)/agents/new/page.tsx",
@@ -1481,6 +1633,18 @@
    "file": "app/(core)/agents/new/studio/page.tsx",
    "pending": true
   },
+  "route:/agents/new/studio/from-claude": {
+   "file": "app/(core)/agents/new/studio/from-claude/page.tsx",
+   "pending": true
+  },
+  "route:/agents/new/studio/with-claude-code": {
+   "file": "app/(core)/agents/new/studio/with-claude-code/page.tsx",
+   "pending": true
+  },
+  "route:/agents/orchestra-studio": {
+   "file": "app/(core)/agents/orchestra-studio/page.tsx",
+   "pending": true
+  },
   "route:/agents/orchestras": {
    "file": "app/(core)/agents/orchestras/page.tsx",
    "pending": true
@@ -1491,6 +1655,18 @@
   },
   "route:/agents/org-chart": {
    "file": "app/(core)/agents/org-chart/page.tsx",
+   "pending": true
+  },
+  "route:/agents/prompt-blocks": {
+   "file": "app/(core)/agents/prompt-blocks/page.tsx",
+   "pending": true
+  },
+  "route:/agents/prompt-blocks/[id]": {
+   "file": "app/(core)/agents/prompt-blocks/[id]/page.tsx",
+   "pending": true
+  },
+  "route:/agents/prompt-blocks/new": {
+   "file": "app/(core)/agents/prompt-blocks/new/page.tsx",
    "pending": true
   },
   "route:/agents/shortcuts": {
@@ -1507,10 +1683,14 @@
   },
   "route:/agents/shortcuts/edit/[id]": {
    "file": "app/(core)/agents/shortcuts/edit/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/agents/shortcuts/new": {
    "file": "app/(core)/agents/shortcuts/new/page.tsx",
+   "pending": true
+  },
+  "route:/agents/speed-test": {
+   "file": "app/(core)/agents/speed-test/page.tsx",
    "pending": true
   },
   "route:/agents/templates": {
@@ -1519,7 +1699,9 @@
   },
   "route:/agents/templates/[id]": {
    "file": "app/(core)/agents/templates/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "agent_template"
+   ]
   },
   "route:/applets": {
    "file": "app/(core)/applets/page.tsx",
@@ -1527,7 +1709,7 @@
   },
   "route:/applets/[slug]/[[...path]]": {
    "file": "app/(link)/applets/[slug]/[[...path]]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/applets/admin": {
    "file": "app/(core)/applets/admin/page.tsx",
@@ -1539,6 +1721,10 @@
   },
   "route:/applets/build/[id]": {
    "file": "app/(core)/applets/build/[id]/page.tsx",
+   "none": "the applet builder (editor), not the record page"
+  },
+  "route:/applets/build/layout": {
+   "file": "app/(core)/applets/build/layout/page.tsx",
    "pending": true
   },
   "route:/applets/manage/[id]": {
@@ -1547,22 +1733,26 @@
   },
   "route:/applets/manage/[id]/code": {
    "file": "app/(core)/applets/manage/[id]/code/page.tsx",
-   "pending": true
+   "none": "a sub-view (code) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/applets/manage/[id]/run": {
    "file": "app/(core)/applets/manage/[id]/run/page.tsx",
-   "pending": true
+   "none": "a sub-view (run) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/applets/manage/[id]/settings": {
    "file": "app/(core)/applets/manage/[id]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/applets/manage/[id]/v/[version]": {
    "file": "app/(core)/applets/manage/[id]/v/[version]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (version), not a record id"
   },
   "route:/applets/manage/[id]/versions": {
    "file": "app/(core)/applets/manage/[id]/versions/page.tsx",
+   "none": "a sub-view (versions) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/applets/speed-test": {
+   "file": "app/(core)/applets/speed-test/page.tsx",
    "pending": true
   },
   "route:/appointment-reminder": {
@@ -1573,12 +1763,20 @@
    "file": "app/(core)/approvals/page.tsx",
    "pending": true
   },
+  "route:/approvals/speed-test": {
+   "file": "app/(core)/approvals/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/artifacts": {
    "file": "app/(core)/artifacts/page.tsx",
    "pending": true
   },
   "route:/artifacts/[id]": {
    "file": "app/(core)/artifacts/[id]/page.tsx",
+   "pending": true
+  },
+  "route:/artifacts/speed-test": {
+   "file": "app/(core)/artifacts/speed-test/page.tsx",
    "pending": true
   },
   "route:/assists": {
@@ -1593,17 +1791,21 @@
    "file": "app/auth/desktop-handoff/page.tsx",
    "pending": true
   },
+  "route:/auth/support-session/ended": {
+   "file": "app/auth/support-session/ended/page.tsx",
+   "pending": true
+  },
   "route:/auth/verifying": {
    "file": "app/auth/verifying/page.tsx",
    "pending": true
   },
   "route:/b/[bookingId]": {
    "file": "app/(link)/b/[bookingId]/page.tsx",
-   "pending": true
+   "none": "a public booking page addressed by a booking reference"
   },
   "route:/b/manage/[ref]": {
    "file": "app/(link)/b/manage/[ref]/page.tsx",
-   "pending": true
+   "none": "a public booking page addressed by a booking reference"
   },
   "route:/board": {
    "file": "app/(core)/board/page.tsx",
@@ -1617,13 +1819,17 @@
    "file": "app/(core)/board/all/page.tsx",
    "pending": true
   },
+  "route:/board/speed-test": {
+   "file": "app/(core)/board/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/bring-your-work": {
    "file": "app/(core)/bring-your-work/page.tsx",
    "pending": true
   },
   "route:/c/[handle]": {
    "file": "app/(public)/c/[handle]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (handle), not a record id"
   },
   "route:/camera": {
    "file": "app/(core)/camera/page.tsx",
@@ -1633,13 +1839,17 @@
    "file": "app/(core)/camera/admin/page.tsx",
    "pending": true
   },
+  "route:/camera/speed-test": {
+   "file": "app/(core)/camera/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/canvas/discover": {
    "file": "app/(public)/canvas/discover/page.tsx",
    "pending": true
   },
   "route:/canvas/shared/[token]": {
    "file": "app/(public)/canvas/shared/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/capture/[sheetId]": {
    "file": "app/(link)/capture/[sheetId]/page.tsx",
@@ -1673,7 +1883,7 @@
   },
   "route:/chat/message-templates/edit/[id]": {
    "file": "app/(core)/chat/message-templates/edit/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/chat/message-templates/new": {
    "file": "app/(core)/chat/message-templates/new/page.tsx",
@@ -1681,6 +1891,10 @@
   },
   "route:/chat/new": {
    "file": "app/(core)/chat/new/page.tsx",
+   "pending": true
+  },
+  "route:/chat/speed-test": {
+   "file": "app/(core)/chat/speed-test/page.tsx",
    "pending": true
   },
   "route:/chat/talk": {
@@ -1725,7 +1939,7 @@
   },
   "route:/cms/[siteId]/collections": {
    "file": "app/(core)/cms/[siteId]/collections/page.tsx",
-   "pending": true
+   "none": "a sub-view (collections) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/cms/[siteId]/collections/[collectionId]": {
    "file": "app/(core)/cms/[siteId]/collections/[collectionId]/page.tsx",
@@ -1733,7 +1947,7 @@
   },
   "route:/cms/[siteId]/components": {
    "file": "app/(core)/cms/[siteId]/components/page.tsx",
-   "pending": true
+   "none": "a sub-view (components) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/cms/[siteId]/pages/[pageId]": {
    "file": "app/(core)/cms/[siteId]/pages/[pageId]/page.tsx",
@@ -1741,11 +1955,11 @@
   },
   "route:/cms/[siteId]/pages/new": {
    "file": "app/(core)/cms/[siteId]/pages/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/cms/[siteId]/settings": {
    "file": "app/(core)/cms/[siteId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/cms/admin": {
    "file": "app/(core)/cms/admin/page.tsx",
@@ -1759,8 +1973,16 @@
    "file": "app/(core)/cms/html-pages/[pageId]/page.tsx",
    "pending": true
   },
+  "route:/cms/speed-test": {
+   "file": "app/(core)/cms/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/code": {
    "file": "app/(core)/code/page.tsx",
+   "pending": true
+  },
+  "route:/code/speed-test": {
+   "file": "app/(core)/code/speed-test/page.tsx",
    "pending": true
   },
   "route:/commerce/attention": {
@@ -1789,7 +2011,7 @@
   },
   "route:/commerce/intake/assets/[id]": {
    "file": "app/(core)/commerce/intake/assets/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/commerce/intake/instant": {
    "file": "app/(core)/commerce/intake/instant/page.tsx",
@@ -1817,7 +2039,7 @@
   },
   "route:/commerce/labels/[batchId]": {
    "file": "app/(core)/commerce/labels/[batchId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/commerce/labels/printers": {
    "file": "app/(core)/commerce/labels/printers/page.tsx",
@@ -1837,6 +2059,10 @@
   },
   "route:/commerce/triage": {
    "file": "app/(core)/commerce/triage/page.tsx",
+   "pending": true
+  },
+  "route:/compare": {
+   "file": "app/(core)/compare/page.tsx",
    "pending": true
   },
   "route:/compare/old": {
@@ -1875,6 +2101,10 @@
    "file": "app/(core)/compare/old/transcripts/page.tsx",
    "none": "an old-version comparison page"
   },
+  "route:/compare/s/[slug]": {
+   "file": "app/(public)/compare/s/[slug]/page.tsx",
+   "none": "addressed by a catalog key (slug), not a record id"
+  },
   "route:/connect-computer": {
    "file": "app/(core)/connect-computer/page.tsx",
    "pending": true
@@ -1889,6 +2119,10 @@
   },
   "route:/context-items": {
    "file": "app/(core)/context-items/page.tsx",
+   "pending": true
+  },
+  "route:/context-items/speed-test": {
+   "file": "app/(core)/context-items/speed-test/page.tsx",
    "pending": true
   },
   "route:/crm": {
@@ -1941,7 +2175,7 @@
   },
   "route:/crm/outreach-lists/[listId]/dial": {
    "file": "app/(core)/crm/outreach-lists/[listId]/dial/page.tsx",
-   "pending": true
+   "none": "a sub-view (dial) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/crm/sending-identities": {
    "file": "app/(core)/crm/sending-identities/page.tsx",
@@ -1949,6 +2183,12 @@
   },
   "route:/crm/sending-identities/[identityId]": {
    "file": "app/(core)/crm/sending-identities/[identityId]/page.tsx",
+   "tokens": [
+    "crm_sending_identity"
+   ]
+  },
+  "route:/crm/speed-test": {
+   "file": "app/(core)/crm/speed-test/page.tsx",
    "pending": true
   },
   "route:/d/[renderId]": {
@@ -1957,6 +2197,10 @@
   },
   "route:/dashboard": {
    "file": "app/(core)/dashboard/page.tsx",
+   "pending": true
+  },
+  "route:/dashboard/speed-test": {
+   "file": "app/(core)/dashboard/speed-test/page.tsx",
    "pending": true
   },
   "route:/data": {
@@ -1971,12 +2215,40 @@
    "file": "app/(core)/data/[tableId]/r/[recordId]/page.tsx",
    "pending": true
   },
+  "route:/data/bases": {
+   "file": "app/(core)/data/bases/page.tsx",
+   "pending": true
+  },
+  "route:/data/bases/[homeId]": {
+   "file": "app/(core)/data/bases/[homeId]/page.tsx",
+   "pending": true
+  },
   "route:/data/connect": {
    "file": "app/(core)/data/connect/page.tsx",
    "pending": true
   },
+  "route:/data/custom-fields/[token]": {
+   "file": "app/(core)/data/custom-fields/[token]/page.tsx",
+   "none": "a public link addressed by a one-time token or code, not a record page"
+  },
   "route:/data/dashboards": {
    "file": "app/(core)/data/dashboards/page.tsx",
+   "pending": true
+  },
+  "route:/data/interfaces/[interfaceId]": {
+   "file": "app/(core)/data/interfaces/[interfaceId]/page.tsx",
+   "pending": true
+  },
+  "route:/data/library": {
+   "file": "app/(core)/data/library/page.tsx",
+   "pending": true
+  },
+  "route:/data/library/lab": {
+   "file": "app/(core)/data/library/lab/page.tsx",
+   "pending": true
+  },
+  "route:/data/library/unlock": {
+   "file": "app/(core)/data/library/unlock/page.tsx",
    "pending": true
   },
   "route:/data/pages": {
@@ -1987,12 +2259,20 @@
    "file": "app/(core)/data/pages/[pageId]/page.tsx",
    "pending": true
   },
+  "route:/data/speed-test": {
+   "file": "app/(core)/data/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/decisions": {
    "file": "app/(core)/decisions/page.tsx",
    "pending": true
   },
   "route:/decisions/review": {
    "file": "app/(core)/decisions/review/page.tsx",
+   "pending": true
+  },
+  "route:/decisions/speed-test": {
+   "file": "app/(core)/decisions/speed-test/page.tsx",
    "pending": true
   },
   "route:/desktop": {
@@ -2007,6 +2287,10 @@
    "file": "app/(core)/detail/[type]/[id]/page.tsx",
    "host": true
   },
+  "route:/detail/speed-test": {
+   "file": "app/(core)/detail/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/developers/oauth": {
    "file": "app/(public)/developers/oauth/page.tsx",
    "pending": true
@@ -2019,8 +2303,16 @@
    "file": "app/(core)/devices/[deviceId]/page.tsx",
    "none": "a connected computer's console; devices are not a registry Entity/Detail table"
   },
+  "route:/devices/speed-test": {
+   "file": "app/(core)/devices/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/dictionary/admin": {
    "file": "app/(core)/dictionary/admin/page.tsx",
+   "pending": true
+  },
+  "route:/dictionary/speed-test": {
+   "file": "app/(core)/dictionary/speed-test/page.tsx",
    "pending": true
   },
   "route:/documents": {
@@ -2031,12 +2323,24 @@
    "file": "app/(core)/documents/[id]/page.tsx",
    "pending": true
   },
+  "route:/documents/speed-test": {
+   "file": "app/(core)/documents/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/documents/templates": {
+   "file": "app/(core)/documents/templates/page.tsx",
+   "pending": true
+  },
   "route:/download": {
    "file": "app/(public)/download/page.tsx",
    "pending": true
   },
   "route:/drive": {
    "file": "app/(core)/drive/page.tsx",
+   "pending": true
+  },
+  "route:/drive/speed-test": {
+   "file": "app/(core)/drive/speed-test/page.tsx",
    "pending": true
   },
   "route:/education": {
@@ -2057,7 +2361,7 @@
   },
   "route:/education/audio-study/[id]/edit": {
    "file": "app/(core)/education/audio-study/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/audio-study/new": {
    "file": "app/(core)/education/audio-study/new/page.tsx",
@@ -2085,7 +2389,7 @@
   },
   "route:/education/classes/[classId]/tests/[testId]/study": {
    "file": "app/(core)/education/classes/[classId]/tests/[testId]/study/page.tsx",
-   "pending": true
+   "none": "a sub-view (study) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/classes/join": {
    "file": "app/(core)/education/classes/join/page.tsx",
@@ -2105,7 +2409,7 @@
   },
   "route:/education/exam-prep/[slug]": {
    "file": "app/(core)/education/exam-prep/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/education/family": {
    "file": "app/(core)/education/family/page.tsx",
@@ -2129,7 +2433,7 @@
   },
   "route:/education/features/[slug]": {
    "file": "app/(core)/education/features/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/education/flashcards": {
    "file": "app/(core)/education/flashcards/page.tsx",
@@ -2145,31 +2449,31 @@
   },
   "route:/education/flashcards/[setId]/edit": {
    "file": "app/(core)/education/flashcards/[setId]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/learn": {
    "file": "app/(core)/education/flashcards/[setId]/learn/page.tsx",
-   "pending": true
+   "none": "a sub-view (learn) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/match": {
    "file": "app/(core)/education/flashcards/[setId]/match/page.tsx",
-   "pending": true
+   "none": "a sub-view (match) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/sessions": {
    "file": "app/(core)/education/flashcards/[setId]/sessions/page.tsx",
-   "pending": true
+   "none": "a sub-view (sessions) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/study": {
    "file": "app/(core)/education/flashcards/[setId]/study/page.tsx",
-   "pending": true
+   "none": "a sub-view (study) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/test": {
    "file": "app/(core)/education/flashcards/[setId]/test/page.tsx",
-   "pending": true
+   "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/[setId]/write": {
    "file": "app/(core)/education/flashcards/[setId]/write/page.tsx",
-   "pending": true
+   "none": "a sub-view (write) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/flashcards/admin": {
    "file": "app/(core)/education/flashcards/admin/page.tsx",
@@ -2221,7 +2525,7 @@
   },
   "route:/education/game/play/[roomId]": {
    "file": "app/(core)/education/game/play/[roomId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/education/game/solo": {
    "file": "app/(core)/education/game/solo/page.tsx",
@@ -2249,7 +2553,7 @@
   },
   "route:/education/learn/[...slug]": {
    "file": "app/(core)/education/learn/[...slug]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/education/learn/admin": {
    "file": "app/(core)/education/learn/admin/page.tsx",
@@ -2261,7 +2565,7 @@
   },
   "route:/education/levels/[slug]": {
    "file": "app/(core)/education/levels/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/education/library": {
    "file": "app/(core)/education/library/page.tsx",
@@ -2289,7 +2593,7 @@
   },
   "route:/education/memory/[id]/edit": {
    "file": "app/(core)/education/memory/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/memory/new": {
    "file": "app/(core)/education/memory/new/page.tsx",
@@ -2309,7 +2613,7 @@
   },
   "route:/education/mind-maps/[id]/edit": {
    "file": "app/(core)/education/mind-maps/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/mind-maps/new": {
    "file": "app/(core)/education/mind-maps/new/page.tsx",
@@ -2325,11 +2629,13 @@
   },
   "route:/education/notes/[id]": {
    "file": "app/(core)/education/notes/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "note"
+   ]
   },
   "route:/education/notes/[id]/edit": {
    "file": "app/(core)/education/notes/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/notes/new": {
    "file": "app/(core)/education/notes/new/page.tsx",
@@ -2361,11 +2667,11 @@
   },
   "route:/education/practice-tests/[id]/edit": {
    "file": "app/(core)/education/practice-tests/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/practice-tests/[id]/results": {
    "file": "app/(core)/education/practice-tests/[id]/results/page.tsx",
-   "pending": true
+   "none": "a sub-view (results) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/practice-tests/new": {
    "file": "app/(core)/education/practice-tests/new/page.tsx",
@@ -2389,11 +2695,11 @@
   },
   "route:/education/quizzes/[id]/edit": {
    "file": "app/(core)/education/quizzes/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/quizzes/[id]/results": {
    "file": "app/(core)/education/quizzes/[id]/results/page.tsx",
-   "pending": true
+   "none": "a sub-view (results) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/education/quizzes/new": {
    "file": "app/(core)/education/quizzes/new/page.tsx",
@@ -2401,6 +2707,10 @@
   },
   "route:/education/sessions": {
    "file": "app/(core)/education/sessions/page.tsx",
+   "pending": true
+  },
+  "route:/education/speed-test": {
+   "file": "app/(core)/education/speed-test/page.tsx",
    "pending": true
   },
   "route:/education/start": {
@@ -2413,7 +2723,7 @@
   },
   "route:/education/study-aids/[slug]": {
    "file": "app/(core)/education/study-aids/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/education/study-guides": {
    "file": "app/(core)/education/study-guides/page.tsx",
@@ -2421,7 +2731,9 @@
   },
   "route:/education/study-guides/[id]": {
    "file": "app/(core)/education/study-guides/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "note"
+   ]
   },
   "route:/education/subjects": {
    "file": "app/(core)/education/subjects/page.tsx",
@@ -2429,7 +2741,7 @@
   },
   "route:/education/subjects/[slug]": {
    "file": "app/(core)/education/subjects/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/education/subjects/quick-math": {
    "file": "app/(core)/education/subjects/quick-math/page.tsx",
@@ -2453,7 +2765,7 @@
   },
   "route:/education/summaries/[id]/edit": {
    "file": "app/(core)/education/summaries/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/education/summaries/new": {
    "file": "app/(core)/education/summaries/new/page.tsx",
@@ -2487,6 +2799,10 @@
    "file": "app/(core)/esign/new/page.tsx",
    "pending": true
   },
+  "route:/esign/speed-test": {
+   "file": "app/(core)/esign/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/esign/templates": {
    "file": "app/(core)/esign/templates/page.tsx",
    "pending": true
@@ -2501,6 +2817,10 @@
   },
   "route:/exports/[libraryId]": {
    "file": "app/(core)/exports/[libraryId]/page.tsx",
+   "none": "a redirect to the page that shows the record"
+  },
+  "route:/exports/speed-test": {
+   "file": "app/(core)/exports/speed-test/page.tsx",
    "pending": true
   },
   "route:/extend": {
@@ -2515,13 +2835,17 @@
    "file": "app/(core)/features/page.tsx",
    "pending": true
   },
+  "route:/features/speed-test": {
+   "file": "app/(core)/features/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/files": {
    "file": "app/(core)/files/page.tsx",
    "pending": true
   },
   "route:/files/[...path]": {
    "file": "app/(core)/files/[...path]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/files/activity": {
    "file": "app/(core)/files/activity/page.tsx",
@@ -2533,7 +2857,7 @@
   },
   "route:/files/all/[[...path]]": {
    "file": "app/(core)/files/all/[[...path]]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/files/f/[fileId]": {
    "file": "app/(core)/files/f/[fileId]/page.tsx",
@@ -2543,7 +2867,7 @@
   },
   "route:/files/f/[fileId]/studio": {
    "file": "app/(core)/files/f/[fileId]/studio/page.tsx",
-   "pending": true
+   "none": "a sub-view (studio) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/files/folders": {
    "file": "app/(core)/files/folders/page.tsx",
@@ -2567,6 +2891,10 @@
   },
   "route:/files/shared": {
    "file": "app/(core)/files/shared/page.tsx",
+   "pending": true
+  },
+  "route:/files/speed-test": {
+   "file": "app/(core)/files/speed-test/page.tsx",
    "pending": true
   },
   "route:/files/starred": {
@@ -2747,15 +3075,19 @@
   },
   "route:/hr/people/[employeeId]": {
    "file": "app/(core)/hr/people/[employeeId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "hr_employee"
+   ]
   },
   "route:/hr/people/[employeeId]/[tab]": {
    "file": "app/(core)/hr/people/[employeeId]/[tab]/page.tsx",
-   "pending": true
+   "tokens": [
+    "hr_employee"
+   ]
   },
   "route:/hr/people/[employeeId]/c/[tabKey]": {
    "file": "app/(core)/hr/people/[employeeId]/c/[tabKey]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (tabKey), not a record id"
   },
   "route:/hr/people/new": {
    "file": "app/(core)/hr/people/new/page.tsx",
@@ -2787,7 +3119,7 @@
   },
   "route:/hr/performance/[reviewId]/meeting": {
    "file": "app/(core)/hr/performance/[reviewId]/meeting/page.tsx",
-   "pending": true
+   "none": "a sub-view (meeting) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/hr/performance/360": {
    "file": "app/(core)/hr/performance/360/page.tsx",
@@ -2863,11 +3195,11 @@
   },
   "route:/hr/settings/leave-policies/[policyId]": {
    "file": "app/(core)/hr/settings/leave-policies/[policyId]/page.tsx",
-   "pending": true
+   "none": "the leave policy editor (it also authors a new policy)"
   },
   "route:/hr/settings/leave-policies/[policyId]/enrollment": {
    "file": "app/(core)/hr/settings/leave-policies/[policyId]/enrollment/page.tsx",
-   "pending": true
+   "none": "a sub-view (enrollment) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/hr/settings/notifications": {
    "file": "app/(core)/hr/settings/notifications/page.tsx",
@@ -2899,6 +3231,10 @@
   },
   "route:/hr/settings/workflows": {
    "file": "app/(core)/hr/settings/workflows/page.tsx",
+   "pending": true
+  },
+  "route:/hr/speed-test": {
+   "file": "app/(core)/hr/speed-test/page.tsx",
    "pending": true
   },
   "route:/hr/tasks": {
@@ -2935,7 +3271,9 @@
   },
   "route:/hr/time/periods/[periodId]": {
    "file": "app/(core)/hr/time/periods/[periodId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "hr_pay_period"
+   ]
   },
   "route:/hr/time/punches": {
    "file": "app/(core)/hr/time/punches/page.tsx",
@@ -2987,7 +3325,7 @@
   },
   "route:/images/edit/[id]": {
    "file": "app/(core)/images/edit/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/images/from-base64": {
    "file": "app/(core)/images/from-base64/page.tsx",
@@ -3021,6 +3359,10 @@
    "file": "app/(core)/images/public-search/page.tsx",
    "pending": true
   },
+  "route:/images/speed-test": {
+   "file": "app/(core)/images/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/images/studio": {
    "file": "app/(core)/images/studio/page.tsx",
    "pending": true
@@ -3047,7 +3389,7 @@
   },
   "route:/import/ai-chats/[provider]": {
    "file": "app/(public)/import/ai-chats/[provider]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (provider), not a record id"
   },
   "route:/intelligence": {
    "file": "app/(core)/intelligence/page.tsx",
@@ -3055,43 +3397,43 @@
   },
   "route:/intelligence/[feature]": {
    "file": "app/(core)/intelligence/[feature]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (feature), not a record id"
   },
   "route:/intelligence/[feature]/unassigned": {
    "file": "app/(core)/intelligence/[feature]/unassigned/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/intelligence/go/[...slug]": {
    "file": "app/(core)/intelligence/go/[...slug]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/invitations/class/accept/[token]": {
    "file": "app/(core)/invitations/class/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/employee/accept/[token]": {
    "file": "app/(core)/invitations/employee/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/organization/accept/[token]": {
    "file": "app/(core)/invitations/organization/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/portal/accept/[token]": {
    "file": "app/(core)/invitations/portal/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/project/accept/[token]": {
    "file": "app/(core)/invitations/project/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/share/accept/[token]": {
    "file": "app/(core)/invitations/share/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/invitations/table/accept/[token]": {
    "file": "app/(core)/invitations/table/accept/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/kiosk": {
    "file": "app/(kiosk)/kiosk/page.tsx",
@@ -3107,6 +3449,10 @@
   },
   "route:/knowledge-graph": {
    "file": "app/(core)/knowledge-graph/page.tsx",
+   "pending": true
+  },
+  "route:/knowledge-graph/speed-test": {
+   "file": "app/(core)/knowledge-graph/speed-test/page.tsx",
    "pending": true
   },
   "route:/knowledge/about": {
@@ -3163,7 +3509,7 @@
   },
   "route:/knowledge/library/[id]/preview": {
    "file": "app/(core)/knowledge/library/[id]/preview/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/knowledge/repositories": {
    "file": "app/(core)/knowledge/repositories/page.tsx",
@@ -3177,15 +3523,23 @@
    "file": "app/(core)/knowledge/sources/[id]/page.tsx",
    "pending": true
   },
+  "route:/knowledge/speed-test": {
+   "file": "app/(core)/knowledge/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/knowledge/transcripts/[id]": {
    "file": "app/(core)/knowledge/transcripts/[id]/page.tsx",
    "tokens": [
     "transcript"
    ]
   },
+  "route:/knowledge/trash": {
+   "file": "app/(core)/knowledge/trash/page.tsx",
+   "pending": true
+  },
   "route:/knowledge/viewer/[id]": {
    "file": "app/(core)/knowledge/viewer/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/knowledge/visualization": {
    "file": "app/(core)/knowledge/visualization/page.tsx",
@@ -3193,10 +3547,18 @@
   },
   "route:/l/[code]": {
    "file": "app/(public)/l/[code]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/launchpad": {
    "file": "app/(core)/launchpad/page.tsx",
+   "pending": true
+  },
+  "route:/launchpad/[key]": {
+   "file": "app/(core)/launchpad/[key]/page.tsx",
+   "none": "addressed by a catalog key (key), not a record id"
+  },
+  "route:/launchpad/speed-test": {
+   "file": "app/(core)/launchpad/speed-test/page.tsx",
    "pending": true
   },
   "route:/legal": {
@@ -3235,12 +3597,20 @@
    "file": "app/(core)/legal/ca-wc/utilities/weeks/page.tsx",
    "pending": true
   },
+  "route:/legal/speed-test": {
+   "file": "app/(core)/legal/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/libraries": {
    "file": "app/(core)/libraries/page.tsx",
    "pending": true
   },
   "route:/libraries/[id]": {
    "file": "app/(core)/libraries/[id]/page.tsx",
+   "pending": true
+  },
+  "route:/libraries/speed-test": {
+   "file": "app/(core)/libraries/speed-test/page.tsx",
    "pending": true
   },
   "route:/local": {
@@ -3263,17 +3633,21 @@
    "file": "app/(core)/make/page.tsx",
    "none": "the make hub, nothing but creation doors"
   },
+  "route:/make/speed-test": {
+   "file": "app/(core)/make/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/mandates": {
    "file": "app/(core)/mandates/page.tsx",
    "pending": true
   },
   "route:/mandates/[mandateKey]": {
    "file": "app/(core)/mandates/[mandateKey]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/mandates/id/[id]": {
    "file": "app/(core)/mandates/id/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/mandates/list-preview": {
    "file": "app/(core)/mandates/list-preview/page.tsx",
@@ -3285,6 +3659,10 @@
   },
   "route:/mandates/record-preview/[mandateKey]": {
    "file": "app/(core)/mandates/record-preview/[mandateKey]/page.tsx",
+   "none": "a redirect to the page that shows the record"
+  },
+  "route:/mandates/speed-test": {
+   "file": "app/(core)/mandates/speed-test/page.tsx",
    "pending": true
   },
   "route:/maps": {
@@ -3295,8 +3673,16 @@
    "file": "app/(core)/maps/[id]/page.tsx",
    "pending": true
   },
+  "route:/maps/speed-test": {
+   "file": "app/(core)/maps/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/markdown-studio": {
    "file": "app/(core)/markdown-studio/page.tsx",
+   "pending": true
+  },
+  "route:/markdown-studio/speed-test": {
+   "file": "app/(core)/markdown-studio/speed-test/page.tsx",
    "pending": true
   },
   "route:/marketing": {
@@ -3309,19 +3695,19 @@
   },
   "route:/marketing/[brandId]/ads": {
    "file": "app/(core)/marketing/[brandId]/ads/page.tsx",
-   "pending": true
+   "none": "a sub-view (ads) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/analytics": {
    "file": "app/(core)/marketing/[brandId]/analytics/page.tsx",
-   "pending": true
+   "none": "a sub-view (analytics) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content": {
    "file": "app/(core)/marketing/[brandId]/content/page.tsx",
-   "pending": true
+   "none": "a sub-view (content) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map": {
    "file": "app/(core)/marketing/[brandId]/content/map/page.tsx",
-   "pending": true
+   "none": "a sub-view (map) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map/[mapId]": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/page.tsx",
@@ -3329,27 +3715,27 @@
   },
   "route:/marketing/[brandId]/content/map/[mapId]/graph": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/graph/page.tsx",
-   "pending": true
+   "none": "a sub-view (graph) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map/[mapId]/history": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/history/page.tsx",
-   "pending": true
+   "none": "a sub-view (history) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map/[mapId]/pages": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/pages/page.tsx",
-   "pending": true
+   "none": "a sub-view (pages) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map/[mapId]/table": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/table/page.tsx",
-   "pending": true
+   "none": "a sub-view (table) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/map/[mapId]/text": {
    "file": "app/(core)/marketing/[brandId]/content/map/[mapId]/text/page.tsx",
-   "pending": true
+   "none": "a sub-view (text) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan": {
    "file": "app/(core)/marketing/[brandId]/content/plan/page.tsx",
-   "pending": true
+   "none": "a sub-view (plan) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/page.tsx",
@@ -3357,139 +3743,143 @@
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/ai-runs": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/ai-runs/page.tsx",
-   "pending": true
+   "none": "a sub-view (ai-runs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/brief": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/brief/page.tsx",
-   "pending": true
+   "none": "a sub-view (brief) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/entities": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/entities/page.tsx",
-   "pending": true
+   "none": "a sub-view (entities) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/map": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/map/page.tsx",
-   "pending": true
+   "none": "a sub-view (map) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/setup": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/setup/page.tsx",
-   "pending": true
+   "none": "a settings page (setup) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/plan/[siteId]/table": {
    "file": "app/(core)/marketing/[brandId]/content/plan/[siteId]/table/page.tsx",
-   "pending": true
+   "none": "a sub-view (table) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/content/studio": {
    "file": "app/(core)/marketing/[brandId]/content/studio/page.tsx",
-   "pending": true
+   "none": "a sub-view (studio) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/email": {
    "file": "app/(core)/marketing/[brandId]/email/page.tsx",
-   "pending": true
+   "none": "a sub-view (email) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity": {
    "file": "app/(core)/marketing/[brandId]/identity/page.tsx",
-   "pending": true
+   "none": "a sub-view (identity) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/audience": {
    "file": "app/(core)/marketing/[brandId]/identity/audience/page.tsx",
-   "pending": true
+   "none": "a sub-view (audience) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/claims": {
    "file": "app/(core)/marketing/[brandId]/identity/claims/page.tsx",
-   "pending": true
+   "none": "a sub-view (claims) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/guidelines": {
    "file": "app/(core)/marketing/[brandId]/identity/guidelines/page.tsx",
-   "pending": true
+   "none": "a sub-view (guidelines) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/knowledge": {
    "file": "app/(core)/marketing/[brandId]/identity/knowledge/page.tsx",
-   "pending": true
+   "none": "a sub-view (knowledge) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/media": {
    "file": "app/(core)/marketing/[brandId]/identity/media/page.tsx",
-   "pending": true
+   "none": "a sub-view (media) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/media/generate": {
    "file": "app/(core)/marketing/[brandId]/identity/media/generate/page.tsx",
-   "pending": true
+   "none": "a sub-view (generate) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/media/research": {
    "file": "app/(core)/marketing/[brandId]/identity/media/research/page.tsx",
-   "pending": true
+   "none": "a sub-view (research) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/media/sources": {
    "file": "app/(core)/marketing/[brandId]/identity/media/sources/page.tsx",
-   "pending": true
+   "none": "a sub-view (sources) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/messaging": {
    "file": "app/(core)/marketing/[brandId]/identity/messaging/page.tsx",
-   "pending": true
+   "none": "a sub-view (messaging) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/offerings": {
    "file": "app/(core)/marketing/[brandId]/identity/offerings/page.tsx",
-   "pending": true
+   "none": "a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/strategy": {
    "file": "app/(core)/marketing/[brandId]/identity/strategy/page.tsx",
-   "pending": true
+   "none": "a sub-view (strategy) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/identity/voice": {
    "file": "app/(core)/marketing/[brandId]/identity/voice/page.tsx",
-   "pending": true
+   "none": "a sub-view (voice) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/inbox": {
    "file": "app/(core)/marketing/[brandId]/inbox/page.tsx",
-   "pending": true
+   "none": "a sub-view (inbox) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence": {
    "file": "app/(core)/marketing/[brandId]/intelligence/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
+  },
+  "route:/marketing/[brandId]/intelligence/ai-visibility": {
+   "file": "app/(core)/marketing/[brandId]/intelligence/ai-visibility/page.tsx",
+   "none": "a sub-view (ai-visibility) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/page.tsx",
-   "pending": true
+   "none": "a sub-view (competitors) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/all": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/all/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/intelligence/competitors/competitors": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/competitors/page.tsx",
-   "pending": true
+   "none": "a sub-view (competitors) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/evidence": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/evidence/page.tsx",
-   "pending": true
+   "none": "a sub-view (evidence) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/history": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/history/page.tsx",
-   "pending": true
+   "none": "a sub-view (history) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/opportunities": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/opportunities/page.tsx",
-   "pending": true
+   "none": "a sub-view (opportunities) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/review": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/review/page.tsx",
-   "pending": true
+   "none": "a sub-view (review) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/competitors/run": {
    "file": "app/(core)/marketing/[brandId]/intelligence/competitors/run/page.tsx",
-   "pending": true
+   "none": "a sub-view (run) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/monitoring": {
    "file": "app/(core)/marketing/[brandId]/intelligence/monitoring/page.tsx",
-   "pending": true
+   "none": "a sub-view (monitoring) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/monitoring/setup": {
    "file": "app/(core)/marketing/[brandId]/intelligence/monitoring/setup/page.tsx",
-   "pending": true
+   "none": "a settings page (setup) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/reputation": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/page.tsx",
-   "pending": true
+   "none": "a sub-view (reputation) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/page.tsx",
@@ -3497,23 +3887,23 @@
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]/cases": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/cases/page.tsx",
-   "pending": true
+   "none": "a sub-view (cases) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]/evidence": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/evidence/page.tsx",
-   "pending": true
+   "none": "a sub-view (evidence) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]/narratives": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/narratives/page.tsx",
-   "pending": true
+   "none": "a sub-view (narratives) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/intelligence/reputation/[siteId]/publications": {
    "file": "app/(core)/marketing/[brandId]/intelligence/reputation/[siteId]/publications/page.tsx",
-   "pending": true
+   "none": "a sub-view (publications) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/locations": {
    "file": "app/(core)/marketing/[brandId]/locations/page.tsx",
-   "pending": true
+   "none": "a sub-view (locations) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/locations/[locationId]": {
    "file": "app/(core)/marketing/[brandId]/locations/[locationId]/page.tsx",
@@ -3521,151 +3911,157 @@
   },
   "route:/marketing/[brandId]/locations/[locationId]/grid": {
    "file": "app/(core)/marketing/[brandId]/locations/[locationId]/grid/page.tsx",
-   "pending": true
+   "none": "a sub-view (grid) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/marketing/[brandId]/offerings": {
+   "file": "app/(core)/marketing/[brandId]/offerings/page.tsx",
+   "none": "a sub-view (offerings) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/planning": {
    "file": "app/(core)/marketing/[brandId]/planning/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/planning/calendar": {
    "file": "app/(core)/marketing/[brandId]/planning/calendar/page.tsx",
-   "pending": true
+   "none": "a sub-view (calendar) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/planning/initiatives": {
    "file": "app/(core)/marketing/[brandId]/planning/initiatives/page.tsx",
-   "pending": true
+   "none": "a sub-view (initiatives) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/planning/initiatives/[id]": {
    "file": "app/(core)/marketing/[brandId]/planning/initiatives/[id]/page.tsx",
-   "pending": true
+   "tokens": [
+    "marketing_initiative"
+   ]
   },
   "route:/marketing/[brandId]/pr": {
    "file": "app/(core)/marketing/[brandId]/pr/page.tsx",
-   "pending": true
+   "none": "a sub-view (pr) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/pr/outreach": {
    "file": "app/(core)/marketing/[brandId]/pr/outreach/page.tsx",
-   "pending": true
+   "none": "a sub-view (outreach) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo": {
    "file": "app/(core)/marketing/[brandId]/seo/page.tsx",
-   "pending": true
+   "none": "a sub-view (seo) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/seo/[siteId]/[...rest]": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/[...rest]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/seo/[siteId]/ai-visibility": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/ai-visibility/page.tsx",
-   "pending": true
+   "none": "a sub-view (ai-visibility) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/ai-visibility/[view]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (view), not a record id"
   },
   "route:/marketing/[brandId]/seo/[siteId]/analysis": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/analysis/page.tsx",
-   "pending": true
+   "none": "a sub-view (analysis) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/audit": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/audit/page.tsx",
-   "pending": true
+   "none": "a sub-view (audit) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/authority": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/authority/page.tsx",
-   "pending": true
+   "none": "a sub-view (authority) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/authority/evidence": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/authority/evidence/page.tsx",
-   "pending": true
+   "none": "a sub-view (evidence) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/authority/routes": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/authority/routes/page.tsx",
-   "pending": true
+   "none": "a sub-view (routes) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/automations": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/automations/page.tsx",
-   "pending": true
+   "none": "a sub-view (automations) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/automations/history": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/automations/history/page.tsx",
-   "pending": true
+   "none": "a sub-view (history) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/automations/proposals": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/automations/proposals/page.tsx",
-   "pending": true
+   "none": "a sub-view (proposals) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/automations/unplaced": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/automations/unplaced/page.tsx",
-   "pending": true
+   "none": "a sub-view (unplaced) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/page.tsx",
-   "pending": true
+   "none": "a sub-view (backlinks) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/anchors": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/anchors/page.tsx",
-   "pending": true
+   "none": "a sub-view (anchors) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/changes": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/changes/page.tsx",
-   "pending": true
+   "none": "a sub-view (changes) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/competitors": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/competitors/page.tsx",
-   "pending": true
+   "none": "a sub-view (competitors) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/coverage": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/coverage/page.tsx",
-   "pending": true
+   "none": "a sub-view (coverage) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/domains": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/domains/page.tsx",
-   "pending": true
+   "none": "a sub-view (domains) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/insights": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/insights/page.tsx",
-   "pending": true
+   "none": "a sub-view (insights) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/links": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/links/page.tsx",
-   "pending": true
+   "none": "a sub-view (links) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/pages": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/pages/page.tsx",
-   "pending": true
+   "none": "a sub-view (pages) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/backlinks/prospects": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/backlinks/prospects/page.tsx",
-   "pending": true
+   "none": "a sub-view (prospects) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/capabilities": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/capabilities/page.tsx",
-   "pending": true
+   "none": "a sub-view (capabilities) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/changes": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/changes/page.tsx",
-   "pending": true
+   "none": "a sub-view (changes) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/changes/untracked": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/changes/untracked/page.tsx",
-   "pending": true
+   "none": "a sub-view (untracked) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/context": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/context/page.tsx",
-   "pending": true
+   "none": "a sub-view (context) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/coverage": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/coverage/page.tsx",
-   "pending": true
+   "none": "a sub-view (coverage) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/findings": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/findings/page.tsx",
-   "pending": true
+   "none": "a sub-view (findings) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/findings/[findingId]": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/findings/[findingId]/page.tsx",
@@ -3673,103 +4069,103 @@
   },
   "route:/marketing/[brandId]/seo/[siteId]/growth-loop": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/growth-loop/page.tsx",
-   "pending": true
+   "none": "a sub-view (growth-loop) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/page.tsx",
-   "pending": true
+   "none": "a sub-view (keywords) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/performance": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/performance/page.tsx",
-   "pending": true
+   "none": "a sub-view (performance) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/research": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/research/page.tsx",
-   "pending": true
+   "none": "a sub-view (research) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/value": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/page.tsx",
-   "pending": true
+   "none": "a sub-view (value) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/dimensions/page.tsx",
-   "pending": true
+   "none": "a sub-view (dimensions) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/value/packs": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/packs/page.tsx",
-   "pending": true
+   "none": "a sub-view (packs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/value/rules": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/rules/page.tsx",
-   "pending": true
+   "none": "a settings page (rules) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/value/settings": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/value/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/keywords/workbench": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/keywords/workbench/page.tsx",
-   "pending": true
+   "none": "a sub-view (workbench) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/links": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/links/page.tsx",
-   "pending": true
+   "none": "a sub-view (links) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/links/external": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/links/external/page.tsx",
-   "pending": true
+   "none": "a sub-view (external) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/links/plan": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/links/plan/page.tsx",
-   "pending": true
+   "none": "a sub-view (plan) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/links/table": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/links/table/page.tsx",
-   "pending": true
+   "none": "a sub-view (table) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/performance": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/performance/page.tsx",
-   "pending": true
+   "none": "a sub-view (performance) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/rankings": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/rankings/page.tsx",
-   "pending": true
+   "none": "a sub-view (rankings) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/reports": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/reports/page.tsx",
-   "pending": true
+   "none": "a sub-view (reports) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/search-console": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/page.tsx",
-   "pending": true
+   "none": "a sub-view (search-console) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/search-console/digs": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/digs/page.tsx",
-   "pending": true
+   "none": "a sub-view (digs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/search-console/insights": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/insights/page.tsx",
-   "pending": true
+   "none": "a sub-view (insights) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/search-console/new-pages": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/new-pages/page.tsx",
-   "pending": true
+   "none": "a sub-view (new-pages) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/search-console/watchlist": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/search-console/watchlist/page.tsx",
-   "pending": true
+   "none": "a sub-view (watchlist) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/seo/[siteId]/valuation": {
    "file": "app/(core)/marketing/[brandId]/seo/[siteId]/valuation/page.tsx",
-   "pending": true
+   "none": "a sub-view (valuation) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/settings": {
    "file": "app/(core)/marketing/[brandId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials": {
    "file": "app/(core)/marketing/[brandId]/socials/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/socials/[platform]/[accountId]": {
    "file": "app/(core)/marketing/[brandId]/socials/[platform]/[accountId]/page.tsx",
@@ -3777,35 +4173,55 @@
   },
   "route:/marketing/[brandId]/socials/accounts": {
    "file": "app/(core)/marketing/[brandId]/socials/accounts/page.tsx",
-   "pending": true
+   "none": "a sub-view (accounts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials/ads": {
    "file": "app/(core)/marketing/[brandId]/socials/ads/page.tsx",
-   "pending": true
+   "none": "a sub-view (ads) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials/kpis": {
    "file": "app/(core)/marketing/[brandId]/socials/kpis/page.tsx",
-   "pending": true
+   "none": "a sub-view (kpis) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials/outliers": {
    "file": "app/(core)/marketing/[brandId]/socials/outliers/page.tsx",
-   "pending": true
+   "none": "a sub-view (outliers) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials/post/[postId]": {
    "file": "app/(core)/marketing/[brandId]/socials/post/[postId]/page.tsx",
    "pending": true
   },
+  "route:/marketing/[brandId]/socials/research": {
+   "file": "app/(core)/marketing/[brandId]/socials/research/page.tsx",
+   "none": "a sub-view (research) inside a record or scope, not the record page; the record's own page carries the section"
+  },
   "route:/marketing/[brandId]/socials/studio": {
    "file": "app/(core)/marketing/[brandId]/socials/studio/page.tsx",
-   "pending": true
+   "none": "a sub-view (studio) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/socials/swipe": {
    "file": "app/(core)/marketing/[brandId]/socials/swipe/page.tsx",
+   "none": "a sub-view (swipe) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/marketing/[brandId]/socials/videos": {
+   "file": "app/(core)/marketing/[brandId]/socials/videos/page.tsx",
+   "none": "a sub-view (videos) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/marketing/[brandId]/socials/videos/[projectId]": {
+   "file": "app/(core)/marketing/[brandId]/socials/videos/[projectId]/page.tsx",
    "pending": true
+  },
+  "route:/marketing/[brandId]/socials/videos/formats": {
+   "file": "app/(core)/marketing/[brandId]/socials/videos/formats/page.tsx",
+   "none": "a sub-view (formats) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/marketing/[brandId]/socials/videos/new": {
+   "file": "app/(core)/marketing/[brandId]/socials/videos/new/page.tsx",
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites": {
    "file": "app/(core)/marketing/[brandId]/websites/page.tsx",
-   "pending": true
+   "none": "a sub-view (websites) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/page.tsx",
@@ -3813,11 +4229,11 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/[...rest]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/[...rest]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/page.tsx",
-   "pending": true
+   "none": "a sub-view (crawls) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/page.tsx",
@@ -3825,47 +4241,47 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/links/page.tsx",
-   "pending": true
+   "none": "a sub-view (links) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/logs/page.tsx",
-   "pending": true
+   "none": "a sub-view (logs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/page.tsx",
-   "pending": true
+   "none": "a sub-view (reports) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/reports/[reportKey]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (reportKey), not a record id"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/snapshots/page.tsx",
-   "pending": true
+   "none": "a sub-view (snapshots) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/[crawlId]/urls/page.tsx",
-   "pending": true
+   "none": "a sub-view (urls) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/crawls/new": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/crawls/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/media": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/media/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/[brandId]/websites/[siteId]/media/standards": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/media/standards/page.tsx",
-   "pending": true
+   "none": "a sub-view (standards) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/media/videos": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/media/videos/page.tsx",
-   "pending": true
+   "none": "a sub-view (videos) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/pages": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/pages/page.tsx",
-   "pending": true
+   "none": "a sub-view (pages) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/pages/[pageId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/page.tsx",
@@ -3875,7 +4291,7 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/page.tsx",
-   "pending": true
+   "none": "a sub-view (snapshots) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/pages/[pageId]/snapshots/[snapshotId]/page.tsx",
@@ -3883,23 +4299,23 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/settings": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/settings/access": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/settings/access/page.tsx",
-   "pending": true
+   "none": "a sub-view (access) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/settings/intake": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/settings/intake/page.tsx",
-   "pending": true
+   "none": "a sub-view (intake) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/settings/integrations": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/settings/integrations/page.tsx",
-   "pending": true
+   "none": "a sub-view (integrations) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/sitemaps": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/sitemaps/page.tsx",
-   "pending": true
+   "none": "a sub-view (sitemaps) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/sitemaps/[sitemapId]/page.tsx",
@@ -3907,11 +4323,11 @@
   },
   "route:/marketing/[brandId]/websites/[siteId]/structure": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/structure/page.tsx",
-   "pending": true
+   "none": "a sub-view (structure) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/[brandId]/websites/[siteId]/structure/columns": {
    "file": "app/(core)/marketing/[brandId]/websites/[siteId]/structure/columns/page.tsx",
-   "pending": true
+   "none": "a sub-view (columns) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/marketing/admin": {
    "file": "app/(core)/marketing/admin/page.tsx",
@@ -3957,11 +4373,39 @@
   },
   "route:/marketing/brands/[brandId]/[[...rest]]": {
    "file": "app/(core)/marketing/brands/[brandId]/[[...rest]]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/marketing/brands/new-website": {
    "file": "app/(core)/marketing/brands/new-website/page.tsx",
    "pending": true
+  },
+  "route:/marketing/brands/offerings": {
+   "file": "app/(core)/marketing/brands/offerings/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands/smart-add": {
+   "file": "app/(core)/marketing/brands/smart-add/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands/smart-add/company": {
+   "file": "app/(core)/marketing/brands/smart-add/company/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands/smart-add/enrich/[brandId]": {
+   "file": "app/(core)/marketing/brands/smart-add/enrich/[brandId]/page.tsx",
+   "none": "a smart-add wizard step for a brand, not the brand record"
+  },
+  "route:/marketing/brands/smart-add/found": {
+   "file": "app/(core)/marketing/brands/smart-add/found/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands/smart-add/person": {
+   "file": "app/(core)/marketing/brands/smart-add/person/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/brands/smart-add/validate/[brandId]": {
+   "file": "app/(core)/marketing/brands/smart-add/validate/[brandId]/page.tsx",
+   "none": "a smart-add wizard step for a brand, not the brand record"
   },
   "route:/marketing/calendar": {
    "file": "app/(core)/marketing/calendar/page.tsx",
@@ -4005,7 +4449,7 @@
   },
   "route:/marketing/content-plan/nodes/[nodeId]": {
    "file": "app/(core)/marketing/content-plan/nodes/[nodeId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/content-studio": {
    "file": "app/(core)/marketing/content-studio/page.tsx",
@@ -4021,7 +4465,7 @@
   },
   "route:/marketing/discovery/youtube/videos/[videoId]": {
    "file": "app/(core)/marketing/discovery/youtube/videos/[videoId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/email": {
    "file": "app/(core)/marketing/email/page.tsx",
@@ -4037,7 +4481,7 @@
   },
   "route:/marketing/initiatives/[id]": {
    "file": "app/(core)/marketing/initiatives/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/keyword-intelligence": {
    "file": "app/(core)/marketing/keyword-intelligence/page.tsx",
@@ -4175,11 +4619,11 @@
   },
   "route:/marketing/sites/[siteId]": {
    "file": "app/(core)/marketing/sites/[siteId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/marketing/sites/[siteId]/[...rest]": {
    "file": "app/(core)/marketing/sites/[siteId]/[...rest]/page.tsx",
-   "pending": true
+   "none": "a catch-all route that resolves paths, not one record"
   },
   "route:/marketing/sites/new": {
    "file": "app/(core)/marketing/sites/new/page.tsx",
@@ -4193,12 +4637,20 @@
    "file": "app/(core)/marketing/social/page.tsx",
    "pending": true
   },
+  "route:/marketing/speed-test": {
+   "file": "app/(core)/marketing/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/marketing/tools": {
    "file": "app/(core)/marketing/tools/page.tsx",
    "pending": true
   },
   "route:/marketing/tools/domain": {
    "file": "app/(core)/marketing/tools/domain/page.tsx",
+   "pending": true
+  },
+  "route:/marketing/tools/domain/check": {
+   "file": "app/(core)/marketing/tools/domain/check/page.tsx",
    "pending": true
   },
   "route:/marketing/tools/youtube": {
@@ -4231,59 +4683,59 @@
   },
   "route:/masterwork/[id]/body-of-work": {
    "file": "app/(core)/masterwork/[id]/body-of-work/page.tsx",
-   "pending": true
+   "none": "a sub-view (body-of-work) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/conduct": {
    "file": "app/(core)/masterwork/[id]/conduct/page.tsx",
-   "pending": true
+   "none": "a sub-view (conduct) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/drip": {
    "file": "app/(core)/masterwork/[id]/drip/page.tsx",
-   "pending": true
+   "none": "a sub-view (drip) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/drive": {
    "file": "app/(core)/masterwork/[id]/drive/page.tsx",
-   "pending": true
+   "none": "a sub-view (drive) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/import": {
    "file": "app/(core)/masterwork/[id]/import/page.tsx",
-   "pending": true
+   "none": "an editor or builder (import) for a record; the record's own page carries the section"
   },
   "route:/masterwork/[id]/inbox": {
    "file": "app/(core)/masterwork/[id]/inbox/page.tsx",
-   "pending": true
+   "none": "a sub-view (inbox) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/interview": {
    "file": "app/(core)/masterwork/[id]/interview/page.tsx",
-   "pending": true
+   "none": "a sub-view (interview) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/masterworks": {
    "file": "app/(core)/masterwork/[id]/masterworks/page.tsx",
-   "pending": true
+   "none": "a sub-view (masterworks) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/plan": {
    "file": "app/(core)/masterwork/[id]/plan/page.tsx",
-   "pending": true
+   "none": "a sub-view (plan) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/probe": {
    "file": "app/(core)/masterwork/[id]/probe/page.tsx",
-   "pending": true
+   "none": "a sub-view (probe) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/record": {
    "file": "app/(core)/masterwork/[id]/record/page.tsx",
-   "pending": true
+   "none": "a sub-view (record) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/sort": {
    "file": "app/(core)/masterwork/[id]/sort/page.tsx",
-   "pending": true
+   "none": "a sub-view (sort) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/sources": {
    "file": "app/(core)/masterwork/[id]/sources/page.tsx",
-   "pending": true
+   "none": "a sub-view (sources) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/sources/kept": {
    "file": "app/(core)/masterwork/[id]/sources/kept/page.tsx",
-   "pending": true
+   "none": "a sub-view (kept) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/sources/kept/[sourceKey]": {
    "file": "app/(core)/masterwork/[id]/sources/kept/[sourceKey]/page.tsx",
@@ -4291,11 +4743,11 @@
   },
   "route:/masterwork/[id]/teach-back": {
    "file": "app/(core)/masterwork/[id]/teach-back/page.tsx",
-   "pending": true
+   "none": "a sub-view (teach-back) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/[id]/triad": {
    "file": "app/(core)/masterwork/[id]/triad/page.tsx",
-   "pending": true
+   "none": "a sub-view (triad) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/masterwork/admin": {
    "file": "app/(core)/masterwork/admin/page.tsx",
@@ -4321,13 +4773,17 @@
    "file": "app/(core)/masterwork/new/page.tsx",
    "pending": true
   },
+  "route:/masterwork/speed-test": {
+   "file": "app/(core)/masterwork/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/masterwork/vision-interview": {
    "file": "app/(core)/masterwork/vision-interview/page.tsx",
    "pending": true
   },
   "route:/masterwork/vision-interview/[sessionId]": {
    "file": "app/(core)/masterwork/vision-interview/[sessionId]/page.tsx",
-   "pending": true
+   "none": "an interview wizard session, not a record page"
   },
   "route:/masterwork/vision-interview/new": {
    "file": "app/(core)/masterwork/vision-interview/new/page.tsx",
@@ -4345,13 +4801,21 @@
    "file": "app/(core)/medical/page.tsx",
    "none": "a landing page"
   },
+  "route:/medical/speed-test": {
+   "file": "app/(core)/medical/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/meet": {
    "file": "app/(meet)/meet/page.tsx",
    "pending": true
   },
+  "route:/meet-matrx": {
+   "file": "app/(core)/meet-matrx/page.tsx",
+   "pending": true
+  },
   "route:/meet/[slug]": {
    "file": "app/(meet)/meet/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/meetings": {
    "file": "app/(core)/meetings/page.tsx",
@@ -4362,6 +4826,10 @@
    "tokens": [
     "meet_meeting"
    ]
+  },
+  "route:/meetings/speed-test": {
+   "file": "app/(core)/meetings/speed-test/page.tsx",
+   "pending": true
   },
   "route:/messages": {
    "file": "app/(core)/messages/page.tsx",
@@ -4379,12 +4847,24 @@
    "file": "app/(core)/messages/admin/page.tsx",
    "pending": true
   },
+  "route:/messages/speed-test": {
+   "file": "app/(core)/messages/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/messenger": {
    "file": "app/(core)/messenger/page.tsx",
    "pending": true
   },
   "route:/messenger/agents": {
    "file": "app/(core)/messenger/agents/page.tsx",
+   "pending": true
+  },
+  "route:/messenger/speed-test": {
+   "file": "app/(core)/messenger/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/messenger/whatsapp": {
+   "file": "app/(core)/messenger/whatsapp/page.tsx",
    "pending": true
   },
   "route:/news": {
@@ -4405,10 +4885,18 @@
   },
   "route:/notes/[id]/diff": {
    "file": "app/(core)/notes/[id]/diff/page.tsx",
+   "none": "a sub-view (diff) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/notes/speed-test": {
+   "file": "app/(core)/notes/speed-test/page.tsx",
    "pending": true
   },
   "route:/notifications": {
    "file": "app/(core)/notifications/page.tsx",
+   "pending": true
+  },
+  "route:/notifications/speed-test": {
+   "file": "app/(core)/notifications/speed-test/page.tsx",
    "pending": true
   },
   "route:/o/[id]": {
@@ -4417,7 +4905,7 @@
   },
   "route:/oauth/callback/[app]": {
    "file": "app/oauth/callback/[app]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (app), not a record id"
   },
   "route:/oauth/consent": {
    "file": "app/oauth/consent/page.tsx",
@@ -4441,15 +4929,15 @@
   },
   "route:/organizations/[orgId]/admin": {
    "file": "app/(core)/organizations/[orgId]/admin/page.tsx",
-   "pending": true
+   "none": "a sub-view (admin) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/admin/ai-spend": {
    "file": "app/(core)/organizations/[orgId]/admin/ai-spend/page.tsx",
-   "pending": true
+   "none": "a sub-view (ai-spend) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/admin/ai-spend/detail": {
    "file": "app/(core)/organizations/[orgId]/admin/ai-spend/detail/page.tsx",
-   "pending": true
+   "none": "a sub-view (detail) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/admin/automations/[kind]/[id]": {
    "file": "app/(core)/organizations/[orgId]/admin/automations/[kind]/[id]/page.tsx",
@@ -4457,11 +4945,15 @@
   },
   "route:/organizations/[orgId]/admin/spend-approvals": {
    "file": "app/(core)/organizations/[orgId]/admin/spend-approvals/page.tsx",
-   "pending": true
+   "none": "a sub-view (spend-approvals) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]": {
+   "file": "app/(core)/organizations/[orgId]/admin/spend-approvals/[kind]/[subjectId]/page.tsx",
+   "none": "a spend approval (billing.run_approval) takes no custom fields"
   },
   "route:/organizations/[orgId]/admin/triggers": {
    "file": "app/(core)/organizations/[orgId]/admin/triggers/page.tsx",
-   "pending": true
+   "none": "a sub-view (triggers) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]": {
    "file": "app/(core)/organizations/[orgId]/admin/triggers/[triggerId]/runs/[runId]/page.tsx",
@@ -4473,27 +4965,27 @@
   },
   "route:/organizations/[orgId]/admin/users/[userId]/resources": {
    "file": "app/(core)/organizations/[orgId]/admin/users/[userId]/resources/page.tsx",
-   "pending": true
+   "none": "a sub-view (resources) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/applets": {
    "file": "app/(core)/organizations/[orgId]/applets/page.tsx",
-   "pending": true
+   "none": "a sub-view (applets) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/context-items": {
    "file": "app/(core)/organizations/[orgId]/context-items/page.tsx",
-   "pending": true
+   "none": "a sub-view (context-items) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/files": {
    "file": "app/(core)/organizations/[orgId]/files/page.tsx",
-   "pending": true
+   "none": "a sub-view (files) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/hr": {
    "file": "app/(core)/organizations/[orgId]/hr/page.tsx",
-   "pending": true
+   "none": "a sub-view (hr) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/mandates": {
    "file": "app/(core)/organizations/[orgId]/mandates/page.tsx",
-   "pending": true
+   "none": "a sub-view (mandates) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/mandates/[mandateKey]": {
    "file": "app/(core)/organizations/[orgId]/mandates/[mandateKey]/page.tsx",
@@ -4501,43 +4993,43 @@
   },
   "route:/organizations/[orgId]/mandates/new": {
    "file": "app/(core)/organizations/[orgId]/mandates/new/page.tsx",
-   "pending": true
+   "none": "an editor or builder (new) for a record; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/notes": {
    "file": "app/(core)/organizations/[orgId]/notes/page.tsx",
-   "pending": true
+   "none": "a sub-view (notes) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/org-2": {
    "file": "app/(core)/organizations/[orgId]/org-2/page.tsx",
-   "pending": true
+   "none": "a sub-view (org-2) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/performance-reviews": {
    "file": "app/(core)/organizations/[orgId]/performance-reviews/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/organizations/[orgId]/projects": {
    "file": "app/(core)/organizations/[orgId]/projects/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/organizations/[orgId]/projects/[projectId]": {
    "file": "app/(core)/organizations/[orgId]/projects/[projectId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/organizations/[orgId]/projects/[projectId]/settings": {
    "file": "app/(core)/organizations/[orgId]/projects/[projectId]/settings/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/organizations/[orgId]/prompts": {
    "file": "app/(core)/organizations/[orgId]/prompts/page.tsx",
-   "pending": true
+   "none": "a sub-view (prompts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/resources/[kind]": {
    "file": "app/(core)/organizations/[orgId]/resources/[kind]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (kind), not a record id"
   },
   "route:/organizations/[orgId]/scopes": {
    "file": "app/(core)/organizations/[orgId]/scopes/page.tsx",
-   "pending": true
+   "none": "a sub-view (scopes) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/page.tsx",
@@ -4553,15 +5045,15 @@
   },
   "route:/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/context-items/page.tsx",
-   "pending": true
+   "none": "a sub-view (context-items) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/[scopeId]/edit": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/[scopeId]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/context-items": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/context-items/page.tsx",
-   "pending": true
+   "none": "a sub-view (context-items) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/page.tsx",
@@ -4569,74 +5061,90 @@
   },
   "route:/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/context-items/[itemId]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/scopes/[typeId]/edit": {
    "file": "app/(core)/organizations/[orgId]/scopes/[typeId]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings": {
    "file": "app/(core)/organizations/[orgId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/api-keys": {
    "file": "app/(core)/organizations/[orgId]/settings/api-keys/page.tsx",
-   "pending": true
+   "none": "a sub-view (api-keys) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/change-policy": {
    "file": "app/(core)/organizations/[orgId]/settings/change-policy/page.tsx",
-   "pending": true
+   "none": "a sub-view (change-policy) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/configuration": {
    "file": "app/(core)/organizations/[orgId]/settings/configuration/page.tsx",
-   "pending": true
+   "none": "a sub-view (configuration) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/organizations/[orgId]/settings/domains": {
+   "file": "app/(core)/organizations/[orgId]/settings/domains/page.tsx",
+   "none": "a sub-view (domains) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/keyword-value": {
    "file": "app/(core)/organizations/[orgId]/settings/keyword-value/page.tsx",
-   "pending": true
+   "none": "a sub-view (keyword-value) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/mandates": {
    "file": "app/(core)/organizations/[orgId]/settings/mandates/page.tsx",
-   "pending": true
+   "none": "a sub-view (mandates) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/settings/mandates/[mandateKey]": {
    "file": "app/(core)/organizations/[orgId]/settings/mandates/[mandateKey]/page.tsx",
    "pending": true
   },
+  "route:/organizations/[orgId]/settings/payments": {
+   "file": "app/(core)/organizations/[orgId]/settings/payments/page.tsx",
+   "none": "a sub-view (payments) inside a record or scope, not the record page; the record's own page carries the section"
+  },
   "route:/organizations/[orgId]/settings/scopes": {
    "file": "app/(core)/organizations/[orgId]/settings/scopes/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
+  },
+  "route:/organizations/[orgId]/settings/system-context": {
+   "file": "app/(core)/organizations/[orgId]/settings/system-context/page.tsx",
+   "none": "a sub-view (system-context) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/shortcuts": {
    "file": "app/(core)/organizations/[orgId]/shortcuts/page.tsx",
-   "pending": true
+   "none": "a sub-view (shortcuts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/shortcuts/categories": {
    "file": "app/(core)/organizations/[orgId]/shortcuts/categories/page.tsx",
-   "pending": true
+   "none": "a sub-view (categories) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/shortcuts/edit/[id]": {
    "file": "app/(core)/organizations/[orgId]/shortcuts/edit/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/organizations/[orgId]/shortcuts/shortcuts": {
    "file": "app/(core)/organizations/[orgId]/shortcuts/shortcuts/page.tsx",
-   "pending": true
+   "none": "a sub-view (shortcuts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/tables": {
    "file": "app/(core)/organizations/[orgId]/tables/page.tsx",
-   "pending": true
+   "none": "a sub-view (tables) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/tasks": {
    "file": "app/(core)/organizations/[orgId]/tasks/page.tsx",
-   "pending": true
+   "none": "a sub-view (tasks) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/templates": {
    "file": "app/(core)/organizations/[orgId]/templates/page.tsx",
-   "pending": true
+   "none": "a sub-view (templates) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/organizations/[orgId]/workflows": {
    "file": "app/(core)/organizations/[orgId]/workflows/page.tsx",
+   "none": "a sub-view (workflows) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/organizations/speed-test": {
+   "file": "app/(core)/organizations/speed-test/page.tsx",
    "pending": true
   },
   "route:/p/e/[resourceType]/[id]": {
@@ -4651,16 +5159,24 @@
    "file": "app/(core)/pick-lists/[id]/page.tsx",
    "pending": true
   },
+  "route:/pick-lists/speed-test": {
+   "file": "app/(core)/pick-lists/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/podcast": {
    "file": "app/(core)/podcast/page.tsx",
    "pending": true
   },
   "route:/podcast/[slug]": {
    "file": "app/(core)/podcast/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/podcast/[slug]/blog": {
    "file": "app/(core)/podcast/[slug]/blog/page.tsx",
+   "none": "a sub-view (blog) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/podcast/speed-test": {
+   "file": "app/(core)/podcast/speed-test/page.tsx",
    "pending": true
   },
   "route:/podcast/studio": {
@@ -4729,7 +5245,7 @@
   },
   "route:/podcast/studio/run-dense/[id]": {
    "file": "app/(core)/podcast/studio/run-dense/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/podcast/studio/run-e": {
    "file": "app/(core)/podcast/studio/run-e/page.tsx",
@@ -4741,15 +5257,15 @@
   },
   "route:/podcast/studio/run-refine/[id]": {
    "file": "app/(core)/podcast/studio/run-refine/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/podcast/studio/run-reimagine/[id]": {
    "file": "app/(core)/podcast/studio/run-reimagine/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/podcast/studio/run-sharp/[id]": {
    "file": "app/(core)/podcast/studio/run-sharp/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/podcast/studio/run/[id]": {
    "file": "app/(core)/podcast/studio/run/[id]/page.tsx",
@@ -4757,7 +5273,9 @@
   },
   "route:/podcast/studio/show/[showId]": {
    "file": "app/(core)/podcast/studio/show/[showId]/page.tsx",
-   "pending": true
+   "tokens": [
+    "pc_show"
+   ]
   },
   "route:/popup-window": {
    "file": "app/(popup)/popup-window/page.tsx",
@@ -4773,7 +5291,7 @@
   },
   "route:/portal/c/[slug]": {
    "file": "app/(portal)/portal/c/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/portal/c/[slug]/f/[formId]": {
    "file": "app/(portal)/portal/c/[slug]/f/[formId]/page.tsx",
@@ -4781,6 +5299,22 @@
   },
   "route:/portal/c/[slug]/r/[recordId]": {
    "file": "app/(portal)/portal/c/[slug]/r/[recordId]/page.tsx",
+   "pending": true
+  },
+  "route:/presentations": {
+   "file": "app/(core)/presentations/page.tsx",
+   "pending": true
+  },
+  "route:/presentations/[id]": {
+   "file": "app/(core)/presentations/[id]/page.tsx",
+   "pending": true
+  },
+  "route:/presentations/speed-test": {
+   "file": "app/(core)/presentations/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/presentations/templates": {
+   "file": "app/(core)/presentations/templates/page.tsx",
    "pending": true
   },
   "route:/pricing": {
@@ -4847,6 +5381,10 @@
    "file": "app/(core)/print/qr/page.tsx",
    "pending": true
   },
+  "route:/print/speed-test": {
+   "file": "app/(core)/print/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/print/zpl": {
    "file": "app/(core)/print/zpl/page.tsx",
    "pending": true
@@ -4875,19 +5413,23 @@
   },
   "route:/projects/[projectId]/settings": {
    "file": "app/(core)/projects/[projectId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/projects/new": {
    "file": "app/(core)/projects/new/page.tsx",
    "pending": true
   },
+  "route:/projects/speed-test": {
+   "file": "app/(core)/projects/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/q/[token]": {
    "file": "app/(link)/q/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/r/[token]": {
    "file": "app/(public)/r/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/rag": {
    "file": "app/(core)/rag/page.tsx",
@@ -4911,7 +5453,7 @@
   },
   "route:/rag/library-catalog": {
    "file": "app/(core)/rag/library-catalog/page.tsx",
-   "none": "a library catalogue"
+   "none": "a library catalog"
   },
   "route:/rag/library/[id]/preview": {
    "file": "app/(core)/rag/library/[id]/preview/page.tsx",
@@ -4924,6 +5466,10 @@
   "route:/rag/search": {
    "file": "app/(core)/rag/search/page.tsx",
    "none": "a search page"
+  },
+  "route:/rag/speed-test": {
+   "file": "app/(core)/rag/speed-test/page.tsx",
+   "pending": true
   },
   "route:/rag/viewer/[id]": {
    "file": "app/(core)/rag/viewer/[id]/page.tsx",
@@ -4961,6 +5507,10 @@
    "file": "app/(core)/reports/agent-drift/page.tsx",
    "pending": true
   },
+  "route:/reports/speed-test": {
+   "file": "app/(core)/reports/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/request-access/thank-you": {
    "file": "app/(public)/request-access/thank-you/page.tsx",
    "pending": true
@@ -4969,9 +5519,13 @@
    "file": "app/(core)/research/page.tsx",
    "pending": true
   },
+  "route:/research/speed-test": {
+   "file": "app/(core)/research/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/research/tags/[tagId]": {
    "file": "app/(core)/research/tags/[tagId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/research/topics": {
    "file": "app/(core)/research/topics/page.tsx",
@@ -4983,47 +5537,47 @@
   },
   "route:/research/topics/[topicId]/agents": {
    "file": "app/(core)/research/topics/[topicId]/agents/page.tsx",
-   "pending": true
+   "none": "a sub-view (agents) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/analysis": {
    "file": "app/(core)/research/topics/[topicId]/analysis/page.tsx",
-   "pending": true
+   "none": "a sub-view (analysis) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/content": {
    "file": "app/(core)/research/topics/[topicId]/content/page.tsx",
-   "pending": true
+   "none": "a sub-view (content) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/context": {
    "file": "app/(core)/research/topics/[topicId]/context/page.tsx",
-   "pending": true
+   "none": "a sub-view (context) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/costs": {
    "file": "app/(core)/research/topics/[topicId]/costs/page.tsx",
-   "pending": true
+   "none": "a sub-view (costs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/curate": {
    "file": "app/(core)/research/topics/[topicId]/curate/page.tsx",
-   "pending": true
+   "none": "a sub-view (curate) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/document": {
    "file": "app/(core)/research/topics/[topicId]/document/page.tsx",
-   "pending": true
+   "none": "a sub-view (document) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/documents": {
    "file": "app/(core)/research/topics/[topicId]/documents/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/research/topics/[topicId]/experts": {
    "file": "app/(core)/research/topics/[topicId]/experts/page.tsx",
-   "pending": true
+   "none": "a sub-view (experts) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/intelligence": {
    "file": "app/(core)/research/topics/[topicId]/intelligence/page.tsx",
-   "pending": true
+   "none": "a sub-view (intelligence) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/keywords": {
    "file": "app/(core)/research/topics/[topicId]/keywords/page.tsx",
-   "pending": true
+   "none": "a sub-view (keywords) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/keywords/[keywordId]": {
    "file": "app/(core)/research/topics/[topicId]/keywords/[keywordId]/page.tsx",
@@ -5031,27 +5585,27 @@
   },
   "route:/research/topics/[topicId]/media": {
    "file": "app/(core)/research/topics/[topicId]/media/page.tsx",
-   "pending": true
+   "none": "a sub-view (media) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/media/debug": {
    "file": "app/(core)/research/topics/[topicId]/media/debug/page.tsx",
-   "pending": true
+   "none": "a sub-view (debug) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/outputs": {
    "file": "app/(core)/research/topics/[topicId]/outputs/page.tsx",
-   "pending": true
+   "none": "a sub-view (outputs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/settings": {
    "file": "app/(core)/research/topics/[topicId]/settings/page.tsx",
-   "pending": true
+   "none": "a settings page (settings) inside a record or scope; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/social": {
    "file": "app/(core)/research/topics/[topicId]/social/page.tsx",
-   "pending": true
+   "none": "a sub-view (social) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/sources": {
    "file": "app/(core)/research/topics/[topicId]/sources/page.tsx",
-   "pending": true
+   "none": "a sub-view (sources) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/sources/[sourceId]": {
    "file": "app/(core)/research/topics/[topicId]/sources/[sourceId]/page.tsx",
@@ -5059,11 +5613,11 @@
   },
   "route:/research/topics/[topicId]/synthesis": {
    "file": "app/(core)/research/topics/[topicId]/synthesis/page.tsx",
-   "pending": true
+   "none": "a sub-view (synthesis) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/tags": {
    "file": "app/(core)/research/topics/[topicId]/tags/page.tsx",
-   "pending": true
+   "none": "a sub-view (tags) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/tags/[tagId]": {
    "file": "app/(core)/research/topics/[topicId]/tags/[tagId]/page.tsx",
@@ -5071,11 +5625,11 @@
   },
   "route:/research/topics/[topicId]/tasks": {
    "file": "app/(core)/research/topics/[topicId]/tasks/page.tsx",
-   "pending": true
+   "none": "a sub-view (tasks) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/[topicId]/youtube": {
    "file": "app/(core)/research/topics/[topicId]/youtube/page.tsx",
-   "pending": true
+   "none": "a sub-view (youtube) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/research/topics/new": {
    "file": "app/(core)/research/topics/new/page.tsx",
@@ -5095,11 +5649,11 @@
   },
   "route:/rsvp/[secret]": {
    "file": "app/(link)/rsvp/[secret]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/s/[token]": {
    "file": "app/(public)/s/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/samples": {
    "file": "app/samples/page.tsx",
@@ -5113,6 +5667,10 @@
    "file": "app/(core)/sandbox/[id]/page.tsx",
    "pending": true
   },
+  "route:/sandbox/speed-test": {
+   "file": "app/(core)/sandbox/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/schedules": {
    "file": "app/(core)/schedules/page.tsx",
    "pending": true
@@ -5123,10 +5681,14 @@
   },
   "route:/schedules/[id]/edit": {
    "file": "app/(core)/schedules/[id]/edit/page.tsx",
-   "pending": true
+   "none": "an editor or builder (edit) for a record; the record's own page carries the section"
   },
   "route:/schedules/new": {
    "file": "app/(core)/schedules/new/page.tsx",
+   "pending": true
+  },
+  "route:/schedules/speed-test": {
+   "file": "app/(core)/schedules/speed-test/page.tsx",
    "pending": true
   },
   "route:/scopes": {
@@ -5145,6 +5707,10 @@
    "file": "app/(core)/scopes/settings/page.tsx",
    "pending": true
   },
+  "route:/scopes/speed-test": {
+   "file": "app/(core)/scopes/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/scopes/templates": {
    "file": "app/(core)/scopes/templates/page.tsx",
    "none": "a retired address that forwards to the one template gallery"
@@ -5155,7 +5721,7 @@
   },
   "route:/scraper/[id]": {
    "file": "app/(core)/scraper/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/scraper/batch": {
    "file": "app/(core)/scraper/batch/page.tsx",
@@ -5173,13 +5739,25 @@
    "file": "app/(core)/scraper/search-and-scrape/page.tsx",
    "pending": true
   },
+  "route:/scraper/speed-test": {
+   "file": "app/(core)/scraper/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/search": {
    "file": "app/(core)/search/page.tsx",
    "pending": true
   },
+  "route:/search/experience": {
+   "file": "app/(core)/search/experience/page.tsx",
+   "pending": true
+  },
+  "route:/search/speed-test": {
+   "file": "app/(core)/search/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/secure/[token]": {
    "file": "app/(link)/secure/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/seo": {
    "file": "app/(public)/seo/page.tsx",
@@ -5219,43 +5797,43 @@
   },
   "route:/shapes/[kind]": {
    "file": "app/(core)/shapes/(workspace)/[kind]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (kind), not a record id"
   },
   "route:/shapes/[kind]/examples": {
    "file": "app/(core)/shapes/(workspace)/[kind]/examples/page.tsx",
-   "pending": true
+   "none": "a sub-view (examples) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/gate": {
    "file": "app/(core)/shapes/(workspace)/[kind]/gate/page.tsx",
-   "pending": true
+   "none": "a sub-view (gate) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/inputs": {
    "file": "app/(core)/shapes/(workspace)/[kind]/inputs/page.tsx",
-   "pending": true
+   "none": "a sub-view (inputs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/instances": {
    "file": "app/(core)/shapes/(workspace)/[kind]/instances/page.tsx",
-   "pending": true
+   "none": "a sub-view (instances) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/schema": {
    "file": "app/(core)/shapes/(workspace)/[kind]/schema/page.tsx",
-   "pending": true
+   "none": "a sub-view (schema) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/stream": {
    "file": "app/(core)/shapes/(workspace)/[kind]/stream/page.tsx",
-   "pending": true
+   "none": "a sub-view (stream) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/table": {
    "file": "app/(core)/shapes/(workspace)/[kind]/table/page.tsx",
-   "pending": true
+   "none": "a sub-view (table) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/template": {
    "file": "app/(core)/shapes/(workspace)/[kind]/template/page.tsx",
-   "pending": true
+   "none": "a sub-view (template) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/[kind]/test": {
    "file": "app/(core)/shapes/(workspace)/[kind]/test/page.tsx",
-   "pending": true
+   "none": "a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/shapes/admin": {
    "file": "app/(core)/shapes/(workspace)/admin/page.tsx",
@@ -5267,7 +5845,7 @@
   },
   "route:/shapes/id/[id]": {
    "file": "app/(core)/shapes/(workspace)/id/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/shapes/instances/[id]": {
    "file": "app/(core)/shapes/(workspace)/instances/[id]/page.tsx",
@@ -5275,6 +5853,14 @@
   },
   "route:/shapes/new": {
    "file": "app/(core)/shapes/(workspace)/new/page.tsx",
+   "pending": true
+  },
+  "route:/shapes/playground": {
+   "file": "app/(core)/shapes/(workspace)/playground/page.tsx",
+   "pending": true
+  },
+  "route:/shapes/speed-test": {
+   "file": "app/(core)/shapes/speed-test/page.tsx",
    "pending": true
   },
   "route:/sign-out": {
@@ -5285,17 +5871,13 @@
    "file": "app/(auth-pages)/sign-up/page.tsx",
    "pending": true
   },
-  "route:/sign/[token]": {
-   "file": "app/(link)/sign/[token]/page.tsx",
-   "pending": true
-  },
   "route:/sign/e/[envelopeId]": {
    "file": "app/(link)/sign/e/[envelopeId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/site/[slug]": {
    "file": "app/(link)/site/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/sms": {
    "file": "app/(public)/sms/page.tsx",
@@ -5321,8 +5903,24 @@
    "file": "app/(core)/spaces/home/page.tsx",
    "pending": true
   },
+  "route:/spaces/speed-test": {
+   "file": "app/(core)/spaces/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/spaces/use-template": {
+   "file": "app/(core)/spaces/use-template/page.tsx",
+   "pending": true
+  },
+  "route:/speed-test": {
+   "file": "app/(core)/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/staff": {
    "file": "app/(core)/staff/page.tsx",
+   "pending": true
+  },
+  "route:/staff/speed-test": {
+   "file": "app/(core)/staff/speed-test/page.tsx",
    "pending": true
   },
   "route:/start": {
@@ -5333,12 +5931,20 @@
    "file": "app/(core)/suggestions/page.tsx",
    "pending": true
   },
+  "route:/suggestions/speed-test": {
+   "file": "app/(core)/suggestions/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/surfaces": {
    "file": "app/(core)/surfaces/page.tsx",
    "pending": true
   },
   "route:/surfaces/[...name]": {
    "file": "app/(core)/surfaces/[...name]/page.tsx",
+   "none": "a catch-all route that resolves paths, not one record"
+  },
+  "route:/surfaces/speed-test": {
+   "file": "app/(core)/surfaces/speed-test/page.tsx",
    "pending": true
   },
   "route:/tasks": {
@@ -5355,6 +5961,10 @@
    "file": "app/(core)/tasks/new/page.tsx",
    "pending": true
   },
+  "route:/tasks/speed-test": {
+   "file": "app/(core)/tasks/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/teams/id/[teamId]": {
    "file": "app/(core)/teams/id/[teamId]/page.tsx",
    "pending": true
@@ -5365,7 +5975,7 @@
   },
   "route:/templates/[slug]": {
    "file": "app/(public)/templates/[slug]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/templates/applets": {
    "file": "app/(public)/templates/applets/page.tsx",
@@ -5373,11 +5983,19 @@
   },
   "route:/templates/category/[industry]": {
    "file": "app/(public)/templates/category/[industry]/page.tsx",
-   "pending": true
+   "none": "addressed by a catalog key (industry), not a record id"
   },
   "route:/templates/job/[job]": {
    "file": "app/(public)/templates/job/[job]/page.tsx",
+   "none": "addressed by a catalog key (job), not a record id"
+  },
+  "route:/templates/workspaces": {
+   "file": "app/(public)/templates/workspaces/page.tsx",
    "pending": true
+  },
+  "route:/templates/workspaces/[category]": {
+   "file": "app/(public)/templates/workspaces/[category]/page.tsx",
+   "none": "addressed by a catalog key (category), not a record id"
   },
   "route:/terms-and-conditions": {
    "file": "app/(public)/terms-and-conditions/page.tsx",
@@ -5405,7 +6023,7 @@
   },
   "route:/tools/pdf-extractor/[id]": {
    "file": "app/(core)/tools/pdf-extractor/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/tools/pdf-extractor/admin": {
    "file": "app/(core)/tools/pdf-extractor/admin/page.tsx",
@@ -5433,7 +6051,7 @@
   },
   "route:/tools/product-capture/item/[id]": {
    "file": "app/(core)/tools/product-capture/item/[id]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/tools/product-capture/manage": {
    "file": "app/(core)/tools/product-capture/manage/page.tsx",
@@ -5441,6 +6059,10 @@
   },
   "route:/tools/scanner": {
    "file": "app/(core)/tools/scanner/page.tsx",
+   "pending": true
+  },
+  "route:/tools/speed-test": {
+   "file": "app/(core)/tools/speed-test/page.tsx",
    "pending": true
   },
   "route:/transcripts": {
@@ -5475,6 +6097,10 @@
    "file": "app/(core)/transcripts/scribe/unsorted/page.tsx",
    "pending": true
   },
+  "route:/transcripts/speed-test": {
+   "file": "app/(core)/transcripts/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/transcripts/studio": {
    "file": "app/(core)/transcripts/studio/page.tsx",
    "pending": true
@@ -5483,13 +6109,25 @@
    "file": "app/(core)/trash/page.tsx",
    "pending": true
   },
+  "route:/trash/speed-test": {
+   "file": "app/(core)/trash/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/unsubscribe/[token]": {
    "file": "app/(public)/unsubscribe/[token]/page.tsx",
-   "pending": true
+   "none": "a public link addressed by a one-time token or code, not a record page"
   },
   "route:/user-settings/[[...path]]": {
    "file": "app/(core)/user-settings/[[...path]]/page.tsx",
+   "none": "a catch-all route that resolves paths, not one record"
+  },
+  "route:/user-settings/speed-test": {
+   "file": "app/(core)/user-settings/speed-test/page.tsx",
    "pending": true
+  },
+  "route:/v/[slug]": {
+   "file": "app/(link)/v/[slug]/page.tsx",
+   "none": "addressed by a catalog key (slug), not a record id"
   },
   "route:/vault": {
    "file": "app/(core)/vault/page.tsx",
@@ -5497,7 +6135,7 @@
   },
   "route:/vault/[itemId]": {
    "file": "app/(core)/vault/[itemId]/page.tsx",
-   "pending": true
+   "none": "a redirect to the page that shows the record"
   },
   "route:/vault/approve-browser": {
    "file": "app/(core)/vault/approve-browser/page.tsx",
@@ -5507,12 +6145,20 @@
    "file": "app/(core)/vault/authenticator/page.tsx",
    "pending": true
   },
+  "route:/vault/speed-test": {
+   "file": "app/(core)/vault/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/voice": {
    "file": "app/(core)/voice/page.tsx",
    "pending": true
   },
   "route:/voice/playground": {
    "file": "app/(core)/voice/playground/page.tsx",
+   "pending": true
+  },
+  "route:/voice/speed-test": {
+   "file": "app/(core)/voice/speed-test/page.tsx",
    "pending": true
   },
   "route:/voice/tester": {
@@ -5539,8 +6185,16 @@
    "file": "app/(core)/war-room/new/page.tsx",
    "pending": true
   },
+  "route:/war-room/speed-test": {
+   "file": "app/(core)/war-room/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/welcome": {
    "file": "app/(core)/welcome/page.tsx",
+   "pending": true
+  },
+  "route:/welcome/speed-test": {
+   "file": "app/(core)/welcome/speed-test/page.tsx",
    "pending": true
   },
   "route:/why-ai-matrx": {
@@ -5579,12 +6233,24 @@
    "file": "app/(core)/work/requests/page.tsx",
    "pending": true
   },
+  "route:/work/speed-test": {
+   "file": "app/(core)/work/speed-test/page.tsx",
+   "pending": true
+  },
   "route:/workbooks": {
    "file": "app/(core)/workbooks/page.tsx",
    "pending": true
   },
   "route:/workbooks/[id]": {
    "file": "app/(core)/workbooks/[id]/page.tsx",
+   "pending": true
+  },
+  "route:/workbooks/speed-test": {
+   "file": "app/(core)/workbooks/speed-test/page.tsx",
+   "pending": true
+  },
+  "route:/workbooks/templates": {
+   "file": "app/(core)/workbooks/templates/page.tsx",
    "pending": true
   },
   "route:/workflows": {
@@ -5597,15 +6263,23 @@
   },
   "route:/workflows/[id]/design": {
    "file": "app/(core)/workflows/[id]/design/page.tsx",
+   "none": "an editor or builder (design) for a record; the record's own page carries the section"
+  },
+  "route:/workflows/[id]/review": {
+   "file": "app/(core)/workflows/[id]/review/page.tsx",
+   "none": "a sub-view (review) inside a record or scope, not the record page; the record's own page carries the section"
+  },
+  "route:/workflows/[id]/review/[issueId]": {
+   "file": "app/(core)/workflows/[id]/review/[issueId]/page.tsx",
    "pending": true
   },
   "route:/workflows/[id]/runs": {
    "file": "app/(core)/workflows/[id]/runs/page.tsx",
-   "pending": true
+   "none": "a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/workflows/[id]/triggers": {
    "file": "app/(core)/workflows/[id]/triggers/page.tsx",
-   "pending": true
+   "none": "a sub-view (triggers) inside a record or scope, not the record page; the record's own page carries the section"
   },
   "route:/workflows/all": {
    "file": "app/(core)/workflows/all/page.tsx",
@@ -5617,35 +6291,35 @@
   },
   "route:/workflows/bakeoff/dense-2/[id]": {
    "file": "app/(core)/workflows/bakeoff/dense-2/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/dense/[id]": {
    "file": "app/(core)/workflows/bakeoff/dense/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/refine-2/[id]": {
    "file": "app/(core)/workflows/bakeoff/refine-2/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/refine/[id]": {
    "file": "app/(core)/workflows/bakeoff/refine/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/reimagine-2/[id]": {
    "file": "app/(core)/workflows/bakeoff/reimagine-2/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/reimagine/[id]": {
    "file": "app/(core)/workflows/bakeoff/reimagine/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/sharp-2/[id]": {
    "file": "app/(core)/workflows/bakeoff/sharp-2/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/bakeoff/sharp/[id]": {
    "file": "app/(core)/workflows/bakeoff/sharp/[id]/page.tsx",
-   "pending": true
+   "none": "an editor or experiment surface for a record, not the record view"
   },
   "route:/workflows/battle": {
    "file": "app/(core)/workflows/battle/page.tsx",
@@ -5653,6 +6327,10 @@
   },
   "route:/workflows/builder/[tableId]": {
    "file": "app/(core)/workflows/builder/[tableId]/page.tsx",
+   "none": "a builder (editor) over a table, not a record page"
+  },
+  "route:/workflows/review": {
+   "file": "app/(core)/workflows/review/page.tsx",
    "pending": true
   },
   "route:/workflows/runs": {
@@ -5666,6 +6344,10 @@
   "route:/workflows/runs/analyze": {
    "file": "app/(core)/workflows/runs/analyze/page.tsx",
    "none": "a run analysis page"
+  },
+  "route:/workflows/speed-test": {
+   "file": "app/(core)/workflows/speed-test/page.tsx",
+   "pending": true
   },
   "route:/workflows/waiting": {
    "file": "app/(core)/workflows/waiting/page.tsx",
@@ -5693,6 +6375,22 @@
   },
   "window:components/agent-copy/copy-subset/CopySubsetWindow.tsx": {
    "file": "components/agent-copy/copy-subset/CopySubsetWindow.tsx",
+   "pending": true
+  },
+  "window:components/debug/AgentExecutionDebugPanel.tsx": {
+   "file": "components/debug/AgentExecutionDebugPanel.tsx",
+   "pending": true
+  },
+  "window:components/debug/DebugIndicator.tsx": {
+   "file": "components/debug/DebugIndicator.tsx",
+   "pending": true
+  },
+  "window:components/debug/DebugModeGate.tsx": {
+   "file": "components/debug/DebugModeGate.tsx",
+   "pending": true
+  },
+  "window:components/debug/ResourceDebugIndicator.tsx": {
+   "file": "components/debug/ResourceDebugIndicator.tsx",
    "pending": true
   },
   "window:components/dialogs/AuthGateDialog.tsx": {
@@ -5759,10 +6457,6 @@
    "file": "features/cloud-browser/components/CloudBrowserWindow.tsx",
    "pending": true
   },
-  "window:features/code-files/actions/QuickSaveCodeDialog.tsx": {
-   "file": "features/code-files/actions/QuickSaveCodeDialog.tsx",
-   "pending": true
-  },
   "window:features/code/host/CodeWorkspaceWindow.tsx": {
    "file": "features/code/host/CodeWorkspaceWindow.tsx",
    "pending": true
@@ -5803,6 +6497,10 @@
    "file": "features/marketing/search-console/windows/GscWhyScoreWindow.tsx",
    "pending": true
   },
+  "window:features/marketing/smart-add/welcome/WelcomeFoundWindow.tsx": {
+   "file": "features/marketing/smart-add/welcome/WelcomeFoundWindow.tsx",
+   "pending": true
+  },
   "window:features/masterwork/build/BuildWindow.tsx": {
    "file": "features/masterwork/build/BuildWindow.tsx",
    "pending": true
@@ -5823,8 +6521,16 @@
    "file": "features/notifications/windows/InboxWindow.tsx",
    "pending": true
   },
+  "window:features/onboarding/meet-matrx/MeetMatrxWindow.tsx": {
+   "file": "features/onboarding/meet-matrx/MeetMatrxWindow.tsx",
+   "pending": true
+  },
   "window:features/overlays/components/FindReplaceOverlay.tsx": {
    "file": "features/overlays/components/FindReplaceOverlay.tsx",
+   "pending": true
+  },
+  "window:features/overlays/components/OverlayNeedsData.tsx": {
+   "file": "features/overlays/components/OverlayNeedsData.tsx",
    "pending": true
   },
   "window:features/overlays/components/ReferencePickerOverlay.tsx": {
@@ -5875,8 +6581,16 @@
    "file": "features/templates/components/SaveTemplateDialog.tsx",
    "pending": true
   },
+  "window:features/trash/review/ChangeReviewOverlay.tsx": {
+   "file": "features/trash/review/ChangeReviewOverlay.tsx",
+   "pending": true
+  },
   "window:features/unified-data/windows/WorkInboxWindow.tsx": {
    "file": "features/unified-data/windows/WorkInboxWindow.tsx",
+   "pending": true
+  },
+  "window:features/user-search/types.ts": {
+   "file": "features/user-search/types.ts",
    "pending": true
   },
   "window:features/window-panels/windows/AudioControlWindow.tsx": {
@@ -5947,6 +6661,14 @@
    "file": "features/window-panels/windows/WorkingDocumentWindow.tsx",
    "pending": true
   },
+  "window:features/window-panels/windows/access-setup/AccessSetupWindow.tsx": {
+   "file": "features/window-panels/windows/access-setup/AccessSetupWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/admin/BuilderPanelWindow.tsx": {
+   "file": "features/window-panels/windows/admin/BuilderPanelWindow.tsx",
+   "pending": true
+  },
   "window:features/window-panels/windows/admin/CaptureInspectorWindow.tsx": {
    "file": "features/window-panels/windows/admin/CaptureInspectorWindow.tsx",
    "pending": true
@@ -5989,6 +6711,10 @@
   },
   "window:features/window-panels/windows/agents/AgentAdminFindUsagesWindow.tsx": {
    "file": "features/window-panels/windows/agents/AgentAdminFindUsagesWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/agents/AgentAdvancedSettingsWindow.tsx": {
+   "file": "features/window-panels/windows/agents/AgentAdvancedSettingsWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/agents/AgentConnectionsWindow.tsx": {
@@ -6057,6 +6783,10 @@
   },
   "window:features/window-panels/windows/agents/SystemInstructionWindow.tsx": {
    "file": "features/window-panels/windows/agents/SystemInstructionWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/ai-watch/AiWatchWindow.tsx": {
+   "file": "features/window-panels/windows/ai-watch/AiWatchWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/cloud-files/CloudFilesWindow.tsx": {
@@ -6139,6 +6869,14 @@
    "file": "features/window-panels/windows/crm/GmailComposeWindow.tsx",
    "pending": true
   },
+  "window:features/window-panels/windows/data-sources/DataChangesWindow.tsx": {
+   "file": "features/window-panels/windows/data-sources/DataChangesWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/data-sources/DataSourceWindow.tsx": {
+   "file": "features/window-panels/windows/data-sources/DataSourceWindow.tsx",
+   "pending": true
+  },
   "window:features/window-panels/windows/detail/DetailWindow.tsx": {
    "file": "features/window-panels/windows/detail/DetailWindow.tsx",
    "host": true
@@ -6213,10 +6951,6 @@
   },
   "window:features/window-panels/windows/image/ImageViewerWindow.tsx": {
    "file": "features/window-panels/windows/image/ImageViewerWindow.tsx",
-   "pending": true
-  },
-  "window:features/window-panels/windows/listen/ListenSummaryWindow.tsx": {
-   "file": "features/window-panels/windows/listen/ListenSummaryWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/mandates-next/MandateWindowNext.tsx": {
@@ -6317,16 +7051,16 @@
    "file": "features/window-panels/windows/notes/NotesWindow.tsx",
    "pending": true
   },
-  "window:features/window-panels/windows/notes/QuickNoteSaveWindow.tsx": {
-   "file": "features/window-panels/windows/notes/QuickNoteSaveWindow.tsx",
-   "pending": true
-  },
   "window:features/window-panels/windows/page-extraction/ExtractionCellEditorWindow.tsx": {
    "file": "features/window-panels/windows/page-extraction/ExtractionCellEditorWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/projects/CreateProjectWindow.tsx": {
    "file": "features/window-panels/windows/projects/CreateProjectWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/provision/ProvisionWindow.tsx": {
+   "file": "features/window-panels/windows/provision/ProvisionWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/rag/RagAiCopyWindow.tsx": {
@@ -6345,6 +7079,10 @@
    "file": "features/window-panels/windows/scopes/SetContextValueWindow.tsx",
    "pending": true
   },
+  "window:features/window-panels/windows/search-review/SearchReviewWindow.tsx": {
+   "file": "features/window-panels/windows/search-review/SearchReviewWindow.tsx",
+   "pending": true
+  },
   "window:features/window-panels/windows/seo/KeywordResearchWindow.tsx": {
    "file": "features/window-panels/windows/seo/KeywordResearchWindow.tsx",
    "pending": true
@@ -6361,16 +7099,20 @@
    "file": "features/window-panels/windows/seo/SocialCardWindow.tsx",
    "pending": true
   },
+  "window:features/window-panels/windows/shell-layout/ShellLayoutEditorWindow.tsx": {
+   "file": "features/window-panels/windows/shell-layout/ShellLayoutEditorWindow.tsx",
+   "pending": true
+  },
+  "window:features/window-panels/windows/smart-add/SmartAddHelperWindow.tsx": {
+   "file": "features/window-panels/windows/smart-add/SmartAddHelperWindow.tsx",
+   "pending": true
+  },
   "window:features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow.tsx": {
    "file": "features/window-panels/windows/smart-code-editor/SmartCodeEditorWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/source-inspector/SourceInspectorWindow.tsx": {
    "file": "features/window-panels/windows/source-inspector/SourceInspectorWindow.tsx",
-   "pending": true
-  },
-  "window:features/window-panels/windows/spend/DailySpendWindow.tsx": {
-   "file": "features/window-panels/windows/spend/DailySpendWindow.tsx",
    "pending": true
   },
   "window:features/window-panels/windows/structured-value/StructuredValueWindow.tsx": {
@@ -6568,6 +7310,7 @@
   "app/(admin)/administration/automation/scheduling/runs/page.tsx": "pending",
   "app/(admin)/administration/automation/scheduling/system-jobs/page.tsx": "pending",
   "app/(admin)/administration/automation/scheduling/tasks/page.tsx": "pending",
+  "app/(admin)/administration/chat/cx-dashboard/conversations/[id]/conversation-usage-views.tsx": "pending",
   "app/(admin)/administration/chat/cx-dashboard/errors/errors-content.tsx": "pending",
   "app/(admin)/administration/chat/cx-dashboard/overview-content.tsx": "pending",
   "app/(admin)/administration/chat/cx-dashboard/requests/[id]/request-detail-content.tsx": "pending",
@@ -6583,13 +7326,13 @@
   "app/(admin)/administration/users/feedback/components/AnnouncementTable.tsx": "pending",
   "app/(admin)/administration/users/feedback/components/FeedbackTable.tsx": "pending",
   "app/(core)/cms/[siteId]/collections/[collectionId]/page.tsx": "pending",
+  "app/(core)/compare/old/_components/CompareOldTable.tsx": "pending",
   "app/(core)/compare/old/_restored/SourcesPage.tsx": "pending",
   "app/(dev)/demos/tests/matrx-table/components/MatrxServerTable.tsx": "noncanonical",
   "app/(dev)/demos/tests/matrx-table/components/MatrxTable.tsx": "noncanonical",
   "app/(dev)/demos/tests/matrx-table/components/MatrxTablePage.tsx": "noncanonical",
   "app/(dev)/demos/tests/tailwind-test/color-converter/components/ColorTester.tsx": "noncanonical",
   "app/(dev)/demos/ui-unification/samples/education-overview/_components/EducationOverviewSample.tsx": "none — a dev demo sample of the table shell over sample rows, not a record view",
-  "components/admin/state-analyzer/sliceViewers/agent-definitions/AgentDefinitionSliceViewerShadcn.tsx": "noncanonical",
   "components/agent-copy/copy-subset/CopySubsetWindow.tsx": "pending",
   "components/image/cloud/CloudFilesBrowserTable.tsx": "pending",
   "components/official/drill-explorer/DrillRecords.tsx": "pending",
@@ -6600,22 +7343,28 @@
   "features/admin/agent-spend/AgentSpendDetail.tsx": "pending",
   "features/admin/agent-spend/ConversationCost.tsx": "pending",
   "features/admin/agent-spend/ProtectedAccountRuns.tsx": "pending",
+  "features/admin/applications/attestation/components/AttestationTable.tsx": "pending",
   "features/admin/applications/catalogs/components/CatalogHistoryPanel.tsx": "pending",
   "features/admin/applications/catalogs/components/CatalogKindTable.tsx": "pending",
   "features/admin/applications/catalogs/components/CatalogsClient.tsx": "pending",
+  "features/admin/applications/catalogs/components/UnifiedModelKindTable.tsx": "pending",
   "features/admin/applications/config/components/AppConfigClient.tsx": "pending",
   "features/admin/applications/config/components/AppConfigHistoryPanel.tsx": "pending",
   "features/admin/applications/history/components/ApplicationsHistoryClient.tsx": "pending",
   "features/admin/applications/installations/components/InstallationsClient.tsx": "pending",
   "features/admin/applications/packages/components/PackagesCatalogClient.tsx": "pending",
   "features/admin/assist-control/AssistProducerControl.tsx": "pending",
+  "features/admin/build-waste/BuildWasteBoard.tsx": "pending",
   "features/admin/check-findings/CheckFindingsConsole.tsx": "pending",
   "features/admin/codex-usage/CodexUsageDashboard.tsx": "pending",
+  "features/admin/converters/ConvertersConsole.tsx": "pending",
+  "features/admin/converters/DefinitionsPanel.tsx": "pending",
   "features/admin/dead-ends/DeadEndsConsole.tsx": "pending",
   "features/admin/hard-cost-reconciliation/HardCostReconciliationTable.tsx": "pending",
   "features/admin/hr/jurisdiction-rules/components/JurisdictionRulesLibraryClient.tsx": "pending",
   "features/admin/hr/jurisdiction-rules/components/JurisdictionVerificationClient.tsx": "pending",
   "features/admin/limits/components/AccountAddonsPanel.tsx": "pending",
+  "features/admin/limits/components/KnobOverridesAdmin.tsx": "pending",
   "features/admin/lint-debt/LintDebtConsole.tsx": "pending",
   "features/admin/meetings/components/MeetingsHistoryPanel.tsx": "pending",
   "features/admin/meetings/components/MeetingsRetentionPanel.tsx": "pending",
@@ -6633,11 +7382,17 @@
   "features/admin/relationships/components/ShareableRegistryPanel.tsx": "pending",
   "features/admin/scopes-context/components/ScopesContextOrganizationsIndex.tsx": "pending",
   "features/admin/seo-operations/SeoOperationsClient.tsx": "pending",
+  "features/admin/spend-alarms/SpendAlarmRecordPage.tsx": "pending",
+  "features/admin/spend-alarms/SpendAlarmsBoard.tsx": "pending",
   "features/admin/spend-approvals/SpendApprovalsBoard.tsx": "pending",
   "features/admin/spend/SpendDashboard.tsx": "pending",
   "features/admin/spend/explorer/EstimatedCostPanel.tsx": "pending",
+  "features/admin/surface-evidence/SurfaceEvidencePage.tsx": "pending",
   "features/admin/system-context/SystemContextConsole.tsx": "pending",
   "features/admin/system-errors/SystemErrorsPanel.tsx": "pending",
+  "features/admin/tool-control/AccountsPanel.tsx": "pending",
+  "features/admin/tool-control/ToolDetail.tsx": "pending",
+  "features/admin/tool-control/ToolsTable.tsx": "pending",
   "features/admin/tool-refetch/ToolRefetchConsole.tsx": "pending",
   "features/admin/unified-preview/jobs/JobBoardPreview.tsx": "pending",
   "features/admin/unwired/UnwiredConsole.tsx": "pending",
@@ -6650,6 +7405,12 @@
   "features/admin/users/components/PreferencesTabClient.tsx": "pending",
   "features/admin/users/components/UsageLimitsClient.tsx": "pending",
   "features/admin/users/components/UserAcquisitionTableClient.tsx": "pending",
+  "features/admin/users/record/UserBillingTab.tsx": "pending",
+  "features/admin/users/record/UserHistoryTab.tsx": "pending",
+  "features/admin/users/record/UserOrganizationsTab.tsx": "pending",
+  "features/admin/users/record/UserSecurityTab.tsx": "pending",
+  "features/admin/users/record/UserSupportTab.tsx": "pending",
+  "features/admin/users/support-sessions/SupportSessionsTableClient.tsx": "pending",
   "features/administration/batch/components/ProviderBatchesPanel.tsx": "pending",
   "features/administration/batch/components/WorkItemsPanel.tsx": "pending",
   "features/administration/canonicalization/components/AdminAuditTable.tsx": "pending",
@@ -6662,17 +7423,26 @@
   "features/administration/kg-cost/components/KgCostDashboard.tsx": "pending",
   "features/administration/kg-inspector/components/KgInspector.tsx": "pending",
   "features/administration/switch-presses/SwitchPressHistory.tsx": "none — rows are switch presses (platform.cutover_seam_press), an audit record with no registry token",
+  "features/agent-comparison/components/RunsComparisonTable.tsx": "pending",
+  "features/agent-comparison/modes/matrix/components/MatrixResults.tsx": "pending",
+  "features/agent-comparison/modes/smart-add/components/BenchResultsTable.tsx": "pending",
+  "features/agent-comparison/modes/smart-add/components/SmartAddBenchPage.tsx": "pending",
   "features/agent-shortcuts/components/ShortcutDirectory.tsx": "pending",
   "features/agent-shortcuts/components/ShortcutList.tsx": "pending",
+  "features/agent-tests/components/AgentTestTables.tsx": "pending",
+  "features/agent-tests/components/AgentTestsPlatformPage.tsx": "pending",
   "features/agents/components/scope-batch-import/ScopeBatchImportBody.tsx": "noncanonical",
   "features/agents/components/usages/AgentUsagesEngine.tsx": "pending",
   "features/agents/decision-review/components/CalibrationView.tsx": "pending",
+  "features/agents/decision-review/components/ReferenceCheck.tsx": "pending",
   "features/agents/factory/components/FactoryBuildsPage.tsx": "pending",
+  "features/agents/factory/components/FactoryDoorsTable.tsx": "pending",
   "features/ai-models/audit/AuditOverviewTab.tsx": "pending",
   "features/ai-models/audit/CapabilitiesAuditTab.tsx": "pending",
   "features/ai-models/audit/CoreFieldsAuditTab.tsx": "pending",
   "features/ai-models/components/AiModelTable.tsx": "pending",
   "features/ai-models/components/DeprecatedModelsAudit.tsx": "pending",
+  "features/ai-models/components/ModelTierStrip.tsx": "pending",
   "features/ai-models/components/ModelUsageAudit.tsx": "pending",
   "features/ai-models/components/ProviderSyncDashboard.tsx": "pending",
   "features/ai-models/components/aliases/AliasesContainer.tsx": "pending",
@@ -6682,9 +7452,17 @@
   "features/ai-models/components/settings/SettingTable.tsx": "pending",
   "features/ai-models/translation/components/NeedsYouQueue.tsx": "none — rows are translation settings awaiting a decision, not records of a registry token",
   "features/ai-models/translation/components/TranslationGrid.tsx": "pending",
+  "features/ai-test-mode/admin/AiTestModeDesk.tsx": "pending",
+  "features/ai-work/components/ClaudeAccountsPanel.tsx": "pending",
+  "features/ai-work/components/CodingProjectOrganizations.tsx": "pending",
+  "features/ai-work/components/CursorAccountsPanel.tsx": "pending",
+  "features/ai-work/components/connections/CodingAppsSection.tsx": "pending",
+  "features/ai-work/conversations/components/SyncStatePanel.tsx": "pending",
+  "features/approvals/ApprovalQueue.tsx": "pending",
   "features/artifacts/components/CmsArtifactList.tsx": "pending",
   "features/assists/manager/AssistsManager.tsx": "pending",
   "features/batch-savings/BatchSavingsPanel.tsx": "pending",
+  "features/builder-panel/components/BuilderDecisionsTab.tsx": "pending",
   "features/change-policy/components/AdminChangePolicyView.tsx": "pending",
   "features/cms/components/PageListView.tsx": "pending",
   "features/cms/components/admin/ActivityFeedPanel.tsx": "pending",
@@ -6699,25 +7477,30 @@
   "features/content-ir/admin/KindRegistryAdminClient.tsx": "pending",
   "features/content-ir/admin/KindSchemaTab.tsx": "pending",
   "features/content-ir/admin/KindStatusBoard.tsx": "pending",
+  "features/content-ir/studio/playground/demos/crew-timesheet.ts": "noncanonical",
   "features/content-ir/studio/records/KindRecordsTable.tsx": "pending",
   "features/crm/components/CrmListPage.tsx": "pending",
   "features/crm/components/deals/DealsPage.tsx": "pending",
+  "features/crm/components/import/ImportPreviewTable.tsx": "pending",
   "features/crm/components/outreach-lists/OutreachListDetailPage.tsx": "pending",
   "features/crm/components/outreach-lists/OutreachListsPage.tsx": "pending",
   "features/crm/media-research/MediaResearchResults.tsx": "pending",
   "features/crm/outcomes/OutcomesPanel.tsx": "pending",
   "features/cx-dashboard/explorer/ConversationExplorer.tsx": "pending",
+  "features/data-sources/lab/DataToModelLab.tsx": "pending",
   "features/directive-catalog/components/DirectiveCatalogGrid.tsx": "pending",
-  "features/documents/components/DocumentsHubTable.tsx": "set",
   "features/education/classes/components/ClassProgressPanel.tsx": "pending",
   "features/education/home/blocks/RecentBlock.tsx": "pending",
   "features/employee-performance-reviews/review-360/Review360Pages.tsx": "pending",
   "features/employee-performance-reviews/standard/CalibrationTab.tsx": "pending",
+  "features/employee-performance-reviews/standard/Comparison.tsx": "pending",
   "features/employee-performance-reviews/standard/CyclePage.tsx": "pending",
   "features/employee-performance-reviews/standard/GoalsView.tsx": "pending",
   "features/employee-performance-reviews/standard/StandardHome.tsx": "pending",
   "features/employee-performance-reviews/standard/TemplatesPanel.tsx": "pending",
+  "features/entitlements/usage-history/MyCostSoFar.tsx": "pending",
   "features/feature-docs/components/FeatureDocsTable.tsx": "pending",
+  "features/file-actions/home/FileHomeTable.tsx": "set",
   "features/files/components/surfaces/desktop/FileTable.tsx": "pending",
   "features/files/devices/admin/SyncFleetClient.tsx": "pending",
   "features/flashcards/components/set-detail/DeckCardViews.tsx": "pending",
@@ -6728,6 +7511,7 @@
   "features/hr/exports/components/ExportRunList.tsx": "pending",
   "features/hr/exports/components/ExportRunPanel.tsx": "pending",
   "features/hr/leave/components/LeaveLedgerView.tsx": "pending",
+  "features/hr/leave/components/LeaveRequestList.tsx": "pending",
   "features/hr/leave/manager/LeaveBalancesSurface.tsx": "pending",
   "features/hr/leave/manager/LeaveQueueSurface.tsx": "pending",
   "features/hr/leave/policies/LeaveEnrollmentSurface.tsx": "pending",
@@ -6738,6 +7522,7 @@
   "features/hr/settings/calendars/HrCalendarsPanel.tsx": "pending",
   "features/hr/settings/codes/HrCodesPanel.tsx": "pending",
   "features/hr/settings/employer/HrEmployerPanel.tsx": "pending",
+  "features/hr/settings/fields/HrFieldsPanel.tsx": "pending",
   "features/hr/settings/hub/HrSettingsHub.tsx": "pending",
   "features/hr/settings/pay-groups/HrPayGroupsPanel.tsx": "pending",
   "features/hr/settings/structure/HrStructurePanel.tsx": "pending",
@@ -6778,11 +7563,16 @@
   "features/marketing/components/backlinks/CoverageTab.tsx": "pending",
   "features/marketing/components/backlinks/ReferringDomainIntelligenceTable.tsx": "pending",
   "features/marketing/components/backlinks/SerpProspectsTab.tsx": "pending",
+  "features/marketing/components/brands/BrandBackgroundWork.tsx": "pending",
+  "features/marketing/components/brands/BrandSocialProfilesCard.tsx": "pending",
+  "features/marketing/components/brands/BrandTempHomes.tsx": "pending",
+  "features/marketing/components/brands/BrandWebDecisionsSection.tsx": "pending",
   "features/marketing/components/brands/BrandsPortfolio.tsx": "pending",
   "features/marketing/components/crawls/CrawlLogsTable.tsx": "pending",
   "features/marketing/components/crawls/CrawlReportWorkspace.tsx": "pending",
   "features/marketing/components/crawls/CrawlUrlsTable.tsx": "pending",
   "features/marketing/components/crawls/CrawlsTable.tsx": "pending",
+  "features/marketing/components/discovery/DiscoveryInbox.tsx": "pending",
   "features/marketing/components/inspection/CrawlSnapshotsInspectionTable.tsx": "pending",
   "features/marketing/components/inspection/LinksInspectionTable.tsx": "pending",
   "features/marketing/components/operations/SeoSpendPanel.tsx": "pending",
@@ -6801,6 +7591,7 @@
   "features/marketing/local/LocalListingsWorkspace.tsx": "pending",
   "features/marketing/local/rank-grid/RankGridWorkspace.tsx": "pending",
   "features/marketing/monitor-setup/inputs/NewsTrackersList.tsx": "pending",
+  "features/marketing/offerings/BrandOfferingsPanel.tsx": "pending",
   "features/marketing/reports/saved/SavedSeoReportsTable.tsx": "pending",
   "features/marketing/search-console/components/GscDimensionTable.tsx": "pending",
   "features/marketing/search-console/components/dig/DigResultsTable.tsx": "pending",
@@ -6831,10 +7622,11 @@
   "features/marketing/social/components/OwnInsightsTable.tsx": "pending",
   "features/marketing/social/components/SocialReportsSection.tsx": "pending",
   "features/masterwork/capture-plan/CapturePlanPage.tsx": "pending",
+  "features/masterwork/components/masterworks/UnfoldingAuditionPanel.tsx": "pending",
   "features/media-capture/components/CameraAdminDiagnostics.tsx": "pending",
   "features/meet/components/record/AttendancePanel.tsx": "pending",
-  "features/organizations/admin/components/MemberResourcesView.tsx": "pending",
   "features/organizations/admin/components/MemberRosterTable.tsx": "pending",
+  "features/organizations/admin/components/OwnedResourcesTable.tsx": "pending",
   "features/organizations/provider-accounts/ProviderAccountsSection.tsx": "pending",
   "features/page-extraction/components/ResultsTable.tsx": "pending",
   "features/page-extraction/data-review/ExtractionCatalogClient.tsx": "pending",
@@ -6851,11 +7643,14 @@
   "features/rag/components/data-stores/DataStoresPage.tsx": "pending",
   "features/rag/components/data-stores/RichMemberTable.tsx": "pending",
   "features/rag/components/library-catalog/LibraryCatalogPage.tsx": "pending",
+  "features/rag/components/library/LibraryTrashTable.tsx": "pending",
+  "features/records-tool-display/BackgroundRunCard.tsx": "none — draws the tables a background copy made, from any table, not one registry token",
   "features/records-tool-display/RecordsAnswerView.tsx": "none — draws whatever rows a records-tool answer returns, from any table, not one registry token",
   "features/reports/components/agent-drift/RollupTable.tsx": "pending",
   "features/research/admin/ProjectsOverview.tsx": "pending",
   "features/research/admin/TemplatesManager.tsx": "pending",
   "features/research/components/costs/CostDashboard.tsx": "pending",
+  "features/research/components/curation/CurationTable.tsx": "pending",
   "features/research/components/sources/SourceList.tsx": "pending",
   "features/research/components/sources/SourceResultsTable.tsx": "pending",
   "features/scheduling/components/admin/SystemJobsPanel.tsx": "pending",
@@ -6864,7 +7659,7 @@
   "features/scheduling/components/triggers/TriggersManager.tsx": "pending",
   "features/scopes/components/management/OrgScopeTypeSection.tsx": "noncanonical",
   "features/scopes/components/management/ScopesHub.tsx": "pending",
-  "features/scopes/components/pages/ScopesList.tsx": "noncanonical",
+  "features/scopes/components/pages/ScopesList.tsx": "pending",
   "features/scraper/batch/BatchScrapePage.tsx": "pending",
   "features/scraper/parts/RemovalDetails.tsx": "pending",
   "features/source-library/components/CataloguedSourcesList.tsx": "pending",
@@ -6872,7 +7667,9 @@
   "features/spaces/data/EntityDatabase.tsx": "pending",
   "features/surfaces/admin-detail/SurfaceAdminDetailPage.tsx": "pending",
   "features/surfaces/components/SurfacesTable.tsx": "pending",
+  "features/system-processes/SystemProcessesBoard.tsx": "pending",
   "features/tasks/components/TasksTableView.tsx": "pending",
+  "features/tool-battle/components/ToolBattleListPage.tsx": "pending",
   "features/tool-call-visualization/admin/McpToolsManager.tsx": "pending",
   "features/tool-call-visualization/admin/ToolTestSamplesViewer.tsx": "pending",
   "features/tool-registry/bundles/components/BundlesAdminPage.tsx": "pending",
@@ -6884,6 +7681,8 @@
   "features/window-panels/windows/admin/user-search/UserSearchWindow.tsx": "pending",
   "features/workflow-runtime/components/ReadoutView.tsx": "pending",
   "features/workflow-runtime/discovery/components/RunsList.tsx": "pending",
-  "lib/entity-list/components/EntityListTable.tsx": "none — EntityListPage adds the custom-field columns to the list config itself, so its one picker offers them"
+  "features/workflow-runtime/review/components/ReviewIssuesTable.tsx": "pending",
+  "lib/entity-list/components/EntityListTable.tsx": "none — EntityListPage adds the custom-field columns to the list config itself, so its one picker offers them",
+  "lib/entity-list/useTableBulkSelection.tsx": "pending"
  }
 }

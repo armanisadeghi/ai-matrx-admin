@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (app), not a record id
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import CallbackClient from './CallbackClient';

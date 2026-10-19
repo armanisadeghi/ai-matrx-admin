@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { notFound, redirect } from "next/navigation";
 
 import { resolveIntakeAssetRouteTarget } from "@/features/commerce-intake/asset-route";

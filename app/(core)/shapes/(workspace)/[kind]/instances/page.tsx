@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (instances) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/instances — the user's saved kind_instance rows for this
 // shape: list (validation dot, pinned-version chip), render through the real
 // component, edit (prefilled KindInputForm), soft delete, honest repin, and

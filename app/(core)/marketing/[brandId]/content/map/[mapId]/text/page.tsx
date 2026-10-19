@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (text) inside a record or scope, not the record page; the record's own page carries the section
 // One map's workspace — the TEXT view: `seo.map_outline`, exactly what an agent
 // receives, read-only.
 // See ../page.tsx: the view is a route, the adapter is the ONE route host.

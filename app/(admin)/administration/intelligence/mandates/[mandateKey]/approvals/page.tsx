@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // /administration/intelligence/mandates/<key>/approvals — the mandate record page on its
 // Approvals tab (status, decision history, held runs, spend). The tab lives in ?tab=.
 import { redirect } from "next/navigation";

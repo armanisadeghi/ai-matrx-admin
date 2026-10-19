@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // app/(core)/commerce/labels/[batchId]/page.tsx
 //
 // One label batch (print run): print / preview / PDF / calibration through

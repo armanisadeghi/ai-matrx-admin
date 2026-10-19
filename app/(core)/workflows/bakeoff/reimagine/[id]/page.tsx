@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 /**
  * /workflows/bakeoff/reimagine/[id] — the ui-reimagine bake-off entry: the
  * Courier concept for the auto-generated workflow run page. The whole

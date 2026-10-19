@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (study) inside a record or scope, not the record page; the record's own page carries the section
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { ClassTestStudy } from "@/features/education/classes/components/ClassTestStudy";

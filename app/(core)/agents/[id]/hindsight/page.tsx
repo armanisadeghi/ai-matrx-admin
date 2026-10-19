@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (hindsight) inside a record or scope, not the record page; the record's own page carries the section
 import { Suspense } from "react";
 
 import { Skeleton } from "@ai-matrx/design-system";

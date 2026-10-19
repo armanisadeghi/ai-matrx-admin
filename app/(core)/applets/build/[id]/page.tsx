@@ -1,3 +1,4 @@
+// record-view: none — the applet builder (editor), not the record page
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";

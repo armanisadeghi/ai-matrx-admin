@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (map) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/content/map/page.tsx
 //
 // The SAME screen as `../page.tsx`, at an address no browser has ever cached a

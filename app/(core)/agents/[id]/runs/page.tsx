@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section
 import { getAgent } from "@/lib/agents/data";
 import PageHeader from "@/features/shell/components/header/PageHeader";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";

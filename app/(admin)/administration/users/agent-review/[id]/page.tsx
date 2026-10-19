@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import AgentReviewWorkspace from "@/features/admin/agent-review/components/AgentReviewWorkspace";
 
 export const dynamic = "force-dynamic";

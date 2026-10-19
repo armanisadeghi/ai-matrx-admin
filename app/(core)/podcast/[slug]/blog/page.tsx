@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (blog) inside a record or scope, not the record page; the record's own page carries the section
 import { createClient } from "@/utils/supabase/server";
 import {
   PC_ARTICLE_PUBLIC_SELECT,

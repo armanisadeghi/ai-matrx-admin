@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(public)/unsubscribe/[token]/page.tsx
 //
 // The human unsubscribe page — where the visible "unsubscribe" link in the body

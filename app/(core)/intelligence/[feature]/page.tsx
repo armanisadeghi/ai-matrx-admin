@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (feature), not a record id
 import { notFound, redirect } from "next/navigation";
 import { createDynamicRouteMetadata } from "@/utils/route-metadata";
 import { loginHref } from "@/utils/auth/auth-destination";

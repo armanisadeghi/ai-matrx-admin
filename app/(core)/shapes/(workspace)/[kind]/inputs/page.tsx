@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (inputs) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/inputs — how this shape is collected FROM a person.
 // Was admin-only.
 

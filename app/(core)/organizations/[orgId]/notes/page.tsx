@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (notes) inside a record or scope, not the record page; the record's own page carries the section
 "use client";
 
 import { useParams } from "next/navigation";

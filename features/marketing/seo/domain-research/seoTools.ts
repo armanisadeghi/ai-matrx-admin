@@ -31,8 +31,9 @@ export function arrangeSeoTools(hits: readonly CatalogToolHit[]): SeoTools {
   return out;
 }
 
-export function useSeoTools() {
+export function useSeoTools(enabled = true) {
   return useQuery<SeoTools>({
+    enabled,
     queryKey: ["marketing", "seo-tools", "catalog"],
     staleTime: 5 * 60_000,
     queryFn: async ({ signal }) => {

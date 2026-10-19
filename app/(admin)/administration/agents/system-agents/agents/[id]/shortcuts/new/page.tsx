@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (new) for a record; the record's own page carries the section
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";
 import PageHeader from "@/features/shell/components/header/PageHeader";

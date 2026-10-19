@@ -1,3 +1,4 @@
+// record-view: crm_sending_identity
 import { MailCheck } from "lucide-react";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";
 import { ModuleSignInGate } from "@/features/auth/components/module-landing/ModuleSignInGate";

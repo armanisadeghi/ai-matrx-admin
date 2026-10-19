@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // app/(core)/exports/[libraryId]/page.tsx
 //
 // /exports/[libraryId] — one dropped export: the summary, the filterable list

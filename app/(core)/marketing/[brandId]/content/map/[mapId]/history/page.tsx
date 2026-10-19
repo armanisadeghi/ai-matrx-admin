@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (history) inside a record or scope, not the record page; the record's own page carries the section
 // One map's workspace — HISTORY: what left the map, and who sent it there
 // (`seo.list_map_history`). Rejecting never deletes.
 // See ../page.tsx: the screen is a route, the adapter is the ONE route host.

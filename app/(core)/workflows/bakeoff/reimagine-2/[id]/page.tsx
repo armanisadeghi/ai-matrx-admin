@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 /**
  * ui-reimagine wave-2 bake-off route — "The Commission" run page.
  * Presentation candidate only; all data flows through the canonical

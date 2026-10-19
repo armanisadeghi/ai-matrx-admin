@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (meeting) inside a record or scope, not the record page; the record's own page carries the section
 // `/hr/performance/[reviewId]/meeting` — the 360 review meeting held in person: the same
 // side-by-side panel the Meet call opens (app panel `hr.review_360`), full page.
 

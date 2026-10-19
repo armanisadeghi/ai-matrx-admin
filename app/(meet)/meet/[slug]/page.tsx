@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(meet)/meet/[slug]/page.tsx
 //
 // THE DURABLE MEETING LINK (R3/D12). One slug resolves before, during and after

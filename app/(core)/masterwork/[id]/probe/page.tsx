@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (probe) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/probe/page.tsx
 //
 // "The Bad Example probe" as a REAL PAGE. Every creation/working mode gets a

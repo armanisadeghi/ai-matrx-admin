@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (hr) inside a record or scope, not the record page; the record's own page carries the section
 // D2 / SPEC-UI-IA §6 row 94 — `/organizations/[orgId]/hr`.
 //
 // The org-workspace door into HR. It matches the sibling org sub-routes exactly

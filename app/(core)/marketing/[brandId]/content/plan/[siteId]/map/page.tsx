@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (map) inside a record or scope, not the record page; the record's own page carries the section
 // The Content Plan workspace for one site — the PILLAR MAP view.
 // See ../page.tsx: the view is a route, the body is the ONE canonical
 // workspace.

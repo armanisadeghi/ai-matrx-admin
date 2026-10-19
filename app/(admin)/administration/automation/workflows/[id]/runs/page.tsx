@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section
 // ADMIN SEAT mirror of /workflows/[id]/runs — the same surface, on an admin route so a
 // platform admin editing a system workflow stays inside the admin system (the admin
 // lane, and with it the admin's write access, is open only on admin pages).

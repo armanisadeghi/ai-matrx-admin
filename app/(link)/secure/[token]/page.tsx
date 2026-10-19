@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(link)/secure/[token]/page.tsx — A SECURE LINK SOMEBODY WAS SENT.
 //
 // The recipient half of secure delivery (aidream `services/secure_delivery/FEATURE.md`): a

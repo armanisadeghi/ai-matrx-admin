@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (analysis) inside a record or scope, not the record page; the record's own page carries the section
 import AnalysisList from '@/features/research/components/analysis/AnalysisList';
 import { readLayoutCookie } from '@/features/resizable-panels/readLayoutCookie';
 

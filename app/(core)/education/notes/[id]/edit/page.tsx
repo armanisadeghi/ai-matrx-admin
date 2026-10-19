@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 // /education/notes/[id]/edit — the editor surface. Same workspace as the detail
 // route (the reused notes editor is always editable for owners/editors and
 // read-only-gated for viewers), kept as a distinct URL per the education routing

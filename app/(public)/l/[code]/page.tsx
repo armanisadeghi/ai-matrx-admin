@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(public)/l/[code]/page.tsx
 //
 // THE LABEL RESOLVER — the printed QR payload is `https://aimatrx.com/l/<code>`

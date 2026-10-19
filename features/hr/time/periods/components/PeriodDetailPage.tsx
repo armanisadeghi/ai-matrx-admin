@@ -36,6 +36,7 @@ import { WorkflowHealthPanel } from "./WorkflowHealthPanel";
 import { useMockCase } from "./PayPeriodsPage";
 import { PeriodStatePanel } from "./PeriodStatePanel";
 import { PostLockAdjustments } from "./PostLockAdjustments";
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
@@ -176,6 +177,8 @@ export function PeriodDetailPage({ payPeriodId }: { payPeriodId: string }) {
               rows={adjustments.page?.rows ?? []}
               isLoading={adjustments.isLoading}
             />
+
+            <EntityCustomFields entityToken="hr_pay_period" recordId={period.id} organizationId={organizationId} />
           </>
         ) : null}
       </div>

@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import { AccessGate } from "@/features/access-gate/components/AccessGate";
 import { TemplateArchiveButton } from "@/features/agents/agent-creators/templates/TemplateArchiveButton";
 import { UseTemplateButton } from "@/features/agents/agent-creators/templates/UseTemplateButton";
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 
 export default async function AgentTemplateDetailPage({
   params,
@@ -208,6 +209,9 @@ export default async function AgentTemplateDetailPage({
               </div>
             </Card>
           </div>
+        </div>
+        <div className="mt-8">
+          <EntityCustomFields entityToken="agent_template" recordId={template.id} organizationId={template.organization_id} />
         </div>
       </div>
     </Card>

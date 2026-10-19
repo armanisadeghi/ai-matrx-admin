@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (design) for a record; the record's own page carries the section
 /**
  * /workflows/[id]/design — design the page people watch while this workflow
  * runs. The whole surface is the builder, so the route is a thin server shell:

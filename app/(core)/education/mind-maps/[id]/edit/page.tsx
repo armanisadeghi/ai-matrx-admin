@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { requireAccess } from "@/utils/permissions/requireAccess";

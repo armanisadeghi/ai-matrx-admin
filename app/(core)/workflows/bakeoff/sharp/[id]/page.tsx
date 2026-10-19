@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 /**
  * /workflows/bakeoff/sharp/[id] — the "ui-sharp" entry in the run-page
  * bake-off: the auto-generated workflow run page as a delivery ticket

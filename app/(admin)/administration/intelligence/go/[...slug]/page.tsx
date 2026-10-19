@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // /administration/intelligence/go/<id> — open any agent, agent version,
 // workflow or workflow version from its id alone; system agents open in the
 // System Agents tree. See features/mandates/go.

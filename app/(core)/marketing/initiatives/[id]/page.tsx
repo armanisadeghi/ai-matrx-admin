@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { permanentRedirect } from "next/navigation";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 

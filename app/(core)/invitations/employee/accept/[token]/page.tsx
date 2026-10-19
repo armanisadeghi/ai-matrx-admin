@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 "use client";
 
 // app/(core)/invitations/employee/accept/[token]/page.tsx

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (body-of-work) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/body-of-work/page.tsx
 //
 // "Everything you've published" — the body_of_work Distillation Approach as a

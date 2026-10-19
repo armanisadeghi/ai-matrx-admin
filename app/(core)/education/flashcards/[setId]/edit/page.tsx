@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (edit) for a record; the record's own page carries the section
 // /education/flashcards/[setId]/edit — authoring surface (view↔edit split).
 // Server shell: resolves async params, then renders the client editor island.
 // EditSetView is a "use client" leaf (inline card editing, set rename, add card)

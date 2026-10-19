@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (gate) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/gate — run the dual gate (structural + render) against a
 // real sample. Was admin-only.
 

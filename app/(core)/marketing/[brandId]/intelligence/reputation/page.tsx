@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (reputation) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/reputation/page.tsx
 //
 // Reputation is answered per WEBSITE, so the brand-level route is a chooser

@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // app/(core)/marketing/[brandId]/intelligence/competitors/all/page.tsx
 //
 // "All" is the bare Competitors route now; this URL only forwards to it.

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (email) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/email/page.tsx
 //
 // One client's Email section. Today email IS Lane B — outreach sent from the

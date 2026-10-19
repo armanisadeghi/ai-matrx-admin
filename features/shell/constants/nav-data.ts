@@ -1909,6 +1909,7 @@ export const primaryNavItems: ShellNavItem[] = [
         dashboard: true,
       },
       { id: "web.search", label: "Search", href: "/search", iconName: "Search" },
+      { id: "web.search-tools", label: "Matrx Search", href: "/search/experience", iconName: "Search", guestHidden: true },
       { id: "web.web-scraper-window", label: "Web Scraper Window", href: "/scraper", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-web-scraper-panel" },
       { id: "web.site-workbench-window", label: "Site Workbench Window", href: "/tools/pdf-extractor", iconName: NAV_WINDOW_PANEL_ICON, panelAction: "open-site-workbench-panel" },
     ],

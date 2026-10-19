@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import { MandateRecordPage } from "@/features/mandates/record-next/MandateRecordPage";
 import { ADMIN_MANDATES_SUPPORT } from "@/features/mandates/admin-routes";
 

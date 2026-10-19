@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (sessions) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/sessions — the deck's Progress screen (the deck
 // page's "Progress" button): mastery, streak, scores over time, the cards that
 // need practice, and every session. Server shell → the client DeckProgressView.

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (brief) inside a record or scope, not the record page; the record's own page carries the section
 // The Content Plan workspace for one site — the SITE BRIEF view: what this
 // website is for, reading the brand strategy. The reference every planned
 // page refers back to. Seventh entry in `PLAN_VIEWS`; see ../page.tsx.

@@ -1,3 +1,4 @@
+// record-view: note
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";
 import { StudyGuideReader } from "@/features/education/study-guides/components/StudyGuideReader";

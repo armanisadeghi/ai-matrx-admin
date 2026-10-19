@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // /education/game/play/[roomId]?code=XXXXX — the live multiplayer game (lobby →
 // play → results). Server shell resolves the roomId + join code; the heavy
 // realtime surface (Broadcast, presence, game engine) is code-split behind

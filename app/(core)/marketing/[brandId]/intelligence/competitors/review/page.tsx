@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (review) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/competitors/review/page.tsx
 //
 // One competitor screen, one route — the agency-model tree gives every screen

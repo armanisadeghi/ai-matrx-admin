@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 /**
  * ui-refine bake-off entry (wave 2) — the auto-generated workflow run page.
  * All presentation lives in features/workflow-runtime/bakeoff/refine-2/.

@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (kind), not a record id
 // /shapes/[kind] — Preview: the shape's canonical examples rendered through
 // the REAL production kind route (shared engine with the admin page).
 

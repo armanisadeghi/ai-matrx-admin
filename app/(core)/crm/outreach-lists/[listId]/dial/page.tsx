@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (dial) inside a record or scope, not the record page; the record's own page carries the section
 import Link from "next/link";
 import { ChevronRight, PhoneCall } from "lucide-react";
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";

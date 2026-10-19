@@ -1,3 +1,4 @@
+// record-view: none — an editor or builder (new) for a record; the record's own page carries the section
 "use client";
 
 // /organizations/[orgId]/mandates/new — create a custom (soft) mandate for this

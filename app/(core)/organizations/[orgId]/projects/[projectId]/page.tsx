@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { redirect } from "next/navigation";
 
 // Canonical project workspace is /projects/[projectId] (slug or UUID).

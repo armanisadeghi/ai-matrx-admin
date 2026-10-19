@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 // app/(link)/applets/[slug]/[[...path]]/page.tsx — AN APPLET, AT aimatrx.com/applets/<slug>/<page…>.
 //
 // In `(link)`: the Applet is the whole screen, no product shell. This is the ONE address an Applet has —

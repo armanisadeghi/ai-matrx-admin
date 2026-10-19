@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(link)/q/[token]/page.tsx — THE ONE THING YOUR AGENT NEEDS FROM YOU.
 //
 // `platform.action_request`: an agent parks its turn, the person it works for

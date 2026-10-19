@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (version), not a record id
 import { notFound } from "next/navigation";
 import { getAgent } from "@/lib/agents/data";
 import { AgentVersionDiffPage } from "@/features/agents/components/diff/AgentVersionDiffPage";

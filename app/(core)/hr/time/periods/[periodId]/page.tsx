@@ -1,3 +1,4 @@
+// record-view: hr_pay_period
 import { Suspense } from "react";
 
 import { HrTimeShell } from "@/features/hr/time/HrTimeShell";

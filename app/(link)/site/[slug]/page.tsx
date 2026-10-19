@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(link)/site/[slug]/page.tsx — a Spaces page published to the web (Notion "Publish").
 //
 // A link somebody sent, so it lives in `(link)`: the page and one attribution row, no marketing chrome.

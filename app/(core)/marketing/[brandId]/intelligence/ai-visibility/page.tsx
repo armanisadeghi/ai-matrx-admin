@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (ai-visibility) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/ai-visibility/page.tsx
 //
 // What AI says about this BRAND. The owner is the brand, not a website, so a social-first or

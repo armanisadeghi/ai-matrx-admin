@@ -73,8 +73,9 @@ const TABS: { tab: DomainTab; name: string; description: string }[] = [
 /** How many of the domain's top keywords seed the competitor search. */
 export const COMPETITOR_SEED_KEYWORDS = 10;
 
-export function parseTab(value: string | null): DomainTab {
-  return value === "keywords" || value === "competitors" || value === "gap" ? value : "overview";
+export function parseTab(value: string | null, experience = false): DomainTab {
+  if (value === "keywords" || value === "competitors" || value === "gap") return value;
+  return experience ? "overview" : "keywords";
 }
 
 export function shortDate(value: string | null): string {
@@ -100,14 +101,20 @@ export function seedKeywords(rows: RankedKeywordRow[], max = COMPETITOR_SEED_KEY
 
 const MARKETS: Record<number, string> = { 2840: "United States" };
 
-export function DomainResearchPage() {
+/**
+ * `experience` is the NEW website check (Overview tab on catalog Tools, keyword volume box), served at
+ * its own route. Without it the page is exactly what people have always had: Keywords first, the stored
+ * domain stats above every tab, no catalog calls ("nothing should have ever changed for active things").
+ */
+export function DomainResearchPage({ experience = false }: { experience?: boolean } = {}) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
   const host = normalizeDomainInput(params.get("d"));
   const siteId = params.get("site") || null;
-  const tab = parseTab(params.get("tab"));
+  const tab = parseTab(params.get("tab"), experience);
+  const tabs = experience ? TABS : TABS.filter((t) => t.tab !== "overview");
 
   const hrefFor = (next: { d?: string | null; site?: string | null; tab?: DomainTab }) => {
     const q = new URLSearchParams();
@@ -116,7 +123,7 @@ export function DomainResearchPage() {
     const t = next.tab ?? tab;
     if (d) q.set("d", d);
     if (site) q.set("site", site);
-    if (t !== "overview") q.set("tab", t);
+    if (t !== (experience ? "overview" : "keywords")) q.set("tab", t);
     const query = q.toString();
     return `${pathname ?? marketingRoutes.domainResearch()}${query ? `?${query}` : ""}`;
   };
@@ -141,8 +148,8 @@ export function DomainResearchPage() {
   const site = (sites.data ?? []).find((s) => s.id === siteId) ?? null;
 
   // The Overview tab runs on catalog Tools (WebsiteCheck); the stored-read sections below belong to the other tabs.
-  const seoTools = useSeoTools();
-  const onOverview = tab === "overview";
+  const seoTools = useSeoTools(experience);
+  const onOverview = experience && tab === "overview";
   const overview = useDomainSection("overview", host && !onOverview ? { target: host } : null);
   const keywords = useDomainSection(
     "ranked_keywords",
@@ -170,7 +177,7 @@ export function DomainResearchPage() {
         status={tracked ? { label: "Tracked competitor", tone: "info" } : undefined}
         modes={
           host
-            ? TABS.map((t) => ({ name: t.name, href: hrefFor({ tab: t.tab }), description: t.description }))
+            ? tabs.map((t) => ({ name: t.name, href: hrefFor({ tab: t.tab }), description: t.description }))
             : undefined
         }
         activeModeHref={host ? hrefFor({ tab }) : undefined}
@@ -183,7 +190,7 @@ export function DomainResearchPage() {
       />
       <div className="h-full overflow-hidden">
         <div className="h-full overflow-y-auto" data-matrx-page-scroll>
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-3 pt-3">
+          <div className={experience ? "mx-auto flex max-w-7xl flex-col gap-3 px-3 pt-3" : "mx-auto flex max-w-7xl flex-col gap-3 p-3"}>
             <DomainSearch
               initial={host ?? ""}
               onSubmit={(d) => go(hrefFor({ d }))}
@@ -200,11 +207,11 @@ export function DomainResearchPage() {
               <EmptyState
                 icon={<Globe />}
                 title="Research any domain"
-                line="Authority, backlinks, keywords and ads in one check."
+                line={experience ? "Authority, backlinks, keywords and ads in one check." : "Traffic, keywords and competitors, with sources and dates."}
               />
             ) : (
               <>
-                {tab === "keywords" && seoTools.data?.keywords ? (
+                {experience && tab === "keywords" && seoTools.data?.keywords ? (
                   <KeywordVolumeBox hit={seoTools.data.keywords} seeds={seeds} />
                 ) : null}
                 {onOverview ? (

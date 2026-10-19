@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (results) inside a record or scope, not the record page; the record's own page carries the section
 // /education/practice-tests/[id]/results — detailed post-test analysis (?r=<resultId>).
 import type { Metadata } from "next";
 import { toolMetadata } from "@/features/education/route-helpers";

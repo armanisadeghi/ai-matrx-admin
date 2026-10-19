@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (learn) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/learn — Phase 1B "Learn" mode: adaptive
 // within-session reshuffle weighted toward weak cards (method='learn').
 // Server shell: resolves async params, then renders the client study island.

@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AxisDetail } from "@/features/education/components/AxisDetail";

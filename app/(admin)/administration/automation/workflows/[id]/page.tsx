@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // ADMIN SEAT mirror of /workflows/[id] — the same surface, on an admin route so a
 // platform admin editing a system workflow stays inside the admin system (the admin
 // lane, and with it the admin's write access, is open only on admin pages).

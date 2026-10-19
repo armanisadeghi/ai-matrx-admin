@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (plan) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/plan/page.tsx
 //
 // THE CAPTURE PLAN as a real page. Every creation/working mode gets a URL

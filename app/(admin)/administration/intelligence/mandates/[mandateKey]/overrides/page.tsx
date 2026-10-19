@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (overrides) inside a record or scope, not the record page; the record's own page carries the section
 import { OverridesPreviewPage } from "@/features/mandates/overrides-simple/OverridesPreviewPage";
 import { storedMandateKey } from "@ai-matrx/agents/mandates";
 

@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (inbox) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/inbox/page.tsx
 //
 // "Shadow your inbox" — the `shadow_inbox` Distillation Approach as a REAL

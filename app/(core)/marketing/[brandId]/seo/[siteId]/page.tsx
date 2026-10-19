@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { MarketingAddressUnavailable } from "@/features/marketing/components/shared/MarketingAddressUnavailable";
 import { notFound, permanentRedirect } from "next/navigation";
 

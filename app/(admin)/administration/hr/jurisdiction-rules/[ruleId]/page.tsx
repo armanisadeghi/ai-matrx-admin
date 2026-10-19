@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // HR & Employment Law › Jurisdiction rule detail (SPEC-UI-IA §3.12 route 85a).
 //
 // The rule's full record and THE PROMOTE/DEMOTE CONTROL (D25). Read-only for

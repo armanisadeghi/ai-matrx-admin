@@ -163,6 +163,7 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
   }
   if (!state?.connected) return null;
   const report = state.report ?? null;
+  // A held archive (the server's guard) is one plain question with its way out, in place of the "synced" chip.
   const held = report?.archive_held && report.archive_confirm && kept !== report.archive_confirm ? report : null;
   return (
     <div className="flex shrink-0 items-center gap-1" data-notion-sync-bar="">
@@ -178,11 +179,12 @@ export function NotionSyncBar({ tableId, organizationId }: { tableId: string; or
             Keep
           </Button>
         </div>
-      ) : null}
-      <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
-        {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}
-        {report?.conflicts?.length ? ` · ${report.conflicts.length} conflict${report.conflicts.length === 1 ? "" : "s"}` : ""}
-      </Button>
+      ) : (
+        <Button type="button" variant="quiet" className="hidden max-w-[16rem] truncate md:inline-flex" onClick={() => setShowing(true)} data-notion-sync-when="">
+          {busy ? "Syncing Notion" : `Notion synced ${ago(state.synced_at)}`}
+          {report?.conflicts?.length ? ` · ${report.conflicts.length} conflict${report.conflicts.length === 1 ? "" : "s"}` : ""}
+        </Button>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button icon={<RefreshCw className={busy ? "animate-spin" : undefined} />} variant="quiet" aria-label="Sync now with Notion" disabled={busy} onClick={() => void syncNow()} data-notion-sync-now="" />

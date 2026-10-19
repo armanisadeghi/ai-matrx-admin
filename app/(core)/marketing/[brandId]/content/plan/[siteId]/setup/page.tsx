@@ -1,3 +1,4 @@
+// record-view: none — a settings page (setup) inside a record or scope; the record's own page carries the section
 // The Content Plan workspace for one site — the SETUP view.
 // See ../page.tsx: the view is a route, the body is the ONE canonical
 // workspace.

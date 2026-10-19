@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 // /workflows/bakeoff/dense/[id] — the ui-dense bake-off run console.
 //
 // Same contract as the canonical run route: the run id rides `?run=` the

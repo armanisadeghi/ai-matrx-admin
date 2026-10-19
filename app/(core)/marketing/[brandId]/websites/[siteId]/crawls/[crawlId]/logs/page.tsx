@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (logs) inside a record or scope, not the record page; the record's own page carries the section
 import { Suspense } from "react";
 import { CrawlLogsTable } from "@/features/marketing/components/crawls/CrawlLogsTable";
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";

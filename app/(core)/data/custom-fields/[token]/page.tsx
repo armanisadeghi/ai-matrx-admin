@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 // app/(core)/data/custom-fields/[token]/page.tsx — THE MOUNT, AND NOTHING MORE.
 // A standard table's custom fields, opened from the data home's "Custom fields on <table>" row
 // (lane ALL-MY-DATA). The screen is features/unified-data/custom-fields.

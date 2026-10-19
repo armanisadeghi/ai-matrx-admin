@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import { RunSharpView } from "./_components/RunSharpView";
 
 export default async function RunSharpPage({

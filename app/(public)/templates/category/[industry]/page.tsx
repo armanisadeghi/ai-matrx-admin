@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (industry), not a record id
 // app/(public)/templates/category/[industry]/page.tsx — every template for one industry (lane CHAIR-GALLERY).
 // Lit in the one category rail under the category its industry files under (publicGallery.ts INDUSTRY_CATEGORY).
 

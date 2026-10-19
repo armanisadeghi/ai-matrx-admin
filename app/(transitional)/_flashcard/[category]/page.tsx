@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (category), not a record id
 // app/(authenticated)/tests/ssr-test/[category]/page.tsx
 import React from "react";
 import { OptionCardGrid } from "@/components/ssr/option-card-grid";

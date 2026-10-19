@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (sources) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/sources/page.tsx
 //
 // The dump Approach's capture surface as a REAL PAGE (Arman's ruling,

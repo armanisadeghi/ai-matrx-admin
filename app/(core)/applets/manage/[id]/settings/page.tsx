@@ -1,3 +1,4 @@
+// record-view: none — a settings page (settings) inside a record or scope; the record's own page carries the section
 import { getApplet } from "@/lib/applets/data";
 import { AppletHeader } from "@/features/applets/components/route-header/AppletHeader";
 import { AppletSettingsContent } from "@/features/applets/route/AppletSettingsContent";

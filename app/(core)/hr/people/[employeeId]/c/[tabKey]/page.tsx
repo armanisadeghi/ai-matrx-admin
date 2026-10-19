@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (tabKey), not a record id
 // Route 14 (custom tabs) — `/hr/people/[employeeId]/c/[tabKey]` (§7.4,
 // SPEC-UI-IA §4.3).
 //

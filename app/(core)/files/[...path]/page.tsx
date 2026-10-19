@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 /**
  * Legacy folder deep-link redirect.
  *

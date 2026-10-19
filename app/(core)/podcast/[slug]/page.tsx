@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 import { createClient } from "@/utils/supabase/server";
 import {
   PC_ARTICLE_PUBLIC_SELECT,

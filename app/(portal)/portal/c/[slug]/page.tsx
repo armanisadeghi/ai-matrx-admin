@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (slug), not a record id
 // app/(portal)/portal/c/[slug]/page.tsx — THE CLIENT PORTAL.
 //
 // A client of a business follows a link, signs in with a one-time email link,

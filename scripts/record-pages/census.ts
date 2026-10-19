@@ -203,7 +203,7 @@ export function buildCensus(opts: CensusOptions): Census {
         return { kind: "none", reason };
       }
       if (marker === "any") {
-        if (!/record=\{\{\s*token\b|entityToken=\{/.test(text))
+        if (!/record=\{\{\s*token\b|entityToken=\{|part:\s*["']custom-fields["']\s*,\s*token\s*[,}]/.test(text))
           problems.push(`${key}: declares "any" but hands no token to a custom-fields section (${rel}).`);
         return { kind: "any" };
       }
@@ -259,6 +259,15 @@ export function buildCensus(opts: CensusOptions): Census {
       if (!/<EntityCustomFields\b/.test(read("features/organizations/peek/PeekDialog.tsx") ?? ""))
         problems.push(`${key}: hands PeekDialog a record, but PeekDialog renders no <EntityCustomFields>.`);
       return { kind: "tokens", tokens: peekTokens, via: "peek" };
+    }
+    // 1c. a peek that draws the section as a PART of THE peek: `{ part: "custom-fields", token: "<token>", id }`
+    //     (checked: AppPeekParts, which draws every such part app-wide, renders <EntityCustomFields>).
+    const partTokens = [...new Set([...text.matchAll(/part:\s*["']custom-fields["']\s*,\s*token:\s*["']([a-z0-9_]+)["']/g)].map((m) => m[1]))];
+    if (partTokens.length) {
+      for (const token of partTokens) judgeToken(key, token);
+      if (!/<EntityCustomFields\b/.test(read("components/official/peek/AppPeekParts.tsx") ?? ""))
+        problems.push(`${key}: pushes a "custom-fields" peek part, but AppPeekParts renders no <EntityCustomFields>.`);
+      return { kind: "tokens", tokens: partTokens, via: "peek" };
     }
     const literal = literalTokens(text);
     if (literal.length) {

@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 // Bakeoff — ui-refine posture — the auto-generated workflow run page.
 // One page, whole lifecycle: intake → live run → the goods.
 

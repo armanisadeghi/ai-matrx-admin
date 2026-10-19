@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { resolveShortLinkPath } from "@ai-matrx/data/short-link";

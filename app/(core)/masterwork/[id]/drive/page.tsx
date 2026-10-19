@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (drive) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/drive/page.tsx
 //
 // "Interview me while I drive" — the hands-free lane of a Rulebook.

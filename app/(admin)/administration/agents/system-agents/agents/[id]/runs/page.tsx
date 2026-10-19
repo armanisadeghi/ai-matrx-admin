@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section
 // Every run of this system agent on the one shared runs table (platform view, admin doors).
 import { getAgent } from "@/lib/agents/data";
 import { AgentHeader } from "@ai-matrx/chat/agents/components/shared/AgentHeader";

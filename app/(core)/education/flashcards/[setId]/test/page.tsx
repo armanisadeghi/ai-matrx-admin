@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/test — Phase 1B "Test" mode: multiple-choice
 // quiz using in-set distractors (AI fallback for small sets), method='test'.
 import type { Metadata } from "next";

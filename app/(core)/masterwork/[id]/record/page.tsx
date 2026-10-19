@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (record) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/record/page.tsx
 //
 // "Your words" — THE RECORD. Everything the Expert has contributed to this

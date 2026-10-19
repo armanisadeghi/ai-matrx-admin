@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (access) inside a record or scope, not the record page; the record's own page carries the section
 import { SiteConfigurationWorkspace } from "@/features/marketing/components/settings/SiteConfigurationWorkspace";
 import type { MarketingSiteSettingsView } from "@/features/marketing/lib/routes";
 

@@ -1,3 +1,4 @@
+// record-view: none — a public booking page addressed by a booking reference
 // app/(link)/b/[bookingId]/page.tsx — THE PUBLIC BOOKING PAGE. PRODUCTS row 14.
 //
 // A person with no account opens an unguessable link, picks a day, picks a time

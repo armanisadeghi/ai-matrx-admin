@@ -1,3 +1,4 @@
+// record-view: none — the leave policy editor (it also authors a new policy)
 import { Suspense } from "react";
 
 import { HrLoading } from "@/features/hr/shared/HrStates";

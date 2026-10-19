@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { redirect } from "next/navigation";
 
 import { getSessionVerdict } from "@/utils/supabase/sessionVerdict";

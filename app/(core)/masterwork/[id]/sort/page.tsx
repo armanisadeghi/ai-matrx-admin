@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (sort) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/sort/page.tsx
 //
 // THE SORTING TABLE as a real page (Arman, 2026-08-17: every creation/working

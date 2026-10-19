@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (test) inside a record or scope, not the record page; the record's own page carries the section
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getAgent } from "@/lib/agents/data";

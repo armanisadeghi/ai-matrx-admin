@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (calendar) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/planning/calendar/page.tsx
 //
 // THE BRAND'S PR CALENDAR — the reserved calendar route, filled by the PR calendar

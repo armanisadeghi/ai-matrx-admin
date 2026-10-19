@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (key), not a record id
 // app/(core)/launchpad/[key]/page.tsx — THE MOUNT, AND NOTHING MORE. One of the person's launchpads by its key
 // (bookmarkable); the screen is `LaunchpadPage` (features/launchpad). The person's own launchpad is read here,
 // on the server, so its saved layout is in the first HTML (loading.tsx streams while it is read).

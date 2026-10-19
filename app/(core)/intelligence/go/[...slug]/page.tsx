@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 // /intelligence/go/<id> — open any agent, agent version, workflow or workflow
 // version from its id alone (member view). See features/mandates/go.
 import {

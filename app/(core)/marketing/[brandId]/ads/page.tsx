@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (ads) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/marketing/[brandId]/ads/page.tsx
 //
 // One client's Advertising section. `GoogleAdsWorkspace` needs a live Google

@@ -1,3 +1,4 @@
+// record-view: none — a public booking page addressed by a booking reference
 // app/(link)/b/manage/[ref]/page.tsx — THE VISITOR'S OWN APPOINTMENT.
 //
 // The link in their confirmation. 128 unguessable bits, minted at confirm, and

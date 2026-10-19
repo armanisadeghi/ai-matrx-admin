@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 import { redirect } from "next/navigation";
 
 // Projects are now a canonical top-level surface; the org is a filtered view.

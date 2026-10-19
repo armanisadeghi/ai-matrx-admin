@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (version), not a record id
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {

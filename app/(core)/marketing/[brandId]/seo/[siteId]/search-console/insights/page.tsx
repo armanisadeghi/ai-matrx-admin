@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (insights) inside a record or scope, not the record page; the record's own page carries the section
 import { SiteSearchConsolePage } from "@/features/marketing/search-console/components/SiteSearchConsolePage";
 
 /** Insights — the algorithms that read this site's Search Console data for you. */

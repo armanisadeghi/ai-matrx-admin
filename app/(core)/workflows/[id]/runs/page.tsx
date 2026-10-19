@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (runs) inside a record or scope, not the record page; the record's own page carries the section
 // /workflows/[id]/runs — one workflow's run history (UI census #39).
 //
 // The destination the catalog's "Runs" count finally has. That number was

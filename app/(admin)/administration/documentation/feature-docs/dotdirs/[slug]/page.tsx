@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 import { notFound } from "next/navigation";
 import { createRouteMetadata } from "@/utils/route-metadata";
 import { dotDirFromRouteSlug } from "@/features/feature-docs/constants";

@@ -1,3 +1,4 @@
+// record-view: none — a settings page (rules) inside a record or scope; the record's own page carries the section
 import { Suspense } from "react";
 
 import { LoadingSurface } from "@/features/marketing/components/shared/MarketingUi";

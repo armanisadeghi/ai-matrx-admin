@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 "use client";
 
 // app/(admin)/administration/compute/sandbox/[id]/page.tsx

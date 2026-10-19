@@ -1,3 +1,4 @@
+// record-view: none — a public link addressed by a one-time token or code, not a record page
 import React, { cache } from "react";
 import type { Metadata } from "next";
 import { createClient } from "@/utils/supabase/server";

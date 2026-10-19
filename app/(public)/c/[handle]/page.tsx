@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (handle), not a record id
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCreatorPublicPage } from "@/features/education/creators/queries";

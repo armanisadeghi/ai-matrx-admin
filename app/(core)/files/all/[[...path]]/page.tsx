@@ -1,3 +1,4 @@
+// record-view: none — a catch-all route that resolves paths, not one record
 /**
  * app/(core)/files/all/[[...path]]/page.tsx
  *

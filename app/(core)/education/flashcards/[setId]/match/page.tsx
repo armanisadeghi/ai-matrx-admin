@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (match) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/match — Phase 1B "Match" mode: timed
 // click-to-pair matching game, method='match'.
 import type { Metadata } from "next";

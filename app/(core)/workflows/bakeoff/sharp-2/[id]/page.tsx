@@ -1,3 +1,4 @@
+// record-view: none — an editor or experiment surface for a record, not the record view
 import SharpRunPage from "@/features/workflow-runtime/bakeoff/sharp-2/SharpRunPage";
 
 /**

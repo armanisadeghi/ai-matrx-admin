@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // Scheduling admin › Costs › one automation: its numbers, flags, links and
 // every run with cost, turns, models and the conversation / workflow run.
 "use client";

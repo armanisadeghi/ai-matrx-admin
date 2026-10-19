@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (schema) inside a record or scope, not the record page; the record's own page carries the section
 // /shapes/[kind]/schema — read-only pretty field view (raw emitted JSON
 // schema behind the collapsible). Reuses the content-ir schema view component.
 

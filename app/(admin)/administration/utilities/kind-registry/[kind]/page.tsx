@@ -1,3 +1,4 @@
+// record-view: none — an admin support view; the admin seat never edits an organization's fields
 // Per-kind Shape System page — /administration/utilities/kind-registry/[kind]
 // (super-admin gated by the (admin) layout). Deep-linkable; tabs:
 // Preview (live kind_example rows rendered through the REAL production

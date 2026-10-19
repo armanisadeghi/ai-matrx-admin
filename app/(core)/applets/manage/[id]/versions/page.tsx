@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (versions) inside a record or scope, not the record page; the record's own page carries the section
 import { getApplet, getAppletVersions } from "@/lib/applets/data";
 import { AppletHeader } from "@/features/applets/components/route-header/AppletHeader";
 import { AppletVersionsContent } from "@/features/applets/route/AppletVersionsContent";

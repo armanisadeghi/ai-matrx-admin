@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (masterworks) inside a record or scope, not the record page; the record's own page carries the section
 // app/(core)/masterwork/[id]/masterworks/page.tsx
 //
 // Masterworks built from this Rulebook (workflow.definition rows stamped

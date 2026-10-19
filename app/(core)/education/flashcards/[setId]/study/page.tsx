@@ -1,3 +1,4 @@
+// record-view: none — a sub-view (study) inside a record or scope, not the record page; the record's own page carries the section
 // /education/flashcards/[setId]/study — focused classic-flip study session.
 // Server shell: resolves async params, then renders the client study island.
 // StudySurface is a "use client" leaf (flip/grade/keyboard) — importing it here

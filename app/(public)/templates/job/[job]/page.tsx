@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (job), not a record id
 // app/(public)/templates/job/[job]/page.tsx — every template that does one job (lane CHAIR-GALLERY).
 
 import type { Metadata } from "next";

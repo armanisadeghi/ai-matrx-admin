@@ -1,3 +1,4 @@
+// record-view: none — a redirect to the page that shows the record
 // app/(link)/sign/e/[envelopeId]/page.tsx — A PLATFORM USER SIGNS AN ENVELOPE SENT TO THEM.
 //
 // The internal signing route of SPEC-ESIGN §6.0 (U-03): the link e-sign notices send a platform

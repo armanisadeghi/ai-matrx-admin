@@ -1,3 +1,4 @@
+// record-view: none — a settings page (setup) inside a record or scope; the record's own page carries the section
 // app/(core)/marketing/[brandId]/intelligence/monitoring/setup/page.tsx
 //
 // The tracker editor — ONE editor for both monitor lenses (coverage and

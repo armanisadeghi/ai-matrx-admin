@@ -1,3 +1,4 @@
+// record-view: none — addressed by a catalog key (reportKey), not a record id
 import { notFound } from "next/navigation";
 import { CrawlReportWorkspace } from "@/features/marketing/components/crawls/CrawlReportWorkspace";
 import { isCrawlReportKey } from "@/features/marketing/lib/crawl-reports";
