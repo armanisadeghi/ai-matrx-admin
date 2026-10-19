@@ -1,0 +1,884 @@
+-- inverse of migrations/campaign/template_fresh3_d_row_refresh_uses_the_rows_version_now.sql (lane TEMPLATE-FRESH-3): the body before it.
+
+CREATE OR REPLACE FUNCTION custom.template_upgrade(p_organization_id uuid, p_install_id uuid, p_template_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'pg_catalog'
+ SET statement_timeout TO '90s'
+AS $function$
+declare
+  v_me       uuid := auth.uid();
+  v_t        custom.template;
+  v_old      custom.template;
+  v_i        custom.template_install;
+  v_pre      jsonb;          -- the id map before this upgrade: what the install already has
+  v_ids      jsonb;
+  v_made     jsonb;
+  v_steps    jsonb;
+  v_n        integer;
+  v_k        integer := -1;
+  v_step     jsonb;
+  v_args     jsonb;
+  v_res      jsonb;
+  v_name     text;
+  v_path     jsonb;
+  v_each     jsonb;
+  v_el       jsonb;
+  v_m        jsonb;
+  v_refs     text[];
+  v_tref     text;
+  v_table    uuid;
+  v_counts   jsonb := '{}'::jsonb;
+  v_skipped  jsonb := '[]'::jsonb;
+  v_queue    jsonb := '[]'::jsonb;   -- select → relation conversions, run after every new step
+  v_q        jsonb;
+  v_live     record;
+  v_new_type text;
+  v_spec     jsonb;
+  v_key      text;
+  v_new_key  text;
+  v_seq      integer;
+  v_old_fid  uuid;
+  v_old_sort jsonb;
+  v_opts     uuid;
+  v_choices  jsonb;
+  v_target   uuid;
+  v_title    text;
+  v_max      integer;
+  v_new_fid  uuid;
+  v_map      jsonb;            -- lower(label) -> target record id
+  v_row      record;
+  v_vals     jsonb;
+  v_labels   text[];
+  v_label    text;
+  v_hit      uuid;
+  v_links    jsonb;
+  v_changes  jsonb;
+  v_f        record;
+  v_t0       timestamptz := clock_timestamp();
+  v_msg      text;
+  v_code     text;
+  v_hint     text;
+  v_detail   text;
+  v_where    text;
+  v_at       integer := -1;    -- the step being run, for the refusal (a FOR loop's own v_k is not seen outside it)
+  v_bind     text[];
+  v_have     jsonb;
+  v_doc      jsonb;
+  v_same     boolean;
+  v_present  boolean;
+  v_flips    jsonb := '[]'::jsonb;  -- a link the new version turns around: {a_table, a_key, b_ref, b_key}
+  v_fl       jsonb;
+  v_b_table  uuid;
+  -- TEMPLATE-FRESH-2: PASS 6 (sample rows follow the new version where unedited)
+  v_s        jsonb;
+  v_o        integer;
+  v_oldrows  jsonb;
+  v_norm     jsonb;
+  v_seen     jsonb;
+  v_keys     text[];
+  v_rows     jsonb[];
+  v_trial    uuid[];
+  v_rec      record;
+  v_nrow     jsonb;
+  v_orow     jsonb;
+  v_patch    jsonb;
+  v_left     jsonb;
+  v_next     jsonb;
+  v_progress boolean;
+  v_deferred jsonb := '[]'::jsonb;
+  v_rows2    jsonb;
+begin
+  perform custom.assert_store_door(p_organization_id, 'custom.template_upgrade');
+  perform custom.assert_client_may_reach(p_organization_id, 'custom.template_upgrade');
+  if v_me is null then
+    raise exception 'Upgrading a template is done by a signed-in person, and nobody is signed in.' using errcode = '42501';
+  end if;
+
+  select * into v_i from custom.template_install i where i.id = p_install_id and i.organization_id = p_organization_id;
+  if not found then
+    raise exception 'There is no such install in this organization, so there is nothing to upgrade.' using errcode = 'P0002',
+          detail = jsonb_build_object('install_id', p_install_id)::text;
+  end if;
+  select * into v_t from custom.template t where t.id = p_template_id and t.retired_at is null;
+  if not found or (v_t.scope = 'org' and not iam.has_org_access(v_t.organization_id)) then
+    raise exception 'There is no such template to upgrade to; it may have been retired.' using errcode = 'P0002',
+          detail = jsonb_build_object('template_id', p_template_id)::text;
+  end if;
+  if v_t.catalogue_id is distinct from v_i.catalogue_id then
+    raise exception 'That template is not a version of the one this install came from (% is not %).', v_t.catalogue_id, v_i.catalogue_id
+      using errcode = '22023';
+  end if;
+
+  -- The same lock template_install takes: an install and an upgrade of one catalogue id wait for each other.
+  perform pg_advisory_xact_lock(hashtextextended('custom.template_install:' || p_organization_id::text || ':' || v_i.catalogue_id, 0));
+  select * into v_i from custom.template_install i where i.id = p_install_id for update;
+
+  if v_i.state <> 'installed' then
+    raise exception 'Only a finished install is upgraded, and this one is %.', v_i.state using errcode = '55000',
+          hint = 'Finish the install (or restore it) first, then upgrade.';
+  end if;
+  if v_t.template_version <= v_i.template_version then
+    -- Idempotent: an install already at (or past) this version changes nothing.
+    return custom._template_answer(v_i, jsonb_build_object('already', true, 'upgraded', false,
+             'from_version', v_i.template_version, 'to_version', v_i.template_version,
+             'counts', '{}'::jsonb, 'skipped', '[]'::jsonb));
+  end if;
+  select * into v_old from custom.template t where t.id = v_i.template_id;
+
+  v_pre := v_i.ids;
+  v_ids := v_i.ids;
+  v_made := v_i.made;
+  v_steps := v_t.plan -> 'steps';
+  v_n := jsonb_array_length(v_steps);
+
+  begin
+    -- ── PASS 4: a column the older version made and the new one no longer has is retired, never dropped ──
+    -- TEMPLATE-UPGRADE: runs FIRST, so a back-link the new version names (inverseKey) is never shadowed by the
+    -- hand-kept mirror column it replaces while the new roll-ups are declared.
+    -- TEMPLATE-FRESH-2 (2026-10-19): IN ROUNDS. A column the version drops together with the formulas (or roll-ups)
+    -- that read it goes with them: a column a dropped formula still reads is refused the first round, the formula is
+    -- retired, and the column goes the next round. Only a column something KEPT still reads stays, and is named.
+    select coalesce(jsonb_agg(jsonb_build_object('table_ref', o.table_ref, 'key', o.key, 'field_id', f.id,
+                                                 'label', coalesce(f.data ->> 'label', o.key)) order by o.table_ref, o.key), '[]'::jsonb)
+      into v_left
+      from (select distinct p.table_ref, p.key from custom._template_plan_fields(v_old.plan) p) o
+      join custom.record f
+        on f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id() and f.deleted_at is null
+       and f.data ->> 'entity_definition_id' = v_pre ->> ('ref:' || o.table_ref) and f.data ->> 'key' = o.key
+     where v_pre ? ('ref:' || o.table_ref)
+       and not exists (select 1 from custom._template_plan_fields(v_t.plan) n where n.table_ref = o.table_ref and n.key = o.key);
+    v_next := '[]'::jsonb;
+    while jsonb_array_length(v_left) > 0 loop
+      v_next := '[]'::jsonb;
+      v_progress := false;
+      for v_m in select x from jsonb_array_elements(v_left) x loop
+        begin
+          -- TEMPLATE-UPGRADE: A LINK THE NEW VERSION TURNS AROUND. The older version kept the link on this table (a
+          -- hand-kept list, e.g. release.fixes -> bugs); the new one keeps it on the other table (bug.release) and names
+          -- this side by its back-link (inverseKey "fixes"). Remembered here, its links copied once the new link exists.
+          v_fl := null;
+          select jsonb_build_object('a_table', v_pre ->> ('ref:' || (v_m ->> 'table_ref')), 'a_key', v_m ->> 'key', 'b_ref', n.table_ref, 'b_key', n.key)
+            into v_fl
+            from custom._template_plan_fields(v_old.plan) o
+            join custom._template_plan_fields(v_t.plan) n
+              on n.door = 'field_declare' and n.spec ->> 'type' = 'relation'
+             and n.spec ->> 'inverse_key' = v_m ->> 'key'
+             and n.spec ->> 'relation_target' = '${ref:' || (v_m ->> 'table_ref') || '}'
+             and o.spec ->> 'relation_target' = '${ref:' || n.table_ref || '}'
+           where o.table_ref = v_m ->> 'table_ref' and o.key = v_m ->> 'key' and o.spec ->> 'type' = 'relation'
+           limit 1;
+          perform custom.field_retire(p_organization_id, (v_m ->> 'field_id')::uuid);
+          if v_fl is not null then
+            v_flips := v_flips || jsonb_build_array(v_fl);
+          end if;
+          v_counts := jsonb_set(v_counts, '{fields_retired}', to_jsonb(coalesce((v_counts ->> 'fields_retired')::integer, 0) + 1));
+          v_ids := v_ids || jsonb_build_object('retired:fields.' || substr(v_m ->> 'table_ref', 8) || '.' || (v_m ->> 'key'), v_m ->> 'field_id');
+          v_progress := true;
+        exception when others then
+          get stacked diagnostics v_msg = message_text;
+          v_next := v_next || jsonb_build_array(v_m || jsonb_build_object('why', v_msg));
+        end;
+      end loop;
+      exit when not v_progress;
+      v_left := v_next;
+    end loop;
+    for v_m in select x from jsonb_array_elements(v_next) x loop
+      -- What still reads it, by name: a live column of the install's tables whose formula, roll-up or lookup names it.
+      select string_agg(distinct '"' || coalesce(u.data ->> 'label', u.data ->> 'key') || '"', ', ') into v_title
+        from custom.record u
+       where u.organization_id = p_organization_id and u.table_id = custom.field_kernel_id() and u.deleted_at is null
+         and u.id <> (v_m ->> 'field_id')::uuid
+         and u.data ->> 'entity_definition_id' = v_pre ->> ('ref:' || (v_m ->> 'table_ref'))
+         and (position('{' || lower(v_m ->> 'label') || '}' in lower(coalesce(u.data ->> 'formula_text', u.data -> 'config' ->> 'formula', u.data ->> 'formula', ''))) > 0
+              or coalesce(u.data -> 'config' ->> 'of', u.data ->> 'of') = v_m ->> 'key'
+              or coalesce(u.data -> 'config' ->> 'via', u.data ->> 'via') = v_m ->> 'key');
+      v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', (v_m ->> 'table_ref') || '.' || (v_m ->> 'key'),
+        'reason', case when v_title is not null
+                       then format('Version %s no longer has "%s", and it was kept: %s still uses it.', v_t.template_version, v_m ->> 'label', v_title)
+                       else format('Version %s no longer has "%s", and it was kept: %s', v_t.template_version, v_m ->> 'label', v_m ->> 'why') end));
+    end loop;
+    v_title := null;
+
+    -- ── PASS 2: a column the new version gives a table the install already has (inline in its table step) ──
+    -- TEMPLATE-UPGRADE: runs before PASS 1, whose views and buttons may name the new column.
+    for v_f in select n.table_ref, n.key, n.spec
+                 from custom._template_plan_fields(v_t.plan) n
+                where n.door = 'table_from_example' and v_pre ? ('ref:' || n.table_ref)
+                  and not exists (select 1 from custom._template_plan_fields(v_old.plan) o where o.table_ref = n.table_ref and o.key = n.key)
+                  and not exists (select 1 from custom._template_plan_fields(v_t.plan) d where d.door = 'field_declare' and d.table_ref = n.table_ref and d.key = n.key)
+                  and coalesce(n.spec ->> 'parityType', n.spec ->> 'type', '') <> 'relation' loop
+      v_table := (v_pre ->> ('ref:' || v_f.table_ref))::uuid;
+      if exists (select 1 from custom.record f where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+                    and f.deleted_at is null and f.data ->> 'entity_definition_id' = v_table::text and f.data ->> 'key' = v_f.key) then
+        continue;
+      end if;
+      begin
+        -- TEMPLATE-UPGRADE (e): the same builder a fresh install uses (custom.table_from_example), so every setting the
+        -- version declares on the column (status groups, a button, a formula, a roll-up's via/agg, …) lands.
+        perform custom.field_declare(p_organization_id, v_table, custom._example_field_spec(v_f.spec));
+        v_counts := jsonb_set(v_counts, '{fields}', to_jsonb(coalesce((v_counts ->> 'fields')::integer, 0) + 1));
+      exception when others then
+        get stacked diagnostics v_msg = message_text;
+        v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', v_f.table_ref || '.' || v_f.key, 'reason', v_msg));
+      end;
+    end loop;
+
+    -- ── PASS 2b (TEMPLATE-UPGRADE): a column the new version RENAMES takes the new name, only where it still carries
+    --            the older version's name (a name the organization gave it is theirs). Formulas name columns by label. ──
+    for v_f in select distinct on (f.id) f.id as field_id, n.spec ->> 'label' as label
+                 from custom._template_plan_fields(v_t.plan) n
+                 join custom._template_plan_fields(v_old.plan) o on o.table_ref = n.table_ref and o.key = n.key
+                 join custom.record f
+                   on f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id() and f.deleted_at is null
+                  and f.data ->> 'entity_definition_id' = v_pre ->> ('ref:' || n.table_ref) and f.data ->> 'key' = n.key
+                where v_pre ? ('ref:' || n.table_ref)
+                  and nullif(n.spec ->> 'label', '') is not null and o.spec ->> 'label' is distinct from n.spec ->> 'label'
+                  and f.data ->> 'label' = o.spec ->> 'label' loop
+      begin
+        perform custom.field_update(p_organization_id, v_f.field_id, jsonb_build_object('label', v_f.label));
+        v_counts := jsonb_set(v_counts, '{fields_renamed}', to_jsonb(coalesce((v_counts ->> 'fields_renamed')::integer, 0) + 1));
+      exception when others then
+        get stacked diagnostics v_msg = message_text;
+        v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', v_f.field_id,
+          'reason', format('It keeps its name; "%s" was refused: %s', v_f.label, v_msg)));
+      end;
+    end loop;
+
+    -- ── PASS 1: every step of the new version the install does not already have ──
+    for v_k in 0 .. v_n - 1 loop
+      v_at := v_k;
+      v_step := v_steps -> v_k;
+      -- TEMPLATE-UPGRADE (2026-10-17): A COLUMN THE INSTALL ALREADY HAS IS BOUND FROM THE INSTALL. A newer version
+      -- names a column by ${ref:fields.<table>.<key>} that an older install never saved (an inline column of a
+      -- table step, saved at install only by an applicable_fields read, or one an older plan never named). The
+      -- live column of that key on the install's own table is that column; bind it before anything resolves.
+      for v_name in select distinct (regexp_matches((v_step -> 'args')::text, '\$\{ref:(fields\.[^}]+)\}', 'g'))[1] loop
+        if not v_ids ? ('ref:' || v_name) then
+          v_bind := regexp_match(v_name, '^fields\.([^.]+)\.(.+)$');
+          if v_bind is not null and v_ids ? ('ref:tables.' || v_bind[1]) then
+            select f.id into v_hit
+              from custom.record f
+             where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+               and f.data_class = 'field' and f.deleted_at is null
+               and f.data ->> 'entity_definition_id' = v_ids ->> ('ref:tables.' || v_bind[1]) and f.data ->> 'key' = v_bind[2]
+             limit 1;
+            if v_hit is not null then
+              v_ids := v_ids || jsonb_build_object('ref:' || v_name, v_hit);
+            end if;
+          end if;
+        end if;
+      end loop;
+      v_refs := array(select m ->> 'ref' from jsonb_array_elements(coalesce(v_step -> 'made', '[]'::jsonb)) m
+                      union select k from jsonb_object_keys(coalesce(v_step -> 'save', '{}'::jsonb)) k);
+      v_tref := case when v_step #>> '{args,p_table_id}' ~ '^\$\{ref:.*\}$'
+                     then regexp_replace(v_step #>> '{args,p_table_id}', '^\$\{ref:(.*)\}$', '\1') end;
+
+      -- TEMPLATE-UPGRADE (f): A TABLE THE ORGANIZATION REMOVED STAYS REMOVED. A step naming a table the install made
+      -- that is no longer a live table here (archived, moved away) is left out, and the upgrade says which.
+      select string_agg(distinct r, ', ') into v_msg
+        from (select (regexp_matches((v_step -> 'args')::text, '\$\{ref:(tables\.[^}]+)\}', 'g'))[1] as r) x
+       where v_pre ? ('ref:' || r)
+         and not exists (select 1 from custom.record t
+                          where t.organization_id = p_organization_id and t.table_id = custom.table_kernel_id()
+                            and t.deleted_at is null and t.id = platform.uuid_or_null(v_pre ->> ('ref:' || r)));
+      if v_msg is not null then
+        v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'step', 'ref', v_step ->> 'label',
+          'reason', format('%s is no longer in this organization, so this step was left out.', v_msg)));
+        v_msg := null;
+        continue;
+      end if;
+
+      if cardinality(v_refs) = 0 and v_tref is null
+         and not exists (select 1 from (select (regexp_matches((v_step -> 'args')::text, '\$\{ref:([^}]+)\}', 'g'))[1] as r) x
+                          where not (v_pre ? ('ref:' || r)))
+         and (v_step -> 'args')::text ~ '\$\{ref:' then
+        -- TEMPLATE-UPGRADE (f): a step that records nothing, on things the install already had (publishing a form it
+        -- made): it ran at install; running it again could act on something the organization has since changed.
+        v_counts := jsonb_set(v_counts, '{kept}', to_jsonb(coalesce((v_counts ->> 'kept')::integer, 0) + 1));
+        continue;
+      end if;
+
+      if cardinality(v_refs) = 0 then
+        -- A step that records nothing (seed rows, a stage rule set): it runs only on a table this
+        -- upgrade made. On a table the install already has, the rows there are the organization's own.
+        -- TEMPLATE-UPGRADE: two such steps DO record something, through saveEach, and later steps name it:
+        -- applicable_fields (a read: every column's id by key) and action_declare (row actions by name, which a
+        -- button names). Both run on a table the install already has: the read changes nothing, and the actions
+        -- are MERGED below (the table's own actions kept, only names it lacks added).
+        if v_tref is not null and v_pre ? ('ref:' || v_tref)
+           and not (v_step -> 'saveEach' is not null and v_step ->> 'door' in ('applicable_fields', 'action_declare')) then
+          v_counts := jsonb_set(v_counts, '{kept}', to_jsonb(coalesce((v_counts ->> 'kept')::integer, 0) + 1));
+          if v_step ->> 'door' not in ('record_write', 'record_write_many', 'record_change_many') then
+            v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'step', 'ref', v_step ->> 'label',
+              'reason', format('custom.%s on a table the install already has is not re-run: it records nothing, so running it again could make a second copy.', v_step ->> 'door')));
+          end if;
+          continue;
+        end if;
+      elsif not exists (select 1 from unnest(v_refs) r where not (v_ids ? ('ref:' || r)))
+            and not (v_step ->> 'door' = 'field_declare' and v_tref is not null and v_pre ? ('ref:' || v_tref)) then
+        v_counts := jsonb_set(v_counts, '{kept}', to_jsonb(coalesce((v_counts ->> 'kept')::integer, 0) + 1));
+        continue;
+      end if;
+      -- TEMPLATE-UPGRADE: a field step the install already has still goes through the same-column check below, so
+      -- what the new version ADDS to that column (status groups) lands and a renamed back-link is reported.
+      v_present := not exists (select 1 from unnest(v_refs) r where not (v_ids ? ('ref:' || r)));
+
+      -- A field step on a table the install already has, whose key is already a live column there.
+      if v_step ->> 'door' = 'field_declare' and v_tref is not null and v_pre ? ('ref:' || v_tref) then
+        v_table := (v_pre ->> ('ref:' || v_tref))::uuid;
+        v_key := v_step #>> '{args,p_spec,key}';
+        select f.id, f.data into v_live
+          from custom.record f
+         where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+           and f.data_class = 'field' and f.deleted_at is null
+           and f.data ->> 'entity_definition_id' = v_table::text and f.data ->> 'key' = v_key
+         limit 1;
+        if found then
+          v_new_type := coalesce(v_step #>> '{args,p_spec,type}', v_step #>> '{args,p_spec,parity_type}', 'text');
+          -- TEMPLATE-UPGRADE: the same column is judged by what the store would KEEP for the new spec (a "select"
+          -- or a "status" is kept as a choice list, a "number" as a range), not by the word the plan says.
+          v_doc := null;
+          begin
+            v_doc := custom._field_document_for(p_organization_id, v_table,
+                       custom._template_bind(v_step #> '{args,p_spec}', v_ids, p_organization_id, v_i.install_day, v_i.timezone));
+          exception when others then
+            v_doc := null;
+          end;
+          v_same := (v_live.data ->> 'type') = v_new_type
+                    or (v_doc is not null and (v_live.data ->> 'type') = (v_doc ->> 'type')
+                        and coalesce(v_live.data ->> 'parity_type', v_doc ->> 'parity_type', '') = coalesce(v_doc ->> 'parity_type', v_live.data ->> 'parity_type', '')
+                        and coalesce((v_live.data ->> 'multi')::boolean, false) = coalesce((v_doc ->> 'multi')::boolean, false));
+          if (v_live.data ->> 'type') = 'list' and v_new_type = 'relation' then
+            v_queue := v_queue || jsonb_build_array(jsonb_build_object('step', v_k, 'table_ref', v_tref, 'key', v_key, 'field_id', v_live.id));
+          elsif v_same then
+            for v_name in select k from jsonb_object_keys(coalesce(v_step -> 'save', '{}'::jsonb)) k loop
+              v_ids := v_ids || jsonb_build_object('ref:' || v_name, v_live.id);
+            end loop;
+            v_counts := jsonb_set(v_counts, '{kept}', to_jsonb(coalesce((v_counts ->> 'kept')::integer, 0) + 1));
+            -- A choice list the new version gives status groups, where the column has none yet: the groups are
+            -- added (custom.field_update merges them; a group the organization set is never replaced).
+            if jsonb_typeof(v_step #> '{args,p_spec,status_groups}') = 'object'
+               and coalesce(v_live.data -> 'config' -> 'status_groups', '{}'::jsonb) in ('{}'::jsonb, 'null'::jsonb) then
+              perform custom.field_update(p_organization_id, v_live.id, jsonb_build_object('type', 'status', 'status_groups', v_step #> '{args,p_spec,status_groups}'));
+              v_counts := jsonb_set(v_counts, '{fields_updated}', to_jsonb(coalesce((v_counts ->> 'fields_updated')::integer, 0) + 1));
+            end if;
+            -- A link the new version names differently on the other table (its back-link, inverseKey — the name that
+            -- replaces a hand-kept mirror list there, which PASS 4 has already retired) takes the new name when nothing
+            -- reads the old one there and the new one is free; otherwise it keeps its name and the upgrade says so.
+            v_target := nullif(v_live.data ->> 'relation_target', '')::uuid;
+            v_new_key := nullif(v_step #>> '{args,p_spec,inverse_key}', '');
+            if (v_live.data ->> 'type') = 'relation' and v_new_key is not null
+               and (v_live.data ->> 'inverse_key') is distinct from v_new_key
+               and not exists (select 1 from custom.record f
+                                where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+                                  and f.data_class = 'field' and f.deleted_at is null and f.id <> v_live.id
+                                  and ((f.data ->> 'entity_definition_id' = v_target::text
+                                        and (f.data ->> 'key' = v_new_key
+                                             or coalesce(f.data -> 'config' ->> 'via', f.data ->> 'via') = (v_live.data ->> 'inverse_key')))
+                                       or (f.data ->> 'type' = 'relation' and f.data ->> 'relation_target' = v_target::text
+                                           and f.data ->> 'inverse_key' = v_new_key))) then
+              update custom.record f
+                 set data = jsonb_set(f.data, '{inverse_key}', to_jsonb(v_new_key)), version = f.version + 1, updated_at = now()
+               where f.id = v_live.id;
+              v_counts := jsonb_set(v_counts, '{links_renamed}', to_jsonb(coalesce((v_counts ->> 'links_renamed')::integer, 0) + 1));
+            elsif (v_live.data ->> 'type') = 'relation' and v_new_key is not null
+               and (v_live.data ->> 'inverse_key') is distinct from v_new_key then
+              v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', v_step ->> 'label',
+                'reason', format('The link "%s" keeps its name "%s" on the table it points at; version %s calls it "%s".',
+                                 coalesce(v_live.data ->> 'label', v_key), coalesce(v_live.data ->> 'inverse_key', ''), v_t.template_version,
+                                 v_step #>> '{args,p_spec,inverse_key}')));
+            end if;
+          else
+            -- Left as it is, and still the column of that key: later steps that name it get this one.
+            for v_name in select k from jsonb_object_keys(coalesce(v_step -> 'save', '{}'::jsonb)) k loop
+              v_ids := v_ids || jsonb_build_object('ref:' || v_name, v_live.id);
+            end loop;
+            v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', v_step ->> 'label',
+              'reason', format('The column "%s" is a %s here and a %s in version %s; only a choice list becoming a link is converted, so it was left as it is.',
+                               coalesce(v_live.data ->> 'label', v_key), v_live.data ->> 'type', v_new_type, v_t.template_version)));
+          end if;
+          continue;
+        elsif v_present and not exists (
+                select 1 from custom.record f
+                 where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+                   and f.data_class = 'field' and f.deleted_at = now()
+                   and f.data ->> 'entity_definition_id' = v_table::text and f.data ->> 'key' = v_key) then
+          -- The install made this column and it is gone now (the organization removed it): it stays gone. One
+          -- retired by THIS upgrade (a roll-up over a link PASS 4 retired goes with it) is declared again below.
+          v_counts := jsonb_set(v_counts, '{kept}', to_jsonb(coalesce((v_counts ->> 'kept')::integer, 0) + 1));
+          continue;
+        end if;
+      end if;
+
+      -- A new step: run exactly as custom.template_install runs it.
+      for v_name in select distinct (regexp_matches((v_step -> 'args')::text, '\$\{new:([^}]+)\}', 'g'))[1] loop
+        if not v_ids ? ('new:' || v_name) then
+          v_ids := v_ids || jsonb_build_object('new:' || v_name, gen_random_uuid());
+        end if;
+      end loop;
+      v_args := custom._template_bind(v_step -> 'args', v_ids, p_organization_id, v_i.install_day, v_i.timezone);
+      v_args := custom._template_instance_args(v_step ->> 'door', v_args, v_i.instance_title, v_i.instance_no);  -- TEMPLATE-FRESH
+      if v_step ->> 'door' = 'action_declare' and v_tref is not null and v_pre ? ('ref:' || v_tref) then
+        -- The table's own actions stay as they are (ids kept); the version's actions it has no action of that name for are added.
+        select coalesce(t.data -> 'row_actions', '[]'::jsonb) into v_have
+          from custom.record t
+         where t.organization_id = p_organization_id and t.id = (v_args ->> 'p_table_id')::uuid and t.table_id = custom.table_kernel_id();
+        v_have := coalesce(v_have, '[]'::jsonb);
+        v_args := jsonb_set(v_args, '{p_actions}', v_have || coalesce((
+                    select jsonb_agg(a order by o) from jsonb_array_elements(coalesce(v_args -> 'p_actions', '[]'::jsonb)) with ordinality x(a, o)
+                     where not exists (select 1 from jsonb_array_elements(v_have) h where lower(btrim(h ->> 'name')) = lower(btrim(a ->> 'name')))), '[]'::jsonb));
+      end if;
+      -- TEMPLATE-FRESH-2 (2026-10-19): A SAMPLE ROW MAY POINT AT A SAMPLE ROW THAT IS NOT WRITTEN YET (a new recipe line
+      -- names an ingredient the new version adds to a table the install already has; PASS 6 writes that one later). Such
+      -- a value is held back here and set once every sample row of this upgrade exists (after PASS 6).
+      if v_step ->> 'door' = 'record_write_many' and jsonb_typeof(v_args -> 'p_rows') = 'array' then
+        v_rows2 := '[]'::jsonb;
+        for v_o in 0 .. jsonb_array_length(v_args -> 'p_rows') - 1 loop
+          v_nrow := v_args -> 'p_rows' -> v_o;
+          for v_name in select k from jsonb_object_keys(v_nrow) k where k not like '\_%' loop
+            if exists (select 1
+                         from jsonb_array_elements_text(case jsonb_typeof(v_nrow -> v_name) when 'array' then v_nrow -> v_name
+                                                             when 'string' then jsonb_build_array(v_nrow -> v_name) else '[]'::jsonb end) e(v)
+                         join jsonb_each_text(v_ids) m on m.key like 'new:row.%' and m.value = e.v
+                        where not exists (select 1 from custom.record r where r.id = platform.uuid_or_null(e.v))) then
+              v_deferred := v_deferred || jsonb_build_array(jsonb_build_object('table_id', v_args ->> 'p_table_id',
+                              'record_id', v_args -> 'p_ids' ->> v_o, 'key', v_name, 'value', v_nrow -> v_name));
+              v_nrow := v_nrow - v_name;
+            end if;
+          end loop;
+          v_rows2 := v_rows2 || jsonb_build_array(v_nrow);
+        end loop;
+        v_args := jsonb_set(v_args, '{p_rows}', v_rows2);
+      end if;
+      v_res := custom._template_call(v_step ->> 'door', v_args);
+      for v_name, v_path in select key, value from jsonb_each(coalesce(v_step -> 'save', '{}'::jsonb)) loop
+        if v_res #> array(select jsonb_array_elements_text(v_path)) is null
+           or jsonb_typeof(v_res #> array(select jsonb_array_elements_text(v_path))) = 'null' then
+          raise exception 'custom.% answered without the id the template saves as "%".', v_step ->> 'door', v_name using errcode = 'P0002';
+        end if;
+        v_ids := v_ids || jsonb_build_object('ref:' || v_name, v_res #>> array(select jsonb_array_elements_text(v_path)));
+      end loop;
+      v_each := v_step -> 'saveEach';
+      if v_each is not null then
+        for v_el in select x from jsonb_array_elements(coalesce(v_res #> array(select jsonb_array_elements_text(coalesce(v_each -> 'array', '[]'::jsonb))), '[]'::jsonb)) x loop
+          if nullif(v_el #>> array(select jsonb_array_elements_text(v_each -> 'key')), '') is not null then
+            v_ids := v_ids || jsonb_build_object('ref:' || (v_each ->> 'prefix') || (v_el #>> array(select jsonb_array_elements_text(v_each -> 'key'))),
+                                                 v_el #>> array(select jsonb_array_elements_text(v_each -> 'value')));
+          end if;
+        end loop;
+      end if;
+      for v_m in select x from jsonb_array_elements(coalesce(v_step -> 'made', '[]'::jsonb)) x loop
+        v_made := v_made || jsonb_build_array(jsonb_build_object(
+          'kind', v_m ->> 'kind', 'ref', v_m ->> 'ref', 'title', v_m ->> 'title', 'step', v_k,
+          'id', v_ids ->> ('ref:' || (v_m ->> 'ref')),
+          'table_id', case when v_m ? 'table' then v_ids ->> ('ref:' || (v_m ->> 'table')) end));
+        v_counts := jsonb_set(v_counts, array[(v_m ->> 'kind') || 's'], to_jsonb(coalesce((v_counts ->> ((v_m ->> 'kind') || 's'))::integer, 0) + 1));
+      end loop;
+      if v_step ->> 'door' in ('record_write_many') then
+        v_counts := jsonb_set(v_counts, '{rows}', to_jsonb(coalesce((v_counts ->> 'rows')::integer, 0) + jsonb_array_length(coalesce(v_step #> '{args,p_rows}', '[]'::jsonb))));
+      elsif v_step ->> 'door' = 'record_write' and v_step -> 'made' is null then
+        v_counts := jsonb_set(v_counts, '{rows}', to_jsonb(coalesce((v_counts ->> 'rows')::integer, 0) + 1));
+      end if;
+    end loop;
+    v_k := -1;
+    v_at := -1;
+
+    -- ── PASS 1b: a link the new version turns around keeps every link: each record the old list named now
+    --            points back at the record that listed it (first one wins where the new link holds one). ──
+    for v_fl in select x from jsonb_array_elements(v_flips) x loop
+      v_b_table := (v_ids ->> ('ref:' || (v_fl ->> 'b_ref')))::uuid;
+      v_key := v_fl ->> 'b_key';
+      select coalesce(nullif(f.data ->> 'relation_max', '')::integer, case when (f.data ->> 'multi')::boolean then 0 else 1 end) into v_max
+        from custom.record f
+       where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id() and f.deleted_at is null
+         and f.data ->> 'entity_definition_id' = v_b_table::text and f.data ->> 'key' = v_key
+       limit 1;
+      if v_max is null then
+        continue;
+      end if;
+      v_changes := '[]'::jsonb;
+      for v_row in
+        select b.id, b.version, b.data -> v_key as have,
+               jsonb_agg(to_jsonb(a.id::text) order by a.created_at, a.id) as listed_by
+          from custom.record a
+          cross join lateral jsonb_array_elements_text(case jsonb_typeof(a.data -> (v_fl ->> 'a_key'))
+                                                       when 'array' then a.data -> (v_fl ->> 'a_key')
+                                                       when 'string' then jsonb_build_array(a.data -> (v_fl ->> 'a_key'))
+                                                       else '[]'::jsonb end) l(bid)
+          join custom.record b
+            on b.organization_id = p_organization_id and b.table_id = v_b_table and b.deleted_at is null
+           and b.id = platform.uuid_or_null(l.bid)
+         where a.organization_id = p_organization_id and a.table_id = (v_fl ->> 'a_table')::uuid and a.deleted_at is null
+         group by b.id, b.version, b.data -> v_key loop
+        if v_row.have is not null and jsonb_typeof(v_row.have) <> 'null' and v_row.have <> '[]'::jsonb then
+          continue;   -- a link the organization already set is never replaced
+        end if;
+        if v_max = 1 and jsonb_array_length(v_row.listed_by) > 1 then
+          v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'value', 'ref', v_row.id,
+            'reason', format('%s records listed this one and "%s" holds one; it points at the first, and the retired column still holds every one.',
+                             jsonb_array_length(v_row.listed_by), v_key)));
+        end if;
+        v_changes := v_changes || jsonb_build_array(jsonb_build_object('op', 'update', 'record_id', v_row.id, 'expected_version', v_row.version,
+                       'patch', jsonb_build_object(v_key, case when v_max = 1 then v_row.listed_by -> 0 else v_row.listed_by end)));
+        v_counts := jsonb_set(v_counts, '{links}', to_jsonb(coalesce((v_counts ->> 'links')::integer, 0) + 1));
+        if jsonb_array_length(v_changes) >= 100 then
+          perform custom.record_change_many(p_organization_id, v_b_table, v_changes);
+          v_changes := '[]'::jsonb;
+        end if;
+      end loop;
+      if jsonb_array_length(v_changes) > 0 then
+        perform custom.record_change_many(p_organization_id, v_b_table, v_changes);
+      end if;
+    end loop;
+
+    -- ── PASS 3: a choice list that became a link. New column, every value linked by title, old column retired. ──
+    for v_q in select x from jsonb_array_elements(v_queue) x loop
+      v_k := (v_q ->> 'step')::integer;
+      v_at := v_k;
+      v_step := v_steps -> v_k;
+      v_table := (v_ids ->> ('ref:' || (v_q ->> 'table_ref')))::uuid;
+      v_key := v_q ->> 'key';
+      v_old_fid := (v_q ->> 'field_id')::uuid;
+      select f.data -> 'sort', nullif(f.data -> 'config' ->> 'options_table_id', '')::uuid into v_old_sort, v_opts
+        from custom.record f where f.id = v_old_fid;
+      v_choices := case when v_opts is null then '{}'::jsonb else custom.choice_options(p_organization_id, v_opts) end;
+      v_spec := custom._template_bind(v_step #> '{args,p_spec}', v_ids, p_organization_id, v_i.install_day, v_i.timezone);
+      v_target := nullif(coalesce(v_spec ->> 'relation_target', v_spec ->> 'target_table'), '')::uuid;
+      select t.data ->> 'title_field' into v_title from custom.record t
+       where t.organization_id = p_organization_id and t.id = v_target and t.table_id = custom.table_kernel_id() and t.deleted_at is null;
+      if v_title is null then
+        raise exception 'The table "%" links to has no title column, so its values cannot be matched by title.', v_key using errcode = '23514';
+      end if;
+      v_max := coalesce(nullif(v_spec ->> 'relation_max', '')::integer, 1);
+
+      -- The new column's key is one no column of this table has ever held: the old column keeps its
+      -- key and its values under every record, so restoring it shows exactly what it showed.
+      v_seq := 2;
+      loop
+        v_new_key := left(v_key, 44) || '_' || v_seq;
+        exit when not exists (select 1 from custom.record f where f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id()
+                                 and f.data ->> 'entity_definition_id' = v_table::text and f.data ->> 'key' = v_new_key)
+              and not exists (select 1 from custom.record t, jsonb_array_elements(coalesce(t.data -> 'fields', '[]'::jsonb)) e
+                               where t.id = v_table and e ->> 'name' = v_new_key);
+        v_seq := v_seq + 1;
+      end loop;
+
+      -- The old column is retired first (one transaction: nothing lands unless everything does), so the
+      -- new column can carry the same name; field_retire archives it, it is never dropped.
+      perform custom.field_retire(p_organization_id, v_old_fid);
+      v_new_fid := custom.field_declare(p_organization_id, v_table,
+                     v_spec || jsonb_build_object('key', v_new_key) || case when v_old_sort is not null then jsonb_build_object('sort', v_old_sort) else '{}'::jsonb end);
+      v_counts := jsonb_set(v_counts, '{fields_converted}', to_jsonb(coalesce((v_counts ->> 'fields_converted')::integer, 0) + 1));
+      v_counts := jsonb_set(v_counts, '{fields_retired}', to_jsonb(coalesce((v_counts ->> 'fields_retired')::integer, 0) + 1));
+
+      -- Every live row's choice → its label → the target record with that title (case-insensitive), made when missing.
+      v_map := '{}'::jsonb;
+      v_changes := '[]'::jsonb;
+      for v_row in select r.id, r.version, r.data -> v_key as val
+                     from custom.record r
+                    where r.organization_id = p_organization_id and r.table_id = v_table and r.deleted_at is null
+                      and r.data ? v_key and jsonb_typeof(r.data -> v_key) <> 'null'
+                    order by r.created_at, r.id loop
+        v_vals := case when jsonb_typeof(v_row.val) = 'array' then v_row.val else jsonb_build_array(v_row.val) end;
+        v_labels := array(select coalesce(v_choices -> (e #>> '{}') ->> 'label', e #>> '{}')
+                            from jsonb_array_elements(v_vals) with ordinality a(e, o)
+                           where nullif(btrim(e #>> '{}'), '') is not null order by o);
+        v_links := '[]'::jsonb;
+        foreach v_label in array v_labels loop
+          v_hit := (v_map ->> lower(btrim(v_label)))::uuid;
+          if v_hit is null then
+            select t.id into v_hit from custom.record t
+             where t.organization_id = p_organization_id and t.table_id = v_target and t.deleted_at is null
+               and lower(btrim(t.data ->> v_title)) = lower(btrim(v_label))
+             order by t.created_at, t.id limit 1;
+            if v_hit is null then
+              v_hit := (custom.record_write_many(p_organization_id, v_target,
+                          array[jsonb_build_object(v_title, btrim(v_label), '_actor', 'user')], array[gen_random_uuid()]))[1];
+              v_counts := jsonb_set(v_counts, '{targets_created}', to_jsonb(coalesce((v_counts ->> 'targets_created')::integer, 0) + 1));
+            end if;
+            v_map := v_map || jsonb_build_object(lower(btrim(v_label)), v_hit);
+          end if;
+          if not v_links @> jsonb_build_array(v_hit) then
+            v_links := v_links || jsonb_build_array(v_hit);
+          end if;
+        end loop;
+        if jsonb_array_length(v_links) = 0 then
+          continue;
+        end if;
+        if jsonb_array_length(v_links) > v_max then
+          v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'value', 'ref', v_row.id,
+            'reason', format('The row held %s choices and the link holds %s; the first %s were linked and every choice is still in the retired column.',
+                             jsonb_array_length(v_links), v_max, v_max)));
+          v_links := (select jsonb_agg(l) from (select l from jsonb_array_elements(v_links) with ordinality a(l, o) order by o limit v_max) z);
+        end if;
+        v_changes := v_changes || jsonb_build_array(jsonb_build_object('op', 'update', 'record_id', v_row.id, 'expected_version', v_row.version,
+                       'patch', jsonb_build_object(v_new_key, case when v_max = 1 then v_links -> 0 else v_links end)));
+        v_counts := jsonb_set(v_counts, '{links}', to_jsonb(coalesce((v_counts ->> 'links')::integer, 0) + jsonb_array_length(v_links)));
+        if jsonb_array_length(v_changes) >= 100 then
+          perform custom.record_change_many(p_organization_id, v_table, v_changes);
+          v_changes := '[]'::jsonb;
+        end if;
+      end loop;
+      if jsonb_array_length(v_changes) > 0 then
+        perform custom.record_change_many(p_organization_id, v_table, v_changes);
+      end if;
+
+      for v_name in select k from jsonb_object_keys(coalesce(v_step -> 'save', '{}'::jsonb)) k loop
+        v_ids := v_ids || jsonb_build_object('ref:' || v_name, v_new_fid, 'retired:' || v_name, v_old_fid);
+      end loop;
+      for v_m in select x from jsonb_array_elements(coalesce(v_step -> 'made', '[]'::jsonb)) x loop
+        v_made := v_made || jsonb_build_array(jsonb_build_object(
+          'kind', v_m ->> 'kind', 'ref', v_m ->> 'ref', 'title', v_m ->> 'title', 'step', v_k,
+          'id', v_new_fid, 'table_id', v_table));
+      end loop;
+    end loop;
+    v_k := -1;
+    v_at := -1;
+
+    -- ── PASS 6a (TEMPLATE-FRESH-2): a choice the new version adds to a column the install already has is added (a
+    --    choice the organization has is never removed or renamed), so its sample rows can say it. ──
+    for v_f in select f.id as field_id, nullif(f.data -> 'config' ->> 'options_table_id', '')::uuid as opts, n.spec -> 'choices' as choices,
+                      coalesce(f.data ->> 'label', n.key) as label
+                 from custom._template_plan_fields(v_t.plan) n
+                 join custom.record f
+                   on f.organization_id = p_organization_id and f.table_id = custom.field_kernel_id() and f.deleted_at is null
+                  and f.data ->> 'entity_definition_id' = v_pre ->> ('ref:' || n.table_ref) and f.data ->> 'key' = n.key
+                where v_pre ? ('ref:' || n.table_ref) and jsonb_typeof(n.spec -> 'choices') = 'array' loop
+      continue when v_f.opts is null;
+      v_choices := custom.choice_options(p_organization_id, v_f.opts);
+      v_labels := array(select w from (select btrim(case jsonb_typeof(c) when 'object' then coalesce(c ->> 'value', c ->> 'label') else c #>> '{}' end) as w, o
+                                         from jsonb_array_elements(v_f.choices) with ordinality x(c, o)) z
+                         where nullif(w, '') is not null
+                           and not exists (select 1 from jsonb_each(v_choices) e
+                                            where lower(btrim(e.value ->> 'label')) = lower(w) or lower(e.key) = lower(custom.choice_slug(w)))
+                         order by o);
+      continue when cardinality(v_labels) = 0;
+      begin
+        perform custom.field_update(p_organization_id, v_f.field_id, jsonb_build_object('options_add', to_jsonb(v_labels)));
+        v_counts := jsonb_set(v_counts, '{choices_added}', to_jsonb(coalesce((v_counts ->> 'choices_added')::integer, 0) + cardinality(v_labels)));
+      exception when others then
+        get stacked diagnostics v_msg = message_text;
+        v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'field', 'ref', v_f.field_id,
+          'reason', format('"%s" keeps its choices; adding %s was refused: %s', v_f.label, array_to_string(v_labels, ', '), v_msg)));
+      end;
+    end loop;
+
+    -- ── PASS 6 (TEMPLATE-FRESH-2, 2026-10-19): SAMPLE ROWS FOLLOW THE NEW VERSION WHERE THE PERSON NEVER EDITED THEM. ──
+    -- On a table the install already has, a sample row the older version wrote (its id is in the install's map as
+    -- new:row.<table>.<key>) takes the new version's values only when every value the older version gave it is still
+    -- exactly what the store kept for it; a sample row the new version adds is written; one the new version no longer
+    -- has is archived (values kept) only when unedited. Rows the person made are never in the map, so never touched.
+    -- "What the store kept" is learned by writing the older row once inside a subtransaction that is rolled back (the
+    -- store turns choice labels into option keys, links into ids, …), so the comparison is the store's own words.
+    v_oldrows := '{}'::jsonb;
+    for v_s in select x from jsonb_array_elements(coalesce(v_old.plan -> 'steps', '[]'::jsonb)) x
+                where x ->> 'door' = 'record_write_many' and x #>> '{args,p_table_id}' ~ '^\$\{ref:tables\.[^}]+\}$' loop
+      v_tref := regexp_replace(v_s #>> '{args,p_table_id}', '^\$\{ref:(.*)\}$', '\1');
+      continue when not (v_pre ? ('ref:' || v_tref));
+      for v_o in 0 .. coalesce(jsonb_array_length(v_s #> '{args,p_ids}'), 0) - 1 loop
+        v_key := substring(v_s #>> array['args', 'p_ids', v_o::text] from '^\$\{(new:[^}]+)\}$');
+        continue when v_key is null or not (v_pre ? v_key);
+        v_oldrows := v_oldrows || jsonb_build_object(v_key, jsonb_build_object('t', v_tref,
+                       'row', custom._template_bind(v_s #> array['args', 'p_rows', v_o::text], v_pre, p_organization_id, v_i.install_day, v_i.timezone)));
+      end loop;
+    end loop;
+    -- The store's own words for every older sample row, one rolled-back write per table.
+    v_norm := '{}'::jsonb;
+    for v_tref in select distinct e.value ->> 't' from jsonb_each(v_oldrows) e loop
+      v_table := (v_pre ->> ('ref:' || v_tref))::uuid;
+      continue when not exists (select 1 from custom.record t where t.organization_id = p_organization_id and t.table_id = custom.table_kernel_id()
+                                   and t.deleted_at is null and t.id = v_table);
+      v_keys := array(select e.key from jsonb_each(v_oldrows) e where e.value ->> 't' = v_tref order by e.key);
+      v_rows := array(select (v_oldrows -> k -> 'row') - '_op_id' from unnest(v_keys) with ordinality u(k, o) order by o);
+      v_trial := array(select gen_random_uuid() from unnest(v_keys));
+      begin
+        perform custom.record_write_many(p_organization_id, v_table, v_rows, v_trial);
+        select coalesce(jsonb_object_agg(v_keys[u.o], r.data), '{}'::jsonb) into v_have
+          from unnest(v_trial) with ordinality u(id, o) join custom.record r on r.id = u.id;
+        raise exception 'trial' using errcode = 'P0R01';
+      exception
+        when sqlstate 'P0R01' then v_norm := v_norm || v_have;
+        when others then null;   -- the older row cannot be written any more: its rows are judged edited (kept)
+      end;
+    end loop;
+
+    v_seen := '{}'::jsonb;
+    for v_s in select x from jsonb_array_elements(v_steps) x
+                where x ->> 'door' = 'record_write_many' and x #>> '{args,p_table_id}' ~ '^\$\{ref:tables\.[^}]+\}$' loop
+      v_tref := regexp_replace(v_s #>> '{args,p_table_id}', '^\$\{ref:(.*)\}$', '\1');
+      continue when not (v_pre ? ('ref:' || v_tref));   -- a table this upgrade made: PASS 1 seeded it
+      v_table := (v_pre ->> ('ref:' || v_tref))::uuid;
+      continue when not exists (select 1 from custom.record t where t.organization_id = p_organization_id and t.table_id = custom.table_kernel_id()
+                                   and t.deleted_at is null and t.id = v_table);
+      for v_name in select distinct (regexp_matches((v_s -> 'args')::text, '\$\{new:([^}]+)\}', 'g'))[1] loop
+        if not v_ids ? ('new:' || v_name) then
+          v_ids := v_ids || jsonb_build_object('new:' || v_name, gen_random_uuid());
+        end if;
+      end loop;
+      v_changes := '[]'::jsonb;
+      v_rows := array[]::jsonb[];
+      v_trial := array[]::uuid[];
+      for v_o in 0 .. coalesce(jsonb_array_length(v_s #> '{args,p_ids}'), 0) - 1 loop
+        v_key := substring(v_s #>> array['args', 'p_ids', v_o::text] from '^\$\{(new:[^}]+)\}$');
+        continue when v_key is null;
+        v_seen := v_seen || jsonb_build_object(v_key, true);
+        v_nrow := custom._template_bind(v_s #> array['args', 'p_rows', v_o::text], v_ids, p_organization_id, v_i.install_day, v_i.timezone) - '_op_id';
+        if not (v_pre ? v_key) then
+          -- A sample row the new version adds.
+          v_rows := v_rows || v_nrow;
+          v_trial := v_trial || (v_ids ->> v_key)::uuid;
+          continue;
+        end if;
+        select r.id, r.version, r.data into v_rec from custom.record r
+         where r.organization_id = p_organization_id and r.table_id = v_table and r.id = platform.uuid_or_null(v_pre ->> v_key)
+           and r.deleted_at is null;
+        continue when not found;   -- the person removed it: it stays removed
+        v_orow := v_oldrows -> v_key -> 'row';
+        v_have := v_norm -> v_key;
+        if v_orow is null or v_have is null
+           or exists (select 1 from jsonb_object_keys(v_orow) k where k not like '\_%' and (v_rec.data -> k) is distinct from (v_have -> k)) then
+          if v_orow is null or v_orow is distinct from v_nrow then
+            v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'row', 'ref', substr(v_key, 5),
+              'reason', 'Kept as it is: it was edited after the template wrote it.'));
+            v_counts := jsonb_set(v_counts, '{rows_kept_edited}', to_jsonb(coalesce((v_counts ->> 'rows_kept_edited')::integer, 0) + 1));
+          end if;
+          continue;
+        end if;
+        continue when v_orow = v_nrow;   -- the new version says the same: nothing to do
+        -- Only the values the new version says differently (a value it no longer gives is cleared).
+        v_patch := coalesce((select jsonb_object_agg(k, v_nrow -> k) from jsonb_object_keys(v_nrow) k
+                              where k not like '\_%' and (v_nrow -> k) is distinct from (v_orow -> k)), '{}'::jsonb)
+                || coalesce((select jsonb_object_agg(k, null) from jsonb_object_keys(v_orow) k
+                              where k not like '\_%' and not v_nrow ? k), '{}'::jsonb);
+        continue when v_patch = '{}'::jsonb;
+        v_changes := v_changes || jsonb_build_array(jsonb_build_object('op', 'update', 'record_id', v_rec.id,
+                       'expected_version', v_rec.version, 'patch', v_patch));
+      end loop;
+      for v_o in 1 .. coalesce(cardinality(v_rows), 0) loop
+        v_nrow := v_rows[v_o];
+        for v_name in select k from jsonb_object_keys(v_nrow) k where k not like '\_%' loop
+          if exists (select 1
+                       from jsonb_array_elements_text(case jsonb_typeof(v_nrow -> v_name) when 'array' then v_nrow -> v_name
+                                                           when 'string' then jsonb_build_array(v_nrow -> v_name) else '[]'::jsonb end) e(v)
+                       join jsonb_each_text(v_ids) m on m.key like 'new:row.%' and m.value = e.v
+                      where not exists (select 1 from custom.record r where r.id = platform.uuid_or_null(e.v))) then
+            v_deferred := v_deferred || jsonb_build_array(jsonb_build_object('table_id', v_table, 'record_id', v_trial[v_o], 'key', v_name, 'value', v_nrow -> v_name));
+            v_nrow := v_nrow - v_name;
+          end if;
+        end loop;
+        begin
+          perform custom.record_write_many(p_organization_id, v_table, array[v_nrow], array[v_trial[v_o]]);
+          v_counts := jsonb_set(v_counts, '{rows_added}', to_jsonb(coalesce((v_counts ->> 'rows_added')::integer, 0) + 1));
+        exception when others then
+          get stacked diagnostics v_msg = message_text;
+          v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'row', 'ref', v_trial[v_o],
+            'reason', format('A new sample row was not added: %s', v_msg)));
+        end;
+      -- One row at a time: a row the store refuses (it names a choice the column does not have) is kept as it is and
+      -- named, and every other row still follows the new version.
+      for v_o in 0 .. jsonb_array_length(v_changes) - 1 loop
+        begin
+          perform custom.record_change_many(p_organization_id, v_table, jsonb_build_array(v_changes -> v_o));
+          v_counts := jsonb_set(v_counts, '{rows_refreshed}', to_jsonb(coalesce((v_counts ->> 'rows_refreshed')::integer, 0) + 1));
+        exception when others then
+          get stacked diagnostics v_msg = message_text;
+          v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'row', 'ref', v_changes -> v_o ->> 'record_id',
+            'reason', format('Kept as it is; the new sample values were refused: %s', v_msg)));
+        end;
+      end loop;
+      end loop;
+    end loop;
+
+    -- A sample row the new version no longer has: archived (values kept, restorable) only when never edited.
+    for v_tref in select distinct e.value ->> 't' from jsonb_each(v_oldrows) e where not v_seen ? e.key loop
+      v_table := (v_pre ->> ('ref:' || v_tref))::uuid;
+      v_changes := '[]'::jsonb;
+      for v_key in select e.key from jsonb_each(v_oldrows) e where e.value ->> 't' = v_tref and not v_seen ? e.key loop
+        select r.id, r.version, r.data into v_rec from custom.record r
+         where r.organization_id = p_organization_id and r.table_id = v_table and r.id = platform.uuid_or_null(v_pre ->> v_key)
+           and r.deleted_at is null;
+        continue when not found;
+        v_orow := v_oldrows -> v_key -> 'row';
+        v_have := v_norm -> v_key;
+        if v_have is null or exists (select 1 from jsonb_object_keys(v_orow) k where k not like '\_%' and (v_rec.data -> k) is distinct from (v_have -> k)) then
+          v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'row', 'ref', substr(v_key, 5),
+            'reason', format('Kept: version %s no longer has this sample row, and it was edited.', v_t.template_version)));
+          v_counts := jsonb_set(v_counts, '{rows_kept_edited}', to_jsonb(coalesce((v_counts ->> 'rows_kept_edited')::integer, 0) + 1));
+          continue;
+        end if;
+        v_changes := v_changes || jsonb_build_array(jsonb_build_object('op', 'archive', 'record_id', v_rec.id));
+      end loop;
+      if jsonb_array_length(v_changes) > 0 then
+        perform custom.record_change_many(p_organization_id, v_table, v_changes);
+        v_counts := jsonb_set(v_counts, '{rows_archived}', to_jsonb(coalesce((v_counts ->> 'rows_archived')::integer, 0) + jsonb_array_length(v_changes)));
+      end if;
+    end loop;
+
+    -- TEMPLATE-FRESH-2: the sample-row links held back above, now that every sample row of this upgrade exists. A
+    -- link whose target still is not there is left out and named in `skipped`; it never refuses the upgrade.
+    for v_s in select jsonb_build_object('t', d ->> 'table_id', 'r', d ->> 'record_id', 'p', jsonb_object_agg(d ->> 'key', d -> 'value')) x
+                 from jsonb_array_elements(v_deferred) d group by d ->> 'table_id', d ->> 'record_id' loop
+      begin
+        perform custom.record_change_many(p_organization_id, (v_s ->> 't')::uuid,
+                  jsonb_build_array(jsonb_build_object('op', 'update', 'record_id', v_s ->> 'r', 'patch', v_s -> 'p')));
+        v_counts := jsonb_set(v_counts, '{links_after_rows}', to_jsonb(coalesce((v_counts ->> 'links_after_rows')::integer, 0) + 1));
+      exception when others then
+        get stacked diagnostics v_msg = message_text;
+        v_skipped := v_skipped || jsonb_build_array(jsonb_build_object('kind', 'row', 'ref', v_s ->> 'r',
+          'reason', format('A sample row''s link (%s) was left empty: %s', (select string_agg(k, ', ') from jsonb_object_keys(v_s -> 'p') k), v_msg)));
+      end;
+    end loop;
+
+    -- ── PASS 5: a seed row the install already has takes the new version's row icon, only where it
+    --           has none — an icon the person set is never overwritten. ──
+    for v_f in select (v_ids ->> ('ref:' || regexp_replace(s.x #>> '{args,p_table_id}', '^\$\{ref:(.*)\}$', '\1')))::uuid as table_id,
+                      jsonb_agg(jsonb_build_object('op', 'update', 'record_id', r.id, 'expected_version', r.version,
+                                                   'patch', jsonb_build_object('icon', btrim(w.v ->> 'icon')))) as changes
+                 from jsonb_array_elements(v_steps) with ordinality s(x, n)
+                 cross join lateral jsonb_array_elements(coalesce(s.x #> '{args,p_rows}', '[]'::jsonb)) with ordinality w(v, o)
+                 join custom.record r
+                   on r.organization_id = p_organization_id and r.deleted_at is null
+                  and r.id = platform.uuid_or_null(v_ids ->> regexp_replace(s.x #>> array['args', 'p_ids', (w.o - 1)::text], '^\$\{(new:[^}]+)\}$', '\1'))
+                  and r.table_id = platform.uuid_or_null(v_ids ->> ('ref:' || regexp_replace(s.x #>> '{args,p_table_id}', '^\$\{ref:(.*)\}$', '\1')))
+                where s.x ->> 'door' = 'record_write_many'
+                  and nullif(btrim(w.v ->> 'icon'), '') is not null
+                  and nullif(btrim(r.data ->> 'icon'), '') is null
+                group by s.n, 1 loop
+      perform custom.record_change_many(p_organization_id, v_f.table_id, v_f.changes);
+      v_counts := jsonb_set(v_counts, '{icons}', to_jsonb(coalesce((v_counts ->> 'icons')::integer, 0) + jsonb_array_length(v_f.changes)));
+    end loop;
+
+    update custom.template_install i
+       set template_id = v_t.id, template_version = v_t.template_version, next_step = v_n,
+           ids = v_ids, made = v_made, refusal = null,
+           ms = i.ms + (extract(epoch from clock_timestamp() - v_t0) * 1000)::integer,
+           calls = i.calls + 1, updated_at = now()
+     where i.id = v_i.id
+    returning * into v_i;
+  exception when others then
+    -- Everything this call did is rolled back: the install stays exactly as it was, on its old version.
+    get stacked diagnostics v_msg = message_text, v_code = returned_sqlstate, v_hint = pg_exception_hint, v_detail = pg_exception_detail, v_where = pg_exception_context;
+    return custom._template_answer(v_i, jsonb_build_object(
+             'ok', false, 'upgraded', false, 'from_version', v_i.template_version, 'to_version', v_t.template_version,
+             'counts', '{}'::jsonb, 'skipped', '[]'::jsonb,
+             'busy', v_code in ('55P03', '40P01'),
+             -- TEMPLATE-FRESH-2: busy tables (55P03 lock wait, 40P01 deadlock) answer a plain sentence; the caller retries.
+             'refusal', jsonb_build_object('busy', v_code in ('55P03', '40P01'), 'step', case when v_at >= 0 then v_at end,
+                                           'label', case when v_at >= 0 then v_steps -> v_at ->> 'label' end,
+                                           'door', case when v_at >= 0 then 'custom.' || (v_steps -> v_at ->> 'door') else 'custom.template_upgrade' end,
+                                           'code', v_code,
+                                           'message', case when v_code in ('55P03', '40P01') then 'The tables were busy; try again in a minute.' else v_msg end,
+                                           'cause', case when v_code in ('55P03', '40P01') then v_msg end,
+                                           'hint', nullif(v_hint, ''), 'detail', nullif(v_detail, ''),
+                                           'where', left(nullif(v_where, ''), 2000))));
+  end;
+
+  return custom._template_answer(v_i, jsonb_build_object(
+           'upgraded', true, 'from_version', coalesce(v_old.template_version, 0), 'to_version', v_t.template_version,
+           'counts', v_counts, 'skipped', v_skipped,
+           'this_call_ms', (extract(epoch from clock_timestamp() - v_t0) * 1000)::integer));
+end;
+$function$
+;
