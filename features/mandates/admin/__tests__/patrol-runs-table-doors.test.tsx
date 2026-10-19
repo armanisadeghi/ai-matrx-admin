@@ -34,6 +34,8 @@ describe("patrol runs table", () => {
     });
     expect(tableProps?.detail?.enabled).not.toBe(false);
     expect(tableProps?.window?.enabled).not.toBe(false);
+    const hidden = (tableProps?.columns ?? []).filter((c) => c.hidden).map((c) => c.id);
+    expect(hidden).toEqual(expect.arrayContaining(["cpu", "rows", "resolved", "clone"]));
     expect(tableProps?.paginationLabelFormat?.(1, 10, 10)).toBe("Latest 10 of 258 runs");
   });
 });

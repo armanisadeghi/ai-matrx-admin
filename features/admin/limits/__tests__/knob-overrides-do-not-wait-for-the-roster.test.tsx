@@ -36,7 +36,6 @@ import {
   writeKnobOverrideThroughDoor,
 } from "@/lib/scoped-config/service";
 import { toast } from "@/lib/toast";
-import { fetchPlatformKnobOverrides } from "@/lib/scoped-config/service";
 import { KnobOverridesAdmin } from "../components/KnobOverridesAdmin";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

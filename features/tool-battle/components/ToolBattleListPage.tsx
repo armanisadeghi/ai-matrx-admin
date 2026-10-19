@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Swords } from "lucide-react";
-import { Badge, EmptyState } from "@ai-matrx/design-system/controls";
+import { Badge } from "@ai-matrx/design-system/controls";
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate } from "@ai-matrx/kit/format";
@@ -80,7 +80,7 @@ export function ToolBattleListPage() {
             error: read.state === "failed" ? read.error : undefined,
             what: "battles",
           }}
-          emptyState={<EmptyState icon={<Swords />} title="No battles yet" />}
+          emptyState={{ icon: <Swords />, title: "No battles yet" }}
         />
       </div>
     </>

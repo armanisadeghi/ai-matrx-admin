@@ -312,6 +312,7 @@ export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
     },
     {
       id: "cpu",
+      hidden: true,
       header: "CPU",
       align: "right",
       accessorFn: (run) => run.cpu_seconds ?? -1,
@@ -357,7 +358,7 @@ export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         </span>
       ),
     },
-    { id: "rows", header: "Rows", align: "right", accessorFn: (run) => run.rows_submitted ?? -1, filter: "number", width: 80, cell: (run) => run.rows_submitted ?? "—" },
+    { id: "rows", hidden: true, header: "Rows", align: "right", accessorFn: (run) => run.rows_submitted ?? -1, filter: "number", width: 80, cell: (run) => run.rows_submitted ?? "—" },
     {
       id: "filed",
       header: "Filed",
@@ -382,9 +383,10 @@ export function PatrolRunsTable({ patrol }: { patrol: MandatePatrolSection }) {
         );
       },
     },
-    { id: "resolved", header: "Resolved", align: "right", accessorFn: (run) => run.error_rows_resolved ?? -1, filter: "number", width: 90, cell: (run) => run.error_rows_resolved ?? "—" },
+    { id: "resolved", hidden: true, header: "Resolved", align: "right", accessorFn: (run) => run.error_rows_resolved ?? -1, filter: "number", width: 90, cell: (run) => run.error_rows_resolved ?? "—" },
     {
       id: "clone",
+      hidden: true,
       header: "Clone",
       align: "right",
       accessorFn: (run) => run.git_clone_bytes ?? -1,
