@@ -90,7 +90,7 @@ describe("ToolResult", () => {
 
   it("an empty answer promises no charge; a refusal carries our sentence and the copy menu", () => {
     show(view("empty"));
-    expect(host.textContent).toContain("You weren't charged.");
+    expect(host.textContent).toContain("Nothing matched what you asked for.");
     show(view("failed", { error: { code: "all_sources_failed", message: "No source could answer Backlinks right now." } }));
     expect(host.textContent).toContain("No source could answer Backlinks right now.");
     expect(host.querySelector("[data-alchemy]")).toBeTruthy();

@@ -123,7 +123,7 @@ export function ToolResult({
     const why = emptyReason(view);
     return (
       <div data-tool-result="empty">
-        <EmptyState icon={<PackageOpen className="h-5 w-5" />} title="Nothing found" line="You weren't charged." />
+        <EmptyState icon={<PackageOpen className="h-5 w-5" />} title="Nothing found" line="Nothing matched what you asked for." />
         {why ? (
           <p className="mt-1 text-center text-sm text-foreground" data-tool-empty-why="">
             {why}
@@ -144,7 +144,7 @@ export function ToolResult({
         <EmptyState
           icon={<CircleAlert className="h-5 w-5" />}
           title={view.status === "refused" ? "Not run" : view.status === "cancelled" ? "Stopped" : "That didn't work"}
-          line={view.error?.message ?? (view.status === "cancelled" ? "You weren't charged." : "Try again in a moment.")}
+          line={view.error?.message ?? (view.status === "cancelled" ? "You stopped this run." : "Try again in a moment.")}
           action={
             <span className="inline-flex items-center gap-1">
               <Button variant="outline" onClick={onRunAgain}>

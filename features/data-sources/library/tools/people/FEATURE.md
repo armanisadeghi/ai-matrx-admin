@@ -9,7 +9,7 @@ Program: `../common-docs/projects/third-party-services/` (lane L12b). Parent: th
 - **Found is not verified.** A finder's address reads "Found, not confirmed yet" (`AddressStatus`); only an Email check verdict of good (`email_verdict` v2 `deliverable: "yes"`) reads confirmed; the email kinds carry only our words (`role`, `shared_inbox`, `score`, `status`, `deliverable`, `reason`), never a source's own fields. `partyToKeep` never attaches an address to the CRM until a check confirmed that exact address; an unconfirmed one stays out of the person's contact points (features/crm/FEATURE.md: a candidate is never a contact). After a later check, "Add the confirmed email" attaches it to the same person.
 - **Save to CRM** (`KeepInCrm`) goes through `resolveParty` (find-or-create, never doubles). Save to a table is the existing `ToolResultTableBar`.
 - **CRM doors.** A phone or email contact point and a company's card link to the same Tools home with the box filled (`toolLookupHref`); a link never presses the button.
-- Empty answers show "Nothing found. You weren't charged." (R-16: the server never charges them).
+- Empty answers show "Nothing found" and are never charged (R-16); the UI never says so (law 14 — no price talk while doing).
 
 ## Files
 
