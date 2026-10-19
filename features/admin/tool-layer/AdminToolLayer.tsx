@@ -102,14 +102,14 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
 
   const flipOff = (ep: EndpointRow, name: string) =>
     run(`off:${ep.id}`, async () => {
-      if (!(await confirm({ title: `Turn off ${name}?`, description: "Calls stop using this source until a check passes.", confirmLabel: "Turn off" }))) return;
+      if (!(await confirm({ title: `Turn off ${name}?`, description: `${ep.vendor_op}. Calls stop using this source until a check passes.`, confirmLabel: "Turn off" }))) return;
       const r = await turnOffEndpoint(ep.id, "paused", why.trim() || undefined);
       toast.success(`Now ${r.state}`);
       setWhy("");
     });
   const flipOn = (ep: EndpointRow, name: string) =>
     run(`on:${ep.id}`, async () => {
-      if (!(await confirm({ title: `Check ${name}?`, description: "Makes one real call. If it works, the source turns on.", confirmLabel: "Run check" }))) return;
+      if (!(await confirm({ title: `Check ${name}?`, description: `${ep.vendor_op}. Makes one real call. If it works, the source turns on.`, confirmLabel: "Run check" }))) return;
       const r = await verifyEndpoint(ep.id);
       if (r.passed) toast.success(r.message);
       else toast.error(r.message);
@@ -168,7 +168,7 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
         <table className="w-full text-xs">
           <thead className="text-left text-muted-foreground">
             <tr className="border-b border-border">
-              {["Order", "Source", "Members see", "Vendor cost", "Member pays", "Success 7d", "Typical", "Slowest 5%", "Last worked", "48 hours", "State", ""].map((h) => (
+              {["Order", "Source", "Members see", "Vendor cost", "Member pays", "Success 7d", "Typical", "Slowest 5%", "Last worked", "48 hours", "State"].map((h) => (
                 <th key={h} className={`${cell} font-medium`}>
                   {h}
                 </th>
@@ -219,20 +219,22 @@ export function AdminToolLayer({ toolId }: { toolId: string }) {
                     <UptimeStrip rows={(detail.data?.strips ?? []).filter((s) => s.endpoint_id === id)} />
                   </td>
                   <td className={cell}>
-                    <span className={TONE[word.tone ?? "muted"]}>{word.label}</span>
-                    {reason ? <div className="max-w-52 truncate text-muted-foreground" title={reason}>{reason}</div> : null}
-                  </td>
-                  <td className={cell}>
-                    {ep.state === "live" ? (
-                      <Button variant="outline" disabled={working || busy !== null} onClick={() => void flipOff(ep, name)}>
-                        Turn off
-                      </Button>
-                    ) : ep.state === "verifying" ? null : (
-                      <Button variant="primary" disabled={working || busy !== null} onClick={() => void flipOn(ep, name)}>
-                        {working ? <Spinner size="xs" /> : null}
-                        Check and turn on
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <div className="min-w-14">
+                        <span className={TONE[word.tone ?? "muted"]}>{word.label}</span>
+                        {reason ? <div className="max-w-40 truncate text-muted-foreground" title={reason}>{reason}</div> : null}
+                      </div>
+                      {ep.state === "live" ? (
+                        <Button variant="outline" disabled={working || busy !== null} onClick={() => void flipOff(ep, name)}>
+                          Turn off
+                        </Button>
+                      ) : ep.state === "verifying" ? null : (
+                        <Button variant="primary" disabled={working || busy !== null} onClick={() => void flipOn(ep, name)}>
+                          {working ? <Spinner size="xs" /> : null}
+                          Check and turn on
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
