@@ -187,10 +187,10 @@ const slice = createSlice({
     },
     memberContextSet(
       state,
-      action: PayloadAction<{ conductorId: string; agentId: string; context: MemberContext; version: number }>,
+      action: PayloadAction<{ conductorId: string; edgeId: string; context: MemberContext; version: number }>,
     ) {
       const m = state.byId[action.payload.conductorId]?.members.find(
-        (x) => x.agentId === action.payload.agentId,
+        (x) => x.edgeId === action.payload.edgeId,
       );
       if (!m) return;
       m.context = action.payload.context;

@@ -99,7 +99,7 @@ export function MemberReceivesCard({
 
   const save = async (next: MemberContext) => {
     setSaving(true);
-    const res = await dispatch(saveMemberContext({ conductorId, agentId: member.agentId, context: next }));
+    const res = await dispatch(saveMemberContext({ conductorId, edgeId: member.edgeId, context: next }));
     setSaving(false);
     if (!res.ok) toast.error(res.stale ? "Changed elsewhere — reloaded" : `Not saved. ${res.error ?? ""}`.trim());
   };
@@ -177,6 +177,7 @@ export function MemberReceivesCard({
                       >
                         <Checkbox
                           checked={listed.includes(o.key)}
+                          disabled={saving}
                           onCheckedChange={(on) =>
                             setList(on === true ? [...listed, o.key] : listed.filter((k) => k !== o.key))
                           }
@@ -196,7 +197,7 @@ export function MemberReceivesCard({
                   placeholder="Value name"
                   aria-label="Add a value name"
                 />
-                <Button variant="outline" onClick={addKey} disabled={!VALUE_REF_PATTERN.test(adding.trim())}>
+                <Button variant="outline" onClick={addKey} disabled={saving || !VALUE_REF_PATTERN.test(adding.trim())}>
                   Add
                 </Button>
               </div>

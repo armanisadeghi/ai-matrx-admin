@@ -5,6 +5,7 @@ import { supabase } from "@/utils/supabase/client";
 import { getClientClaimsUserCached } from "@/utils/supabase/clientClaimsCache";
 import { requireUserId } from "@/utils/auth/getUserId";
 import { operationFailed } from "@/utils/errors";
+import { throwIfHeld, whileAgentHoldsTheNote } from "@/features/notes/service/noteEditHold";
 import { recordUnavailable } from "@/lib/records/recordUnavailable";
 import { requireOrganizationContext } from "@/lib/api/organization-context";
 import { guardedUpdate } from "@ai-matrx/data/db";
@@ -660,15 +661,19 @@ export async function persistNoteUpdate(
       data = result.row;
     } else {
       // write-lands-exempt: zero rows leaves `data` null, and the `if (!data)` below refuses in words
-      const { data: updated, error } = await supabase
-        .schema("workbench")
-        .from("notes")
-        .update(databaseUpdates)
-        .eq("id", id)
-        .eq("organization_id", organizationId)
-        .is("deleted_at", null)
-        .select("*")
-        .maybeSingle();
+      const { data: updated, error } = await whileAgentHoldsTheNote(organizationId, async () =>
+        throwIfHeld(
+          await supabase
+            .schema("workbench")
+            .from("notes")
+            .update(databaseUpdates)
+            .eq("id", id)
+            .eq("organization_id", organizationId)
+            .is("deleted_at", null)
+            .select("*")
+            .maybeSingle(),
+        ),
+      );
       if (error) {
         console.error("Error updating note:", error);
         throw error;
@@ -913,50 +918,4 @@ export async function fetchTags(scope?: ListScopeWord): Promise<string[]> {
   const allTags = data.flatMap((n) => n.tags || []);
   const uniqueTags = Array.from(new Set(allTags));
   return uniqueTags.sort();
-}
-
-/** The database's answer while an agent holds a note for its turn (simultaneous edits). */
-function isEditHeld(error: unknown): boolean {
-  const code = (error as { code?: unknown } | null)?.code;
-  return code === "PT423";
-}
-
-/**
- * Run a note save; while an agent holds the note (PT423), wait and try again — for at most the
- * `agents.context` / `edit_hold_wait_seconds` knob, looking every `edit_hold_poll_ms` (the same
- * knobs the server's agents wait by). Past the limit the refusal stands, in words.
- */
-async function whileAgentHoldsTheNote<T>(organizationId: string, save: () => Promise<T>): Promise<T> {
-  let deadline: number | null = null;
-  let pollMs = 0;
-  for (;;) {
-    try {
-      return await save();
-    } catch (error) {
-      if (!isEditHeld(error)) throw error;
-      if (deadline === null) {
-        const [wait, poll] = await Promise.all([
-          supabase.schema("platform").rpc("knob_resolve", {
-            p_feature: "agents.context",
-            p_key: "edit_hold_wait_seconds",
-            p_organization_id: organizationId,
-          }),
-          supabase.schema("platform").rpc("knob_resolve", {
-            p_feature: "agents.context",
-            p_key: "edit_hold_poll_ms",
-            p_organization_id: organizationId,
-          }),
-        ]);
-        if (wait.error || poll.error || typeof wait.data !== "number" || typeof poll.data !== "number") {
-          throw error;
-        }
-        deadline = Date.now() + wait.data * 1000;
-        pollMs = poll.data;
-      }
-      if (Date.now() >= deadline) {
-        throw operationFailed("save this note — an agent is still editing it; try again in a moment");
-      }
-      await new Promise((resolve) => setTimeout(resolve, pollMs));
-    }
-  }
 }
