@@ -10,7 +10,7 @@
  *   createNewNote            — create note in DB
  *   deleteNote               — soft delete
  *   copyNote                 — duplicate a note
- *   findOrCreateEmptyNote    — find existing empty note or create one
+ *   createEmptyNote          — always create a new empty note
  *   (moving a note: homes/moveNoteToHome — the one move path)
  *   saveNoteField            — quick single-field save + optimistic update
  */
@@ -745,46 +745,26 @@ export const copyNote = createAsyncThunk<
 });
 
 // ---------------------------------------------------------------------------
-// 7. findOrCreateEmptyNote
+// 7. createEmptyNote
 // ---------------------------------------------------------------------------
 
 /**
- * Find an existing empty "New Note" in the given home, or create one. No home
- * = the active organization's General (the database files it there).
- * Returns the note and sets it active.
+ * The "New note" button: ALWAYS creates a new empty note in the given home and
+ * opens it as a tab. Never reuses an existing note. No home = the active
+ * organization's General (the database files it there).
  */
-export const findOrCreateEmptyNote = createAsyncThunk<
+export const createEmptyNote = createAsyncThunk<
   Note,
   { homeScopeId?: string | null; organizationId?: string | null } | undefined
 >(
-  "notes/findOrCreateEmptyNote",
-  async (target, { dispatch, getState }) => {
+  "notes/createEmptyNote",
+  async (target, { dispatch }) => {
     // A home names its organization; otherwise the active one (never a prompt).
     const organizationId = await ensureOrgId(target?.organizationId ?? null);
     const homeScopeId = target?.homeScopeId ?? null;
-    const state = getState() as RootState;
-    const allNotes = state.notes.notes;
-
-    for (const record of Object.values(allNotes)) {
-      if (
-        !record._sharedWithMe &&
-        record.label === "New Note" &&
-        (!record.content || record.content.trim() === "") &&
-        record.organization_id === organizationId &&
-        (homeScopeId === null || record.home_scope_id === homeScopeId) &&
-        !record.deleted_at
-      ) {
-        dispatch(addTab(record.id));
-        dispatch(setActiveNote(record.id));
-        return record as Note;
-      }
-    }
-
-    const result = await dispatch(
+    return await dispatch(
       createNewNote({ organization_id: organizationId, ...(homeScopeId ? { home_scope_id: homeScopeId } : {}) }),
     ).unwrap();
-
-    return result;
   },
 );
 
