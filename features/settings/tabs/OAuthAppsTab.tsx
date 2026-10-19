@@ -43,6 +43,13 @@ function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
+/**
+ * THE ONE-TIME SECRET OUTLIVES A REMOUNT (AT-STOREFIX): the settings page can remount this tab (the list showed "Loading your apps"
+ * and the secret panel was gone before anybody copied it). The secret is shown until the person presses Done, so it is held here, not
+ * only in component state. It lives in this tab's memory only (never stored), and Done clears it.
+ */
+let pendingRegistration: RegisteredOAuthApp | null = null;
+
 function Field({ label, value, secret }: { label: string; value: string; secret?: boolean }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -71,7 +78,11 @@ export default function OAuthAppsTab() {
   const [orgName, setOrgName] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
-  const [created, setCreated] = useState<RegisteredOAuthApp | null>(null);
+  const [created, setCreatedState] = useState<RegisteredOAuthApp | null>(pendingRegistration);
+  const setCreated = (app: RegisteredOAuthApp | null) => {
+    pendingRegistration = app;
+    setCreatedState(app);
+  };
   const [copied, setCopied] = useState(false);
   const [removeTarget, setRemoveTarget] = useState<OAuthApp | null>(null);
   const [removing, setRemoving] = useState(false);

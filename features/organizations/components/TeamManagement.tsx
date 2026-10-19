@@ -291,31 +291,7 @@ function TeamRow({
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-sm truncate">{team.name}</span>
-              {/* An archived team counts nobody today; its members come back with it. */}
-              {!archived && (
-                <Badge variant="secondary" className="text-xs">
-                  {team.memberCount} {team.memberCount === 1 ? "person" : "people"}
-                </Badge>
-              )}
-              {team.hrDepartmentName && (
-                <Badge variant="outline" className="text-xs gap-1">
-                  <Building2 className="h-3 w-3" />
-                  {team.hrDepartmentName}
-                </Badge>
-              )}
-              {team.myRole && !archived && (
-                <Badge variant="outline" className="text-xs">
-                  {team.myRole === "admin" ? "You're a team admin" : "You're on it"}
-                </Badge>
-              )}
-              {archived && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  Archived
-                </Badge>
-              )}
-            </div>
+            <span className="block font-medium text-sm truncate">{team.name}</span>
             {team.description && (
               <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 {team.description}
@@ -323,6 +299,33 @@ function TeamRow({
             )}
           </div>
         </button>
+
+        {/* THE BADGES ARE BESIDE THE ROW BUTTON, NOT INSIDE IT (AT-STOREFIX): a rounded badge inside a button is judged as a pill
+            button by the tap-target guard and logged "pill off-centre" on this page. */}
+        <div className="flex shrink-0 items-center gap-2 flex-wrap justify-end" data-team-badges="">
+          {/* An archived team counts nobody today; its members come back with it. */}
+          {!archived && (
+            <Badge variant="secondary" className="text-xs">
+              {team.memberCount} {team.memberCount === 1 ? "person" : "people"}
+            </Badge>
+          )}
+          {team.hrDepartmentName && (
+            <Badge variant="outline" className="text-xs gap-1">
+              <Building2 className="h-3 w-3" />
+              {team.hrDepartmentName}
+            </Badge>
+          )}
+          {team.myRole && !archived && (
+            <Badge variant="outline" className="text-xs">
+              {team.myRole === "admin" ? "You're a team admin" : "You're on it"}
+            </Badge>
+          )}
+          {archived && (
+            <Badge variant="outline" className="text-xs text-muted-foreground">
+              Archived
+            </Badge>
+          )}
+        </div>
 
         {hasMenu && (
           <DropdownMenu>

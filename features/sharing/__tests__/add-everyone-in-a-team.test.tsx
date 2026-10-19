@@ -131,4 +131,22 @@ describe("Add everyone in a team names the team's people", () => {
     expect(calls.map((c) => c[0].userId)).toEqual([TEST, OWEN]);
     expect(calls.every((c) => c[1] === "editor")).toBe(true);
   });
+
+  it("shows the team's own level, starting at the section's level, and grants at the level picked there (AT-STOREFIX)", async () => {
+    const grantPerson = jest.fn(async () => ({ success: true as const }));
+    act(() => root.render(<AddEveryoneInOrg grantPerson={grantPerson} level="viewer" defaultOrgId={ORG} />));
+    act(() => button("Add everyone in an organization")!.click());
+    await flush();
+
+    expect(host.querySelector('[data-trigger="add-everyone-level"]')).not.toBeNull();
+    // Picking a level here changes what these people get; the section above said viewer.
+    act(() => (host.querySelector('[data-select-item="editor"]') as HTMLButtonElement).click());
+    await flush();
+
+    act(() => button("Share with 3 people")!.click());
+    await flush();
+    const calls = grantPerson.mock.calls as unknown as [unknown, string][];
+    expect(calls.length).toBeGreaterThan(0);
+    expect(calls.every((c) => c[1] === "editor")).toBe(true);
+  });
 });

@@ -144,6 +144,26 @@ it("registers an app in the chosen organization and shows the secret exactly onc
   expect(container.textContent).not.toContain("secret-shown-once");
 });
 
+it("keeps the one-time secret on screen across a remount until Done (AT-STOREFIX)", async () => {
+  registerOAuthApp.mockResolvedValue({
+    id: "a3", client_id: "client-remount", client_secret: "secret-survives-remount", name: "Remount app",
+    redirect_uris: ["https://app.example.com/cb"], scopes: ["data.records:read"], authorize_url: "u", token_url: "t",
+  });
+  await act(async () => root.render(<OAuthAppsTab />));
+  await act(async () => button("New app").click());
+  await act(async () => type(container.querySelector<HTMLInputElement>("input[aria-label=Name]")!, "Remount app"));
+  await act(async () => type(container.querySelector<HTMLTextAreaElement>("textarea")!, "https://app.example.com/cb"));
+  await act(async () => button("Register").click());
+  expect(container.textContent).toContain("secret-survives-remount");
+  // The page remounts the tab (it shows "Loading your apps" again): the secret is still there.
+  await act(async () => root.unmount());
+  root = createRoot(container);
+  await act(async () => root.render(<OAuthAppsTab />));
+  expect(container.querySelector("[data-secret=oauth-client-secret]")?.textContent).toBe("secret-survives-remount");
+  await act(async () => button("Done").click());
+  expect(container.textContent).not.toContain("secret-survives-remount");
+});
+
 it("picking an organization (even the active one) enables Register and registers there", async () => {
   mockOrgs = [{ id: "org-1", name: "Clinic" }, { id: "org-active", name: "admin's Workspace" }];
   registerOAuthApp.mockResolvedValue({

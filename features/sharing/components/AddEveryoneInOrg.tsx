@@ -40,6 +40,7 @@ import { organizationDisambiguators } from "@/features/organizations/organizatio
 import { useOrganizationsToCreateIn } from "@/features/agent-context/hooks/useNavTree";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
+import { PERMISSION_LEVELS, PERMISSION_LEVEL_SHORT_LABELS } from "@/utils/permissions/levels";
 import type {
   PermissionLevel,
   ShareActionResult,
@@ -59,8 +60,10 @@ export interface AddEveryoneInOrgProps {
     person: OrgMemberPerson,
     level: PermissionLevel,
   ) => Promise<ShareActionResult>;
-  /** The level picked in the People tab. Everyone added here gets it. */
+  /** The level picked in the People tab: the block's own level starts here, and follows it until the person picks one here. */
   level: PermissionLevel;
+  /** Why a level may not be given on this thing (null: may). Those levels are shown disabled with the reason. */
+  whyNotLevel?: (level: PermissionLevel) => string | null;
   /** People who already hold a grant on this thing. They are shown, not re-granted. */
   alreadySharedUserIds?: string[];
   /** Called once after a run that granted at least one person. */
@@ -99,7 +102,8 @@ async function readMembers(orgId: string): Promise<OrgMemberPerson[]> {
 
 export function AddEveryoneInOrg({
   grantPerson,
-  level,
+  level: sectionLevel,
+  whyNotLevel,
   alreadySharedUserIds = [],
   onDone,
   defaultOrgId,
@@ -117,6 +121,9 @@ export function AddEveryoneInOrg({
   const [teams, setTeams] = useState<Team[]>([]);
   const [teamsError, setTeamsError] = useState<string | null>(null);
   const [group, setGroup] = useState(EVERYONE);
+  // THE BLOCK'S OWN LEVEL: starts at the People tab's level and follows it until the person picks one here.
+  const [ownLevel, setOwnLevel] = useState<PermissionLevel | null>(null);
+  const level = ownLevel ?? sectionLevel;
 
   const orgLabel = orgs.find((o) => o.id === orgId)?.name ?? "this organization";
   const team = group === EVERYONE ? undefined : teams.find((t) => t.id === group);
@@ -285,6 +292,29 @@ export function AddEveryoneInOrg({
                 <SelectItem key={t.id} value={t.id}>
                   {t.name}
                   <span className="type-meta text-muted-foreground"> · {t.memberCount}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
+      {orgId ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="add-everyone-level" className="text-xs">
+            They get
+          </Label>
+          <Select
+            value={level}
+            onValueChange={(v) => setOwnLevel(v as PermissionLevel)}
+            disabled={running}
+          >
+            <SelectTrigger id="add-everyone-level" data-add-everyone-level={level}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PERMISSION_LEVELS.map((l) => (
+                <SelectItem key={l} value={l} disabled={(whyNotLevel?.(l) ?? null) !== null} title={whyNotLevel?.(l) ?? undefined}>
+                  {PERMISSION_LEVEL_SHORT_LABELS[l]}
                 </SelectItem>
               ))}
             </SelectContent>

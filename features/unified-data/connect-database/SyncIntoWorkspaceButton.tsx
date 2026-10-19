@@ -18,6 +18,7 @@ import { Button, Select } from "@ai-matrx/design-system/controls";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { OrganizationChooser } from "@/features/organizations/components/OrganizationChooser";
+import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { toast } from "@/lib/toast";
 
 const WHOLE_TABLE = "__whole_table__";
@@ -30,6 +31,9 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
   const [view, setView] = useState(WHOLE_TABLE);
   const [dest, setDest] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  // The destination has no data home: said IN the dialog (a toast leaves and the dialog gives no hint what to do), and the
+  // dialog stays ready for a retry the moment the person has opened that workspace's Data page once.
+  const [noHome, setNoHome] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -50,6 +54,7 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
   async function sync() {
     if (!destination || !sourceOrg) return;
     setBusy(true);
+    setNoHome(null);
     const there = createRecordsClient({ ...client.config, organizationId: destination });
     const done = await there.tableCopySync({
       source_organization_id: sourceOrg,
@@ -58,6 +63,7 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
     });
     setBusy(false);
     if (!done.ok) {
+      if (/data home/i.test(done.error.message)) setNoHome(done.error.message);
       toast.error(done.error.message);
       return;
     }
@@ -86,8 +92,17 @@ export function SyncIntoWorkspaceButton({ tableId, organizationId }: { tableId: 
             </label>
             <label className="flex flex-col gap-1 text-sm">
               Workspace
-              <OrganizationChooser value={destination || null} placeholder="Pick a workspace" onChange={(org) => setDest(org.id)} className="w-full justify-start" />
+              <OrganizationChooser value={destination || null} placeholder="Pick a workspace" onChange={(org) => {
+                  setDest(org.id);
+                  setNoHome(null);
+                }} className="w-full justify-start" />
             </label>
+            {noHome ? (
+              <p className="text-xs text-destructive" role="alert" data-sync-into-workspace-no-home="">
+                {noHome} Then press Sync again.
+                <ErrorAlchemyMenu error={noHome} />
+              </p>
+            ) : null}
             <p className="text-xs text-muted-foreground">A read-only copy that follows this view</p>
             <div className="flex justify-end">
               <Button
