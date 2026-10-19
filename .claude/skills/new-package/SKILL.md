@@ -31,6 +31,11 @@ timestamp: 2026-08-30
    package (Arman, 2026-10-07). Split by capability, merge what always ships together.
    Lines come from responsibility, never from today's import counts: a package is separate only if some
    app could need it without the rest, and its job is nameable in one sentence.
+   Never propose a package without that one-sentence job and the design reason an app would use it
+   alone; "current consumers" is not evidence. Method (Arman, 2026-10-09): layer by layer, each with a
+   charter (must include / never include), proof it works standalone in an empty app, and a census of
+   every outside copy of its logic. A creator/consumer client split is coming, so agents/workflows
+   creation stays apart from running. Program history: `projects/npm-package-extraction/HANDOFF.md`.
 5. **Few packages, many sections; pay only for what you use** (Arman, 2026-10-08). Importing one
    section never loads another; unused parts cost zero, measured in a built consumer.
    **Optional parts are sections, never separate packages** (Arman, 2026-10-15, set on sync): a

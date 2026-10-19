@@ -37,7 +37,7 @@ Keyword grep is round one, never the last round. Each round uses a DIFFERENT met
 - read how each copy actually behaves, not just where it is.
 
 Where copies do the same job differently, list every way on the list and pick a winner per capability.
-Build the canonical one CLEAN from the winners: never promote the best existing copy and patch it.
+Build the canonical one CLEAN from the winners: never promote the best existing copy and patch it. Research every copy completely first (every column, every behavior, what is actually used), eliminate what is wrong, bad or unused, and build ONE system with 100% of the winning capabilities from day one; the incumbent is one input, never the base, and the strongest incumbent migrates in like every other. The order for a storage or design unification: research, capability-by-implementation winner matrix, clean design, independent attack, build, migrate all. "Follow X's concepts" means follow its method, not store content in X.
 
 Done when: a round using a new method adds nothing to the list.
 

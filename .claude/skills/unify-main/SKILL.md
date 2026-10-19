@@ -35,8 +35,10 @@ description: The standing order for local git state in every AI Matrx repo — z
 5. **When `git push` is rejected, integrate:** never stash, never rebase a dirty tree, never force (procedure
    below). **Every merge conflict, blocked pull or failed push is yours to resolve and push in the same
    turn; never list one as pending for Arman** (Arman, 2026-10-10).
-6. **Never revert or delete another lane's guard, gate or forcing test to clear an error.** Fix the cause, or
-   record it and leave it. A shared-identity revert cannot be attributed, so answer with state, not blame.
+6. **Never revert or delete another lane's guard, gate or forcing test to clear an error** (a type error is
+   never a reason to delete a guard; removing a live-money gate is a destructive click). Fix the cause, or
+   record it and leave it. A shared-identity revert cannot be attributed, so answer with state, not blame:
+   when a peer reports a revert, check `git log` for the gate's current state and its forcing test first.
 7. **A plumbing or private-index commit is proven against what is pushed.** Before committing a shared file,
    `git diff HEAD -- <file>` and confirm every hunk is yours; before reporting done, prove every symbol the
    commit imports exists in the pushed tree (`git archive <commit>` into scratch, then import-test or
