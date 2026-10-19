@@ -49,6 +49,9 @@ import { useWheelModePreference } from "../board/useWheelModePreference";
 import { type BoardDocument, type NodeSource } from "../board/document";
 import { BoardMenu } from "../components/BoardMenu";
 import { BoardSurface } from "../components/BoardSurface";
+import { MANDATE_KEYS } from "@ai-matrx/agents/mandates";
+import { useDeclaredSurfaceMandates } from "@ai-matrx/chat/surfaces/runtime/surface-mandates";
+import { BOARD_SURFACE_NAME } from "@/features/surfaces/manifests/board.manifest";
 import { BoardViewport } from "../components/BoardViewport";
 import { BoardTile, TileLayersContext } from "../components/BoardTile";
 import { BoardFrameView } from "../components/BoardFrameView";
@@ -138,6 +141,9 @@ const CAMERA_SAVE_MS = 1200;
  * compiler's memoization holds and the page's save-status flips never reach a
  * tile body.
  */
+/** The design-system Conductor (DESIGN-SYSTEM-ORCHESTRA.md, Phase 1). */
+const DESIGN_SYSTEM_BUILD_MANDATE = MANDATE_KEYS.design_system__build;
+
 export function UserBoard({
   boardId = null,
   title,
@@ -209,6 +215,12 @@ export function UserBoard({
   const chapterIcons = useChapterIcons(board);
   // The board's own design tokens: component samples on it draw in them.
   const tokenTables = useTokenTables(board);
+  // A design system board (it holds token tables) runs the Conductor: the Agents menu presents its mandate here.
+  useDeclaredSurfaceMandates(
+    tokenTables.length
+      ? [{ mandateKey: DESIGN_SYSTEM_BUILD_MANDATE, does: "Builds or adapts this design system to a brand, row by row.", surfaceName: BOARD_SURFACE_NAME }]
+      : [],
+  );
   // The board's own thread, read ONCE: each board-only tile's count is its part's share of it.
   const boardCommentCounts = useBoardCommentCounts(boardId);
   const tileLayers = useMemo(() => new Map(layout.tileIds.map((tid, i) => [tid, i] as const)), [layout.tileIds]);
