@@ -110,6 +110,14 @@ export function seedPlatform(): void {
   // asks once (a scope's page too): no custom values, no row linking here.
   seedRpc("entity_record_read", {});
   seedRpc("entity_back_links", { target: null, items: [], next_cursor: null });
+  // the add-a-column control on any record page (entity_field_rights): she owns the organization, so she may.
+  seedRpc("entity_field_rights", (args: unknown) => ({
+    token: (args as { p_token?: string }).p_token ?? null,
+    label: "Records",
+    may_declare: true,
+    reason: null,
+    may_fill_in: true,
+  }));
   // @ai-matrx/chat's background dock (chat.conversation_background_facts: one row per conversation it is asked
   // about, none have background work) and its server look (`ues_touch`, a write the dock records once per point).
   seedRpc("conversation_background_facts", []);
