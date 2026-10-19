@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0455",
-  "version": 5,
+  "version": 6,
   "title": "Photography Studio Desk",
-  "description": "Clients, packages, shoots and the editing-to-delivery checklist for a photo studio.",
+  "description": "For photographers: inquiries, packages, contracts, deposits, shoots and gallery delivery.",
   "forWho": "Portrait, wedding and brand photographers",
   "icon": {
     "emoji": "📷"
@@ -14,10 +14,12 @@
   },
   "category": "agencies",
   "tags": [
-    "photography",
+    "photographer",
+    "wedding photographer",
+    "studio manager",
     "bookings",
-    "packages",
-    "delivery"
+    "deposits",
+    "gallery delivery"
   ],
   "spec": {
     "specVersion": 1,
@@ -153,6 +155,40 @@
             "via": "shoots",
             "pick": "shoot_name",
             "agg": "count"
+          },
+          {
+            "key": "in_progress",
+            "label": "Shoots in progress",
+            "parityType": "rollup",
+            "via": "shoots",
+            "pick": "shoot_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Booked",
+                "Shot",
+                "Editing"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "spend",
+            "label": "Booked with us",
+            "parityType": "rollup",
+            "via": "shoots",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Inquiry"
+                ]
+              }
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "owner_me",
@@ -439,6 +475,23 @@
             ]
           },
           {
+            "key": "deposit_pct",
+            "label": "Deposit to book (%)",
+            "parityType": "percent",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "hours",
             "label": "Coverage hours",
             "parityType": "number",
@@ -473,9 +526,43 @@
             ]
           },
           {
+            "key": "turnaround",
+            "label": "Delivery within (days)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 120
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "includes",
             "label": "Includes",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "usage",
+            "label": "Image use",
+            "parityType": "select",
+            "choices": [
+              "Personal use",
+              "Web and social",
+              "Full commercial"
+            ],
+            "choiceColors": {
+              "Personal use": "blue",
+              "Web and social": "green",
+              "Full commercial": "amber"
+            },
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -559,7 +646,10 @@
               "price_floor": 4800,
               "hours": 9,
               "images": 600,
-              "includes": "Two photographers, engagement session, online gallery, printing rights"
+              "includes": "Two photographers, engagement session, online gallery, printing rights",
+              "deposit_pct": 30,
+              "turnaround": 60,
+              "usage": "Personal use"
             }
           },
           {
@@ -570,7 +660,10 @@
               "price_floor": 2200,
               "hours": 3,
               "images": 200,
-              "includes": "One photographer, gallery, 20 retouched favourites"
+              "includes": "One photographer, gallery, 20 retouched favourites",
+              "deposit_pct": 30,
+              "turnaround": 30,
+              "usage": "Personal use"
             }
           },
           {
@@ -581,7 +674,10 @@
               "price_floor": 550,
               "hours": 1.5,
               "images": 45,
-              "includes": "Outdoor location, gallery, two prints"
+              "includes": "Outdoor location, gallery, two prints",
+              "deposit_pct": 25,
+              "turnaround": 14,
+              "usage": "Personal use"
             }
           },
           {
@@ -592,7 +688,10 @@
               "price_floor": 380,
               "hours": 1,
               "images": 25,
-              "includes": "Studio lighting, wardrobe guidance, retouching"
+              "includes": "Studio lighting, wardrobe guidance, retouching",
+              "deposit_pct": 25,
+              "turnaround": 10,
+              "usage": "Personal use"
             }
           },
           {
@@ -603,7 +702,10 @@
               "price_floor": 1800,
               "hours": 5,
               "images": 80,
-              "includes": "Product and people images with licence for web and social"
+              "includes": "Product and people images with licence for web and social",
+              "deposit_pct": 50,
+              "turnaround": 21,
+              "usage": "Full commercial"
             }
           },
           {
@@ -614,7 +716,10 @@
               "price_floor": 900,
               "hours": 3,
               "images": 150,
-              "includes": "Candid and group photos, next-day preview"
+              "includes": "Candid and group photos, next-day preview",
+              "deposit_pct": 40,
+              "turnaround": 10,
+              "usage": "Web and social"
             }
           }
         ]
@@ -772,8 +877,29 @@
             "formula": "{Quoted fee (USD)} - {Deposit received (USD)}"
           },
           {
+            "key": "balance_paid",
+            "label": "Balance paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "contract_signed",
             "label": "Contract signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "questionnaire",
+            "label": "Questionnaire back",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "second",
+            "label": "Second shooter",
             "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
@@ -794,6 +920,13 @@
                 "value": 2000
               }
             ]
+          },
+          {
+            "key": "gallery",
+            "label": "Gallery link",
+            "parityType": "url",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "client",
@@ -998,7 +1131,10 @@
               "client": "client-1",
               "package": "package-1",
               "photographer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "questionnaire": false,
+              "second": true,
+              "balance_paid": false
             }
           },
           {
@@ -1007,7 +1143,7 @@
               "shoot_name": "Ashgrove autumn family session",
               "status": "Booked",
               "kind": "Family",
-              "shoot_on": "@mon+5d",
+              "shoot_on": "@today+2d",
               "deliver_by": "@today+14d",
               "location": "Palmetto Park",
               "fee": 620,
@@ -1015,7 +1151,10 @@
               "contract_signed": true,
               "client": "client-2",
               "package": "package-3",
-              "photographer": "tm-2"
+              "photographer": "tm-2",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": false
             }
           },
           {
@@ -1033,7 +1172,10 @@
               "client": "client-3",
               "package": "package-5",
               "photographer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "questionnaire": true,
+              "second": true,
+              "balance_paid": false
             }
           },
           {
@@ -1064,7 +1206,10 @@
               "client": "client-5",
               "package": "package-4",
               "photographer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": false
             }
           },
           {
@@ -1083,7 +1228,11 @@
               "client": "client-6",
               "package": "package-3",
               "photographer": "tm-2",
-              "delivered_on": "@today-455d"
+              "delivered_on": "@today-455d",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": true,
+              "gallery": "https://gallery.lowlightstudio.net/okonkwo-lindqvist"
             }
           },
           {
@@ -1103,7 +1252,11 @@
               "package": "package-5",
               "photographer": "tm-1",
               "owner_me": "@installer",
-              "delivered_on": "@today-50d"
+              "delivered_on": "@today-50d",
+              "questionnaire": true,
+              "second": true,
+              "balance_paid": true,
+              "gallery": "https://gallery.lowlightstudio.net/kestrel-roastery"
             }
           },
           {
@@ -1122,7 +1275,11 @@
               "client": "client-8",
               "package": "package-2",
               "photographer": "tm-1",
-              "delivered_on": "@today-80d"
+              "delivered_on": "@today-80d",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": true,
+              "gallery": "https://gallery.lowlightstudio.net/hargrove"
             }
           },
           {
@@ -1140,7 +1297,10 @@
               "client": "client-7",
               "package": "package-5",
               "photographer": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "questionnaire": false,
+              "second": false,
+              "balance_paid": false
             }
           },
           {
@@ -1157,7 +1317,10 @@
               "contract_signed": true,
               "client": "client-2",
               "package": "package-3",
-              "photographer": "tm-2"
+              "photographer": "tm-2",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": false
             }
           },
           {
@@ -1175,7 +1338,10 @@
               "client": "client-1",
               "package": "package-4",
               "photographer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "questionnaire": true,
+              "second": false,
+              "balance_paid": false
             }
           },
           {
@@ -1192,7 +1358,10 @@
               "contract_signed": false,
               "client": "client-5",
               "package": "package-6",
-              "photographer": "tm-2"
+              "photographer": "tm-2",
+              "questionnaire": false,
+              "second": true,
+              "balance_paid": false
             }
           }
         ]
@@ -2017,13 +2186,14 @@
       "noRealPeople": true,
       "sources": [],
       "fictionalDomains": [
-        "saltmarshphoto.net"
+        "saltmarshphoto.net",
+        "gallery.lowlightstudio.net"
       ],
       "fictionalStreets": [
         "Weaver Close"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2062,6 +2232,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2471,6 +2647,386 @@
             ],
             "activeViewId": "tas-b"
           }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "photography-studio-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs a photography studio's business side: every inquiry and client, the packages you sell, each shoot with its contract, deposit and balance, the to-do list from questionnaire to gallery, and delivery dates you promised. Your editing software and gallery host stay where they are; this is where bookings and promises are kept."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A couple, family or business"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, where they found you, shoots in progress, booked with us"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Packages"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Something you sell"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Starting price, deposit to book, hours, images, delivery within, image use"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shoots"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One session or event"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date, contract signed, questionnaire back, deposit, balance, balance paid, deliver by"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tasks"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One step for one shoot"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, due date, who"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three promises the studio keeps"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No date is held without a signed contract and a deposit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every card is backed up twice before it is formatted."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Galleries go out by the date in the contract."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your packages with starting price, deposit percent and delivery days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every booked shoot with fee, deposit received and the date you promised delivery."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Contract signed",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Questionnaire back",
+              "bold": true
+            },
+            {
+              "text": " honestly; chase what is missing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the open tasks for shoots in the next month and in editing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shoots this week: contracts, questionnaires, timelines, weather"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuesday and Wednesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Editing days; nothing else booked"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Inquiries answered; consultations held"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Galleries due next week checked; balances invoiced"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ashgrove family session is in two days. The questionnaire is back, so the photographer checks the sunset time, confirms the park, and sends a short note on what to wear."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Even a solo studio has two jobs: the photographer and the office. Block office time each week for replies, contracts and invoices, so editing days stay free."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Balance",
+              "bold": true
+            },
+            {
+              "text": " is the quoted fee minus the deposit. A balance unpaid on a delivered shoot is the first thing to chase on Friday."
+            }
+          ]
         }
       ]
     },
@@ -2904,14 +3460,14 @@
       "parent": "photography-studio-desk",
       "title": "From inquiry to booked",
       "icon": {
-        "emoji": "📨"
+        "emoji": "📩"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Reply fast, sound human, and make the next step obvious. Most clients book the first studio that answers well."
+              "text": "Most inquiries are lost to slow replies, not to price. Answer fast, make the next step easy, and hold no date without a contract and deposit."
             }
           ],
           "background": "blue",
@@ -2923,7 +3479,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Within one working day"
+              "text": "The first reply (within a few hours)"
             }
           ],
           "props": {
@@ -2934,7 +3490,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reply with availability for their date and two package suggestions."
+              "text": "Add the client with "
+            },
+            {
+              "text": "Source",
+              "bold": true
+            },
+            {
+              "text": " and the date of the first inquiry."
             }
           ]
         },
@@ -2942,7 +3505,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create the client row and a shoot at the Inquiry stage."
+              "text": "Thank them by name and mention one detail from their message."
             }
           ]
         },
@@ -2950,7 +3513,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer a short call or a studio visit."
+              "text": "Share the package that fits, with its starting price, and offer a short call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a shoot row with status "
+            },
+            {
+              "text": "Inquiry",
+              "bold": true
+            },
+            {
+              "text": " and the date they asked about."
             }
           ]
         },
@@ -2958,7 +3536,62 @@
           "type": "heading",
           "text": [
             {
-              "text": "To hold the date"
+              "text": "The consultation call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "What the day or session is for, and what they want to remember"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Location, timing and how many people"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Their budget, asked plainly and kindly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "For brands: where the images will be used, so the right image use is quoted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sending the proposal"
             }
           ],
           "props": {
@@ -2969,7 +3602,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Contract signed and deposit received, then change the shoot to Booked."
+              "text": "The package, what it includes, the delivery time and the image use."
             }
           ]
         },
@@ -2977,7 +3610,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Without a deposit, the date is held for seven days only."
+              "text": "The deposit to book and when the balance is due."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A reply-by date. Dates are first come, first served."
             }
           ]
         },
@@ -2985,7 +3626,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After booking"
+              "text": "Booking"
             }
           ],
           "props": {
@@ -2993,48 +3634,197 @@
           }
         },
         {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Welcome email with what happens next"
-            }
-          ],
+          "type": "table",
           "props": {
-            "checked": false
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Contract"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Signed by the client; tick "
+                    },
+                    {
+                      "text": "Contract signed",
+                      "bold": true
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deposit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Received; enter "
+                    },
+                    {
+                      "text": "Deposit received",
+                      "bold": true
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Set to "
+                    },
+                    {
+                      "text": "Booked",
+                      "bold": true
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Questionnaire"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sent the same day"
+                    }
+                  ]
+                ]
+              }
+            ]
           }
         },
         {
-          "type": "todo",
+          "type": "heading",
           "text": [
             {
-              "text": "Questionnaire sent"
+              "text": "When they go quiet"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Calendar invite with address and arrival time"
+              "text": "Follow up once after three days and once after a week. Then mark the inquiry closed with a note. Never chase more than twice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing questions"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Checklist items added to the shoot"
+              "text": "If the price is the obstacle, offer a smaller package or a shorter session, not a discount on the same work. Discounts teach clients that your prices are negotiable."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Brennans asked about an engagement session three days ago. The studio sends two package options with a reply-by date and offers a 15-minute call this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contracts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Use the same contract for every booking of a kind, with the package, date, deposit, balance due, delivery time, image use and cancellation terms filled in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Track where clients come from"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at "
+            },
+            {
+              "text": "Source",
+              "bold": true
+            },
+            {
+              "text": " each quarter. If venue partners send most of the booked weddings, spend more time with venues and less on posting."
+            }
+          ]
         }
       ]
     },
@@ -3043,9 +3833,102 @@
       "parent": "photography-studio-desk",
       "title": "Shoot day preparation",
       "icon": {
-        "emoji": "🎒"
+        "emoji": "📷"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A calm shoot comes from preparation done days before. Clients notice when you know the timeline, the light and their names."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Questionnaire back; tick "
+            },
+            {
+              "text": "Questionnaire back",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Timeline agreed for weddings and events, minute by minute"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Must-have shot list confirmed, including family groupings"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Location scouted at the same time of day, or checked with the venue"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Second shooter confirmed if the package includes one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance invoice sent if the contract says it is due before the day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3058,10 +3941,45 @@
           }
         },
         {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check the weather and agree a backup plan for rain."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the client a short note: arrival time, where to meet, what to bring."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm parking and any venue rules about flash or where you may stand."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The night before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "todo",
           "text": [
             {
-              "text": "Batteries charged and spares counted"
+              "text": "Batteries charged; spares packed"
             }
           ],
           "props": {
@@ -3072,7 +3990,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Cards formatted, spare cards packed"
+              "text": "Memory cards formatted and labelled"
             }
           ],
           "props": {
@@ -3083,7 +4001,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Flash, reflectors and backdrops packed per the plan"
+              "text": "Two camera bodies, lenses cleaned, flashes tested"
             }
           ],
           "props": {
@@ -3094,7 +4012,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Weather checked; indoor backup location confirmed"
+              "text": "Shot list and timeline printed and on your phone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client and venue phone numbers saved"
             }
           ],
           "props": {
@@ -3105,7 +4034,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Morning of"
+              "text": "On the day"
             }
           ],
           "props": {
@@ -3113,18 +4042,34 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Message the client with arrival time and a cheerful reminder of what to wear."
+              "text": "Arrive early; walk the location and test the light."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Check the shot list for must-have groups and family notes."
+              "text": "Shoot the must-haves first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For groups, have someone from the family call names so you can focus on the photos."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At the end, thank the client and tell them when to expect a sneak peek."
             }
           ]
         },
@@ -3140,26 +4085,90 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Back up the cards to two places before leaving."
+              "text": "Back up every card twice before you go to bed; mark the backup task done."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Mark the shoot Shot and add the editing checklist items."
+              "text": "Set the shoot to "
+            },
+            {
+              "text": "Shot",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send a thank-you with the delivery date."
+              "text": "Send a few preview images within 48 hours. It is the moment clients share you with friends."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Whitfield wedding needs a second shooter and the questionnaire is not back yet. The studio sends a friendly reminder and books the ceremony lighting scout for the week before the day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Safety and comfort"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Bring water and a small kit for clients: hair ties, safety pins, tissues and a lint roller. For newborn sessions, warm the room and never pose a baby in a way that is not safe."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weddings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask for one contact on the day who is not the couple: a friend or the planner. They solve the small problems so the couple can enjoy the day."
             }
           ]
         }
@@ -3174,10 +4183,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The gallery is what clients keep and share. Deliver it on time, in a consistent style, with a short guide to what they can do with it."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "The editing pipeline"
+              "text": "The editing flow"
             }
           ],
           "props": {
@@ -3185,69 +4206,110 @@
           }
         },
         {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Cull to the promised number of selects."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Color and exposure on all selects, retouching on favourites."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Export web-sized images and full-resolution files."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Upload to the client gallery with a short welcome note."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Quality checks"
-            }
-          ],
+          "type": "table",
           "props": {
-            "level": 2
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cull"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pick the best frame of each moment; remove near-duplicates and closed eyes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Edit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Consistent color and exposure across the set"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retouch"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Only the hero images, unless the package says more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Export"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full resolution for print and smaller files for the web"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Upload"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Gallery with favorites and download turned on"
+                    }
+                  ]
+                ]
+              }
+            ]
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Ask a second person to open the gallery as the client would."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Each step is a task on the shoot. Mark the shoot "
+            },
             {
-              "text": "Check names, captions and download links."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
+              "text": "Editing",
+              "bold": true
+            },
             {
-              "text": "Confirm the images delivered count against the package promise."
+              "text": " when culling starts."
             }
           ]
         },
@@ -3255,7 +4317,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When you deliver"
+              "text": "Delivery dates"
             }
           ],
           "props": {
@@ -3266,21 +4328,209 @@
           "type": "text",
           "text": [
             {
-              "text": "Press Hand over gallery, record the images delivered, and ask for a short review a week later."
+              "text": "Deliver by",
+              "bold": true
+            },
+            {
+              "text": " comes from the package's "
+            },
+            {
+              "text": "Delivery within",
+              "bold": true
+            },
+            {
+              "text": " days. Block editing days in your calendar the moment a shoot is booked. Missing a delivery date is the most common reason for a poor review."
             }
           ]
         },
         {
-          "type": "callout",
+          "type": "heading",
           "text": [
             {
-              "text": "A gallery that arrives early is the best advertising you will ever get."
+              "text": "Before you send"
             }
           ],
-          "background": "blue",
           "props": {
-            "icon": "Lightbulb"
+            "level": 2
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every image checked at full size for focus and stray marks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Image count matches or beats what the package promised"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance paid; tick "
+            },
+            {
+              "text": "Balance paid",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gallery link added to the shoot in "
+            },
+            {
+              "text": "Gallery link",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "For brands, the image use written in the delivery email"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The delivery email"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The gallery link and how long it stays online."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How to download, mark favorites and order prints."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What they may do with the images: personal use, web and social, or full commercial."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A request for a review, and thanks."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Then set the shoot to "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " with the date and the number of images."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Archive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep two copies of every delivered gallery for at least a year, one away from the studio. Clients lose files; a quick resend makes a loyal client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Whitfield engagement gallery was due a day ago and retouching is still in progress. The photographer emails the couple with a new date, sends three finished favorites as a thank-you, and delivers the full set within two days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When you fall behind"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell the client before the date passes, with a new date you will keep. Clients forgive a short delay; they do not forgive silence."
+            }
+          ]
         }
       ]
     },
@@ -3293,10 +4543,145 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clear packages make booking easy, and deposits protect your calendar. Price for your time, not just the hours behind the camera."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Keeping packages simple"
+              "text": "What a package says"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Part"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What it is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Family session, 90 minutes, one location"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What they get"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "40 edited images in an online gallery"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Delivery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Within 14 days"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Image use"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Personal use, or web and social, or full commercial"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deposit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "25 percent to book"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing your time"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A one-hour session takes far more than one hour: the inquiry and call, travel, shooting, culling, editing, delivery and admin. Count all of it. A family session often takes six to eight hours in total."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposits"
             }
           ],
           "props": {
@@ -3307,7 +4692,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Three to five packages per kind of shoot; each states hours, people and images."
+              "text": "Taken when the contract is signed; nothing is held without it."
             }
           ]
         },
@@ -3315,7 +4700,29 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Add-ons are priced separately so the package stays easy to compare."
+              "text": "Usually not refundable, because you turned other work away for that date. Say so in the contract."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Enter it in "
+            },
+            {
+              "text": "Deposit received",
+              "bold": true
+            },
+            {
+              "text": ". "
+            },
+            {
+              "text": "Balance",
+              "bold": true
+            },
+            {
+              "text": " shows what is left."
             }
           ]
         },
@@ -3323,7 +4730,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Deposits"
+              "text": "Balances"
             }
           ],
           "props": {
@@ -3345,12 +4752,7 @@
                   ],
                   [
                     {
-                      "text": "Typical deposit"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "When"
+                      "text": "Balance due"
                     }
                   ]
                 ]
@@ -3359,17 +4761,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Wedding"
+                      "text": "Weddings and events"
                     }
                   ],
                   [
                     {
-                      "text": "Quarter to half"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "At signing"
+                      "text": "Two to four weeks before the day"
                     }
                   ]
                 ]
@@ -3378,17 +4775,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Family or portrait"
+                      "text": "Family, portrait and newborn"
                     }
                   ],
                   [
                     {
-                      "text": "Quarter"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "At booking"
+                      "text": "On the day or before delivery"
                     }
                   ]
                 ]
@@ -3397,17 +4789,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Brand day"
+                      "text": "Brand work"
                     }
                   ],
                   [
                     {
-                      "text": "Half"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "At signing"
+                      "text": "On delivery, per the agreement"
                     }
                   ]
                 ]
@@ -3416,10 +4803,25 @@
           }
         },
         {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Balance paid",
+              "bold": true
+            },
+            {
+              "text": " when it arrives. No gallery goes out with a balance owing, unless the agreement says otherwise."
+            }
+          ]
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Tracking money"
+              "text": "Brand work"
             }
           ],
           "props": {
@@ -3430,7 +4832,64 @@
           "type": "text",
           "text": [
             {
-              "text": "Record the quoted fee and deposit received on every shoot. The Balance due column does the rest, and the Dashboard lists anything unpaid."
+              "text": "Price the image use separately. A business using images in advertising gets far more value than a family hanging a print, and the price should reflect that. Write the use on the package and in the delivery email."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rescheduling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Put your rescheduling rule in the contract: one free move with enough notice, after that a fee or a new deposit. Apply it the same way to everyone."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Raising prices"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Review prices each year. When you are booked solid months ahead, it is time to raise them for new bookings."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The brand story day asks for half the fee to book, because it holds a full weekday and includes full commercial use. The Kestrel spring menu stills are booked on the same package, with the balance due on delivery."
             }
           ]
         }
