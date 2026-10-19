@@ -5,19 +5,20 @@
  * box: the Google Images "Tools" bar (one box, options behind one press) generated from the Tool's
  * own declaration by `SimpleBoxForm`. The run is a durable call record (`/tools/calls`): inputs are
  * written before anything runs, a slow source keeps going if the tab closes, and `?call=` picks the
- * same answer up again. Beaten by showing the price before the press and the real cost after it.
+ * same answer up again. No price, run count or success rate on the page: points show only at the step that
+ * confirms a spend. "Advanced" opens every option as JSON; "Describe what you want" fills the form from words.
  */
 
 import { createElement, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { SimpleBoxForm } from "@ai-matrx/chat/mandates/invoke/SimpleBoxForm";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { CATALOG_SEARCH_PATH, toolPriceText, type CatalogSearchResponse, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
+import { CATALOG_SEARCH_PATH, type CatalogSearchResponse, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
@@ -30,7 +31,10 @@ import { ToolResult } from "./ToolResult";
 import { KeepInCrm, AddressStatus } from "./people/KeepInCrm";
 import { checkedPhone, emailVerdictWords, kindOf, nextSteps, type NextStep } from "./people/lookupPlan";
 import { FollowUpCard, NextSteps, type FollowUp } from "./people/ToolFollowUps";
-import { jobFamilyOf, refillFor, reliabilityFacts, speedText } from "./toolFacts";
+import { inputsToSend, jobFamilyOf, refillFor } from "./toolFacts";
+import { ToolAdvanced } from "./ToolAdvanced";
+import { ToolDescribe } from "./ToolDescribe";
+import { ToolsAdminSlot, useToolsAdminView } from "./ToolsAdminSlot";
 import { useToolCall } from "./useToolCall";
 import { useToolRunForm } from "./useToolRunForm";
 
@@ -81,6 +85,12 @@ function readWith(raw: string | null): Record<string, unknown> {
   }
 }
 
+function applyValues(prev: Record<string, unknown>, applied: Record<string, unknown>, userId: string | null | undefined, toolId: string): Record<string, unknown> {
+  const next = { ...prev, ...applied };
+  if (userId) writeDraft(userId, toolId, next);
+  return next;
+}
+
 export function ToolPage({
   toolId,
   known,
@@ -112,7 +122,7 @@ export function ToolPage({
   const title = card?.display_name ?? facts?.displayName ?? "Tool";
   const summary = card?.summary ?? facts?.summary ?? "";
   const noun = card?.display_noun ?? facts?.displayNoun ?? "";
-  const priceHint = card?.price_hint_points ?? facts?.priceHintPoints ?? null;
+  const adminView = useToolsAdminView();
 
   // `?with=` fills the box (a lookup started from the one search box) and `&run=1` presses it once.
   const [values, setValues] = useState<Record<string, unknown>>(() => {
@@ -199,14 +209,12 @@ export function ToolPage({
   const verdictView = Object.values(followViews).find((v) => v?.status === "succeeded" && kindOf(v.output) === "email_verdict" && String((v.output as Record<string, unknown>).email ?? "").toLowerCase() === answerEmail.toLowerCase());
 
   const family = jobFamilyOf(card?.job_family);
-  const price = toolPriceText({ price_hint_points: priceHint });
-  const reliability = card ? reliabilityFacts(card.reliability) : null;
-  const speed = card ? speedText(card.reliability.p50_ms) : null;
   const approval = view?.status === "needs_approval" ? (view.approval as ScreenRunApproval | null) : null;
   const running = view != null && (view.status === "queued" || view.status === "running" || view.status === "waiting");
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-12 pt-4" data-tool-page={toolId}>
+      <ToolsAdminSlot where="tool" toolId={realToolId} />
       <div className="flex items-center gap-2">
         <Button variant="quiet" onClick={onBack} icon={<ArrowLeft className="h-4 w-4" />}>
           All Tools
@@ -234,19 +242,6 @@ export function ToolPage({
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               {noun ? <Badge tone="neutral">{noun}</Badge> : null}
               {facts?.offNotice ? <Badge tone="warning">Paused</Badge> : null}
-              {price ? <span className="font-medium text-foreground">{price}</span> : null}
-              {reliability ? (
-                <span>
-                  {reliability.headline}
-                  {reliability.sample ? ` · ${reliability.sample}` : ""}
-                </span>
-              ) : null}
-              {speed ? (
-                <span className="inline-flex items-center gap-1">
-                  <Zap className="h-3 w-3" aria-hidden />
-                  {speed}
-                </span>
-              ) : null}
             </div>
           ) : null}
         </div>
@@ -277,10 +272,25 @@ export function ToolPage({
               autoFocus
             />
           )}
+          {form.data ? (
+            <div className="mt-3 flex flex-col items-start gap-2">
+              <ToolDescribe
+                toolId={realToolId}
+                current={inputsToSend(merged)}
+                names={inputs.map((i) => i.name)}
+                onFill={(filled) => setValues((prev) => applyValues(prev, filled, userId, toolId))}
+              />
+              <ToolAdvanced
+                names={inputs.map((i) => i.name)}
+                current={inputsToSend(merged)}
+                onApply={(applied) => setValues((prev) => applyValues(prev, applied, userId, toolId))}
+              />
+            </div>
+          ) : null}
         </div>
         <div className="min-w-0">
           <div className="flex flex-col gap-3">
-            <ToolResult view={view} clientError={clientError} onRunAgain={() => void run()} onCancel={stop} onReopen={call.reopen} />
+            <ToolResult view={view} jobFamily={card?.job_family ?? null} adminView={adminView} clientError={clientError} onRunAgain={() => void run()} onCancel={stop} onReopen={call.reopen} />
             {view?.status === "succeeded" ? (
               <>
                 <AddressStatus output={view.output} verdict={verdictView?.output} />

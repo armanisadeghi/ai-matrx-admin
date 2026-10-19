@@ -24,7 +24,8 @@ jest.mock("@/features/tool-result-tables/ToolResultTableBar", () => ({ ToolResul
 jest.mock("@/components/icons/domain-icons", () => ({ AGENT_ICON: () => <svg /> }));
 
 import { ToolResult } from "../ToolResult";
-import { ToolCard } from "../ToolCard";
+import { ToolRow } from "../ToolRow";
+import { sourceLabel } from "../sourceNames";
 
 const view = (status: ToolCallView["status"], extra: Partial<ToolCallView> = {}): ToolCallView => ({
   call_id: "c1",
@@ -52,8 +53,8 @@ const view = (status: ToolCallView["status"], extra: Partial<ToolCallView> = {})
 let root: Root;
 let host: HTMLDivElement;
 const noop = () => {};
-const show = (v: ToolCallView | null, clientError: string | null = null) =>
-  act(() => root.render(<ToolResult view={v} clientError={clientError} onRunAgain={noop} onCancel={noop} onReopen={noop} />));
+const show = (v: ToolCallView | null, clientError: string | null = null, extra: { adminView?: boolean; jobFamily?: string } = {}) =>
+  act(() => root.render(<ToolResult view={v} clientError={clientError} onRunAgain={noop} onCancel={noop} onReopen={noop} {...extra} />));
 beforeEach(() => {
   host = document.createElement("div");
   document.body.appendChild(host);
@@ -73,12 +74,30 @@ describe("ToolResult", () => {
     const cost = host.querySelector("[data-tool-cost]")?.textContent ?? "";
     expect(cost).not.toContain("Cost");
     expect(cost).not.toContain("$");
+    expect(host.textContent).not.toContain("Raw data");
+  });
+
+  it("a member never sees the Raw data toggle; an admin with the admin view on does", () => {
+    const v = view("succeeded", { output: { domain: "x.org" }, raw: { domain: "x.org" } });
+    show(v);
+    expect(host.textContent).not.toContain("Raw data");
+    show(v, null, { adminView: true });
     expect(host.textContent).toContain("Raw data");
   });
 
   it("a compare Tool's source (what the layer sends only for compare) is shown beside the answer", () => {
     show(view("succeeded", { output: { domain: "x.org" }, display_source: "Moz" }));
     expect(host.querySelector("[data-tool-cost]")?.textContent).toContain("Moz");
+  });
+
+  it("a Matrx source reads by the Tool's job, a real brand by name, and nothing else leaks", () => {
+    expect(sourceLabel("Matrx", "seo")).toBe("Matrx SEO");
+    expect(sourceLabel("Matrx", "nonsense")).toBe("Matrx");
+    expect(sourceLabel("Moz", "seo")).toBe("Moz");
+    expect(sourceLabel("DataForSEO", "seo")).toBe("Matrx SEO");
+    expect(sourceLabel(null, "seo")).toBeNull();
+    show(view("succeeded", { output: { domain: "x.org" }, display_source: "Matrx" }), null, { jobFamily: "people" });
+    expect(host.querySelector("[data-tool-cost]")?.textContent).toContain("Matrx People");
   });
 
   it("says a saved answer is saved, and never says free", () => {
@@ -113,7 +132,7 @@ describe("ToolResult", () => {
   });
 
   it("the raw view is a marked source view, so internal keys are allowed there and nowhere else", () => {
-    show(view("succeeded", { output: { domain: "x.org" }, raw: { __kind: "domain_authority", domain: "x.org" } }));
+    show(view("succeeded", { output: { domain: "x.org" }, raw: { __kind: "domain_authority", domain: "x.org" } }), null, { adminView: true });
     act(() => ([...host.querySelectorAll("button")].find((b) => b.textContent === "Raw data") as HTMLButtonElement).click());
     expect(host.querySelector("[data-kind-source='explicit'] [data-raw]")).toBeTruthy();
   });
@@ -139,29 +158,24 @@ const hit = (extra: Partial<CatalogToolHit> = {}): CatalogToolHit => ({
   ...extra,
 });
 
-describe("ToolCard", () => {
-  it("states price, reliability with its sample and speed; try and give are separate presses", () => {
+describe("ToolRow", () => {
+  it("shows what the Tool does and nothing numeric: no price, no percent, no run count; open and give are separate presses", () => {
     const opened = jest.fn();
     const gave = jest.fn();
-    act(() => root.render(<ToolCard hit={hit()} onOpen={opened} onGive={gave} />));
+    act(() => root.render(<ToolRow hit={hit()} onOpen={opened} onGive={gave} />));
     const text = host.textContent ?? "";
-    expect(text).toContain("400 pts");
-    expect(text).toContain("100% worked");
-    expect(text).toContain("6 runs");
-    expect(text).toContain("~4.3 s");
-    const buttons = [...host.querySelectorAll("button")];
-    act(() => buttons.find((b) => b.textContent === "Give to an agent")!.click());
+    expect(text).toContain("Backlinks");
+    expect(text).toContain("How many links point at a site.");
+    expect(text).not.toMatch(/pts|worked|runs|~\d|\d%/);
+    act(() => (host.querySelector("button[aria-label='Give to an agent']") as HTMLButtonElement).click());
     expect(gave).toHaveBeenCalledTimes(1);
     expect(opened).not.toHaveBeenCalled();
-    act(() => buttons.find((b) => b.textContent === "Try it")!.click());
+    act(() => (host.querySelector("[data-tool-card]") as HTMLElement).click());
     expect(opened).toHaveBeenCalledTimes(1);
   });
 
-  it("is honest while the sample is small and when the Tool is paused", () => {
-    act(() => root.render(<ToolCard hit={hit({ reliability: { success_rate: 1, samples: 2, p50_ms: null, last_success_at: null }, state: "paused" })} onOpen={noop} onGive={noop} />));
-    const text = host.textContent ?? "";
-    expect(text).toContain("New");
-    expect(text).not.toContain("100% worked");
-    expect(text).toContain("Paused");
+  it("says when the Tool is paused", () => {
+    act(() => root.render(<ToolRow hit={hit({ state: "paused" })} onOpen={noop} onGive={noop} />));
+    expect(host.textContent).toContain("Paused");
   });
 });
