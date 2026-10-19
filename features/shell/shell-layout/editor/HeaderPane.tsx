@@ -2,9 +2,22 @@
 
 // HeaderPane — the Header's buttons, left to right: the five header controls (Search and Notifications are
 // reserved — always there, shown with a lock), plus your own: a page, a link, a launchpad or an AI job.
+// Reorder by dragging a row's handle (the same dnd-kit drag as the Sidebar's ArrangeTree), or with the
+// row's left/right buttons — the keyboard and touch twin of the drag.
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Bell, BrainCircuit, Lock, MessageSquare, PanelRight, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@ai-matrx/design-system";
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  pointerWithin,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragMoveEvent,
+} from "@dnd-kit/core";
+import { ArrowDown, ArrowUp, Bell, BrainCircuit, GripVertical, Lock, MessageSquare, PanelRight, Plus, Search, Trash2, type LucideIcon } from "lucide-react";
+import { DragCursorMonitor, Popover, PopoverContent, PopoverTrigger, cn } from "@ai-matrx/design-system";
 import { Button, SearchField } from "@ai-matrx/design-system/controls";
 import ShellIcon from "@/features/shell/components/ShellIcon";
 import type { ShellIconName } from "@/features/shell/shellIconMap";
@@ -12,7 +25,9 @@ import { RESERVED_HEADER_CONTROLS, type HeaderButton, type HeaderControlId } fro
 import { getCatalogEntry, type ShellCatalogEntry } from "../catalog";
 import { AddOwnRow, type PickOption } from "./AddOwnRow";
 import { IconPicker } from "./IconPicker";
-import { addHeaderButton, isLockedHeaderButton, moveInList } from "./tree";
+import { addHeaderButton, isLockedHeaderButton, listDropIndex, moveInList } from "./tree";
+
+type HeaderDrop = { id: string; side: "before" | "after" };
 
 const CONTROL: Record<HeaderControlId, { label: string; Icon: LucideIcon }> = {
   search: { label: "Search", Icon: Search },
@@ -81,49 +96,139 @@ export function HeaderPane({
           </Button>
         ))}
       </div>
-      <ol className="min-h-0 flex-1 overflow-y-auto px-1 pb-2" aria-label="Your header, left to right">
-        {buttons.map((b, i) => {
-          const locked = isLockedHeaderButton(b, RESERVED_HEADER_CONTROLS);
-          return (
-            <li key={b.id} className="flex min-h-9 items-center gap-1 rounded-md px-1 hover:bg-accent">
-              {b.kind === "control" ? (
-                <span className="flex h-7 w-7 items-center justify-center">
-                  {(() => {
-                    const Icon = CONTROL[b.control].Icon;
-                    return <Icon className="h-4 w-4" aria-hidden />;
-                  })()}
-                </span>
-              ) : (
-                <IconPicker
-                  value={buttonIcon(b)}
-                  onChange={(icon) => onChange(buttons.map((x) => (x.id === b.id && x.kind !== "control" ? { ...x, icon } : x)))}
-                />
-              )}
-              <span className="min-w-0 flex-1 truncate type-body">{buttonLabel(b)}</span>
-              {KIND_WORD[b.kind] ? <span className="type-meta text-muted-foreground">{KIND_WORD[b.kind]}</span> : null}
-              {locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-label="Always in the header" /> : null}
-              <Button variant="quiet" aria-label={`Move ${buttonLabel(b)} left`} icon={<ArrowUp />} disabled={i === 0} onClick={() => onChange(moveInList(buttons, b.id, i - 1))} />
-              <Button
-                variant="quiet"
-                aria-label={`Move ${buttonLabel(b)} right`}
-                icon={<ArrowDown />}
-                disabled={i === buttons.length - 1}
-                onClick={() => onChange(moveInList(buttons, b.id, i + 1))}
-              />
-              <Button
-                variant="quiet"
-                removes
-                aria-label={locked ? `${buttonLabel(b)} is always in the header` : `Remove ${buttonLabel(b)}`}
-                title={locked ? "Always in the header" : "Remove"}
-                icon={<Trash2 />}
-                disabled={locked}
-                onClick={() => onChange(buttons.filter((x) => x.id !== b.id))}
-              />
-            </li>
-          );
-        })}
-      </ol>
+      <HeaderList buttons={buttons} onChange={onChange} />
     </div>
+  );
+}
+
+function HeaderList({ buttons, onChange }: { buttons: HeaderButton[]; onChange: (next: HeaderButton[]) => void }) {
+  const [drop, setDrop] = useState<HeaderDrop | null>(null);
+  const [dragging, setDragging] = useState<string | null>(null);
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }));
+
+  const zoneFor = (event: DragMoveEvent): HeaderDrop | null => {
+    const over = event.over;
+    if (!over || over.id === event.active.id) return null;
+    const start = event.activatorEvent as PointerEvent | TouchEvent;
+    const startY = "touches" in start ? (start.touches[0]?.clientY ?? 0) : start.clientY;
+    const y = startY + event.delta.y;
+    return { id: String(over.id), side: y < over.rect.top + over.rect.height / 2 ? "before" : "after" };
+  };
+
+  const end = (activeId: string) => {
+    const zone = drop;
+    setDrop(null);
+    setDragging(null);
+    if (!zone) return;
+    const from = buttons.findIndex((b) => b.id === activeId);
+    const over = buttons.findIndex((b) => b.id === zone.id);
+    if (from === -1 || over === -1) return;
+    onChange(moveInList(buttons, activeId, listDropIndex(from, over, zone.side)));
+  };
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerWithin}
+      onDragStart={(e) => setDragging(String(e.active.id))}
+      onDragMove={(e) => setDrop(zoneFor(e))}
+      onDragCancel={() => {
+        setDrop(null);
+        setDragging(null);
+      }}
+      onDragEnd={(e) => end(String(e.active.id))}
+    >
+      <DragCursorMonitor />
+      <ol className="min-h-0 flex-1 overflow-y-auto px-1 pb-2" aria-label="Your header, left to right">
+        {buttons.map((b, i) => (
+          <HeaderRow
+            key={b.id}
+            button={b}
+            index={i}
+            buttons={buttons}
+            onChange={onChange}
+            dragging={dragging === b.id}
+            mark={drop && drop.id === b.id ? drop.side : null}
+          />
+        ))}
+      </ol>
+    </DndContext>
+  );
+}
+
+function HeaderRow({
+  button: b,
+  index: i,
+  buttons,
+  onChange,
+  dragging,
+  mark,
+}: {
+  button: HeaderButton;
+  index: number;
+  buttons: HeaderButton[];
+  onChange: (next: HeaderButton[]) => void;
+  dragging: boolean;
+  mark: "before" | "after" | null;
+}) {
+  const drag = useDraggable({ id: b.id });
+  const dropZone = useDroppable({ id: b.id });
+  const locked = isLockedHeaderButton(b, RESERVED_HEADER_CONTROLS);
+  const label = buttonLabel(b);
+  return (
+    <li
+      ref={(el) => {
+        dropZone.setNodeRef(el);
+        drag.setNodeRef(el);
+      }}
+      className={cn("relative flex min-h-9 items-center gap-1 rounded-md px-1 hover:bg-accent", dragging && "opacity-50")}
+      data-header-row={b.id}
+    >
+      {mark === "before" ? <span className="pointer-events-none absolute inset-x-1 top-0 h-0.5 rounded bg-primary" /> : null}
+      {mark === "after" ? <span className="pointer-events-none absolute inset-x-1 bottom-0 h-0.5 rounded bg-primary" /> : null}
+      <span
+        {...drag.listeners}
+        {...drag.attributes}
+        aria-label={`Drag ${label}`}
+        className="flex h-7 w-5 shrink-0 touch-none items-center justify-center text-muted-foreground"
+        data-drag-handle
+      >
+        <GripVertical className="h-4 w-4" aria-hidden />
+      </span>
+      {b.kind === "control" ? (
+        <span className="flex h-7 w-7 items-center justify-center">
+          {(() => {
+            const Icon = CONTROL[b.control].Icon;
+            return <Icon className="h-4 w-4" aria-hidden />;
+          })()}
+        </span>
+      ) : (
+        <IconPicker
+          value={buttonIcon(b)}
+          onChange={(icon) => onChange(buttons.map((x) => (x.id === b.id && x.kind !== "control" ? { ...x, icon } : x)))}
+        />
+      )}
+      <span className="min-w-0 flex-1 truncate type-body">{label}</span>
+      {KIND_WORD[b.kind] ? <span className="type-meta text-muted-foreground">{KIND_WORD[b.kind]}</span> : null}
+      {locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-label="Always in the header" /> : null}
+      <Button variant="quiet" aria-label={`Move ${label} left`} icon={<ArrowUp />} disabled={i === 0} onClick={() => onChange(moveInList(buttons, b.id, i - 1))} />
+      <Button
+        variant="quiet"
+        aria-label={`Move ${label} right`}
+        icon={<ArrowDown />}
+        disabled={i === buttons.length - 1}
+        onClick={() => onChange(moveInList(buttons, b.id, i + 1))}
+      />
+      <Button
+        variant="quiet"
+        removes
+        aria-label={locked ? `${label} is always in the header` : `Remove ${label}`}
+        title={locked ? "Always in the header" : "Remove"}
+        icon={<Trash2 />}
+        disabled={locked}
+        onClick={() => onChange(buttons.filter((x) => x.id !== b.id))}
+      />
+    </li>
   );
 }
 

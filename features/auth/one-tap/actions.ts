@@ -16,13 +16,22 @@ import { handOverSession } from "@/lib/guest/session-handover";
 import { ACQUISITION_VISITOR_COOKIE } from "@/lib/product-analytics/user-acquisition";
 import { linkAcquisitionToUser } from "@/lib/product-analytics/server/acquisition-persistence";
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
+import { signInDestination } from "@/utils/auth/auth-destination";
+import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 
-export type OneTapSignInResult = { ok: true } | { ok: false; error: string };
+/** `destination`: where to open next (null = reload the page in place). */
+export type OneTapSignInResult = { ok: true; destination: string | null } | { ok: false; error: string };
 
 export async function signInWithGoogleOneTap(input: {
   credential: string;
   nonce: string;
   visitorId: string | null;
+  /**
+   * Set on pages that hand the person on (sign-in, sign-up, the home page): the end of every sign-in
+   * path decides where — the page she asked for, else her saved layout's landing, else /dashboard
+   * (`signInDestination`; `/dashboard` counts as no destination). Absent = stay on this page.
+   */
+  landing?: { redirectTo: string | null };
 }): Promise<OneTapSignInResult> {
   if (!input.credential || !input.nonce) {
     return { ok: false, error: "Google did not return a sign-in token." };
@@ -63,5 +72,8 @@ export async function signInWithGoogleOneTap(input: {
       });
     }
   }
-  return { ok: true };
+  const destination = input.landing
+    ? await signInDestination({ redirectTo: input.landing.redirectTo ?? undefined }, () => shellLandingAfterSignIn(supabase))
+    : null;
+  return { ok: true, destination };
 }

@@ -21,8 +21,26 @@ export type SeedOutcome = "wrote" | "skipped" | "failed";
 const IN_FLIGHT = new Map<string, Promise<SeedOutcome>>();
 const DONE = new Set<string>();
 
+/** Done-ness outlives the tab: a person whose row exists is never re-checked on every page load (each check is
+ *  a read across every organization she belongs to). Device-local; a cleared browser checks once more. */
+const doneKey = (userId: string) => `matrx:launchpad-seeded:${userId}`;
+function doneOnDevice(userId: string): boolean {
+  try {
+    return typeof window !== "undefined" && window.localStorage.getItem(doneKey(userId)) === "1";
+  } catch {
+    return false;
+  }
+}
+function markDoneOnDevice(userId: string): void {
+  try {
+    if (typeof window !== "undefined") window.localStorage.setItem(doneKey(userId), "1");
+  } catch {
+    // storage refused (private mode): the in-tab memo still holds for this tab
+  }
+}
+
 export function seedOnce(deps: SeedOnceDeps): Promise<SeedOutcome> {
-  if (DONE.has(deps.userId)) return Promise.resolve("skipped");
+  if (DONE.has(deps.userId) || doneOnDevice(deps.userId)) return Promise.resolve("skipped");
   const running = IN_FLIGHT.get(deps.userId);
   if (running) return running.then(() => "skipped" as const);
   const run = (async () => {
@@ -32,7 +50,10 @@ export function seedOnce(deps: SeedOnceDeps): Promise<SeedOutcome> {
       outcome = (await deps.write()).ok ? "wrote" : "failed";
     });
     // A failed write is NOT done: the next mount (or visit) tries again.
-    if (outcome !== "failed") DONE.add(deps.userId);
+    if (outcome !== "failed") {
+      DONE.add(deps.userId);
+      markDoneOnDevice(deps.userId);
+    }
     return outcome;
   })();
   IN_FLIGHT.set(deps.userId, run);
@@ -47,6 +68,13 @@ export function browserLock(name: string, fn: () => Promise<void>): Promise<void
 
 /** Test seam: forget what this tab seeded. */
 export function __resetSeedOnceForTests(): void {
+  for (const id of DONE) {
+    try {
+      window.localStorage.removeItem(doneKey(id));
+    } catch {
+      // no storage in this test environment
+    }
+  }
   DONE.clear();
   IN_FLIGHT.clear();
 }

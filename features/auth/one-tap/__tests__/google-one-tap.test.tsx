@@ -18,7 +18,7 @@ jest.mock("@/lib/services/fingerprint-service", () => ({ getFingerprint: async (
 jest.mock("@/lib/toast", () => ({ toast: { error: jest.fn() } }));
 jest.mock("next/navigation", () => ({ usePathname: () => mockPathname }));
 let mockPathname = "/pricing";
-const signIn = jest.fn(async () => ({ ok: true as const }));
+const signIn = jest.fn(async (..._args: unknown[]) => ({ ok: true as const, destination: null as string | null }));
 jest.mock("../actions", () => ({ signInWithGoogleOneTap: (...args: unknown[]) => signIn(...(args as [])) }));
 
 const initialize = jest.fn();
@@ -81,12 +81,24 @@ it("prompts a signed-out visitor with FedCM, the knob's auto-select and a hashed
   act(() => root.unmount());
 });
 
-it("opens the destination after sign-in on the auth pages", async () => {
-  const root = await mount({ autoSelect: false, context: "signin", destination: "/agents" });
+it("on the auth pages, asks the server where to land and opens it (the asked-for page, else the saved landing)", async () => {
+  signIn.mockImplementationOnce(async () => ({ ok: true as const, destination: "/launchpad/start" }));
+  const root = await mount({ autoSelect: false, context: "signin", landing: { redirectTo: null } });
   const config = initialize.mock.calls[0][0];
   expect(config.auto_select).toBe(false);
   await act(async () => config.callback({ credential: "id-token" }));
   await settle();
+  expect((signIn.mock.calls[0] as unknown as [{ landing?: unknown }])[0].landing).toEqual({ redirectTo: null });
+  expect(land).toHaveBeenCalledWith("/launchpad/start");
+  act(() => root.unmount());
+});
+
+it("passes a deep link through to the server's landing rule", async () => {
+  signIn.mockImplementationOnce(async () => ({ ok: true as const, destination: "/agents" }));
+  const root = await mount({ autoSelect: false, context: "signin", landing: { redirectTo: "/agents" } });
+  await act(async () => initialize.mock.calls[0][0].callback({ credential: "id-token" }));
+  await settle();
+  expect((signIn.mock.calls[0] as unknown as [{ landing?: unknown }])[0].landing).toEqual({ redirectTo: "/agents" });
   expect(land).toHaveBeenCalledWith("/agents");
   act(() => root.unmount());
 });

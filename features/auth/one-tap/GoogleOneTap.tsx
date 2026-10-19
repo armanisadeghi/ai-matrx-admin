@@ -5,8 +5,9 @@
 // Google / Apple / GitHub buttons stay the fallback for every browser that shows no prompt.
 //
 // Flow: Google signs an ID token carrying our hashed nonce → `signInWithGoogleOneTap` establishes the
-// session inside the guest handover → the page reloads in place (or, on the sign-in and sign-up
-// pages, opens the destination the person was headed for). New Google accounts are created by the
+// session inside the guest handover → the page reloads in place (or, where `landing` is set — sign-in,
+// sign-up, the home page — opens the end of every sign-in path: the page she asked for, else her saved
+// layout's landing, else /dashboard; decided on the server by `signInDestination`). New Google accounts are created by the
 // same click. Mount it through `GoogleOneTapMount`, which reads the auto-select knob on the server.
 
 import { useEffect } from "react";
@@ -23,8 +24,8 @@ export interface GoogleOneTapProps {
   autoSelect: boolean;
   /** The prompt's wording: "Sign in to", "Sign up for", or "Use" AI Matrx with Google. */
   context?: "signin" | "signup" | "use";
-  /** After sign-in, open this path instead of reloading the current page (auth pages only). */
-  destination?: string;
+  /** Hand the person on after sign-in (`redirectTo` = the page she asked for, or null) instead of reloading. */
+  landing?: { redirectTo: string | null };
   /** Paths (by prefix) where this mount stays quiet — a layout that covers errand links. */
   skipPrefixes?: readonly string[];
 }
@@ -39,7 +40,8 @@ async function sha256Hex(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export function GoogleOneTap({ autoSelect, context = "use", destination, skipPrefixes }: GoogleOneTapProps) {
+export function GoogleOneTap({ autoSelect, context = "use", landing, skipPrefixes }: GoogleOneTapProps) {
+  const landingRedirectTo = landing ? (landing.redirectTo ?? "") : null;
   const pathname = usePathname();
   const skipped = Boolean(skipPrefixes?.some((prefix) => pathname?.startsWith(prefix)));
 
@@ -80,6 +82,7 @@ export function GoogleOneTap({ autoSelect, context = "use", destination, skipPre
               credential: response.credential,
               nonce: rawNonce,
               visitorId,
+              ...(landingRedirectTo !== null ? { landing: { redirectTo: landingRedirectTo || null } } : {}),
             });
             if (!result.ok) {
               // An automatic sign-in that failed must not fail again on every page load.
@@ -87,7 +90,7 @@ export function GoogleOneTap({ autoSelect, context = "use", destination, skipPre
               toast.error(`Google sign-in failed: ${result.error}`);
               return;
             }
-            landAfterSignIn(destination);
+            landAfterSignIn(result.destination ?? undefined);
           })();
         },
       });
@@ -98,7 +101,7 @@ export function GoogleOneTap({ autoSelect, context = "use", destination, skipPre
       cancelled = true;
       window.google?.accounts?.id?.cancel();
     };
-  }, [autoSelect, context, destination, skipped]);
+  }, [autoSelect, context, landingRedirectTo, skipped]);
 
   return null;
 }

@@ -11,11 +11,17 @@
  *
  * RED when: a static `app/(core)/data/<segment>/page.tsx` exists whose `/data/<segment>` is not a
  * Data or Workspace menu row and not in LINK_ONLY; Pages, Dashboards or Make reappear in Data or
- * leave Workspace; or /start leaves the Workspace menu.
+ * leave Workspace; or the person's start launchpad leaves the Workspace menu.
+ *
+ * 2026-10-19 (custom-experience): /start became a permanent redirect to the start launchpad, so the
+ * Workspace row points at the launchpad, never at the redirect. Directories route discovery hides
+ * (the empty `speed-test` baseline page, `shouldSkipDir`) are instruments, not pages a person opens.
  */
 import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { DATA_NAV_CHILDREN, primaryNavItems, type ShellNavChild } from "../constants/nav-data";
+import { launchpadHref } from "../shell-layout/resolve";
+import { shouldSkipDir } from "@/utils/route-discovery/scan-fs";
 
 const ROOT = path.resolve(__dirname, "../../..");
 /** Arman, 2026-10-09: pages, dashboards and Make are places a person works, never "Data". */
@@ -34,7 +40,7 @@ function everyChild(children: ShellNavChild[] | undefined): ShellNavChild[] {
 
 function staticDataPages(): string[] {
   return readdirSync(DATA_DIR)
-    .filter((name) => !name.startsWith("[") && !name.startsWith("_") && !name.startsWith("("))
+    .filter((name) => !name.startsWith("[") && !name.startsWith("(") && !shouldSkipDir(name))
     .filter((name) => statSync(path.join(DATA_DIR, name)).isDirectory())
     .filter((name) => existsSync(path.join(DATA_DIR, name, "page.tsx")))
     .map((name) => `/data/${name}`);
@@ -67,7 +73,8 @@ describe("every /data page has a menu door", () => {
     expect(doorsOf(DATA_NAV_CHILDREN)).not.toContain(href);
   });
 
-  it("the person's start page is in the Workspace menu", () => {
-    expect(workspaceHrefs.has("/start")).toBe(true);
+  it("the person's start page is in the Workspace menu (as its launchpad, never the /start redirect)", () => {
+    expect(workspaceHrefs.has(launchpadHref("start"))).toBe(true);
+    expect(workspaceHrefs.has("/start")).toBe(false);
   });
 });

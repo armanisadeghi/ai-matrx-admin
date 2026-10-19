@@ -130,7 +130,8 @@ export function useLaunchpads() {
       write: () => moveStartPageOnce({ client, userId, organizationId: activeOrg! }),
     }).then((outcome) => {
       if (outcome === "failed") toast.error("Your Start page could not be moved to your launchpads");
-      table.reload();
+      // Only a write changes what is listed; "skipped" re-listing every organization bought nothing.
+      if (outcome === "wrote") table.reload();
     });
   });
 
