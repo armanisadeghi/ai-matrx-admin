@@ -31,6 +31,7 @@ Its files stay as they are.
 ## Docs and comments — both versions kept
 
 ## Held files
+- _conflicts/2026-10-19-002058/features/spaces/templates/packs/general-contractor-projects.pack.json.held — LOCAL latest 2026-10-19 00:06; GITHUB latest 2026-10-19 00:08; LOCAL lacks 2 of GITHUB's 536 new lines; GITHUB lacks 0 of LOCAL's 521 new lines; recover: git show 9a3447a761:'features/spaces/templates/packs/general-contractor-projects.pack.json' / ab3cb204bc:'features/spaces/templates/packs/general-contractor-projects.pack.json'
 
 ## Resolution log
 - 2026-10-18 12:58 PDT — Resolved `_conflicts/2026-10-18-122044/pnpm-lock.yaml.held`: sides differed only in @ai-matrx versions (LOCAL chat 0.8.196 / records-ui 0.116.23 vs GITHUB 0.8.195 / 0.116.22); ran `pnpm sync:matrx-packages`, which supersedes both; `check:matrx-packages` green (33 at npm latest, once); owner: none needed (lockfile).

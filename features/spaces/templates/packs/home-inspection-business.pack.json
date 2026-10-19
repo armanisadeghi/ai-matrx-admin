@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 3,
+  "version": 4,
   "title": "Home Inspection Business",
-  "description": "Inspections, referral partners, invoices and licence renewals for an inspector.",
-  "forWho": "Home inspectors and inspection companies",
+  "description": "For home inspectors: bookings, agreements, reports, agent referrals and license renewals.",
+  "forWho": "Home inspectors and multi-inspector firms",
   "icon": {
     "emoji": "🔍"
   },
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "home inspection",
+    "home inspector",
+    "inspection company",
+    "scheduler",
     "reports",
-    "referrals",
-    "invoices"
+    "agent referrals",
+    "licenses"
   ],
   "spec": {
     "specVersion": 1,
@@ -78,6 +80,57 @@
             "contextPolicy": "include"
           },
           {
+            "key": "sqft",
+            "label": "Square feet",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 300
+              },
+              {
+                "kind": "max",
+                "value": 15000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "year_built",
+            "label": "Year built",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1850
+              },
+              {
+                "kind": "max",
+                "value": 2030
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "foundation",
+            "label": "Foundation",
+            "parityType": "select",
+            "choices": [
+              "Slab",
+              "Crawlspace",
+              "Basement"
+            ],
+            "choiceColors": {
+              "Slab": "blue",
+              "Crawlspace": "green",
+              "Basement": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "client_name",
             "label": "Client",
             "parityType": "text",
@@ -113,6 +166,27 @@
               "Re-inspection": "violet",
               "Radon add-on": "teal"
             }
+          },
+          {
+            "key": "addons",
+            "label": "Add-on services",
+            "parityType": "multi_select",
+            "choices": [
+              "Radon",
+              "Sewer scope",
+              "Termite",
+              "Mold sampling",
+              "Pool and spa"
+            ],
+            "choiceColors": {
+              "Radon": "blue",
+              "Sewer scope": "green",
+              "Termite": "amber",
+              "Mold sampling": "violet",
+              "Pool and spa": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "when_at",
@@ -164,6 +238,27 @@
             "default": "Booked"
           },
           {
+            "key": "agreement",
+            "label": "Agreement signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "paid",
+            "label": "Paid before report",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "utilities",
+            "label": "Utilities confirmed on",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "fee",
             "label": "Fee",
             "parityType": "currency",
@@ -181,6 +276,23 @@
                 "value": 1500
               }
             ]
+          },
+          {
+            "key": "safety_items",
+            "label": "Safety items found",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 40
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "inspector",
@@ -262,7 +374,7 @@
           {
             "key": "n01",
             "values": {
-              "insp_title": "Full home - Pelican Row",
+              "insp_title": "44 Pelican Row, full home",
               "address": "44 Pelican Row",
               "client_name": "Odalys Marchetti",
               "agent": "a01",
@@ -271,13 +383,22 @@
               "status": "On site",
               "fee": 575,
               "inspector": "tm-ellis",
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "sqft": 2140,
+              "year_built": 1987,
+              "foundation": "Slab",
+              "addons": [
+                "Termite"
+              ],
+              "agreement": true,
+              "paid": true,
+              "utilities": true
             }
           },
           {
             "key": "n02",
             "values": {
-              "insp_title": "Condo - Wharf Lane",
+              "insp_title": "17 Wharf Lane, unit 3C condo",
               "address": "17 Wharf Lane",
               "client_name": "Bartholomew Ng",
               "agent": "a03",
@@ -286,13 +407,19 @@
               "status": "Confirmed",
               "fee": 395,
               "inspector": "tm-rani",
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "sqft": 980,
+              "year_built": 2006,
+              "foundation": "Slab",
+              "agreement": true,
+              "paid": false,
+              "utilities": true
             }
           },
           {
             "key": "n03",
             "values": {
-              "insp_title": "Pre-listing - Cypress Hollow",
+              "insp_title": "90 Cypress Hollow, pre-listing",
               "address": "90 Cypress Hollow",
               "client_name": "Henrietta Voss",
               "agent": "a05",
@@ -301,13 +428,21 @@
               "status": "Booked",
               "fee": 495,
               "inspector": "tm-ellis",
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "sqft": 2860,
+              "year_built": 1974,
+              "foundation": "Crawlspace",
+              "addons": [
+                "Sewer scope"
+              ],
+              "agreement": false,
+              "utilities": true
             }
           },
           {
             "key": "n04",
             "values": {
-              "insp_title": "Full home - Magnolia Court",
+              "insp_title": "6 Magnolia Court, full home",
               "address": "12 Magnolia Court",
               "client_name": "Ingrid and Tomas Alvarez",
               "agent": "a02",
@@ -315,13 +450,21 @@
               "when_at": "@mon+4d 10:00",
               "status": "Booked",
               "fee": 650,
-              "inspector": "tm-rani"
+              "inspector": "tm-rani",
+              "sqft": 3320,
+              "year_built": 2015,
+              "foundation": "Basement",
+              "addons": [
+                "Radon",
+                "Pool and spa"
+              ],
+              "agreement": true
             }
           },
           {
             "key": "n05",
             "values": {
-              "insp_title": "Re-inspection - Larkin Avenue",
+              "insp_title": "212 Larkin Avenue, re-inspection",
               "address": "205 Larkin Avenue",
               "client_name": "Rosalba Finch",
               "agent": "a04",
@@ -329,13 +472,18 @@
               "when_at": "@today+6d 14:00",
               "status": "Booked",
               "fee": 175,
-              "inspector": "tm-rani"
+              "inspector": "tm-rani",
+              "sqft": 1760,
+              "year_built": 1962,
+              "foundation": "Crawlspace",
+              "agreement": true,
+              "paid": true
             }
           },
           {
             "key": "n06",
             "values": {
-              "insp_title": "Full home - Corbel Street",
+              "insp_title": "39 Corbel Street, full home",
               "address": "33 Corbel Street",
               "client_name": "Desmond Achebe",
               "agent": "a01",
@@ -344,13 +492,23 @@
               "status": "Writing report",
               "fee": 610,
               "inspector": "tm-ellis",
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "sqft": 2410,
+              "year_built": 1958,
+              "foundation": "Basement",
+              "addons": [
+                "Sewer scope"
+              ],
+              "agreement": true,
+              "paid": false,
+              "utilities": true,
+              "safety_items": 4
             }
           },
           {
             "key": "n07",
             "values": {
-              "insp_title": "Condo - Tamarind Way",
+              "insp_title": "8 Tamarind Way, unit 12 condo",
               "address": "8 Tamarind Way",
               "client_name": "Philippa Kwon",
               "agent": "a02",
@@ -359,13 +517,20 @@
               "status": "Writing report",
               "fee": 420,
               "inspector": "tm-rani",
-              "scheduler": "@installer"
+              "scheduler": "@installer",
+              "sqft": 1120,
+              "year_built": 2001,
+              "foundation": "Slab",
+              "agreement": true,
+              "paid": true,
+              "utilities": true,
+              "safety_items": 1
             }
           },
           {
             "key": "n08",
             "values": {
-              "insp_title": "Full home - Foxglove Court",
+              "insp_title": "71 Foxglove Court, full home",
               "address": "61 Foxglove Court",
               "client_name": "Cormac Ashworth",
               "agent": "a05",
@@ -374,13 +539,23 @@
               "status": "Delivered",
               "fee": 560,
               "inspector": "tm-ellis",
-              "delivered_on": "@today-9d"
+              "delivered_on": "@today-9d",
+              "sqft": 2690,
+              "year_built": 1993,
+              "foundation": "Basement",
+              "addons": [
+                "Radon"
+              ],
+              "agreement": true,
+              "paid": true,
+              "utilities": true,
+              "safety_items": 2
             }
           },
           {
             "key": "n09",
             "values": {
-              "insp_title": "Radon add-on - Foxglove Court",
+              "insp_title": "71 Foxglove Court, radon test",
               "address": "61 Foxglove Court",
               "client_name": "Cormac Ashworth",
               "agent": "a05",
@@ -389,13 +564,20 @@
               "status": "Delivered",
               "fee": 150,
               "inspector": "tm-ellis",
-              "delivered_on": "@today-9d"
+              "delivered_on": "@today-9d",
+              "sqft": 2690,
+              "year_built": 1993,
+              "foundation": "Basement",
+              "agreement": true,
+              "paid": true,
+              "utilities": true,
+              "safety_items": 0
             }
           },
           {
             "key": "n10",
             "values": {
-              "insp_title": "Pre-listing - Pelican Row",
+              "insp_title": "44 Pelican Row, pre-listing for the seller",
               "address": "78 Pelican Row",
               "client_name": "Lucinda Obuya",
               "agent": "a03",
@@ -404,13 +586,20 @@
               "status": "Delivered",
               "fee": 480,
               "inspector": "tm-rani",
-              "delivered_on": "@today-15d"
+              "delivered_on": "@today-15d",
+              "sqft": 2140,
+              "year_built": 1987,
+              "foundation": "Slab",
+              "agreement": true,
+              "paid": true,
+              "utilities": true,
+              "safety_items": 3
             }
           },
           {
             "key": "n11",
             "values": {
-              "insp_title": "Full home - Wharf Lane",
+              "insp_title": "17 Wharf Lane, unit 5A full home",
               "address": "29 Wharf Lane",
               "client_name": "Theodora Lindqvist",
               "agent": "a06",
@@ -418,13 +607,17 @@
               "when_at": "@today-20d 09:00",
               "status": "Cancelled",
               "fee": 0,
-              "inspector": "tm-ellis"
+              "inspector": "tm-ellis",
+              "sqft": 1340,
+              "year_built": 2006,
+              "foundation": "Slab",
+              "agreement": false
             }
           },
           {
             "key": "n12",
             "values": {
-              "insp_title": "Full home - Cypress Hollow",
+              "insp_title": "90 Cypress Hollow, full home for the buyer",
               "address": "4 Cypress Hollow",
               "client_name": "Marcus Delacroix",
               "agent": "a01",
@@ -433,7 +626,18 @@
               "status": "Delivered",
               "fee": 620,
               "inspector": "tm-ellis",
-              "delivered_on": "@today-30d"
+              "delivered_on": "@today-30d",
+              "sqft": 2860,
+              "year_built": 1974,
+              "foundation": "Crawlspace",
+              "addons": [
+                "Termite",
+                "Mold sampling"
+              ],
+              "agreement": true,
+              "paid": true,
+              "utilities": true,
+              "safety_items": 6
             }
           }
         ],
@@ -699,6 +903,25 @@
             "default": "Unpaid"
           },
           {
+            "key": "method",
+            "label": "Paid by",
+            "parityType": "select",
+            "choices": [
+              "Card at booking",
+              "Card on site",
+              "Check",
+              "Paid at closing"
+            ],
+            "choiceColors": {
+              "Card at booking": "blue",
+              "Card on site": "green",
+              "Check": "amber",
+              "Paid at closing": "violet"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "due_on",
             "label": "Due",
             "parityType": "datetime",
@@ -730,7 +953,7 @@
           {
             "key": "v01",
             "values": {
-              "inv_title": "Invoice - Pelican Row",
+              "inv_title": "Receipt for 44 Pelican Row",
               "inspection": "n01",
               "addons": 0,
               "status": "Unpaid",
@@ -740,7 +963,7 @@
           {
             "key": "v02",
             "values": {
-              "inv_title": "Invoice - Wharf Lane condo",
+              "inv_title": "Receipt for 17 Wharf Lane 3C",
               "inspection": "n02",
               "addons": 0,
               "status": "Unpaid",
@@ -750,7 +973,7 @@
           {
             "key": "v03",
             "values": {
-              "inv_title": "Invoice - Corbel Street",
+              "inv_title": "Receipt for 39 Corbel Street",
               "inspection": "n06",
               "addons": 125,
               "status": "Unpaid",
@@ -760,7 +983,7 @@
           {
             "key": "v04",
             "values": {
-              "inv_title": "Invoice - Tamarind Way",
+              "inv_title": "Receipt for 8 Tamarind Way 12",
               "inspection": "n07",
               "addons": 0,
               "status": "Unpaid",
@@ -770,34 +993,37 @@
           {
             "key": "v05",
             "values": {
-              "inv_title": "Invoice - Foxglove Court",
+              "inv_title": "Receipt for 71 Foxglove Court",
               "inspection": "n08",
               "addons": 150,
               "status": "Paid",
               "due_on": "@today-9d",
-              "paid_on": "@today-9d"
+              "paid_on": "@today-9d",
+              "method": "Card at booking"
             }
           },
           {
             "key": "v06",
             "values": {
-              "inv_title": "Invoice - Pelican Row pre-listing",
+              "inv_title": "Receipt for the Pelican Row pre-listing",
               "inspection": "n10",
               "addons": 0,
               "status": "Paid",
               "due_on": "@today-15d",
-              "paid_on": "@today-15d"
+              "paid_on": "@today-15d",
+              "method": "Paid at closing"
             }
           },
           {
             "key": "v07",
             "values": {
-              "inv_title": "Invoice - Cypress Hollow",
+              "inv_title": "Receipt for 90 Cypress Hollow",
               "inspection": "n12",
               "addons": 0,
               "status": "Paid",
               "due_on": "@today-30d",
-              "paid_on": "@today-30d"
+              "paid_on": "@today-30d",
+              "method": "Check"
             }
           }
         ],
@@ -943,14 +1169,37 @@
             "agg": "count"
           },
           {
+            "key": "ahead",
+            "label": "Inspections booked ahead",
+            "parityType": "rollup",
+            "via": "inspections",
+            "pick": "insp_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Booked",
+                "Confirmed"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "revenue",
             "label": "Fees from referrals",
             "parityType": "rollup",
-            "sensitivity": "internal",
+            "sensitivity": "confidential",
             "contextPolicy": "include",
             "via": "inspections",
             "pick": "fee",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
+            }
           },
           {
             "key": "last_contact",
@@ -1149,21 +1398,21 @@
       },
       {
         "token": "credential",
-        "name": "Equipment and licences",
-        "labelSingular": "Equipment or licence",
-        "labelPlural": "Equipment and licences",
+        "name": "Equipment and licenses",
+        "labelSingular": "Equipment or license",
+        "labelPlural": "Equipment and licenses",
         "type": "entity",
         "display": "board",
         "weight": "light",
         "ordered": false,
         "icon": "shield-check",
         "titleField": "cred_title",
-        "describes": "Licences, insurance and tool calibrations that must stay current.",
+        "describes": "Licenses, insurance and tool calibrations that must stay current.",
         "subject": "thing",
         "fields": [
           {
             "key": "cred_title",
-            "label": "Equipment or licence",
+            "label": "Equipment or license",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1176,19 +1425,26 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Licence",
+              "License",
               "Insurance",
               "Equipment calibration",
               "Software",
               "Training"
             ],
             "choiceColors": {
-              "Licence": "blue",
+              "License": "blue",
               "Insurance": "green",
               "Equipment calibration": "amber",
               "Software": "violet",
               "Training": "teal"
             }
+          },
+          {
+            "key": "number",
+            "label": "License or serial number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "due_on",
@@ -1247,31 +1503,34 @@
           {
             "key": "e01",
             "values": {
-              "cred_title": "Inspector licence - Bramwell",
-              "kind": "Licence",
+              "cred_title": "Bramwell state inspector license",
+              "kind": "License",
               "due_on": "@today+210d",
               "status": "Current",
-              "owner_tm": "tm-ellis"
+              "owner_tm": "tm-ellis",
+              "number": "HI-20417"
             }
           },
           {
             "key": "e02",
             "values": {
-              "cred_title": "Inspector licence - Chaudhary",
-              "kind": "Licence",
+              "cred_title": "Chaudhary state inspector license",
+              "kind": "License",
               "due_on": "@today+34d",
               "status": "Current",
-              "owner_tm": "tm-rani"
+              "owner_tm": "tm-rani",
+              "number": "HI-31188"
             }
           },
           {
             "key": "e03",
             "values": {
-              "cred_title": "Errors and omissions insurance",
+              "cred_title": "Errors and omissions insurance policy",
               "kind": "Insurance",
               "due_on": "@today+22d",
               "status": "Due soon",
-              "owner_tm": "tm-ellis"
+              "owner_tm": "tm-ellis",
+              "number": "EO-5528104"
             }
           },
           {
@@ -1281,7 +1540,8 @@
               "kind": "Equipment calibration",
               "due_on": "@today-6d",
               "status": "Overdue",
-              "owner_tm": "tm-rani"
+              "owner_tm": "tm-rani",
+              "number": "MM-77310"
             }
           },
           {
@@ -1291,7 +1551,8 @@
               "kind": "Equipment calibration",
               "due_on": "@mon+4d",
               "status": "Due soon",
-              "owner_tm": "tm-ellis"
+              "owner_tm": "tm-ellis",
+              "number": "TC-0942"
             }
           },
           {
@@ -1331,10 +1592,10 @@
         ],
         "rowTemplates": [
           {
-            "name": "Equipment or licence",
+            "name": "Equipment or license",
             "values": {
               "status": "Current",
-              "cred_title": "New equipment or licence"
+              "cred_title": "New equipment or license"
             },
             "default": true,
             "body": {
@@ -1422,7 +1683,7 @@
         "inverseKey": "invoices"
       },
       {
-        "describes": "Each equipment or licence links to one team member.",
+        "describes": "Each equipment or license links to one team member.",
         "fromTable": "credential",
         "fromField": "owner_tm",
         "toTable": "team_member",
@@ -1813,7 +2074,7 @@
       },
       {
         "token": "all_credential",
-        "name": "All equipment and licences",
+        "name": "All equipment and licenses",
         "table": "credential",
         "kind": "grid",
         "isDefault": true
@@ -1985,7 +2246,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2007,7 +2268,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Your inspection business in one place. Run today's Inspections, deliver reports on time, keep Referral partners warm, collect on Invoices, and renew licences and calibrations before they lapse. Operational tracking only."
+              "text": "The office of a home inspection company: every booking with its agreement and payment, reports delivered on time, the agents who refer you, and the licenses, insurance and tool calibrations that keep you allowed to work."
             }
           ],
           "background": "blue",
@@ -2024,6 +2285,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2507,7 +2774,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Equipment and licences"
+              "text": "Equipment and licenses"
             }
           ],
           "props": {
@@ -2523,7 +2790,7 @@
               "view": "credential_board"
             },
             "inline": true,
-            "title": "Equipment and licences",
+            "title": "Equipment and licenses",
             "linked": true,
             "showTitle": false,
             "views": [
@@ -2595,7 +2862,7 @@
               },
               {
                 "id": "vall",
-                "name": "All equipment and licences",
+                "name": "All equipment and licenses",
                 "layout": "grid",
                 "icon": "Table",
                 "sorts": [
@@ -2608,6 +2875,374 @@
             ],
             "activeViewId": "vs-week"
           }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "home-inspection-business",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace runs the business side of a home inspection company: who is booked where, whether the agreement is signed and the fee paid, which reports are still being written, which agents send you work, and when each license, policy and tool calibration renews. Your report software still writes the reports."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspections"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One visit to one property"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When, type, add-ons, agreement signed, paid, utilities on, status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What the client owes for one inspection"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fee, add-ons, total, how it was paid"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Referral partners"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An agent who sends you clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Inspections, booked ahead, fees from referrals, next touch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Equipment and licenses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Something that expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Number, renews or due, who is responsible"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three rules the office never breaks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No inspection happens without a signed agreement."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No report is released before the fee is paid, unless the agreement says it is paid at closing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Reports go out within 24 hours of the inspection."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every booked inspection with address, size, year built and add-ons."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Agreement signed",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Paid before report",
+              "bold": true
+            },
+            {
+              "text": " for each. Chase anything missing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your referral partners with the date you last spoke."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every license, insurance policy and calibration date. One missed renewal can stop the business."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Morning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Today's inspections: agreements, payment, utilities confirmed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Midday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Reports in Writing report checked against the 24-hour promise"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tomorrow's bookings confirmed with clients and listing agents"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two referral partners get a call or a visit"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Wharf Lane condo is on the calendar this afternoon. The agreement is signed but the fee is not paid, so the scheduler sends the payment link now and the inspector knows the report waits for it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fees from referrals",
+              "bold": true
+            },
+            {
+              "text": " leaves out cancelled jobs, so it shows the work each agent really brought. "
+            },
+            {
+              "text": "Inspections booked ahead",
+              "bold": true
+            },
+            {
+              "text": " shows who is sending you work right now, not last year."
+            }
+          ]
         }
       ]
     },
@@ -2931,14 +3566,14 @@
       "parent": "home-inspection-business",
       "title": "Booking an inspection",
       "icon": {
-        "emoji": "📞"
+        "emoji": "📅"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Agents work against short contingency windows. Fast, clear booking wins repeat referrals."
+              "text": "Most problems on inspection day start at booking: wrong address, utilities off, no access, or a client who never signed the agreement. A complete booking prevents them."
             }
           ],
           "background": "blue",
@@ -2950,50 +3585,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When the request arrives"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Create the inspection with the address, client and agent."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Confirm access, utilities and who will attend."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Send the agreement and payment link."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark Confirmed once the agreement is signed."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Day before"
+              "text": "On the call or the online form"
             }
           ],
           "props": {
@@ -3004,7 +3596,285 @@
           "type": "text",
           "text": [
             {
-              "text": "Send the arrival window to the client and the agent."
+              "text": "Collect, every time:"
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client name, phone and email; the buyer's agent and the listing agent"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Full address, unit number, square feet, year built and foundation"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Type: full home, pre-listing, condo or re-inspection"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Add-on services: radon, sewer scope, termite, mold sampling, pool and spa"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The contract's inspection deadline, so you know how much room there is"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Price by size and age, then add each add-on. Older homes on crawlspaces take longer; price for the time. Quote the total before booking so there is no surprise on the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the inspection agreement for e-signature. Tick "
+            },
+            {
+              "text": "Agreement signed",
+              "bold": true
+            },
+            {
+              "text": " when it comes back."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the payment link. Tick "
+            },
+            {
+              "text": "Paid before report",
+              "bold": true
+            },
+            {
+              "text": " when it clears, or note that it is paid at closing."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the listing agent to confirm access, lockbox code, pets and that water, gas and electricity are on. Tick "
+            },
+            {
+              "text": "Utilities confirmed on",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark confirmed",
+              "bold": true
+            },
+            {
+              "text": " once all of that is in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Check"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "If not done"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Agreement signed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the client; the inspection does not start without it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Utilities on"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the listing agent; reschedule if a utility is off"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Paid"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Remind the client; the report waits for payment"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Re-inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A re-inspection checks only the repairs the seller agreed to make. Book it with the repair list attached and price it as a short visit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Cypress Hollow pre-listing is booked for this week with a sewer scope, but the agreement is still unsigned. The scheduler resends it and calls the seller, because the inspector will not start without it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Note why every cancelled job fell through: deal fell apart, price, or another inspector. Patterns tell you whether to change your prices or your follow-up."
             }
           ]
         }
@@ -3015,9 +3885,40 @@
       "parent": "home-inspection-business",
       "title": "Report delivery standard",
       "icon": {
-        "emoji": "📝"
+        "emoji": "📄"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The report is your product. Agents judge you on how fast it arrives and how clearly it reads; buyers judge you on whether it is fair."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The promise"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every report is delivered within 24 hours of the inspection, and the same evening when the contract deadline is tight."
+            }
+          ]
+        },
         {
           "type": "heading",
           "text": [
@@ -3030,32 +3931,56 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Photos in every area"
+              "text": "Photograph every defect with something for scale, plus the data plates on the furnace, water heater and electrical panel."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Notes taken as you walk"
+              "text": "Record the age and condition of the roof, heating and cooling, water heater and electrical panel."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count safety items as you go: missing smoke alarms, double-tapped breakers, missing handrails, gas leaks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Start inspection",
+              "bold": true
+            },
+            {
+              "text": " when you arrive and "
+            },
+            {
+              "text": "Writing report",
+              "bold": true
+            },
+            {
+              "text": " when you leave."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Same day"
+              "text": "Writing the report"
             }
           ],
           "props": {
@@ -3066,7 +3991,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the inspection Writing report."
+              "text": "Lead with a summary of major defects and safety items. Enter the count in "
+            },
+            {
+              "text": "Safety items found",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3074,7 +4006,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write and review the report."
+              "text": "Describe each defect in plain words: what it is, where it is, why it matters and who should look at it."
             }
           ]
         },
@@ -3082,7 +4014,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Deliver it by the agreed time."
+              "text": "Avoid alarming language. \"Recommend evaluation by a licensed electrician\" is more useful than \"dangerous\"."
             }
           ]
         },
@@ -3090,7 +4022,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark Delivered and create the invoice."
+              "text": "Stay within your standards of practice. Do not estimate repair costs unless that is your service."
             }
           ]
         },
@@ -3098,7 +4030,77 @@
           "type": "heading",
           "text": [
             {
-              "text": "Follow up"
+              "text": "Before you release it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fee paid, or the agreement says paid at closing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Spelling of names and the address checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every photo matches its comment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "The summary agrees with the body"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Then press "
+            },
+            {
+              "text": "Mark delivered",
+              "bold": true
+            },
+            {
+              "text": " and send it to the client and, with the client's permission, their agent."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After delivery"
             }
           ],
           "props": {
@@ -3109,7 +4111,45 @@
           "type": "text",
           "text": [
             {
-              "text": "Offer a short call to answer questions within three days."
+              "text": "Offer a short call to walk the buyer through the summary. Most buyers have never read a report before, and ten minutes on the phone is what they remember."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Corbel Street was inspected two days ago and is still in Writing report with four safety items. The fee is unpaid, so the office calls the buyer first and the report goes out the moment payment clears."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Measuring yourself"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once a month, count reports delivered late. Anything above one in twenty means the schedule is too full."
             }
           ]
         }
@@ -3127,7 +4167,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Referrals are the engine of the business. Keep it personal."
+              "text": "Most inspection companies get most of their work from a small group of agents. Treat them like your best customers, because they are."
             }
           ],
           "background": "blue",
@@ -3139,109 +4179,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After every referred inspection"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Send the agent a thank-you and a link to the report"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Monthly"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open Referral partners and use the Next 30 days view."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Call or message each partner and update Last contact."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Move good partners up from New to Regular to Top referrer."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-renewals",
-      "parent": "home-inspection-business",
-      "title": "Licences and calibrations",
-      "icon": {
-        "emoji": "🛠️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Quarterly"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open Equipment and licences, Next 30 days view."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Start each renewal with the issuer."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark Current when proof arrives."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Overdue"
+              "text": "Who is a partner"
             }
           ],
           "props": {
@@ -3252,7 +4190,619 @@
           "type": "text",
           "text": [
             {
-              "text": "Pause using any overdue equipment until it is calibrated."
+              "text": "Any agent who has sent you a client. Add them with brokerage, phone and email, and pick a "
+            },
+            {
+              "text": "Relationship",
+              "bold": true
+            },
+            {
+              "text": ": New, Regular or Top referrer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The routine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Every partner has a "
+            },
+            {
+              "text": "Next touch",
+              "bold": true
+            },
+            {
+              "text": " date. The overdue view lists everyone you have let slip."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each week, contact at least two partners: a call, a coffee, or a visit to their office meeting."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each touch, set "
+            },
+            {
+              "text": "Last contact",
+              "bold": true
+            },
+            {
+              "text": " and pick the next date: two weeks for top referrers, a month for regulars, six weeks for new partners."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to bring them"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A sample report so they can show buyers what to expect."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A short talk at their team meeting: the five defects that most often stall a sale and how to prepare sellers for them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A fast answer when their buyer has a question about your report."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping it clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Agents refer clients; buyers hire you. Your report is written for the buyer, never softened for the agent. Agents who want softer reports are not partners worth keeping. Never pay or give anything of value for referrals where your state forbids it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspections"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every job they sent, all time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Inspections booked ahead"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Booked or confirmed jobs from them right now"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fees from referrals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fees on their jobs, leaving out cancelled ones"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Tobias at Copperline Homes was due a call two days ago and has two jobs coming up. The owner calls to thank him and offers a short talk at his office's sales meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Losing a partner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a regular partner goes quiet for two months, ask directly whether something went wrong. A late report or a buyer who felt scared is usually the reason, and it is often fixable."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-renewals",
+      "parent": "home-inspection-business",
+      "title": "Licenses and calibrations",
+      "icon": {
+        "emoji": "📋"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "An expired license means you may not inspect. Lapsed insurance means one claim can end the company. Uncalibrated tools mean findings you cannot defend. This page keeps all three current."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What to track"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Kind"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Examples"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usual cycle"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "License"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "State home inspector license for each inspector"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One or two years"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insurance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Errors and omissions, general liability"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Equipment calibration"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Moisture meter, thermal camera, radon monitor, gas detector"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly or per the maker"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Software"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Report writing, scheduling"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Yearly"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Training"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Continuing education hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "By license cycle"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add each item with its number in "
+            },
+            {
+              "text": "License or serial number",
+              "bold": true
+            },
+            {
+              "text": " and its "
+            },
+            {
+              "text": "Renews or due",
+              "bold": true
+            },
+            {
+              "text": " date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick who is "
+            },
+            {
+              "text": "Responsible",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set status "
+            },
+            {
+              "text": "Current",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The monthly check (first Monday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anything due in the next 60 days set to "
+            },
+            {
+              "text": "Due soon",
+              "bold": true
+            },
+            {
+              "text": " and its renewal started"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Continuing education hours counted against what the state requires"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Radon monitor calibration certificates filed; many states require them for each test"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance certificates sent to any partner who asked for one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something is overdue"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "License: that inspector stops inspecting until it is renewed. Reassign their bookings."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance: call the broker the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Calibration: use a backup tool or remove that service from bookings until it is back."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark current",
+              "bold": true
+            },
+            {
+              "text": " and set the new date once it is renewed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The moisture meter's calibration was due six days ago. Rani sends it to the lab and uses the spare meter in the meantime. The thermal camera is due this week, so it goes out together with the meter."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budgeting for renewals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add up the yearly cost of every license, policy, calibration and subscription on this page and divide it by the number of inspections you expect. That small amount belongs in every inspection price, so renewals are never a surprise."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep copies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Store a scan of every license, policy and calibration certificate where the whole office can reach it. Agents and clients sometimes ask, and an answer within minutes looks professional."
             }
           ]
         }

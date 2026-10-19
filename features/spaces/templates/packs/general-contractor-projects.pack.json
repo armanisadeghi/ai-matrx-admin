@@ -5457,6 +5457,25 @@
           "type": "heading",
           "text": [
             {
+              "text": "Keeping the owner on side"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Owners living with an unfinished house get tired. Send a short note each Friday during punch: what was finished, what is left and when each sub is coming back. A clear list with dates ends most closeout arguments before they start."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
               "text": "Example"
             }
           ],

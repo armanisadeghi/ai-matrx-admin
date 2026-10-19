@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0419",
-  "version": 3,
+  "version": 4,
   "title": "Mortgage Broker Pipeline",
-  "description": "Borrowers, loan files by stage, conditions and referral partners. Tracking only.",
-  "forWho": "Mortgage brokers and loan officers",
+  "description": "For mortgage brokers: loan files by stage, rate locks, conditions, closings and partners.",
+  "forWho": "Mortgage brokers, loan officers and processors",
   "icon": {
     "emoji": "🏦"
   },
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "mortgage",
-    "pipeline",
+    "mortgage broker",
+    "loan officer",
+    "loan processor",
+    "rate locks",
     "conditions",
-    "referrals"
+    "closings"
   ],
   "spec": {
     "specVersion": 1,
@@ -80,6 +82,13 @@
             "relationMax": 1
           },
           {
+            "key": "property",
+            "label": "Property address",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
             "key": "partner",
             "label": "Referred by",
             "parityType": "relation",
@@ -125,6 +134,13 @@
             }
           },
           {
+            "key": "lender",
+            "label": "Lender",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "amount",
             "label": "Loan amount",
             "parityType": "currency",
@@ -142,6 +158,76 @@
                 "value": 3000000
               }
             ]
+          },
+          {
+            "key": "rate",
+            "label": "Interest rate (%)",
+            "parityType": "decimal",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 15
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "ltv",
+            "label": "Loan to value (%)",
+            "parityType": "percent",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fico",
+            "label": "Middle credit score",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 500
+              },
+              {
+                "kind": "max",
+                "value": 850
+              }
+            ],
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "comp",
+            "label": "Broker compensation",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ],
+            "contextPolicy": "include"
           },
           {
             "key": "stage",
@@ -178,6 +264,34 @@
             },
             "required": true,
             "default": "Pre-approval"
+          },
+          {
+            "key": "appraisal",
+            "label": "Appraisal",
+            "parityType": "select",
+            "choices": [
+              "Not ordered",
+              "Ordered",
+              "Received at value",
+              "Came in low",
+              "Waived"
+            ],
+            "choiceColors": {
+              "Not ordered": "blue",
+              "Ordered": "green",
+              "Received at value": "amber",
+              "Came in low": "violet",
+              "Waived": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cd_sent",
+            "label": "Closing disclosure sent",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "lock_ends",
@@ -223,7 +337,7 @@
           },
           {
             "key": "open_conditions",
-            "label": "Open conditions",
+            "label": "Conditions not cleared",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -231,8 +345,28 @@
             "pick": "cond_title",
             "agg": "count",
             "filter": {
-              "status": "Open"
+              "status": {
+                "not": [
+                  "Cleared"
+                ]
+              }
             }
+          },
+          {
+            "key": "waiting_borrower",
+            "label": "Waiting on the borrower",
+            "parityType": "rollup",
+            "via": "conditions",
+            "pick": "cond_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Open",
+                "Requested"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "cond_btn",
@@ -298,7 +432,7 @@
           {
             "key": "l01",
             "values": {
-              "loan_title": "Lindqvist purchase",
+              "loan_title": "Lindqvist purchase, Sorrelwood Drive",
               "borrower": "b01",
               "partner": "a01",
               "purpose": "Purchase",
@@ -308,7 +442,14 @@
               "lock_ends": "@today+14d",
               "closing_on": "@today+24d",
               "officer": "tm-geraldine",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "18 Sorrelwood Drive",
+              "lender": "Bayfront Wholesale Lending",
+              "rate": 6.375,
+              "ltv": 80,
+              "fico": 742,
+              "comp": 4120,
+              "appraisal": "Received at value"
             }
           },
           {
@@ -324,13 +465,20 @@
               "lock_ends": "@today+40d",
               "closing_on": "@today+60d",
               "officer": "tm-ravi",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "To be found",
+              "lender": "Granite Point Mortgage",
+              "rate": 6.125,
+              "ltv": 96.5,
+              "fico": 668,
+              "comp": 2860,
+              "appraisal": "Not ordered"
             }
           },
           {
             "key": "l03",
             "values": {
-              "loan_title": "Tanaka new construction",
+              "loan_title": "Tanaka construction-to-permanent",
               "borrower": "b03",
               "partner": "a04",
               "purpose": "Purchase",
@@ -340,13 +488,20 @@
               "lock_ends": "@mon+4d",
               "closing_on": "@mon+5d",
               "officer": "tm-ravi",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "Lot 14, Wrenfield Commons",
+              "lender": "Bayfront Wholesale Lending",
+              "rate": 6.5,
+              "ltv": 85,
+              "fico": 721,
+              "comp": 5450,
+              "appraisal": "Came in low"
             }
           },
           {
             "key": "l04",
             "values": {
-              "loan_title": "Moreau refinance",
+              "loan_title": "Moreau rate-and-term refinance",
               "borrower": "b04",
               "partner": "a06",
               "purpose": "Refinance",
@@ -356,7 +511,14 @@
               "lock_ends": "@today+45d",
               "closing_on": "@today+55d",
               "officer": "tm-geraldine",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "302 Kittering Lane",
+              "lender": "Northmark Home Loans",
+              "rate": 5.99,
+              "ltv": 62,
+              "fico": 788,
+              "comp": 3390,
+              "appraisal": "Waived"
             }
           },
           {
@@ -373,7 +535,15 @@
               "closing_on": "@today-30d",
               "officer": "tm-geraldine",
               "processor": "tm-concetta",
-              "funded_on": "@today-30d"
+              "funded_on": "@today-30d",
+              "property": "7 Ambleside Court",
+              "lender": "Granite Point Mortgage",
+              "rate": 6.25,
+              "ltv": 90,
+              "fico": 705,
+              "comp": 3010,
+              "appraisal": "Received at value",
+              "cd_sent": true
             }
           },
           {
@@ -389,7 +559,15 @@
               "lock_ends": "@today",
               "closing_on": "@today",
               "officer": "tm-ravi",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "1190 Quillan Road",
+              "lender": "Northmark Home Loans",
+              "rate": 7.125,
+              "ltv": 70,
+              "fico": 694,
+              "comp": 2340,
+              "appraisal": "Received at value",
+              "cd_sent": true
             }
           },
           {
@@ -405,7 +583,14 @@
               "lock_ends": "@today+50d",
               "closing_on": "@today+75d",
               "officer": "tm-ravi",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "To be found",
+              "lender": "Bayfront Wholesale Lending",
+              "rate": 6.375,
+              "ltv": 90,
+              "fico": 735,
+              "comp": 3825,
+              "appraisal": "Not ordered"
             }
           },
           {
@@ -421,7 +606,14 @@
               "lock_ends": "@today-60d",
               "closing_on": "@today-35d",
               "officer": "tm-geraldine",
-              "processor": "tm-concetta"
+              "processor": "tm-concetta",
+              "property": "56 Fenmore Street",
+              "lender": "Granite Point Mortgage",
+              "rate": 6.75,
+              "ltv": 95,
+              "fico": 679,
+              "comp": 2470,
+              "appraisal": "Ordered"
             }
           }
         ],
@@ -669,6 +861,23 @@
             }
           },
           {
+            "key": "timing",
+            "label": "Due before",
+            "parityType": "select",
+            "choices": [
+              "Approval",
+              "Closing documents",
+              "Funding"
+            ],
+            "choiceColors": {
+              "Approval": "blue",
+              "Closing documents": "green",
+              "Funding": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -775,108 +984,118 @@
           {
             "key": "c01",
             "values": {
-              "cond_title": "Updated pay stubs - Lindqvist",
+              "cond_title": "Lindqvist: two most recent pay stubs",
               "loan": "l01",
               "kind": "Income",
               "status": "Requested",
               "due_on": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "timing": "Closing documents"
             }
           },
           {
             "key": "c02",
             "values": {
-              "cond_title": "Bank statements - Lindqvist",
+              "cond_title": "Lindqvist: two months of bank statements",
               "loan": "l01",
               "kind": "Assets",
               "status": "Open",
               "due_on": "@mon+2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "timing": "Approval"
             }
           },
           {
             "key": "c03",
             "values": {
-              "cond_title": "Homeowner insurance binder - Lindqvist",
+              "cond_title": "Lindqvist: homeowner insurance binder",
               "loan": "l01",
               "kind": "Insurance",
               "status": "Open",
-              "due_on": "@today+9d"
+              "due_on": "@today+9d",
+              "timing": "Closing documents"
             }
           },
           {
             "key": "c04",
             "values": {
-              "cond_title": "Appraisal review - Tanaka",
+              "cond_title": "Tanaka: appraisal reconsideration of value",
               "loan": "l03",
               "kind": "Property",
               "status": "Requested",
               "due_on": "@mon+4d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "timing": "Approval"
             }
           },
           {
             "key": "c05",
             "values": {
-              "cond_title": "Explanation letter - Tanaka",
+              "cond_title": "Tanaka: letter explaining a credit inquiry",
               "loan": "l03",
               "kind": "Credit",
               "status": "Received",
               "due_on": "@today-2d",
-              "received_on": "@today-2d"
+              "received_on": "@today-2d",
+              "timing": "Approval"
             }
           },
           {
             "key": "c06",
             "values": {
-              "cond_title": "Title commitment - Abara",
+              "cond_title": "Abara: title commitment from the title company",
               "loan": "l06",
               "kind": "Title",
               "status": "Open",
               "due_on": "@today-1d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "timing": "Closing documents"
             }
           },
           {
             "key": "c07",
             "values": {
-              "cond_title": "Employment verification - Abara",
+              "cond_title": "Abara: verbal verification of employment",
               "loan": "l06",
               "kind": "Income",
               "status": "Cleared",
               "due_on": "@today-6d",
-              "cleared_on": "@today-6d"
+              "cleared_on": "@today-6d",
+              "timing": "Funding"
             }
           },
           {
             "key": "c08",
             "values": {
-              "cond_title": "Gift letter - Adebayo",
+              "cond_title": "Adebayo: gift letter and donor bank statement",
               "loan": "l02",
               "kind": "Assets",
               "status": "Open",
-              "due_on": "@today+14d"
+              "due_on": "@today+14d",
+              "timing": "Approval"
             }
           },
           {
             "key": "c09",
             "values": {
-              "cond_title": "Payoff statement - Moreau",
+              "cond_title": "Moreau: payoff statement for the current loan",
               "loan": "l04",
               "kind": "Credit",
               "status": "Requested",
-              "due_on": "@today+4d"
+              "due_on": "@today+4d",
+              "timing": "Closing documents"
             }
           },
           {
             "key": "c10",
             "values": {
-              "cond_title": "Bank statements - Castellano",
+              "cond_title": "Castellano: updated bank statement",
               "loan": "l05",
               "kind": "Assets",
               "status": "Cleared",
               "due_on": "@today-50d",
-              "cleared_on": "@today-50d"
+              "cleared_on": "@today-50d",
+              "timing": "Funding"
             }
           }
         ],
@@ -1091,6 +1310,24 @@
             "via": "loans",
             "pick": "loan_title",
             "agg": "count"
+          },
+          {
+            "key": "active",
+            "label": "Loans in process",
+            "parityType": "rollup",
+            "via": "loans",
+            "pick": "loan_title",
+            "agg": "count",
+            "filter": {
+              "stage": {
+                "not": [
+                  "Funded",
+                  "Lost"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "loan_btn",
@@ -1343,6 +1580,37 @@
             "via": "loans",
             "pick": "loan_title",
             "agg": "count"
+          },
+          {
+            "key": "funded",
+            "label": "Funded volume",
+            "parityType": "rollup",
+            "via": "loans",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "stage": "Funded"
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "in_process",
+            "label": "Loans in process",
+            "parityType": "rollup",
+            "via": "loans",
+            "pick": "loan_title",
+            "agg": "count",
+            "filter": {
+              "stage": {
+                "not": [
+                  "Funded",
+                  "Lost"
+                ]
+              }
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "last_contact",
@@ -2117,10 +2385,16 @@
         "redcedarloans.net"
       ],
       "fictionalStreets": [
-        "Trade Street"
+        "Trade Street",
+        "Sorrelwood Drive",
+        "Wrenfield Commons",
+        "Kittering Lane",
+        "Ambleside Court",
+        "Quillan Road",
+        "Fenmore Street"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2142,7 +2416,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Your pipeline in one place. Follow each Loan from pre-approval to funding, clear Conditions before they hold up closing, and keep Borrowers and Referral partners in view. Tracking only; this holds no rates, quotes or financial advice."
+              "text": "The pipeline of a mortgage brokerage: every borrower and loan file from pre-approval to funding, the rate lock and closing date on each, the underwriting conditions still open, and the agents and partners who send you business."
             }
           ],
           "background": "blue",
@@ -2159,6 +2433,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -2655,6 +2935,356 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace is the brokerage's pipeline: every borrower, every loan file by stage, the rate lock and closing date that cannot be missed, the conditions the underwriter still wants, and the partners who refer you. Your loan origination system stays the place where applications and disclosures are produced; this is where the team sees the whole pipeline at once."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loans"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One loan file"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Stage, lender, amount, rate, lock ends, closing, appraisal, conditions not cleared"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Conditions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One item the underwriter needs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kind, due before approval, documents or funding, status"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Borrowers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A person or couple"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status, source, loan officer, loans in process"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Referral partners"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An agent, attorney, planner or builder"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loans referred, loans in process, funded volume, next touch"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three dates that matter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Lock ends",
+              "bold": true
+            },
+            {
+              "text": ": after this the rate can change. Every lock is watched daily."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Closing",
+              "bold": true
+            },
+            {
+              "text": ": from the purchase contract. Missing it can cost the buyer the house."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The closing disclosure must reach the borrower at least three business days before closing. Tick "
+            },
+            {
+              "text": "Closing disclosure sent",
+              "bold": true
+            },
+            {
+              "text": " the day it goes."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open loan with lender, amount, rate, lock end and closing date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every open condition from the latest approval, with who it is waiting on."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your referral partners with the last time you spoke."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "8:30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pipeline meeting: locks ending this week, closings in ten days, conditions waiting on borrowers"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Morning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Processor requests every Open condition"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loan officers call borrowers who owe documents"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Partners updated on every loan they referred"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Tanaka construction loan's appraisal came in low and the lock ends this week. The loan officer asks for a reconsideration of value with three better sales and, in parallel, prices a lock extension so the borrower can decide the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Borrower files hold income, credit and bank information. Keep the documents themselves in your secure loan system and keep notes here to what the team needs to move the file."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "mortgage-broker-pipeline",
       "title": "Dashboard",
@@ -2977,14 +3607,14 @@
       "parent": "mortgage-broker-pipeline",
       "title": "Pipeline stages",
       "icon": {
-        "emoji": "🪜"
+        "emoji": "🏁"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Every file moves through the same stages. Keep the stage honest."
+              "text": "Every loan moves through the same stages. Each stage has an entry test, so the pipeline report means the same thing to everyone."
             }
           ],
           "background": "blue",
@@ -2996,7 +3626,179 @@
           "type": "heading",
           "text": [
             {
-              "text": "Stages"
+              "text": "The stages"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Enters when"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Leaves when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pre-approval"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Credit pulled, income and assets reviewed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Borrower has an accepted offer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Application"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Full application and disclosures signed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "File sent to the lender's processing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Processing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Documents gathered, appraisal and title ordered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "File submitted to underwriting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Underwriting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Underwriter reviewing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Conditional approval answered in full"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clear to close"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every condition cleared"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Documents signed and the loan funds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Funded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Money sent to the closing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Borrower went elsewhere, withdrew or was declined"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final; note why"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Moving a file"
             }
           ],
           "props": {
@@ -3007,7 +3809,35 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pre-approval: documents reviewed, letter issued."
+              "text": "Use the buttons on the loan: "
+            },
+            {
+              "text": "Move to processing",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Move to underwriting",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Clear to close",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark funded",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3015,7 +3845,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Application: disclosures delivered within the required window."
+              "text": "When a stage changes, tell the borrower and their agent what happens next and what you need from them."
             }
           ]
         },
@@ -3023,31 +3853,117 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Processing: appraisal, title, verifications."
+              "text": "In Processing, order the appraisal and set "
+            },
+            {
+              "text": "Appraisal",
+              "bold": true
+            },
+            {
+              "text": " to Ordered."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Underwriting: conditions issued and cleared."
+              "text": "Watching the pipeline"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The board groups files by stage. A file that sits in one stage for more than a week gets a question at the morning meeting."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Clear to close: closing date confirmed."
+              "text": "Conditions not cleared",
+              "bold": true
+            },
+            {
+              "text": " shows everything the underwriter is still waiting for. "
+            },
+            {
+              "text": "Waiting on the borrower",
+              "bold": true
+            },
+            {
+              "text": " shows only what is open or requested."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Funded: file closed out, partner thanked."
+              "text": "Locks ending this week and closings this week each have their own view."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lost loans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark them Lost with a reason in the notes: rate, fees, credit, the deal fell through, or no response. Read the reasons each quarter; they tell you what to fix."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Lindqvist purchase is in Underwriting with three conditions left: pay stubs requested, bank statements and the insurance binder. Closing is in a little over three weeks and the lock ends ten days before that, so the processor asks for everything this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pre-approvals that go quiet"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A pre-approved borrower without an accepted offer after 60 days gets a call: still looking, or ready to pause? Update the status either way."
             }
           ]
         }
@@ -3058,86 +3974,14 @@
       "parent": "mortgage-broker-pipeline",
       "title": "Clearing conditions",
       "icon": {
-        "emoji": "✅"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Daily"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Open Conditions, Today and This week views."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Contact each borrower about anything Open and mark it Requested."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Mark Received when it arrives and Cleared when underwriting agrees."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Tips"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Tell borrowers exactly what to send and in what format."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Escalate anything Overdue to the loan officer the same day."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-closing",
-      "parent": "mortgage-broker-pipeline",
-      "title": "Closing countdown",
-      "icon": {
-        "emoji": "🔑"
+        "emoji": "📑"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "The closing disclosure must reach the borrower in time. Count back from the closing date."
+              "text": "A conditional approval is a list of things the underwriter still needs. Clearing them fast and completely is the main job of processing, and the main reason closings slip."
             }
           ],
           "background": "blue",
@@ -3149,7 +3993,120 @@
           "type": "heading",
           "text": [
             {
-              "text": "A week before"
+              "text": "When the approval arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add every condition with "
+            },
+            {
+              "text": "Add condition",
+              "bold": true
+            },
+            {
+              "text": " on the loan. One condition per row, written so the borrower would understand it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the "
+            },
+            {
+              "text": "Kind",
+              "bold": true
+            },
+            {
+              "text": ": income, assets, credit, property, title or insurance."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick "
+            },
+            {
+              "text": "Due before",
+              "bold": true
+            },
+            {
+              "text": ": approval, closing documents or funding."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Needed by",
+              "bold": true
+            },
+            {
+              "text": " working back from the closing date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Asking the borrower"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send one list with everything at once, never one item a day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Say exactly what counts: \"all pages of your two most recent bank statements, including blank pages\"."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark requested",
+              "bold": true
+            },
+            {
+              "text": " when the list goes out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When documents come in"
             }
           ],
           "props": {
@@ -3160,7 +4117,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "All conditions cleared"
+              "text": "Check every page is there and readable"
             }
           ],
           "props": {
@@ -3171,7 +4128,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Rate lock covers the closing date"
+              "text": "Large deposits explained and sourced"
             }
           ],
           "props": {
@@ -3182,7 +4139,285 @@
           "type": "todo",
           "text": [
             {
-              "text": "Closing date confirmed with the title company"
+              "text": "Names and account numbers match the application"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Then press "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": " and send it to the underwriter. When the underwriter signs off, press "
+            },
+            {
+              "text": "Mark cleared",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common conditions and what they need"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Condition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What satisfies it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pay stubs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The most recent 30 days, all pages"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bank statements"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two months, all pages, every account used for down payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Gift letter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Signed letter plus proof the money left the donor and arrived"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Explanation letter"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Short signed letter about a credit inquiry or a late payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insurance binder"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Policy with the lender named as mortgagee"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Suspense items"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Some conditions can only be met close to closing, such as a final verbal check of employment or an updated statement. Mark them "
+            },
+            {
+              "text": "Due before",
+              "bold": true
+            },
+            {
+              "text": " funding so they are not chased too early, and put a reminder on the closing countdown."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Conditions waiting on the borrower for more than two days get a phone call, not another email. The daily view of conditions due this week drives the processor's calls."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Abara's title commitment is past its date and closing is this week. The processor calls the title company, learns it is waiting on a payoff figure, and gets the payoff the same morning."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-closing",
+      "parent": "mortgage-broker-pipeline",
+      "title": "Closing countdown",
+      "icon": {
+        "emoji": "⏳"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The last ten days before closing are where loans fail. A fixed countdown, checked every morning, keeps closings on their date."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ten days out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every condition received; anything open is chased today"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Appraisal received and at value, or a plan agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rate lock ends after the closing date; if not, price an extension now"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Homeowner insurance binder in the file"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Title commitment and survey received"
             }
           ],
           "props": {
@@ -3193,7 +4428,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Three business days before"
+              "text": "Five business days out"
             }
           ],
           "props": {
@@ -3204,7 +4439,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Closing disclosure delivered and acknowledged"
+              "text": "Clear to close from the underwriter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Closing disclosure prepared and checked line by line"
             }
           ],
           "props": {
@@ -3215,7 +4461,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After funding"
+              "text": "Three business days out (at the latest)"
             }
           ],
           "props": {
@@ -3226,7 +4472,11 @@
           "type": "todo",
           "text": [
             {
-              "text": "Mark the loan Funded and the borrower Closed"
+              "text": "Closing disclosure delivered to the borrower; tick "
+            },
+            {
+              "text": "Closing disclosure sent",
+              "bold": true
             }
           ],
           "props": {
@@ -3237,12 +4487,293 @@
           "type": "todo",
           "text": [
             {
-              "text": "Send a thank-you to the referral partner"
+              "text": "Borrower told the exact cash to close and how to wire it safely"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wire instructions confirmed by phone with the title company, never from an email alone"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Closing documents sent to the title company."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Be reachable all day for questions at the table."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the loan funds, press "
+            },
+            {
+              "text": "Mark funded",
+              "bold": true
+            },
+            {
+              "text": " and record the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After closing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thank-you note to the borrower and the referring partner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask the borrower for a review a week later."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add a reminder to check in at the one-year mark about rates and home equity."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Conditions and title"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Processor"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Borrower calls and lock decisions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loan officer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closing disclosure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Processor, checked by the loan officer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Agent updates"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loan officer"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the names of your team next to each task so nobody assumes someone else did it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the lock is at risk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Situation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closing moved inside the lock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Nothing; note it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Closing moved past the lock"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Price an extension today; tell the borrower who pays"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lock expired"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Relock at today's price; explain the difference in writing"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Abara cash-out refinance closes this week with the lock ending the same day. The disclosure went out on time, but the title commitment is still open, so the processor chases it first thing to keep the date."
+            }
+          ]
         }
       ]
     },
@@ -3255,10 +4786,91 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Real estate agents, attorneys, financial planners and builders send most of a broker's purchase business. They stay loyal to brokers who close on time and keep them informed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "After every referred file"
+              "text": "Adding a partner"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add every partner with company, kind, phone and email. Link each loan they send in "
+            },
+            {
+              "text": "Referred by",
+              "bold": true
+            },
+            {
+              "text": ", so their history builds up on its own."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What partners want"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A quick pre-approval their buyer can use in an offer the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "An update at every stage without having to ask."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A closing on the contract date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "An honest call early when something is wrong, not the day before closing."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The routine"
             }
           ],
           "props": {
@@ -3269,7 +4881,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Update the partner with the milestone reached."
+              "text": "Every partner has a "
+            },
+            {
+              "text": "Next touch",
+              "bold": true
+            },
+            {
+              "text": " date. The overdue view lists everyone you have let slip."
             }
           ]
         },
@@ -3277,7 +4896,30 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Thank them when the file funds."
+              "text": "Agents with loans in process hear from you every week about each file."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Top partners get a visit or lunch each month; others a call each month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After each touch, set "
+            },
+            {
+              "text": "Last contact",
+              "bold": true
+            },
+            {
+              "text": " and the next date."
             }
           ]
         },
@@ -3285,7 +4927,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Reading the numbers"
             }
           ],
           "props": {
@@ -3293,26 +4935,143 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loans referred"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every file they sent, all time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loans in process"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Files not yet funded or lost"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Funded volume"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Loan amounts on their funded files"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Open Referral partners, Next 30 days view."
+              "text": "Growing the list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask every new agent you work with on a deal for a ten-minute coffee after closing. Show them how your updates work. Agents who saw one smooth closing are the easiest new partners to win."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Reach out to each partner and update Last contact."
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Desmond, the attorney at Keystone Title Counsel, was due a call three days ago and has a purchase in process. The loan officer calls with an update on the file and asks about two clients of his who mentioned refinancing."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Offer a short market-update lunch to your top three."
+              "text": "Bad news travels fast"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a file has a problem, call the partner before the borrower's closing is at risk, with what happened and the plan. Partners forgive problems; they do not forgive surprises."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it legal"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never pay or give anything of value for referrals. Shared marketing must follow the rules for your state and loan types; when in doubt, ask your compliance contact."
             }
           ]
         }

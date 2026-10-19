@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 3,
+  "version": 4,
   "title": "Interior Design Studio",
-  "description": "Clients, projects by phase, furnishings procurement, approvals and fee invoices.",
+  "description": "For interior designers: projects by phase, furnishings orders, client approvals and fees.",
   "forWho": "Interior designers and design studios",
   "icon": {
     "emoji": "🛋️"
@@ -14,10 +14,12 @@
   },
   "category": "realestate",
   "tags": [
-    "interior design",
+    "interior designer",
+    "design studio",
     "procurement",
+    "furnishings",
     "approvals",
-    "projects"
+    "design fees"
   ],
   "spec": {
     "specVersion": 1,
@@ -110,6 +112,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "finish",
+            "label": "Finish or fabric",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "qty",
+            "label": "Quantity",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -141,6 +167,13 @@
             },
             "required": true,
             "default": "Specified"
+          },
+          {
+            "key": "po_number",
+            "label": "Purchase order",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "trade_price",
@@ -181,6 +214,44 @@
             ]
           },
           {
+            "key": "vendor_deposit",
+            "label": "Deposit paid to vendor",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "freight",
+            "label": "Freight and receiving",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "margin",
             "label": "Margin",
             "parityType": "formula",
@@ -211,6 +282,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "damaged",
+            "label": "Arrived damaged",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "lead_weeks",
@@ -274,7 +352,7 @@
           {
             "key": "t01",
             "values": {
-              "item_title": "Curved boucle sofa - Ebbesen",
+              "item_title": "Curved boucle sofa, Ebbesen living room",
               "project": "j01",
               "room": "Living room",
               "vendor": "Alder and Bright Furniture",
@@ -283,13 +361,18 @@
               "client_price": 4480,
               "eta": "@mon+4d",
               "lead_weeks": 10,
-              "owner": "@installer"
+              "owner": "@installer",
+              "finish": "Ivory boucle, oak plinth",
+              "qty": 1,
+              "po_number": "PO-2214",
+              "vendor_deposit": 1600,
+              "freight": 240
             }
           },
           {
             "key": "t02",
             "values": {
-              "item_title": "Walnut dining table - Ebbesen",
+              "item_title": "Walnut dining table for eight",
               "project": "j01",
               "room": "Dining",
               "vendor": "Millhouse Woodworks",
@@ -298,13 +381,18 @@
               "client_price": 3710,
               "eta": "@today+8d",
               "lead_weeks": 12,
-              "owner": "@installer"
+              "owner": "@installer",
+              "finish": "Oiled walnut",
+              "qty": 1,
+              "po_number": "PO-2215",
+              "vendor_deposit": 1325,
+              "freight": 310
             }
           },
           {
             "key": "t03",
             "values": {
-              "item_title": "Linen drapery panels - Ebbesen",
+              "item_title": "Linen drapery panels, pair of four",
               "project": "j01",
               "room": "Living room",
               "vendor": "Tessera Textile Studio",
@@ -312,13 +400,15 @@
               "trade_price": 1180,
               "client_price": 1650,
               "lead_weeks": 6,
-              "approved_on": "@today-8d"
+              "approved_on": "@today-8d",
+              "finish": "Oat linen, pinch pleat",
+              "qty": 4
             }
           },
           {
             "key": "t04",
             "values": {
-              "item_title": "Brass pendant light - Ebbesen",
+              "item_title": "Brass dome pendant over the dining table",
               "project": "j01",
               "room": "Dining",
               "vendor": "Lumen Atelier",
@@ -327,39 +417,49 @@
               "client_price": 870,
               "eta": "@today-5d",
               "lead_weeks": 8,
-              "received_on": "@today-5d"
+              "received_on": "@today-5d",
+              "finish": "Aged brass",
+              "qty": 1,
+              "po_number": "PO-2209",
+              "vendor_deposit": 340,
+              "freight": 45,
+              "damaged": true
             }
           },
           {
             "key": "t05",
             "values": {
-              "item_title": "Upholstered bed - Obuya-Hartley",
+              "item_title": "Channel-tufted upholstered bed, king",
               "project": "j02",
               "room": "Primary suite",
               "vendor": "Alder and Bright Furniture",
               "status": "Specified",
               "trade_price": 2100,
               "client_price": 2940,
-              "lead_weeks": 10
+              "lead_weeks": 10,
+              "finish": "Sage velvet",
+              "qty": 1
             }
           },
           {
             "key": "t06",
             "values": {
-              "item_title": "Wool area rug - Obuya-Hartley",
+              "item_title": "Hand-knotted wool rug 9 by 12",
               "project": "j02",
               "room": "Primary suite",
               "vendor": "Kestrel Rug Gallery",
               "status": "Specified",
               "trade_price": 1450,
               "client_price": 2030,
-              "lead_weeks": 8
+              "lead_weeks": 8,
+              "finish": "Ivory and rust",
+              "qty": 1
             }
           },
           {
             "key": "t07",
             "values": {
-              "item_title": "Standing desk - Marchetti",
+              "item_title": "Sit-stand desk in white oak",
               "project": "j03",
               "room": "Office",
               "vendor": "Millhouse Woodworks",
@@ -369,13 +469,18 @@
               "eta": "@today-9d",
               "lead_weeks": 6,
               "owner": "@installer",
-              "received_on": "@today-9d"
+              "received_on": "@today-9d",
+              "finish": "White oak",
+              "qty": 1,
+              "po_number": "PO-2188",
+              "vendor_deposit": 780,
+              "freight": 120
             }
           },
           {
             "key": "t08",
             "values": {
-              "item_title": "Task chair - Marchetti",
+              "item_title": "Ergonomic task chair in leather",
               "project": "j03",
               "room": "Office",
               "vendor": "Foxfield Seating",
@@ -383,13 +488,18 @@
               "trade_price": 540,
               "client_price": 760,
               "eta": "@today-20d",
-              "lead_weeks": 4
+              "lead_weeks": 4,
+              "finish": "Cognac leather",
+              "qty": 1,
+              "po_number": "PO-2189",
+              "vendor_deposit": 420,
+              "freight": 60
             }
           },
           {
             "key": "t09",
             "values": {
-              "item_title": "Built-in bookcase panels - Marchetti",
+              "item_title": "Built-in bookcase panels in painted maple",
               "project": "j03",
               "room": "Office",
               "vendor": "Millhouse Woodworks",
@@ -398,39 +508,48 @@
               "client_price": 2660,
               "eta": "@today-3d",
               "lead_weeks": 9,
-              "owner": "@installer"
+              "owner": "@installer",
+              "finish": "Painted maple, Hale Navy",
+              "qty": 6,
+              "po_number": "PO-2201",
+              "vendor_deposit": 1900,
+              "freight": 380
             }
           },
           {
             "key": "t10",
             "values": {
-              "item_title": "Entry bench - Raman",
+              "item_title": "Entry bench with cane seat",
               "project": "j05",
               "room": "Entry",
               "vendor": "Alder and Bright Furniture",
               "status": "Specified",
               "trade_price": 890,
               "client_price": 1250,
-              "lead_weeks": 6
+              "lead_weeks": 6,
+              "finish": "Ebonized ash, natural cane",
+              "qty": 1
             }
           },
           {
             "key": "t11",
             "values": {
-              "item_title": "Runner rug - Raman",
+              "item_title": "Stair runner in flatweave wool",
               "project": "j05",
               "room": "Entry",
               "vendor": "Kestrel Rug Gallery",
               "status": "Specified",
               "trade_price": 420,
               "client_price": 590,
-              "lead_weeks": 5
+              "lead_weeks": 5,
+              "finish": "Charcoal flatweave",
+              "qty": 14
             }
           },
           {
             "key": "t12",
             "values": {
-              "item_title": "Pendant lights - Sorensen-Vaughn",
+              "item_title": "Glass pendants over the kitchen island",
               "project": "j04",
               "room": "Kitchen",
               "vendor": "Lumen Atelier",
@@ -438,7 +557,12 @@
               "trade_price": 760,
               "client_price": 1060,
               "eta": "@today-170d",
-              "lead_weeks": 8
+              "lead_weeks": 8,
+              "finish": "Seeded glass, nickel",
+              "qty": 3,
+              "po_number": "PO-1960",
+              "vendor_deposit": 510,
+              "freight": 90
             }
           }
         ],
@@ -696,6 +820,13 @@
             "default": "Pending"
           },
           {
+            "key": "client_notes",
+            "label": "Client comments",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "member",
@@ -729,7 +860,7 @@
           {
             "key": "a01",
             "values": {
-              "appr_title": "Material selections - Obuya-Hartley",
+              "appr_title": "Obuya-Hartley material selections",
               "project": "j02",
               "kind": "Material selections",
               "due_on": "@mon+3d",
@@ -740,18 +871,19 @@
           {
             "key": "a02",
             "values": {
-              "appr_title": "Floor plan - Obuya-Hartley",
+              "appr_title": "Obuya-Hartley floor plan",
               "project": "j02",
               "kind": "Floor plan",
               "due_on": "@today+10d",
               "status": "Changes requested",
-              "owner": "@installer"
+              "owner": "@installer",
+              "client_notes": "Wants the bed on the long wall and a reading chair by the window."
             }
           },
           {
             "key": "a03",
             "values": {
-              "appr_title": "Concept board - Raman",
+              "appr_title": "Raman concept board",
               "project": "j05",
               "kind": "Concept board",
               "due_on": "@today+6d",
@@ -761,7 +893,7 @@
           {
             "key": "a04",
             "values": {
-              "appr_title": "Budget - Okoro",
+              "appr_title": "Okoro furnishings budget",
               "project": "j06",
               "kind": "Budget",
               "due_on": "@today+20d",
@@ -771,7 +903,7 @@
           {
             "key": "a05",
             "values": {
-              "appr_title": "Final walk-through - Marchetti",
+              "appr_title": "Marchetti final install walk-through",
               "project": "j03",
               "kind": "Final install walk-through",
               "due_on": "@mon+4d",
@@ -782,18 +914,19 @@
           {
             "key": "a06",
             "values": {
-              "appr_title": "Concept board - Ebbesen",
+              "appr_title": "Ebbesen concept board",
               "project": "j01",
               "kind": "Concept board",
               "due_on": "@today-80d",
               "status": "Approved",
-              "approved_on": "@today-80d"
+              "approved_on": "@today-80d",
+              "client_notes": "Approved as presented."
             }
           },
           {
             "key": "a07",
             "values": {
-              "appr_title": "Material selections - Ebbesen",
+              "appr_title": "Ebbesen material selections",
               "project": "j01",
               "kind": "Material selections",
               "due_on": "@today-60d",
@@ -804,7 +937,7 @@
           {
             "key": "a08",
             "values": {
-              "appr_title": "Floor plan - Marchetti",
+              "appr_title": "Marchetti floor plan",
               "project": "j03",
               "kind": "Floor plan",
               "due_on": "@today-110d",
@@ -815,18 +948,19 @@
           {
             "key": "a10",
             "values": {
-              "appr_title": "Concept board revisions - Obuya-Hartley",
+              "appr_title": "Obuya-Hartley concept board, second round",
               "project": "j02",
               "kind": "Concept board",
               "due_on": "@today",
               "status": "Pending",
-              "owner": "@installer"
+              "owner": "@installer",
+              "client_notes": "Liked the sage direction; asked for one warmer option."
             }
           },
           {
             "key": "a09",
             "values": {
-              "appr_title": "Budget - Raman",
+              "appr_title": "Raman furnishings budget",
               "project": "j05",
               "kind": "Budget",
               "due_on": "@today-2d",
@@ -1042,6 +1176,40 @@
             ]
           },
           {
+            "key": "fee_type",
+            "label": "Fee type",
+            "parityType": "select",
+            "choices": [
+              "Flat fee",
+              "Hourly",
+              "Flat fee plus markup"
+            ],
+            "choiceColors": {
+              "Flat fee": "blue",
+              "Hourly": "green",
+              "Flat fee plus markup": "amber"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "markup",
+            "label": "Markup on furnishings (%)",
+            "parityType": "percent",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 60
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "designer",
             "label": "Lead designer",
             "parityType": "relation",
@@ -1085,6 +1253,23 @@
             "agg": "sum"
           },
           {
+            "key": "approved_total",
+            "label": "Approved for purchase",
+            "parityType": "rollup",
+            "via": "items",
+            "pick": "client_price",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Specified"
+                ]
+              }
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
             "key": "trade_total",
             "label": "Cost of items",
             "parityType": "rollup",
@@ -1095,8 +1280,57 @@
             "agg": "sum"
           },
           {
+            "key": "fees_billed",
+            "label": "Fees invoiced",
+            "parityType": "rollup",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft"
+                ]
+              }
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fees_due",
+            "label": "Fees awaiting payment",
+            "parityType": "rollup",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "open_approvals",
+            "label": "Approvals waiting on client",
+            "parityType": "rollup",
+            "via": "approvals",
+            "pick": "appr_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Pending",
+                "Changes requested"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "late_items",
-            "label": "Items running late",
+            "label": "Pieces on order",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1104,7 +1338,10 @@
             "pick": "item_title",
             "agg": "count",
             "filter": {
-              "status": "Ordered"
+              "status": [
+                "Ordered",
+                "Shipped"
+              ]
             }
           },
           {
@@ -1197,7 +1434,9 @@
               "design_fee": 12000,
               "designer": "tm-odessa",
               "start_on": "@today-90d",
-              "install_on": "@today+40d"
+              "install_on": "@today+40d",
+              "fee_type": "Flat fee plus markup",
+              "markup": 35
             }
           },
           {
@@ -1210,7 +1449,9 @@
               "design_fee": 7500,
               "designer": "tm-tomas",
               "start_on": "@today-30d",
-              "install_on": "@today+95d"
+              "install_on": "@today+95d",
+              "fee_type": "Flat fee plus markup",
+              "markup": 30
             }
           },
           {
@@ -1223,7 +1464,9 @@
               "design_fee": 4800,
               "designer": "tm-tomas",
               "start_on": "@today-120d",
-              "install_on": "@mon+3d"
+              "install_on": "@mon+3d",
+              "fee_type": "Hourly",
+              "markup": 25
             }
           },
           {
@@ -1237,7 +1480,9 @@
               "designer": "tm-odessa",
               "start_on": "@today-260d",
               "install_on": "@today-150d",
-              "completed_on": "@today-150d"
+              "completed_on": "@today-150d",
+              "fee_type": "Flat fee",
+              "markup": 0
             }
           },
           {
@@ -1250,7 +1495,9 @@
               "design_fee": 3600,
               "designer": "tm-odessa",
               "start_on": "@today-12d",
-              "install_on": "@today+20d"
+              "install_on": "@today+20d",
+              "fee_type": "Flat fee plus markup",
+              "markup": 30
             }
           },
           {
@@ -1263,7 +1510,9 @@
               "design_fee": 18000,
               "designer": "tm-odessa",
               "start_on": "@today-2d",
-              "install_on": "@today+180d"
+              "install_on": "@today+180d",
+              "fee_type": "Hourly",
+              "markup": 20
             }
           }
         ],
@@ -1602,7 +1851,7 @@
           {
             "key": "v01",
             "values": {
-              "inv_title": "Retainer - Okoro",
+              "inv_title": "Okoro condo retainer",
               "project": "j06",
               "phase": "Retainer",
               "amount": 3600,
@@ -1615,7 +1864,7 @@
           {
             "key": "v02",
             "values": {
-              "inv_title": "Design development - Obuya-Hartley",
+              "inv_title": "Obuya-Hartley design development fee",
               "project": "j02",
               "phase": "Design development",
               "amount": 2500,
@@ -1628,7 +1877,7 @@
           {
             "key": "v03",
             "values": {
-              "inv_title": "Concept - Raman",
+              "inv_title": "Raman concept fee",
               "project": "j05",
               "phase": "Concept",
               "amount": 1800,
@@ -1641,7 +1890,7 @@
           {
             "key": "v04",
             "values": {
-              "inv_title": "Procurement deposit - Ebbesen",
+              "inv_title": "Ebbesen purchasing deposit",
               "project": "j01",
               "phase": "Procurement deposit",
               "amount": 14000,
@@ -1653,7 +1902,7 @@
           {
             "key": "v05",
             "values": {
-              "inv_title": "Concept - Ebbesen",
+              "inv_title": "Ebbesen concept fee",
               "project": "j01",
               "phase": "Concept",
               "amount": 4000,
@@ -1666,7 +1915,7 @@
           {
             "key": "v06",
             "values": {
-              "inv_title": "Installation - Marchetti",
+              "inv_title": "Marchetti installation fee",
               "project": "j03",
               "phase": "Installation",
               "amount": 1600,
@@ -1678,7 +1927,7 @@
           {
             "key": "v07",
             "values": {
-              "inv_title": "Final - Sorensen-Vaughn",
+              "inv_title": "Sorensen-Vaughn final fee",
               "project": "j04",
               "phase": "Installation",
               "amount": 3000,
@@ -1832,6 +2081,27 @@
             "default": "Active"
           },
           {
+            "key": "source",
+            "label": "Came from",
+            "parityType": "select",
+            "choices": [
+              "Referral",
+              "Instagram",
+              "Past client",
+              "Architect",
+              "Showhouse"
+            ],
+            "choiceColors": {
+              "Referral": "blue",
+              "Instagram": "green",
+              "Past client": "amber",
+              "Architect": "violet",
+              "Showhouse": "teal"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "phone",
             "label": "Phone",
             "parityType": "phone",
@@ -1842,6 +2112,13 @@
             "key": "email",
             "label": "Email",
             "parityType": "email",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "address",
+            "label": "Project address",
+            "parityType": "text",
             "sensitivity": "confidential",
             "contextPolicy": "include"
           },
@@ -1878,7 +2155,9 @@
               "client_name": "Rosalind and Cormac Ebbesen",
               "status": "Active",
               "phone": "(512) 555-0151",
-              "email": "ebbesens@mailbox-demo.net"
+              "email": "ebbesens@mailbox-demo.net",
+              "source": "Referral",
+              "address": "14 Larkspur Bend"
             }
           },
           {
@@ -1887,7 +2166,9 @@
               "client_name": "Imani Obuya-Hartley",
               "status": "Active",
               "phone": "(512) 555-0152",
-              "email": "imani.oh@mailbox-demo.net"
+              "email": "imani.oh@mailbox-demo.net",
+              "source": "Instagram",
+              "address": "302 Halvorsen Street, unit 6"
             }
           },
           {
@@ -1896,7 +2177,9 @@
               "client_name": "Thaddeus Marchetti",
               "status": "Active",
               "phone": "(512) 555-0153",
-              "email": "thad.m@mailbox-demo.net"
+              "email": "thad.m@mailbox-demo.net",
+              "source": "Architect",
+              "address": "88 Copperline Way"
             }
           },
           {
@@ -1905,7 +2188,9 @@
               "client_name": "Linnea Sorensen-Vaughn",
               "status": "Past client",
               "phone": "(512) 555-0154",
-              "email": "linnea.sv@mailbox-demo.net"
+              "email": "linnea.sv@mailbox-demo.net",
+              "source": "Showhouse",
+              "address": "5 Tamsin Court"
             }
           },
           {
@@ -1914,7 +2199,9 @@
               "client_name": "Dr. Anselm Okoro",
               "status": "Inquiry",
               "phone": "(512) 555-0155",
-              "email": "anselm.o@mailbox-demo.net"
+              "email": "anselm.o@mailbox-demo.net",
+              "source": "Past client",
+              "address": "1200 Riverlet Avenue, unit 14B"
             }
           },
           {
@@ -1923,7 +2210,9 @@
               "client_name": "Philippa and Dev Raman",
               "status": "Active",
               "phone": "(512) 555-0156",
-              "email": "ramans@mailbox-demo.net"
+              "email": "ramans@mailbox-demo.net",
+              "source": "Referral",
+              "address": "47 Wexcombe Lane"
             }
           }
         ],
@@ -2697,10 +2986,16 @@
         "mailbox-demo.net"
       ],
       "fictionalStreets": [
-        "Congress Lane"
+        "Congress Lane",
+        "Larkspur Bend",
+        "Halvorsen Street",
+        "Copperline Way",
+        "Tamsin Court",
+        "Riverlet Avenue",
+        "Wexcombe Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2722,7 +3017,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Your studio in one place. Move each Project through its phases, track every Furnishing from specified to installed, collect client Approvals before ordering, and keep Fee invoices flowing. Operational tracking only."
+              "text": "The studio desk for an interior designer: each project from discovery to install, every piece you specify and order with trade and client prices, the approvals that unlock each phase, and the fee invoices that keep the studio paid."
             }
           ],
           "background": "blue",
@@ -2739,6 +3034,12 @@
                 "width": 0.5
               },
               "children": [
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
+                  }
+                },
                 {
                   "type": "page",
                   "props": {
@@ -3333,6 +3634,375 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "interior-design-studio",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace is the studio's desk: who the clients are, what phase each project is in, every piece specified and ordered, what the client still has to approve, and which fee invoices are out. Your accounting software keeps the books; this is where the design work is run."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One row is"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What you watch"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A household or person"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where they came from, project address, projects"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Projects"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One scope of work for a client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, fee type, markup, approvals waiting, pieces on order, fees awaiting payment"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Furnishings"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One piece you specify"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Room, vendor, finish, quantity, trade and client price, purchase order, deposit, freight, expected delivery"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Approvals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One thing the client signs off"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Kind, needed by, status, the client's comments"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fee invoices"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One bill for your design fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phase, amount, due date, status"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": " on a piece is the client price minus the trade price."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Specified to client",
+              "bold": true
+            },
+            {
+              "text": " adds up every piece on the project. "
+            },
+            {
+              "text": "Approved for purchase",
+              "bold": true
+            },
+            {
+              "text": " counts only pieces past Specified."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fees invoiced",
+              "bold": true
+            },
+            {
+              "text": " leaves out drafts. "
+            },
+            {
+              "text": "Fees awaiting payment",
+              "bold": true
+            },
+            {
+              "text": " is sent and overdue invoices together."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add current clients and projects with the fee and markup from each letter of agreement."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every piece already ordered with its purchase order, vendor deposit and expected delivery."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add any approval you are waiting on, with the date you need it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter fee invoices that are out and unpaid."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Day"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Monday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Studio meeting: projects by phase, approvals due this week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Tuesday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Procurement call-around: every piece Ordered or Shipped gets a status check"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Thursday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fee invoices due and overdue followed up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client update emails for every project in Procurement or Installation"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ebbesen dining pendant arrived damaged, so the procurement assistant files the claim with the vendor and moves the install back one week. The purchasing deposit invoice is overdue, so nothing else is ordered for that project until it is paid."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "interior-design-studio",
       "title": "Dashboard",
@@ -3658,14 +4328,14 @@
       "parent": "interior-design-studio",
       "title": "Design phases",
       "icon": {
-        "emoji": "🧭"
+        "emoji": "🎨"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Each phase ends with a client approval. Do not skip the gate."
+              "text": "Every project moves through the same phases. Each one ends with a client approval, and the next one does not start until that approval is in. That rule protects your time and keeps fees tied to finished work."
             }
           ],
           "background": "blue",
@@ -3677,7 +4347,141 @@
           "type": "heading",
           "text": [
             {
-              "text": "Phases"
+              "text": "The phases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Phase"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What happens"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ends with"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Discovery"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Site visit, measurements, photos, budget and wish list"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Signed letter of agreement and retainer paid"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Concept"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Mood and concept boards, rough layout"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Concept board approved"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Design development"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Floor plan, furniture plan, materials, lighting, first pricing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Floor plan and material selections approved"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Procurement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Proposals, deposits, orders, tracking"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Furnishings budget approved and deposit paid"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Installation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Receiving, delivery, styling"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final walk-through approved"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Moving a project"
             }
           ],
           "props": {
@@ -3688,7 +4492,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Discovery: measurements, questionnaire, budget."
+              "text": "When the phase's work is ready, add the approval with "
+            },
+            {
+              "text": "Add approval",
+              "bold": true
+            },
+            {
+              "text": " and set "
+            },
+            {
+              "text": "Needed by",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3696,7 +4514,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Concept: boards and a first floor plan."
+              "text": "Present it in person or on a call; never by email alone for the first presentation."
             }
           ]
         },
@@ -3704,7 +4522,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Design development: specific pieces and finishes."
+              "text": "Write the client's words in "
+            },
+            {
+              "text": "Client comments",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3712,7 +4537,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Procurement: orders, deposits, tracking."
+              "text": "Press "
+            },
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": " or "
+            },
+            {
+              "text": "Changes requested",
+              "bold": true
+            },
+            {
+              "text": ". One round of changes is normal; a third round is a scope conversation."
             }
           ]
         },
@@ -3720,7 +4559,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Installation: delivery, placement and styling."
+              "text": "Move the project to the next phase."
             }
           ]
         },
@@ -3728,7 +4567,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "At each gate"
+              "text": "Revisions"
             }
           ],
           "props": {
@@ -3739,7 +4578,84 @@
           "type": "text",
           "text": [
             {
-              "text": "Add an Approval, send the presentation, and record the decision before moving the project on."
+              "text": "Your letter of agreement should say how many revision rounds each phase includes. When a client asks for a fourth concept, show them the agreement kindly and offer the extra round at your hourly rate. Record that conversation on the approval."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping clients moving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Approvals waiting on client",
+              "bold": true
+            },
+            {
+              "text": " on the project shows how many decisions are open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Approvals past their date appear in the overdue view. Call, do not email."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A project waiting more than two weeks on a decision gets a check-in about timing and budget, not just the decision."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Obuya-Hartley floor plan came back with changes: the bed on the long wall and a reading chair by the window. The second concept round is due this week; material selections follow once the plan is approved."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Budget talks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Talk money in every phase, not just procurement. A client who saw a clear budget at concept is rarely surprised by the proposal."
             }
           ]
         }
@@ -3754,10 +4670,140 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Procurement is where studios earn a large share of their income and lose most of their time. Every piece is tracked from the moment it is specified until it is installed."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Specify"
+              "text": "The statuses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Specified"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "In the design, priced, not yet approved by the client"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Approved"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client said yes and paid the deposit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Ordered"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Purchase order sent; vendor deposit paid"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Shipped"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vendor confirmed it left, with a tracking number"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "At your receiver, inspected"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Installed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "In the home"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ordering a piece"
             }
           ],
           "props": {
@@ -3768,7 +4814,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add each piece with Add item and enter trade and client prices."
+              "text": "Only order pieces the client has approved and paid for. "
+            },
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": " sets the date."
             }
           ]
         },
@@ -3776,7 +4829,59 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm lead time with the vendor."
+              "text": "Confirm the finish or fabric, the size and the quantity against the vendor's spec sheet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the purchase order and record its number in "
+            },
+            {
+              "text": "Purchase order",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record "
+            },
+            {
+              "text": "Deposit paid to vendor",
+              "bold": true
+            },
+            {
+              "text": " and the vendor's lead time; set "
+            },
+            {
+              "text": "Expected delivery",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark ordered",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3784,7 +4889,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Order"
+              "text": "The Tuesday call-around"
             }
           ],
           "props": {
@@ -3792,18 +4897,47 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Collect the client deposit before ordering."
+              "text": "Every piece Ordered or Shipped has a confirmed expected delivery"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Mark the piece Ordered and set Expected delivery."
+              "text": "Any date that slipped is updated and the client told"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pieces past their expected delivery are chased the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pieces on order",
+              "bold": true
+            },
+            {
+              "text": " on each project shows how many are still out there."
             }
           ]
         },
@@ -3811,7 +4945,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Receive"
+              "text": "Receiving"
             }
           ],
           "props": {
@@ -3819,26 +4953,95 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Inspect and photograph on arrival."
+              "text": "Have pieces delivered to a receiving warehouse, not the client's home. When a piece arrives the receiver inspects it, then you press "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": ". Record "
+            },
+            {
+              "text": "Freight and receiving",
+              "bold": true
+            },
+            {
+              "text": " so the true cost is known."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Mark Received and schedule installation."
+              "text": "Damage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a piece arrives damaged, tick "
+            },
+            {
+              "text": "Arrived damaged",
+              "bold": true
+            },
+            {
+              "text": ", take photos, and file the claim with the vendor or freight company within their deadline, often five days. Tell the client before they find out another way."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Items past their delivery date appear under Overdue."
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Client price is trade price plus the markup in your agreement. "
+            },
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": " on each piece shows what the studio earns. Be open with clients about how you charge; surprises about markup end relationships."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The built-in bookcase panels for the Marchetti office were expected three days ago. The assistant calls the millwork shop, learns they ship this week, updates the date and lets the client know the install moves two days."
             }
           ]
         }
@@ -3853,10 +5056,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Design fees pay for the studio's time. Bill them on a schedule tied to the phases, so you are never far ahead of what the client has paid."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Fee schedule"
+              "text": "Fee types"
             }
           ],
           "props": {
@@ -3864,34 +5079,75 @@
           }
         },
         {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Retainer at agreement."
-            }
-          ]
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Fee type"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How it works"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Flat fee"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One fee for the design, billed in parts at each phase"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hourly"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time billed monthly against an estimate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Flat fee plus markup"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "A design fee plus a markup on furnishings you buy for the client"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Concept and design development fees at each approval."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Procurement deposit before the first order."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Final installation fee at the walk-through."
+              "text": "Record the fee type and markup on each project from the signed agreement."
             }
           ]
         },
@@ -3899,7 +5155,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Routine"
+              "text": "The billing schedule"
             }
           ],
           "props": {
@@ -3910,7 +5166,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create invoices from the project with Add fee invoice."
+              "text": "Retainer",
+              "bold": true
+            },
+            {
+              "text": " when the agreement is signed. No work starts before it is paid."
             }
           ]
         },
@@ -3918,7 +5178,11 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark Sent, then Paid."
+              "text": "Concept",
+              "bold": true
+            },
+            {
+              "text": " fee when the concept board is approved."
             }
           ]
         },
@@ -3926,7 +5190,253 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Follow up the day after the due date."
+              "text": "Design development",
+              "bold": true
+            },
+            {
+              "text": " fee when the floor plan and selections are approved."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Purchasing deposit",
+              "bold": true
+            },
+            {
+              "text": " before any order is placed, usually most of the furnishings total."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Installation",
+              "bold": true
+            },
+            {
+              "text": " fee and any balance at the final walk-through."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Sending an invoice"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Amount matches the agreement for that phase"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Due date set, usually 14 days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark sent",
+              "bold": true
+            },
+            {
+              "text": " once it is out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Paid invoices get "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " with the date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Following up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days past due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Friendly reminder with the invoice attached"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phone call from the lead designer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ordering and design work pause, as the agreement allows"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fees awaiting payment",
+              "bold": true
+            },
+            {
+              "text": " on each project adds sent and overdue invoices. "
+            },
+            {
+              "text": "Fees invoiced",
+              "bold": true
+            },
+            {
+              "text": " shows everything billed except drafts."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hourly projects"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Log time weekly, even when you bill monthly. Send the client a short summary with each invoice: hours by phase and what was done. Clients who see the work rarely question the bill."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never front the money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Do not pay a vendor deposit with studio money before the client's purchasing deposit has cleared. If a client stops paying, you are left holding furniture made to their taste."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ebbesen purchasing deposit is ten days overdue. The lead designer calls, learns the client was travelling, and agrees payment by Friday. The walnut table already shipped against an earlier deposit, so nothing new is ordered until then."
             }
           ]
         }
@@ -3937,14 +5447,26 @@
       "parent": "interior-design-studio",
       "title": "Installation day",
       "icon": {
-        "emoji": "🚚"
+        "emoji": "🛋️"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Installation is the day clients remember. Plan it like an event: everything received and inspected, a timed plan, and the room finished and styled before the client walks in."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "A week before"
+              "text": "Two weeks before"
             }
           ],
           "props": {
@@ -3955,7 +5477,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm delivery windows"
+              "text": "Every piece for the rooms being installed is Received and inspected"
             }
           ],
           "props": {
@@ -3966,12 +5488,80 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm access with the client"
+              "text": "Damaged pieces replaced or a plan agreed with the client"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Delivery booked with the receiver; truck size and crew confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Building rules checked: elevator booking, loading dock hours, certificate of insurance"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Art hanger, electrician or drapery installer booked if needed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Print a floor plan for each room with every piece marked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pack the styling kit: tools, felt pads, steamer, touch-up markers, picture hooks, cleaning supplies."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Confirm the client is out of the house until the agreed reveal time."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3985,32 +5575,64 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Check every piece against the specification"
+              "text": "Protect floors and door frames before the first piece comes in."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Photograph the finished rooms"
+              "text": "Place large pieces first, then lighting, rugs, drapery and art."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Steam drapery and bedding; fluff and style."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check every piece for damage and photograph each room."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": " for anything still showing as shipped, then "
+            },
+            {
+              "text": "Installed",
+              "bold": true
+            },
+            {
+              "text": " on each piece in the home."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "The reveal"
             }
           ],
           "props": {
@@ -4018,26 +5640,100 @@
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Mark pieces Installed"
+              "text": "Walk the client through each room. Add the final walk-through approval and press "
+            },
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": " when they sign off. List anything outstanding, with a date for each."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something is missing"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Send the final invoice and request a review"
+              "text": "Never stage a room with a gap the client will notice. If a piece is late, hold that room for a second visit and stage the rest fully, then tell the client in advance which room is still to come and when."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the install"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the installation fee invoice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send care instructions for fabrics, finishes and rugs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book professional photography while the rooms are fresh, with the client's permission."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for a review or a referral two weeks later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Marchetti home office installs this week. The desk and chair are in, but the bookcase panels are still in transit, so the carpenter is booked for a second visit and the final walk-through waits until the panels are in."
+            }
+          ]
         }
       ]
     }

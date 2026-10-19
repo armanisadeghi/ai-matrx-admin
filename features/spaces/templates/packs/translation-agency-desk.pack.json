@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0461",
-  "version": 4,
+  "version": 5,
   "title": "Translation Agency Desk",
-  "description": "Clients, linguists, translation jobs, glossaries and quality checks for a language agency.",
+  "description": "For translation project managers: jobs, word counts, linguists, glossaries and reviews.",
   "forWho": "Translation and localization agencies",
   "icon": {
     "emoji": "🌐"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "translation",
-    "linguists",
+    "translation pm",
+    "translator",
+    "localization",
     "glossary",
-    "quality"
+    "language agency",
+    "quality review"
   ],
   "spec": {
     "specVersion": 1,
@@ -116,6 +118,13 @@
             }
           },
           {
+            "key": "style_guide",
+            "label": "Style guide on file",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "contact_email",
             "label": "Contact email",
             "parityType": "email",
@@ -141,17 +150,24 @@
           },
           {
             "key": "job_count",
-            "label": "Jobs",
+            "label": "Open jobs",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "jobs",
             "pick": "job_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Delivered"
+                ]
+              }
+            }
           },
           {
             "key": "words_total",
-            "label": "Words translated",
+            "label": "Words delivered",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -161,6 +177,35 @@
             "filter": {
               "status": "Delivered"
             }
+          },
+          {
+            "key": "words_open",
+            "label": "Words in progress",
+            "parityType": "rollup",
+            "via": "jobs",
+            "pick": "words",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "In translation",
+                "In review"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "delivered_value",
+            "label": "Delivered work (USD)",
+            "parityType": "rollup",
+            "via": "jobs",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Delivered"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -281,7 +326,8 @@
               "sector": "Legal",
               "contact_email": "docs@pryorhaldane.net",
               "since": "@today-600d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "style_guide": true
             }
           },
           {
@@ -292,7 +338,8 @@
               "sector": "Medical",
               "contact_email": "regulatory@marlowebio.net",
               "since": "@today-300d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "style_guide": true
             }
           },
           {
@@ -314,7 +361,8 @@
               "sector": "Technical",
               "contact_email": "manuals@kestrelmachine.net",
               "since": "@today-400d",
-              "owner": "tm-2"
+              "owner": "tm-2",
+              "style_guide": true
             }
           },
           {
@@ -448,6 +496,39 @@
             }
           },
           {
+            "key": "rate",
+            "label": "Usual rate per word (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "certified",
+            "label": "Sworn or certified",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "nda",
+            "label": "Confidentiality agreement signed",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "email",
             "label": "Email",
             "parityType": "email",
@@ -481,13 +562,32 @@
           },
           {
             "key": "jobs_done",
-            "label": "Jobs assigned",
+            "label": "Jobs delivered",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "jobs",
             "pick": "job_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": "Delivered"
+            }
+          },
+          {
+            "key": "jobs_open",
+            "label": "Jobs in hand",
+            "parityType": "rollup",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "In translation",
+                "In review"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "added_at",
@@ -573,7 +673,10 @@
               "band": "Specialist",
               "email": "esperanza.v@mailpost.net",
               "words_day": 2500,
-              "last_used": "@today-10d"
+              "last_used": "@today-10d",
+              "rate": 0.11,
+              "certified": true,
+              "nda": true
             }
           },
           {
@@ -586,7 +689,10 @@
               "band": "Specialist",
               "email": "matteo.b@mailpost.net",
               "words_day": 2200,
-              "last_used": "@today-2d"
+              "last_used": "@today-2d",
+              "rate": 0.09,
+              "certified": false,
+              "nda": true
             }
           },
           {
@@ -599,7 +705,10 @@
               "band": "Standard",
               "email": "chloe.an@mailpost.net",
               "words_day": 3000,
-              "last_used": "@today-6d"
+              "last_used": "@today-6d",
+              "rate": 0.08,
+              "certified": false,
+              "nda": true
             }
           },
           {
@@ -612,7 +721,10 @@
               "band": "Premium",
               "email": "joaquim.t@mailpost.net",
               "words_day": 2000,
-              "last_used": "@today-1d"
+              "last_used": "@today-1d",
+              "rate": 0.12,
+              "certified": true,
+              "nda": true
             }
           },
           {
@@ -625,7 +737,10 @@
               "band": "Specialist",
               "email": "haruka.m@mailpost.net",
               "words_day": 1800,
-              "last_used": "@today-20d"
+              "last_used": "@today-20d",
+              "rate": 0.13,
+              "certified": false,
+              "nda": true
             }
           },
           {
@@ -638,7 +753,10 @@
               "band": "Specialist",
               "email": "santiago.f@mailpost.net",
               "words_day": 2400,
-              "last_used": "@today-8d"
+              "last_used": "@today-8d",
+              "rate": 0.115,
+              "certified": false,
+              "nda": true
             }
           },
           {
@@ -651,7 +769,10 @@
               "band": "Premium",
               "email": "ingeborg.l@mailpost.net",
               "words_day": 2100,
-              "last_used": "@today-45d"
+              "last_used": "@today-45d",
+              "rate": 0.12,
+              "certified": true,
+              "nda": true
             }
           },
           {
@@ -664,7 +785,10 @@
               "band": "Standard",
               "email": "rafaela.d@mailpost.net",
               "words_day": 2800,
-              "last_used": "@today-30d"
+              "last_used": "@today-30d",
+              "rate": 0.075,
+              "certified": false,
+              "nda": false
             }
           }
         ]
@@ -719,6 +843,27 @@
             }
           },
           {
+            "key": "service",
+            "label": "Service",
+            "parityType": "select",
+            "choices": [
+              "Translation and edit",
+              "Translation only",
+              "Certified translation",
+              "Transcreation",
+              "Proofreading"
+            ],
+            "choiceColors": {
+              "Translation and edit": "blue",
+              "Translation only": "slate",
+              "Certified translation": "purple",
+              "Transcreation": "pink",
+              "Proofreading": "green"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "pair",
             "label": "Language pair",
             "parityType": "select",
@@ -742,6 +887,29 @@
             }
           },
           {
+            "key": "file_format",
+            "label": "Source files",
+            "parityType": "select",
+            "choices": [
+              "Word",
+              "InDesign",
+              "Web strings",
+              "Scanned PDF",
+              "Subtitle file",
+              "Spreadsheet"
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choiceColors": {
+              "Word": "blue",
+              "InDesign": "green",
+              "Web strings": "orange",
+              "Scanned PDF": "violet",
+              "Subtitle file": "teal",
+              "Spreadsheet": "pink"
+            }
+          },
+          {
             "key": "words",
             "label": "Words",
             "parityType": "number",
@@ -757,6 +925,48 @@
                 "value": 500000
               }
             ]
+          },
+          {
+            "key": "fuzzy_words",
+            "label": "Partial matches (words)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "repeat_words",
+            "label": "Repetitions and full matches (words)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billable_words",
+            "label": "Weighted words",
+            "parityType": "formula",
+            "formula": "ROUND({Words} - {Partial matches (words)} * 0.4 - {Repetitions and full matches (words)} * 0.75, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "rate",
@@ -783,7 +993,50 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "ROUND({Words} * {Agreed rate per word (USD)}, 0)"
+            "formula": "ROUND({Weighted words} * {Agreed rate per word (USD)}, 0)"
+          },
+          {
+            "key": "linguist_rate",
+            "label": "Linguist rate per word (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "linguist_cost",
+            "label": "Linguist cost (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Weighted words} * {Linguist rate per word (USD)}, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "margin_pct",
+            "label": "Gross margin (%)",
+            "parityType": "formula",
+            "formula": "IF({Job price (USD)} > 0, ROUND(({Job price (USD)} - {Linguist cost (USD)}) / {Job price (USD)} * 100, 0), 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "po_number",
+            "label": "Client PO number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "received_on",
@@ -1024,7 +1277,13 @@
               "client": "client-1",
               "linguist": "linguist-1",
               "pm": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service": "Certified translation",
+              "file_format": "Scanned PDF",
+              "fuzzy_words": 0,
+              "repeat_words": 180,
+              "linguist_rate": 0.11,
+              "po_number": "PH-4471"
             }
           },
           {
@@ -1039,7 +1298,13 @@
               "due_on": "@today+1d",
               "client": "client-2",
               "linguist": "linguist-4",
-              "pm": "tm-2"
+              "pm": "tm-2",
+              "service": "Translation and edit",
+              "file_format": "Word",
+              "fuzzy_words": 2600,
+              "repeat_words": 1900,
+              "linguist_rate": 0.12,
+              "po_number": "MB-PO-20931"
             }
           },
           {
@@ -1055,7 +1320,12 @@
               "client": "client-3",
               "linguist": "linguist-6",
               "pm": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service": "Transcreation",
+              "file_format": "Web strings",
+              "fuzzy_words": 400,
+              "repeat_words": 900,
+              "linguist_rate": 0.08
             }
           },
           {
@@ -1070,7 +1340,13 @@
               "due_on": "@today+9d",
               "client": "client-4",
               "linguist": "linguist-2",
-              "pm": "tm-2"
+              "pm": "tm-2",
+              "service": "Translation and edit",
+              "file_format": "InDesign",
+              "fuzzy_words": 5200,
+              "repeat_words": 4100,
+              "linguist_rate": 0.09,
+              "po_number": "KMT-7702"
             }
           },
           {
@@ -1087,7 +1363,12 @@
               "linguist": "linguist-3",
               "pm": "tm-2",
               "owner_me": "@installer",
-              "delivered_on": "@today-14d"
+              "delivered_on": "@today-14d",
+              "service": "Translation and edit",
+              "file_format": "InDesign",
+              "fuzzy_words": 300,
+              "repeat_words": 250,
+              "linguist_rate": 0.08
             }
           },
           {
@@ -1103,7 +1384,13 @@
               "client": "client-2",
               "linguist": "linguist-6",
               "pm": "tm-2",
-              "delivered_on": "@today-22d"
+              "delivered_on": "@today-22d",
+              "service": "Translation and edit",
+              "file_format": "Word",
+              "fuzzy_words": 1100,
+              "repeat_words": 1400,
+              "linguist_rate": 0.115,
+              "po_number": "MB-PO-20702"
             }
           },
           {
@@ -1120,7 +1407,13 @@
               "linguist": "linguist-1",
               "pm": "tm-2",
               "owner_me": "@installer",
-              "delivered_on": "@today-36d"
+              "delivered_on": "@today-36d",
+              "service": "Translation and edit",
+              "file_format": "Word",
+              "fuzzy_words": 1800,
+              "repeat_words": 900,
+              "linguist_rate": 0.11,
+              "po_number": "PH-4398"
             }
           },
           {
@@ -1135,7 +1428,12 @@
               "due_on": "@today+12d",
               "client": "client-3",
               "linguist": "linguist-5",
-              "pm": "tm-2"
+              "pm": "tm-2",
+              "service": "Translation only",
+              "file_format": "Subtitle file",
+              "fuzzy_words": 0,
+              "repeat_words": 350,
+              "linguist_rate": 0.13
             }
           },
           {
@@ -1151,7 +1449,13 @@
               "client": "client-4",
               "linguist": "linguist-2",
               "pm": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "service": "Translation and edit",
+              "file_format": "Spreadsheet",
+              "fuzzy_words": 2300,
+              "repeat_words": 2900,
+              "linguist_rate": 0.09,
+              "po_number": "KMT-7655"
             }
           },
           {
@@ -1161,12 +1465,17 @@
               "status": "Quoted",
               "pair": "French to English",
               "words": 4300,
-              "rate": 0.16,
+              "rate": 0.07,
               "received_on": "@today-0d",
               "due_on": "@today+10d",
               "client": "client-5",
               "linguist": "linguist-3",
-              "pm": "tm-2"
+              "pm": "tm-2",
+              "service": "Proofreading",
+              "file_format": "Word",
+              "fuzzy_words": 0,
+              "repeat_words": 0,
+              "linguist_rate": 0.06
             }
           }
         ]
@@ -1465,6 +1774,74 @@
             ]
           },
           {
+            "key": "errors_critical",
+            "label": "Critical errors",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "errors_major",
+            "label": "Major errors",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "errors_minor",
+            "label": "Minor errors",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "result",
+            "label": "Result",
+            "parityType": "select",
+            "choices": [
+              "Pass",
+              "Pass after fixes",
+              "Fail"
+            ],
+            "choiceColors": {
+              "Pass": "green",
+              "Pass after fixes": "yellow",
+              "Fail": "red"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "findings",
             "label": "Main findings",
             "parityType": "text",
@@ -1594,7 +1971,11 @@
               "findings": "Two tone corrections",
               "checked_on": "@today-15d",
               "job": "job-5",
-              "reviewer": "tm-4"
+              "reviewer": "tm-4",
+              "errors_critical": 0,
+              "errors_major": 0,
+              "errors_minor": 2,
+              "result": "Pass"
             }
           },
           {
@@ -1606,7 +1987,11 @@
               "findings": "Consistent terminology",
               "checked_on": "@today-23d",
               "job": "job-6",
-              "reviewer": "tm-4"
+              "reviewer": "tm-4",
+              "errors_critical": 0,
+              "errors_major": 0,
+              "errors_minor": 1,
+              "result": "Pass"
             }
           },
           {
@@ -1618,7 +2003,11 @@
               "findings": "One missed defined term",
               "checked_on": "@today-37d",
               "job": "job-7",
-              "reviewer": "tm-4"
+              "reviewer": "tm-4",
+              "errors_critical": 0,
+              "errors_major": 1,
+              "errors_minor": 3,
+              "result": "Pass after fixes"
             }
           },
           {
@@ -2108,7 +2497,7 @@
         "Cormorant Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2130,7 +2519,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "The agency's work in one place: clients and their glossaries, the linguists you can call, every translation job from quote to delivery, and a quality check for each. Start on the Dashboard and work the jobs due soonest. Never assign a job before checking the linguist's availability and language pair."
+              "text": "The project desk of a small translation agency: clients and their style guides, linguists with pairs, rates and availability, every job with word counts, weighted words, price and margin, the shared glossaries, and the quality reviews. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2151,6 +2547,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2956,6 +3358,53 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Jobs by margin"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Jobs by margin",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vmg",
+                "name": "Jobs by margin",
+                "layout": "list",
+                "icon": "List",
+                "sorts": [
+                  {
+                    "field": "margin_pct",
+                    "direction": "asc"
+                  }
+                ],
+                "anyOf": {
+                  "status": [
+                    "Quoted",
+                    "In translation",
+                    "In review"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vmg"
+          }
         }
       ]
     },
@@ -2964,14 +3413,14 @@
       "parent": "translation-agency-desk",
       "title": "Quote and assign a job",
       "icon": {
-        "emoji": "💬"
+        "emoji": "🧮"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A good quote is quick, specific and states the deadline you can really meet."
+              "text": "A good quote is fast, clear and correct. A good assignment puts the right specialist on the job with enough days to do it well."
             }
           ],
           "background": "blue",
@@ -2983,7 +3432,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Quoting"
+              "text": "Quote within four working hours"
             }
           ],
           "props": {
@@ -2994,7 +3443,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open the file and count the words; check for repeated text and images with text."
+              "text": "Get the files, the language pair, the purpose (publish, file with a court, internal use) and the deadline."
             }
           ]
         },
@@ -3002,7 +3451,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Choose the language pair and the rate from the client row."
+              "text": "Run the analysis and enter the counts on a new job with status "
+            },
+            {
+              "text": "Quoted",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3010,7 +3466,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add a rush surcharge only when the deadline needs it, and say so."
+              "text": "Choose the "
+            },
+            {
+              "text": "Service",
+              "bold": true
+            },
+            {
+              "text": ". Certified translations and transcreation are priced differently from translation and edit."
             }
           ]
         },
@@ -3018,7 +3481,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the quote with the due date, the format of the delivery and what you need from the client."
+              "text": "Send the price, the delivery date and what is included (review, formatting, certification)."
             }
           ]
         },
@@ -3026,125 +3489,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Assigning"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Open Available linguists and filter by the main language pair."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Check specialty, words per day and last used date."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Offer the job; wait for a yes before changing the linguist on the job row."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Rule of thumb"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Divide the word count by the linguist's words per day to see if the deadline is realistic."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "terminology-and-glossaries",
-      "parent": "translation-agency-desk",
-      "title": "Terminology and glossaries",
-      "icon": {
-        "emoji": "📚"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Why it matters"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Clients notice inconsistent terms faster than they notice style. A glossary fixes this once."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Building a glossary"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Collect terms from the client's earlier documents and style guide."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add each term with its approved translation and the language pair."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Ask the client to approve; tick Approved by client when they do."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Using it"
+              "text": "What to ask before quoting"
             }
           ],
           "props": {
@@ -3155,7 +3500,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Send the approved terms to the linguist with the job."
+              "text": "Who is the reader, and where will it appear?"
             }
           ]
         },
@@ -3163,7 +3508,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask the reviewer to check term use and report misses."
+              "text": "Is there a glossary, style guide or earlier translation to follow?"
             }
           ]
         },
@@ -3171,48 +3516,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Add new terms after delivery."
+              "text": "Are the files editable? Scanned PDFs need extra time to prepare."
             }
           ]
         },
         {
-          "type": "callout",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Unapproved terms are suggestions. Mark the row clearly so nobody treats them as final."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        }
-      ]
-    },
-    {
-      "key": "quality-review",
-      "parent": "translation-agency-desk",
-      "title": "Quality review process",
-      "icon": {
-        "emoji": "✅"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "What gets reviewed"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Every legal and medical job gets a second linguist. Marketing jobs are reviewed by sample."
+              "text": "Does the translation need a certificate or a sworn translator?"
             }
           ]
         },
@@ -3220,50 +3532,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The check"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The reviewer reads the translation against the source."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "They note accuracy, terminology, style and formatting issues separately."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The score and main findings go on the quality check row."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "The project manager sends corrections to the linguist and confirms they were applied."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Reading the scores"
+              "text": "Choosing the linguist"
             }
           ],
           "props": {
@@ -3280,17 +3549,12 @@
                 "cells": [
                   [
                     {
-                      "text": "Score"
+                      "text": "Check"
                     }
                   ],
                   [
                     {
-                      "text": "Meaning"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Action"
+                      "text": "Why"
                     }
                   ]
                 ]
@@ -3299,17 +3563,12 @@
                 "cells": [
                   [
                     {
-                      "text": "95 or more"
+                      "text": "Pair and specialty"
                     }
                   ],
                   [
                     {
-                      "text": "Excellent"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Thank the linguist; consider for premium work"
+                      "text": "A legal translator for a contract, a medical one for a leaflet"
                     }
                   ]
                 ]
@@ -3318,17 +3577,12 @@
                 "cells": [
                   [
                     {
-                      "text": "90 to 94"
+                      "text": "Words per day against the deadline"
                     }
                   ],
                   [
                     {
-                      "text": "Good"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Share notes"
+                      "text": "A 10,000-word job at 2,500 a day needs four working days plus review"
                     }
                   ]
                 ]
@@ -3337,23 +3591,766 @@
                 "cells": [
                   [
                     {
-                      "text": "Under 90"
+                      "text": "Rate"
                     }
                   ],
                   [
                     {
-                      "text": "Needs attention"
+                      "text": "Keeps the margin healthy"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Certified"
                     }
                   ],
                   [
                     {
-                      "text": "Talk to the linguist before the next job"
+                      "text": "Required for some official documents"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Confidentiality agreement"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Required before any file is shared"
                     }
                   ]
                 ]
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Assign"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Link the linguist and the project manager; set the status to "
+            },
+            {
+              "text": "In translation",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the files, the glossary terms for that client, the style guide and the due date with a time zone."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set an internal due date one working day before the client's, so review has time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Margin check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If "
+            },
+            {
+              "text": "Gross margin",
+              "bold": true
+            },
+            {
+              "text": " is under 35 percent, look again: a different linguist, a longer deadline, or a higher rate for a rush."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kestrel's service manual is 18,500 words, with 9,300 matched or repeated. Matteo, a technical English to German specialist, has it at his usual rate and is due nine days from now, with review booked for the last two."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "terminology-and-glossaries",
+      "parent": "translation-agency-desk",
+      "title": "Terminology and glossaries",
+      "icon": {
+        "emoji": "📚"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Clients notice inconsistent terms more than anything else. A shared, approved glossary per client makes every linguist sound like one writer."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes in the glossary"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Product names, part names and features"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Legal defined terms (\"the Licensee\", \"the Effective Date\")"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Medical and regulatory terms that must match approved documents"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Interface words such as button labels"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Terms the client has said they dislike, with the preferred choice"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Approval"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A linguist proposes a term with a note on context. It goes in unapproved."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The project manager sends unapproved terms to the client's reviewer in one batch, not one at a time."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Once the client confirms, tick "
+            },
+            {
+              "text": "Approved",
+              "bold": true
+            },
+            {
+              "text": ". Only approved terms are binding."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Working with linguists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send the client's approved terms with every job."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask linguists to flag new terms rather than invent a translation silently."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After delivery, add any new agreed term the same week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping it clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two translations for one term"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep the approved one; note the other as not to be used"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Term without context"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Add a short note: where it appears, what it means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Old product names"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Keep them, marked as retired, so older documents still make sense"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Style guides"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Style guide on file",
+              "bold": true
+            },
+            {
+              "text": " on the client when you have one. A style guide covers tone, formal or informal address, numbers and dates, and brand rules. If a client has none, write a one-page version after the first job and ask them to confirm it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Review twice a year"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Unapproved terms older than 60 days chased or removed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Terms used in recent jobs checked for consistency"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New linguists given the glossary and style guide"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kestrel's \"torque limit\" is still waiting on their engineering review. Until it is approved, Matteo uses the term from the last delivered manual and flags it in his delivery note."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "quality-review",
+      "parent": "translation-agency-desk",
+      "title": "Quality review process",
+      "icon": {
+        "emoji": "✅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every job gets a second pair of eyes before it reaches the client. A simple error count keeps reviews fair and shows where to help a linguist improve."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the review works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Schedule the review when the job moves to "
+            },
+            {
+              "text": "In review",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The reviewer compares the translation with the source, checking meaning, terms, numbers, names, formatting and style."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Each problem is counted by severity and returned to the linguist to fix."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The reviewer gives a score out of 100 and a result."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Severity, in plain words"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Severity"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Example"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Critical"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wrong dosage, wrong amount, a clause that changes meaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Major"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Wrong term from the glossary, a missing sentence, a mistranslation that confuses"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Minor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Punctuation, a slightly awkward phrase, a spacing slip"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Results"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pass",
+              "bold": true
+            },
+            {
+              "text": ": no critical and no major errors."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pass after fixes",
+              "bold": true
+            },
+            {
+              "text": ": major errors found and corrected before delivery."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fail",
+              "bold": true
+            },
+            {
+              "text": ": any critical error, or many majors. The job goes back, and the project manager decides whether a second linguist should help."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Feedback to linguists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the marked file and a short note: what was good and what to watch. Patterns matter more than single slips. Three major errors of the same kind across jobs is a conversation, not a scolding."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviewer checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Glossary terms used everywhere they apply"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Numbers, dates, units and names checked against the source"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Nothing left untranslated or duplicated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Formatting matches the source file"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Spelling and grammar check run in the target language"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reviewing the reviewers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Once a quarter, the project manager spot-checks a few reviewed jobs. A reviewer who never finds anything, or who marks preferences as errors, needs a word. Rotate reviewers on big accounts so one person's habits do not become the client's style by accident."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The distribution agreement passed after fixes: one major error, a defined term used inconsistently, was corrected before delivery, and the term was added to the glossary."
+            }
+          ]
         }
       ]
     },
@@ -3366,10 +4363,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Delivery is where the client sees the work. A tidy delivery and a short follow-up turn one job into a steady account."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Before delivering"
+              "text": "Before you deliver"
             }
           ],
           "props": {
@@ -3380,7 +4389,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Reviewer's corrections applied"
+              "text": "Review result is Pass or Pass after fixes"
             }
           ],
           "props": {
@@ -3391,7 +4400,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Layout matches the source"
+              "text": "Files open correctly in the client's format"
             }
           ],
           "props": {
@@ -3402,7 +4411,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Glossary terms checked"
+              "text": "File names follow the client's convention, with the language code"
             }
           ],
           "props": {
@@ -3413,7 +4422,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "File names match the client's convention"
+              "text": "Certificate attached when the service is certified translation"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any open questions listed in the delivery note"
             }
           ],
           "props": {
@@ -3424,7 +4444,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Delivering"
+              "text": "Deliver"
             }
           ],
           "props": {
@@ -3435,7 +4455,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the files with a short note listing what is included."
+              "text": "Send the files with a short note: what is included, any terms the client should confirm, and the PO number."
             }
           ]
         },
@@ -3443,7 +4463,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Send to client and make sure the job row shows Delivered."
+              "text": "Set the job to "
+            },
+            {
+              "text": "Delivered",
+              "bold": true
+            },
+            {
+              "text": " with the date."
             }
           ]
         },
@@ -3451,7 +4478,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask the client to flag any change requests within five working days."
+              "text": "Update the translation memory and the glossary the same day."
             }
           ]
         },
@@ -3459,7 +4486,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After delivery"
+              "text": "Invoicing"
             }
           ],
           "props": {
@@ -3470,7 +4497,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Add new terms to the glossary."
+              "text": "Invoice from the job price; quote the client's PO number."
             }
           ]
         },
@@ -3478,7 +4505,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Record the quality score."
+              "text": "Rush and weekend work is charged as agreed in the quote, never added afterwards."
             }
           ]
         },
@@ -3486,7 +4513,510 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Thank the linguist and note anything for next time."
+              "text": "Pay linguists on the agreed schedule. Paying on time keeps your best people."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One week after delivery, ask if the reviewers had any changes."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Client changes that are preferences, not errors, go into the glossary or style guide so they do not repeat."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Errors found by the client get logged as a review note and discussed with the linguist."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Measuring the month"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Look at"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Words delivered by client"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clients list"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Jobs delivered late"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Jobs, filtered by delivered after due"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Average review score by linguist"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Quality reviews"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Margin by service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Jobs by margin on the dashboard"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a client is unhappy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Listen first, then look at the file together. Separate real errors from taste. Fix errors at no charge and quickly; record preferences so they never come up again. A calm, fast answer to a complaint keeps more clients than a perfect first delivery."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The hotel partner brochure was delivered on time with two tone corrections. A week later the client asked for a warmer phrase on the cover, which is now a note in their style guide."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "translation-agency-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The translation tool holds the files and the translation memory. This workspace holds the business around them: who asked for what, who is translating it, when it is due, what it costs and what it earns."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sector, style guide, open jobs, words in progress and delivered, value of delivered work"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Linguists"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Language pair, specialty, rate band, usual rate per word, words per day, certification, confidentiality agreement, jobs in hand"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Jobs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service, pair, source files, word counts from the analysis, weighted words, price, linguist cost, margin, dates, project manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Glossary"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Approved and pending terms per client and pair"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Quality reviews"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Score, errors by severity and the result"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How a job is priced"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run the file analysis in your translation tool."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter "
+            },
+            {
+              "text": "Words",
+              "bold": true
+            },
+            {
+              "text": " (the total), "
+            },
+            {
+              "text": "Partial matches",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Repetitions and full matches",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Weighted words",
+              "bold": true
+            },
+            {
+              "text": " takes 40 percent off partial matches and 75 percent off repetitions and full matches. Change the discounts in the formula to match your price list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Job price",
+              "bold": true
+            },
+            {
+              "text": " is weighted words times the agreed rate; "
+            },
+            {
+              "text": "Linguist cost",
+              "bold": true
+            },
+            {
+              "text": " uses the linguist's rate on the same words; "
+            },
+            {
+              "text": "Gross margin",
+              "bold": true
+            },
+            {
+              "text": " is what is left."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add current clients and note who has a style guide."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add linguists with pair, specialty, rate and certification. Tick the confidentiality agreement only once it is signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open jobs with their analysis, rates and due dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the most used terms for your biggest clients into the glossary."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning:",
+              "bold": true
+            },
+            {
+              "text": " Jobs, Overdue and Due this week. Anything In review due within a day gets the reviewer's time first."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Midday:",
+              "bold": true
+            },
+            {
+              "text": " check new requests; quote within four working hours."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "End of day:",
+              "bold": true
+            },
+            {
+              "text": " linguists' progress noted; status moved forward honestly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Job buttons move a job to the next stage or schedule a review; review buttons mark a review checked."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The clinical study report summary is In review and due tomorrow. Its 11,200 words include 4,500 matched or repeated words, so the client pays for about 8,700 weighted words, and the margin is 45 percent."
             }
           ]
         }

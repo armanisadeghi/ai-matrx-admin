@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0459",
-  "version": 4,
+  "version": 5,
   "title": "Insurance Agency Desk",
-  "description": "Insureds, policies, renewals, claims and follow-ups for an independent insurance agency.",
+  "description": "For insurance agents: policies, carriers, renewals, claims and commission statements.",
   "forWho": "Independent insurance agencies and brokers",
   "icon": {
     "emoji": "🛡️"
@@ -14,10 +14,12 @@
   },
   "category": "services",
   "tags": [
-    "insurance",
-    "policies",
+    "insurance agent",
+    "insurance agency",
     "renewals",
-    "claims"
+    "claims",
+    "commissions",
+    "policies"
   ],
   "spec": {
     "specVersion": 1,
@@ -142,13 +144,34 @@
           },
           {
             "key": "policy_count",
-            "label": "Policies",
+            "label": "Active policies",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "policies",
             "pick": "policy_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Lapsed",
+                  "Quote"
+                ]
+              }
+            }
+          },
+          {
+            "key": "quotes_open",
+            "label": "Open quotes",
+            "parityType": "rollup",
+            "via": "policies",
+            "pick": "policy_name",
+            "agg": "count",
+            "filter": {
+              "status": "Quote"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "premium_total",
@@ -160,7 +183,10 @@
             "pick": "premium",
             "agg": "sum",
             "filter": {
-              "status": "In force"
+              "status": [
+                "In force",
+                "Renewing"
+              ]
             }
           },
           {
@@ -421,6 +447,13 @@
             "required": true
           },
           {
+            "key": "policy_number",
+            "label": "Policy number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -473,9 +506,41 @@
             }
           },
           {
+            "key": "business_type",
+            "label": "New or renewal",
+            "parityType": "select",
+            "choices": [
+              "New business",
+              "Renewal",
+              "Rewrite"
+            ],
+            "choiceColors": {
+              "New business": "green",
+              "Renewal": "blue",
+              "Rewrite": "purple"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "carrier",
             "label": "Carrier",
             "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "billing",
+            "label": "Billing",
+            "parityType": "select",
+            "choices": [
+              "Direct bill",
+              "Agency bill"
+            ],
+            "choiceColors": {
+              "Direct bill": "slate",
+              "Agency bill": "orange"
+            },
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -497,6 +562,49 @@
                 "value": 500000
               }
             ]
+          },
+          {
+            "key": "commission_rate",
+            "label": "Commission rate (%)",
+            "parityType": "number",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 30
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "commission",
+            "label": "Expected commission (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "ROUND({Annual premium (USD)} * {Commission rate (%)} / 100, 0)",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "commission_received",
+            "label": "Commission received (USD)",
+            "parityType": "rollup",
+            "via": "commission_lines",
+            "pick": "received",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Received",
+                "Short paid",
+                "Chargeback"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "effective_on",
@@ -702,7 +810,11 @@
               "expires_on": "@today+25d",
               "client": "client-1",
               "rep": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "HO-7741-2093",
+              "business_type": "Renewal",
+              "billing": "Direct bill",
+              "commission_rate": 15
             }
           },
           {
@@ -716,7 +828,11 @@
               "effective_on": "@today-350d",
               "expires_on": "@today+15d",
               "client": "client-1",
-              "rep": "tm-3"
+              "rep": "tm-3",
+              "policy_number": "PA-30918-44",
+              "business_type": "Renewal",
+              "billing": "Direct bill",
+              "commission_rate": 12
             }
           },
           {
@@ -731,7 +847,11 @@
               "expires_on": "@today+165d",
               "client": "client-2",
               "rep": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "CPP-118204",
+              "business_type": "Renewal",
+              "billing": "Agency bill",
+              "commission_rate": 15
             }
           },
           {
@@ -745,7 +865,11 @@
               "effective_on": "@today-200d",
               "expires_on": "@today+165d",
               "client": "client-2",
-              "rep": "tm-2"
+              "rep": "tm-2",
+              "policy_number": "GL-5520-871",
+              "business_type": "Renewal",
+              "billing": "Agency bill",
+              "commission_rate": 15
             }
           },
           {
@@ -760,7 +884,11 @@
               "expires_on": "@today+265d",
               "client": "client-3",
               "rep": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "RN-2290-114",
+              "business_type": "New business",
+              "billing": "Direct bill",
+              "commission_rate": 15
             }
           },
           {
@@ -772,9 +900,13 @@
               "carrier": "Northgate Casualty",
               "premium": 9800,
               "effective_on": "@today-358d",
-              "expires_on": "@today+7d",
+              "expires_on": "@today+6d",
               "client": "client-4",
-              "rep": "tm-2"
+              "rep": "tm-2",
+              "policy_number": "WC-77013-02",
+              "business_type": "Renewal",
+              "billing": "Direct bill",
+              "commission_rate": 8
             }
           },
           {
@@ -786,10 +918,14 @@
               "carrier": "Harborview Insurance",
               "premium": 4100,
               "effective_on": "@today-358d",
-              "expires_on": "@today+7d",
+              "expires_on": "@today+6d",
               "client": "client-4",
               "rep": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "GL-5521-309",
+              "business_type": "Renewal",
+              "billing": "Agency bill",
+              "commission_rate": 15
             }
           },
           {
@@ -803,7 +939,11 @@
               "effective_on": "@today-120d",
               "expires_on": "@today+245d",
               "client": "client-5",
-              "rep": "tm-3"
+              "rep": "tm-3",
+              "policy_number": "HO-8810-5521",
+              "business_type": "Rewrite",
+              "billing": "Direct bill",
+              "commission_rate": 15
             }
           },
           {
@@ -818,7 +958,11 @@
               "expires_on": "@today+305d",
               "client": "client-6",
               "rep": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "BOP-40912-6",
+              "business_type": "New business",
+              "billing": "Agency bill",
+              "commission_rate": 17.5
             }
           },
           {
@@ -832,7 +976,11 @@
               "effective_on": "@today-420d",
               "expires_on": "@today-55d",
               "client": "client-7",
-              "rep": "tm-3"
+              "rep": "tm-3",
+              "policy_number": "PA-29177-03",
+              "business_type": "Renewal",
+              "billing": "Direct bill",
+              "commission_rate": 12
             }
           },
           {
@@ -847,7 +995,11 @@
               "expires_on": "@today+375d",
               "client": "client-8",
               "rep": "tm-5",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "policy_number": "Quote 2026-118",
+              "business_type": "New business",
+              "billing": "Agency bill",
+              "commission_rate": 15
             }
           },
           {
@@ -861,7 +1013,29 @@
               "effective_on": "@today-330d",
               "expires_on": "@mon+4d",
               "client": "client-3",
-              "rep": "tm-3"
+              "rep": "tm-3",
+              "policy_number": "PA-31446-77",
+              "business_type": "New business",
+              "billing": "Direct bill",
+              "commission_rate": 12
+            }
+          },
+          {
+            "key": "policy-13",
+            "values": {
+              "policy_name": "Tallgrass delivery van",
+              "status": "Renewing",
+              "line": "Auto",
+              "carrier": "Harborview Insurance",
+              "premium": 1960,
+              "effective_on": "@today-368d",
+              "expires_on": "@today-3d",
+              "client": "client-6",
+              "rep": "tm-2",
+              "policy_number": "CA-60213-11",
+              "business_type": "Renewal",
+              "billing": "Direct bill",
+              "commission_rate": 12
             }
           }
         ]
@@ -887,6 +1061,13 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "required": true
+          },
+          {
+            "key": "claim_number",
+            "label": "Carrier claim number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "status",
@@ -949,6 +1130,25 @@
                 "value": 2000000
               }
             ]
+          },
+          {
+            "key": "paid",
+            "label": "Paid by carrier (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000000
+              }
+            ],
+            "contextPolicy": "include"
           },
           {
             "key": "adjuster",
@@ -1090,7 +1290,8 @@
               "claimed": 14200,
               "adjuster": "M. Sorensen",
               "policy": "policy-1",
-              "insured": "client-1"
+              "insured": "client-1",
+              "claim_number": "PM-26-0418833"
             }
           },
           {
@@ -1103,7 +1304,9 @@
               "claimed": 3850,
               "adjuster": "A. Wanjiru",
               "policy": "policy-2",
-              "insured": "client-1"
+              "insured": "client-1",
+              "claim_number": "HV-26-0091574",
+              "paid": 3410
             }
           },
           {
@@ -1116,7 +1319,8 @@
               "claimed": 6100,
               "adjuster": "To be assigned",
               "policy": "policy-8",
-              "insured": "client-5"
+              "insured": "client-5",
+              "claim_number": "Waiting on carrier"
             }
           },
           {
@@ -1129,7 +1333,8 @@
               "claimed": 28400,
               "adjuster": "D. Petrakis",
               "policy": "policy-6",
-              "insured": "client-4"
+              "insured": "client-4",
+              "claim_number": "NG-WC-26-2207"
             }
           },
           {
@@ -1142,7 +1347,8 @@
               "claimed": 5200,
               "adjuster": "R. Lindholm",
               "policy": "policy-4",
-              "insured": "client-2"
+              "insured": "client-2",
+              "claim_number": "NG-GL-26-1185"
             }
           },
           {
@@ -1155,7 +1361,9 @@
               "claimed": 1800,
               "adjuster": "A. Wanjiru",
               "policy": "policy-3",
-              "insured": "client-2"
+              "insured": "client-2",
+              "claim_number": "NG-CP-26-0764",
+              "paid": 1600
             }
           }
         ]
@@ -1454,6 +1662,261 @@
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "commission",
+        "name": "Commission statements",
+        "labelSingular": "Commission line",
+        "labelPlural": "Commission statements",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "receipt",
+        "titleField": "line_name",
+        "describes": "Each commission line on a carrier statement, matched to the policy it pays on, for tracking only.",
+        "subject": "thing",
+        "fields": [
+          {
+            "key": "line_name",
+            "label": "Statement line",
+            "parityType": "text",
+            "required": true,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "status",
+            "choices": [
+              "Expected",
+              "Short paid",
+              "Received",
+              "Chargeback"
+            ],
+            "statusGroups": {
+              "Expected": "todo",
+              "Short paid": "in_progress",
+              "Received": "done",
+              "Chargeback": "done"
+            },
+            "required": true,
+            "choiceColors": {
+              "Expected": "slate",
+              "Short paid": "orange",
+              "Received": "green",
+              "Chargeback": "red"
+            },
+            "default": "Expected",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "statement_on",
+            "label": "Statement date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "carrier",
+            "label": "Carrier",
+            "parityType": "lookup",
+            "via": "policy",
+            "pick": "carrier",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "expected",
+            "label": "Expected (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "received",
+            "label": "Received (USD)",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": -100000
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "difference",
+            "label": "Difference (USD)",
+            "parityType": "formula",
+            "unit": "USD",
+            "formula": "{Received (USD)} - {Expected (USD)}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "note",
+            "label": "Note",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "policy",
+            "label": "Policy",
+            "parityType": "relation",
+            "relationTarget": "policy",
+            "relationMax": 1,
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "comm-1",
+            "values": {
+              "line_name": "Halloran home, renewal commission",
+              "status": "Received",
+              "statement_on": "@today-48d",
+              "expected": 276,
+              "policy": "policy-1",
+              "received": 276
+            }
+          },
+          {
+            "key": "comm-2",
+            "values": {
+              "line_name": "Halloran auto, renewal commission",
+              "status": "Received",
+              "statement_on": "@today-48d",
+              "expected": 265,
+              "policy": "policy-2",
+              "received": 265
+            }
+          },
+          {
+            "key": "comm-3",
+            "values": {
+              "line_name": "Greer & Osei property, installment",
+              "status": "Short paid",
+              "statement_on": "@today-18d",
+              "expected": 548,
+              "policy": "policy-3",
+              "received": 410,
+              "note": "Paid on the old premium; the mid-term endorsement is missing"
+            }
+          },
+          {
+            "key": "comm-4",
+            "values": {
+              "line_name": "Greer & Osei liability, installment",
+              "status": "Received",
+              "statement_on": "@today-18d",
+              "expected": 312,
+              "policy": "policy-4",
+              "received": 312
+            }
+          },
+          {
+            "key": "comm-5",
+            "values": {
+              "line_name": "Mohammadi renters, new business",
+              "status": "Received",
+              "statement_on": "@today-78d",
+              "expected": 41,
+              "policy": "policy-5",
+              "received": 41
+            }
+          },
+          {
+            "key": "comm-6",
+            "values": {
+              "line_name": "Riverbend workers comp, audit adjustment",
+              "status": "Chargeback",
+              "statement_on": "@today-18d",
+              "expected": 190,
+              "policy": "policy-6",
+              "received": -140,
+              "note": "Payroll audit lowered the premium; commission taken back"
+            }
+          },
+          {
+            "key": "comm-7",
+            "values": {
+              "line_name": "Tallgrass package, new business",
+              "status": "Expected",
+              "statement_on": "@today+12d",
+              "expected": 1129,
+              "policy": "policy-9"
+            }
+          },
+          {
+            "key": "comm-8",
+            "values": {
+              "line_name": "Lindqvist-Banks home and umbrella, rewrite",
+              "status": "Expected",
+              "statement_on": "@today+12d",
+              "expected": 402,
+              "policy": "policy-8"
+            }
+          },
+          {
+            "key": "comm-9",
+            "values": {
+              "line_name": "Mohammadi auto, new business",
+              "status": "Received",
+              "statement_on": "@today-48d",
+              "expected": 118,
+              "policy": "policy-12",
+              "received": 118
+            }
+          }
+        ],
+        "independentOf": {
+          "policy": "Either record can be created or change status before the other."
+        },
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Received",
+              "Short paid",
+              "Chargeback"
+            ],
+            "filled": [
+              "received"
+            ]
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1526,6 +1989,16 @@
         "cardinality": "one",
         "onDelete": "set_null",
         "inverseKey": "task_by_owner"
+      },
+      {
+        "describes": "Each commission line pays on one policy.",
+        "fromTable": "commission",
+        "fromField": "policy",
+        "toTable": "policy",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "restrict",
+        "inverseKey": "commission_lines"
       }
     ],
     "sharedBlocks": [
@@ -1900,6 +2373,20 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_commission",
+        "name": "All commission statements",
+        "table": "commission",
+        "kind": "grid",
+        "isDefault": true
+      },
+      {
+        "token": "commission_board",
+        "name": "Commission statements board",
+        "table": "commission",
+        "kind": "kanban",
+        "groupBy": "status"
       }
     ],
     "agent": {
@@ -1988,7 +2475,7 @@
         "Chandler Plaza"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -2010,7 +2497,14 @@
           "type": "callout",
           "text": [
             {
-              "text": "The agency's book in one place: insureds, every policy with its expiry and days to renewal, claims in progress, and the follow-ups the team owes. It tracks work only and gives no coverage advice. Start with Expiring in 60 days, then clear Mine."
+              "text": "The agency book in one place: insureds, every policy with its carrier, term and commission, renewals coming due, claims in progress, carrier commission statements and the follow-ups the team owes. It tracks the work only; coverage decisions stay with licensed staff and the carrier. Open "
+            },
+            {
+              "text": "Start here",
+              "bold": true
+            },
+            {
+              "text": " first."
             }
           ],
           "background": "blue",
@@ -2031,6 +2525,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:dashboard"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:start-here"
                   }
                 }
               ]
@@ -2460,6 +2960,55 @@
             ],
             "activeViewId": "tas-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Commission statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Carrier statements matched line by line to the policies they pay on."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "commission",
+              "view": "all_commission"
+            },
+            "inline": true,
+            "title": "Commission statements",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "commis-b",
+                "name": "Board",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "commis-t",
+                "name": "All commission statements",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "commis-b"
+          }
         }
       ]
     },
@@ -2884,6 +3433,46 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Commission lines to chase"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "commission",
+              "view": "all_commission"
+            },
+            "inline": true,
+            "title": "Commission lines to chase",
+            "linked": true,
+            "showTitle": true,
+            "views": [
+              {
+                "id": "vcm",
+                "name": "Short paid and expected",
+                "layout": "list",
+                "icon": "List",
+                "anyOf": {
+                  "status": [
+                    "Short paid",
+                    "Expected"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "vcm"
+          }
         }
       ]
     },
@@ -2892,14 +3481,14 @@
       "parent": "insurance-agency-desk",
       "title": "Renewal workflow",
       "icon": {
-        "emoji": "🔄"
+        "emoji": "🔁"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Renewals are where an agency earns its keep. A calm sixty days beats a frantic five."
+              "text": "Renewals are most of an agency's income and most of its lost clients. A steady 90-60-30 rhythm keeps both under control."
             }
           ],
           "background": "blue",
@@ -2911,7 +3500,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Timeline"
+              "text": "The timeline"
             }
           ],
           "props": {
@@ -2928,12 +3517,17 @@
                 "cells": [
                   [
                     {
-                      "text": "Days out"
+                      "text": "Days before expiry"
                     }
                   ],
                   [
                     {
-                      "text": "Step"
+                      "text": "What happens"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
                     }
                   ]
                 ]
@@ -2947,7 +3541,12 @@
                   ],
                   [
                     {
-                      "text": "Review the policy and the insured's changes; add a renewal follow-up"
+                      "text": "Pull the policy, check claims and changes in the past year, ask the client about new cars, renovations, staff or payroll"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account manager"
                     }
                   ]
                 ]
@@ -2961,7 +3560,12 @@
                   ],
                   [
                     {
-                      "text": "Request the renewal quote and any updated applications"
+                      "text": "Carrier renewal offer arrives; compare it with last year's premium"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account manager"
                     }
                   ]
                 ]
@@ -2975,7 +3579,12 @@
                   ],
                   [
                     {
-                      "text": "Remarket if the premium rose sharply"
+                      "text": "If the increase is large, ask other appointed carriers for quotes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account manager"
                     }
                   ]
                 ]
@@ -2989,7 +3598,12 @@
                   ],
                   [
                     {
-                      "text": "Call the insured with the options and a recommendation"
+                      "text": "Renewal call with the client; record the decision"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Account manager"
                     }
                   ]
                 ]
@@ -3003,7 +3617,12 @@
                   ],
                   [
                     {
-                      "text": "Collect signatures and payment details"
+                      "text": "Signed forms and payment set up; certificates reissued for businesses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service team"
                     }
                   ]
                 ]
@@ -3017,7 +3636,12 @@
                   ],
                   [
                     {
-                      "text": "Confirm the new term is in force and update the row"
+                      "text": "New term starts; update dates, premium and commission rate here"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Service team"
                     }
                   ]
                 ]
@@ -3029,7 +3653,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Tracking"
+              "text": "Step by step"
             }
           ],
           "props": {
@@ -3040,7 +3664,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Use Expiring in 60 days every Monday."
+              "text": "Every Monday, open "
+            },
+            {
+              "text": "Expiring in 60 days",
+              "bold": true
+            },
+            {
+              "text": " on the Policies list."
             }
           ]
         },
@@ -3048,7 +3679,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Start renewal when work begins so the status reads Renewing."
+              "text": "Press "
+            },
+            {
+              "text": "Start renewal",
+              "bold": true
+            },
+            {
+              "text": " on each one that is still In force. It moves to Renewing."
             }
           ]
         },
@@ -3056,7 +3694,179 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log every conversation in the policy page."
+              "text": "Add a follow-up: Renewal call, due 30 days before expiry, owned by the account manager."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the carrier offer comes in, enter the new premium on the follow-up note, not on the policy, until the client accepts."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the call, write down what the client chose and why. If they chose to shop the policy, add a Quote follow-up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the first day of the new term, update the effective and expiry dates, the premium and the commission rate, and set the status back to In force."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a client leaves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the policy to Lapsed, and note the reason in the follow-up: price, service, sold the car, moved, or went to another agency. A yearly look at these reasons tells you where you lose business."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Large increases"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check whether a claim, a new driver or a rate filing caused it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask the carrier underwriter if any credit was missed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Quote at least two other appointed carriers before the call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Explain the reason to the client in plain words"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for business renewals"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payroll, revenue and headcount updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "New locations or vehicles added"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Certificates of insurance reissued to everyone who holds one"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Workers compensation audit questions answered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Riverbend Roofing's workers compensation and liability both expire in six days. The workers compensation renewal came in 18 percent higher after the ladder-fall claim, so Rosalind is remarketing it and has a call booked with the owner before the term ends."
             }
           ]
         }
@@ -3067,117 +3877,293 @@
       "parent": "insurance-agency-desk",
       "title": "Supporting an insured through a claim",
       "icon": {
-        "emoji": "🧯"
+        "emoji": "🧾"
       },
       "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "First call"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Express care before process. Ask if anyone is hurt and if the damage is contained."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Collect what happened, when, and the photos they have."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Give the carrier's claim line and report the claim the same day."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "While the claim is open"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Log the claim with the date of loss and reported date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add the carrier's claim number and adjuster to the row."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Call the insured every two weeks even if there is no news."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Closing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Confirm the settlement matches the policy language."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Note anything the insured should change at renewal."
-            }
-          ]
-        },
         {
           "type": "callout",
           "text": [
             {
-              "text": "Say what you know, say what you do not know, and say when you will call again."
+              "text": "The carrier pays the claim, but the client remembers how the agency helped. Your job is to report quickly, keep the file moving and keep the client informed."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a client reports a loss"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make sure everyone is safe and the damage cannot get worse: water shut off, the car towed, the property secured."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Log a claim",
+              "bold": true
+            },
+            {
+              "text": " on the policy. Fill in the date of loss and the date it was reported."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Report it to the carrier the same day, by portal or phone. Enter the carrier claim number and adjuster name when you get them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tell the client what happens next and when they will hear from the adjuster."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a follow-up for your next check-in, usually three working days later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the adjuster usually needs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Loss"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Documents"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Home water or storm damage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Photos, repair estimates, receipts for emergency repairs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Auto collision"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Police report number, photos, other driver's details, repair shop"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Workplace injury"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "First report of injury, witness names, doctor's notes"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Liability"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Incident report, photos of the area, names of witnesses"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Theft"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Police report, receipts or serial numbers"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it moving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A claim with no update for a week gets a call to the adjuster."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every call goes on the claim page as a dated note: who you spoke to and what they said."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When the carrier pays, enter "
+            },
+            {
+              "text": "Paid by carrier",
+              "bold": true
+            },
+            {
+              "text": " and set the status to Settled."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the carrier denies the claim, set it to Denied, keep the denial letter, and make sure the client knows their options. Do not argue coverage yourself; involve the agency principal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the agency must not do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Never promise a claim will be paid, never estimate what the carrier will pay, and never tell a client a loss is or is not covered. Pass coverage questions to the carrier and record that you did."
+            }
+          ],
+          "background": "yellow",
+          "props": {
+            "icon": "TriangleAlert"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the claim"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Claims affect renewals. Add a note to the policy's renewal follow-up so the account manager expects a premium change and can explain it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Lindqvist-Banks household reported water damage in the kitchen four days after it happened. The claim is logged with the carrier, an adjuster is not yet assigned, and Patrice has a follow-up in two days to chase the assignment."
+            }
+          ]
         }
       ]
     },
@@ -3186,14 +4172,414 @@
       "parent": "insurance-agency-desk",
       "title": "New business intake",
       "icon": {
-        "emoji": "🆕"
+        "emoji": "📥"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A new client is won or lost in the first conversation. A tidy intake gets accurate quotes quickly and avoids surprises at renewal."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Information to collect"
+              "text": "The first call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask, and write down on the insured's page:"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Who and what needs insuring: drivers and vehicles, the home, the business and what it does."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Current carrier, expiry date and premium, and why they are shopping."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Claims in the past five years."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "For businesses: revenue, payroll, number of employees, locations, contracts that require certain insurance."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Set it up here"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the insured with status Prospect and choose Household or Business."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a policy for each line they want quoted, with status Quote, business type New business and the proposed effective date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add a Quote follow-up for each, due within three working days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note which carriers you will ask. Only ask carriers your agency is appointed with."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Presenting quotes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Show"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Premium and payment plan"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it will really cost each month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Deductibles"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What they pay first on a claim"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Main differences between carriers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "So the choice is theirs"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "What is not included"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "So nothing surprises them later"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Record which quote the client chose, and that the choice was theirs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Binding"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed application and any required forms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First payment or payment plan set up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Carrier confirms the policy is bound; enter the policy number"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Status to In force; insured to Insured"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Commission rate filled in from the carrier schedule"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Welcome email with ID cards or certificates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If they do not buy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the policy to Lapsed with a note on why, and add a follow-up 60 days before their current policy expires next year. Many clients come back at the next renewal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Sunrise Learning Center needs general liability before it opens a second classroom. The quote is out, the signed application is due by the end of this week, and the proposed start date is ten days away."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "weekly-service-rhythm",
+      "parent": "insurance-agency-desk",
+      "title": "Weekly and monthly rhythm",
+      "icon": {
+        "emoji": "📅"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "An agency runs on habits. These routines take about an hour a week and keep the book clean."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every Monday"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Follow-ups",
+              "bold": true
+            },
+            {
+              "text": ": clear Overdue first, then plan Due this week. Reassign anything stuck with someone who is away."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Policies",
+              "bold": true
+            },
+            {
+              "text": ": open Expiring in 60 days and start any renewal not yet started."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Claims",
+              "bold": true
+            },
+            {
+              "text": ": any claim with no note in seven days gets a call."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Quotes",
+              "bold": true
+            },
+            {
+              "text": ": open quotes older than two weeks get a call or are closed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every Friday"
             }
           ],
           "props": {
@@ -3204,7 +4590,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Contact details and the effective date they need."
+              "text": "Any policy still Renewing after its expiry date is an emergency: confirm with the carrier that the renewal is bound and paid, the same day."
             }
           ]
         },
@@ -3212,7 +4598,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Business: operations, payroll, revenue range, locations, vehicles."
+              "text": "Check that every call this week that needs action has a follow-up."
             }
           ]
         },
@@ -3220,7 +4606,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Household: property details, drivers, prior claims."
+              "text": "Look at the policies board: nothing should sit in Renewing past its expiry date."
             }
           ]
         },
@@ -3228,7 +4614,442 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Once a month: commission statements"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Carriers send a statement listing what they paid on each policy. Match it line by line."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add one line per policy on the statement under "
+            },
+            {
+              "text": "Commission statements",
+              "bold": true
+            },
+            {
+              "text": ", with the expected amount from the policy and the amount received."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark it "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": " when they match, "
+            },
+            {
+              "text": "Short paid",
+              "bold": true
+            },
+            {
+              "text": " when less arrived, "
+            },
+            {
+              "text": "Chargeback",
+              "bold": true
+            },
+            {
+              "text": " when the carrier took commission back after a cancellation or audit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Short paid lines get a note and a follow-up to the carrier's commission department."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Expected lines older than 60 days go to the agency principal."
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Common cause of a difference"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to check"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Mid-term change not paid yet"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Endorsement date and the next statement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Wrong commission rate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Carrier schedule and the policy's rate"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Policy cancelled early"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chargeback line on the statement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Payroll or revenue audit"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Final audit premium"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Once a quarter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Review the five biggest insureds with their account manager"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at lapsed policies and the reasons given"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check every business client has current certificates on file"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Compare received commission with expected by carrier"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Greer & Osei property installment came in at 410 dollars against 548 expected. The note says the mid-term endorsement was not paid, so a follow-up goes to the carrier and the line stays Short paid until the next statement."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "insurance-agency-desk",
+      "title": "Start here",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "This workspace is the back office of a small independent agency. The carrier systems still hold the official policy, billing and claim records; this is where the team sees the whole book at once and nothing slips between them."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "List"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it holds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Look at it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Insureds"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each household or business, the account manager, premium in force, active policies, open quotes and claims in progress"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "When a client calls"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Policies"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Policy number, line, carrier, term dates, days to renewal, new or renewal, billing, premium, commission rate, expected and received commission"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every morning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Claims"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Date of loss, carrier claim number, adjuster, amount claimed and paid"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Twice a week"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Commission statements"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One line per policy per carrier statement, expected against received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Once a month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Follow-ups"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Calls, documents, quotes and reviews someone owes, with a due date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every morning"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Premium in force",
+              "bold": true
+            },
+            {
+              "text": " counts policies that are In force or Renewing. Quotes and lapsed policies are left out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Expected commission",
+              "bold": true
+            },
+            {
+              "text": " is the annual premium times the commission rate on the policy. Use the rate on the carrier's commission schedule."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Commission received",
+              "bold": true
+            },
+            {
+              "text": " adds up lines marked Received, Short paid or Chargeback, so a taken-back commission lowers the total."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your first week"
             }
           ],
           "props": {
@@ -3239,7 +5060,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create the insured and a policy at Quote."
+              "text": "Add your team, then enter every active policy with its number, carrier, effective and expiry dates and premium. A download from your agency system is the quickest start."
             }
           ]
         },
@@ -3247,7 +5068,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Gather applications and send them for signature."
+              "text": "Link each policy to its insured. Households and businesses each get one record."
             }
           ]
         },
@@ -3255,7 +5076,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Submit to the carriers you place that line with."
+              "text": "Fill in the commission rate for each policy from the carrier's schedule."
             }
           ]
         },
@@ -3263,7 +5084,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Present options in plain language, with differences in cover listed."
+              "text": "Enter every open claim with the carrier claim number and the adjuster's name."
             }
           ]
         },
@@ -3271,7 +5092,105 @@
           "type": "numbered",
           "text": [
             {
-              "text": "When bound, change the status to In force and set the dates."
+              "text": "Add follow-ups for any renewal inside 60 days that nobody has started."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The daily rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning:",
+              "bold": true
+            },
+            {
+              "text": " Follow-ups due this week and anything overdue; then Policies, Expiring in 60 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "During the day:",
+              "bold": true
+            },
+            {
+              "text": " every client call that needs action becomes a follow-up with a date and an owner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "End of day:",
+              "bold": true
+            },
+            {
+              "text": " claims with no update in a week get a call to the adjuster."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons you will use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Start renewal",
+              "bold": true
+            },
+            {
+              "text": " moves a policy to Renewing. "
+            },
+            {
+              "text": "Log a claim",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Add follow-up",
+              "bold": true
+            },
+            {
+              "text": " open a new linked record. "
+            },
+            {
+              "text": "Tick done",
+              "bold": true
+            },
+            {
+              "text": " closes a follow-up and dates it. "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": " takes a follow-up over."
             }
           ]
         },
@@ -3279,29 +5198,19 @@
           "type": "callout",
           "text": [
             {
-              "text": "This template tracks workflow only; coverage advice follows your licence and the carrier rules."
+              "text": "The workspace never decides what coverage a client needs. Record what was discussed and who decided; leave advice to licensed staff."
             }
           ],
-          "background": "blue",
+          "background": "yellow",
           "props": {
-            "icon": "Lightbulb"
+            "icon": "TriangleAlert"
           }
-        }
-      ]
-    },
-    {
-      "key": "weekly-service-rhythm",
-      "parent": "insurance-agency-desk",
-      "title": "Weekly service rhythm",
-      "icon": {
-        "emoji": "🗓️"
-      },
-      "blocks": [
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Monday"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3309,80 +5218,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "quote",
           "text": [
             {
-              "text": "Review Expiring in 60 days and assign renewals."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Review Claims in progress and agree who calls whom."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Daily"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Work Mine from the top; anything overdue is first."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Log every call on the policy page before moving on."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Friday"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Tick off finished follow-ups."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Move statuses so the dashboard is true."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Write down the three things Monday needs to start with."
+              "text": "The Halloran auto policy renews in 15 days with a higher premium. Rosalind starts the renewal, books a call about the change, and notes the client's choice on the follow-up when they speak."
             }
           ]
         }
