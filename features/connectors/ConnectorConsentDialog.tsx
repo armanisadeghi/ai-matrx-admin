@@ -1045,7 +1045,7 @@ export function ConnectorConsentBody({
           {hasGrantedResult && onDone ? (
             <Button
               onClick={onDone}
-              className="h-12 w-full rounded-full bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+              className="h-12 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
             >
               Done
             </Button>
@@ -1053,7 +1053,7 @@ export function ConnectorConsentBody({
             <Button
               onClick={() => void connect()}
               disabled={busy || !runner.ready}
-              className="h-12 w-full rounded-full bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
+              className="h-12 w-full rounded-xl bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90"
             >
               {busy ? (
                 <>
