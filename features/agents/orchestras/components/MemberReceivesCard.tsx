@@ -110,6 +110,7 @@ export function MemberReceivesCard({
   };
 
   const addKey = () => {
+    if (saving) return;
     const key = adding.trim();
     if (!VALUE_REF_PATTERN.test(key) || listed.includes(key)) return;
     setAdding("");
@@ -208,7 +209,7 @@ export function MemberReceivesCard({
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1">
-          <label htmlFor={`receives-person-${member.agentId}`} className="type-meta text-muted-foreground">
+          <label htmlFor={`receives-person-${member.edgeId}`} className="type-meta text-muted-foreground">
             Person &amp; org
           </label>
           <InfoHint
@@ -217,7 +218,7 @@ export function MemberReceivesCard({
           />
         </div>
         <Switch
-          id={`receives-person-${member.agentId}`}
+          id={`receives-person-${member.edgeId}`}
           checked={ctx.personAndOrg}
           disabled={saving}
           onCheckedChange={(on) => void save({ ...ctx, personAndOrg: on })}
