@@ -1,3 +1,4 @@
+// record-view: none — the search tool, not a record page
 // app/(core)/search/page.tsx
 //
 // Matrx Search — the platform's search engine. One experience (`SearchExperience`) answers every
