@@ -22,6 +22,7 @@
  */
 
 import { useState } from "react";
+import { categorizeSizeTier } from "@/lib/media/categorization";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ExternalLink, FolderPlus, Search, Telescope, X } from "lucide-react";
@@ -438,6 +439,7 @@ export function ResearchMediaView({
           value={categoryFilter}
           options={categoryOptions}
           onValueChange={setCategoryFilter}
+          align="end"
           className="w-[10rem]"
         />
       </div>
@@ -543,22 +545,7 @@ export function ResearchMediaView({
                     }
                     aria-label="Select image"
                   />
-                  {/* Owned uploads resolve from their file_id (the reader
-                      re-mints); third-party assets render their external
-                      URL. */}
-                  <InlineMediaRef
-                    ref={
-                      row.fileId
-                        ? fileIdToMediaRef(row.fileId)
-                        : urlToMediaRef(row.thumbnailUrl || row.url)
-                    }
-                    size="fill"
-                    fit="cover"
-                    as="img"
-                    rounded="none"
-                    alt={row.alt ?? ""}
-                    className="h-full w-full"
-                  />
+                  <ResearchTileImage row={row} />
                 </div>
                 <div className="space-y-0.5 p-1.5">
                   <div className="flex items-center gap-1">
@@ -652,5 +639,68 @@ export function ResearchMediaView({
       ) : null}
     </div>
     </SectionCard>
+  );
+}
+
+/**
+ * A research picture sized by what it is (the shared `categorizeSizeTier` rules, same as the brand
+ * Assets gallery): photos fill the tile and crop to it; logos, graphics and icons are never cropped
+ * and never drawn larger than their own pixels. Without stored dimensions the picture is measured on
+ * load; until then it is contained, so nothing is ever cropped or stretched while it waits.
+ */
+function ResearchTileImage({ row }: { row: ResearchImageRow }) {
+  const [measured, setMeasured] = useState<{ width: number; height: number } | null>(null);
+  const width = row.width ?? measured?.width ?? null;
+  const height = row.height ?? measured?.height ?? null;
+  const tier =
+    width && height
+      ? categorizeSizeTier({ url: row.url, width, height, alt: row.alt, kind: "image" })
+      : null;
+  const mediaRef = row.fileId
+    ? fileIdToMediaRef(row.fileId)
+    : urlToMediaRef(row.thumbnailUrl || row.url);
+  const onLoad = (event: { currentTarget: EventTarget }) => {
+    const img = event.currentTarget as HTMLImageElement;
+    if (!row.width && img.naturalWidth > 0) {
+      setMeasured({ width: img.naturalWidth, height: img.naturalHeight });
+    }
+  };
+  if (tier === "photo") {
+    return (
+      <InlineMediaRef
+        ref={mediaRef}
+        size="fill"
+        fit="cover"
+        as="img"
+        rounded="none"
+        alt={row.alt ?? ""}
+        className="h-full w-full"
+        onLoad={onLoad}
+      />
+    );
+  }
+  // Logos, graphics and icons: natural size at most, fully visible on a neutral backdrop.
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-card p-2">
+      <div
+        className="max-h-full max-w-full"
+        style={{
+          width: width ?? "100%",
+          height: width && height ? undefined : "100%",
+          aspectRatio: width && height ? `${width} / ${height}` : undefined,
+        }}
+      >
+        <InlineMediaRef
+          ref={mediaRef}
+          size="fill"
+          fit="contain"
+          as="img"
+          rounded="none"
+          alt={row.alt ?? ""}
+          className="h-full w-full"
+          onLoad={onLoad}
+        />
+      </div>
+    </div>
   );
 }

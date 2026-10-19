@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { RegionSkeleton } from "@ai-matrx/design-system/controls";
 import { cn } from "@/lib/utils";
-import { proxiedExternalImageUrl } from "@/lib/media/external-image";
+import { blocksCrossOriginImages, proxiedExternalImageUrl } from "@/lib/media/external-image";
 import {
   categorizeAspect,
   categorizeSizeTier,
@@ -65,14 +65,23 @@ function useImageSizes(urls: string[]): { sizes: Map<string, Size | null>; settl
       if (found.size === list.length) setState({ key, sizes: new Map(found) });
     };
     const timers = list.map((url) => {
-      const img = new Image();
-      img.referrerPolicy = "no-referrer";
-      img.onload = () =>
-        finish(url, img.naturalWidth > 0 ? { width: img.naturalWidth, height: img.naturalHeight } : null);
-      img.onerror = () => finish(url, null);
-      img.src = url;
+      // Many hosts refuse a hotlinked load (favicons, social CDNs): retry once through our image proxy.
+      const measure = (src: string, onFail: () => void) => {
+        const img = new Image();
+        img.referrerPolicy = "no-referrer";
+        img.onload = () =>
+          img.naturalWidth > 0
+            ? finish(url, { width: img.naturalWidth, height: img.naturalHeight })
+            : onFail();
+        img.onerror = onFail;
+        img.src = src;
+      };
+      const viaProxy = () =>
+        /^https?:\/\//i.test(url) ? measure(proxiedExternalImageUrl(url), () => finish(url, null)) : finish(url, null);
+      if (blocksCrossOriginImages(url)) viaProxy();
+      else measure(url, viaProxy);
       // A host that never answers must not hold the whole section.
-      return window.setTimeout(() => finish(url, null), 6000);
+      return window.setTimeout(() => finish(url, null), 8000);
     });
     return () => {
       cancelled = true;
