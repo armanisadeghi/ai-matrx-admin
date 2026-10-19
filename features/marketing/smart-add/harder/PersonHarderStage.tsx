@@ -249,7 +249,7 @@ export function PersonHarderStage({
       setSweep((cur) => withSweep(cur, r, opts.extras));
       if (r.error) setError(r.error);
       for (const d of r.decisions) logNow(onLog, { kind: "round", text: d, points: null });
-      logNow(onLog, { kind: "round", text: `Sweep cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
+      logNow(onLog, { kind: "round", text: `Sweep took ${r.ms} ms`, points: r.points });
       if (r.directory?.job?.snapshot_id) void poll(r.directory.job.snapshot_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The search failed");
@@ -280,7 +280,7 @@ export function PersonHarderStage({
       if (r.error) setError(r.error);
       for (const d of r.decisions) logNow(onLog, { kind: "round", text: d, points: null });
       for (const q of r.queries) logNow(onLog, { kind: "round", text: `Query: ${q.query} (p${q.page}) → ${q.results} · ${q.why}` });
-      logNow(onLog, { kind: "round", text: `Round cost: ${r.points ?? "?"} points in ${r.ms} ms`, points: r.points });
+      logNow(onLog, { kind: "round", text: `Round took ${r.ms} ms`, points: r.points });
       if (r.directory?.job?.snapshot_id) void poll(r.directory.job.snapshot_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The search failed");

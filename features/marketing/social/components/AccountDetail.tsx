@@ -351,7 +351,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
   const invalidate = useInvalidateSocial();
   const profile = useProfile(profileId);
   const tracked = useTrackedForProfile(brand.organizationId, profileId);
-  const { costText, confirmSpend, confirmPosts } = useSocialSpend(brand.organizationId);
+  const { confirmSpend, confirmPosts } = useSocialSpend(brand.organizationId);
   const handle = profile.data?.handle ?? null;
   const posts = useProfilePosts(profileId, handle);
   const captureTargets = [
@@ -542,7 +542,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
 
       <div className="-mt-1 flex min-h-4 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground" data-testid="fetch-lines">
         {posts.isLoading ? <span /> : (
-          <PostsShownLine organizationId={brand.organizationId} platform={p.platform} loaded={list.length} reportedTotal={p.post_count} moreFlag={lastFetch?.has_more ?? false} canLoadMore={canEdit} busy={busy} onLoadMore={() => void refresh({ more: true })} />
+          <PostsShownLine loaded={list.length} reportedTotal={p.post_count} moreFlag={lastFetch?.has_more ?? false} canLoadMore={canEdit} busy={busy} onLoadMore={() => void refresh({ more: true })} />
         )}
         {fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused) ? (
           <span>{fetchedText(lastFetch?.fetched_at ?? p.last_refreshed_at, lastFetch?.reused)}</span>

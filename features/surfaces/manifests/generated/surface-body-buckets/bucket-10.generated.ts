@@ -5,9 +5,9 @@ export { agentRunManifest as s32 } from "@ai-matrx/chat/surfaces/manifests/agent
 export { agentComparisonModelManifest as s33 } from "../../agent-comparison-model.manifest";
 export { keywordIntelligenceManifest as s72 } from "../../keyword-intelligence.manifest";
 export { marketingFindingsManifest as s78 } from "../../marketing-findings.manifest";
-export { masterworkRulebookManifest as s102 } from "../../masterwork-rulebook.manifest";
-export { marketingSiteMediaManifest as s157 } from "../../marketing-site-media.manifest";
-export { workbooksManifest as s193 } from "../../workbooks.manifest";
-export { adminAiModelsManifest as s218 } from "../../admin-ai-models.manifest";
-export { adminSandboxManifest as s234 } from "../../admin-sandbox.manifest";
-export { adminProofRunsManifest as s241 } from "../../admin-proof-runs.manifest";
+export { masterworkRulebookManifest as s103 } from "../../masterwork-rulebook.manifest";
+export { marketingSiteMediaManifest as s158 } from "../../marketing-site-media.manifest";
+export { workbooksManifest as s194 } from "../../workbooks.manifest";
+export { adminAiModelsManifest as s219 } from "../../admin-ai-models.manifest";
+export { adminSandboxManifest as s236 } from "../../admin-sandbox.manifest";
+export { adminProofRunsManifest as s243 } from "../../admin-proof-runs.manifest";

@@ -1,7 +1,7 @@
 import { dragonLairComposition, editWordOps, type PatchOp } from "@ai-matrx/media/video";
 
 import { describeTheirs, historyFromRows, rebasePending } from "../conflict";
-import { summarizeEstimate, estimateLabel, perSecondLine, confirmLine, outputRows, downloadName, variantDownloadName } from "../estimate";
+import { summarizeEstimate, estimateLabel, confirmLine, outputRows, downloadName, variantDownloadName } from "../estimate";
 import { brandNameIn, hookPrefill } from "../hook-brand";
 import { joinOverlayLines } from "../text";
 import { cutText, hasBrokenCharacter, nameFromCaption } from "../text";
@@ -137,14 +137,9 @@ describe("variants panel rules", () => {
 });
 
 describe("estimate lines the person reads", () => {
-  const take = (q: number) => ({ media_id: `t${q}`, capability: "video", model: "veo", unit: "second", quantity: q, unit_price_usd: 0.05, cost_usd: q * 0.05, points: 0, note: null });
-  it("shows the per-second price of presenter takes, and nothing for a plain image plan", () => {
-    expect(perSecondLine({ lines: [take(4), take(8)] })).toBe("2 video takes, 4 to 8 s each at $0.05 a second ($0.20 to $0.40 each, $0.60 in all)");
-    expect(perSecondLine({ lines: [{ ...take(4), unit: "image" }] })).toBeNull();
-  });
-  it("names the confirmation line in dollars", () => {
-    expect(confirmLine({ confirm_over_points: 20000 })).toBe("Asks before spending over $1");
-    expect(confirmLine({ confirm_over_points: 10000 })).toBe("Asks before spending over $0.50");
+  it("names the confirmation line in points", () => {
+    expect(confirmLine({ confirm_over_points: 20000 })).toBe("Asks before spending over 20,000 points");
+    expect(confirmLine({ confirm_over_points: 10000 })).toBe("Asks before spending over 10,000 points");
     expect(confirmLine({ confirm_over_points: null })).toBeNull();
   });
 });

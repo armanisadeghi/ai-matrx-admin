@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0315",
-  "version": 4,
+  "version": 5,
   "title": "Support and Feedback Tracker",
   "description": "Small support teams: triage tickets, track feature requests, link help articles.",
   "forWho": "Small teams handling customer support",
@@ -539,7 +539,17 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New feedback",
@@ -991,7 +1001,17 @@
           "article": "Either record can be created or change status before the other.",
           "feedback": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Resolved"
+            ],
+            "filled": [
+              "resolved_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New ticket",
@@ -1491,7 +1511,7 @@
         "Ferrule Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

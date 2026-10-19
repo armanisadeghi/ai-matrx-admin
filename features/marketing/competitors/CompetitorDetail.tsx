@@ -19,7 +19,6 @@ import { toast } from "@/lib/toast";
 import { listBrandCompetitors, type BrandCompetitor } from "./brand-competitors";
 import { competitorDetailModel, platformLabel } from "./competitor-detail";
 import { AddHandlesForm } from "./AddHandlesForm";
-import { useSocialSpend } from "@/features/marketing/social/cost";
 import { directoryKey, useCompetitorSocialActions, useFoundSocials, type BrandRef } from "./useCompetitorSocials";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
 
@@ -48,7 +47,6 @@ export function CompetitorDetail({
   const model = useMemo(() => competitorDetailModel(current, brandSeg), [current, brandSeg]);
   const found = useFoundSocials(brand.id, current.key);
   const { find, track } = useCompetitorSocialActions(brand);
-  const { pointsText } = useSocialSpend(brand.organizationId);
   const busy = found?.status === "finding" || found?.status === "tracking";
 
   async function trackAll() {
@@ -147,7 +145,7 @@ export function CompetitorDetail({
                     <span className="ml-2 text-muted-foreground">{l.url.replace(/^https?:\/\/(www\.)?/, "")}</span>
                   </span>
                   <Button variant="outline" disabled={busy} onClick={() => void track(current, [l])}>
-                    {pointsText("track") ? `Track · ${pointsText("track")}` : "Track"}
+                    Track
                   </Button>
                 </li>
               ))}
@@ -166,12 +164,12 @@ export function CompetitorDetail({
             icon={found?.status === "finding" ? <Loader2 className="animate-spin" /> : <Search />}
             onClick={() => void find(current)}
           >
-            {found?.status === "finding" ? "Reading their website…" : "Find socials · Free"}
+            {found?.status === "finding" ? "Reading their website…" : "Find socials"}
           </Button>
         ) : null}
         {found?.links.length ? (
           <Button variant="primary" disabled={busy} icon={<UserPlus />} onClick={() => void trackAll()}>
-            {found.status === "tracking" ? "Tracking…" : `Track ${found.links.length}${pointsText("track", found.links.length) ? ` · ${pointsText("track", found.links.length)}` : ""}`}
+            {found.status === "tracking" ? "Tracking…" : `Track ${found.links.length}`}
           </Button>
         ) : null}
       </footer>

@@ -3,7 +3,6 @@
 import { Globe, Download, Brain, Cpu, Zap, Gauge, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCount } from "@ai-matrx/kit/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import type {
   PipelineDerived,
   PipelineState,
@@ -12,8 +11,6 @@ import type {
 interface Props {
   state: PipelineState;
   derived: PipelineDerived;
-  /** Authoritative cost from backend cost_summary, when available. */
-  authoritativeCostUsd: number | null;
 }
 
 function MetricChip({
@@ -48,16 +45,12 @@ function MetricChip({
   );
 }
 
-export function MetricsStrip({ state, derived, authoritativeCostUsd }: Props) {
-  const { format: formatCostDisplay } = useCostDisplay();
+export function MetricsStrip({ state, derived }: Props) {
   const errors =
     state.stages.scrape.totals.failed +
     state.stages.analyze.totals.failed +
     state.stages.synthesize.totals.failed;
 
-  const cost =
-    authoritativeCostUsd != null ? authoritativeCostUsd : derived.runningCostUsd;
-  const isLiveCost = authoritativeCostUsd == null && state.completedAt == null;
 
   return (
     <div className="flex items-center flex-wrap gap-x-4 gap-y-1.5 px-3 py-2 border-b border-border/30 bg-card/30">
@@ -104,12 +97,6 @@ export function MetricsStrip({ state, derived, authoritativeCostUsd }: Props) {
           value={derived.rate.toFixed(1)}
         />
       )}
-      <MetricChip
-        icon={Gauge}
-        iconColor="text-green-500"
-        label={isLiveCost ? "spent so far" : "spent"}
-        value={cost == null ? "—" : formatCostDisplay(cost)}
-      />
       {errors > 0 && (
         <MetricChip
           icon={AlertTriangle}

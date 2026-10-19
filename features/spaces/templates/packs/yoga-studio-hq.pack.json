@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 2,
+  "version": 3,
   "title": "Yoga Studio HQ",
   "description": "Manage class passes and memberships, teachers and schedules, and payments.",
   "forWho": "Yoga and pilates studios",
@@ -843,7 +843,17 @@
           "plan": "Either record can be created or change status before the other.",
           "staff": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "booking_name",
@@ -1412,7 +1422,8 @@
               "price": 45
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "payment",
@@ -1437,7 +1448,8 @@
               "Paid"
             ],
             "filled": [
-              "method"
+              "method",
+              "paid_on"
             ]
           }
         ],
@@ -1698,7 +1710,8 @@
               "method": "Gift card"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -2148,7 +2161,7 @@
         "Alder Walk"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

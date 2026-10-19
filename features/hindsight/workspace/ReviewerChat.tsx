@@ -34,8 +34,7 @@ import { useClippedContentGuard } from "@/lib/layout/useClippedContentGuard";
 import { discussFinding, discussReview, getReviewThread } from "../api";
 import type { Finding, Review } from "../types";
 import { ThreadMessageRow } from "../components/ThreadMessageRow";
-import { currentPointsRate } from "@/components/cost/pointsRate";
-import { fmtCost, fmtDate, fmtElapsed } from "../components/tokens";
+import { fmtDate, fmtElapsed } from "../components/tokens";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 function Elapsed({ startedAt }: { startedAt: number }) {
@@ -150,8 +149,8 @@ export function ReviewerChat({
       onClearGuidedFinding();
       toast.success(
         result.findings_created
-          ? `The reviewer answered and added ${result.findings_created} new proposal${result.findings_created === 1 ? "" : "s"} — ${fmtCost(result.cost_usd, currentPointsRate())}`
-          : `The reviewer answered — no new proposals, ${fmtCost(result.cost_usd, currentPointsRate())}`,
+          ? `The reviewer answered and added ${result.findings_created} new proposal${result.findings_created === 1 ? "" : "s"}`
+          : `The reviewer answered — no new proposals`,
       );
       void thread.refetch();
       onResolved();

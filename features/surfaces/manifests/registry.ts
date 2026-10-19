@@ -116,6 +116,7 @@ import { marketingCompetitorsManifest } from "./marketing-competitors.manifest";
 import { marketingSitemapsManifest } from "./marketing-sitemaps.manifest";
 import { marketingDiscoveryManifest } from "./marketing-discovery.manifest";
 import { marketingBrandAssetsManifest } from "./marketing-brand-assets.manifest";
+import { marketingBrandStrategyManifest } from "./marketing-brand-strategy.manifest";
 import { marketingIntegrationsManifest } from "./marketing-integrations.manifest";
 import { marketingSiteSettingsManifest } from "./marketing-site-settings.manifest";
 import { marketingTopicalMapManifest } from "./marketing-topical-map.manifest";
@@ -403,6 +404,7 @@ export const RAW_MANIFESTS: readonly SurfaceManifest[] = [
   marketingSitemapsManifest,
   marketingDiscoveryManifest,
   marketingBrandAssetsManifest,
+  marketingBrandStrategyManifest,
   marketingIntegrationsManifest,
   marketingSiteSettingsManifest,
   // The brand's topical map — which pages should exist and where they live.

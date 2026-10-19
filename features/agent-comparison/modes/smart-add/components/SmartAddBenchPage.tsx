@@ -20,7 +20,8 @@ import {
   SegmentedControl,
   Switch,
 } from "@ai-matrx/design-system/controls";
-import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { Cost } from "@/components/cost/Cost";
 import { ModelListDropdown } from "@ai-matrx/agents/models/react";
 import { AgentListDropdown } from "@ai-matrx/agents/catalog/react";
 import { ProInput } from "@/components/official/ProInput";
@@ -48,7 +49,6 @@ import {
   defaultQueries,
   applyRunEvent,
   batchAnswerUnreadable,
-  moneyDigits,
   emptyBench,
   expectedCells,
   placeholderCells,
@@ -781,7 +781,7 @@ function Scoreboard({ bench, runs }: { bench: BenchState; runs: ReturnType<typeo
   }
   const rows: ScoreRow[] = bench.systems.map((system) => ({ system, sc: score(runs[system], bench.truth) }));
   const rate = (r: ScoreRow) => (r.sc.marked ? r.sc.right / r.sc.marked : 0);
-  const money = (v: number) => formatUsd(v, { digits: moneyDigits(v) });
+  const money = (v: number) => <Cost usd={v} short />;
   const columns: MatrxColumnDef<ScoreRow>[] = [
     { id: "system", header: "System", accessorFn: (r) => SYSTEM_LABEL[r.system], filter: "select", width: 140 },
     {

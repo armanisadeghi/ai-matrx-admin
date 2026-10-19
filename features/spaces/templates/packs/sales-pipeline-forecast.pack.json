@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "version": 5,
+  "version": 6,
   "title": "Sales Pipeline Forecast",
   "description": "Sales managers: forecast revenue from deal stages and weighted value.",
   "forWho": "Sales managers and revenue teams",
@@ -844,7 +844,26 @@
             }
           }
         ],
-        "statusImplies": []
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Closed won"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Closed lost"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1229,7 +1248,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

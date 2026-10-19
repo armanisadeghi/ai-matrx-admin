@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 7,
+  "version": 8,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -851,7 +851,26 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Won"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Lost"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New deal",
@@ -937,7 +956,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "before": [
@@ -1270,7 +1290,17 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "state",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New interaction",
@@ -1860,7 +1890,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

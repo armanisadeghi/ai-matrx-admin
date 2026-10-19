@@ -39,7 +39,7 @@ import { GUIDED_CAPTURE_PLATFORMS } from "../gated/guidedJob";
 import { useAccountRows, useInvalidateSocial } from "../hooks";
 import { CONNECTION_STATE_LABELS, CONNECTION_STATE_TONES } from "../connection-state";
 import { useConnectionStates } from "../useConnectionStates";
-import { COST_NOT_KNOWN, frequencyLabel, useConnectedPlans } from "../useConnectedPlans";
+import { frequencyLabel, useConnectedPlans } from "../useConnectedPlans";
 import {
   accountLabels,
   accountName,
@@ -147,9 +147,8 @@ export function AccountsTab() {
     trackOwn,
     trackOwnRow,
     trackAllOwn,
-    costText,
   } = useTrackOwn(organizationId, brandId);
-  const { agentCostText, confirmPosts, postsText } = useSocialSpend(organizationId);
+  const { agentCostText, confirmPosts } = useSocialSpend(organizationId);
   const { choice: countChoice } = usePostCount();
   const postsMax = useProfilePostsMax();
   const askedPosts = resolveCount(countChoice, postsMax.value);
@@ -431,8 +430,8 @@ export function AccountsTab() {
           if (!plan) return null;
           if (!plan.automatic) {
             return (
-              <span className="text-muted-foreground" title="Reads cost points, so this account updates only when you click Refresh">
-                {["Refresh only", plans.refreshCost(r.trackedAccountId) ?? COST_NOT_KNOWN].join(" · ")}
+              <span className="text-muted-foreground" title="This account updates only when you click Refresh">
+                Refresh only
               </span>
             );
           }
@@ -754,12 +753,7 @@ export function AccountsTab() {
                   variant="outline"
                   icon={<UserPlus />}
                   disabled={busyRow !== null}
-                  title={[
-                    "Track every own account not tracked yet",
-                    costText("track", untrackedOwn.length),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  title="Track every own account not tracked yet"
                   onClick={() => void trackAllOwn(untrackedOwn)}
                 >
                   {busyRow === "bulk"
@@ -776,7 +770,7 @@ export function AccountsTab() {
                 id: "refresh",
                 icon: RefreshCw,
                 label: "Refresh",
-                tooltip: ["Refresh", askedPosts ? `${askedPosts} posts` : null, askedPosts ? postsText(row.platform, askedPosts) : null]
+                tooltip: ["Refresh", askedPosts ? `${askedPosts} posts` : null]
                   .filter(Boolean)
                   .join(" · "),
                 loading: busyRow === row.rowId,
@@ -788,9 +782,7 @@ export function AccountsTab() {
                   id: "track",
                   icon: UserPlus,
                   label: "Track",
-                  tooltip: ["Track as Own", costText("track")]
-                    .filter(Boolean)
-                    .join(" · "),
+                  tooltip: "Track as Own",
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void trackOwn(row),
@@ -838,7 +830,7 @@ export function AccountsTab() {
                   id: "sync-connection",
                   icon: RefreshCw,
                   label: "Refresh stats",
-                  tooltip: ["Refresh private stats and posts", plans.refreshCost(row.trackedAccountId) ?? COST_NOT_KNOWN].join(" · "),
+                  tooltip: "Refresh private stats and posts",
                   loading: busyRow === row.rowId,
                   disabled: busyRow !== null,
                   onClick: () => void syncConnection(row),

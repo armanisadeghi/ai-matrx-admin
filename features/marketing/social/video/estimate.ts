@@ -30,34 +30,12 @@ export function estimateLabel(s: EstimateSummary): string {
   return s.reused > 0 ? `${s.toMake} to make · ${s.reused} reused` : `${s.toMake} to make`;
 }
 
-const USD = (n: number) => `$${n.toFixed(2)}`;
-
-/**
- * The per-second price of the clips that are billed by length (an AI presenter's talking takes): "4 to 8 s each at
- * $0.05 a second ($0.20 to $0.40 each)". Null when nothing in the estimate is billed per second.
- */
-export function perSecondLine(est: Pick<EstimateAnswer, "lines">): string | null {
-  const bySecond = est.lines.filter((l) => l.unit === "second" && l.unit_price_usd != null && l.quantity > 0);
-  if (!bySecond.length) return null;
-  const price = Math.min(...bySecond.map((l) => l.unit_price_usd as number));
-  const priceTop = Math.max(...bySecond.map((l) => l.unit_price_usd as number));
-  const lo = Math.min(...bySecond.map((l) => l.quantity));
-  const hi = Math.max(...bySecond.map((l) => l.quantity));
-  const secs = lo === hi ? `${lo} s` : `${lo} to ${hi} s`;
-  const cost = (q: number) => USD(q * price);
-  const each = lo === hi ? cost(lo) : `${cost(lo)} to ${cost(hi)}`;
-  const rate = price === priceTop ? USD(price) : `${USD(price)} to ${USD(priceTop)}`;
-  const total = bySecond.reduce((sum, l) => sum + (l.cost_usd ?? 0), 0);
-  return `${bySecond.length} video ${bySecond.length === 1 ? "take" : "takes"}, ${secs} each at ${rate} a second (${each} each, ${USD(total)} in all)`;
-}
-
-/** The line that tells the person when the studio stops to ask: "Asks before spending over $1". Null when the setting is unknown. */
+/** The line that tells the person when the studio stops to ask: "Asks before spending over 20,000 points". Null when the setting is unknown. */
 export function confirmLine(est: Pick<EstimateAnswer, "confirm_over_points">): string | null {
   const pts = est.confirm_over_points;
   if (pts == null) return null;
   if (pts <= 0) return "Asks before every generation";
-  const usd = pts / 20000;
-  return `Asks before spending over ${Number.isInteger(usd) ? `$${usd}` : USD(usd)}`;
+  return `Asks before spending over ${Math.round(pts).toLocaleString("en-US")} points`;
 }
 
 export interface OutputRow {

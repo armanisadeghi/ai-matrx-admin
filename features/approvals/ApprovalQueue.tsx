@@ -49,7 +49,8 @@ import {
 } from "@ai-matrx/design-system/data-table";
 import AppLink from "@/components/navigation/AppLink";
 import { formatCount } from "@ai-matrx/kit/format";
-import { Badge as KindBadge } from "@ai-matrx/design-system/controls";
+import { Badge as KindBadge, PropertyRow } from "@ai-matrx/design-system/controls";
+import { commitUrlParams } from "@ai-matrx/kit/url-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -251,7 +252,7 @@ interface QueueSection {
   total: number;
 }
 
-/** One short word for the row's state; its full sentence is in the opened row. */
+/** One short word for the row's state; its full sentence is in the row's window. */
 function statusLabel(item: ApprovalItem): string {
   if (item.unreadable) return "Can't show";
   if (item.unknownState) return "Unknown state";
@@ -260,6 +261,9 @@ function statusLabel(item: ApprovalItem): string {
   if (item.lastAttempt?.state === "failed") return "Failed";
   if (item.expired) return "Expired";
   if (item.blocked) return "Not yours";
+  // Mode 3 applies itself — the row says so before it fires (policy rule 4);
+  // the exact instant is in the window.
+  if (item.mode === "mode_3") return "Auto-applies";
   return "Waiting";
 }
 
@@ -280,24 +284,50 @@ function modeText(item: ApprovalItem): string {
   return item.mode === "unresolved" ? "Unresolved" : AUTONOMY_MODE_LABEL[item.mode];
 }
 
+/** The deep-linked row opens in its window — the URL key the table reads (rule 14). */
+const URL_TABLE_ID = /^[a-z][a-z0-9-]{0,63}$/;
+
 /**
- * A row opens by itself when what it holds must be read before deciding: its
- * body (what the change is), a review card that IS the authorization, or a
- * sentence about its state — exactly what the list always showed open.
+ * The row's own decision buttons, in the kind's words ("Approve" / "Archive" /
+ * "Decline"; "Try again" after a failed apply). Shared by the row and its window.
  */
-function opensByItself(item: ApprovalItem): boolean {
+function DecisionButtons({
+  item,
+  kind,
+  busy,
+  onDecide,
+}: {
+  item: ApprovalItem;
+  kind: ApprovalKind;
+  busy: boolean;
+  onDecide: (decision: Decision, items: ApprovalItem[]) => void;
+}) {
+  if (noDecisionControls(item)) return null;
   return (
-    Boolean(item.body) ||
-    (Boolean(item.individualReview) && !noLiveAction(item)) ||
-    statusSentence(item) !== null
+    <span
+      className="inline-flex items-center gap-1"
+      onClick={(event) => event.stopPropagation()}
+    >
+      {item.individualReview || item.blocked || item.expired ? null : (
+        <Button variant="quiet" disabled={busy} onClick={() => onDecide("accept", [item])}>
+          {/* After a failed apply the same door IS the retry, and the label says so. */}
+          {item.lastAttempt?.state === "failed" ? "Try again" : kind.accept.label}
+        </Button>
+      )}
+      <Button variant="quiet" disabled={busy} onClick={() => onDecide("reject", [item])}>
+        {kind.reject.label}
+      </Button>
+    </span>
   );
 }
 
 /**
- * THE QUEUE'S LIST, on the shared table: search, sort, filters, one collapsible
- * band per kind, URL state and paging. Everything a row used to show is either a
- * column or in the opened row (click a row): its records, its full change, its
- * state sentences, its body and its review card.
+ * THE QUEUE'S LIST, on the shared table: ONE LINE PER PROPOSAL (Linear's inbox,
+ * GitHub's review queue) — type, what, where, who, when, and the kind's own
+ * decision words. Everything else a row used to print under itself (its full
+ * change, its state sentences, its body, its review card) lives in the row's
+ * window, opened by a row click. Search, sort, filters, one collapsible band per
+ * kind, URL state, paging and batch decisions are the table's.
  */
 function ApprovalTable({
   tableId,
@@ -326,64 +356,75 @@ function ApprovalTable({
   const kindLabel = (item: ApprovalItem) =>
     sectionByKind.get(item.kindId)?.kind.label ?? item.kindId;
 
-  const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
-  const autoOpen = new Set(
-    rows
-      .filter((item) => opensByItself(item) || item.key === focusedKey)
-      .map((item) => item.key),
-  );
-  const expandedIds = new Set(
-    rows
-      .map((item) => item.key)
-      .filter((key) => (autoOpen.has(key) && !closed.has(key)) || opened.has(key)),
-  );
+  // A deep link (`?item=`) opens its row's window once — the table already pages
+  // to and rings it (`focusRowId`). Written to the URL the table reads.
+  const [openedFor, setOpenedFor] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focusedKey || focusedKey === openedFor || !URL_TABLE_ID.test(tableId)) return;
+    setOpenedFor(focusedKey);
+    commitUrlParams({ [`table.${tableId}.window`]: focusedKey }, "replace");
+  }, [focusedKey, openedFor, tableId]);
 
   const columns: MatrxColumnDef<ApprovalItem>[] = [
     {
+      // The band each row sits in (the group header names it, so the column steps aside).
       id: "kind",
       header: "Kind",
       accessorFn: kindLabel,
       format: { id: "choice" },
-      width: 170,
+      width: 160,
+    },
+    {
+      id: "badge",
+      header: "Type",
+      accessorFn: (item) => item.badge ?? kindLabel(item),
+      format: { id: "choice" },
+      width: 110,
       cell: (item) => (
         <KindBadge className="shrink-0">{item.badge ?? kindLabel(item)}</KindBadge>
       ),
     },
     {
       id: "headline",
-      header: "Proposal",
+      header: "What",
       accessorKey: "headline",
-      width: 300,
+      width: 330,
+      cell: (item) => (
+        <span className="block min-w-0 truncate text-foreground" title={item.headline}>
+          {item.headline}
+        </span>
+      ),
     },
     {
       // The records a row names, each with its door (THE DOOR LAW).
       id: "records",
-      header: "Records",
+      header: "Where",
       accessorFn: () => null,
       sortable: false,
-      // table-filter-off: the cell is the record doors themselves; Proposal and Change carry the words
+      // table-filter-off: the cell is the record doors themselves; What carries the words
       filter: false,
-      width: 220,
-      cell: (item) => (item.doors ? <span className="min-w-0 truncate">{item.doors}</span> : null),
-    },
-    {
-      id: "change",
-      header: "Change",
-      accessorKey: "acceptEffect",
-      width: 320,
+      width: 160,
+      cell: (item) =>
+        item.doors ? (
+          <span
+            className="block min-w-0 overflow-hidden whitespace-nowrap"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {item.doors}
+          </span>
+        ) : null,
     },
     {
       id: "status",
       header: "Status",
       accessorFn: statusLabel,
       format: { id: "choice" },
-      width: 130,
+      width: 100,
       tone: (item) =>
         item.lastAttempt?.state === "failed"
           ? "danger"
           : statusLabel(item) === "Waiting"
-            ? undefined
+            ? "muted"
             : "warning",
     },
     {
@@ -391,62 +432,36 @@ function ApprovalTable({
       header: "Mode",
       accessorFn: modeText,
       format: { id: "choice" },
-      width: 240,
-      cell: (item) => <ModeLine item={item} />,
+      width: 200,
+      hidden: true,
     },
     {
       id: "proposedBy",
       header: "Proposed by",
       accessorFn: (item) => item.proposedBy ?? null,
-      width: 150,
-    },
-    {
-      id: "proposedAt",
-      header: "Proposed",
-      accessorFn: (item) => item.proposedAt ?? null,
-      format: { id: "date" },
       width: 120,
     },
     {
-      // The decision words are each kind's own ("Add it", "Keep mine") — text
-      // buttons, never bare icons, exactly as the list showed them.
+      id: "proposedAt",
+      header: "When",
+      accessorFn: (item) => item.proposedAt ?? null,
+      format: { id: "relative_time" },
+      width: 100,
+    },
+    {
+      // The decision words are each kind's own ("Approve", "Archive", "Decline").
+      // Headed "Actions": it REPLACES the built-in column and keeps its open/copy controls.
       id: "decide",
-      header: "Decide",
-      accessorFn: statusLabel,
+      header: "Actions",
       sortable: false,
       // table-filter-off: the Status column already filters on what this column reads
       filter: false,
-      width: 190,
-      cell: (item) => {
+      width: 200,
+      customActions: (item) => {
         const section = sectionByKind.get(item.kindId);
-        if (!section || noDecisionControls(item)) return null;
-        return (
-          <span
-            className="inline-flex items-center gap-1"
-            onClick={(event) => event.stopPropagation()}
-          >
-            {item.individualReview || item.blocked || item.expired ? null : (
-              <Button
-                variant="quiet"
-                disabled={busy}
-                onClick={() => onDecide("accept", [item])}
-              >
-                {/* After a failed apply the same door IS the retry, and the
-                    label says so. */}
-                {item.lastAttempt?.state === "failed"
-                  ? "Try again"
-                  : section.kind.accept.label}
-              </Button>
-            )}
-            <Button
-              variant="quiet"
-              disabled={busy}
-              onClick={() => onDecide("reject", [item])}
-            >
-              {section.kind.reject.label}
-            </Button>
-          </span>
-        );
+        return section ? (
+          <DecisionButtons item={item} kind={section.kind} busy={busy} onDecide={onDecide} />
+        ) : null;
       },
     },
   ];
@@ -531,7 +546,7 @@ function ApprovalTable({
             <span className="inline-flex flex-wrap items-center gap-1.5">
               {batchRejectNeedsOneKind ? (
                 <span className="type-meta text-muted-foreground">
-                  This reject needs rows of one kind
+                  Reject needs one kind
                 </span>
               ) : null}
               <Button
@@ -555,13 +570,25 @@ function ApprovalTable({
         },
       }}
       focusRowId={focusedKey}
-      expandedDetail={{
-        expandedIds,
-        onExpandedIdsChange: (next) => {
-          setOpened(new Set([...next].filter((key) => !autoOpen.has(key))));
-          setClosed(new Set([...autoOpen].filter((key) => !next.has(key))));
+      window={{
+        title: (item) => item.headline,
+        renderView: (item) => {
+          const section = sectionByKind.get(item.kindId);
+          return (
+            <ApprovalRowDetail
+              item={item}
+              kindLabel={kindLabel(item)}
+              decide={
+                section ? (
+                  <DecisionButtons item={item} kind={section.kind} busy={busy} onDecide={onDecide} />
+                ) : null
+              }
+            />
+          );
         },
-        render: (item) => <ApprovalRowDetail item={item} />,
+        renderEdit: false,
+        width: 560,
+        height: 560,
       }}
       pageSize={50}
       emptyState={{ title: "No proposals match" }}
@@ -569,33 +596,41 @@ function ApprovalTable({
   );
 }
 
-/** Everything one row says, opened in place: nothing a row used to show is lost. */
-function ApprovalRowDetail({ item }: { item: ApprovalItem }) {
+/** Everything one proposal says, in its window: nothing a row used to show is lost. */
+function ApprovalRowDetail({
+  item,
+  kindLabel,
+  decide,
+}: {
+  item: ApprovalItem;
+  kindLabel: string;
+  decide: ReactNode;
+}) {
+  const proposedAt = item.proposedAt ? new Date(item.proposedAt) : null;
+  const proposedLabel =
+    proposedAt && !Number.isNaN(proposedAt.getTime()) ? proposedAt.toLocaleString() : null;
   return (
-    <div className="min-w-0 space-y-1 px-2 py-2">
-      <p className="break-words type-heading text-foreground">{item.headline}</p>
-      <p className="break-words type-secondary text-muted-foreground">
-        {item.acceptEffect}
-        {item.proposedBy ? ` · proposed by ${item.proposedBy}` : ""}
-        {item.proposedAt ? ` · ${new Date(item.proposedAt).toLocaleDateString()}` : ""}
-      </p>
-      <p className="break-words type-meta">
-        <ModeLine item={item} />
-      </p>
+    <div className="min-w-0 space-y-3 p-3">
+      <div className="flex min-w-0 items-start gap-2">
+        <KindBadge className="mt-0.5 shrink-0">{item.badge ?? kindLabel}</KindBadge>
+        <p className="min-w-0 flex-1 break-words type-heading text-foreground">{item.headline}</p>
+      </div>
+      {decide ? <div className="flex justify-end">{decide}</div> : null}
+
       {/* Not yours to approve — but never hidden, and never a disabled control
           with no reason (THE NO-SILENT-FAILURE LAW). */}
       {item.blocked ? (
-        <p className="break-words type-meta text-warning">
+        <p className="break-words type-secondary text-warning">
           {item.blocked.reason} {item.blocked.whoCan}
         </p>
       ) : null}
       {/* An approve is running on the server RIGHT NOW: no decision controls. */}
       {item.inFlight ? (
-        <p className="break-words type-meta text-muted-foreground">{item.inFlight.sentence}</p>
+        <p className="break-words type-secondary text-muted-foreground">{item.inFlight.sentence}</p>
       ) : null}
       {/* 🚨 THE LAST APPROVE FAILED AND THE CHANGE WAS NOT MADE (§ A-iii). */}
       {item.lastAttempt?.state === "failed" ? (
-        <p className="break-words type-meta font-medium text-destructive">
+        <p className="break-words type-secondary font-medium text-destructive">
           {item.lastAttempt.sentence}
           <ErrorAlchemyMenu />
         </p>
@@ -603,25 +638,43 @@ function ApprovalRowDetail({ item }: { item: ApprovalItem }) {
       {/* 🚨 THE WRITE REACHED GOOGLE AND THE ANSWER WAS LOST (§ A-N1): the
           server's sentence, and no retry anywhere on the row. */}
       {item.lastAttempt?.state === "applied_unconfirmed" ? (
-        <p className="break-words type-meta font-medium text-warning">{item.lastAttempt.sentence}</p>
+        <p className="break-words type-secondary font-medium text-warning">{item.lastAttempt.sentence}</p>
       ) : null}
       {/* 🚨 SOMETHING IS WAITING AND THIS BUILD CANNOT SHOW IT (§ A-N6). */}
       {item.unreadable ? (
-        <p className="break-words type-meta font-medium text-warning">{item.unreadable.sentence}</p>
+        <p className="break-words type-secondary font-medium text-warning">{item.unreadable.sentence}</p>
       ) : null}
       {/* 🚨 A RECEIPT STATE THIS BUILD HAS NEVER HEARD OF (§ V14-4). */}
       {item.unknownState ? (
-        <p className="break-words type-meta font-medium text-warning">{item.unknownState.sentence}</p>
+        <p className="break-words type-secondary font-medium text-warning">{item.unknownState.sentence}</p>
       ) : null}
       {/* 🚨 PAST THE ORGANIZATION'S REVIEW WINDOW (§ A-N7). */}
       {item.expired ? (
-        <p className="break-words type-meta font-medium text-warning">{item.expired.sentence}</p>
+        <p className="break-words type-secondary font-medium text-warning">{item.expired.sentence}</p>
       ) : null}
-      {item.body ? <div className="mt-1">{item.body}</div> : null}
+
+      <div className="space-y-2">
+        <PropertyRow label="If approved" value={item.acceptEffect} />
+        <PropertyRow label="If rejected" value={item.rejectEffect} />
+        <PropertyRow label="Records" value={item.doors ?? null} {...(item.doors ? {} : { missing: "None" })} />
+        <PropertyRow
+          label="Proposed by"
+          value={item.proposedBy ?? null}
+          {...(item.proposedBy ? {} : { missing: "Unknown" })}
+        />
+        <PropertyRow
+          label="Proposed"
+          value={proposedLabel}
+          {...(proposedLabel ? {} : { missing: "Unknown" })}
+        />
+        <PropertyRow label="Mode" value={<ModeLine item={item} />} />
+      </div>
+
+      {item.body ? <div className="min-w-0">{item.body}</div> : null}
       {/* 🚨 A ROW THAT CANNOT BE ACTED ON MOUNTS NO KIND'S ACTION EITHER
           (Bugbot round 11, frontend PR 228): one gate, here, for every kind. */}
       {item.individualReview && !noLiveAction(item) ? (
-        <div className="mt-1">{item.individualReview}</div>
+        <div className="min-w-0">{item.individualReview}</div>
       ) : null}
     </div>
   );

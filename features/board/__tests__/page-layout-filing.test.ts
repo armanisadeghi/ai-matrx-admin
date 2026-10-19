@@ -21,7 +21,7 @@ import { join } from "node:path";
 
 import type { SpaceTemplatePack } from "@/lib/spaces-blocks/template-pack";
 import { frameOf } from "../engine/arrange";
-import { PAGE_FRAME_PAD, planPageLayout, type PageMove, type PagePlaced } from "../engine/page-layout";
+import { PAGE_FRAME_PAD, pageColumnWidth, planPageLayout, type PageMove, type PagePlaced } from "../engine/page-layout";
 import { autoHeightMoves, frameMembers, growStep, innerSlack, tileChrome } from "../engine/tile-chrome";
 import { planPackBoards } from "../templates/board-pack-plan";
 import { cloneBoardContent } from "../templates/clone-content";
@@ -199,6 +199,19 @@ describe("a column of cards", () => {
     expect(planPageLayout(wide).moves).toEqual([]);
   });
 
+  it("never re-flows the board to a view narrower than any phone (a squeezed or hidden pane)", () => {
+    const scene: Scene = {
+      frames: [{ id: "f", rect: { x: 0, y: 0, w: 1100, h: 316 }, title: "Colors" }],
+      tiles: [{ id: "a", rect: { x: 8, y: 8, w: 1084, h: 300 }, title: "Colors", chapter: "f" }],
+    };
+    // A 375 phone's usable width (after insets and margins) is its column; a 240-wide pane keeps the column.
+    expect(pageColumnWidth(375, 311)).toBe(311);
+    expect(pageColumnWidth(240, 176)).toBeUndefined();
+    expect(pageColumnWidth(0, 1)).toBeUndefined();
+    expect(pageColumnWidth(1440, 1300)).toBeUndefined();
+    expect(planPageLayout(scene, undefined, { columnW: pageColumnWidth(240, 176) }).moves).toEqual([]);
+  });
+
   it("stacks loose tiles the same way, and a drawn mark keeps its own size", () => {
     const scene: Scene = {
       frames: [],
@@ -231,14 +244,23 @@ describe("no tile scrolls inside itself in page layout", () => {
   });
 
   it("reads the content's own bottom: grows to hidden content, shrinks to spare room, ignores scroll-past-end padding", () => {
-    const box = (clientHeight: number, contentBottom: number | null, scrollHeight = clientHeight, overflowY = "auto") => ({ clientHeight, contentBottom, scrollHeight, overflowY });
-    expect(innerSlack(280, [box(200, 900)])).toBe(700);
-    // The rich editor's column carries pb-[40dvh]: its content bottom (padding excluded) is the truth.
-    expect(innerSlack(876, [box(768, 120, 1100)])).toBe(120 - 768);
-    expect(innerSlack(280, [box(60, 900)])).toBe(0); // a small box with its own max height (a code block)
-    expect(innerSlack(280, [box(200, 900, 900, "hidden")])).toBe(0);
-    expect(innerSlack(280, [box(200, null, 650)])).toBe(450); // a textarea: only its scroll height tells
-    expect(innerSlack(280, [box(200, 200.5)])).toBe(0);
+    const box = (clientHeight: number, contentBottom: number | null, scrollHeight = clientHeight, overflowY = "auto", capped = false) => ({
+      clientHeight,
+      contentBottom,
+      scrollHeight,
+      overflowY,
+      capped,
+    });
+    expect(innerSlack([box(200, 900)])).toBe(700);
+    // The rich editor's column carries pb-[40dvh]: its content bottom (its deepest lines) is the truth.
+    expect(innerSlack([box(768, 120, 1100)])).toBe(120 - 768);
+    // On a phone the note's toolbar wraps: the editor is a small part of the card, and still counts.
+    expect(innerSlack([box(89, 300, 812)])).toBe(211);
+    expect(innerSlack([box(200, 900, 900, "auto", true)])).toBe(0); // a code block with its own max height
+    expect(innerSlack([box(28, 36, 36)])).toBe(0); // a toolbar row scrolling sideways
+    expect(innerSlack([box(200, 900, 900, "hidden")])).toBe(0);
+    expect(innerSlack([box(200, null, 650)])).toBe(450); // a textarea: only its scroll height tells
+    expect(innerSlack([box(200, 200.5)])).toBe(0);
   });
 
   it("never ratchets: an overflow growing does not reveal stops the growth for good, and later content still grows it", () => {

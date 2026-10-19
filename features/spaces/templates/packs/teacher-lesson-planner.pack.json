@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 5,
+  "version": 6,
   "title": "Teacher Lesson Planner",
   "description": "Teachers: weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -558,7 +558,8 @@
               "Taught"
             ],
             "filled": [
-              "reflection"
+              "reflection",
+              "taught_on"
             ]
           }
         ],
@@ -1143,7 +1144,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1461,7 +1463,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -399,9 +399,6 @@ export function SiteIntakeWizard() {
               onClick={() => void startInterview(true)}
             >
               <RotateCcw className="h-3 w-3" /> Re-run analysis
-              {runResult.cost_usd != null
-                ? ` (${formatCostDisplay(runResult.cost_usd)}/run)`
-                : ""}
             </button>
           ) : null}
         </div>

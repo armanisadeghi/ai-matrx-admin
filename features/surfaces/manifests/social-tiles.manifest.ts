@@ -9,7 +9,7 @@
  * metrics ride in `post_text` / `transcript_text` / `metrics`. One value is never a hidden copy of
  * another surface's: they are the same fields the post card and detail show.
  *
- * Actions are client tools (`mode: "entity"` when they spend credits or write rows, which the person
+ * Actions are client tools (`mode: "entity"` when they call a paid provider or write rows, which the person
  * approves on a card): get transcript, breakdown, save to swipe file, open detail.
  */
 
@@ -86,7 +86,7 @@ export const socialPostManifest = manifest({
   briefValues: ["post_loaded", "platform", "handle", "hook_line"],
   intro: `<surface_intro>
 You are on ONE public social post (TikTok, Instagram, YouTube, LinkedIn, X, Facebook). Check post_loaded first.
-hook_line is the opening line; post_text is the caption; transcript_text is what is SAID in the video (transcript_status says "available" or "none" — never guess a transcript that is "none", offer social_post_get_transcript, which spends credits and is approved by the person). metrics are the latest numbers; outlier is the score against the author's own recent posts (null baseline means too few posts to judge).
+hook_line is the opening line; post_text is the caption; transcript_text is what is SAID in the video (transcript_status says "available" or "none" — never guess a transcript that is "none", offer social_post_get_transcript, which the person approves). metrics are the latest numbers; outlier is the score against the author's own recent posts (null baseline means too few posts to judge).
 social_post_breakdown asks the breakdown agent; before it is built the server refuses with an honest 409, report that as it is.
 </surface_intro>`,
   groups: [
@@ -118,7 +118,7 @@ social_post_breakdown asks the breakdown agent; before it is built the server re
       name: SOCIAL_POST_CLIENT_TOOLS.getTranscript,
       label: "Get transcript",
       description:
-        "Fetches or generates the transcript of this post and stores it (spends provider credits; the person approves). Returns transcript_status and word count; transcript_text then appears in this surface. Does nothing if a transcript is already stored.",
+        "Fetches or generates the transcript of this post and stores it (the person approves). Returns transcript_status and word count; transcript_text then appears in this surface. Does nothing if a transcript is already stored.",
       inputSchema: NO_ARGS,
       mode: "entity",
     },

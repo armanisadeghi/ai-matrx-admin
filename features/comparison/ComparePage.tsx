@@ -103,7 +103,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
   const [phase, setPhase] = useState<Phase>(runParam ? "running" : "input");
   const [finding, setFinding] = useState(false);
   const [rows, setRows] = useState<FoundRow[]>([]);
-  const [lookupPoints, setLookupPoints] = useState(0);
   const [adding, setAdding] = useState(false);
   const [progress, setProgress] = useState<ItemProgress[]>([]);
   const [identities, setIdentities] = useState<ProgressRowIdentity[]>([]);
@@ -168,7 +167,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     try {
       const out = await lookupItems(useKind, parsed.items.map((i) => i.input), { organizationId });
       setRows(out.items.map((it) => ({ ...it, key: rowKey(), query: parsed.items[it.index]?.text ?? it.query })));
-      setLookupPoints(out.points);
       setPhase("found");
     } catch (err) {
       setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look those up. Try again.");
@@ -219,7 +217,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
         else setLookupError(it.message ?? "We could not find that.");
       }
       setDiscoveryRows((rs) => [...rs, ...added]);
-      setLookupPoints((p) => p + out.points);
     } catch (err) {
       setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look that up.");
     } finally {
@@ -234,7 +231,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     try {
       const out = await lookupItems(kindKey, parsed.items.map((i) => i.input), { organizationId });
       setRows((rs) => [...rs, ...out.items.map((it) => ({ ...it, key: rowKey(), query: parsed.items[it.index]?.text ?? it.query }))]);
-      setLookupPoints((p) => p + out.points);
     } catch (err) {
       setLookupError(err instanceof ComparisonRefusal ? err.userMessage : "We could not look that up.");
     } finally {
@@ -287,7 +283,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
     setModeOverride(null);
     setScope("auto");
     setText("");
-    setLookupPoints(0);
     setPhase("input");
   }
 
@@ -333,7 +328,6 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
       <>
         <ComparisonView
           result={result}
-          seesDollars={seesDollars}
           factsHref={(i) => (i.table_id ? `/data/${i.table_id}` : null)}
           onPick={pick}
           actions={<><ShareButton /><Button variant="outline" icon={<RotateCcw className="h-4 w-4" />} onClick={startOver}>New comparison</Button></>}
@@ -373,7 +367,7 @@ function CompareBody({ kinds, organizationId }: { kinds: ComparisonKindInfo[]; o
         {lookupError ? <ErrorNotice message={lookupError} /> : null}
         <FacetOptions kind={kind} itemCount={rows.filter((r) => r.status === "found").length} />
         <FoundStep kind={kind} rows={rows} organizationId={organizationId} seesDollars={seesDollars}
-          lookupPoints={lookupPoints} adding={adding} onRows={setRows} onAdd={(t) => void addOne(t)}
+          adding={adding} onRows={setRows} onAdd={(t) => void addOne(t)}
           onBack={() => setPhase("input")} onCompare={(m) => void compare(m)} starting={false} />
       </div>
     );

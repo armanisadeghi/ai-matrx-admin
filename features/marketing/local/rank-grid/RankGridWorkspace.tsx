@@ -149,7 +149,6 @@ function BusinessStep({
   business: ConfirmedBusiness | null;
   onConfirm: (b: ConfirmedBusiness | null) => void;
 }) {
-  const { format } = useCostDisplay();
   const find = useToolAction<ToolEnvelope<FindBusinessData>>(SEO_LOCAL_TOOL);
   const price = useQuery({
     queryKey: ["seo_local", "price", "find_business"],
@@ -174,7 +173,6 @@ function BusinessStep({
     event.preventDefault();
     if (canSearch) void search(false);
   };
-  const cost = costText(format, price.data?.costUsd);
 
   if (business) {
     return (
@@ -220,10 +218,10 @@ function BusinessStep({
         <EmptyState
           icon={<Search />}
           title="No stored search to reuse"
-          line={state.note ?? `${cost} per search, then free for ${price.data?.reuseDays ?? "some"} days.`}
+          line={state.note ?? `A search is saved and reused for ${price.data?.reuseDays ?? "some"} days.`}
           action={
             <Button variant="primary" onClick={() => void search(true)} disabled={find.running}>
-              Search · {cost}
+              Search
             </Button>
           }
         />
@@ -239,7 +237,7 @@ function BusinessStep({
           <Badge tone={state.reused ? "neutral" : "info"} className="self-start">
             {state.reused
               ? `Reused from ${shortDate(state.observedAt)}`
-              : `Bought ${shortDate(state.observedAt)}${state.chargedUsd != null ? ` · ${costText(format, state.chargedUsd)}` : ""}`}
+              : `Bought ${shortDate(state.observedAt)}`}
           </Badge>
           <CandidatesTable rows={state.data.candidates} onPick={(b) => onConfirm(b)} />
         </>
@@ -374,7 +372,7 @@ function GridStep({ business }: { business: ConfirmedBusiness }) {
           ]}
         />
         <Button type="submit" variant="primary" icon={<Grid3x3 />} disabled={!keyword.trim() || grid.running}>
-          Preview · free
+          Preview
         </Button>
       </form>
 
@@ -487,7 +485,7 @@ function PreviewView({
           disabled={running}
           onClick={() => onRun(data.center_confirmed_value)}
         >
-          {free ? "Open stored grid · free" : `Run grid · ${costText(format, data.estimate_usd)}`}
+          {free ? "Open stored grid" : `Run grid${costText(format, data.estimate_usd) ? ` · ${costText(format, data.estimate_usd)}` : ""}`}
         </Button>
       </div>
       {extra.map((n) => (
@@ -505,10 +503,9 @@ function ResultView({
   envelope: Extract<GridState, { kind: "result" }>["envelope"];
   business: ConfirmedBusiness;
 }) {
-  const { format } = useCostDisplay();
   const data = envelope.data;
   const s = data.summary;
-  const source = sourceLine(envelope, format);
+  const source = sourceLine(envelope);
   const markers: MapMarker[] = gridPoints(data).map((p) => {
     const b = bubbleFor(p, data.depth);
     return {

@@ -21,7 +21,6 @@
  * see is an image the user can reach.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { ImageIcon, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { Carousel } from "@ai-matrx/design-system/carousel";
@@ -33,7 +32,6 @@ import {
   type GeneratedImageSetData,
 } from "@/features/content-ir/kinds/generated-image-set";
 import {
-  formatCost,
   readUsage,
 } from "@/features/content-ir/kinds/media-io-shared";
 import { cn } from "@/lib/utils";
@@ -147,11 +145,8 @@ export default function GeneratedImageSetBlock({
   hideHeader = false,
   className,
 }: GeneratedImageSetBlockProps) {
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const data = readGeneratedImageSetData(serverData);
   if (!data) return null;
-
-  const cost = formatCost(data.usage?.cost_usd ?? null, costRate, costUnit);
 
   return (
     <div className={cn("my-2 space-y-2", className)}>
@@ -169,11 +164,6 @@ export default function GeneratedImageSetBlock({
           {data.model && (
             <span className="font-mono text-[11px] text-muted-foreground">
               {data.model}
-            </span>
-          )}
-          {cost && (
-            <span className="text-[11px] tabular-nums text-muted-foreground">
-              {cost}
             </span>
           )}
           {!data.isComplete && (

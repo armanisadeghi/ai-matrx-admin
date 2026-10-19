@@ -26,14 +26,13 @@ export interface FoundRow extends LookupItem {
 }
 
 export function FoundStep({
-  kind, rows, organizationId, seesDollars, lookupPoints, adding, onRows, onAdd, onBack, onCompare, starting,
+  kind, rows, organizationId, seesDollars, adding, onRows, onAdd, onBack, onCompare, starting,
 }: {
   kind: ComparisonKindInfo;
   rows: FoundRow[];
   organizationId: string;
   seesDollars: boolean;
   /** Points the lookup itself spent. */
-  lookupPoints: number;
   adding: boolean;
   onRows: (rows: FoundRow[]) => void;
   onAdd: (text: string) => void;
@@ -136,7 +135,6 @@ export function FoundStep({
             <>
               Compare {chosen.length} · <span className="font-medium text-foreground tabular-nums">{formatPoints(quote.data.total_points)}</span>
               {seesDollars && quote.data.total_usd_display ? <span className="tabular-nums"> · {quote.data.total_usd_display}</span> : null}
-              {lookupPoints > 0 ? <span className="tabular-nums"> · finding used {formatPoints(lookupPoints, { short: true })}</span> : null}
             </>
           ) : quote.isError ? (
             <span className="inline-flex items-center gap-2">

@@ -137,7 +137,7 @@ export function KpisTab() {
   const [editing, setEditing] = useState<KpiGoalRow | null>(null);
   const [now] = useState(() => Date.now());
   const accountRows = useAccountRows(organizationId, brandId);
-  const { busyRow, trackAllOwn, costText } = useTrackOwn(organizationId, brandId);
+  const { busyRow, trackAllOwn } = useTrackOwn(organizationId, brandId);
 
   // The agent surface: built from what is already on screen (never a fetch).
   const brandName = useMarketingBrand().name;
@@ -394,7 +394,7 @@ export function KpisTab() {
                   variant="primary"
                   icon={<UserPlus />}
                   disabled={busyRow !== null}
-                  title={["Track every own account not tracked yet", costText("track", untrackedOwn.length)].filter(Boolean).join(" · ")}
+                  title="Track every own account not tracked yet"
                   onClick={() => void trackAllOwn(untrackedOwn)}
                 >
                   {busyRow === "bulk" ? "Tracking…" : `Track own accounts (${untrackedOwn.length})`}

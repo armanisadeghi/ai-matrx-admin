@@ -445,6 +445,90 @@ export class BoardStore<T extends BoardTileBase> {
     this.commit({ ...st, now: { ...s, byId, shapes, frames }, moving: null });
   };
 
+  // ── a view-local projection (page layout on a narrow view) ───────────────
+
+  /**
+   * While set, the board SHOWS a view-local arrangement (page layout narrowed to a phone) and SAVES
+   * this one instead: id → the saved rect of every tile, frame and stacked drawn mark (the canonical
+   * page at the full column). Never shared: another viewer never sees this viewer's projection.
+   */
+  private savedLayout: ReadonlyMap<string, Rect> | null = null;
+
+  /** True while the board shows a view-local projection (`project`). */
+  get projecting(): boolean {
+    return this.savedLayout !== null;
+  }
+
+  /** The saved rects while projecting (id → rect), else null. */
+  getSavedLayout = (): ReadonlyMap<string, Rect> | null => this.savedLayout;
+
+  /**
+   * Show `view` (moves, as `reflow`: no undo step) while `saved` stays what is saved. Everything that
+   * reads the board sees the projection; only `readSaved` (persistence) sees `saved`. A change of
+   * `saved` alone (a real change, made on a narrow view) still notifies, so it is saved.
+   */
+  project = (view: readonly { id: string; x: number; y: number; w?: number; h?: number }[], saved: ReadonlyMap<string, Rect>): void => {
+    const changed = !sameRectMaps(this.savedLayout, saved);
+    this.savedLayout = saved;
+    if (view.length) this.reflow(view);
+    else if (changed) for (const l of [...this.listeners]) l();
+  };
+
+  /** Stop projecting: the board shows what it saves again (the saved rects are put back). */
+  endProjection = (): void => {
+    const saved = this.savedLayout;
+    if (!saved) return;
+    this.savedLayout = null;
+    const now = this.h.now;
+    const moves: { id: string; x: number; y: number; w?: number; h?: number }[] = [];
+    const differs = (a: Rect, b: Rect) => a.x !== b.x || a.y !== b.y || a.w !== b.w || a.h !== b.h;
+    for (const t of Object.values(now.byId)) {
+      const r = saved.get(t.id);
+      if (r && differs(r, t.rect)) moves.push({ id: t.id, ...r });
+    }
+    for (const f of now.frames) {
+      const r = saved.get(f.id);
+      if (r && differs(r, f.rect)) moves.push({ id: f.id, ...r });
+    }
+    for (const sh of now.shapes) {
+      const r = saved.get(sh.id);
+      if (!r || isConnector(sh.kind)) continue;
+      const b = boundsOfPoints(sh.points);
+      if (r.x !== b.x || r.y !== b.y) moves.push({ id: sh.id, x: r.x, y: r.y });
+    }
+    if (moves.length) this.reflow(moves);
+    else for (const l of [...this.listeners]) l();
+  };
+
+  /**
+   * The board as SAVED (persistence reads this, never `read`): while a projection is shown, every
+   * tile, frame and drawn mark at its saved place; otherwise exactly `read` and `shapes`.
+   */
+  readSaved = (): BoardView<T> & { shapes: BoardShape[] } => {
+    const view = this.read();
+    const saved = this.savedLayout;
+    if (!saved) return { ...view, shapes: this.h.now.shapes };
+    const tile = (t: T): T => {
+      const r = saved.get(t.id);
+      return r ? { ...t, rect: { ...r } } : t;
+    };
+    return {
+      ...view,
+      tiles: view.tiles.map(tile),
+      parked: view.parked.map(tile),
+      frames: view.frames.map((f) => {
+        const r = saved.get(f.id);
+        return r ? { ...f, rect: { ...r } } : f;
+      }),
+      shapes: this.h.now.shapes.map((sh) => {
+        const r = saved.get(sh.id);
+        if (!r || isConnector(sh.kind)) return sh;
+        const b = boundsOfPoints(sh.points);
+        return r.x === b.x && r.y === b.y ? sh : translateShape(sh, r.x - b.x, r.y - b.y);
+      }),
+    };
+  };
+
   /**
    * The shapes list with every shape named in `at` moved so its box's corner
    * lands at the given point, or null when none moved. A line / arrow end
@@ -1066,6 +1150,17 @@ function revertList<T, K extends "frames" | "shapes">(
 
 /** The cached layout still names exactly the snapshot's tile ids and shelf
  * (and the parked records are the same records). */
+/** Two saved-rect maps hold the same rects (null = none). */
+function sameRectMaps(a: ReadonlyMap<string, Rect> | null, b: ReadonlyMap<string, Rect> | null): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.size !== b.size) return false;
+  for (const [id, r] of a) {
+    const q = b.get(id);
+    if (!q || q.x !== r.x || q.y !== r.y || q.w !== r.w || q.h !== r.h) return false;
+  }
+  return true;
+}
+
 function sameIds<T extends BoardTileBase>(c: BoardLayout<T>, now: Snapshot<T>): boolean {
   const parkedSet = now.parked.length ? new Set(now.parked) : null;
   let i = 0;

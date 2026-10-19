@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0305",
-  "version": 5,
+  "version": 6,
   "title": "Creator Studio",
   "description": "YouTube creators: take video ideas to publish day with sponsors, results and gear.",
   "forWho": "Video and channel creators",
@@ -289,7 +289,8 @@
               "Paid"
             ],
             "filled": [
-              "fee"
+              "fee",
+              "paid_on"
             ]
           }
         ],
@@ -401,7 +402,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "video",
@@ -684,7 +686,17 @@
         "independentOf": {
           "sponsor": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Published"
+            ],
+            "filled": [
+              "publish_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "Video",
@@ -1036,7 +1048,17 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "verdict",
+            "when": [
+              "Approved"
+            ],
+            "filled": [
+              "approved_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New idea",
@@ -1894,7 +1916,7 @@
         "Hobbler Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -105,7 +105,6 @@ function bestOutlier(row: BrandCompetitor) {
 function RowSocialActions({ row, brand }: { row: BrandCompetitor; brand: { id: string; organizationId: string } }) {
   const found = useFoundSocials(brand.id, row.key);
   const { find, track } = useCompetitorSocialActions(brand);
-  const { pointsText } = useSocialSpend(brand.organizationId);
   const canEdit = useCanEditSocial(undefined, brand.id);
   if (row.progress || !canEdit) return null;
   const busy = found?.status === "finding" || found?.status === "tracking";
@@ -141,7 +140,7 @@ function RowSocialActions({ row, brand }: { row: BrandCompetitor; brand: { id: s
         >
           {found.status === "tracking"
             ? "Tracking…"
-            : `Track ${found.links.length}${pointsText("track", found.links.length) ? ` · ${pointsText("track", found.links.length)}` : ""}`}
+            : `Track ${found.links.length}`}
         </Button>
       ) : null}
     </span>
@@ -705,8 +704,6 @@ function AddCompetitorDialog({
 
   const cleanDomain = normalizeDomain(domain);
   const entered = Object.entries(handles).filter(([, v]) => v.trim());
-  const { pointsText: dialogPointsText } = useSocialSpend(organizationId);
-  const addPoints = entered.length > 0 ? dialogPointsText("track", entered.length) : null;
   const firstSiteId = hasSite ? "yes" : null;
 
   async function findSocials() {
@@ -800,7 +797,7 @@ function AddCompetitorDialog({
             Close
           </Button>
           <Button variant="primary" disabled={!name.trim() || (!cleanDomain && entered.length === 0)} onClick={save}>
-            {addPoints ? `Add · ${addPoints}` : "Add · Free"}
+            Add
           </Button>
         </DialogFooter>
       </DialogContent>

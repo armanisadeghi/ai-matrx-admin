@@ -26,7 +26,7 @@ export function useTrackOwn(organizationId: string, brandId: string) {
   const [busyRow, setBusyRow] = useState<string | null>(null);
   /** The server's live step line for the row being tracked ("Fetching posts · 2 of 3"). */
   const [progress, setProgress] = useState<string | null>(null);
-  const { costText, pointsText, confirmSpend } = useSocialSpend(organizationId);
+  const { pointsText, confirmSpend } = useSocialSpend(organizationId);
 
   /** Track one own property as role Own; an empty account asks before tracking it anyway. */
   async function trackOwnRow(row: AccountRow, allowEmpty = false): Promise<"ok" | "failed"> {
@@ -108,5 +108,5 @@ export function useTrackOwn(organizationId: string, brandId: string) {
     toast.success(`Tracked ${done} of ${list.length}`);
   }
 
-  return { busyRow, setBusyRow, progress, trackOwn, trackOwnRow, trackAllOwn, costText, pointsText, confirmSpend };
+  return { busyRow, setBusyRow, progress, trackOwn, trackOwnRow, trackAllOwn, confirmSpend };
 }

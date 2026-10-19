@@ -86,6 +86,8 @@ interface OutlineProps {
   pages: OutlinePages | null;
   /** Page layout only: move a chapter up or down. */
   onMoveChapter?: (id: string, dir: -1 | 1) => void;
+  /** Page layout only: a chapter's top as planned for this view (runs a waiting re-flow first). */
+  chapterTop?: (id: string) => number | null;
   /** Each chapter's own icon, by frame id (`chapterIconName`); absent = the neutral icon. */
   chapterIcons?: Readonly<Record<string, ChapterIcon>>;
   onClose: () => void;
@@ -142,13 +144,14 @@ function useActiveChapter(
   return { active: pinned ?? active, pin: (id: string) => setPin({ id, layout }) };
 }
 
-function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterIcons, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
+function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterTop, chapterIcons, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
   const chapters = chapterOrder(frames);
   const { active, pin } = useActiveChapter(store, chapters, layout);
   const go = (f: BoardFrame) => {
     if (!store) return;
     pin(f.id);
-    if (layout === "page") store.pageScrollTo(f.rect.y - 56);
+    // The planned top, never a stale one: after a width change the page may still be re-flowing.
+    if (layout === "page") store.pageScrollTo((chapterTop?.(f.id) ?? f.rect.y) - 56);
     else store.fitItem(frameKey(f.id), 48);
     store.select(f.id);
     if (fill) onClose(); // the phone's drawer steps aside to show the chapter

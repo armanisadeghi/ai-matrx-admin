@@ -3,8 +3,13 @@
 /**
  * components/cost/CostBadge.tsx
  *
- * The canonical "what will this cost" chip beside an expensive action. Tier-
- * colored so a large run reads as a warning at a glance. Renders through
+ * The tier-colored "what will this cost" chip. It belongs ONLY on the confirm
+ * step before bulk, heavy or repeating work, or inside a picker where price is
+ * part of the choice — never on a one-click button, an action menu, a result
+ * or a receipt (Arman, 2026-10-18; common-docs/policies/points-and-money-in-the-ui.md;
+ * `pnpm check:cost-display` P1). One expensive action gets no price on its
+ * button; above an organization-set threshold it gets a confirm step, and the
+ * chip goes there. Tier-colored so a large run reads as a warning. Renders through
  * `useCostDisplay`, so a member sees points and only an admin who flipped the
  * switch sees dollars. (Replaces the retired 2,000-per-dollar
  * "Processing Units" badge — points are the one unit.)

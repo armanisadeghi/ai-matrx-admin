@@ -20,8 +20,6 @@ export interface AuthorityTile {
   status: TileStatus;
   /** Plain words when the tile has no number: why. */
   note: string | null;
-  /** What this one answer cost, in points; null before it ran. */
-  points: number | null;
   /** True when the answer was saved earlier (own repeat). */
   saved: boolean;
 }
@@ -62,20 +60,19 @@ export function authorityTile(
   field: string = FIELD[key].field,
 ): AuthorityTile {
   const { label } = FIELD[key];
-  const base = { key, label, source: sourceOf(key, view), score: null, note: null, points: null, saved: false };
+  const base = { key, label, source: sourceOf(key, view), score: null, note: null, saved: false };
   if (!view) {
     return clientError ? { ...base, status: "failed", note: clientError } : { ...base, status: "idle" };
   }
-  const points = view.points_charged;
-  if (isCallRunning(view.status)) return { ...base, status: "running", points: null };
+  if (isCallRunning(view.status)) return { ...base, status: "running" };
   if (view.status === "needs_approval") return { ...base, status: "running", note: "Waiting for your OK" };
   if (view.status === "succeeded") {
     const score = scoreFrom(view.output, field);
-    if (score == null) return { ...base, status: "empty", note: "No score for this website", points, saved: view.cache !== "none" };
-    return { ...base, status: "ready", score, points, saved: view.cache !== "none" };
+    if (score == null) return { ...base, status: "empty", note: "No score for this website", saved: view.cache !== "none" };
+    return { ...base, status: "ready", score, saved: view.cache !== "none" };
   }
-  if (view.status === "empty") return { ...base, status: "empty", note: "No score for this website", points };
-  return { ...base, status: "failed", note: view.error?.message ?? "That didn't work", points };
+  if (view.status === "empty") return { ...base, status: "empty", note: "No score for this website" };
+  return { ...base, status: "failed", note: view.error?.message ?? "That didn't work" };
 }
 
 /**

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 5,
+  "version": 6,
   "title": "Release Notes & API Docs",
   "description": "Product and developer teams: release notes, a public changelog and an API reference.",
   "forWho": "Product and developer-experience teams",
@@ -539,6 +539,17 @@
               "release_on": "@today+50d",
               "highlights": "Removes the old tracking endpoints and the legacy auth header."
             }
+          }
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Released"
+            ],
+            "filled": [
+              "release_on"
+            ]
           }
         ]
       },
@@ -1403,7 +1414,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

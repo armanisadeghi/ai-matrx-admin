@@ -6,10 +6,9 @@
 // question — to up to four answer engines NOW, through `seo_ai_visibility
 // try_prompt` on the screen-run door (`useToolAction`).
 //
-// Price before anything runs: every engine is probed alone for free
-// (`engine-state.ts`), so each row says "stored — free" or its exact price,
-// and the one Ask button names the total it will spend. A paid ask above the
-// organization's threshold shows the shared approval dialog in place.
+// Every engine is probed alone (`engine-state.ts`), so each row says whether a
+// stored answer exists. A paid ask above the organization's threshold shows the
+// shared approval dialog in place.
 //
 // Each answer opens whole in the existing answer canvas tab
 // (`ai-visibility-answer`); a capped answer is read in full from its stored
@@ -22,7 +21,6 @@ import { useOptionalCanvas } from "@ai-matrx/canvas/react";
 import { useToolAction } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ToolEnvelope } from "@ai-matrx/chat/action-requests/screen-run";
 import { Badge, Button, Chip, Select } from "@ai-matrx/design-system/controls";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { openCanvasItem } from "@/features/canvas/host/openCanvasItem";
@@ -46,10 +44,9 @@ const engineLabel = (engine: string) =>
   AI_VISIBILITY_ENGINES.find((e) => e.id === engine)?.label ?? engine;
 
 function StatusText({ state }: { state: EngineState | undefined }) {
-  const { format } = useCostDisplay();
-  if (!state || state.kind === "checking") return <span className="text-muted-foreground">Checking price…</span>;
+  if (!state || state.kind === "checking") return <span className="text-muted-foreground">Checking…</span>;
   if (state.kind === "asking") return <span className="text-muted-foreground">Asking…</span>;
-  if (state.kind === "priced") return <span className="tabular-nums">{state.estimateUsd == null ? "cost unknown" : format(state.estimateUsd)}</span>;
+  if (state.kind === "priced") return <span className="text-muted-foreground">Ready to ask</span>;
   if (state.kind === "error")
     return (
       <ErrorNotice
@@ -58,7 +55,7 @@ function StatusText({ state }: { state: EngineState | undefined }) {
         operation={`${SEO_AI_VISIBILITY_TOOL} try_prompt`}
       />
     );
-  return <span className="text-muted-foreground">{state.reused ? "Stored · free" : "Answered"}</span>;
+  return <span className="text-muted-foreground">{state.reused ? "Stored answer" : "Answered"}</span>;
 }
 
 export function TryOnePrompt({
@@ -70,7 +67,6 @@ export function TryOnePrompt({
   questions: string[];
   onClose: () => void;
 }) {
-  const { format } = useCostDisplay();
   const tool = useToolAction<ToolEnvelope<TryPromptData>>(SEO_AI_VISIBILITY_TOOL);
   const canvas = useOptionalCanvas();
   const first = (questions[0] ?? "").trim();
@@ -108,7 +104,7 @@ export function TryOnePrompt({
   };
   const probeOnOpen = useEffectEvent((forPrompt: string) => probe(forPrompt, ANSWER_ENGINES));
 
-  // A new prompt opens with one free price check per engine.
+  // A new prompt opens with one stored-answer check per engine.
   useEffect(() => {
     if (prompt) probeOnOpen(prompt);
   }, [prompt]);
@@ -123,7 +119,7 @@ export function TryOnePrompt({
     const outcome = await tool.run(args(plan.engines));
     const next = engineStatesFromOutcome(outcome, plan.engines, { probe: false });
     if (Object.keys(next).length === 0) {
-      // Declined or closed: nothing was spent. Check the prices again.
+      // Declined or closed: check the engines again.
       merge(forPrompt, Object.fromEntries(plan.engines.map((e) => [e, { kind: "checking" }])) as States);
       probe(forPrompt, plan.engines);
       return;
@@ -190,7 +186,7 @@ export function TryOnePrompt({
       {draft.trim() !== prompt ? (
         <div>
           <Button onClick={commitDraft} disabled={!draft.trim()}>
-            Check prices
+            Use this question
           </Button>
         </div>
       ) : null}
@@ -246,7 +242,7 @@ export function TryOnePrompt({
           >
             {plan.engines.length === 0
               ? "Nothing to ask"
-              : `Ask ${plan.engines.length} engine${plan.engines.length === 1 ? "" : "s"} · ${plan.totalUsd == null ? "cost unknown" : format(plan.totalUsd)}`}
+              : `Ask ${plan.engines.length} engine${plan.engines.length === 1 ? "" : "s"}`}
           </Button>
           <Badge tone="neutral" title="One question at one moment. It writes no panel data and is not a panel metric.">
             One moment, not a measurement

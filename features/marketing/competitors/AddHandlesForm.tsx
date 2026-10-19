@@ -17,13 +17,10 @@ import { SocialAccountInput, useSocialAccountInput } from "@/features/marketing/
 
 import type { BrandCompetitor } from "./brand-competitors";
 import { COMPETITOR_SOCIAL_PLATFORMS, type CompetitorSocialPlatform } from "./social-links";
-import { useSocialSpend } from "@/features/marketing/social/cost";
 import { useCompetitorSocialActions, type BrandRef } from "./useCompetitorSocials";
 
 export function AddHandlesForm({ row, brand }: { row: BrandCompetitor; brand: BrandRef }) {
   const { track } = useCompetitorSocialActions(brand);
-  const { pointsText } = useSocialSpend(brand.organizationId);
-  const trackPoints = pointsText("track");
   const [platform, setPlatform] = useState<CompetitorSocialPlatform>("instagram");
   const [busy, setBusy] = useState(false);
   const input = useSocialAccountInput({ contextPlatform: platform, organizationId: brand.organizationId });
@@ -64,7 +61,7 @@ export function AddHandlesForm({ row, brand }: { row: BrandCompetitor; brand: Br
       <SocialAccountInput input={input} className="min-w-0 flex-1" />
       <PostCountControl organizationId={brand.organizationId} platform={platform} disabled={busy} />
       <Button type="submit" variant="outline" disabled={!input.account || busy} icon={busy ? <Loader2 className="animate-spin" /> : <UserPlus />}>
-        {trackPoints ? `Add · ${trackPoints}` : "Add"}
+        Add
       </Button>
     </form>
   );

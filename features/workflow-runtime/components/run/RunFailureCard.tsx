@@ -31,7 +31,6 @@ import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 
 import {
   selectNodeAggregatePhases,
-  selectRunCostTotal,
   selectRunError,
   selectRunStatus,
   selectRunStickyFacts,
@@ -75,7 +74,6 @@ export function RunFailureCard({
   const error = useAppSelector(selectRunError(runId));
   const sticky = useAppSelector(selectRunStickyFacts(runId));
   const phases = useAppSelector(selectNodeAggregatePhases(runId));
-  const costUsd = useAppSelector(selectRunCostTotal(runId));
   const [showTechnical, setShowTechnical] = useState(false);
 
   if (status === null || !STOPPED_STATUSES.has(status)) return null;
@@ -123,7 +121,6 @@ export function RunFailureCard({
     failedSteps: namedSteps,
     completedSteps,
     totalSteps,
-    costUsd,
   });
 
   // A step whose change is HELD for a person stopped the run, but nothing is

@@ -20,7 +20,6 @@ import { useResearchApi } from "../../hooks/useResearchApi";
 import { StoppedEarlyNote } from "../shared/StoppedEarlyNote";
 import { humanizeAgentType } from "../../labels";
 import { type ResearchAnalysis, tokenUsageFromJson } from "../../types";
-import { Cost } from "@/components/cost/Cost";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 interface AnalysisCardProps {
@@ -312,9 +311,6 @@ export function AnalysisCard({
                 <span className="text-muted-foreground/50">
                   {tokenUsage.models.map((m) => m.model).join(", ")}
                 </span>
-              )}
-              {tokenUsage.costUsd != null && (
-                <Cost usd={tokenUsage.costUsd} short />
               )}
             </div>
           )}

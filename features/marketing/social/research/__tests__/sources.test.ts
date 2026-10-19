@@ -6,7 +6,6 @@ import {
   chipForPaste,
   decodeCalls,
   encodeCalls,
-  priceHintTotal,
   sourceFor,
   stepInputs,
   stepsServed,
@@ -57,13 +56,6 @@ describe("look-up sources", () => {
     expect(missing.map((m) => m.title)).toEqual(["Accounts", "Notes"]);
     const wechat = stepsServed(sourceFor("account", "wechat")!, tools);
     expect(wechat.served.map((s) => s.toolId)).toEqual(["w"]);
-  });
-
-  it("the expected price is the sum of the Tools' hints, unknown when any is unknown", () => {
-    const { served } = stepsServed(sourceFor("account", "instagram")!, tools);
-    expect(priceHintTotal(served, tools)).toBe(160);
-    const unknown = new Map(tools).set("social_posts", hit("social_posts", "q", null));
-    expect(priceHintTotal(stepsServed(sourceFor("account", "instagram")!, unknown).served, unknown)).toBeNull();
   });
 
   it("Weibo is named as not served, so the screen says so", () => {

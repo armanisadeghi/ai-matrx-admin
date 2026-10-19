@@ -25,7 +25,6 @@ import { RefusedReadOffer } from "../gated/RefusedReadOffer";
 import { useAllSwipeCollections, useInvalidateSocial } from "../hooks";
 import { looksLikePostUrl } from "../link";
 import { saveLinkToSwipe } from "../social-actions";
-import { useSocialSpend } from "../cost";
 import { addToCollection, createCollection, socialErrorMessage } from "../server";
 import {
   NEW_COLLECTION_CHOICE,
@@ -266,7 +265,6 @@ export function SaveLinkDialog({
   defaultCollectionId: string | null;
 }) {
   const invalidate = useInvalidateSocial();
-  const { costText } = useSocialSpend(organizationId);
   const { options, choice, setChoice, loading, newName: suggestedName } = useCollectionChoice(open, brandId, defaultCollectionId);
   const [url, setUrl] = useState("");
   const [newName, setNewName] = useState("");
@@ -346,7 +344,7 @@ export function SaveLinkDialog({
                 <ErrorAlchemyMenu error={failure} operation="save social link" />
               </span>
             ) : (
-              status || (url.trim() && !valid ? "Not a post link" : costText("save_link"))
+              status || (url.trim() && !valid ? "Not a post link" : "")
             )}
           </p>
         </div>

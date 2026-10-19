@@ -16,7 +16,6 @@
  */
 
 import type { ReactNode } from "react";
-import { Cost } from "@/components/cost/Cost";
 import { CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
 
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -26,7 +25,6 @@ import { ElapsedTime } from "@/components/official-candidate/elapsed-time/Elapse
 
 import {
   selectNodeAggregatePhases,
-  selectRunCostTotal,
   selectRunStartedAt,
   selectRunStatus,
   selectRunStatusTs,
@@ -145,7 +143,6 @@ export function RunHero({
   const startedAt = useAppSelector(selectRunStartedAt(runId));
   const statusTs = useAppSelector(selectRunStatusTs(runId));
   const phases = useAppSelector(selectNodeAggregatePhases(runId));
-  const costTotal = useAppSelector(selectRunCostTotal(runId));
 
   // WHY THE PAGE HAS NOTHING (W39, 2026-09-12). A run whose attach read was
   // refused used to sit on the `pending` default and narrate "GETTING READY"
@@ -217,11 +214,6 @@ export function RunHero({
         </span>
         {statusExtra}
         <div className="ml-auto flex items-center gap-3 text-xs tabular-nums text-muted-foreground">
-          {costTotal > 0 ? (
-            <span aria-label="AI cost so far">
-              <Cost usd={costTotal} />
-            </span>
-          ) : null}
           {/* "0 of 13 steps" about a run nobody has read yet is a measurement
               of nothing, and it reads as a run that just started. Until the
               row lands, the denominator is all we honestly have. */}

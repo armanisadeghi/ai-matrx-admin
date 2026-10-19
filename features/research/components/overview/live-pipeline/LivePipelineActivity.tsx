@@ -23,7 +23,6 @@ import type {
   UsePipelineProgressResult,
   StageKind,
 } from "../../../hooks/usePipelineProgress";
-import { useCostSummary } from "../../../hooks/useTopicCosts";
 import { MetricsStrip } from "./MetricsStrip";
 import { QuotaStrip } from "./QuotaStrip";
 import { StageStatSquare } from "./StageStatSquare";
@@ -125,19 +124,6 @@ export function LivePipelineActivity({
     [visibleStages, state],
   );
   const base = `/research/topics/${topicId}`;
-
-  const { data: costSummary, refetch: refetchCosts } = useCostSummary(topicId);
-
-  useEffect(() => {
-    if (state.completedAt != null) {
-      void refetchCosts();
-    }
-  }, [state.completedAt, refetchCosts]);
-
-  const authoritativeCost =
-    state.completedAt != null && costSummary
-      ? costSummary.total_estimated_cost_usd
-      : null;
 
   const isPipelineDone = state.completedAt != null && !isStreaming;
 
@@ -342,7 +328,6 @@ export function LivePipelineActivity({
       <MetricsStrip
         state={state}
         derived={derived}
-        authoritativeCostUsd={authoritativeCost}
       />
       <QuotaStrip topic={topic} state={state} derived={derived} />
 

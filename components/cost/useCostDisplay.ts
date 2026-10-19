@@ -3,9 +3,20 @@
 /**
  * components/cost/useCostDisplay.ts
  *
- * THE single decision point for how a cost is shown to the person looking.
+ * THE single decision point for HOW a cost is shown to the person looking.
  * Administration pages show the stored USD cost together with the points
  * equivalent; the single-unit preference still applies on other pages.
+ *
+ * WHERE comes first (Arman, 2026-10-18 — law 14,
+ * common-docs/policies/points-and-money-in-the-ui.md): is the person deciding
+ * or investigating, or doing? Points only where they are deciding or
+ * investigating — a battle, a model or option picker, an info card or details
+ * page, a run-history table, the confirm step before bulk/heavy/repeating
+ * work, a schedule's setup, billing/usage/budgets, admin. Never where they are
+ * doing — chat, result blocks, generated media, tool results, receipts,
+ * toasts, notifications, a live run's header, a button or action menu, the
+ * word "Free". `pnpm check:cost-display` (P1) fails a price outside its
+ * ALLOWED_PLACES list. The 2026-09-27 ruling below governs the UNIT only.
  *
  * Arman, 2026-09-27: "No one talks cost to a normal user, only api users. For
  * normal users, they use points or credits … Everyone should see
@@ -25,10 +36,11 @@
  *
  * The number itself is never computed here — `formatCost` / `usdToPoints` in
  * `@ai-matrx/kit/format` are the one conversion, shared with the server's
- * `ai_points.py` and Workflow Studio. Render costs with `<Cost usd={…}/>`;
- * reach for this hook only where a plain string is required (a title, a copy
- * payload, an aria-label). `pnpm check:cost-display` fails any UI file that
- * formats a cost in dollars outside this module.
+ * `ai_points.py` and Workflow Studio. Where a price belongs (see above), render
+ * it with `<Cost usd={…}/>`; reach for this hook only where a plain string is
+ * required on such a surface (a picker option's label, a confirm step's
+ * sentence). `pnpm check:cost-display` fails any UI file that formats a cost
+ * in dollars outside this module, and any price outside an allowed place.
  */
 
 import { useContext, useSyncExternalStore } from "react";

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0404",
-  "version": 2,
+  "version": 3,
   "title": "Veterinary Clinic",
   "description": "Owners, pets, appointments and vaccine reminders for a small animal clinic.",
   "forWho": "Veterinary clinics and animal hospitals",
@@ -374,7 +374,8 @@
               "Completed"
             ],
             "filled": [
-              "vet"
+              "vet",
+              "completed_on"
             ]
           }
         ],
@@ -477,7 +478,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "vaccine",
@@ -1806,7 +1808,7 @@
         "Tamarack Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

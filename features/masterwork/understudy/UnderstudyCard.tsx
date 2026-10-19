@@ -349,7 +349,6 @@ export function UnderstudyCard({
           whatItRuns="Your understudy"
           fieldLabels={["Your request", "Supporting material"]}
           onRunFinished={() => undefined}
-          priceScope="mine"
         />
       )}
     </div>

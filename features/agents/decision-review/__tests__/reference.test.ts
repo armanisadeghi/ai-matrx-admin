@@ -12,7 +12,6 @@ import {
   applyRunEvent,
   compareReferenceRows,
   distinctSnippets,
-  formatUsd,
   latestPerItem,
   orderReferenceRows,
   readReferenceGroups,
@@ -143,17 +142,6 @@ describe("agreement and order", () => {
       "agree-high",
     ]);
     expect(compareReferenceRows(disagreeLow, agreeLow)).toBeLessThan(0);
-  });
-});
-
-describe("money", () => {
-  it("formats cost at a readable precision", () => {
-    expect(formatUsd(null)).toBe("—");
-    expect(formatUsd(0)).toBe("$0.00");
-    expect(formatUsd(0.00004)).toBe("<$0.0001");
-    expect(formatUsd(0.0042)).toBe("$0.0042");
-    expect(formatUsd(0.125)).toBe("$0.13");
-    expect(formatUsd(1234.4)).toBe("$1,234");
   });
 });
 

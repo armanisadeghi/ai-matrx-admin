@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 2,
+  "version": 3,
   "title": "Massage Therapy Practice HQ",
   "description": "Book sessions by therapist and room, keep session notes, memberships and payments.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -834,7 +834,17 @@
           "plan": "Either record can be created or change status before the other.",
           "staff": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "booking_name",
@@ -1414,7 +1424,8 @@
               "price": 105
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "payment",
@@ -1439,7 +1450,8 @@
               "Paid"
             ],
             "filled": [
-              "method"
+              "method",
+              "paid_on"
             ]
           }
         ],
@@ -1700,7 +1712,8 @@
               "method": "Gift card"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -2140,7 +2153,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

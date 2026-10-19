@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0262",
-  "version": 5,
+  "version": 6,
   "title": "Thesis & Research Tracker",
   "description": "Graduate students: chapters, sources, tasks and advisor meetings, from outline to defence.",
   "forWho": "Graduate students and researchers",
@@ -1076,7 +1076,19 @@
               ]
             }
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "meeting",
@@ -1660,7 +1672,7 @@
         "Quillfeather Place"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

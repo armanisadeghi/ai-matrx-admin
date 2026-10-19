@@ -14,15 +14,10 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { toast } from "@/lib/toast";
 
 import { accountHref } from "../account-href";
-import { useSocialSpend } from "../cost";
 import type { PostCardModel } from "../types";
 import { useCanEditSocial } from "../useCanEditSocial";
 import { cloneHref, isClonable } from "../video/clone-links";
 import { usePostActions } from "./usePostActions";
-
-function CostTail({ text }: { text: string | null }) {
-  return text ? <span className="ml-auto pl-3 text-[11px] tabular-nums text-muted-foreground">{text}</span> : null;
-}
 
 export function PostCardMenuItems({
   post,
@@ -42,7 +37,6 @@ export function PostCardMenuItems({
     hasTranscript: false,
     openDetail: () => {},
   });
-  const { pointsText } = useSocialSpend(organizationId);
   const href = accountHref(brandSeg, post);
   const canEdit = useCanEditSocial(brandSeg);
 
@@ -89,12 +83,10 @@ export function PostCardMenuItems({
       <DropdownMenuItem disabled={actions.busy === "transcript"} onSelect={run(actions.transcript)}>
         <FileText className="mr-2 h-4 w-4" />
         Get transcript
-        <CostTail text={pointsText("transcript")} />
       </DropdownMenuItem>
       <DropdownMenuItem disabled={actions.busy === "breakdown"} onSelect={run(actions.breakdown)}>
         <ScanSearch className="mr-2 h-4 w-4" />
         Run breakdown
-        <CostTail text="AI points" />
       </DropdownMenuItem>
         </>
       )}

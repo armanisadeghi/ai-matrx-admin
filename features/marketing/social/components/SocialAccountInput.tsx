@@ -118,7 +118,6 @@ export function useSocialAccountInput(args: {
     parsed,
     lookup,
     check,
-    lookCost: spend.costText("profile_page", 1),
     canFetch: Boolean(organizationId),
     /** What to save, or null while the field is not a complete account. */
     account: savedAccount(parsed, raw),
@@ -185,7 +184,7 @@ export function SocialAccountInput({
           />
         ) : null}
       </div>
-      <AccountPreview parsed={parsed} lookup={lookup} lookCost={input.lookCost} canFetch={input.canFetch} onLookUp={() => void input.check()} />
+      <AccountPreview parsed={parsed} lookup={lookup} canFetch={input.canFetch} onLookUp={() => void input.check()} />
     </div>
   );
 }
@@ -194,13 +193,11 @@ export function SocialAccountInput({
 function AccountPreview({
   parsed,
   lookup,
-  lookCost,
   canFetch,
   onLookUp,
 }: {
   parsed: ParsedAccount;
   lookup: LookupState;
-  lookCost: string | null;
   canFetch: boolean;
   onLookUp: () => void;
 }) {
@@ -239,7 +236,7 @@ function AccountPreview({
             <ErrorAlchemyMenu /></span>
           ) : lookup.state === "idle" && canFetch ? (
             <button type="button" className="text-primary hover:underline" onClick={onLookUp}>
-              {lookCost ? `Look up · ${lookCost}` : "Look up"}
+              Look up
             </button>
           ) : null}
         </span>

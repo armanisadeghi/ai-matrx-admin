@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0307",
-  "version": 4,
+  "version": 5,
   "title": "Inventory Tracker",
   "description": "Small shops and makers: track stock, suppliers and orders so you reorder in time.",
   "forWho": "Small retailers, online shops and makers",
@@ -738,7 +738,8 @@
             ],
             "filled": [
               "ordered_on",
-              "expected_on"
+              "expected_on",
+              "received_on"
             ]
           },
           {
@@ -1444,7 +1445,27 @@
             }
           }
         ],
-        "statusImplies": []
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Shipped"
+            ],
+            "filled": [
+              "shipped_on"
+            ]
+          },
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivered_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1833,7 +1854,7 @@
         "Brindle Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0409",
-  "version": 2,
+  "version": 3,
   "title": "Immigration Practice",
   "description": "Cases, agency notices with due dates, and an evidence checklist for immigration.",
   "forWho": "Immigration attorneys and legal practices",
@@ -315,7 +315,8 @@
               "Done"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "completed_on"
             ]
           }
         ],
@@ -750,7 +751,8 @@
               "Filed"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "filed_on"
             ]
           },
           {
@@ -759,7 +761,8 @@
               "Approved"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "approved_on"
             ]
           }
         ],
@@ -1154,7 +1157,8 @@
               "Received"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "received_on"
             ]
           }
         ],
@@ -2066,7 +2070,7 @@
         "Alder Way"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

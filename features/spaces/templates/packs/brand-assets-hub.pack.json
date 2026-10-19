@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0162",
-  "version": 4,
+  "version": 5,
   "title": "Brand Assets Hub",
   "description": "Brand and design teams: a gallery of logos and photos with brand rules and approvals.",
   "forWho": "Brand managers, agencies and in-house design teams",
@@ -685,7 +685,8 @@
             }
           }
         ],
-        "statusImplies": []
+        "statusImplies": [],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -977,7 +978,7 @@
         "Cedar Tinsel Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

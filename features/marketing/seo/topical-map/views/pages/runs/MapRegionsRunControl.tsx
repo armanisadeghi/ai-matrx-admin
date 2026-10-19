@@ -163,7 +163,7 @@ export function MapRegionsRunControl({
             <SwitchField
               id="map-regions-dry-run"
               label="Rehearse"
-              note="Free — no model calls. Answers what would happen and writes nothing."
+              note="No model calls. Answers what would happen and writes nothing."
               checked={dryRun}
               onChange={setDryRun}
             />

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0351",
-  "version": 4,
+  "version": 5,
   "title": "Feature Requests",
   "description": "Product teams: collect requests, count votes and customers, and decide what is next.",
   "forWho": "Product and support teams",
@@ -461,7 +461,17 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Declined"
+            ],
+            "filled": [
+              "decided_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New request",
@@ -1008,7 +1018,7 @@
         "Alder Lantern Way"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

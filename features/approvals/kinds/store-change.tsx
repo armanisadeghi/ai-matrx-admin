@@ -259,7 +259,7 @@ function Doors({ approval }: { approval: StoreApproval }) {
   const conversation = approval.conversation;
   const link = "text-primary underline-offset-2 hover:underline";
   return (
-    <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
+    <span className="inline-flex items-center gap-x-3 whitespace-nowrap">
       {tableId ? (
         <AppLink href={openPath(tableId)} className={link}>
           {approval.inbox.table_name ?? "Open the table"}

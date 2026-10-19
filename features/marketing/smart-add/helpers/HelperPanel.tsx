@@ -233,9 +233,9 @@ export function HelperPanel({ method }: { method: HelperMethod }) {
                 {session.status === "polling" ? "LinkedIn search running" : "Searching"} · <Elapsed since={session.startedAt} />
               </>
             ) : r ? (
-              `${r.candidates.length} found · ${seconds(session.elapsedMs ?? r.ms)}${r.points != null ? ` · ${r.points} pts` : ""}`
+              `${r.candidates.length} found · ${seconds(session.elapsedMs ?? r.ms)}`
             ) : info ? (
-              `About ${info.estimate_points ?? "?"} pts · ${info.typical_time}`
+              info.typical_time
             ) : null}
           </span>
         </div>

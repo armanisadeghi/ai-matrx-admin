@@ -20,6 +20,7 @@
  * verifier used.
  */
 
+import { openApprovalRow, pageButtonLabels, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -150,12 +151,9 @@ async function renderQueue(): Promise<{ text: string; labels: string[] }> {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   }
-  return {
-    text: container.textContent ?? "",
-    labels: [...container.querySelectorAll("button")].map(
-      (button) => button.textContent ?? "",
-    ),
-  };
+  // The row's state sentence is in its window.
+  await openApprovalRow(container);
+  return { text: pageText(), labels: pageButtonLabels() };
 }
 
 /** The accept label `document_append` really prints, from its own contract. */

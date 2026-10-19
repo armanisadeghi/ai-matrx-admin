@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0254",
-  "version": 4,
+  "version": 5,
   "title": "Assignment & Exam Tracker",
   "description": "Students: deadlines, weights and grades for every course in one view.",
   "forWho": "Students tracking coursework",
@@ -245,7 +245,17 @@
         "titleField": "assignment_name",
         "describes": "Every homework, essay, quiz and exam with its due day, weight and grade.",
         "subject": "thing",
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "assignment_name",
@@ -784,7 +794,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1049,7 +1060,7 @@
         "Thornwick Avenue"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

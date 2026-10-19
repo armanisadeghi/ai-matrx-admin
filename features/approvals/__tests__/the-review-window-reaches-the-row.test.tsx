@@ -16,6 +16,7 @@
  * whose refusal is already known.
  */
 
+import { openApprovalRow, pageButtonLabels, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -288,11 +289,11 @@ describe("the queue offers no Approve over an expired row", () => {
         </QueryClientProvider>,
       );
     });
-    const text = container.textContent ?? "";
+    // The row's state sentence is in its window.
+    await openApprovalRow(container);
+    const text = pageText();
     expect(text).toContain("can no longer be applied");
-    const labels = [...container.querySelectorAll("button")].map(
-      (button) => button.textContent ?? "",
-    );
+    const labels = pageButtonLabels();
     expect(labels.join("|")).not.toContain("Take it");
     expect(labels.join("|")).toContain("Keep mine");
   });

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 2,
+  "version": 3,
   "title": "Med Spa",
   "description": "Clients, appointments, memberships with credits and inventory for a med spa.",
   "forWho": "Medical spas and aesthetic clinics",
@@ -417,7 +417,8 @@
               "Completed"
             ],
             "filled": [
-              "price"
+              "price",
+              "completed_on"
             ]
           },
           {
@@ -532,7 +533,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "client",
@@ -1818,7 +1820,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -48,14 +48,13 @@ export function musicSound(c: MusicChoice): string | null {
   return MUSIC_BED_MOODS[c.mood].replace(/^[A-Za-z]+,\s*/, "").replace(/^(.*?)\s+with\s+(.*)$/, "$1, with $2");
 }
 
-/** The bed's line in a cost summary: "Music bed $0.08 · 1,600 pts", "Music bed reused", or null when the video has no bed to make. */
+/** The bed's line in a cost summary: "Music bed 1,600 points", "Music bed reused", or null when the video has no bed to make. */
 export function musicCostLine(est: Pick<EstimateAnswer, "lines" | "cached">): string | null {
   const line = est.lines.find((l) => l.capability === "music");
   if (line) {
-    const usd = line.cost_usd == null ? "price unknown" : line.cost_usd < 0.005 ? "<$0.01" : `$${line.cost_usd.toFixed(2)}`;
-    return `Music bed ${usd}${line.points != null ? ` · ${Math.round(line.points).toLocaleString()} pts` : ""}`;
+    return line.points != null ? `Music bed ${Math.round(line.points).toLocaleString()} points` : "Music bed";
   }
-  return est.cached.includes("music") ? "Music bed reused · $0.00" : null;
+  return est.cached.includes("music") ? "Music bed reused" : null;
 }
 
 /** The music a composition carries now, or none. */

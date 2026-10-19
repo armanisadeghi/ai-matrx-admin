@@ -18,6 +18,7 @@
  * dead end this queue exists to end.
  */
 
+import { openApprovalRow, pageButtonLabels, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -222,16 +223,16 @@ describe("the queue shows it instead of an empty state", () => {
       );
     });
 
-    const text = container.textContent ?? "";
+    // The remedy sentence is in the row's window.
+    await openApprovalRow(container);
+    const text = pageText();
     expect(text).toContain("future_kind");
     expect(text.toLowerCase()).toContain("cannot show");
     // The count a person reads includes it — that is what stops the empty state
     // on `/approvals` (`ApprovalsWorkspace` shows it only at count 0).
     expect(summaries.at(-1)?.count).toBe(1);
     // No control whose effect nobody can state.
-    const labels = [...container.querySelectorAll("button")].map(
-      (button) => button.textContent ?? "",
-    );
+    const labels = pageButtonLabels();
     expect(labels.join("|")).not.toContain("Take it");
     expect(labels.join("|")).not.toContain("Keep mine");
   });

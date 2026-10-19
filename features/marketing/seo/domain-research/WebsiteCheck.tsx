@@ -13,10 +13,9 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Link2, Megaphone, ShieldCheck } from "lucide-react";
 import { Badge, Button } from "@ai-matrx/design-system/controls";
-import { formatPoints } from "@ai-matrx/kit/format";
 import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/useToolAction";
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
-import { isCallRunning, toolPriceText, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
+import { isCallRunning, type CatalogToolHit, type ToolCallView } from "@ai-matrx/agents/tools";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { ToolResult } from "@/features/data-sources/library/tools/ToolResult";
@@ -24,7 +23,7 @@ import { useToolCall, type ToolCallState } from "@/features/data-sources/library
 
 import { authorityTiles, bandOf, type AuthorityKey, type AuthorityTile, type MatrxTileFrom } from "./authority";
 import { formatTile, linkTiles, searchTiles, type StatTile } from "./summaries";
-import { pointsTogether, type SeoTools } from "./seoTools";
+import type { SeoTools } from "./seoTools";
 
 type RunKey = AuthorityKey | "links" | "linkRows";
 const CALL_PARAM: Record<RunKey, string> = { authority: "ca", matrx: "cm", links: "cl", searchAds: "cs", linkRows: "cr" };
@@ -78,7 +77,6 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
   const checks = [authority, ...(compareReady ? [matrx] : []), links, searchAds];
   const busy = checks.some((c) => c.view != null && isCallRunning(c.view.status));
   const everyTool = Boolean(tools.authority && tools.links && tools.searchAds);
-  const together = pointsTogether([tools.authority, ...(compareReady ? [tools.authorityScore] : []), tools.links, tools.searchAds]);
   const asked = checks.some((c) => c.view != null || c.clientError != null);
 
   const runAll = () => {
@@ -93,7 +91,6 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
     { authority: authority.clientError, matrx: matrx.clientError, links: links.clientError, searchAds: searchAds.clientError },
     matrxFrom,
   );
-  const spent = [authority, matrx, links, searchAds, linkRows].reduce((sum, c) => sum + (c.view?.points_charged ?? 0), 0);
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8" data-website-check={host}>
@@ -102,20 +99,13 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
           <div className="break-all text-base font-semibold text-foreground">{host}</div>
           <div className="text-xs text-muted-foreground">Authority, backlinks, search and ads</div>
         </div>
-        {asked && spent > 0 ? (
-          <span className="text-xs text-muted-foreground" data-check-spent="">
-            Spent <span className="font-medium text-foreground">{formatPoints(spent)}</span>
-          </span>
-        ) : null}
         <Button
           variant="primary"
           disabled={!everyTool || busy}
           onClick={runAll}
-          title={asked ? "Repeat checks are free while the answers are saved" : undefined}
           data-check-button=""
         >
           {asked ? "Check again" : "Check website"}
-          {!asked && together != null ? ` · about ${formatPoints(together)}` : ""}
         </Button>
       </section>
 
@@ -124,8 +114,6 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
       <Panel
         icon={<Link2 className="h-4 w-4" />}
         title="Backlinks"
-        price={tools.links}
-        call={links}
         action={
           tools.linkRows ? (
             <Button
@@ -135,7 +123,6 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
               data-links-button=""
             >
               {linkRows.view ? "List again" : "See the links"}
-              {tools.linkRows.price_hint_points != null ? ` · about ${formatPoints(tools.linkRows.price_hint_points)}` : ""}
             </Button>
           ) : null
         }
@@ -144,7 +131,7 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
         {linkRows.view || linkRows.clientError ? <Answer call={linkRows} inputs={inputs} idle="" /> : null}
       </Panel>
 
-      <Panel icon={<Megaphone className="h-4 w-4" />} title="Search and ads" price={tools.searchAds} call={searchAds}>
+      <Panel icon={<Megaphone className="h-4 w-4" />} title="Search and ads">
         <Glance call={searchAds} inputs={inputs} idle="Press Check website for last month's visits and ad budget." tiles={searchTiles} />
       </Panel>
 
@@ -172,27 +159,14 @@ export function WebsiteCheck({ host, tools }: { host: string; tools: SeoTools })
 function Panel({
   icon,
   title,
-  price,
-  call,
   action,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
-  price?: CatalogToolHit;
-  call?: ToolCallState;
   action?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  // Before the press the Tool's own price; after it, what that answer really cost.
-  const answered = call?.view != null && (call.view.status === "succeeded" || call.view.status === "empty");
-  const cost = answered
-    ? call.view!.points_charged > 0
-      ? `Cost ${formatPoints(call.view!.points_charged)}`
-      : "No charge"
-    : price
-      ? toolPriceText(price)
-      : null;
   return (
     <section aria-label={title} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
@@ -200,7 +174,6 @@ function Panel({
           {icon}
         </span>
         <h2 className="whitespace-nowrap text-sm font-semibold text-foreground">{title}</h2>
-        {cost ? <span className="text-xs text-muted-foreground" data-panel-cost="">{cost}</span> : null}
         <span className="ml-auto">{action}</span>
       </div>
       {children}
@@ -303,10 +276,7 @@ function AuthorityCard({ tile, hint, onRetry }: { tile: AuthorityTile; hint?: Ca
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{bandOf(tile.score)}</span>
-            <span data-authority-cost="">
-              {tile.saved ? "Saved answer · " : ""}
-              {tile.points != null && tile.points > 0 ? formatPoints(tile.points) : "No charge"}
-            </span>
+            {tile.saved ? <span>Saved answer</span> : null}
           </div>
         </>
       ) : tile.status === "running" ? (
@@ -318,13 +288,13 @@ function AuthorityCard({ tile, hint, onRetry }: { tile: AuthorityTile; hint?: Ca
       ) : tile.status === "idle" ? (
         <div className="flex flex-col gap-2">
           <span className="text-4xl font-semibold leading-none text-disabled-foreground">—</span>
-          <span className="text-xs text-muted-foreground">{hint ? (toolPriceText(hint) ?? "Not checked yet") : "Not available right now"}</span>
+          <span className="text-xs text-muted-foreground">{hint ? "Not checked yet" : "Not available right now"}</span>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           <span className="text-sm text-foreground">{tile.note}</span>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{tile.status === "empty" ? "You weren't charged." : "Nothing was charged."}</span>
+            <span />
             {tile.status === "failed" ? (
               <Button variant="quiet" onClick={onRetry}>
                 Try again

@@ -24,7 +24,6 @@ import {
   joinBlocks,
 } from "./kind-markdown-utils";
 import {
-  formatCost,
   formatDuration,
   optionalNumber,
   optionalString,
@@ -33,7 +32,6 @@ import {
   type MediaUsage,
 } from "./media-io-shared";
 import { KIND_KEY } from "@ai-matrx/content-ir";
-import { currentPointsRate } from "@/components/cost/pointsRate";
 import type { MaterializedKind } from "./kind-payload";
 import type { GeneratedAudio } from "./generated/kinds.generated";
 
@@ -159,14 +157,12 @@ export function generatedAudioMarkdownFromValue(
 ): string {
   const audio = readGeneratedAudio(value);
   const duration = formatDuration(audio.duration_seconds);
-  const cost = formatCost(audio.usage?.cost_usd ?? null, currentPointsRate());
 
   return joinBlocks([
     "# Generated audio",
     [
       audio.model ? `Model: \`${audio.model}\`` : null,
       duration ? `Duration: ${duration}` : null,
-      cost ? `Cost: ${cost}` : null,
     ]
       .filter(Boolean)
       .join(" · ") || null,

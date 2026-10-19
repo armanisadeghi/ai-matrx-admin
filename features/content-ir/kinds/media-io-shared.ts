@@ -31,11 +31,9 @@
 import { isRecord } from "./legacy-bridge-utils";
 import type { MaterializedKind } from "./kind-payload";
 import type { AiUsage_AgentResult, GeneratedImage } from "./generated/kinds.generated";
-import { currentCostUnit } from "@/components/cost/costUnit";
 // THE package duration formatter (`@ai-matrx/kit/format`, census H1
 // 2026-09-07). THE UNIT LAW: the unit is in the name.
-import { type CostUnit, formatDurationSeconds } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatKitCost } from "@/components/cost/formatAdminCost";
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 
 export function stringOrEmpty(value: unknown): string {
   return typeof value === "string" ? value : "";
@@ -108,16 +106,4 @@ export function readUsage(value: unknown): MediaUsage | null {
 export function formatDuration(seconds: number | null): string | null {
   if (seconds === null || !Number.isFinite(seconds) || seconds < 0) return null;
   return formatDurationSeconds(seconds);
-}
-
-/** A generation's cost in the viewer's unit — points for everyone, dollars
- *  only for a system admin who flipped the switch (`useCostDisplay().unit`).
- *  `null` (untracked) stays `null` so the fact is omitted, never "—". */
-export function formatCost(
-  cost: number | null,
-  rate: number | null,
-  unit: CostUnit = currentCostUnit(),
-): string | null {
-  if (cost === null) return null;
-  return formatKitCost(cost, { rate, unit });
 }

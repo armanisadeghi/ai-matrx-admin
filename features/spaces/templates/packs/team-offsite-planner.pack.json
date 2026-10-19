@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 5,
+  "version": 6,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -652,7 +652,19 @@
               "category": "Comms"
             }
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "budget",
@@ -1727,7 +1739,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

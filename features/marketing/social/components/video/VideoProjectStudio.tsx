@@ -28,8 +28,6 @@ import { cn } from "@/lib/utils";
 import {
   HEAD_ITEM,
   createVariantMatrix,
-  dollars,
-  points,
   streamBatch,
   streamGenerate,
   type CloneAspect,
@@ -38,7 +36,7 @@ import {
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
-import { confirmLine, downloadName, estimateLabel, variantDownloadName, outputRows, perSecondLine, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, downloadName, estimateLabel, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
 import { countWord, createButtonText, matrixOutcomeText, rebasedLabel, splitNewSets } from "../../video/variants";
@@ -75,10 +73,6 @@ interface ItemOutcome {
   stage?: string | null;
   error?: string | null;
   fileId?: string | null;
-  usd?: number;
-  pts?: number;
-  /** The server said the cloud render itself is not billed. */
-  renderFree?: boolean;
 }
 
 const EVENT = "video_variant_batch.";
@@ -98,7 +92,7 @@ function batchHandler(
         setOutcome((o) => ({ ...o, [vid]: { status: "ready" } }));
         break;
       case "estimated":
-        setSteps((p) => pushStep(p, { id: "est", label: "Priced", state: "done", meta: points(Number(e.total_points ?? e.estimate_points)) }));
+        setSteps((p) => pushStep(p, { id: "est", label: "Checked what is left to make", state: "done" }));
         break;
       case "confirmation_required":
         flags.confirm = true;
@@ -107,10 +101,7 @@ function batchHandler(
         setSteps((p) => pushStep(p, { id: `gen-${vid}`, label: `Making media for ${labelOf(vid)}`, state: "running" }));
         break;
       case "generated":
-        // Media is billed per picture or voice made; reused media costs nothing, and the line says so.
-        setSteps((p) =>
-          pushStep(p, { id: "gen", label: "Media ready", state: "done", meta: Number(e.total_usd) > 0 ? `Media ${dollars(Number(e.total_usd))}` : "Media · nothing new to pay" }),
-        );
+        setSteps((p) => pushStep(p, { id: "gen", label: "Media ready", state: "done" }));
         break;
       case "aligned":
         setSteps((p) => pushStep(p, { id: "align", label: "Captions synced to the voice", state: "done" }));
@@ -124,11 +115,8 @@ function batchHandler(
         break;
       case "render.done": {
         const out = (e.output ?? {}) as { file_id?: string };
-        const renderFree = e.render_charged === false;
-        setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null, usd: Number(e.cost_usd) || 0, pts: Number(e.points) || 0, renderFree } }));
-        setSteps((p) =>
-          p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done", meta: renderFree ? "Render · free" : dollars(Number(e.cost_usd)) } : s)),
-        );
+        setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null } }));
+        setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
         break;
       }
       case "variant.failed": {
@@ -144,14 +132,8 @@ function batchHandler(
         break;
       }
       case "batch_report":
-        // "Done" only when nothing failed; after a failure the line says what was spent, never that it finished.
-        // The total is the media made; the render line above says whether the cloud render was billed.
-        setSteps((p) => {
-          const total = Number(e.total_usd);
-          const paid = total > 0 ? `Media ${dollars(total)}` : "Nothing charged";
-          const free = e.render_charged === false ? " · render free" : "";
-          return pushStep(p, { id: "report", label: flags.failed > 0 || flags.error ? "Spent" : "Done", state: "done", meta: `${paid}${free}` });
-        });
+        // "Done" only when nothing failed; after a failure the line never says it finished.
+        setSteps((p) => pushStep(p, { id: "report", label: flags.failed > 0 || flags.error ? "Stopped early" : "Done", state: "done" }));
         break;
       case "error":
         flags.error = plainRenderMessage(
@@ -347,11 +329,11 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
       await streamGenerate(projectId, { version: head, confirmed, apply: true }, { organizationId }, (e) => {
         const media = typeof e.media_id === "string" ? e.media_id : "";
         if (e.type === "confirmation_required") needsConfirm = true;
-        else if (e.type === "estimate") setSteps((p) => pushStep(p, { id: "price", label: "Priced", state: "done", meta: points(Number(e.total_points)) }));
+        else if (e.type === "estimate") setSteps((p) => pushStep(p, { id: "price", label: "Checked what is left to make", state: "done" }));
         else if (e.type === "generating") setSteps((p) => pushStep(p, { id: media, label: `Making ${mediaLabel(media)}`, state: "running" }));
         else if (e.type === "generated")
-          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaLabel(media)} made`, state: "done", meta: dollars(Number(e.cost_usd)) } : s)));
-        else if (e.type === "cache_hit") setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done", meta: "$0.00" }));
+          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaLabel(media)} made`, state: "done" } : s)));
+        else if (e.type === "cache_hit") setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done" }));
         else if (e.type === "applying") setSteps((p) => pushStep(p, { id: "apply", label: "Placing files and syncing captions", state: "running" }));
         else if (e.type === "applied") setSteps((p) => pushStep(p, { id: "apply", label: `Saved as v${String(e.version)}`, state: "done" }));
         else if (e.type === "error" || e.type === "preflight_failed") errored = String(e.message ?? e.code ?? "Generation failed");
@@ -422,10 +404,9 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
           <div className="flex items-center gap-2">
             <span className="type-label text-foreground">Make it</span>
             <span className="ml-auto">
-              {sum ? <CostLine label={estimateLabel(sum)} usd={sum.usd} pts={sum.points} /> : null}
+              {sum ? <CostLine label={estimateLabel(sum)} pts={sum.points} /> : null}
             </span>
           </div>
-          {estimate.data && perSecondLine(estimate.data) ? <span className="type-meta text-muted-foreground">{perSecondLine(estimate.data)}</span> : null}
           {estimate.data && musicCostLine(estimate.data) ? <span className="type-meta text-muted-foreground">{musicCostLine(estimate.data)}</span> : null}
           {estimate.data && confirmLine(estimate.data) ? <span className="type-meta text-muted-foreground">{confirmLine(estimate.data)}</span> : null}
           <div className="flex flex-wrap items-center gap-2">
@@ -769,7 +750,6 @@ function VariantsPanel({
             <Button variant="quiet" onClick={() => setDrafts(null)}>
               Cancel
             </Button>
-            <span className="type-meta ml-auto text-muted-foreground">Free until you render</span>
           </div>
           <div className="flex flex-col gap-0.5">
             {emptyRows > 0 ? <span className="type-meta text-muted-foreground">{`${countWord(emptyRows, "row")} left empty, so not included`}</span> : null}
@@ -812,9 +792,6 @@ function VariantCard({ v, doc, head, outcome, projectName }: { v: VariantAnswer;
         </div>
       )}
       {outcome?.error ? <ErrorAlchemyMenu error={new Error(outcome.error)} operation="video variant render" /> : null}
-      {outcome?.usd !== undefined ? (
-        outcome.renderFree && !outcome.usd ? <span className="type-meta text-muted-foreground">Render · free</span> : <CostLine usd={outcome.usd} pts={outcome.pts} />
-      ) : null}
       {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} fileName={variantDownloadName(projectName, v.label)} /> : null}
     </div>
   );

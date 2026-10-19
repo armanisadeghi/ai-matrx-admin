@@ -91,7 +91,6 @@ import { StudioRun } from "./StudioRun";
 import { StudioControls, type ControlsTab } from "./StudioControls";
 import { StudioTurnModel } from "./StudioTurnModel";
 import { PaneBar, PaneLabel } from "./PaneBar";
-import { StudioCost } from "./StudioCost";
 import { StudioAgentPending } from "./StudioEmpty";
 import { StudioCompare } from "./StudioCompare";
 import { PlanBackLink, writeAgentToPlanStep } from "./PlanBackLink";
@@ -703,11 +702,6 @@ function StudioWorkspace({ state, go }: { state: StudioState; go: (p: Partial<St
         />
       )}
       <div className="flex min-w-0 items-center justify-end gap-2">
-        <StudioCost
-          buildId={state.buildId}
-          buildDone={Boolean(state.agentId) || Boolean(build?.outcome)}
-          runConversationId={state.agentId ? runConversation : null}
-        />
         {mode.id === "do-with-me" && !state.buildId && (
           <Button
             variant="primary"

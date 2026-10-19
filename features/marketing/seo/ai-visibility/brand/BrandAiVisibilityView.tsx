@@ -10,7 +10,6 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@ai-matrx/design-system/controls";
-import { Cost } from "@/components/cost/Cost";
 import { SectionCard } from "@/features/marketing/components/shared/MarketingUi";
 import { useBrand } from "@/features/marketing/data/hooks";
 import { parseBrandProfile } from "@/features/marketing/types";
@@ -86,12 +85,6 @@ export function BrandAiVisibilityView({ brandId }: { brandId: string }) {
               <span className="text-sm text-muted-foreground">
                 share of voice vs {Math.max(0, latest.entries.length - 1)} compared ·{" "}
                 {formatDistanceToNow(new Date(latest.checked_at), { addSuffix: true })}
-                {latest.cost_usd != null ? (
-                  <>
-                    {" "}
-                    · <Cost usd={latest.cost_usd} />
-                  </>
-                ) : null}
               </span>
             </div>
             <ShareBars entries={latest.entries} />

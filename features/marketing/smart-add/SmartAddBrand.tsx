@@ -46,7 +46,6 @@ import { useWorkflowRunControls } from "@/features/workflow-runtime/hooks/useWor
 import { isFailedEntry, quietMs, sessionEntry, siteReadFailure, siteReadLine, stepCouldNotRead } from "./entryOutcome";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { extractErrorMessage } from "@/utils/errors";
 import { toast } from "@/lib/toast";
 import { FACTS_FOUND_BY, mergeConfirmedIntoPlan, planKeptFacts, saveKeptFacts, type ConfirmedContactFact } from "./keptFacts";
@@ -278,7 +277,6 @@ export function SmartAddBrand({
   onWelcomeSkip?: () => void;
 }) {
   const dispatch = useAppDispatch();
-  const { format } = useCostDisplay();
   const runControls = useWorkflowRunControls();
   // The quiet-time knob: this long with no new step while a round runs, the stage says it is still working.
   const stallMs = quietMs(useSessionKnob("marketing.smart_add_quiet_seconds"));
@@ -1029,11 +1027,6 @@ export function SmartAddBrand({
   const siteUnread = rounds.map((r, i) => siteReadFailure(roundViews[i], r.seeds.website)).find(Boolean) ?? null;
   // The facts agent failed and no round brought a fact: say so, never carry on as if nothing were missing (MKT-061).
   const factsMissing = facts.length === 0 && roundViews.some((v) => v?.factsFailed);
-  // Every paid step of every round (anchor searches and profile lookups included) and the setup run: never
-  // "Free so far" after a paid lookup (PEOPLE-AND-CREATORS §10).
-  const costUsd =
-    roundViews.reduce((sum, v) => sum + (v?.spendUsd ?? v?.steps.reduce((s, x) => s + x.costUsd, 0) ?? 0), 0) +
-    (setupView?.spendUsd ?? 0);
   // A later round's judgment of a finding wins over an earlier one (it saw more).
   const suggestions: Record<string, WeThinkSuggestion> = Object.assign({}, ...rounds.map((r) => (r.runId ? suggestionsByRun[r.runId] : undefined) ?? {}));
   const visible = visibleEvidence(items.values(), decisions, person, suggestions);
@@ -1628,10 +1621,9 @@ export function SmartAddBrand({
   const restart = async (how: "edit" | "retry" | "over"): Promise<boolean> => {
     const answers = Object.keys(decisions).length;
     if (!entryFailed && (hasFindings || answers) && how !== "retry") {
-      const spent = costUsd > 0 ? ` and ${format(costUsd)} of lookups` : "";
       const ok = await confirm({
         title: how === "over" ? "Start over?" : "Edit and search again?",
-        description: `${answers ? `${answers} answers` : "What we found"}${spent} will be cleared.`,
+        description: `${answers ? `${answers} answers` : "What we found"} will be cleared.`,
         confirmLabel: how === "over" ? "Start over" : "Edit",
         variant: "destructive",
       });
@@ -2254,9 +2246,7 @@ export function SmartAddBrand({
             <ErrorAlchemyMenu error="The facts step failed in this round" />
           </span>
         ) : null}
-        <span className="ml-auto shrink-0 tabular-nums">
-          {rounds.length ? (costUsd > 0 ? format(costUsd) : "Free so far") : null}
-        </span>
+        <span className="ml-auto" />
         {rounds.length && !created && url ? (
           <Button variant="quiet" className="shrink-0" onClick={() => void restart("over")} data-testid="smart-add-start-over">
             <RotateCcw className="size-3.5" />
@@ -2420,7 +2410,7 @@ export function SmartAddBrand({
                   basics.websiteUrl ? websiteHost(basics.websiteUrl) : null,
                   basics.accounts.length ? `${basics.accounts.length} ${basics.accounts.length === 1 ? "account" : "accounts"}` : null,
                   trackedAccounts.length && !created && postsPerAccount ? `${postsPerAccount} posts each` : null,
-                  trackedAccounts.length && !created && postsPerAccount ? (postsPoints ?? "points not priced yet") : null,
+                  trackedAccounts.length && !created && postsPerAccount ? postsPoints : null,
                 ]
                   .filter((f): f is string => Boolean(f))
                   .map((f, n) => (
@@ -2503,7 +2493,6 @@ export function SmartAddBrand({
               <span className="w-32 shrink-0 truncate">{SETUP_STEP_LABEL[step.step] ?? step.step}</span>
               <span className="w-16 shrink-0">{step.skipped ? "Skipped" : STEP_PHASE_LABEL[step.phase] ?? step.phase}</span>
               <span className="min-w-0 flex-1 truncate">{step.notes[0] ?? step.progress ?? ""}</span>
-              <span className="shrink-0 tabular-nums">{step.costUsd > 0 ? format(step.costUsd) : ""}</span>
             </div>
           ))}
         </div>

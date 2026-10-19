@@ -151,18 +151,15 @@ function factList(facts: AgentRunFacts, unit: CostUnit, rate: number | null): Fa
 }
 
 /**
- * The one-line summary on the closed row: the two facts a reader glances at.
+ * The one-line summary on the closed row: the fact a reader glances at.
  * Empty when the producer tracked neither — the row then says only "Run
- * detail", which is honest rather than a fabricated "0ms · $0".
+ * detail", which is honest rather than a fabricated "0ms".
  */
-function summaryLine(facts: AgentRunFacts, unit: CostUnit, rate: number | null): string | null {
+function summaryLine(facts: AgentRunFacts): string | null {
   const parts: string[] = [];
   const duration =
     facts.durationMs !== null ? formatDuration(facts.durationMs) : null;
   if (duration) parts.push(duration);
-  if (facts.costUsd !== null && facts.costUsd > 0) {
-    parts.push(formatCost(facts.costUsd, { rate, unit }));
-  }
   return parts.length > 0 ? parts.join(" · ") : null;
 }
 
@@ -181,7 +178,7 @@ function RunDetail({ facts }: { facts: AgentRunFacts }) {
   // Nothing to tell and nowhere to go — render no row at all rather than a
   // control that opens onto an empty box.
   if (items.length === 0 && !facts.conversationId) return null;
-  const summary = summaryLine(facts, costUnit, costRate);
+  const summary = summaryLine(facts);
 
   return (
     <div className="mt-2 border-t border-border/50 pt-1.5">

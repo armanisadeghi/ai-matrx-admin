@@ -3,11 +3,9 @@
  * every color here is declared for both themes.
  */
 import { Globe, Network, StepForward, Webhook, Workflow, Wrench } from "lucide-react";
-import { formatDurationSeconds, type CostUnit } from "@ai-matrx/kit/format";
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
+import { formatDurationSeconds } from "@ai-matrx/kit/format";
 
 import type { Lever, SubjectKind, Verdict } from "../types";
-import { currentCostUnit } from "@/components/cost/costUnit";
 
 export const KIND_ICON: Record<SubjectKind, typeof Webhook> = {
   agent: Webhook,
@@ -84,21 +82,6 @@ export function fmtDate(value: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-/**
- * Money, always with its unit. Never used for a value that was never spent.
- *
- * AN OPTION-BINDING WRAPPER over `@ai-matrx/kit/format`. The body it replaces
- * pinned THREE decimals, so a per-call cost of $0.000004 read "$0.000" — in a
- * file that already imported kit for durations.
- */
-export function fmtCost(
-  value: number | null | undefined,
-  rate: number | null,
-  unit: CostUnit = currentCostUnit(),
-): string {
-  return formatCost(value, { rate, unit });
 }
 
 export function fmtElapsed(seconds: number): string {

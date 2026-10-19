@@ -452,7 +452,6 @@ export function SetupBridgeSection({
     } else if (current === "completed") {
       toast.success(
         `Content build finished: ${fillStatus?.pagesBuilt ?? 0} page(s) built` +
-          (fillStatus?.costUsd != null ? ` for ${formatCostDisplay(fillStatus.costUsd)}` : "") +
           ".",
       );
     }
@@ -1046,10 +1045,7 @@ export function SetupBridgeSection({
           description="Each drafted page goes through the whole pipeline — work out what belongs on this page and not its siblings, write the content, review and fact-check it, then build the page. Work already done is skipped; nothing is published."
           doneDetail={
             fillStatus && fillStatus.status === "completed"
-              ? `${fillStatus.pagesBuilt} page(s) built` +
-                (fillStatus.costUsd !== null
-                  ? ` · ${formatCostDisplay(fillStatus.costUsd)}`
-                  : "")
+              ? `${fillStatus.pagesBuilt} page(s) built`
               : null
           }
           blockedReason={linked ? null : "Link a CMS site first (step 1)."}
@@ -1127,9 +1123,6 @@ export function SetupBridgeSection({
                   )}
                   variant="primary"
                   disabled={!linked || busy !== null || !hasPreviewed}
-                  title={
-                    "The live service does not currently provide a cost estimate."
-                  }
                   onClick={() => void handleFillStart()}
                 >
                   Build {report?.matched ?? "all"} pages
@@ -1494,7 +1487,6 @@ function FillStepRow({ step }: { step: FillStepCounts }) {
 
 /** Live fill progress + failures, verbatim from queue counts. */
 function FillStatusSummary({ status }: { status: FillStatus }) {
-  const { format: money } = useCostDisplay();
   const failures = status.failed + status.deadLetter;
   return (
     <div
@@ -1533,14 +1525,8 @@ function FillStatusSummary({ status }: { status: FillStatus }) {
           />
         </div>
       ) : null}
-      {status.estimate || status.costUsd !== null ? (
-        <p className="mt-1.5 tabular-nums text-muted-foreground">
-          {status.estimate ? `${status.estimate.calls} AI call(s)` : null}
-          {status.estimate?.usd != null
-            ? ` · estimated ${money(status.estimate.usd)}`
-            : null}
-          {status.costUsd !== null ? ` · spent ${money(status.costUsd)}` : null}
-        </p>
+      {status.estimate ? (
+        <p className="mt-1.5 tabular-nums text-muted-foreground">{`${status.estimate.calls} AI call(s)`}</p>
       ) : null}
       {status.error ? <p className="mt-0.5 text-warning">{status.error} <ErrorAlchemyMenu error={status.error} /></p> : null}
       {status.problems.slice(0, 30).map((problem) => (

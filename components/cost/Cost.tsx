@@ -3,13 +3,21 @@
 /**
  * components/cost/Cost.tsx
  *
- * THE way a cost reaches the screen. Pass the USD figure the server gave you;
- * administration sees dollars and points; other pages follow the viewer's
- * selected unit.
- * An unmeasured cost (`null`) renders "—", never a confident zero.
+ * HOW a cost reaches the screen — once you know it belongs there. First ask:
+ * is the person deciding or investigating (a battle, a picker, an info or
+ * details page, a history table, a bulk/repeating confirm step, a schedule's
+ * setup, billing/usage, admin)? Then a price may show. Are they doing their
+ * work (chat, a result, a receipt, a toast, a button)? Then it never does —
+ * the number stays in the data. Arman, 2026-10-18;
+ * common-docs/policies/points-and-money-in-the-ui.md; enforced by
+ * `pnpm check:cost-display` (P1, ALLOWED_PLACES).
  *
- * Use `<CostBadge>` for the tier-coloured "this will cost you" chip beside an
- * expensive action; use `useCostDisplay().format` where only a string fits.
+ * Pass the USD figure the server gave you; administration sees dollars and
+ * points; other pages follow the viewer's selected unit. An unmeasured cost
+ * (`null`) renders "—", never a confident zero.
+ *
+ * `<CostBadge>` belongs only on a confirm step for bulk/heavy/repeating work
+ * or inside a picker; `useCostDisplay().format` where only a string fits.
  */
 
 import { cn } from "@/lib/utils";

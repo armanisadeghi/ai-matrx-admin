@@ -6,13 +6,10 @@
  * payload cannot drift away from the sentence the person is looking at.
  */
 
-import { formatViewerCost as formatCost } from "@/components/cost/formatAdminCost";
-import { currentPointsRate } from "@/components/cost/pointsRate";
 import {
   buildAgentPayload,
   type AgentPayloadInput,
 } from "@/components/agent-copy/buildAgentPayload";
-import { currentCostUnit } from "@/components/cost/costUnit";
 
 const LOCATION = "AI Matrx — Workflow run";
 
@@ -32,7 +29,6 @@ export interface WorkflowFailureView {
   failedSteps?: string[];
   completedSteps?: number;
   totalSteps?: number;
-  costUsd?: number;
   detail?: string | null;
 }
 
@@ -46,16 +42,11 @@ export function workflowFailureHuman(view: WorkflowFailureView): string {
     view.completedSteps !== undefined && view.totalSteps !== undefined
       ? `${view.completedSteps} of ${view.totalSteps} steps`
       : null;
-  const cost =
-    view.costUsd !== undefined && view.costUsd > 0
-      ? formatCost(view.costUsd, { rate: currentPointsRate(), unit: currentCostUnit() })
-      : null;
   return compactLines([
     view.workflowName ? `Workflow: ${view.workflowName}` : null,
     view.status ? `Status: ${view.status}` : null,
     view.runId ? `Run: ${view.runId}` : null,
     progress ? `Progress: ${progress}` : null,
-    cost ? `Cost: ${cost}` : null,
     view.stepLabel ? `Step: ${view.stepLabel}` : null,
     view.headline,
     view.failedSteps?.length
@@ -75,10 +66,6 @@ export function workflowFailureAgentInput(
     view.completedSteps !== undefined && view.totalSteps !== undefined
       ? `${view.completedSteps} of ${view.totalSteps} steps`
       : null;
-  const cost =
-    view.costUsd !== undefined && view.costUsd > 0
-      ? formatCost(view.costUsd, { rate: currentPointsRate(), unit: currentCostUnit() })
-      : null;
 
   return {
     kind: `workflow-${view.kind}-failure`,
@@ -90,7 +77,6 @@ export function workflowFailureAgentInput(
       failed_steps: view.failedSteps?.length,
       completed_steps: view.completedSteps,
       total_steps: view.totalSteps,
-      cost_usd: view.costUsd,
     },
     context: {
       "workflow-name": view.workflowName,
@@ -99,7 +85,6 @@ export function workflowFailureAgentInput(
       "step-id": view.stepId,
       "step-label": view.stepLabel,
       progress,
-      cost,
     },
     data: {
       rendered: {
@@ -115,7 +100,6 @@ export function workflowFailureAgentInput(
         workflow_name: view.workflowName ?? null,
         status: view.status ?? null,
         progress,
-        cost,
       },
       node: {
         id: view.stepId ?? null,

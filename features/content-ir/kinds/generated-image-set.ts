@@ -23,7 +23,6 @@ import {
   joinBlocks,
 } from "./kind-markdown-utils";
 import {
-  formatCost,
   mediaHandleOf,
   optionalNumber,
   optionalString,
@@ -34,7 +33,6 @@ import {
   type MediaUsage,
 } from "./media-io-shared";
 import { KIND_KEY } from "@ai-matrx/content-ir";
-import { currentPointsRate } from "@/components/cost/pointsRate";
 import type { MaterializedKind } from "./kind-payload";
 import type {
   GeneratedImage,
@@ -186,7 +184,6 @@ export function generatedImageSetMarkdownFromValue(
 ): string {
   const images = readGeneratedImageList(value.images);
   const model = optionalString(value.model);
-  const cost = formatCost(readUsage(value.usage)?.cost_usd ?? null, currentPointsRate());
 
   const lines =
     images.length > 0
@@ -205,7 +202,7 @@ export function generatedImageSetMarkdownFromValue(
 
   return joinBlocks([
     "# Generated images",
-    [model ? `Model: \`${model}\`` : null, cost ? `Cost: ${cost}` : null]
+    [model ? `Model: \`${model}\`` : null]
       .filter(Boolean)
       .join(" · ") || null,
     lines,

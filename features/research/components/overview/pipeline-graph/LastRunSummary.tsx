@@ -11,11 +11,9 @@ import {
   Layers,
   ArrowRight,
   Clock,
-  Gauge,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Cost } from "@/components/cost/Cost";
 import { CopyButtons } from "@/components/agent-copy/CopyButtons";
 import { csvExportItem, jsonExportItem } from "@/components/agent-copy/export";
 import {
@@ -432,20 +430,6 @@ export function LastRunSummary({
             value={hasReport ? "Generated" : "Not yet"}
             href={hasReport ? `${base}/synthesis` : undefined}
             dim={!hasReport}
-          />
-          {/* Cost belongs on the receipt, not only behind the Costs tab —
-              a run that spent real money must say so where the user lands. */}
-          <Line
-            icon={Gauge}
-            label="AI cost"
-            value={
-              <Cost
-                usd={costSummary?.total_estimated_cost_usd ?? 0}
-                short
-              />
-            }
-            href={`${base}/costs`}
-            dim={(costSummary?.total_llm_calls ?? 0) === 0}
           />
         </div>
       </div>

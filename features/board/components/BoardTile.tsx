@@ -71,7 +71,7 @@ import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
-import { FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
+import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
  * The tile lays out at its content's height (page layout, `BoardItemType.autoHeight`): a body reads
@@ -81,6 +81,9 @@ const TileAutoHeightContext = createContext(false);
 export function useTileAutoHeight(): boolean {
   return useContext(TileAutoHeightContext);
 }
+
+/** Room kept below a grow-to-fit body's last line (its own bottom padding is not measured). */
+const FIT_PAD = 16;
 
 /** Quiet time before a measured height is written (a body settling over a few frames writes once). */
 const AUTO_HEIGHT_MS = 80;
@@ -561,24 +564,39 @@ export function BoardTile({
     let floor = 0;
     /** The last growth: the overflow it answered and by how much it grew. */
     let pending: { hidden: number; by: number } | null = null;
+    /** Scrollers this tile stopped from scrolling: given back when grow-to-fit ends (the canvas, focus). */
+    const unfit: HTMLElement[] = [];
     const measure = () => {
       timer = null;
       const boxes: ScrollerBox[] = [];
       for (const el of card.querySelectorAll<HTMLElement>("*")) {
-        const overflowY = getComputedStyle(el).overflowY;
+        const fitted = el.dataset.boardFitScroll === "1";
+        const style = getComputedStyle(el);
+        const overflowY = fitted ? "auto" : style.overflowY;
         if (overflowY !== "auto" && overflowY !== "scroll") continue;
-        if (el.clientHeight < card.clientHeight * 0.4) continue;
+        const capped = style.maxHeight !== "none";
+        if (capped || el.clientHeight < FIT_MIN_SCROLLER_H) continue;
+        // Where the content really ends: its deepest elements' bottoms. A wrapper stretched to the
+        // scroller (an editor's min-height) or its "scroll past the end" padding is not content.
         const top = el.getBoundingClientRect().top - el.scrollTop;
         let contentBottom: number | null = null;
-        for (const kid of el.children) {
-          const r = kid.getBoundingClientRect();
+        for (const leaf of el.querySelectorAll<HTMLElement>("*")) {
+          if (leaf.childElementCount > 0) continue;
+          const r = leaf.getBoundingClientRect();
           if (r.height === 0) continue;
-          const bottom = r.bottom - top - (parseFloat(getComputedStyle(kid).paddingBottom) || 0);
-          contentBottom = contentBottom === null ? bottom : Math.max(contentBottom, bottom);
+          contentBottom = Math.max(contentBottom ?? 0, r.bottom - top + FIT_PAD);
         }
-        boxes.push({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, overflowY, contentBottom });
+        boxes.push({ scrollHeight: el.scrollHeight, clientHeight: el.clientHeight, overflowY, capped, contentBottom });
+        // Content that fits starts at the top (an editor following its caret may have scrolled it).
+        if (contentBottom !== null && contentBottom <= el.clientHeight + 1 && el.scrollTop > 0) el.scrollTop = 0;
+        // The tile takes the content's height, so this scroller never scrolls (the page does).
+        if (!fitted) {
+          el.dataset.boardFitScroll = "1";
+          el.style.overflowY = "hidden";
+          unfit.push(el);
+        }
       }
-      const step = growStep(innerSlack(card.clientHeight, boxes), floor, pending);
+      const step = growStep(innerSlack(boxes), floor, pending);
       floor = step.floor;
       pending = step.grow > 0 ? { hidden: step.hidden, by: step.grow } : null;
       if (step.grow === 0) return;
@@ -600,6 +618,10 @@ export function BoardTile({
       mo.disconnect();
       card.removeEventListener("input", schedule, true);
       if (timer) clearTimeout(timer);
+      for (const el of unfit) {
+        delete el.dataset.boardFitScroll;
+        el.style.overflowY = "";
+      }
     };
   }, [growToFit, id]);
 

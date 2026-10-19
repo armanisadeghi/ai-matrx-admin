@@ -15,7 +15,6 @@ import { ExternalLink, Table2, Trophy } from "lucide-react";
 import { Badge, Tile } from "@ai-matrx/design-system/controls";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { cn } from "@/lib/utils";
 
@@ -25,8 +24,6 @@ import { ItemLogo } from "./ItemLogo";
 
 export interface ComparisonViewProps {
   result: ComparisonResult;
-  /** A dollar-seat viewer also sees dollars, to the cent. Points are always shown. */
-  seesDollars?: boolean;
   /** Where an item's raw facts open (a new tab); null hides the door (a public page). */
   factsHref?: (item: ComparedItem) => string | null;
   /** Actions on the right of the verdict (new comparison, share later). */
@@ -38,7 +35,7 @@ export interface ComparisonViewProps {
 /** Kinds whose picture is a photo (a place, a product, an avatar) and fills its square. */
 const isPhoto = (kind: string) => kind === "local_business" || kind === "products" || kind === "social_accounts";
 
-export function ComparisonView({ result, seesDollars = false, factsHref, actions, onPick }: ComparisonViewProps) {
+export function ComparisonView({ result, factsHref, actions, onPick }: ComparisonViewProps) {
   const verdict = verdictOf(result);
   const compared = comparedItems(result);
   const primary = result.fields.find((f) => f.is_primary) ?? null;
@@ -103,12 +100,8 @@ export function ComparisonView({ result, seesDollars = false, factsHref, actions
         );
       }) : null}
 
-      {/* ── what it cost ──────────────────────────────────────── */}
+      {/* ── when it was made ─────────────────────────────────────── */}
       <section className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-4">
-        <span className="type-secondary text-muted-foreground">
-          Cost <span className="font-medium text-foreground tabular-nums">{formatPoints(result.total_points)}</span>
-          {seesDollars && result.total_cost_display ? <span className="tabular-nums"> · {result.total_cost_display}</span> : null}
-        </span>
         {result.generated_at ? (
           <span className="type-meta text-muted-foreground">{new Date(result.generated_at).toLocaleString()}</span>
         ) : null}

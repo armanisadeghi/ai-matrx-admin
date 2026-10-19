@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 2,
+  "version": 3,
   "title": "Estate Planning Practice",
   "description": "Estate plans by stage, instruments, signings and trust funding.",
   "forWho": "Estate planning attorneys and small firms",
@@ -385,7 +385,8 @@
               "Complete"
             ],
             "filled": [
-              "package"
+              "package",
+              "completed_on"
             ]
           }
         ],
@@ -743,7 +744,8 @@
               "Signed"
             ],
             "filled": [
-              "where"
+              "where",
+              "signed_on"
             ]
           }
         ],
@@ -860,7 +862,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "document",
@@ -1111,7 +1114,8 @@
               "Signed"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "signed_on"
             ]
           }
         ],
@@ -1228,7 +1232,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "funding",
@@ -1417,7 +1422,8 @@
               "Done"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "completed_on"
             ]
           }
         ],
@@ -1479,7 +1485,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "client",
@@ -2477,7 +2484,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

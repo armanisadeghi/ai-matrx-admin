@@ -23,7 +23,7 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { cn } from "@/lib/utils";
 
-import { dollars, points, streamGenerate, type ClonePlanResult, type LineEvent, type PresenterMode, type ServerCloneBrief } from "../../video/clone";
+import { points, streamGenerate, type ClonePlanResult, type LineEvent, type PresenterMode, type ServerCloneBrief } from "../../video/clone";
 import {
   fetchFormatPreview,
   listFormats,
@@ -215,7 +215,6 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [plan, setPlan] = useState<ClonePlanResult | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
-  const [spent, setSpent] = useState(0);
   const busy = phase === "planning" || phase === "generating";
   const presenters = PRESENTERS.filter((p) => info.presenters.includes(p.value));
 
@@ -287,7 +286,6 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
     if (!plan) return;
     setFailure(null);
     setPhase("generating");
-    setSpent(0);
     setSteps([{ id: "price", label: "Pricing", state: "running" }]);
     let needsConfirm = false;
     let errored: string | null = null;
@@ -295,7 +293,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
       const media = typeof e.media_id === "string" ? e.media_id : "";
       switch (e.type) {
         case "estimate":
-          setSteps((p) => pushStep(p, { id: "price", label: "Priced", state: "done", meta: points(Number(e.total_points)) }));
+          setSteps((p) => pushStep(p, { id: "price", label: "Checked what is left to make", state: "done" }));
           break;
         case "confirmation_required":
           needsConfirm = true;
@@ -304,11 +302,10 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
           setSteps((p) => pushStep(p, { id: media, label: `Making ${mediaName(media)}`, state: "running" }));
           break;
         case "cache_hit":
-          setSteps((p) => pushStep(p, { id: media, label: `${mediaName(media)} reused`, state: "done", meta: "$0.00" }));
+          setSteps((p) => pushStep(p, { id: media, label: `${mediaName(media)} reused`, state: "done" }));
           break;
         case "generated":
-          setSpent((v) => v + (Number(e.cost_usd) || 0));
-          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaName(media)} made`, state: "done", meta: dollars(Number(e.cost_usd)) } : s)));
+          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaName(media)} made`, state: "done" } : s)));
           break;
         case "warning":
           setSteps((p) => [...p, { id: `w${p.length}`, label: String(e.message ?? "Warning"), state: "failed" }]);
@@ -453,7 +450,7 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
           <div className="flex flex-col gap-3 border-t border-border pt-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone={source === "template" ? "warning" : "success"}>{source === "agent" ? "Script written" : source === "person" ? "Your script" : "Draft script"}</Badge>
-              {est ? <CostLine label="Estimate" usd={est.total_usd} pts={est.total_points} /> : null}
+              {est ? <CostLine label="Estimate" pts={est.total_points} /> : null}
               {est && musicCostLine(est) ? <span className="type-meta text-muted-foreground">{musicCostLine(est)}</span> : null}
             </div>
             {notes.filter((n) => n.code !== "music-none").map((n) => (
@@ -474,7 +471,6 @@ function FormatBrief({ info, base }: { info: FormatInfo; base: string }) {
               <Button asChild variant="quiet">
                 <Link href={`${base}/${plan.project_id}`}>Open project</Link>
               </Button>
-              {spent > 0 ? <span className="type-meta tabular-nums text-muted-foreground">{`Spent ${dollars(spent)}`}</span> : null}
             </div>
           </div>
         ) : null}

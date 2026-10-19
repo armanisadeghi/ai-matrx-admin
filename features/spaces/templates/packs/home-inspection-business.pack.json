@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 2,
+  "version": 3,
   "title": "Home Inspection Business",
   "description": "Inspections, referral partners, invoices and licence renewals for an inspector.",
   "forWho": "Home inspectors and inspection companies",
@@ -475,7 +475,8 @@
               "Delivered"
             ],
             "filled": [
-              "address"
+              "address",
+              "delivered_on"
             ]
           }
         ],
@@ -603,7 +604,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "invoice",
@@ -815,7 +817,8 @@
               "Paid"
             ],
             "filled": [
-              "addons"
+              "addons",
+              "paid_on"
             ]
           }
         ],
@@ -1982,7 +1985,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

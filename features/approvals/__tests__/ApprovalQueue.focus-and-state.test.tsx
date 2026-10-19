@@ -15,6 +15,7 @@
  *    turn scrolled to a row that had not rendered yet.
  */
 
+import { openApprovalRow, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -199,7 +200,9 @@ describe("ApprovalQueue: row state, deep links and scrolling", () => {
       );
     });
     await flush();
-    expect(container.textContent).toContain("Checking this recipient");
+    // The row's state sentence and its review card are in its window.
+    await openApprovalRow(container);
+    expect(pageText()).toContain("Checking this recipient");
 
     // The spine answered: the same row, same key, is now reviewable.
     stillChecking = false;
@@ -208,8 +211,8 @@ describe("ApprovalQueue: row state, deep links and scrolling", () => {
     });
     await flush();
 
-    expect(container.textContent).toContain("REVIEW CARD");
-    expect(container.textContent).not.toContain("Checking this recipient");
+    expect(pageText()).toContain("REVIEW CARD");
+    expect(pageText()).not.toContain("Checking this recipient");
   });
 
   it("scrolls to a focused row even when the list starts collapsed", async () => {

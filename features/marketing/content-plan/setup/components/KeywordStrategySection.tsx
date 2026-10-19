@@ -15,7 +15,6 @@
 import { useState } from "react";
 import { ArrowRight, Loader2, X } from "lucide-react";
 
-import { CostBadge } from "@/components/cost/CostBadge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -150,7 +149,7 @@ export function KeywordStrategySection({
               disabledReason ??
               estimateError ??
               tierEstimate?.basis ??
-              "Calculating pages, calls, and approximate cost…"
+              "Calculating pages and calls…"
             }
             onClick={() => onRun(tier)}
           >
@@ -161,16 +160,6 @@ export function KeywordStrategySection({
             )}
             {strategy ? "Re-plan" : "Plan"} {tierEstimate?.pages ?? "…"} pages
             {tierEstimate ? ` · ${tierEstimate.calls} call${tierEstimate.calls === 1 ? "" : "s"}` : ""}
-            {tierEstimate?.approximate_cost_usd != null ? (
-              <CostBadge
-                usd={tierEstimate.approximate_cost_usd}
-                hideIcon
-                short
-                className="ml-0.5 px-1.5 py-0"
-              />
-            ) : tierEstimate ? (
-              <span className="text-muted-foreground">· cost unknown</span>
-            ) : null}
           </Button>
         </div>
       }

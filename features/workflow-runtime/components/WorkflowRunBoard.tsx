@@ -47,7 +47,6 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
-import { Cost } from "@/components/cost/Cost";
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
@@ -58,7 +57,6 @@ import { useWorkflowRunControls } from "../hooks/useWorkflowRunControls";
 import {
   selectChildRunIds,
   selectNodeAggregate,
-  selectRunCostTotal,
   selectRunNodeOrder,
   selectRunStatus,
   selectRunTransportMode,
@@ -154,7 +152,6 @@ export function WorkflowRunBoard({
   useWorkflowRun(adopt ? runId : null);
   const status = useAppSelector(selectRunStatus(runId));
   const nodeOrder = useAppSelector(selectRunNodeOrder(runId));
-  const costTotal = useAppSelector(selectRunCostTotal(runId));
   const transport = useAppSelector(selectRunTransportMode(runId));
   const childRunIds = useAppSelector(selectChildRunIds(runId));
   const { pause, resumePaused, cancel } = useWorkflowRunControls();
@@ -163,12 +160,6 @@ export function WorkflowRunBoard({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
         <span className="text-sm font-medium">{PHASE_LABEL[status ?? ""] ?? status ?? "…"}</span>
-        {costTotal > 0 ? (
-          <span className="text-xs text-muted-foreground">
-            {/* read-gate-exempt: progress and cost over the live run stream in redux, not a list read */}
-            <Cost usd={costTotal} />
-          </span>
-        ) : null}
         {/* Transport is a live-follow detail — meaningless (and misleading:
             "polling" forever) once the run is terminal. */}
         {status === "running" || status === "paused" ? (

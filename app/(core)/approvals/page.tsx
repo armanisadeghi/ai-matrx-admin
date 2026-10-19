@@ -24,7 +24,7 @@ export default async function ApprovalsPage({
     <>
       <RecordPageHeader record={{ name: "Waiting on you" }} />
       <div className="h-full overflow-y-auto bg-textured pt-[var(--shell-header-h)]">
-        <div className="mx-auto w-full max-w-4xl p-4 md:p-6">
+        <div className="mx-auto w-full max-w-7xl p-4 md:p-6">
           <ApprovalsWorkspace focusItemId={focusItemId} />
         </div>
       </div>

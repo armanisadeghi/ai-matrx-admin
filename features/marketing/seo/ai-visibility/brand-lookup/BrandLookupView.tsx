@@ -44,7 +44,6 @@ import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { MarketingSite } from "@/features/marketing/types";
 import type { SectionState } from "../../domain-research/section-state";
 import { fetchSiteCompetitors } from "../../site-context/service";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useToolSection } from "../../tool-door/useToolSection";
 import {
   mentionsArgs,
@@ -71,13 +70,6 @@ export const INDEX_NOT_PROVEN =
   "A sample of an AI-answer index, updated about monthly. Not your tracked panel, and not comparable to panel metrics.";
 
 const MARKETS: Record<number, string> = { 2840: "United States" };
-
-export function priceText(
-  format: (usd: number | null | undefined) => string,
-  estimateUsd: number | null,
-): string {
-  return estimateUsd != null ? format(estimateUsd) : "cost unknown";
-}
 
 function marketText(market: MentionsMarket | undefined): string {
   if (!market) return "Market not stated";
@@ -106,10 +98,9 @@ const num = (v: number | null) =>
 
 const platformName = (p: string) => MENTIONS_PLATFORM_LABEL[p] ?? p;
 
-/** Loading, not stored (offer the run at its exact price), error; ready renders children. */
+/** Loading, not stored (offer the run), error; ready renders children. */
 function LookupGate<T>({
   state,
-  estimateUsd,
   what,
   action,
   onBuy,
@@ -117,14 +108,12 @@ function LookupGate<T>({
   children,
 }: {
   state: SectionState<T>;
-  estimateUsd: number | null;
   what: string;
   action: string;
   onBuy: () => void;
   onRetry: () => void;
   children: ReactNode;
 }) {
-  const { format } = useCostDisplay();
   switch (state.kind) {
     case "idle":
       return null;
@@ -141,10 +130,10 @@ function LookupGate<T>({
         <EmptyState
           icon={<Search />}
           title={`No stored ${what} to reuse`}
-          line={state.note ?? `${priceText(format, estimateUsd)} now, then reused free`}
+          line={state.note ?? "Run it once; the answer is saved and reused."}
           action={
             <Button variant="primary" onClick={onBuy}>
-              Run · {priceText(format, estimateUsd)}
+              Run
             </Button>
           }
         />
@@ -171,13 +160,10 @@ function SourceBadges<T>({
   state: SectionState<T>;
   market: MentionsMarket | undefined;
 }) {
-  const { format } = useCostDisplay();
   if (state.kind !== "ready") return null;
   const source = state.reused
     ? `Reused from ${shortDate(state.observedAt)}`
-    : `Bought ${shortDate(state.observedAt)}${
-        state.chargedUsd != null ? ` · ${format(state.chargedUsd)}` : ""
-      }`;
+    : `Bought ${shortDate(state.observedAt)}`;
   return (
     <div className="flex flex-wrap items-center gap-2 px-3 py-2">
       <Badge tone={state.reused ? "neutral" : "info"} title="AI-mentions data">
@@ -431,7 +417,6 @@ export function BrandLookupView({ site, brandId }: { site: MarketingSite; brandI
         <SourceBadges state={mentions.state} market={mentionsData?.market} />
         <LookupGate
           state={mentions.state}
-          estimateUsd={mentions.estimateUsd}
           what="AI mentions"
           action="brand_mentions"
           onBuy={() => void mentions.buy()}
@@ -469,7 +454,6 @@ export function BrandLookupView({ site, brandId }: { site: MarketingSite; brandI
             <SourceBadges state={sov.state} market={sovData?.market} />
             <LookupGate
               state={sov.state}
-              estimateUsd={sov.estimateUsd}
               what="share of voice"
               action="share_of_voice"
               onBuy={() => void sov.buy()}

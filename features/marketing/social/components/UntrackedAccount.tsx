@@ -39,7 +39,7 @@ export function UntrackedAccount({ platform, propertyId }: { platform: string; p
   const router = useRouter();
   const canEdit = useCanEditSocial();
   const accounts = useBrandSocialAccounts(brand.id);
-  const { busyRow, progress, trackOwn, pointsText } = useTrackOwn(brand.organizationId, brand.id);
+  const { busyRow, progress, trackOwn } = useTrackOwn(brand.organizationId, brand.id);
   const row = (accounts.data ?? []).find((r) => r.propertyId === propertyId) ?? null;
   const profileHref = row ? accountHref(brand.seg, row) : null;
 
@@ -100,7 +100,6 @@ export function UntrackedAccount({ platform, propertyId }: { platform: string; p
             variant="outline"
             icon={busy ? <Loader2 className="animate-spin" /> : <Plus />}
             disabled={busyRow !== null}
-            meta={pointsText("track", 1) ?? undefined}
             onClick={() => void trackOwn(row)}
           >
             {busy ? "Tracking…" : "Track"}

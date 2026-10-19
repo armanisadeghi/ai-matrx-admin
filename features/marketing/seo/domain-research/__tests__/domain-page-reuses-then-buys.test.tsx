@@ -145,7 +145,7 @@ it("reuses a stored result first: the probe returns it free and no paid call is 
   expect(text()).toContain("United States");
   // Keywords had nothing stored: offered at the definition's price, not bought.
   expect(text()).toContain("No stored keywords to reuse");
-  expect(button("Run · 200 points")).toBeDefined();
+  expect(button("Run")).toBeDefined();
   expect(definitionReads).toContain("seo_domain");
 });
 
@@ -159,17 +159,17 @@ it("offers the paid run at the definition's price and only a click spends", asyn
   await render();
 
   expect(text()).toContain("No stored stats to reuse");
-  expect(text()).toContain("400 points per run, then free for 7 days.");
+  expect(text()).toContain("A run is saved and reused for 7 days.");
   const before = calls().length;
   expect(calls().every((c) => c.arguments.max_cost_usd === 0.0001)).toBe(true);
 
-  await act(async () => { button("Run · 400 points")!.click(); });
+  await act(async () => { button("Run")!.click(); });
   for (let i = 0; i < 5; i++) await act(async () => { await Promise.resolve(); });
 
   const paid = calls().slice(before);
   expect(paid).toHaveLength(1);
   expect(paid[0].arguments).toEqual({ action: "overview", target: "python.org" });
-  expect(text()).toContain("Bought Sep 28, 2026 · 121 points");
+  expect(text()).toContain("Bought Sep 28, 2026");
   expect(text()).toContain("48k");
   expect(text()).toContain("Monthly estimate · Sep 28, 2026");
 });

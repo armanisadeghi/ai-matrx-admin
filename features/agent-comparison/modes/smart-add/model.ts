@@ -584,13 +584,3 @@ export function batchAnswerUnreadable(cell: MatrixCell): boolean {
   if (cell.columnId === COLUMN_ID.jev || cell.status !== "completed") return false;
   return readBatchCell(cell.result?.answer, {}).size === 0;
 }
-
-/**
- * Money on the bench: a cent or more is $x.xx; under a cent shows two significant digits
- * ($0.0093, $0.000052), so every figure in a column reads the same way (Arman, 2026-10-17).
- */
-export function moneyDigits(value: number): number {
-  const m = Math.abs(value);
-  if (m === 0 || m >= 0.01) return 2;
-  return Math.max(2, 1 - Math.floor(Math.log10(m)));
-}

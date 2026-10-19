@@ -20,7 +20,6 @@ import {
   researchLocation,
   type ResearchKpis,
 } from "@/features/research/copy";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { useCountUp, formatInt, formatCompact } from "./resultsShared";
 
 export interface HeroMetric {
@@ -28,8 +27,8 @@ export interface HeroMetric {
   label: string;
   value: number;
   icon: LucideIcon;
-  /** "int" | "compact" | "usd" — how the (animated) number renders. */
-  format: "int" | "compact" | "usd";
+  /** "int" | "compact" — how the (animated) number renders. */
+  format: "int" | "compact";
   /** Tailwind text/border accent for the tile. */
   accent: string;
   /** Optional sub-line under the big number. */
@@ -49,7 +48,6 @@ export function buildHeroMetrics(input: {
   characters: number;
   analyses: number;
   reports: number;
-  totalCostUsd: number;
   llmCalls: number;
 }): HeroMetric[] {
   // Cost intentionally omitted from the at-a-glance band. Characters render as a
@@ -122,17 +120,9 @@ function MetricValue({
   format: HeroMetric["format"];
   delay: number;
 }) {
-  // Money animates with 2 decimals; compact/int animate as whole numbers and
-  // we format the live value each frame.
-  const { format: formatCostDisplay } = useCostDisplay();
-  const decimals = format === "usd" && value < 1000 ? 2 : 0;
-  const animated = useCountUp(value, { decimals, delay });
-  const text =
-    format === "usd"
-      ? formatCostDisplay(animated)
-      : format === "compact"
-        ? formatCompact(animated)
-        : formatInt(animated);
+  // Compact/int animate as whole numbers and we format the live value each frame.
+  const animated = useCountUp(value, { decimals: 0, delay });
+  const text = format === "compact" ? formatCompact(animated) : formatInt(animated);
   return <span className="tabular-nums">{text}</span>;
 }
 
@@ -149,12 +139,8 @@ export interface HeroMetricsCopyContext {
 }
 
 /** Readable value for a tile, in the same format the tile renders. */
-function metricText(metric: HeroMetric, formatCostDisplay: (usd: number) => string): string {
-  return metric.format === "usd"
-    ? formatCostDisplay(metric.value)
-    : metric.format === "compact"
-      ? formatCompact(metric.value)
-      : formatInt(metric.value);
+function metricText(metric: HeroMetric): string {
+  return metric.format === "compact" ? formatCompact(metric.value) : formatInt(metric.value);
 }
 
 function MetricTile({
@@ -166,7 +152,6 @@ function MetricTile({
   index: number;
   copyContext?: HeroMetricsCopyContext;
 }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   const Icon = metric.icon;
   return (
     <motion.div
@@ -202,7 +187,7 @@ function MetricTile({
             label={`${metric.label} (research)`}
             human={() =>
               humanLines([
-                [metric.label, metricText(metric, formatCostDisplay)],
+                [metric.label, metricText(metric)],
                 [metric.hint ? "Note" : "", metric.hint],
               ])
             }
@@ -215,7 +200,7 @@ function MetricTile({
                   key: metric.key,
                   label: metric.label,
                   value: metric.value,
-                  rendered: metricText(metric, formatCostDisplay),
+                  rendered: metricText(metric),
                   hint: metric.hint ?? null,
                 },
                 // A single tile is only meaningful beside the whole strip.
@@ -261,14 +246,13 @@ export function ResultsHeroMetrics({
   metrics: HeroMetric[];
   copyContext?: HeroMetricsCopyContext;
 }) {
-  const { format: formatCostDisplay } = useCostDisplay();
   /** Rows for the rail's own copy/export — ALL tiles, never a visible slice. */
   const metricRows = () =>
     metrics.map((m) => ({
       key: m.key,
       label: m.label,
       value: m.value,
-      rendered: metricText(m, formatCostDisplay),
+      rendered: metricText(m),
       hint: m.hint ?? null,
     }));
 

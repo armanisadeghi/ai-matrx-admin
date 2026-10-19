@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0160",
-  "version": 5,
+  "version": 6,
   "title": "Proposals Tracker",
   "description": "Agencies and freelancers: track proposals from draft to decision, with line items.",
   "forWho": "Agencies and freelancers",
@@ -73,7 +73,8 @@
             ],
             "filled": [
               "sent_on",
-              "valid_until"
+              "valid_until",
+              "decided_on"
             ]
           }
         ],
@@ -1158,7 +1159,7 @@
         "Hollis Mill Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

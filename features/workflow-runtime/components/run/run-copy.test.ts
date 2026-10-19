@@ -21,7 +21,6 @@ const VIEW = {
   failedSteps: ["Unknown rule ids"],
   completedSteps: 17,
   totalSteps: 39,
-  costUsd: 6.46,
 };
 
 describe("workflow run copy payloads", () => {
@@ -40,7 +39,6 @@ describe("workflow run copy payloads", () => {
       failed_steps: 1,
       completed_steps: 17,
       total_steps: 39,
-      cost_usd: 6.46,
     });
     expect(input.data).toMatchObject({
       rendered: {
@@ -50,7 +48,6 @@ describe("workflow run copy payloads", () => {
       run: {
         run_id: "run-1",
         progress: "17 of 39 steps",
-        cost: "129,200 points",
       },
     });
   });

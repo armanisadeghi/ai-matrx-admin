@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 4,
+  "version": 5,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
@@ -575,7 +575,17 @@
             }
           }
         ],
-        "statusImplies": []
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Published"
+            ],
+            "filled": [
+              "publish_on"
+            ]
+          }
+        ]
       },
       {
         "independentOf": {
@@ -1557,7 +1567,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

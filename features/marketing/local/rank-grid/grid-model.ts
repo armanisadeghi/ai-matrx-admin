@@ -249,8 +249,9 @@ export function shortDate(value: string | null | undefined): string {
 /** A USD cost → the viewer's string (`useCostDisplay().format`); points unless an admin chose dollars. */
 export type CostFormat = (usd: number | null | undefined) => string;
 
+/** The price of a heavy run, for the step that confirms it; "" when the tool named none. */
 export function costText(format: CostFormat, value: number | null | undefined): string {
-  return value == null ? "cost unknown" : format(value);
+  return value == null ? "" : format(value);
 }
 
 /**
@@ -260,7 +261,6 @@ export function costText(format: CostFormat, value: number | null | undefined): 
  */
 export function sourceLine(
   envelope: ToolEnvelope<GridResultData>,
-  format: CostFormat,
 ): { reused: boolean; text: string } {
   const points = envelope.data ? gridPoints(envelope.data).filter((p) => !p.pending).length : 0;
   const reusedIds = envelope.cost?.reused_run_ids ?? [];
@@ -279,8 +279,7 @@ export function sourceLine(
       .map((e) => e.observed_at as string)
       .sort()
       .pop() ?? null;
-  const charged = envelope.cost?.charged_usd;
-  const bought = `Bought ${shortDate(boughtAt)}${charged != null ? ` · ${costText(format, charged)}` : ""}`;
+  const bought = `Bought ${shortDate(boughtAt)}`;
   if (reusedIds.length > 0) {
     return { reused: true, text: `${reusedIds.length} of ${points} reused from ${shortDate(oldest)} · ${bought}` };
   }

@@ -126,7 +126,6 @@ import {
   getMasterworkDefinition,
   getMasterworkRunVerdict,
 } from "../../service";
-import { MasterworkRunPrice, type RunPriceScope } from "../../runPrice";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
 /**
@@ -254,7 +253,6 @@ export function TryMasterworkBox({
   submitLabel = null,
   fieldLabels,
   onRunFinished,
-  priceScope,
   onCompare,
   onCompareTwo,
 }: {
@@ -285,12 +283,6 @@ export function TryMasterworkBox({
   fieldLabels?: string[];
   /** Fired when a run reaches a terminal state (refresh Past runs). */
   onRunFinished: () => void;
-  /**
-   * Whose runs "Last run" is priced from — the same runs the host page lists
-   * (`RunPriceScope`). Required: a host that lists only her runs must never
-   * show a price taken from a teammate's.
-   */
-  priceScope: RunPriceScope;
   /**
    * Owner-only door beside the result: hand the Masterwork's own output to
    * the Audition, prefilled. Omit to hide it.
@@ -344,7 +336,6 @@ export function TryMasterworkBox({
    *  never schedules another render. */
   const notifiedFor = useRef<string | null>(null);
   // Re-reads the price beside Run it once a run ends (cold walk 23, F).
-  const [runsFinished, setRunsFinished] = useState(0);
   /**
    * Bumped every time the person starts a run. A re-attach check still in
    * flight compares against it and stands down — the freshly started run
@@ -513,7 +504,6 @@ export function TryMasterworkBox({
     if (!runId || !terminal || notifiedFor.current === runId) return;
     notifiedFor.current = runId;
     onRunFinished();
-    setRunsFinished((n) => n + 1);
     if (runStatus === "completed") return;
     // The run ROW's recorded error is richer than anything the stream carried.
     void getMasterworkRunVerdict(runId)
@@ -805,13 +795,6 @@ export function TryMasterworkBox({
                   ? "Working…"
                   : (submitLabel ?? "Run it")}
           </GatedActionButton>
-          {/* THE PRICE BEFORE THE CLICK (cold walk 23, F): the last priced
-            run, the Bench's own derivation, through the canonical chip. */}
-          <MasterworkRunPrice
-            masterworkId={masterworkId}
-            refreshKey={runsFinished}
-            scope={priceScope}
-          />
           {onCompare && !candidateText && !noResultReason ? (
             <span className="text-xs text-muted-foreground">
               Runs land in your recent runs below.

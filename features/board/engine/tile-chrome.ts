@@ -126,25 +126,30 @@ export interface ScrollerBox {
   clientHeight: number;
   /** Its computed `overflow-y`. */
   overflowY: string;
+  /** It has a max height of its own (a code block): growing the tile would never reveal it. */
+  capped: boolean;
   /**
-   * Where its content really ends (px from its scroll top): the lowest child's bottom less that child's
-   * own bottom padding (an editor's "scroll past the end" room is not content). Null when it has no
-   * child elements (a textarea): then only `scrollHeight` tells.
+   * Where its content really ends (px from its scroll top): its deepest elements' lowest bottom, plus a
+   * little room — never a wrapper stretched to fill it, nor an editor's "scroll past the end" padding.
+   * Null when it has no child elements (a textarea): then only `scrollHeight` tells.
    */
   contentBottom: number | null;
 }
 
+/** A scroller shorter than this is a toolbar row scrolling sideways, never the body. */
+export const FIT_MIN_SCROLLER_H = 48;
+
 /**
  * How much taller (positive) or shorter (negative) a grow-to-fit tile should be so its content shows
- * whole and nothing inside scrolls: read from the scrollers that take most of the tile's height (they
- * grow with it). A small inner box with its own max height (a code block) never counts: growing the
- * tile would not reveal it, and counting it would grow the tile forever. 0 = leave it.
+ * whole and nothing inside scrolls: read from the scrollers sized by the layout (they grow with the
+ * tile). A box with its own max height (a code block) never counts: growing the tile would not reveal
+ * it, and counting it would grow the tile forever. Nor does a toolbar row. 0 = leave it.
  */
-export function innerSlack(tileHeight: number, scrollers: readonly ScrollerBox[]): number {
+export function innerSlack(scrollers: readonly ScrollerBox[]): number {
   let most: number | null = null;
   for (const s of scrollers) {
     if (s.overflowY !== "auto" && s.overflowY !== "scroll") continue;
-    if (s.clientHeight < tileHeight * 0.4) continue;
+    if (s.capped || s.clientHeight < FIT_MIN_SCROLLER_H) continue;
     const slack = s.contentBottom !== null ? s.contentBottom - s.clientHeight : Math.max(0, s.scrollHeight - s.clientHeight);
     if (most === null || slack > most) most = slack;
   }

@@ -11,7 +11,6 @@
  * every field read is defensive because values are partial mid-stream.
  */
 
-import { InfoHint } from "@/components/official/InfoHint";
 import React from "react";
 import {
   Clock,
@@ -23,7 +22,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCount } from "@/features/marketing/components/ranks/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import {
   num,
   readSearchKindValue,
@@ -149,32 +147,13 @@ export function SeoRankReadingBlock({
 // provider_run_receipt — what one paid provider call cost and produced
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * 🚨 `cost_usd = null` means UNMEASURED, never free. Rendering an absent cost
- * as "$0.00" is exactly the coalesce that let 112 live SerpAPI runs spend
- * nothing against every ceiling. The component says "not reported" and means
- * it.
- */
-function costLabel(
-  cost: number | null,
-  formatCostDisplay: (usd: number) => string,
-): {
-  text: string;
-  unmeasured: boolean;
-} {
-  if (cost === null) return { text: "not reported", unmeasured: true };
-  return { text: formatCostDisplay(cost), unmeasured: false };
-}
-
 export function ProviderRunReceiptBlock({
   serverData,
   className,
 }: RankKindBlockProps) {
   const { value } = readSearchKindValue<"provider_run_receipt">(serverData);
-  const { format: formatCostDisplay } = useCostDisplay();
 
   const provider = text(value.provider);
-  const cost = costLabel(num(value.cost_usd), formatCostDisplay);
   const latency = num(value.latency_seconds);
   const created = num(value.created_observations);
   const existing = num(value.existing_observations);
@@ -197,20 +176,6 @@ export function ProviderRunReceiptBlock({
         <span className="font-medium text-foreground">
           {provider ? `${provider} run` : "Provider run"}
         </span>
-        <span
-          className={cn(
-            "rounded-md px-1.5 py-0.5 text-xs font-semibold tabular-nums",
-            cost.unmeasured
-              ? "border border-dashed border-warning/60 text-warning"
-              : "bg-muted text-foreground",
-          )}
-          title={cost.unmeasured ? undefined : "Spend, as the provider reported it"}
-        >
-          {cost.text}
-        </span>
-        {cost.unmeasured ? (
-          <InfoHint text="The provider reported no cost for this call. Unmeasured is not free, so it is not counted as zero." label="About unmeasured cost" />
-        ) : null}
         {fromCache && (
           <RankChip
             title={

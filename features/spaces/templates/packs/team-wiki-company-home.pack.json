@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0101",
-  "version": 4,
+  "version": 5,
   "title": "Team Wiki & Company Home",
   "description": "Companies of 10 to 200: a company home with news, team pages and a wiki that stays fresh.",
   "forWho": "Companies of 10 to 200 people",
@@ -620,6 +620,17 @@
               ]
             }
           }
+        ],
+        "statusImplies": [
+          {
+            "field": "verification",
+            "when": [
+              "Verified"
+            ],
+            "filled": [
+              "reviewed_on"
+            ]
+          }
         ]
       },
       {
@@ -1106,7 +1117,7 @@
         "Alderkeep Wharf"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

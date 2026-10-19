@@ -226,7 +226,6 @@ function renderBox(
           masterworkId={masterworkId}
           masterworkKind="edit"
           onRunFinished={onRunFinished}
-          priceScope="visible"
           onCompare={onCompare}
         />
       </Provider>,

@@ -30,7 +30,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PropertyRow } from "@ai-matrx/design-system/controls";
 import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
-import { ProTextarea } from "@/components/official/ProTextarea";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import { DurableRunFailure } from "@/lib/durable-run/DurableRunFailure";
 import {
@@ -55,6 +54,7 @@ import {
   useStrategyRuling,
 } from "../hooks";
 import { AGENT_ICON } from "@/components/icons/domain-icons";
+import { BrandStrategySurface, StrategyCorrectionsInput } from "./BrandStrategySurface";
 
 const SCOPE_NOUN: Record<StrategyScope, string> = {
   brand: "brand strategy",
@@ -289,7 +289,35 @@ export function StrategyBriefWorkspace({
       ]
     : [];
 
-  return (
+  // The room's own surface values (brand scope), read at trigger time.
+  const getOwnSurfaceValues = () =>
+    current
+      ? {
+          strategy_brief_markdown: current.briefMarkdown,
+          strategy_facts: Object.fromEntries(
+            FACT_ROWS[scope].map((row) => [row.key, asText(current.facts[row.key])]),
+          ),
+          strategy_service_lines: current.serviceLines.map((line) => ({
+            name: line.name,
+            customer_segment: line.customerSegment,
+            footprint: line.footprint,
+            footprint_detail: line.footprintDetail,
+            why: line.why,
+          })),
+          strategy_open_questions: openQuestions,
+          strategy_guidance: current.guidance,
+          strategy_guidance_draft: guidanceValue,
+          strategy_status: current.status,
+          strategy_version_no: current.versionNo,
+          strategy_confidence: {
+            score: current.agentConfidence,
+            reason: current.confidenceReason,
+          },
+          strategy_built_from: sources,
+        }
+      : {};
+
+  const body = (
     <div className="mx-auto w-full max-w-6xl space-y-3 px-3 py-3 sm:px-4">
       <h1 className="sr-only">{nounTitle}</h1>
       {/* Lead with the substance: who they are, then the strategy itself. */}
@@ -454,12 +482,10 @@ export function StrategyBriefWorkspace({
               about={`Say it the way you would say it out loud: "it's more like a 30-mile radius", "we stopped doing residential last year". This outranks everything the AI inferred and carries into every later version. Confirming with no corrections means "this is right".`}
             >
               <div className="space-y-2 p-3">
-                <ProTextarea
+                <StrategyCorrectionsInput
                   value={guidanceValue}
-                  onChange={(event) => setGuidance(event.target.value)}
+                  onChange={setGuidance}
                   placeholder="What the AI got wrong, or could not have known"
-                  autoGrow
-                  minHeight={96}
                 />
                 <div className="flex items-center gap-2">
                   <Button
@@ -633,5 +659,16 @@ export function StrategyBriefWorkspace({
         </SectionCard>
       ) : null}
     </div>
+  );
+
+  return scope === "brand" ? (
+    <BrandStrategySurface
+      getOwn={getOwnSurfaceValues}
+      onGuidanceDraft={current ? setGuidance : null}
+    >
+      {body}
+    </BrandStrategySurface>
+  ) : (
+    body
   );
 }

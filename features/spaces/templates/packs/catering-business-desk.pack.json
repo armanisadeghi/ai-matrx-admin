@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 3,
+  "version": 4,
   "title": "Catering Business Desk",
   "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
   "forWho": "Caterers and event food companies",
@@ -646,7 +646,17 @@
           "client": "Either record can be created or change status before the other.",
           "captain": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Served"
+            ],
+            "filled": [
+              "closed_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New event",
@@ -846,7 +856,8 @@
               "captain": "tm-2"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "menu_item",
@@ -2167,7 +2178,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

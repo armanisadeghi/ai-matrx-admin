@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 5,
+  "version": 6,
   "title": "Student OS",
   "description": "Students: classes, tasks, notes and study time in one dashboard for the term.",
   "forWho": "Students in high school and college",
@@ -843,7 +843,19 @@
               ]
             }
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Done"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "note",
@@ -1609,7 +1621,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

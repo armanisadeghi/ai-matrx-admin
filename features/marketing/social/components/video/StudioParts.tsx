@@ -2,7 +2,7 @@
 
 /**
  * Pieces the clone page and the project studio share: the live run log (shimmer on the step that is running),
- * the cost line (points with dollars to the cent beside), caption-look tiles drawn from the engine's real
+ * the cost line (points), caption-look tiles drawn from the engine's real
  * CAPTION_PRESETS, the composition preview (the engine's resolver + VideoPlayer) and an output download row.
  */
 
@@ -23,7 +23,7 @@ import { ShimmerText } from "@/components/loaders/ShimmerText";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { cn } from "@/lib/utils";
 
-import { dollars, points } from "../../video/clone";
+import { points } from "../../video/clone";
 import { plainFailureText } from "../../video/render-errors";
 import { isSessionExpired, useExpiredSessionGuard } from "../../video/session";
 import { useFileUrls } from "../../video/studio-hooks";
@@ -119,12 +119,11 @@ function tookText(s: RunStep | undefined): string | undefined {
 
 // ── cost ────────────────────────────────────────────────────────────────────────────────────────────
 
-export function CostLine({ usd, pts, label }: { usd: number | null | undefined; pts: number | null | undefined; label?: string }) {
+export function CostLine({ pts, label }: { pts: number | null | undefined; label?: string }) {
   return (
     <span className="inline-flex items-baseline gap-1.5 tabular-nums">
       {label ? <span className="type-meta text-muted-foreground">{label}</span> : null}
       <span className="type-label text-foreground">{points(pts)}</span>
-      <span className="type-meta text-muted-foreground">{dollars(usd)}</span>
     </span>
   );
 }

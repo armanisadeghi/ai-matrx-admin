@@ -314,18 +314,6 @@ export function distinctSnippets(
   return out;
 }
 
-// ── Money ────────────────────────────────────────────────────────────────────
-
-/** "$0.12", "$0.0042", "<$0.0001"; null reads as "—". */
-export function formatUsd(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
-  if (value === 0) return "$0.00";
-  if (value < 0.0001) return "<$0.0001";
-  if (value < 0.01) return `$${value.toFixed(4)}`;
-  if (value < 100) return `$${value.toFixed(2)}`;
-  return `$${Math.round(value).toLocaleString("en-US")}`;
-}
-
 // ── The quote ────────────────────────────────────────────────────────────────
 
 export interface ReferenceQuote {

@@ -22,6 +22,7 @@
  * the last test here fails if a future kind's live action escapes it.
  */
 
+import { openApprovalRow, pageButtonLabels, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -263,11 +264,11 @@ async function renderQueue(registry: ApprovalKind[]) {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   }
+  // The row's detail (its sentence, its review card) is in its window.
+  await openApprovalRow(container);
   return {
-    text: container.textContent ?? "",
-    labels: [...container.querySelectorAll("button")]
-      .map((button) => button.textContent ?? "")
-      .join("|"),
+    text: pageText(),
+    labels: pageButtonLabels().join("|"),
   };
 }
 

@@ -23,7 +23,6 @@ import {
   joinBlocks,
 } from "./kind-markdown-utils";
 import {
-  formatCost,
   formatDuration,
   mediaHandleOf,
   optionalNumber,
@@ -35,7 +34,6 @@ import {
   type MediaUsage,
 } from "./media-io-shared";
 import { KIND_KEY } from "@ai-matrx/content-ir";
-import { currentPointsRate } from "@/components/cost/pointsRate";
 import type { MaterializedKind } from "./kind-payload";
 import type {
   GeneratedVideo,
@@ -149,7 +147,6 @@ export function generatedVideoSetMarkdownFromValue(
 ): string {
   const videos = readGeneratedVideoList(value.videos);
   const model = optionalString(value.model);
-  const cost = formatCost(readUsage(value.usage)?.cost_usd ?? null, currentPointsRate());
 
   const lines =
     videos.length > 0
@@ -165,7 +162,7 @@ export function generatedVideoSetMarkdownFromValue(
 
   return joinBlocks([
     "# Generated video",
-    [model ? `Model: \`${model}\`` : null, cost ? `Cost: ${cost}` : null]
+    [model ? `Model: \`${model}\`` : null]
       .filter(Boolean)
       .join(" · ") || null,
     lines,

@@ -10,14 +10,11 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { Bookmark, Clapperboard, Copy, ExternalLink, FileText, Layers, ScanSearch, UserRound } from "lucide-react";
 import { registerRecordMenu, type ContextMenuExtraItem, type RecordMenuRows } from "@ai-matrx/context-menu/engine";
-import { usdToPoints } from "@ai-matrx/kit/format";
 
-import { currentPointsRate } from "@/components/cost/pointsRate";
 import { toast } from "@/lib/toast";
 
-import { actionUsd, formatPointsAlways } from "../cost";
 import { socialKeys } from "../hooks";
-import type { PostCardModel, SocialCosts } from "../types";
+import type { PostCardModel } from "../types";
 import { postActionRunners } from "./usePostActions";
 import { isCapturedPostId } from "../gated/capturedPosts";
 import { cloneHref, isClonable } from "../video/clone-links";
@@ -35,14 +32,6 @@ export interface PostCardMenuInput {
   onSave?: ((post: PostCardModel) => void) | undefined;
   extraActions?: ReadonlyArray<{ id: string; label: string; onSelect: (post: PostCardModel) => void }> | undefined;
   queryClient: QueryClient;
-}
-
-/** The points a transcript click uses, read from the costs the page already holds (no fetch at open). */
-function transcriptPoints(client: QueryClient, organizationId: string): string | null {
-  const costs = client.getQueryData<SocialCosts>(["marketing", "social", "costs", organizationId]);
-  if (!costs) return null;
-  const rate = currentPointsRate();
-  return formatPointsAlways(actionUsd(costs, "transcript", 1), (usd) => usdToPoints(usd, { rate }));
 }
 
 export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
@@ -83,9 +72,8 @@ export function postCardMenuRows(input: PostCardMenuInput): RecordMenuRows {
       if (!onSave) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: run(runners.saveToSwipe) });
     } else if (canEdit) {
       if (!onSave) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: run(runners.saveToSwipe) });
-      const points = transcriptPoints(queryClient, brand.organizationId);
-      items.push({ kind: "item", id: "transcript", label: "Get transcript", icon: FileText, ...(points ? { hint: points } : {}), onSelect: run(runners.transcript) });
-      items.push({ kind: "item", id: "breakdown", label: "Run breakdown", icon: ScanSearch, hint: "AI points", onSelect: run(runners.breakdown) });
+      items.push({ kind: "item", id: "transcript", label: "Get transcript", icon: FileText, onSelect: run(runners.transcript) });
+      items.push({ kind: "item", id: "breakdown", label: "Run breakdown", icon: ScanSearch, onSelect: run(runners.breakdown) });
     }
   }
   if (onSave && canEdit) items.push({ kind: "item", id: "save-swipe", label: "Save to swipe file", icon: Bookmark, onSelect: () => onSave(post) });

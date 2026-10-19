@@ -294,18 +294,18 @@ export const marketingSocialSwipeManifest = build({
   description: "The posts and ads saved for inspiration, in collections.",
   briefValues: ["swipe_loaded", "brand_name", "item_count", "collections"],
   readinessNote:
-    "Values, filter and open tools, New collection, create_swipe_links (Save link, spends points), update_swipe_collections (rename / archive / restore) and update_swipe_items (note and tags). Every person action has an agent twin except removing an item from a collection and transcribing.",
+    "Values, filter and open tools, New collection, create_swipe_links (Save link), update_swipe_collections (rename / archive / restore) and update_swipe_items (note and tags). Every person action has an agent twin except removing an item from a collection and transcribing.",
   intro: `<surface_intro>
 You are on the brand's Swipe file: posts and ads the team saved, grouped in collections. Check swipe_loaded first.
 collections lists each collection with its item count; scope says which one is open (all = All saved). item_list is the condensed items shown under the current filters; items holds every row. ${SOCIAL_SWIPE_TOOLS.setFilters} changes the search, type, platform, tag and collection shown; ${SOCIAL_SWIPE_TOOLS.openItem} opens one item's note/tags sheet; ${SOCIAL_SWIPE_TOOLS.newCollection} creates a collection for this brand and needs approval.
-create_swipe_links saves post links into a collection (it fetches each post and spends points; say so before you call it). update_swipe_collections renames, archives or restores collections. update_swipe_items changes an item's note and tags. The person approves each on a card.
+create_swipe_links saves post links into a collection (it fetches each post; the person approves it). update_swipe_collections renames, archives or restores collections. update_swipe_items changes an item's note and tags. The person approves each on a card.
 </surface_intro>`,
   groups: [{ key: "swipe", label: "Swipe file", sortOrder: 200 }],
   writeTargets: [
     listTarget(
       "create_swipe_links",
       "Save links",
-      'Saves links to single posts into the swipe file, exactly as the Save link dialog does: each post is fetched (this SPENDS POINTS per link; the approval card names the points) and filed in a collection. Value is a JSON ARRAY of 1-10 objects { "url": "<a post link>", "collection_id": "<from collections>" OR "new_collection_name": "<name>", "note"?: string, "tags"?: [string] }. A profile link, a bad collection_id or both/neither collection fields refuses the whole list.',
+      'Saves links to single posts into the swipe file, exactly as the Save link dialog does: each post is fetched (the person approves it on a card) and filed in a collection. Value is a JSON ARRAY of 1-10 objects { "url": "<a post link>", "collection_id": "<from collections>" OR "new_collection_name": "<name>", "note"?: string, "tags"?: [string] }. A profile link, a bad collection_id or both/neither collection fields refuses the whole list.',
       "items",
       "swipe",
       300,
@@ -402,8 +402,8 @@ export const marketingSocialAdsManifest = build({
   readinessNote:
     "Values, result filters, Search, and create_ / update_ / delete_tracked_advertisers (Track, Look again or mark seen, Stop tracking). Every person action has an agent twin.",
   intro: `<surface_intro>
-You are on the brand's Ad library. section says Search or Tracked. In Search, results holds the ads of the last search (empty until one runs; searched says what ran); each search spends points, so ${SOCIAL_ADS_TOOLS.search} needs the person's approval. ${SOCIAL_ADS_TOOLS.setFilters} narrows the shown results (active only, format, sort). In Tracked, tracked_advertisers lists the advertisers being followed, each opens to its ads.
-create_tracked_advertisers follows the advertiser of ads in results; update_tracked_advertisers looks again (spends points; say so first) or marks an advertiser's ads seen; delete_tracked_advertisers stops tracking. The person approves each on a card.
+You are on the brand's Ad library. section says Search or Tracked. In Search, results holds the ads of the last search (empty until one runs; searched says what ran); ${SOCIAL_ADS_TOOLS.search} needs the person's approval. ${SOCIAL_ADS_TOOLS.setFilters} narrows the shown results (active only, format, sort). In Tracked, tracked_advertisers lists the advertisers being followed, each opens to its ads.
+create_tracked_advertisers follows the advertiser of ads in results; update_tracked_advertisers looks again (the person approves it) or marks an advertiser's ads seen; delete_tracked_advertisers stops tracking. The person approves each on a card.
 Never search to look around: results is already what the person sees.
 </surface_intro>`,
   groups: [{ key: "ads", label: "Ad library", sortOrder: 200 }],
@@ -419,7 +419,7 @@ Never search to look around: results is already what the person sees.
     listTarget(
       "update_tracked_advertisers",
       "Look again",
-      'For tracked advertisers: look_again searches their ad library for new ads, exactly as Look again does (SPENDS POINTS per advertiser; the approval card names the points); mark_seen marks their current ads seen. Value is a JSON ARRAY of { "id": "<from tracked_advertisers>", "look_again"?: true, "mark_seen"?: true }.',
+      'For tracked advertisers: look_again searches their ad library for new ads, exactly as Look again does (the person approves it on a card); mark_seen marks their current ads seen. Value is a JSON ARRAY of { "id": "<from tracked_advertisers>", "look_again"?: true, "mark_seen"?: true }.',
       "tracked_advertisers",
       "ads",
       310,
@@ -462,7 +462,7 @@ Never search to look around: results is already what the person sees.
     {
       name: SOCIAL_ADS_TOOLS.search,
       label: "Search ad library",
-      description: "Runs a search in one ad library and shows the results on the page. Spends points. Works on the Search section only.",
+      description: "Runs a search in one ad library and shows the results on the page. Works on the Search section only.",
       inputSchema: {
         type: "object",
         properties: {

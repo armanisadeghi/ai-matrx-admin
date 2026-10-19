@@ -27,7 +27,6 @@ export type SectionState<T> =
       reused: boolean;
       /** When the returned data was collected (the evidence run's date). */
       observedAt: string | null;
-      chargedUsd: number | null;
       /** Some figures failed; `notice` says which. */
       partial: boolean;
       notice: string | null;
@@ -63,7 +62,6 @@ export function sectionFromOutcome<T>(
           data: envelope.data,
           reused: envelope.cost?.reused === true,
           observedAt: evidence?.observed_at ?? (typeof asOf === "string" ? asOf : null),
-          chargedUsd: envelope.cost?.charged_usd ?? null,
           partial: envelope.status === "partial",
           notice: envelope.status === "partial" ? (envelope.notices?.[0] ?? null) : null,
         };

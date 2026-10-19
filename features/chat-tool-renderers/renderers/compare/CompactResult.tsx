@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ExternalLink, Trophy } from "lucide-react";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { cn } from "@/lib/utils";
 import type { ComparisonResult } from "@/features/comparison/contract";
@@ -13,12 +12,12 @@ const FIELDS_SHOWN = 3;
 
 /**
  * The finished comparison, chat-sized: the leader's headline, the first few numeric fields as bars
- * (primary first), the points it cost, and the way to the full page. Built from the SAME pure readers
+ * (primary first), and the way to the full page. Built from the SAME pure readers
  * the full `ComparisonView` uses (`verdict.ts`, `ItemLogo`) — that view is a page-sized flagship
  * (64 px verdict, ranked card grid, field-by-field grid) with no compact mode, so the card wraps its
  * readers, not the view.
  */
-export function CompactResult({ result, runId, seesDollars }: { result: ComparisonResult; runId: string; seesDollars: boolean }) {
+export function CompactResult({ result, runId }: { result: ComparisonResult; runId: string }) {
   const verdict = verdictOf(result);
   const headline = headlineOf(result);
   const items = comparedItems(result);
@@ -78,11 +77,7 @@ export function CompactResult({ result, runId, seesDollars }: { result: Comparis
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2">
-        <span className="type-meta text-muted-foreground">
-          Cost <span className="tabular-nums text-foreground">{formatPoints(result.total_points)}</span>
-          {seesDollars && result.total_cost_display ? <span className="tabular-nums"> · {result.total_cost_display}</span> : null}
-        </span>
+      <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-2">
         <Link href={`/compare?run=${encodeURIComponent(runId)}`} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline" data-compare-open="">
           Open full comparison <ExternalLink className="h-3 w-3" aria-hidden />

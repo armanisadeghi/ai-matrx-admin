@@ -72,19 +72,6 @@ export interface WorkItem {
   completedAt: number | null;
 }
 
-export function sumCompletedAiCosts(
-  items: Array<Pick<WorkItem, "status" | "metadata">>,
-): number | null {
-  const completed = items.filter((item) => item.status === "success");
-  if (completed.some((item) => typeof item.metadata.cost_usd !== "number")) {
-    return null;
-  }
-  return completed.reduce(
-    (sum, item) => sum + (item.metadata.cost_usd ?? 0),
-    0,
-  );
-}
-
 export interface StageState {
   kind: StageKind;
   /**
@@ -928,7 +915,6 @@ export interface PipelineDerived {
   /** "5 analyses serving 7 keywords (35 → 5 deduped)" or null when not applicable */
   dedupLabel: string | null;
   /** Catalog-derived spend streamed by completed AI operations. */
-  runningCostUsd: number | null;
 }
 
 export interface UsePipelineProgressResult {
@@ -1043,13 +1029,6 @@ export function usePipelineProgress(opts?: {
       }
     }
 
-    // Running spend comes only from the server's catalog-priced usage. If a
-    // completed AI operation has no cost, show unknown instead of guessing.
-    const runningCostUsd = sumCompletedAiCosts([
-      ...Object.values(stages.analyze.items),
-      ...Object.values(stages.synthesize.items),
-    ]);
-
     // Rate from active stage
     const active = state.activeStage ? stages[state.activeStage] : null;
     const now = active?.recentCompletions.at(-1) ?? 0;
@@ -1094,7 +1073,6 @@ export function usePipelineProgress(opts?: {
       uniqueModels: Array.from(uniqueModelsSet),
       uniqueAgents: Array.from(uniqueAgentsSet),
       dedupLabel,
-      runningCostUsd,
     };
   }, [state, topic]);
 

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 2,
+  "version": 3,
   "title": "Day Spa HQ",
   "description": "Book treatments by room and therapist, sell gift cards, and track retail stock.",
   "forWho": "Day spas and wellness retreats",
@@ -827,7 +827,17 @@
           "plan": "Either record can be created or change status before the other.",
           "staff": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "booking_name",
@@ -1407,7 +1417,8 @@
               "price": 140
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "payment",
@@ -1432,7 +1443,8 @@
               "Paid"
             ],
             "filled": [
-              "method"
+              "method",
+              "paid_on"
             ]
           }
         ],
@@ -1693,7 +1705,8 @@
               "method": "Membership credit"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -2143,7 +2156,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

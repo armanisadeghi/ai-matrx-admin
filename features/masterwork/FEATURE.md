@@ -1394,3 +1394,4 @@ canonical words (Rulebook · a Masterwork · Build · Audition · Scout · Appro
   boundary is MEASURED with a Range and the selection is clamped to the work, because a
   triple-click ends outside it; it used to record a correction against the wrong passage, or
   drop the gesture in silence.
+- 2026-10-18 — Claude: **Run price beside Run it removed** (law 14: a price on a doing-button never shows). `runPrice.tsx`, its guard and the `priceScope` prop are gone; the run history row and the Bench still show points.

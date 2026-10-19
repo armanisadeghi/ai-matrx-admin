@@ -17,6 +17,7 @@
  * an empty page so the other kinds stay quiet.
  */
 
+import { openApprovalRow, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -294,24 +295,9 @@ async function mountPage() {
   await settle();
 }
 
-/**
- * One approval on the shared table (2026-10-18): its row, plus the opened detail row under it
- * (a store change opens by itself — its body is the value now beside the value it would get).
- */
+/** One approval on the shared table: one line per proposal (its detail is in its window). */
 function rowOf(approvalId: string): HTMLElement | null {
-  const tr = container!.querySelector<HTMLElement>(`tr[data-row-id="store_change:${approvalId}"]`);
-  if (!tr) return null;
-  const next = tr.nextElementSibling as HTMLElement | null;
-  const parts = next && !next.hasAttribute("data-row-id") ? [tr, next] : [tr];
-  return {
-    get textContent() {
-      return parts.map((part) => part.textContent ?? "").join(" ");
-    },
-    querySelector: (selector: string) =>
-      parts.map((part) => part.querySelector(selector)).find(Boolean) ?? null,
-    querySelectorAll: (selector: string) =>
-      parts.flatMap((part) => Array.from(part.querySelectorAll(selector))),
-  } as unknown as HTMLElement;
+  return container!.querySelector<HTMLElement>(`tr[data-row-id="store_change:${approvalId}"]`);
 }
 
 function buttonIn(row: HTMLElement, label: string): HTMLButtonElement {
@@ -356,12 +342,15 @@ describe("/approvals shows the record store's waiting changes beside the assists
 
   it("shows a change to a record as the value it has now beside the value it would get", async () => {
     await mountPage();
-    const row = rowOf(PATCH_APPROVAL)!;
-    // "Scheduled" exists only in the record read; "Completed" only in the filed change.
-    expect(row.textContent).toContain("Scheduled");
-    expect(row.textContent).toContain("Completed");
     // A change filed in a conversation-less run names the agent without a person-less guess.
-    expect(row.textContent).toContain("An agent for Dana Whitfield");
+    expect(rowOf(PATCH_APPROVAL)!.textContent).toContain("An agent for Dana Whitfield");
+    // ONE LINE PER PROPOSAL: the list never opens a row by itself (Arman, 2026-10-18).
+    expect(container!.textContent).not.toContain("Scheduled");
+    // The body (value now beside the value it would get) is in the row's window.
+    await openApprovalRow(container!, `store_change:${PATCH_APPROVAL}`);
+    // "Scheduled" exists only in the record read; "Completed" only in the filed change.
+    expect(pageText()).toContain("Scheduled");
+    expect(pageText()).toContain("Completed");
   });
 
   it("approves one through custom.work_approval_decide and the row leaves the waiting list", async () => {

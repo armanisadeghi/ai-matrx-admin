@@ -46,7 +46,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "create_accounts",
     label: "Track accounts",
     description:
-      'Tracks social accounts for this brand, exactly as the Track dialog does: each account\'s profile and latest posts are fetched (this SPENDS POINTS per account; the approval card names the points). Value is a JSON ARRAY of 1-10 objects { "handle_or_url": "<profile link, or a handle>", "platform"?: "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "facebook" | "threads" | "reddit" | ... (required with a bare handle), "role"?: "own" | "competitor" | "inspiration" | "client" (default competitor) }. A link to a single post is refused (save posts in the Swipe file). An account already tracked comes back "already tracked".',
+      'Tracks social accounts for this brand, exactly as the Track dialog does: each account\'s profile and latest posts are fetched (the person approves it on a card). Value is a JSON ARRAY of 1-10 objects { "handle_or_url": "<profile link, or a handle>", "platform"?: "instagram" | "tiktok" | "youtube" | "x" | "linkedin" | "facebook" | "threads" | "reddit" | ... (required with a bare handle), "role"?: "own" | "competitor" | "inspiration" | "client" (default competitor) }. A link to a single post is refused (save posts in the Swipe file). An account already tracked comes back "already tracked".',
     valueType: "array",
     updatesValue: "accounts",
     mode: "entity",
@@ -58,7 +58,7 @@ const writeTargets: SurfaceWriteTarget[] = [
     name: "update_accounts",
     label: "Update accounts",
     description:
-      'Changes accounts on this page, exactly as the row buttons do. Value is a JSON ARRAY of 1-10 objects { "row_id": "<from accounts>", "role"?: "own" | "competitor" | "inspiration" | "client", "tracked"?: true | false, "refresh"?: true }. tracked false = Stop tracking (archives it for the organization; saved posts and history stay). tracked true = Track as Own, only for an untracked own account (spends points). refresh fetches new numbers (spends points). An unknown row_id refuses the whole list.',
+      'Changes accounts on this page, exactly as the row buttons do. Value is a JSON ARRAY of 1-10 objects { "row_id": "<from accounts>", "role"?: "own" | "competitor" | "inspiration" | "client", "tracked"?: true | false, "refresh"?: true }. tracked false = Stop tracking (archives it for the organization; saved posts and history stay). tracked true = Track as Own, only for an untracked own account. refresh fetches new numbers. An unknown row_id refuses the whole list.',
     valueType: "array",
     updatesValue: "accounts",
     mode: "entity",
@@ -83,7 +83,7 @@ export const marketingSocialAccountsManifest: SurfaceManifest = {
   intro: `<surface_intro>
 You are on the brand's Social accounts list: its own accounts and the competitor, inspiration and client accounts it tracks. Check accounts_loaded first.
 account_list is the condensed rows (read it first); accounts holds every row. A row with has_page true opens an account page at /marketing/<brand>/socials/<platform>/<profile_id>; has_page false means the account is not tracked yet, so no numbers exist. Followers or growth null mean not measured, never zero.
-create_accounts tracks accounts from a handle or profile link (spends points; say so first). update_accounts changes a tracked account's role, stops tracking it, tracks an untracked own account, or refreshes its numbers (refresh spends points). The person approves each on a card.
+create_accounts tracks accounts from a handle or profile link . update_accounts changes a tracked account's role, stops tracking it, tracks an untracked own account, or refreshes its numbers. The person approves each on a card.
 </surface_intro>`,
   groups,
   writeTargets,

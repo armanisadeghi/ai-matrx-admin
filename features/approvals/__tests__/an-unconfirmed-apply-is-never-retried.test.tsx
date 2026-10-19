@@ -25,6 +25,7 @@
  * reading as applied or failed.
  */
 
+import { openApprovalRow, pageButtonLabels, pageText } from "./open-approval-row";
 import * as React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -288,10 +289,11 @@ describe("the queue shows the sentence and offers NO retry", () => {
         </QueryClientProvider>,
       );
     });
-    const text = container.textContent ?? "";
+    // The row's state sentence is in its window.
+    await openApprovalRow(container);
+    const text = pageText();
     expect(text).toContain("check the document before retrying");
-    const labels = [...container.querySelectorAll("button")]
-      .map((button) => button.textContent ?? "")
+    const labels = pageButtonLabels()
       .join("|");
     expect(labels).not.toContain("Try again");
     expect(labels).not.toContain("Write it");

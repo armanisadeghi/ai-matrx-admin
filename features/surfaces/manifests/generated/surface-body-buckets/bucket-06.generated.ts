@@ -5,10 +5,10 @@ export { aiWorkConversationsManifest as s6 } from "../../ai-work-conversations.m
 export { codeEditorManifest as s20 } from "../../code-editor.manifest";
 export { listsManifest as s46 } from "../../lists.manifest";
 export { marketingAutomationsManifest as s88 } from "../../marketing-automations.manifest";
-export { educationFamilyManifest as s110 } from "../../education-family.manifest";
-export { educationQuickMathAuthoringManifest as s137 } from "../../education-quick-math-authoring.manifest";
-export { educationGameSoloManifest as s140 } from "../../education-game-solo.manifest";
-export { settingsManifest as s148 } from "../../settings.manifest";
-export { meetingManifest as s167 } from "../../meeting.manifest";
-export { marketingSocialRollupManifest as s200 } from "../../marketing-social-rollup.manifest";
-export { commerceLabelBatchManifest as s223 } from "../../commerce-label-batch.manifest";
+export { educationFamilyManifest as s111 } from "../../education-family.manifest";
+export { educationQuickMathAuthoringManifest as s138 } from "../../education-quick-math-authoring.manifest";
+export { educationGameSoloManifest as s141 } from "../../education-game-solo.manifest";
+export { settingsManifest as s149 } from "../../settings.manifest";
+export { meetingManifest as s168 } from "../../meeting.manifest";
+export { marketingSocialRollupManifest as s201 } from "../../marketing-social-rollup.manifest";
+export { commerceLabelBatchManifest as s225 } from "../../commerce-label-batch.manifest";

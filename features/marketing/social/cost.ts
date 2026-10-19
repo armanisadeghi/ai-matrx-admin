@@ -13,7 +13,6 @@
  *   - never a vendor name, never "credits".
  *
  * Screens call `useSocialSpend(organizationId)`:
- *   `costText("track", 3)` -> "≈ 114 points" or null (trivial / unknown),
  *   `await confirmSpend("profile_page", pages, { title, confirmLabel })` -> true when trivial,
  *   otherwise the shared confirm dialog naming the points.
  */
@@ -23,7 +22,7 @@ import { confirm } from "@/components/dialogs/confirm/ConfirmDialogHost";
 import { shouldWarnAboutCost } from "@/components/cost/costTier";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { getCosts } from "./server";
-import { commentsUsd, postsUsd } from "./post-count";
+import { postsUsd } from "./post-count";
 import type { SocialCosts, SocialSpendAction } from "./types";
 
 export type { SocialSpendAction } from "./types";
@@ -74,7 +73,8 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     toPoints: (usd: number) => toPoints(usd),
   };
 
-  function costText(action: SocialSpendAction, count = 1): string | null {
+  /** The cost words for a CONFIRM step (null when trivial or unknown). Never for a button or label. */
+  function confirmCostText(action: SocialSpendAction, count = 1): string | null {
     return formatPointsCost(actionUsd(costs.data, action, count), display);
   }
 
@@ -84,7 +84,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return formatPointsAlways(actionUsd(costs.data, action, count), display.toPoints) ?? "points (price not loaded yet)";
   }
 
-  /** The points a click will use, always named (even when small): "≈ 38 points", or null when unpriced. */
+  /** The points a confirm step names before work is committed, even when small; null when unpriced. */
   function pointsText(action: SocialSpendAction, count = 1): string | null {
     return formatPointsAlways(actionUsd(costs.data, action, count), display.toPoints);
   }
@@ -94,7 +94,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     count: number,
     dialog: { title: string; confirmLabel: string; description?: string },
   ): Promise<boolean> {
-    const words = costText(action, count);
+    const words = confirmCostText(action, count);
     if (!words) return true;
     return confirm({
       title: dialog.title,
@@ -103,21 +103,11 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     });
   }
 
-  /** The points a fetch of `count` posts will use, always named; null when unpriced. */
-  function postsText(platform: string, count: number): string | null {
-    return formatPointsAlways(postsUsd(costs.data, platform, count), display.toPoints);
-  }
-
-  /** The points one fetch of `count` posts from EACH platform uses, as one total; null when any is unpriced. */
+  /** The points one fetch of `count` posts from EACH platform uses, as one total, for a pre-commit preview; null when any is unpriced. */
   function postsTotalText(platforms: string[], count: number): string | null {
     const each = platforms.map((p) => postsUsd(costs.data, p, count));
     if (!each.length || each.some((u) => u == null)) return null;
     return formatPointsAlways(each.reduce<number>((sum, u) => sum + (u ?? 0), 0), display.toPoints);
-  }
-
-  /** The points `count` comments will use, always named; null when unpriced. */
-  function commentsText(count: number): string | null {
-    return formatPointsAlways(commentsUsd(costs.data, count), display.toPoints);
   }
 
   /** Confirm a fetch of `count` posts of `platform` (a warning-tier cost only; trivial costs ask nothing). */
@@ -131,12 +121,7 @@ export function useSocialSpend(organizationId: string | null | undefined) {
     return confirm({ title: dialog.title, description: `Uses ${words.replace(/^≈ /, "about ")}.`, confirmLabel: dialog.confirmLabel });
   }
 
-  /** The dollars a fetch of `count` posts will cost (for a per-row cost column); null when unpriced. */
-  function postsUsdOf(platform: string, count: number): number | null {
-    return postsUsd(costs.data, platform, count);
-  }
-
-  return { costText, pointsText, agentCostText, confirmSpend, confirmPosts, postsText, postsTotalText, commentsText, postsUsd: postsUsdOf };
+  return { confirmCostText, pointsText, agentCostText, confirmSpend, confirmPosts, postsTotalText };
 }
 
 // ---------------------------------------------------------------------------

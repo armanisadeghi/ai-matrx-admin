@@ -40,7 +40,6 @@ import {
 import { MatrxDataTable } from "@ai-matrx/design-system/data-table";
 import type { MatrxColumnDef } from "@ai-matrx/design-system/data-table/types";
 import { formatAbsoluteDate, formatCount, formatUsd } from "@ai-matrx/kit/format";
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { KpiGrid, KpiTile } from "@/components/official/kpi/KpiTile";
@@ -76,13 +75,6 @@ export const COMPETITOR_SEED_KEYWORDS = 10;
 
 export function parseTab(value: string | null): DomainTab {
   return value === "keywords" || value === "competitors" || value === "gap" ? value : "overview";
-}
-
-export function priceLabel(
-  price: ActionPrice | undefined,
-  format: (usd: number | null | undefined) => string,
-): string {
-  return price?.costUsd != null ? format(price.costUsd) : "cost unknown";
 }
 
 export function shortDate(value: string | null): string {
@@ -462,13 +454,10 @@ export function SourceLine<T>({
   busy: boolean;
   children?: ReactNode;
 }) {
-  const { format } = useCostDisplay();
   if (state.kind !== "ready") return null;
   const source = state.reused
     ? `Reused from ${shortDate(state.observedAt)}`
-    : `Bought ${shortDate(state.observedAt)}${
-        state.chargedUsd != null ? ` · ${format(state.chargedUsd)}` : ""
-      }`;
+    : `Bought ${shortDate(state.observedAt)}`;
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Badge tone={state.reused ? "neutral" : "info"} title={`${what}: market-data estimate`}>
@@ -482,7 +471,7 @@ export function SourceLine<T>({
         onClick={onRefresh}
         title={`Buy a fresh read of ${what.toLowerCase()}`}
       >
-        Refresh · {priceLabel(price, format)}
+        Refresh
       </Button>
       {state.partial && state.notice ? (
         <Badge tone="warning" title={state.notice}>
@@ -513,7 +502,6 @@ export function SectionGate<T>({
   onRetry: () => void;
   children: ReactNode;
 }) {
-  const { format } = useCostDisplay();
   switch (state.kind) {
     case "idle":
       return null;
@@ -533,12 +521,12 @@ export function SectionGate<T>({
           line={
             state.note ??
             (price?.reuseDays != null
-              ? `${priceLabel(price, format)} per run, then free for ${price.reuseDays} days.`
-              : `${priceLabel(price, format)} per run.`)
+              ? `A run is saved and reused for ${price.reuseDays} days.`
+              : "Run it to fetch the latest figures.")
           }
           action={
             <Button variant="primary" onClick={onBuy}>
-              Run · {priceLabel(price, format)}
+              Run
             </Button>
           }
         />

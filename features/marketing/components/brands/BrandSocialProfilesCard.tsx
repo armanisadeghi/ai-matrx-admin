@@ -41,10 +41,6 @@ import { useMarketingBrand } from "@/features/marketing/lib/brand-context";
 import { marketingRoutes } from "@/features/marketing/lib/routes";
 import type { BrandProperty } from "@/features/marketing/types";
 
-function joinTitle(label: string, cost: string | null): string {
-  return cost ? `${label} · ${cost}` : label;
-}
-
 type Tracking = "Tracked" | "Not tracked" | "Not supported" | "Needs a handle" | "Listed";
 const TRACKING_VALUES: readonly Tracking[] = ["Tracked", "Not tracked", "Not supported", "Needs a handle", "Listed"];
 
@@ -124,7 +120,7 @@ export function BrandSocialProfilesCard({
   const router = useRouter();
   const brandKind = useMarketingBrand().kind;
   const accounts = useBrandSocialAccounts(brandId);
-  const { busyRow, progress, trackOwn, trackAllOwn, costText } = useTrackOwn(organizationId, brandId);
+  const { busyRow, progress, trackOwn, trackAllOwn } = useTrackOwn(organizationId, brandId);
   const invalidate = useInvalidateSocial();
   const { open: openCapture, node: captureNode } = useRefusedRead(organizationId, () => void invalidate());
 
@@ -399,7 +395,7 @@ export function BrandSocialProfilesCard({
         id: "track",
         icon: UserPlus,
         label: "Track",
-        tooltip: canTrack ? joinTitle("Track as Own", costText("track", 1)) : a ? "Already tracked" : "No account to track",
+        tooltip: canTrack ? "Track as Own" : a ? "Already tracked" : "No account to track",
         loading: busyRow === r.id,
         disabled: !canTrack || busyRow !== null,
         onClick: () => {
@@ -457,7 +453,7 @@ export function BrandSocialProfilesCard({
               variant="outline"
               icon={<UserPlus />}
               disabled={busyRow !== null}
-              title={joinTitle("Track every profile not tracked yet", costText("track", untracked.length))}
+              title={"Track every profile not tracked yet"}
               onClick={() => void trackAllOwn(untracked)}
             >
               {busyRow === "bulk" ? "Tracking…" : `Track all (${untracked.length})`}

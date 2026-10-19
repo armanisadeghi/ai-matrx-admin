@@ -116,15 +116,9 @@ export type PostHost = "window" | "canvas" | "page";
 // Tabs
 // ---------------------------------------------------------------------------
 
-/** The points a button will use, named under it even when small. */
-function CostLine({ text }: { text: string | null }) {
-  return text ? <p className="text-xs tabular-nums text-muted-foreground">{text}</p> : null;
-}
-
 function TranscriptTab({ postId, organizationId, canEdit }: { postId: string; organizationId: string; canEdit: boolean }) {
   const transcript = usePostTranscript(postId);
   const client = useQueryClient();
-  const { pointsText } = useSocialSpend(organizationId);
   const [busy, setBusy] = useState(false);
 
   async function fetchIt() {
@@ -155,12 +149,9 @@ function TranscriptTab({ postId, organizationId, canEdit }: { postId: string; or
       <div className="flex flex-col items-start gap-2 py-1">
         <p className="text-xs text-muted-foreground">No transcript yet.</p>
         {canEdit ? (
-          <>
-            <Button variant="outline" onClick={() => void fetchIt()} disabled={busy}>
-              {busy ? "Transcribing…" : "Get transcript"}
-            </Button>
-            <CostLine text={pointsText("transcript")} />
-          </>
+          <Button variant="outline" onClick={() => void fetchIt()} disabled={busy}>
+            {busy ? "Transcribing…" : "Get transcript"}
+          </Button>
         ) : null}
       </div>
     );
@@ -400,12 +391,9 @@ function BreakdownTab({ postId, organizationId, canEdit }: { postId: string; org
         <>
           <p className="text-xs text-muted-foreground">Hook, format, audio and call to action.</p>
           {canEdit ? (
-            <>
-              <Button variant="outline" onClick={() => void run()} disabled={busy}>
-                {busy ? "Analyzing…" : "Run breakdown"}
-              </Button>
-              <CostLine text="Uses AI, billed in points" />
-            </>
+            <Button variant="outline" onClick={() => void run()} disabled={busy}>
+              {busy ? "Analyzing…" : "Run breakdown"}
+            </Button>
           ) : null}
         </>
       )}
@@ -522,7 +510,6 @@ export function PostDetailBody({
   const canEdit = useCanEditSocial(brandSeg);
   const collections = useSwipeCollections(organizationId);
   const client = useQueryClient();
-  const { pointsText } = useSocialSpend(organizationId);
   const [tab, setTab] = useState<DetailTab>(initialTab);
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -650,9 +637,7 @@ export function PostDetailBody({
         icon={<RefreshCw />}
         disabled={busy}
         onClick={() => void refreshMetrics(post.url)}
-        title={[`Refresh numbers · updated ${relativeAge(post.last_refreshed_at)}`, pointsText("post")]
-          .filter(Boolean)
-          .join(" · ")}
+        title={`Refresh numbers · updated ${relativeAge(post.last_refreshed_at)}`}
         aria-label="Refresh numbers"
       />
       ) : null}

@@ -158,7 +158,6 @@ export function DiscoveryStep({
             <>
               Compare {picked.length} · <span className="font-medium text-foreground tabular-nums">{formatPoints(quote.data.total_points)}</span>
               {seesDollars && quote.data.total_usd_display ? <span className="tabular-nums"> · {quote.data.total_usd_display}</span> : null}
-              {result.points > 0 ? <span className="tabular-nums"> · finding used {formatPoints(result.points, { short: true })}</span> : null}
             </>
           ) : quote.isError ? (
             <span className="inline-flex items-center gap-2">

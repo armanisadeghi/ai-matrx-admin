@@ -99,7 +99,7 @@ function chip(active: boolean) {
 
 export function SwipeFileTab() {
   const { brandId, organizationId, canEdit } = useSocials();
-  const { costText, agentCostText } = useSocialSpend(organizationId);
+  const { confirmCostText, agentCostText } = useSocialSpend(organizationId);
   const invalidate = useInvalidateSocial();
   const collections = useAllSwipeCollections();
   const [showArchived, setShowArchived] = useState(false);
@@ -210,7 +210,7 @@ export function SwipeFileTab() {
       }
       const ok = await confirm({
         title: `Transcribe ${todo.length} ${todo.length === 1 ? "post" : "posts"}?`,
-        description: [costText("transcript", todo.length), done.size ? `${done.size} already transcribed ${done.size === 1 ? "is" : "are"} skipped.` : null].filter(Boolean).join(" · ") || undefined,
+        description: [confirmCostText("transcript", todo.length), done.size ? `${done.size} already transcribed ${done.size === 1 ? "is" : "are"} skipped.` : null].filter(Boolean).join(" · ") || undefined,
         confirmLabel: "Transcribe",
         variant: "destructive",
       });

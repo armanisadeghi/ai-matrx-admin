@@ -8,7 +8,7 @@
  * The box: a person types a CONCEPT ("best bike shops in Bend", "payroll software",
  * "who competes with @handle") or a LIST ("Hydro Flask vs Yeti", names with their city, links). The
  * box says which it read — "Find for me" or "Compare these" — and the person can flip it. A concept
- * shows how we will search for it and what finding costs before anything is spent; a list shows its
+ * shows how we will search for it; a list shows its
  * items as chips. Links decide their own kind; coming kinds stay visible, marked "Soon".
  */
 
@@ -17,7 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Building2, Compass, Globe, MapPin, Plus, Search, Share2, ShoppingBag, Store } from "lucide-react";
 import { Button, Chip, SegmentedControl } from "@ai-matrx/design-system/controls";
 import { announceComingSoon } from "@ai-matrx/kit/coming-soon";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { ProInput } from "@/components/official/ProInput";
 import { ProTextarea } from "@/components/official/ProTextarea";
@@ -73,8 +72,6 @@ export function CompareInput({
   const parsed = parseInput(text, kindKey as KindKey, area);
   const linkKind = parsed.suggestedKind ? kinds.find((k) => k.key === parsed.suggestedKind) ?? null : null;
   const blockedByLinks = linkKind !== null && linkKind.status !== "live";
-  const names = parsed.items.filter((i) => !isLink(i.text)).length;
-  const lookupCost = (kind?.lookup_points ?? 0) * names;
   const canFind = parsed.items.length >= 2 && !finding && !blockedByLinks && kind?.status === "live";
   const ui = KIND_UI[kindKey];
   const findMode = mode === "find";
@@ -183,8 +180,7 @@ export function CompareInput({
           ) : null}
         </div>
         {findMode ? (
-          <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canDiscover}
-            meta={reading && reading.points > 0 ? formatPoints(reading.points, { short: true }) : undefined}>
+          <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canDiscover}>
             {finding ? "Finding" : "Find for me"}
           </Button>
         ) : fills ? (
@@ -192,8 +188,7 @@ export function CompareInput({
             {parsed.items.length > 1 ? `Fill ${Math.min(parsed.items.length, 5)} rows` : "Fill a row"}
           </Button>
         ) : (
-          <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canFind}
-            meta={lookupCost > 0 ? formatPoints(lookupCost, { short: true }) : undefined}>
+          <Button variant="primary" hero icon={<Search className="h-4 w-4" />} onClick={go} disabled={!canFind}>
             {finding ? "Finding" : parsed.items.length >= 2 ? `Find ${parsed.items.length}` : "Find them"}
           </Button>
         )}

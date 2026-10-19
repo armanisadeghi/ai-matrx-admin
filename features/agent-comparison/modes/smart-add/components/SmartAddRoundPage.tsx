@@ -27,8 +27,8 @@ import {
   Select,
   Switch,
 } from "@ai-matrx/design-system/controls";
-import { formatDurationMs, formatUsd } from "@ai-matrx/kit/format";
-import { moneyDigits } from "../model";
+import { formatDurationMs } from "@ai-matrx/kit/format";
+import { Cost } from "@/components/cost/Cost";
 import { ProInput } from "@/components/official/ProInput";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectUserId } from "@/lib/redux/selectors/userSelectors";
@@ -839,7 +839,7 @@ function RoundScoreboard({ bench, jev }: { bench: RoundBench; jev: JevRun }) {
                       </td>
                       <td className="p-2 text-right">{sc.calls}</td>
                       <td className="p-2 text-right">
-                        {formatUsd(sc.cost, { digits: moneyDigits(sc.cost) })}
+                        <Cost usd={sc.cost} short />
                       </td>
                     </tr>
                   ))}

@@ -274,14 +274,6 @@ export function streamBatch(
 
 // ── money ───────────────────────────────────────────────────────────────────────────────────────────
 
-/** Dollars to the cent; under a cent says so (never a confident $0.00). */
-export function dollars(usd: number | null | undefined): string {
-  if (usd == null || Number.isNaN(usd)) return "—";
-  if (usd === 0) return "$0.00";
-  if (usd < 0.005) return "<$0.01";
-  return `$${usd.toFixed(2)}`;
-}
-
 export function points(n: number | null | undefined): string {
   if (n == null) return "—";
   return `${Math.round(n).toLocaleString()} pts`;

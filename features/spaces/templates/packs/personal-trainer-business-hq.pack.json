@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0511",
-  "version": 2,
+  "version": 3,
   "title": "Personal Trainer Business HQ",
   "description": "Track clients, session packages, training sessions and payments for a small trainer.",
   "forWho": "Personal trainers and small coaching businesses",
@@ -841,7 +841,17 @@
           "plan": "Either record can be created or change status before the other.",
           "staff": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Completed"
+            ],
+            "filled": [
+              "completed_on"
+            ]
+          }
+        ],
         "fields": [
           {
             "key": "booking_name",
@@ -1410,7 +1420,8 @@
               "price": 75
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "payment",
@@ -1435,7 +1446,8 @@
               "Paid"
             ],
             "filled": [
-              "method"
+              "method",
+              "paid_on"
             ]
           }
         ],
@@ -1696,7 +1708,8 @@
               "method": "Check"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -2126,7 +2139,7 @@
         "Granary Row"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

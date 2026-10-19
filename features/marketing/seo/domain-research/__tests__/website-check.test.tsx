@@ -1,9 +1,9 @@
 /**
  * The Overview, through the real `useToolCall` (only the HTTP runner is faked):
- *  - nothing is bought until the press, and the press names its price in points (the Tools' own hints);
+ *  - nothing is bought until the press, and no price is shown;
  *  - the press runs the three Tools as durable calls for the typed website, and the answers sit side by
  *    side — Moz named for its own score, "Matrx" for ours, SpyFu for its own;
- *  - the cost after is each call's own points; "See the links" runs the list Tool and only then.
+ *  - "See the links" runs the list Tool and only then.
  */
 import React from "react";
 import { act } from "react";
@@ -101,15 +101,14 @@ afterEach(() => {
 const text = () => host.textContent ?? "";
 const button = (label: string) => [...host.querySelectorAll("button")].find((b) => (b.textContent ?? "").includes(label));
 
-it("buys nothing before the press and names the price together", async () => {
+it("buys nothing before the press and shows no price", async () => {
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={TOOLS} />));
   expect(runHostToolCall).not.toHaveBeenCalled();
-  expect(button("Check website")?.textContent).toContain("about 686 points");
-  expect(text()).toContain("134 pts");
-  expect(text()).toContain("482 pts");
+  expect(button("Check website")?.textContent).toBe("Check website");
+  expect(text()).not.toMatch(/points|pts|No charge/);
 });
 
-it("runs the three Tools for the typed website and shows their scores side by side with the real cost", async () => {
+it("runs the three Tools for the typed website and shows their scores side by side", async () => {
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={TOOLS} />));
   await act(async () => button("Check website")!.click());
 
@@ -130,13 +129,13 @@ it("runs the three Tools for the typed website and shows their scores side by si
   expect(tiles[1]).toContain("46");
   expect(tiles[2]).toContain("SpyFu");
   expect(tiles[2]).toContain("49");
-  expect(host.querySelector("[data-check-spent]")?.textContent).toContain("685");
+  expect(host.querySelector("[data-check-spent]")).toBeNull();
   expect(replaced.some((u) => u.includes("ca=call-id-seo_domain_authority"))).toBe(true);
 });
 
-it("lists the links only when asked, at its own price", async () => {
+it("lists the links only when asked", async () => {
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={TOOLS} />));
-  expect(button("See the links")?.textContent).toContain("about 400 points");
+  expect(button("See the links")?.textContent).toBe("See the links");
   await act(async () => button("See the links")!.click());
   expect(runHostToolCall).toHaveBeenCalledTimes(1);
   expect((runHostToolCall.mock.calls[0][0] as { request: { tool_id: string } }).request.tool_id).toBe("id-seo_backlink_rows");
@@ -151,7 +150,6 @@ it("never prints a vendor that is not a leader", async () => {
 it("until the server says the authority score has compare sources, the Matrx tile is the link strength already bought — never a second Moz", async () => {
   const before: SeoTools = { ...TOOLS, authorityScore: hit("seo_authority_score", 50) };
   await act(async () => root.render(<WebsiteCheck host="smitten.example" tools={before} />));
-  expect(button("Check website")?.textContent).toContain("about 636 points");
   await act(async () => button("Check website")!.click());
   const ids = runHostToolCall.mock.calls.map((c) => (c[0] as { request: { tool_id: string } }).request.tool_id);
   expect(ids).not.toContain("id-seo_authority_score");

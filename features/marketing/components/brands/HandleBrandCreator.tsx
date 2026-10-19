@@ -321,9 +321,6 @@ export function HandleBrandCreator({
     setStep("track");
   };
 
-  const trackCost = spend.costText("track", Math.max(trackable.length, 1));
-  const lookCost = spend.costText("profile_page", 1);
-
   if (step === "start" || step === "looking") {
     const busy = step === "looking";
     return (
@@ -394,8 +391,6 @@ export function HandleBrandCreator({
         <div className="flex items-center justify-end gap-2">
           {organizationId ? (
             <PostCountControl organizationId={organizationId} platform={parsed.status === "ok" ? parsed.platform : null} disabled={busy} />
-          ) : lookCost ? (
-            <span className="text-xs text-muted-foreground">{lookCost}</span>
           ) : null}
           <Button variant="quiet" disabled={busy} onClick={onClose}>
             Cancel
@@ -619,9 +614,6 @@ export function HandleBrandCreator({
         </ul>
         <div className="flex items-center justify-end gap-2">
           {!anyDone && organizationId ? <PostCountControl organizationId={organizationId} disabled={busy} /> : null}
-          {!anyDone && trackCost ? (
-            <span className="text-xs text-muted-foreground">{trackCost}</span>
-          ) : null}
           <Button
             variant="quiet"
             disabled={busy || opening}

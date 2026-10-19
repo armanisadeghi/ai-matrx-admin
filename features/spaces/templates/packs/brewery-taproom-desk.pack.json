@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 3,
+  "version": 4,
   "title": "Brewery Taproom Desk",
   "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -276,7 +276,17 @@
         "independentOf": {
           "brewer": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Packaged"
+            ],
+            "filled": [
+              "packaged_on"
+            ]
+          }
+        ],
         "before": [
           [
             "brewed_on",
@@ -1086,7 +1096,17 @@
         "independentOf": {
           "rep": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Delivered"
+            ],
+            "filled": [
+              "delivery_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New wholesale order",
@@ -1351,7 +1371,8 @@
               "Held"
             ],
             "filled": [
-              "actual"
+              "actual",
+              "closed_on"
             ]
           }
         ],
@@ -1471,7 +1492,8 @@
               "host": "tm-2"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -2120,7 +2142,7 @@
         "Foundry Row"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

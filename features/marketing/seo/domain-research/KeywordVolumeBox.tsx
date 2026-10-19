@@ -2,7 +2,7 @@
 
 // features/marketing/seo/domain-research/KeywordVolumeBox.tsx — "How often do people search these?" on the
 // Keywords tab: the catalog's keyword Tool as ONE box and a button, generated from the Tool's own
-// declaration (`SimpleBoxForm`), with the price before the press and the cost after, and the rows saving
+// declaration (`SimpleBoxForm`), and the rows saving
 // to a table through the same result bar as every other Tool. The site's own top keywords are one press away.
 
 import { useEffect, useRef, useState } from "react";
@@ -13,7 +13,6 @@ import { ToolActionApprovalDialog } from "@ai-matrx/chat/action-requests/hooks/u
 import type { ScreenRunApproval } from "@ai-matrx/chat/action-requests/screen-run";
 import { Button } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
-import { formatPoints } from "@ai-matrx/kit/format";
 import { isCallRunning, type CatalogToolHit } from "@ai-matrx/agents/tools";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
@@ -53,9 +52,6 @@ export function KeywordVolumeBox({ hit, seeds }: { hit: CatalogToolHit; seeds: r
     <section aria-label="Check search volume" className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4" data-keyword-volume="">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-sm font-semibold text-foreground">How often people search</h2>
-        {hit.price_hint_points != null ? (
-          <span className="text-xs text-muted-foreground">About {formatPoints(hit.price_hint_points)}</span>
-        ) : null}
         {seeds.length > 0 ? (
           <Button
             variant="quiet"

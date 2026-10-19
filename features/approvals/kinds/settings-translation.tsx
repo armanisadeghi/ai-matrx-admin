@@ -87,7 +87,7 @@ function toItem(bundle: TranslationBundle, cell: TranslationCellRow): Translatio
         href={`${GRID_HREF}?tab=needs`}
         className="text-primary underline-offset-2 hover:underline"
       >
-        Open in the grid
+        {owner}
       </AppLink>
     ),
   };

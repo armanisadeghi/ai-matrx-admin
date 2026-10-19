@@ -2,7 +2,7 @@
 
 /**
  * `news_digest` (NEWS-ENGINE-SPEC §6.11) — the per-run receipt: what surfaced,
- * the watch list with every reason, the withheld counts, source health, cost.
+ * the watch list with every reason, the withheld counts, source health.
  * The ONE digest renderer: the run view, a chat answer and the kind registry
  * all render through this component.
  *
@@ -14,7 +14,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { cn } from "@/lib/utils";
 
 import {
@@ -117,14 +116,12 @@ function statusTone(status: string): "good" | "warn" | "bad" | "neutral" {
 }
 
 export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth }: NewsDigestViewProps) {
-  const { format: formatCost } = useCostDisplay();
   const headline = isRecord(value.headline) ? value.headline : {};
   const surfaced = records(value.surfaced);
   const watch = records(value.watch);
   const groups = records(value.watch_groups);
   const withheld = isRecord(value.withheld) ? value.withheld : {};
   const health = records(value.source_health);
-  const cost = isRecord(value.cost) ? value.cost : {};
   const windowInfo = isRecord(value.window) ? value.window : {};
   const unverified = counts(headline.unverified_by_status);
   const overflow = num(value.watch_overflow);
@@ -315,10 +312,6 @@ export function NewsDigestView({ value, storyActions, onOpen, onShowSourceHealth
       ) : null}
 
       <div className="flex flex-col gap-0.5">
-        <FactRow label="Cost">
-          this run {formatCost(num(cost.run_usd))} · this month {formatCost(num(cost.month_to_date_usd))} of{" "}
-          {formatCost(num(cost.ceiling_usd))}
-        </FactRow>
         {num(withheld.hygiene) + num(withheld.safety) > 0 && str(withheld.open_url) ? (
           <FactRow label="Withheld">
             <SmartLink href={str(withheld.open_url)}>Open the withheld list</SmartLink>

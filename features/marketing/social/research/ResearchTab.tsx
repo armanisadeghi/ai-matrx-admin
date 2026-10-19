@@ -18,7 +18,6 @@ import { planSimpleBox } from "@ai-matrx/chat/mandates/invoke/simple-box";
 import { Chip, EmptyState, RegionSkeleton, Tabs } from "@ai-matrx/design-system/controls";
 import { ReadFailure } from "@ai-matrx/design-system";
 import { newToolCallKey, type ToolCallView } from "@ai-matrx/agents/tools";
-import { formatPoints } from "@ai-matrx/kit/format";
 
 import { replaceAddressWithoutNavigating } from "@/lib/url-state/addressWithoutNavigating";
 import { useToolRunForm } from "@/features/data-sources/library/tools/useToolRunForm";
@@ -36,7 +35,6 @@ import {
   decodeCalls,
   encodeCalls,
   isResearchMode,
-  priceHintTotal,
   sourceFor,
   stepInputs,
   stepsServed,
@@ -147,12 +145,10 @@ export function ResearchTab() {
     pinAddress({ mode, source: sourceId, calls: callIds.current });
   };
 
-  const charged = served.reduce((sum, step) => sum + (views[step.id]?.points_charged ?? 0), 0);
   const settled = served.length > 0 && served.every((step) => {
     const view = views[step.id];
     return view != null && !RUNNING.has(view.status);
   });
-  const expected = priceHintTotal(served, found);
   const showResults = served.length > 0 && (submission != null || savedCalls.some(Boolean));
 
   return (
@@ -189,7 +185,7 @@ export function ResearchTab() {
             hints={source.submit ? { ...form.data.schema.hints, submitLabel: source.submit } : form.data.schema.hints}
             size="standard"
             autoFocus
-            footer={<PriceLine expected={expected} charged={settled && submission ? charged : null} missing={missing.map((m) => m.title)} />}
+            footer={<MissingLine missing={missing.map((m) => m.title)} />}
           />
         )}
       </div>
@@ -248,17 +244,11 @@ function AdLibraryChips({ value, onChange }: { value: string; onChange: (id: str
   );
 }
 
-function PriceLine({ expected, charged, missing }: { expected: number | null; charged: number | null; missing: string[] }) {
-  const parts: string[] = [];
-  if (charged != null) parts.push(charged > 0 ? `This look-up cost ${formatPoints(charged)}` : "No charge");
-  else {
-    if (expected != null) parts.push(`About ${formatPoints(expected)}`);
-  }
-  if (missing.length > 0) parts.push(`${missing.join(" and ")} not available yet`);
-  if (parts.length === 0) return null;
+function MissingLine({ missing }: { missing: string[] }) {
+  if (missing.length === 0) return null;
   return (
-    <p className="type-secondary text-muted-foreground" data-research-price="">
-      {parts.join(" · ")}
+    <p className="type-secondary text-muted-foreground" data-research-missing="">
+      {`${missing.join(" and ")} not available yet`}
     </p>
   );
 }

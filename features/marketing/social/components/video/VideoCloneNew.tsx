@@ -30,7 +30,6 @@ import { cn } from "@/lib/utils";
 import {
   analyzeReference,
   VideoStreamError,
-  dollars,
   fetchTeleprompter,
   points,
   runClonePlan,
@@ -51,7 +50,7 @@ import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-bra
 import { cutText, nameFromCaption } from "../../video/text";
 import { useExpiredSessionGuard } from "../../video/session";
 import { uploadBriefFile } from "../../video/upload";
-import { confirmLine, estimateLabel, perSecondLine, summarizeEstimate } from "../../video/estimate";
+import { confirmLine, estimateLabel, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { MusicPicker } from "./MusicPicker";
 import { NO_MUSIC, musicCostLine, musicForBrief, type MusicChoice } from "../../video/music";
@@ -158,18 +157,6 @@ function ReferencePanel({ postId }: { postId: string }) {
   const url = video.data ? facts[video.data.file_id]?.url : null;
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [busy, setBusy] = useState(false);
-  const costKey = `video-analysis-cost:${postId}`;
-  const [lastCost, setLastCost] = useState<{ usd: number; points: number; reused: boolean } | null>(null);
-  // What the analysis spent stays on the page for this reference, through reloads (the structure replaces the run log).
-  useEffect(() => {
-    try {
-      const saved = window.sessionStorage.getItem(costKey);
-      if (saved) setLastCost(JSON.parse(saved) as { usd: number; points: number; reused: boolean });
-    } catch {
-      /* no saved cost */
-    }
-  }, [costKey]);
-
   // The platform refused the download: the person's own file of that video carries on from here.
   const [refused, setRefused] = useState(false);
   const uploadReference = async (files: FileList | null) => {
@@ -199,15 +186,8 @@ function ReferencePanel({ postId }: { postId: string }) {
         setSteps((prev) => pushStep(prev, { id: s.stage || s.label, label: s.label, state: "running", meta: s.total ? `${s.current}/${s.total}` : undefined })),
       );
       setSteps((prev) => closeSteps(prev));
-      const spent = { usd: result.cost?.usd ?? 0, points: result.cost?.points ?? 0, reused: result.status === "reused" };
-      setLastCost(spent);
       setSettling(true);
       window.setTimeout(() => setSettling(false), 90_000);
-      try {
-        window.sessionStorage.setItem(costKey, JSON.stringify(spent));
-      } catch {
-        /* storage full or blocked: the line still shows for this visit */
-      }
       // Analysis lands the post's video and its words too: re-read all three.
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: videoKeys.post(postId) }),
@@ -265,13 +245,11 @@ function ReferencePanel({ postId }: { postId: string }) {
               <span className="type-meta text-muted-foreground">Then it is analyzed from your file</span>
             </div>
           ) : null}
-          <span className="type-meta text-muted-foreground">Uses AI points · usually a few cents</span>
           <RunLog steps={steps} />
         </div>
       ) : (
         <div className="flex flex-col gap-3">
           <RunLog steps={steps} />
-          {lastCost ? <CostLine label={lastCost.reused ? "Analysis reused" : "Analysis cost"} usd={lastCost.usd} pts={lastCost.points} /> : null}
           <div className="flex flex-wrap gap-1.5">
             <Badge>{`${s.shots.length} shots`}</Badge>
             {s.beats.length ? <Badge>{`${s.beats.length} beats`}</Badge> : null}
@@ -388,7 +366,6 @@ function BriefPanel({
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [plan, setPlan] = useState<ClonePlanResult | null>(null);
   const [failure, setFailure] = useState<unknown>(null);
-  const [spent, setSpent] = useState(0);
 
   // The reference's on-screen text that stays when no hook line is typed: warn when it names a business.
   const keptTexts = [structure.data?.hook?.on_screen_text, ...(structure.data?.onScreenText.map((t) => t.text) ?? [])].filter((t): t is string => Boolean(t));
@@ -578,7 +555,6 @@ function BriefPanel({
     if (!plan) return;
     setFailure(null);
     setPhase("generating");
-    setSpent(0);
     setSteps([{ id: "price", label: "Pricing", state: "running" }]);
     let needsConfirm = false;
     let errored: string | null = null;
@@ -586,7 +562,7 @@ function BriefPanel({
       const media = typeof e.media_id === "string" ? e.media_id : "";
       switch (e.type) {
         case "estimate":
-          setSteps((p) => pushStep(p, { id: "price", label: "Priced", state: "done", meta: points(Number(e.total_points)) }));
+          setSteps((p) => pushStep(p, { id: "price", label: "Checked what is left to make", state: "done" }));
           break;
         case "confirmation_required":
           needsConfirm = true;
@@ -595,11 +571,10 @@ function BriefPanel({
           setSteps((p) => pushStep(p, { id: media, label: `Making ${mediaLabel(media)}`, state: "running" }));
           break;
         case "cache_hit":
-          setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done", meta: "$0.00" }));
+          setSteps((p) => pushStep(p, { id: media, label: `${mediaLabel(media)} reused`, state: "done" }));
           break;
         case "generated":
-          setSpent((v) => v + (Number(e.cost_usd) || 0));
-          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaLabel(media)} made`, state: "done", meta: dollars(Number(e.cost_usd)) } : s)));
+          setSteps((p) => p.map((s) => (s.id === media ? { ...s, label: `${mediaLabel(media)} made`, state: "done" } : s)));
           break;
         case "warning":
           setSteps((p) => [...p, { id: `w${p.length}`, label: String(e.message ?? "Warning"), state: "failed" }]);
@@ -858,7 +833,6 @@ function BriefPanel({
           </Button>
           {!structure.data ? <span className="type-meta text-muted-foreground">Analyze the reference first</span> : null}
           {ownFootageMissing ? <span className="type-meta text-muted-foreground">Upload your recordings first</span> : null}
-          <span className="type-meta ml-auto text-muted-foreground">Planning is free</span>
         </div>
         {resuming ? <span className="type-meta text-muted-foreground">Loading your saved plan…</span> : null}
         <RunLog steps={steps} />
@@ -868,10 +842,9 @@ function BriefPanel({
             <div className="flex flex-wrap items-center gap-2">
               <span className="type-label text-foreground">{`Plan saved · version ${plan.version}`}</span>
               <span className="ml-auto">
-                <CostLine label={estimateLabel(summarizeEstimate(est))} usd={est.total_usd} pts={est.total_points} />
+                <CostLine label={estimateLabel(summarizeEstimate(est))} pts={est.total_points} />
               </span>
             </div>
-            {perSecondLine(est) ? <span className="type-meta text-muted-foreground">{perSecondLine(est)}</span> : null}
             {musicCostLine(est) ? <span className="type-meta text-muted-foreground">{musicCostLine(est)}</span> : null}
             {confirmLine(est) ? <span className="type-meta text-muted-foreground">{confirmLine(est)}</span> : null}
             {plan.script_source === "fallback" ? <span className="type-meta text-warning">Kept the reference script</span> : null}
@@ -906,7 +879,6 @@ function BriefPanel({
                 </>
               ) : (
                 <>
-                  {phase === "generating" && spent > 0 ? <span className="type-meta text-muted-foreground">{`Spent so far ${dollars(spent)}`}</span> : null}
                   <Button variant="primary" className="ml-auto" disabled={phase === "generating"} onClick={() => void generate(false)}>
                     Generate
                   </Button>

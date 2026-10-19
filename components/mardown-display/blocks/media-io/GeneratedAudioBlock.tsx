@@ -19,13 +19,11 @@
  * broken player.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { AudioLines, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
 import type { GeneratedAudioData } from "@/features/content-ir/kinds/generated-audio";
 import {
-  formatCost,
   formatDuration,
   readUsage,
 } from "@/features/content-ir/kinds/media-io-shared";
@@ -73,14 +71,11 @@ export default function GeneratedAudioBlock({
   hideHeader = false,
   className,
 }: GeneratedAudioBlockProps) {
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const openFilePreview = useOpenFilePreviewWindow();
   const data = readGeneratedAudioData(serverData);
   if (!data) return null;
 
   const duration = formatDuration(data.duration_seconds);
-  const cost = formatCost(data.usage?.cost_usd ?? null, costRate, costUnit);
-
   return (
     <div className={cn("my-2 space-y-2", className)}>
       {!hideHeader && (
@@ -97,11 +92,6 @@ export default function GeneratedAudioBlock({
           {duration && (
             <span className="text-[11px] tabular-nums text-muted-foreground">
               {duration}
-            </span>
-          )}
-          {cost && (
-            <span className="text-[11px] tabular-nums text-muted-foreground">
-              {cost}
             </span>
           )}
           {!data.isComplete && (

@@ -85,14 +85,6 @@ export function postsUsd(costs: SocialCosts | null | undefined, platform: string
   return Math.ceil(count / entry.posts_per_page) * entry.usd_per_page;
 }
 
-/** USD for `count` comments. Pure. */
-export function commentsUsd(costs: SocialCosts | null | undefined, count: number): number | null {
-  const perPage = costs?.per_comment_page;
-  if (perPage == null || count <= 0) return null;
-  // The server prices a page of comments; 20 per page is the smallest choice.
-  return Math.ceil(count / 20) * perPage;
-}
-
 /** "Showing 12 of ~N posts · Load more (≈ X points)" text parts: how many more the profile reports than are stored. Pure. */
 export function morePostsAvailable(reportedTotal: number | null | undefined, stored: number): number | null {
   if (reportedTotal == null || !Number.isFinite(reportedTotal) || reportedTotal <= stored) return null;

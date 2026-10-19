@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0304",
-  "version": 5,
+  "version": 6,
   "title": "Account CRM for Consultants",
   "description": "Consultants and B2B firms: companies first, then their contacts, deals and follow-ups.",
   "forWho": "Consultants and business-to-business firms",
@@ -979,7 +979,26 @@
           "owner": "Either record can be created or change status before the other.",
           "contact": "Either record can be created or change status before the other."
         },
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Won"
+            ],
+            "filled": [
+              "close_on"
+            ]
+          },
+          {
+            "field": "stage",
+            "when": [
+              "Lost"
+            ],
+            "filled": [
+              "close_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "New deal",
@@ -1869,7 +1888,7 @@
         "Merriweather Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

@@ -201,8 +201,7 @@ export default function VideoPromptOptionsBlock({
       ) : null}
       {data.action ? (
         <p className="text-xs text-muted-foreground" role="note">
-          Video generation uses paid provider credits. You will confirm before
-          it starts.
+          You will confirm before it starts.
         </p>
       ) : null}
       <div className="space-y-2">

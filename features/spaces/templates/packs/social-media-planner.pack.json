@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0153",
-  "version": 4,
+  "version": 5,
   "title": "Social Media Planner",
   "description": "Social managers and small brands: schedule posts on one calendar, with hashtag sets.",
   "forWho": "Social managers, creators and small brands",
@@ -743,7 +743,17 @@
             }
           }
         ],
-        "statusImplies": [],
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Posted"
+            ],
+            "filled": [
+              "publish_on"
+            ]
+          }
+        ],
         "rowTemplates": [
           {
             "name": "Post",
@@ -1232,7 +1242,7 @@
         "Driftwood Row"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

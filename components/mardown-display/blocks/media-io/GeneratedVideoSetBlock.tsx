@@ -16,7 +16,6 @@
  * re-mints instead of breaking.
  */
 
-import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import { Film, Loader2 } from "lucide-react";
 import { InlineMediaRef } from "@ai-matrx/media/react";
 import { useOpenFilePreviewWindow } from "@/features/overlays/definitions/filePreviewWindow.overlay";
@@ -26,7 +25,6 @@ import {
   type GeneratedVideoSetData,
 } from "@/features/content-ir/kinds/generated-video-set";
 import {
-  formatCost,
   formatDuration,
   readUsage,
 } from "@/features/content-ir/kinds/media-io-shared";
@@ -104,11 +102,8 @@ export default function GeneratedVideoSetBlock({
   hideHeader = false,
   className,
 }: GeneratedVideoSetBlockProps) {
-  const { unit: costUnit, rate: costRate } = useCostDisplay();
   const data = readGeneratedVideoSetData(serverData);
   if (!data) return null;
-
-  const cost = formatCost(data.usage?.cost_usd ?? null, costRate, costUnit);
 
   return (
     <div className={cn("my-2 space-y-2", className)}>
@@ -126,11 +121,6 @@ export default function GeneratedVideoSetBlock({
           {data.model && (
             <span className="font-mono text-[11px] text-muted-foreground">
               {data.model}
-            </span>
-          )}
-          {cost && (
-            <span className="text-[11px] tabular-nums text-muted-foreground">
-              {cost}
             </span>
           )}
           {!data.isComplete && (

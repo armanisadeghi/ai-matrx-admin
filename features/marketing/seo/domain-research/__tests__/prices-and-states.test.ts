@@ -69,7 +69,7 @@ describe("one tool outcome to one screen state", () => {
 
   it("a reused result carries the reuse verdict and the evidence run's date", () => {
     const state = sectionFromOutcome({ status: "ok", output: envelope({}), callId: "c" }, { probe: true });
-    expect(state).toMatchObject({ kind: "ready", reused: true, observedAt: "2026-09-28T23:18:48Z", chargedUsd: 0, partial: false });
+    expect(state).toMatchObject({ kind: "ready", reused: true, observedAt: "2026-09-28T23:18:48Z", partial: false });
   });
 
   it("a bought result is not reused and states its charge", () => {
@@ -77,7 +77,7 @@ describe("one tool outcome to one screen state", () => {
       { status: "ok", output: envelope({ cost: { class: "paid", charged_usd: 0.0121, reused: false } }), callId: "c" },
       { probe: false },
     );
-    expect(state).toMatchObject({ kind: "ready", reused: false, chargedUsd: 0.0121 });
+    expect(state).toMatchObject({ kind: "ready", reused: false });
   });
 
   it("partial keeps the data and names what is missing", () => {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 2,
+  "version": 3,
   "title": "Interior Design Studio",
   "description": "Clients, projects by phase, furnishings procurement, approvals and fee invoices.",
   "forWho": "Interior designers and design studios",
@@ -452,7 +452,8 @@
               "Approved"
             ],
             "filled": [
-              "vendor"
+              "vendor",
+              "approved_on"
             ]
           },
           {
@@ -470,7 +471,8 @@
               "Received"
             ],
             "filled": [
-              "vendor"
+              "vendor",
+              "received_on"
             ]
           }
         ],
@@ -598,7 +600,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "approval",
@@ -842,7 +845,8 @@
               "Approved"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "approved_on"
             ]
           },
           {
@@ -932,7 +936,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "project",
@@ -1297,7 +1302,8 @@
               "Complete"
             ],
             "filled": [
-              "designer"
+              "designer",
+              "completed_on"
             ]
           }
         ],
@@ -1699,7 +1705,8 @@
               "Sent"
             ],
             "filled": [
-              "phase"
+              "phase",
+              "sent_on"
             ]
           },
           {
@@ -1708,7 +1715,8 @@
               "Paid"
             ],
             "filled": [
-              "phase"
+              "phase",
+              "paid_on"
             ]
           }
         ],
@@ -2692,7 +2700,7 @@
         "Congress Lane"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,4 +1,4 @@
-import { COUNT_UNREADABLE_MESSAGE, LOAD_MORE_STEP, choiceFromKnob, choiceMenu, commentsUsd, knobFromChoice, loadMoreRequest, morePostsAvailable, postsUsd, rememberedMaxPosts, rememberedMaxPostsPlain, resolveCount, setPostCountChoice } from "../post-count";
+import { COUNT_UNREADABLE_MESSAGE, LOAD_MORE_STEP, choiceFromKnob, choiceMenu, knobFromChoice, loadMoreRequest, morePostsAvailable, postsUsd, rememberedMaxPosts, rememberedMaxPostsPlain, resolveCount, setPostCountChoice } from "../post-count";
 import { fetchOutcomeText, stoppedText } from "../components/FetchLines";
 import type { SocialCosts } from "../types";
 
@@ -35,7 +35,7 @@ describe("resolveCount", () => {
   });
 });
 
-describe("postsUsd / commentsUsd", () => {
+describe("postsUsd", () => {
   it("prices whole pages, rounding up", () => {
     expect(postsUsd(costs, "tiktok", 50)).toBeCloseTo(0.01);
     expect(postsUsd(costs, "tiktok", 12)).toBeCloseTo(0.004);
@@ -44,10 +44,6 @@ describe("postsUsd / commentsUsd", () => {
     expect(postsUsd(costs, "tiktok", 0)).toBeNull();
     expect(postsUsd(costs, "x", 10)).toBeNull();
     expect(postsUsd(null, "tiktok", 10)).toBeNull();
-    expect(commentsUsd(costs, 0)).toBeNull();
-  });
-  it("prices comments in pages of 20", () => {
-    expect(commentsUsd(costs, 21)).toBeCloseTo(0.002);
   });
 });
 

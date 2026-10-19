@@ -1,6 +1,6 @@
 // features/marketing/seo/domain-research/seoTools.ts — the catalog Tools this screen runs, found by
 // JOB (never by a copied Tool id) in the one SEO family the catalog search serves. Prices before a press
-// are the Tools' own price hints, in points. Pure helpers are tested; the hook is one cached read.
+// come from the catalog hits. Pure helpers are tested; the hook is one cached read.
 
 import { useQuery } from "@tanstack/react-query";
 import { CATALOG_SEARCH_PATH, type CatalogSearchResponse, type CatalogToolHit } from "@ai-matrx/agents/tools";
@@ -29,16 +29,6 @@ export function arrangeSeoTools(hits: readonly CatalogToolHit[]): SeoTools {
     if (hit) out[key] = hit;
   }
   return out;
-}
-
-/** What a set of Tools costs together, in points; null when any price is unknown. */
-export function pointsTogether(hits: readonly (CatalogToolHit | undefined)[]): number | null {
-  let total = 0;
-  for (const hit of hits) {
-    if (!hit || hit.price_hint_points == null) return null;
-    total += hit.price_hint_points;
-  }
-  return total;
 }
 
 export function useSeoTools() {

@@ -68,7 +68,6 @@ import {
   useKnowledgeAssetRunner,
   type OpState,
 } from "@/features/rag/hooks/useKnowledgeAssetRunner";
-import { CostBadge } from "@/components/cost/CostBadge";
 import { useCostDisplay } from "@/components/cost/useCostDisplay";
 import {
   usePageVerificationSummary,
@@ -388,14 +387,6 @@ export function KnowledgeAssetPanel({ doc }: { doc: KnowledgeAssetDoc }) {
           {/* Doc reality summary — "137 pages · 25 sections · 12 tables · 8
               figure pages" — so the user grasps the scope before building. */}
           <DocSummaryLine estimate={estimate} fallbackPages={doc.totalPages} />
-          {totalBuildUnits != null && totalBuildUnits > 0 && (
-            <div className="mt-1 flex items-center gap-1.5">
-              <CostBadge usd={totalBuildUnits} />
-              <span className="type-meta text-muted-foreground">
-                full build estimate
-              </span>
-            </div>
-          )}
         </div>
         <Button
           icon={buildingAll ? (
@@ -563,7 +554,6 @@ function RepresentationCard({
   const isCostly = meta.costly === true;
   const estimateLoading = estimating && !estimate;
   const estUnits = estimate?.cost_usd ?? 0;
-  const costLabel = estUnits > 0 ? ` · ${costText(estUnits)}` : "";
 
   const handleBuild = async (resume = false) => {
     if (isCostly) {
@@ -595,7 +585,7 @@ function RepresentationCard({
         confirmLabel: resume
           ? "Resume"
           : estUnits > 0
-            ? `Build${costLabel}`
+            ? "Build"
             : "Build anyway",
       });
       if (!ok) return;
@@ -793,7 +783,7 @@ function RepresentationCard({
             disabled={estimateLoading || statusUnavailable}
             className="flex-1"
           >
-            {estimateLoading ? "Estimating cost…" : `Build${costLabel}`}
+            {estimateLoading ? "Estimating cost…" : "Build"}
           </Button>
         )}
       </div>
@@ -835,8 +825,8 @@ function RepresentationCard({
   );
 }
 
-/** The "25 sections → 25 Gemini runs · ~$0.05" reality line. Uses the
- *  estimate's own `note` verbatim plus a runs/cost tail. */
+/** The "25 sections → 25 Gemini runs" reality line. Uses the
+ *  estimate's own `note` verbatim plus a runs tail. */
 function RealityLine({
   estimate,
   loading,
@@ -846,7 +836,6 @@ function RealityLine({
   loading: boolean;
   unit: string;
 }) {
-  const { format: costText } = useCostDisplay();
   if (loading && !estimate) {
     return (
       <div className="mt-1.5 flex items-center gap-1 type-meta leading-snug text-muted-foreground">
@@ -861,7 +850,6 @@ function RealityLine({
     estimate.runs > 0
       ? `${estimate.runs.toLocaleString()} run${estimate.runs === 1 ? "" : "s"}`
       : "deterministic";
-  const units = estimate.cost_usd ?? 0;
 
   return (
     <div className="mt-1.5 flex items-start gap-1 type-meta leading-snug text-muted-foreground">
@@ -871,14 +859,6 @@ function RealityLine({
           {estimate.items.toLocaleString()} {estimate.unit || unit}
         </span>{" "}
         → {runsLabel}
-        {units > 0 && (
-          <>
-            {" · "}
-            <span className="font-medium text-foreground/70">
-              {costText(units)}
-            </span>
-          </>
-        )}
         {estimate.note && (
           <span className="block text-muted-foreground/80">
             {estimate.note}

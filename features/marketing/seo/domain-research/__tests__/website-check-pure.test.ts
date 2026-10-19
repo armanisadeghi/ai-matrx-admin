@@ -6,7 +6,7 @@
 import type { CatalogToolHit, ToolCallView } from "@ai-matrx/agents/tools";
 
 import { authorityTile, authorityTiles, bandOf } from "../authority";
-import { arrangeSeoTools, pointsTogether, splitPhrases, withLists } from "../seoTools";
+import { arrangeSeoTools, splitPhrases, withLists } from "../seoTools";
 
 const hit = (job_key: string, price: number | null): CatalogToolHit => ({
   tool_id: `id-${job_key}`,
@@ -49,12 +49,6 @@ describe("finding the SEO Tools by job", () => {
     expect(Object.keys(tools).sort()).toEqual(["authority", "links"]);
     expect(tools.authority?.price_hint_points).toBe(134);
   });
-
-  it("adds prices together, and says nothing when one price is unknown", () => {
-    expect(pointsTogether([hit("a", 134), hit("b", 482), hit("c", 20)])).toBe(636);
-    expect(pointsTogether([hit("a", 134), hit("b", null)])).toBeNull();
-    expect(pointsTogether([hit("a", 134), undefined])).toBeNull();
-  });
 });
 
 describe("the authority row", () => {
@@ -67,10 +61,10 @@ describe("the authority row", () => {
       },
       { authority: null, matrx: null, searchAds: null },
     );
-    expect(tiles.map((t) => [t.label, t.source, t.score, t.points])).toEqual([
-      ["Domain Authority", "Moz", 31, 134],
-      ["Authority score", "Matrx", 46, 50],
-      ["Site strength", "SpyFu", 49, 20],
+    expect(tiles.map((t) => [t.label, t.source, t.score])).toEqual([
+      ["Domain Authority", "Moz", 31],
+      ["Authority score", "Matrx", 46],
+      ["Site strength", "SpyFu", 49],
     ]);
   });
 

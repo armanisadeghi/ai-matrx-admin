@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0408",
-  "version": 2,
+  "version": 3,
   "title": "Law Firm Case Management",
   "description": "Clients, matters, deadlines and time entries for a small law firm.",
   "forWho": "Small law firms and solo attorneys",
@@ -389,7 +389,8 @@
               "Closed"
             ],
             "filled": [
-              "attorney"
+              "attorney",
+              "closed_on"
             ]
           }
         ],
@@ -512,7 +513,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "deadline",
@@ -764,7 +766,8 @@
               "Done"
             ],
             "filled": [
-              "kind"
+              "kind",
+              "completed_on"
             ]
           }
         ],
@@ -857,7 +860,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "time_entry",
@@ -1820,7 +1824,7 @@
         "Cannery Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -205,18 +205,6 @@ export function stepInputs(step: ResearchStep, values: Readonly<Record<string, u
   return out;
 }
 
-/** Points the whole look-up is expected to cost (the sum of its Tools' price hints), or null when any is unknown. */
-export function priceHintTotal(steps: ReadonlyArray<{ toolId: string }>, tools: ReadonlyMap<string, CatalogToolHit>): number | null {
-  const byId = new Map(Array.from(tools.values()).map((t) => [t.tool_id, t]));
-  let total = 0;
-  for (const step of steps) {
-    const hint = byId.get(step.toolId)?.price_hint_points;
-    if (hint == null) return null;
-    total += hint;
-  }
-  return total;
-}
-
 /** A pasted link names its platform; the chip follows it. Null = leave the chip where it is. */
 export function chipForPaste(text: string): string | null {
   const platform = detectPlatform(text);

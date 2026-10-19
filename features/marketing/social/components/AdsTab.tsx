@@ -8,8 +8,8 @@ import { ProInput } from "@/components/official/ProInput";
  * `platform.saved_view` that remembers the last look, so the ads newly seen
  * since then are marked. Refresh is on demand only: no schedules.
  *
- * A search is a hard cost charged in points; like every AI action the cost is
- * named only when worth a warning (`useSocialSpend`, cost.ts). The
+ * A search is a hard cost charged in points; it is named only in a confirm
+ * step when worth a warning (`useSocialSpend`, cost.ts). The
  * country the provider applied is shown with the results, never silent.
  */
 
@@ -212,7 +212,7 @@ function AdFilters({
 
 function AdsSearch({ onTracked }: { onTracked: () => void }) {
   const { organizationId, brandId, canEdit } = useSocials();
-  const { costText, confirmSpend, agentCostText } = useSocialSpend(organizationId);
+  const { confirmSpend, agentCostText } = useSocialSpend(organizationId);
   const invalidate = useInvalidateSocial();
   const [library, setLibrary] = useState<AdLibrary>("meta");
   const [kind, setKind] = useState<"query" | "advertiser">("query");
@@ -345,7 +345,7 @@ function AdsSearch({ onTracked }: { onTracked: () => void }) {
           wrapperClassName="min-w-48 flex-1"
         />
         {canEdit ? (
-          <Button variant="primary" icon={<Search />} type="submit" disabled={!canSearch} title={costText("ads_search") ?? undefined} aria-busy={busy}>
+          <Button variant="primary" icon={<Search />} type="submit" disabled={!canSearch} aria-busy={busy}>
             Search
           </Button>
         ) : null}
@@ -397,7 +397,7 @@ function AdsSearch({ onTracked }: { onTracked: () => void }) {
           )}
           {canEdit && meta?.has_more && meta.cursor && asked ? (
             <div>
-              <Button variant="outline" disabled={busy} title={costText("ads_search") ?? undefined} onClick={() => void run(asked, meta.cursor ?? undefined)}>
+              <Button variant="outline" disabled={busy} onClick={() => void run(asked, meta.cursor ?? undefined)}>
                 {busy ? "Loading…" : "Load more"}
               </Button>
             </div>
@@ -546,7 +546,7 @@ function AdvertiserCard({ advertiser, onOpen }: { advertiser: TrackedAdvertiser;
 
 function AdvertiserView({ advertiser, onBack }: { advertiser: TrackedAdvertiser; onBack: () => void }) {
   const { organizationId, brandId, canEdit } = useSocials();
-  const { costText, confirmSpend } = useSocialSpend(organizationId);
+  const { confirmSpend } = useSocialSpend(organizationId);
   const client = useQueryClient();
   const invalidate = useInvalidateSocial();
   const adsQuery = useAdvertiserArgs(advertiser);
@@ -630,7 +630,7 @@ function AdvertiserView({ advertiser, onBack }: { advertiser: TrackedAdvertiser;
         ) : null}
         {canEdit ? (
           <>
-            <Button variant="outline" icon={<RefreshCw />} disabled={busy} title={costText("ads_search") ?? undefined} aria-busy={busy} onClick={() => void lookAgain()}>
+            <Button variant="outline" icon={<RefreshCw />} disabled={busy} aria-busy={busy} onClick={() => void lookAgain()}>
               Look again
             </Button>
             <Button variant="quiet" onClick={() => void stop()}>

@@ -109,7 +109,7 @@ export function CompareInline({ entry, expanded, onToggleExpanded }: ToolRendere
       </div>
     );
   } else if (run.phase === "done" && run.result && data.runId) {
-    body = <CompactResult result={run.result} runId={data.runId} seesDollars={seesDollars} />;
+    body = <CompactResult result={run.result} runId={data.runId} />;
   } else if (run.phase === "running" || run.phase === "starting") {
     body = <ProgressList rows={run.progress} found={data.found} startedAt={run.startedAt} />;
   } else if (run.phase === "failed") {
