@@ -23,6 +23,22 @@ export type BoardLayoutMode = "canvas" | "page";
 
 /** The readable column width, world px (shown at 100% when the view is wide enough). */
 export const PAGE_COLUMN_W = 1100;
+/**
+ * The narrowest VIEW page layout re-flows to (the smallest real phone is 320 wide). A narrower one is a
+ * pane mid-resize, hidden or squeezed: re-flowing the shared board to it left every tile 224 wide (the
+ * 240 column floor) for everyone else, so it keeps the column instead.
+ */
+export const PAGE_MIN_VIEW_W = 320;
+
+/**
+ * The page column for a view (`columnW` for `planPageLayout`): the usable width when the view is a phone,
+ * undefined (the default column) when it is wide, not measured yet (0), or narrower than any phone.
+ */
+export function pageColumnWidth(viewW: number, usableW: number): number | undefined {
+  if (viewW < PAGE_MIN_VIEW_W) return undefined;
+  const w = Math.floor(usableW);
+  return w < PAGE_COLUMN_W ? w : undefined;
+}
 /** Space between sections (chapters sit close: a column of cards, not islands). */
 export const PAGE_SECTION_GAP = 16;
 /** Space between tiles stacked in a chapter. */

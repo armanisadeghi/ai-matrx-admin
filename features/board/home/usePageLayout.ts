@@ -21,7 +21,7 @@ import {
   type CanvasSnapshot,
   canvasSnapshot,
   chapterOrder,
-  PAGE_COLUMN_W,
+  pageColumnWidth,
   pageLanding,
   type PagePlan,
   planPageLayout,
@@ -76,10 +76,8 @@ export function pageScene<T extends BoardTileBase>(board: BoardStore<T>) {
 
 /** The page column for this view: the view's own width when it is narrower than the column (a phone), else the default. */
 function pageColumnFor(store: BoardCameraStore): number | undefined {
-  // A view not measured yet (0 wide: first frame, a hidden pane) keeps the column; it is not a phone.
-  if (store.getSize().w <= 0) return undefined;
-  const w = Math.floor(store.pageViewWidth());
-  return w < PAGE_COLUMN_W ? w : undefined;
+  // An unmeasured (0), hidden or squeezed view keeps the column: it is not a phone (`PAGE_MIN_VIEW_W`).
+  return pageColumnWidth(store.getSize().w, store.pageViewWidth());
 }
 
 export function usePageLayout<T extends BoardTileBase>({
