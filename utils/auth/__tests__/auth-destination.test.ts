@@ -242,3 +242,42 @@ describe("loginHref", () => {
     expect(loginHref(null)).toBe("/login");
   });
 });
+
+// ── the saved landing applies on every sign-in path (custom-experience lane C) ──
+import {
+  isPlatformDefaultDestination,
+  readExplicitAuthDestination,
+  signInDestination,
+} from "../auth-destination";
+
+describe("signInDestination — the platform default counts as no destination", () => {
+  it("treats /dashboard (and a trailing slash) as the platform default, never a deep link", () => {
+    expect(isPlatformDefaultDestination("/dashboard")).toBe(true);
+    expect(isPlatformDefaultDestination("/dashboard/")).toBe(true);
+    expect(isPlatformDefaultDestination(null)).toBe(true);
+    expect(isPlatformDefaultDestination("/dashboard?tab=usage")).toBe(false);
+    expect(isPlatformDefaultDestination("/agents/all")).toBe(false);
+    expect(readExplicitAuthDestination({ redirectTo: "/dashboard" })).toBeNull();
+    expect(readExplicitAuthDestination({ redirectTo: "/tasks" })).toBe("/tasks");
+  });
+
+  it("OAuth / magic link carrying /dashboard lands on the saved landing", async () => {
+    const landing = jest.fn(async () => "/launchpad/sales");
+    await expect(signInDestination({ redirectTo: "/dashboard" }, landing)).resolves.toBe("/launchpad/sales");
+    await expect(signInDestination(null, landing)).resolves.toBe("/launchpad/sales");
+  });
+
+  it("a real destination (a bounced deep link) always wins and the landing is never read", async () => {
+    const landing = jest.fn(async () => "/launchpad/sales");
+    await expect(signInDestination({ redirectTo: "/agents/123/build" }, landing)).resolves.toBe("/agents/123/build");
+    expect(landing).not.toHaveBeenCalled();
+  });
+
+  it("no landing, an unsafe landing or a failing read → /dashboard", async () => {
+    await expect(signInDestination({ redirectTo: "/dashboard" }, async () => null)).resolves.toBe("/dashboard");
+    await expect(signInDestination(null, async () => "https://evil.example/x")).resolves.toBe("/dashboard");
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    await expect(signInDestination(null, async () => { throw new Error("rpc down"); })).resolves.toBe("/dashboard");
+    warn.mockRestore();
+  });
+});

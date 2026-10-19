@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import {
   authDestinationOr,
+  signInDestination,
   preserveAuthDestination,
   readAuthDestination,
 } from "@/utils/auth/auth-destination";
@@ -115,9 +116,8 @@ export async function login(redirectToArg: string, formData: FormData) {
   // authDestinationOr already refuses "/", "/login", "/sign-up" and every
   // other auth surface, so no hand-rolled blocklist is needed here.
   // No destination of her own: the landing her saved layout chose (custom-experience), same validation.
-  const finalRedirect = authDestinationOr({
-    redirectTo: redirectTo ?? (await shellLandingAfterSignIn(supabase)),
-  });
+  // "/dashboard" is the platform default, never her choice — it counts as none (signInDestination).
+  const finalRedirect = await signInDestination({ redirectTo }, () => shellLandingAfterSignIn(supabase));
 
   // Success lands via a FULL-DOCUMENT navigation (see HardRedirectForm):
   // a soft redirect() here runs in a possibly-stale tab's old runtime and

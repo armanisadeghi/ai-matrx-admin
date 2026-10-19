@@ -7,12 +7,14 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import {
   authDestinationOr,
+  signInDestination,
   normalizeAuthDestination,
   preserveAuthDestination,
   readAuthDestination,
   withAuthDestination,
   withAuthFlowParams,
 } from "@/utils/auth/auth-destination";
+import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import { clearPendingSignupEmail } from "@/utils/auth/pending-signup";
 
 function isEmailOtpType(value: string | null): value is EmailOtpType {
@@ -65,7 +67,12 @@ export async function GET(request: NextRequest) {
     if (!error) {
       await clearPendingSignupEmail();
       // redirect user to specified redirect URL with success message
-      const successUrl = withAuthFlowParams(redirectTo, {
+      // The platform default counts as no destination: a saved landing applies (utils/auth/FEATURE.md).
+      const landed =
+        type === "recovery"
+          ? redirectTo
+          : await signInDestination({ redirectTo }, () => shellLandingAfterSignIn(supabase));
+      const successUrl = withAuthFlowParams(landed, {
         success: "Email confirmed! Welcome to AI Matrx!",
       });
       redirect(successUrl);

@@ -17,12 +17,14 @@ import {
 import { getClaimsUser } from "@/utils/supabase/claimsUser";
 import { extractErrorMessage } from "@/utils/errors";
 import { safeForwardedHost } from "@/utils/auth/safe-redirect";
+import { shellLandingAfterSignIn } from "@/features/shell/shell-layout/server";
 import {
   authDestinationOr,
   normalizeAuthDestination,
   resolveAuthDestinationUrl,
   preserveAuthDestination,
   readAuthDestination,
+  signInDestination,
   withAuthDestination,
 } from "@/utils/auth/auth-destination";
 import { handOverSession, takeGuestVisitorId } from "@/lib/guest/session-handover";
@@ -444,7 +446,12 @@ export async function GET(request: Request) {
         }
       }
 
-      const finalRedirectTo = redirectTo;
+      // Every sign-in path lands the same way (utils/auth/FEATURE.md): the page asked for wins; the
+      // platform default "/dashboard" counts as none, so the person's saved landing applies.
+      const finalRedirectTo =
+        type === "recovery"
+          ? redirectTo
+          : await signInDestination({ redirectTo }, () => shellLandingAfterSignIn(supabase));
 
       const finalRedirectUrl = resolveAuthDestinationUrl(
         baseUrl,

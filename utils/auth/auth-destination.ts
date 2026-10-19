@@ -246,6 +246,43 @@ export function authDestinationOr(
 }
 
 /**
+ * The platform's own default hub (`/dashboard`, no query, no fragment) is not a choice the person
+ * made: every sign-in door passes it when nobody asked for a page (OAuth and magic links carry it
+ * through the callback). It therefore counts as NO destination, so the landing a person saved
+ * (custom-experience) can apply. Any other page — a deep link, `/dashboard?tab=x` — is a real one.
+ */
+export function isPlatformDefaultDestination(destination: string | null | undefined): boolean {
+  if (!destination) return true;
+  return destination.replace(/\/+$/, "") === DEFAULT_AUTH_DESTINATION;
+}
+
+/** `readAuthDestination`, minus the platform default: `null` = nobody asked for a particular page. */
+export function readExplicitAuthDestination(source: AuthDestinationSource): string | null {
+  const destination = readAuthDestination(source);
+  return destination && !isPlatformDefaultDestination(destination) ? destination : null;
+}
+
+/**
+ * THE end of every sign-in path (password, OAuth, magic link): the page the person asked for wins;
+ * with none, the landing their saved layout chose (`landing`, asked only then); else `/dashboard`.
+ * A landing is validated exactly like any destination. A failing landing read is the default.
+ */
+export async function signInDestination(
+  source: AuthDestinationSource,
+  landing: () => Promise<string | null>,
+): Promise<string> {
+  const explicit = readExplicitAuthDestination(source);
+  if (explicit) return explicit;
+  let saved: string | null = null;
+  try {
+    saved = await landing();
+  } catch (error) {
+    console.warn("[auth-destination] the saved landing could not be read; the default is used", error);
+  }
+  return authDestinationOr({ redirectTo: saved });
+}
+
+/**
  * Attach a destination to an internal auth URL.
  *
  * **This never overwrites an existing destination.** If `target` already
