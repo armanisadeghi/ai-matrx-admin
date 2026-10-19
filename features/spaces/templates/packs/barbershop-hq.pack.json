@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0513",
-  "version": 3,
+  "version": 4,
   "title": "Barbershop HQ",
-  "description": "Manage barbers, walk-ins and bookings, chair rent or commission, and payments.",
+  "description": "For barbershops: walk-in queue, bookings, chair rent and commission, memberships.",
   "forWho": "Barbershops and grooming studios",
   "icon": {
     "emoji": "💈"
@@ -14,10 +14,12 @@
   },
   "category": "wellness",
   "tags": [
+    "barber",
     "barbershop",
     "walk-ins",
-    "chairs",
-    "appointments"
+    "chair rent",
+    "fades",
+    "memberships"
   ],
   "spec": {
     "specVersion": 1,
@@ -140,32 +142,41 @@
             ]
           },
           {
-            "key": "valid_days",
-            "label": "Valid for (days)",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 730
-              }
-            ]
-          },
-          {
             "key": "includes",
-            "label": "Includes",
+            "label": "What's included",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
-            "key": "active_n",
-            "label": "Active clients",
+            "key": "times_done",
+            "label": "Cuts done",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "service_revenue",
+            "label": "Revenue",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "members_n",
+            "label": "Members",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -175,35 +186,6 @@
             "filter": {
               "client_status": "Active"
             }
-          },
-          {
-            "key": "cancelled_n",
-            "label": "Cancelled",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
-            "agg": "count",
-            "filter": {
-              "client_status": "Cancelled"
-            }
-          },
-          {
-            "key": "churn",
-            "label": "Churn (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Active clients} + {Cancelled} > 0, ROUND({Cancelled} / ({Active clients} + {Cancelled}) * 100, 0), 0)"
-          },
-          {
-            "key": "recurring",
-            "label": "Recurring value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Active clients} * {Price (USD)}"
           },
           {
             "key": "added_at",
@@ -272,7 +254,6 @@
               "price": 35,
               "billing": "Per visit",
               "minutes": 30,
-              "valid_days": 1,
               "includes": "cut, per visit"
             }
           },
@@ -284,7 +265,6 @@
               "price": 50,
               "billing": "Per visit",
               "minutes": 45,
-              "valid_days": 1,
               "includes": "cut, per visit"
             }
           },
@@ -296,7 +276,6 @@
               "price": 40,
               "billing": "Per visit",
               "minutes": 30,
-              "valid_days": 1,
               "includes": "shave, per visit"
             }
           },
@@ -308,7 +287,6 @@
               "price": 25,
               "billing": "Per visit",
               "minutes": 25,
-              "valid_days": 1,
               "includes": "cut, per visit"
             }
           },
@@ -320,8 +298,7 @@
               "price": 90,
               "billing": "Monthly",
               "minutes": 30,
-              "valid_days": 30,
-              "includes": "membership, monthly"
+              "includes": "Up to four cuts a month, line-ups any time, 10% off products"
             }
           },
           {
@@ -332,8 +309,18 @@
               "price": 18,
               "billing": "Per visit",
               "minutes": 15,
-              "valid_days": 1,
               "includes": "cut, per visit"
+            }
+          },
+          {
+            "key": "plan-7",
+            "values": {
+              "plan_name": "Skin fade",
+              "category": "Cut",
+              "price": 42,
+              "billing": "Per visit",
+              "minutes": 45,
+              "includes": "Foil or zero fade, scissor top, hot towel neck"
             }
           }
         ]
@@ -391,26 +378,42 @@
             "contextPolicy": "include",
             "choices": [
               "Active",
-              "Frozen",
-              "Cancelled",
+              "Paused",
+              "Lapsed",
               "Lead"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Frozen": "blue",
-              "Cancelled": "red",
-              "Lead": "amber"
+              "Active": "green",
+              "Paused": "amber",
+              "Lapsed": "slate",
+              "Lead": "blue"
             },
             "default": "Active"
           },
           {
             "key": "plan",
-            "label": "Service",
+            "label": "Usual cut",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
             "relationMax": 1
+          },
+          {
+            "key": "barber",
+            "label": "Usual barber",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "cut_notes",
+            "label": "How they like it",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "phone",
@@ -455,6 +458,19 @@
             }
           },
           {
+            "key": "spent",
+            "label": "Spent",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
             "key": "no_shows",
             "label": "No-shows",
             "parityType": "rollup",
@@ -479,27 +495,6 @@
             "filter": {
               "status": "Paid"
             }
-          },
-          {
-            "key": "failed_n",
-            "label": "Failed payments",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "payments",
-            "pick": "amount",
-            "agg": "count",
-            "filter": {
-              "status": "Failed"
-            }
-          },
-          {
-            "key": "risk",
-            "label": "Retention check",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
           },
           {
             "key": "add_booking_btn",
@@ -631,7 +626,9 @@
               "phone": "(412) 555-0118",
               "email": "rosalind.salazar@inbox-mail.net",
               "joined_on": "@today-30d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "barber": "tm-2",
+              "cut_notes": "#2 on the sides, low taper, 1 inch off the top"
             }
           },
           {
@@ -644,7 +641,9 @@
               "phone": "(412) 555-0155",
               "email": "jonah.brannigan@inbox-mail.net",
               "joined_on": "@today-77d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "barber": "tm-3",
+              "cut_notes": "Skin fade, beard shaped to the jaw, no neckline"
             }
           },
           {
@@ -657,7 +656,9 @@
               "phone": "(412) 555-0192",
               "email": "amara.iyer@inbox-mail.net",
               "joined_on": "@today-124d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "barber": "tm-1",
+              "cut_notes": "Scissor cut, keeps length over the ears"
             }
           },
           {
@@ -670,7 +671,9 @@
               "phone": "(412) 555-0129",
               "email": "cormac.quillan@inbox-mail.net",
               "joined_on": "@today-171d",
-              "area": "Lakeview"
+              "area": "Lakeview",
+              "barber": "tm-4",
+              "cut_notes": "Buzz #3 all over, squared neck"
             }
           },
           {
@@ -683,7 +686,9 @@
               "phone": "(412) 555-0166",
               "email": "delphine.yamamoto@inbox-mail.net",
               "joined_on": "@today-218d",
-              "area": "Foxglove Court"
+              "area": "Foxglove Court",
+              "barber": "tm-2",
+              "cut_notes": "Mid fade, hard part on the left"
             }
           },
           {
@@ -696,7 +701,9 @@
               "phone": "(412) 555-0103",
               "email": "mateus.fontaine@inbox-mail.net",
               "joined_on": "@today-265d",
-              "area": "Stonebridge"
+              "area": "Stonebridge",
+              "barber": "tm-3",
+              "cut_notes": "Beard trim only, keep the length, clean cheek line"
             }
           },
           {
@@ -709,7 +716,9 @@
               "phone": "(412) 555-0140",
               "email": "farah.navarro@inbox-mail.net",
               "joined_on": "@today-312d",
-              "area": "Harbor Heights"
+              "area": "Harbor Heights",
+              "barber": "tm-4",
+              "cut_notes": "Kids cut: #4 sides, sits still for the tablet"
             }
           },
           {
@@ -722,7 +731,9 @@
               "phone": "(412) 555-0177",
               "email": "dennis.westbrook@inbox-mail.net",
               "joined_on": "@today-359d",
-              "area": "Willow Creek"
+              "area": "Willow Creek",
+              "barber": "tm-2",
+              "cut_notes": "Low fade, textured crop"
             }
           },
           {
@@ -735,7 +746,9 @@
               "phone": "(412) 555-0114",
               "email": "yara.eastwick@inbox-mail.net",
               "joined_on": "@today-406d",
-              "area": "North Ridge"
+              "area": "North Ridge",
+              "barber": "tm-1",
+              "cut_notes": "Hot towel shave every other Friday"
             }
           },
           {
@@ -743,12 +756,13 @@
             "values": {
               "client_name": "Teodor Mbeki",
               "kind": "Walk-in",
-              "client_status": "Frozen",
+              "client_status": "Paused",
               "plan": "plan-4",
               "phone": "(412) 555-0151",
               "email": "teodor.mbeki@inbox-mail.net",
               "joined_on": "@today-453d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "barber": "tm-3"
             }
           },
           {
@@ -756,12 +770,14 @@
             "values": {
               "client_name": "Odette Thackeray",
               "kind": "Membership",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-5",
               "phone": "(412) 555-0188",
               "email": "odette.thackeray@inbox-mail.net",
               "joined_on": "@today-500d",
-              "area": "Maple Hollow"
+              "area": "Maple Hollow",
+              "barber": "tm-4",
+              "cut_notes": "Taper, 2 inches on top"
             }
           },
           {
@@ -769,12 +785,13 @@
             "values": {
               "client_name": "Rafael Boateng",
               "kind": "Kid",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-6",
               "phone": "(412) 555-0125",
               "email": "rafael.boateng@inbox-mail.net",
               "joined_on": "@today-547d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "barber": "tm-2"
             }
           },
           {
@@ -787,7 +804,9 @@
               "phone": "(412) 555-0162",
               "email": "saoirse.jessup@inbox-mail.net",
               "joined_on": "@today-594d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "barber": "tm-3",
+              "cut_notes": "Wants to try a fade"
             }
           },
           {
@@ -800,7 +819,8 @@
               "phone": "(412) 555-0199",
               "email": "ravi.rutherford@inbox-mail.net",
               "joined_on": "@today-641d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "barber": "tm-1"
             }
           }
         ]
@@ -918,21 +938,19 @@
           },
           {
             "key": "visit_type",
-            "label": "Kind",
+            "label": "How they came in",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Appointment",
+              "Booked",
               "Walk-in",
-              "Line-up",
-              "Shave"
+              "Member"
             ],
             "choiceColors": {
-              "Appointment": "slate",
-              "Walk-in": "blue",
-              "Line-up": "amber",
-              "Shave": "violet"
+              "Booked": "blue",
+              "Walk-in": "amber",
+              "Member": "green"
             }
           },
           {
@@ -968,6 +986,42 @@
               {
                 "kind": "max",
                 "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "tip",
+            "label": "Tip (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "wait",
+            "label": "Waited (minutes)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 240
               }
             ]
           },
@@ -1098,319 +1152,311 @@
           {
             "key": "bookin-1",
             "values": {
-              "booking_name": "Hot towel shave - Brannigan",
+              "booking_name": "Low taper + beard line-up",
               "status": "Completed",
-              "client": "client-2",
-              "plan": "plan-3",
-              "staff": "tm-1",
-              "when_on": "@today-12d",
-              "visit_type": "Appointment",
-              "minutes": 30,
-              "price": 40,
-              "completed_on": "@today-12d"
+              "client": "client-1",
+              "plan": "plan-2",
+              "staff": "tm-2",
+              "when_on": "@today-9d",
+              "visit_type": "Booked",
+              "minutes": 40,
+              "price": 50,
+              "tip": 10,
+              "completed_on": "@today-9d"
             }
           },
           {
             "key": "bookin-2",
             "values": {
-              "booking_name": "Walk-in - Yamamoto",
+              "booking_name": "Skin fade, first visit",
               "status": "Completed",
-              "client": "client-5",
-              "plan": "plan-5",
-              "staff": "tm-2",
-              "when_on": "@today-9d",
+              "client": "client-13",
+              "plan": "plan-7",
+              "staff": "tm-3",
+              "when_on": "@today-8d",
               "visit_type": "Walk-in",
-              "minutes": 60,
-              "price": 0,
-              "completed_on": "@today-9d"
+              "minutes": 45,
+              "price": 42,
+              "tip": 8,
+              "wait": 25,
+              "completed_on": "@today-8d"
             }
           },
           {
             "key": "bookin-3",
             "values": {
-              "booking_name": "Haircut - Westbrook",
+              "booking_name": "Scissor cut, keeps length",
               "status": "Completed",
-              "client": "client-8",
+              "client": "client-3",
               "plan": "plan-1",
-              "staff": "tm-3",
+              "staff": "tm-1",
               "when_on": "@today-7d",
-              "visit_type": "Line-up",
+              "visit_type": "Booked",
               "minutes": 30,
               "price": 35,
+              "tip": 7,
               "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Hot towel shave - Thackeray",
+              "booking_name": "Kids cut before school photos",
               "status": "Completed",
-              "client": "client-11",
-              "plan": "plan-3",
+              "client": "client-7",
+              "plan": "plan-4",
               "staff": "tm-4",
-              "when_on": "@today-5d",
-              "visit_type": "Shave",
-              "minutes": 30,
-              "price": 40,
-              "completed_on": "@today-5d"
+              "when_on": "@today-6d",
+              "visit_type": "Walk-in",
+              "minutes": 20,
+              "price": 25,
+              "tip": 5,
+              "wait": 15,
+              "completed_on": "@today-6d"
             }
           },
           {
             "key": "bookin-5",
             "values": {
-              "booking_name": "Appointment - Rutherford",
+              "booking_name": "Member cut, mid fade",
               "status": "Completed",
-              "client": "client-14",
+              "client": "client-5",
               "plan": "plan-5",
-              "staff": "tm-1",
-              "when_on": "@today-3d",
-              "visit_type": "Appointment",
-              "minutes": 60,
+              "staff": "tm-2",
+              "when_on": "@today-5d",
+              "visit_type": "Member",
+              "minutes": 30,
               "price": 0,
-              "completed_on": "@today-3d"
+              "tip": 6,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Haircut - Iyer",
-              "status": "No-show",
-              "client": "client-3",
-              "plan": "plan-1",
-              "staff": "tm-2",
-              "when_on": "@today-4d",
-              "visit_type": "Walk-in",
-              "minutes": 30,
-              "price": 35
+              "booking_name": "Hot towel shave",
+              "status": "Completed",
+              "client": "client-9",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "when_on": "@today-5d",
+              "visit_type": "Booked",
+              "minutes": 35,
+              "price": 40,
+              "tip": 10,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-7",
             "values": {
-              "booking_name": "Hot towel shave - Fontaine",
-              "status": "Cancelled",
-              "client": "client-6",
-              "plan": "plan-3",
-              "staff": "tm-3",
-              "when_on": "@today-2d",
-              "visit_type": "Line-up",
-              "minutes": 30,
-              "price": 40
+              "booking_name": "Buzz #3 + neck",
+              "status": "Completed",
+              "client": "client-4",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today-4d",
+              "visit_type": "Walk-in",
+              "minutes": 20,
+              "price": 35,
+              "tip": 5,
+              "wait": 40,
+              "completed_on": "@today-4d"
             }
           },
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "Shave - Eastwick",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-5",
-              "staff": "tm-4",
-              "when_on": "@today-1d",
-              "visit_type": "Shave",
-              "minutes": 60,
-              "price": 0
+              "booking_name": "Beard shape only",
+              "status": "Completed",
+              "client": "client-6",
+              "plan": "plan-6",
+              "staff": "tm-3",
+              "when_on": "@today-3d",
+              "visit_type": "Walk-in",
+              "minutes": 15,
+              "price": 18,
+              "tip": 4,
+              "wait": 10,
+              "completed_on": "@today-3d"
             }
           },
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Haircut - Boateng",
-              "status": "Booked",
-              "client": "client-12",
-              "plan": "plan-1",
-              "staff": "tm-1",
+              "booking_name": "Textured crop, low fade",
+              "status": "No-show",
+              "client": "client-8",
+              "plan": "plan-7",
+              "staff": "tm-2",
               "when_on": "@today-2d",
-              "visit_type": "Appointment",
-              "minutes": 30,
-              "price": 35
+              "visit_type": "Booked",
+              "minutes": 45,
+              "price": 42
             }
           },
           {
             "key": "bookin-10",
             "values": {
-              "booking_name": "Hot towel shave - Salazar",
-              "status": "Checked in",
-              "client": "client-1",
-              "plan": "plan-3",
-              "staff": "tm-2",
-              "when_on": "@mon",
-              "visit_type": "Walk-in",
+              "booking_name": "Member cut",
+              "status": "Cancelled",
+              "client": "client-10",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "when_on": "@today-1d",
+              "visit_type": "Member",
               "minutes": 30,
-              "price": 40,
-              "mine": "@installer"
+              "price": 0
             }
           },
           {
             "key": "bookin-11",
             "values": {
-              "booking_name": "Line-up - Quillan",
+              "booking_name": "Fade and beard, wedding Saturday",
               "status": "Booked",
-              "client": "client-4",
-              "plan": "plan-5",
+              "client": "client-2",
+              "plan": "plan-2",
               "staff": "tm-3",
-              "when_on": "@tue",
-              "visit_type": "Line-up",
-              "minutes": 60,
-              "price": 0
+              "when_on": "@today",
+              "visit_type": "Booked",
+              "minutes": 45,
+              "price": 50,
+              "mine": "@installer"
             }
           },
           {
             "key": "bookin-12",
             "values": {
-              "booking_name": "Haircut - Navarro",
+              "booking_name": "Member cut, mid fade",
               "status": "Booked",
-              "client": "client-7",
-              "plan": "plan-1",
-              "staff": "tm-4",
-              "when_on": "@wed",
-              "visit_type": "Shave",
+              "client": "client-5",
+              "plan": "plan-5",
+              "staff": "tm-2",
+              "when_on": "@today+1d",
+              "visit_type": "Member",
               "minutes": 30,
-              "price": 35,
+              "price": 0,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-13",
             "values": {
-              "booking_name": "Hot towel shave - Mbeki",
+              "booking_name": "Kids cut",
               "status": "Booked",
-              "client": "client-10",
-              "plan": "plan-3",
-              "staff": "tm-1",
-              "when_on": "@thu",
-              "visit_type": "Appointment",
-              "minutes": 30,
-              "price": 40
+              "client": "client-7",
+              "plan": "plan-4",
+              "staff": "tm-4",
+              "when_on": "@today+2d",
+              "visit_type": "Booked",
+              "minutes": 20,
+              "price": 25
             }
           },
           {
             "key": "bookin-14",
             "values": {
-              "booking_name": "Walk-in - Jessup",
+              "booking_name": "Line-up between cuts",
               "status": "Booked",
-              "client": "client-13",
-              "plan": "plan-5",
+              "client": "client-1",
+              "plan": "plan-6",
               "staff": "tm-2",
-              "when_on": "@fri",
-              "visit_type": "Walk-in",
-              "minutes": 60,
-              "price": 0,
-              "mine": "@installer"
+              "when_on": "@today+3d",
+              "visit_type": "Booked",
+              "minutes": 15,
+              "price": 18
             }
           },
           {
             "key": "bookin-15",
             "values": {
-              "booking_name": "Haircut - Brannigan",
+              "booking_name": "Skin fade",
               "status": "Booked",
-              "client": "client-2",
-              "plan": "plan-1",
+              "client": "client-14",
+              "plan": "plan-7",
               "staff": "tm-3",
-              "when_on": "@sat",
-              "visit_type": "Line-up",
-              "minutes": 30,
-              "price": 35,
+              "when_on": "@today+5d",
+              "visit_type": "Booked",
+              "minutes": 45,
+              "price": 42,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-16",
             "values": {
-              "booking_name": "Hot towel shave - Yamamoto",
+              "booking_name": "Scissor cut",
               "status": "Booked",
-              "client": "client-5",
-              "plan": "plan-3",
-              "staff": "tm-4",
-              "when_on": "@sun",
-              "visit_type": "Shave",
+              "client": "client-3",
+              "plan": "plan-1",
+              "staff": "tm-1",
+              "when_on": "@today+6d",
+              "visit_type": "Booked",
               "minutes": 30,
-              "price": 40
+              "price": 35
             }
           },
           {
             "key": "bookin-17",
             "values": {
-              "booking_name": "Appointment - Westbrook",
+              "booking_name": "Hot towel shave",
               "status": "Booked",
-              "client": "client-8",
-              "plan": "plan-5",
+              "client": "client-9",
+              "plan": "plan-3",
               "staff": "tm-1",
-              "when_on": "@mon+1w",
-              "visit_type": "Appointment",
-              "minutes": 60,
-              "price": 0
+              "when_on": "@today+9d",
+              "visit_type": "Booked",
+              "minutes": 35,
+              "price": 40
             }
           },
           {
             "key": "bookin-18",
             "values": {
-              "booking_name": "Haircut - Thackeray",
-              "status": "Booked",
+              "booking_name": "Taper, two inches on top",
+              "status": "Completed",
               "client": "client-11",
               "plan": "plan-1",
-              "staff": "tm-2",
-              "when_on": "@wed+1w",
-              "visit_type": "Walk-in",
+              "staff": "tm-4",
+              "when_on": "@today-40d",
+              "visit_type": "Booked",
               "minutes": 30,
-              "price": 35
+              "price": 35,
+              "tip": 5,
+              "completed_on": "@today-40d"
             }
           },
           {
             "key": "bookin-19",
             "values": {
-              "booking_name": "Hot towel shave - Rutherford",
-              "status": "Booked",
-              "client": "client-14",
-              "plan": "plan-3",
-              "staff": "tm-3",
-              "when_on": "@today",
-              "visit_type": "Line-up",
-              "minutes": 30,
-              "price": 40,
-              "mine": "@installer"
+              "booking_name": "Walk-in fade, waited out the rush",
+              "status": "Completed",
+              "client": "client-12",
+              "plan": "plan-7",
+              "staff": "tm-2",
+              "when_on": "@today-20d",
+              "visit_type": "Walk-in",
+              "minutes": 45,
+              "price": 42,
+              "tip": 7,
+              "wait": 55,
+              "completed_on": "@today-20d"
             }
           },
           {
             "key": "bookin-20",
             "values": {
-              "booking_name": "Shave - Iyer",
-              "status": "Booked",
-              "client": "client-3",
-              "plan": "plan-5",
-              "staff": "tm-4",
-              "when_on": "@today+2d",
-              "visit_type": "Shave",
-              "minutes": 60,
-              "price": 0
-            }
-          },
-          {
-            "key": "bookin-21",
-            "values": {
-              "booking_name": "Haircut - Fontaine",
-              "status": "Booked",
-              "client": "client-6",
-              "plan": "plan-1",
-              "staff": "tm-1",
-              "when_on": "@today+4d",
-              "visit_type": "Appointment",
-              "minutes": 30,
-              "price": 35
-            }
-          },
-          {
-            "key": "bookin-22",
-            "values": {
-              "booking_name": "Hot towel shave - Eastwick",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-3",
-              "staff": "tm-2",
-              "when_on": "@today+1d",
-              "visit_type": "Walk-in",
-              "minutes": 30,
-              "price": 40
+              "booking_name": "Haircut and beard",
+              "status": "Completed",
+              "client": "client-2",
+              "plan": "plan-2",
+              "staff": "tm-3",
+              "when_on": "@today-24d",
+              "visit_type": "Booked",
+              "minutes": 40,
+              "price": 50,
+              "tip": 10,
+              "completed_on": "@today-24d"
             }
           }
         ],
@@ -1567,142 +1613,336 @@
           {
             "key": "paymen-1",
             "values": {
-              "payment_name": "PAY-2210",
+              "payment_name": "PAY-3101",
               "status": "Paid",
-              "client": "client-3",
-              "amount": 40,
-              "due_on": "@today-30d",
-              "method": "Cash",
-              "paid_on": "@today-30d"
+              "client": "client-5",
+              "amount": 90.0,
+              "due_on": "@today-28d",
+              "method": "Membership",
+              "paid_on": "@today-28d"
             }
           },
           {
             "key": "paymen-2",
             "values": {
-              "payment_name": "PAY-2211",
+              "payment_name": "PAY-3102",
               "status": "Paid",
-              "client": "client-8",
-              "amount": 50,
-              "due_on": "@today-28d",
+              "client": "client-1",
+              "amount": 60.0,
+              "due_on": "@today-9d",
               "method": "Card",
-              "paid_on": "@today-28d"
+              "paid_on": "@today-9d"
             }
           },
           {
             "key": "paymen-3",
             "values": {
-              "payment_name": "PAY-2212",
+              "payment_name": "PAY-3103",
               "status": "Paid",
               "client": "client-13",
-              "amount": 35,
-              "due_on": "@today-14d",
+              "amount": 50.0,
+              "due_on": "@today-8d",
               "method": "Tap to pay",
-              "paid_on": "@today-14d"
+              "paid_on": "@today-8d"
             }
           },
           {
             "key": "paymen-4",
             "values": {
-              "payment_name": "PAY-2213",
+              "payment_name": "PAY-3104",
               "status": "Paid",
-              "client": "client-4",
-              "amount": 25,
-              "due_on": "@today-10d",
-              "method": "Membership",
-              "paid_on": "@today-10d"
+              "client": "client-7",
+              "amount": 30.0,
+              "due_on": "@today-6d",
+              "method": "Cash",
+              "paid_on": "@today-6d"
             }
           },
           {
             "key": "paymen-5",
             "values": {
-              "payment_name": "PAY-2214",
+              "payment_name": "PAY-3105",
               "status": "Failed",
-              "client": "client-9",
-              "amount": 40,
-              "due_on": "@today-3d",
-              "method": "Cash"
+              "client": "client-10",
+              "amount": 90.0,
+              "due_on": "@today-3d"
             }
           },
           {
             "key": "paymen-6",
             "values": {
-              "payment_name": "PAY-2215",
-              "status": "Failed",
-              "client": "client-14",
-              "amount": 50,
-              "due_on": "@today-1d",
-              "method": "Card"
+              "payment_name": "PAY-3106",
+              "status": "Paid",
+              "client": "client-9",
+              "amount": 50.0,
+              "due_on": "@today-5d",
+              "method": "Card",
+              "paid_on": "@today-5d"
             }
           },
           {
             "key": "paymen-7",
             "values": {
-              "payment_name": "PAY-2216",
+              "payment_name": "PAY-3107",
               "status": "Pending",
               "client": "client-5",
-              "amount": 90,
-              "due_on": "@fri",
-              "method": "Tap to pay"
+              "amount": 90.0,
+              "due_on": "@today+2d"
             }
           },
           {
             "key": "paymen-8",
             "values": {
-              "payment_name": "PAY-2217",
-              "status": "Pending",
-              "client": "client-10",
-              "amount": 25,
-              "due_on": "@today+3d",
-              "method": "Membership"
+              "payment_name": "PAY-3108",
+              "status": "Paid",
+              "client": "client-4",
+              "amount": 40.0,
+              "due_on": "@today-4d",
+              "method": "Cash",
+              "paid_on": "@today-4d"
             }
           },
           {
             "key": "paymen-9",
             "values": {
-              "payment_name": "PAY-2218",
-              "status": "Pending",
-              "client": "client-1",
-              "amount": 35,
-              "due_on": "@today+5d",
-              "method": "Cash"
+              "payment_name": "PAY-3109",
+              "status": "Paid",
+              "client": "client-6",
+              "amount": 22.0,
+              "due_on": "@today-3d",
+              "method": "Tap to pay",
+              "paid_on": "@today-3d"
             }
           },
           {
             "key": "paymen-10",
             "values": {
-              "payment_name": "PAY-2219",
-              "status": "Paid",
-              "client": "client-6",
-              "amount": 18,
-              "due_on": "@today-6d",
+              "payment_name": "PAY-3110",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 35.0,
+              "due_on": "@today-40d",
               "method": "Card",
-              "paid_on": "@today-6d"
+              "paid_on": "@today-39d"
             }
           },
           {
             "key": "paymen-11",
             "values": {
-              "payment_name": "PAY-2220",
-              "status": "Refunded",
-              "client": "client-11",
-              "amount": 90,
-              "due_on": "@today-9d",
-              "method": "Tap to pay"
+              "payment_name": "PAY-3111",
+              "status": "Pending",
+              "client": "client-2",
+              "amount": 50.0,
+              "due_on": "@today"
             }
           },
           {
             "key": "paymen-12",
             "values": {
-              "payment_name": "PAY-2221",
-              "status": "Pending",
-              "client": "client-2",
-              "amount": 50,
-              "due_on": "@today+6d",
-              "method": "Membership"
+              "payment_name": "PAY-3112",
+              "status": "Failed",
+              "client": "client-12",
+              "amount": 90.0,
+              "due_on": "@today-1d"
             }
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "rent",
+        "name": "Chair rent",
+        "labelSingular": "Rent payment",
+        "labelPlural": "Chair rent",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "armchair",
+        "titleField": "rent_name",
+        "describes": "Weekly chair rent from barbers who rent their chair instead of working on commission.",
+        "subject": "thing",
+        "statusImplies": [
+          {
+            "field": "status",
+            "when": [
+              "Paid"
+            ],
+            "filled": [
+              "paid_on"
+            ]
+          }
+        ],
+        "rowTemplates": [],
+        "before": [
+          [
+            "week_of",
+            "paid_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "rent_name",
+            "label": "Rent",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "barber",
+            "label": "Barber",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "week_of",
+            "label": "Week of",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Due",
+              "Paid",
+              "Late"
+            ],
+            "choiceColors": {
+              "Due": "blue",
+              "Paid": "green",
+              "Late": "red"
+            }
+          },
+          {
+            "key": "paid_on",
+            "label": "Paid on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "rent-1",
+            "values": {
+              "rent_name": "Week 41 rent, Thaddeus",
+              "barber": "tm-4",
+              "week_of": "@mon-2w",
+              "amount": 225,
+              "status": "Paid",
+              "paid_on": "@mon-2w"
+            }
+          },
+          {
+            "key": "rent-2",
+            "values": {
+              "rent_name": "Week 41 rent, Elodie",
+              "barber": "tm-3",
+              "week_of": "@mon-2w",
+              "amount": 225,
+              "status": "Paid",
+              "paid_on": "@mon-2w"
+            }
+          },
+          {
+            "key": "rent-3",
+            "values": {
+              "rent_name": "Week 42 rent, Thaddeus",
+              "barber": "tm-4",
+              "week_of": "@mon-1w",
+              "amount": 225,
+              "status": "Paid",
+              "paid_on": "@mon-1w"
+            }
+          },
+          {
+            "key": "rent-4",
+            "values": {
+              "rent_name": "Week 42 rent, Elodie",
+              "barber": "tm-3",
+              "week_of": "@mon-1w",
+              "amount": 225,
+              "status": "Late"
+            }
+          },
+          {
+            "key": "rent-5",
+            "values": {
+              "rent_name": "Week 43 rent, Thaddeus",
+              "barber": "tm-4",
+              "week_of": "@mon",
+              "amount": 225,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "rent-6",
+            "values": {
+              "rent_name": "Week 43 rent, Elodie",
+              "barber": "tm-3",
+              "week_of": "@mon",
+              "amount": 225,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "rent-7",
+            "values": {
+              "rent_name": "Week 44 rent, Thaddeus",
+              "barber": "tm-4",
+              "week_of": "@mon+1w",
+              "amount": 225,
+              "status": "Due"
+            }
+          },
+          {
+            "key": "rent-8",
+            "values": {
+              "rent_name": "Week 44 rent, Elodie",
+              "barber": "tm-3",
+              "week_of": "@mon+1w",
+              "amount": 225,
+              "status": "Due"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1755,6 +1995,26 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "payments"
+      },
+      {
+        "describes": "A regular usually sits in one barber's chair.",
+        "fromTable": "client",
+        "fromField": "barber",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "regulars"
+      },
+      {
+        "describes": "Each rent payment is from one barber.",
+        "fromTable": "rent",
+        "fromField": "barber",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "chair_rent"
       }
     ],
     "sharedBlocks": [
@@ -1946,8 +2206,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1960,8 +2223,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1975,8 +2241,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2053,6 +2322,20 @@
             "Failed"
           ]
         }
+      },
+      {
+        "token": "all_rent",
+        "name": "All chair rent",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "rent"
+      },
+      {
+        "token": "rent_board",
+        "name": "Chair rent by status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "rent"
       }
     ],
     "agent": {
@@ -2125,6 +2408,18 @@
           "surface": "booking_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open chair rent.",
+        "action": {
+          "kind": "open",
+          "surface": "rent_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "rent_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2142,7 +2437,7 @@
         "Tannery Square"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2164,12 +2459,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the shop from one page. Clients, services and payments are linked, every cut is a row with a barber, and walk-ins go on the board as they arrive. Each barber sees their own chair under Mine."
+              "text": "Run the shop from here. Walk-ins and bookings land on the Cuts board; each finished cut records the price, tip and how long the client waited. Client cards say how each regular likes it and who their barber is. Commission barbers are paid from the cuts; renters pay weekly in Chair rent. Members pay monthly in Payments."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2398,8 +2699,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2412,8 +2716,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2427,8 +2734,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2544,6 +2854,320 @@
             ],
             "activeViewId": "pay-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Chair rent"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Weekly rent from barbers who rent their chair."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rent",
+              "view": "rent_board"
+            },
+            "inline": true,
+            "title": "Chair rent",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "rn-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "rn-t",
+                "name": "All rent",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "rn-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "barbershop-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the shop runs in this workspace. Share it with every barber and the front desk."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Services and memberships",
+              "bold": true
+            },
+            {
+              "text": ": each cut and shave with price and time, the monthly membership, and how many of each you did."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": usual cut, usual barber, how they like it, visits, no-shows and spend."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cuts",
+              "bold": true
+            },
+            {
+              "text": ": every walk-in and booking, with barber, price, tip and wait time."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payments",
+              "bold": true
+            },
+            {
+              "text": ": card, cash and tap payments, and monthly membership charges."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Chair rent",
+              "bold": true
+            },
+            {
+              "text": ": weekly rent from barbers who rent their chair."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A cut from door to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Booked clients are on the Cuts calendar; walk-ins are added at the door as "
+            },
+            {
+              "text": "Walk-in",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the client sits down, record how long they waited."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the cut, press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ", add the tip, and take payment ("
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": ")."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Members' cuts carry no price; their monthly payment covers them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's bookings, failed member payments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: chair rent for the week, commission for last week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: walk-in share and waits, membership numbers"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change services and prices to your own, set your commission and rent amounts, and delete the sample clients once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Regulars are the business"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most of a shop's income comes from regulars who come back every two to four weeks. Write how they like it on their card after the first cut, and the next barber gets it right without asking twice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tips and no-shows"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tips belong to the barber in full; record them on the cut so pay is easy to add up. A booked client who does not come is set to "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": ". After two, ask them to book with a card or come in as a walk-in."
+            }
+          ]
         }
       ]
     },
@@ -2721,7 +3345,8 @@
                 },
                 "anyOf": {
                   "status": [
-                    "Booked"
+                    "Booked",
+                    "Checked in"
                   ]
                 }
               }
@@ -2802,6 +3427,86 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Walk-ins vs bookings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Cuts",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c5",
+                "name": "How they came in",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "visit_type",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-c5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Chair rent due or late"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "rent",
+              "view": "all_rent"
+            },
+            "inline": true,
+            "title": "Chair rent",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l6",
+                "name": "Due or late",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Due",
+                    "Late"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l6"
+          }
         }
       ]
     },
@@ -2817,7 +3522,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Walk-ins are the lifeblood. Keep the queue honest and the wait short."
+              "text": "Walk-ins are the life of a barbershop and the biggest source of lost money: a client who sees a 90-minute wait and walks out is gone. A fair, visible queue keeps them in the chair."
             }
           ],
           "background": "blue",
@@ -2829,7 +3534,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Running the queue"
             }
           ],
           "props": {
@@ -2840,7 +3545,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Greet and write the name on the Cuts board with a rough wait time."
+              "text": "Every walk-in gets added at the door as a cut with "
+            },
+            {
+              "text": "How they came in",
+              "bold": true
+            },
+            {
+              "text": " set to Walk-in, and the barber they want, or \"next available.\""
             }
           ]
         },
@@ -2848,7 +3560,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Keep a barber for walk-ins at the busiest hours."
+              "text": "Tell them an honest wait. Count the people ahead and the cuts in progress: a fade is 40 to 45 minutes, a line-up 15."
             }
           ]
         },
@@ -2856,7 +3568,30 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Text people when they are next if they step out."
+              "text": "Offer a text when they are two away, so they can grab a coffee instead of leaving."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Booked clients keep their time. Walk-ins fill the gaps between bookings."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the client sits down, write how long they waited in "
+            },
+            {
+              "text": "Waited (minutes)",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2864,7 +3599,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Busy hours"
+              "text": "Rush hours"
             }
           ],
           "props": {
@@ -2875,7 +3610,130 @@
           "type": "text",
           "text": [
             {
-              "text": "Fridays after 3 and Saturdays before noon. Stop taking new walk-ins when the wait exceeds 90 minutes and offer an appointment."
+              "text": "Friday afternoons and Saturday mornings are the rush. Put every barber on the floor, keep the apprentice on line-ups and kids cuts, and push regulars toward booked times on quieter days: \"Tuesdays at 11 you would walk straight in.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The chair checklist between clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clippers cleaned and disinfected, guards in the jar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fresh neck strip and cape"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hair swept from the chair and the floor around it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Ask the next client how they want it, even regulars; check "
+            },
+            {
+              "text": "How they like it",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On a Saturday at 10 am three walk-ins arrive while two barbers are on bookings. The front desk adds them, quotes 35 minutes and offers a text. One goes next door for breakfast and comes back on the text. All three are cut by 11:15; average wait 32 minutes. The Dashboard shows how many cuts were walk-ins that week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watching the numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at the share of walk-ins and the average wait every month. Long waits with a rising walk-in share mean it is time for another barber on Saturdays, not a longer queue."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Members are booked or walk in like anyone else, with "
+            },
+            {
+              "text": "How they came in",
+              "bold": true
+            },
+            {
+              "text": " set to Member and no price on the cut: their monthly payment covers it. A member who comes in less than twice a month will usually cancel; the barber should invite them back."
             }
           ]
         }
@@ -2893,7 +3751,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Know what each barber owes and earns before the week ends."
+              "text": "Most shops mix two pay models. Commission barbers share each cut with the shop; renters pay a fixed weekly rent and keep what they cut. Both work, as long as the money is tracked every week."
             }
           ],
           "background": "blue",
@@ -2905,7 +3763,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Models"
+              "text": "Commission barbers"
             }
           ],
           "props": {
@@ -2913,76 +3771,97 @@
           }
         },
         {
-          "type": "table",
-          "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Model"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "How it works"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Weekly task"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Commission"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Barber keeps an agreed share of each service"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Total services and settle on Friday"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Chair rent"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Barber pays a fixed weekly fee and keeps what they earn"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Collect rent on Monday"
-                    }
-                  ]
-                ]
-              }
-            ]
-          }
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The shop sets the price and provides products, tools and the booking system."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The barber earns a percentage of each cut, commonly 40 to 60 percent, and keeps their tips."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pay is worked out from the Cuts table: filter by barber and the pay period, add up the price column, apply the percentage, add tips."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Check local rules"
+              "text": "Chair renters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The renter pays a fixed weekly rent, sets their own prices within the shop's range, and keeps all cut income and tips."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each week gets a row in "
+            },
+            {
+              "text": "Chair rent",
+              "bold": true
+            },
+            {
+              "text": " with the amount and "
+            },
+            {
+              "text": "Due",
+              "bold": true
+            },
+            {
+              "text": " status."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Paid on Monday: set "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " and the date. Not paid by Wednesday: set "
+            },
+            {
+              "text": "Late",
+              "bold": true
+            },
+            {
+              "text": " and talk to the barber that day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Which model, for whom"
             }
           ],
           "props": {
@@ -2993,7 +3872,111 @@
           "type": "text",
           "text": [
             {
-              "text": "Rules on chair rental differ by state. Confirm which arrangements your state allows."
+              "text": "Newer barbers usually do better on commission while they build a book. A barber with a full book of regulars often prefers rent. Write the agreement down and review it every six months."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly money checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every cut marked done with price and tip"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Commission worked out for each commission barber"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Chair rent for the week marked Paid, Due or Late"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Card and cash totals match the payments list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Member payments that failed are followed up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Thaddeus rents his chair for $225 a week; Dario works on 50 percent commission. On Monday the owner marks Thaddeus's rent Paid, then filters last week's cuts to Dario: $1,640 of cuts, so $820 commission plus $210 in tips. Elodie's rent from last week shows Late; the owner asks her about it before lunch."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Late rent"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One late week is a conversation. Two in a row means a written plan with dates. Never take it out of a client payment without the barber agreeing in writing."
             }
           ]
         }
@@ -3011,7 +3994,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Cleanliness is the first thing clients notice."
+              "text": "Clean tools are the law and the first thing clients notice. Every barber follows the same routine, every client, every day."
             }
           ],
           "background": "blue",
@@ -3023,7 +4006,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After each client"
+              "text": "Between every client"
             }
           ],
           "props": {
@@ -3031,34 +4014,175 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Clean and disinfect clippers and combs."
+              "text": "Brush hair off clippers and trimmers, spray with disinfectant, let it sit for the time on the label"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Replace the neck strip and wipe the cape."
+              "text": "Combs and guards into the disinfectant jar for the full contact time"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Sweep around the chair."
+              "text": "New neck strip; cape that touches skin is changed or wiped"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Single-use razor blade for every shave and line-up; blade into the sharps box"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wash hands"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "End of day"
+              "text": "Every morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fresh disinfectant in the jars, mixed to the label"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Towels clean and stored in a closed cabinet"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hot towel cabinet cleaned and at temperature"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Stations wiped: chair, armrests, counter, mirror"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Every night"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors swept and mopped, hair bagged and out"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clippers oiled, blades checked for chips"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sharps box checked; swapped when it is three-quarters full"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dirty towels and capes in the wash"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Cuts and nicks"
             }
           ],
           "props": {
@@ -3069,7 +4193,72 @@
           "type": "text",
           "text": [
             {
-              "text": "Soak tools, empty trash, mop and take out laundry."
+              "text": "Stop, apply pressure with clean gauze, use a styptic, and never touch blood with bare hands. Throw away the blade and anything that touched blood. Write it down if the client needed more than a minute of care."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Skin conditions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a client has an open sore, rash or sign of infection on the area you would cut, do not cut that area. Be kind, explain why, and offer to rebook."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Inspections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep the disinfectant label, your license and the shop license where an inspector can see them. The owner walks the stations once a week with this checklist; anything missed is a five-minute talk at the next team meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "An inspector visits on a Thursday. Every jar is fresh, blades are single-use and the sharps box is half full. The only note is a towel cabinet left open; it is fixed on the spot."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "New barbers and apprentices shadow this routine for their first week, then the owner watches them do it alone before they take clients on their own."
             }
           ]
         }

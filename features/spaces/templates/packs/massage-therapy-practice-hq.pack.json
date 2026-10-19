@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 3,
+  "version": 4,
   "title": "Massage Therapy Practice HQ",
-  "description": "Book sessions by therapist and room, keep session notes, memberships and payments.",
+  "description": "For massage therapists: intake, session notes, memberships, rooms and reminders.",
   "forWho": "Massage therapists and small bodywork practices",
   "icon": {
     "emoji": "💆"
@@ -14,10 +14,12 @@
   },
   "category": "wellness",
   "tags": [
+    "massage therapist",
     "massage",
-    "sessions",
     "memberships",
-    "notes"
+    "soap notes",
+    "intake",
+    "wellness"
   ],
   "spec": {
     "specVersion": 1,
@@ -65,7 +67,7 @@
         "fields": [
           {
             "key": "plan_name",
-            "label": "Session type",
+            "label": "Session or plan",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -140,32 +142,28 @@
             ]
           },
           {
-            "key": "valid_days",
-            "label": "Valid for (days)",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 730
-              }
-            ]
-          },
-          {
             "key": "includes",
-            "label": "Includes",
+            "label": "What's included",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
-            "key": "active_n",
-            "label": "Active clients",
+            "key": "times_done",
+            "label": "Sessions given",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "booking_name",
+            "agg": "count",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
+            "key": "members_n",
+            "label": "Members",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -175,35 +173,6 @@
             "filter": {
               "client_status": "Active"
             }
-          },
-          {
-            "key": "cancelled_n",
-            "label": "Cancelled",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
-            "agg": "count",
-            "filter": {
-              "client_status": "Cancelled"
-            }
-          },
-          {
-            "key": "churn",
-            "label": "Churn (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Active clients} + {Cancelled} > 0, ROUND({Cancelled} / ({Active clients} + {Cancelled}) * 100, 0), 0)"
-          },
-          {
-            "key": "recurring",
-            "label": "Recurring value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Active clients} * {Price (USD)}"
           },
           {
             "key": "added_at",
@@ -272,8 +241,7 @@
               "price": 95,
               "billing": "Per visit",
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "session, per visit"
+              "includes": "Intake, 60 minutes on the table, aftercare advice"
             }
           },
           {
@@ -284,8 +252,7 @@
               "price": 135,
               "billing": "Per visit",
               "minutes": 90,
-              "valid_days": 1,
-              "includes": "session, per visit"
+              "includes": "Intake, 90 minutes, extra time on one focus area"
             }
           },
           {
@@ -296,8 +263,7 @@
               "price": 85,
               "billing": "Monthly",
               "minutes": 60,
-              "valid_days": 30,
-              "includes": "membership, monthly"
+              "includes": "One 60 minute session a month, unused sessions bank for 3 months, 15% off extra sessions"
             }
           },
           {
@@ -308,8 +274,7 @@
               "price": 55,
               "billing": "Per visit",
               "minutes": 30,
-              "valid_days": 1,
-              "includes": "session, per visit"
+              "includes": "Neck and shoulders or low back only"
             }
           },
           {
@@ -320,8 +285,7 @@
               "price": 105,
               "billing": "Per visit",
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "side-lying setup with pillows and extra room time"
+              "includes": "Side-lying with pregnancy pillows, second trimester on"
             }
           },
           {
@@ -332,8 +296,7 @@
               "price": 70,
               "billing": "Per visit",
               "minutes": 30,
-              "valid_days": 1,
-              "includes": "corporate, per visit"
+              "includes": "Seated chair massage at offices and events, per therapist hour"
             }
           }
         ]
@@ -385,32 +348,90 @@
           },
           {
             "key": "client_status",
-            "label": "Status",
+            "label": "Membership",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
               "Active",
-              "Frozen",
+              "Paused",
               "Cancelled",
-              "Lead"
+              "Not a member"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Frozen": "blue",
-              "Cancelled": "red",
-              "Lead": "amber"
+              "Active": "green",
+              "Paused": "amber",
+              "Cancelled": "slate",
+              "Not a member": "blue"
             },
             "default": "Active"
           },
           {
             "key": "plan",
-            "label": "Session type",
+            "label": "Usual session",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
             "relationMax": 1
+          },
+          {
+            "key": "health",
+            "label": "Health history and cautions",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pressure",
+            "label": "Pressure",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Light",
+              "Medium",
+              "Firm",
+              "Deep"
+            ],
+            "choiceColors": {
+              "Light": "blue",
+              "Medium": "green",
+              "Firm": "amber",
+              "Deep": "violet"
+            }
+          },
+          {
+            "key": "avoid",
+            "label": "Areas to avoid",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "intake_on",
+            "label": "Intake signed on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "banked",
+            "label": "Sessions banked",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
           },
           {
             "key": "phone",
@@ -481,25 +502,12 @@
             }
           },
           {
-            "key": "failed_n",
-            "label": "Failed payments",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "payments",
-            "pick": "amount",
-            "agg": "count",
-            "filter": {
-              "status": "Failed"
-            }
-          },
-          {
-            "key": "risk",
-            "label": "Retention check",
+            "key": "reminder",
+            "label": "Next step",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+            "formula": "IF({No-shows} >= 2, \"Card required to book\", \"Book as usual\")"
           },
           {
             "key": "add_booking_btn",
@@ -528,7 +536,7 @@
           {
             "name": "Client intake",
             "values": {
-              "client_status": "Lead"
+              "client_status": "Not a member"
             },
             "default": true,
             "body": {
@@ -642,7 +650,11 @@
               "phone": "(802) 555-0192",
               "email": "odette.aldercott@inbox-mail.net",
               "joined_on": "@today-30d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "health": "Desk job; tension headaches. No conditions.",
+              "pressure": "Firm",
+              "intake_on": "@today-300d",
+              "banked": 1
             }
           },
           {
@@ -655,7 +667,10 @@
               "phone": "(802) 555-0129",
               "email": "rafael.hartigan@inbox-mail.net",
               "joined_on": "@today-77d",
-              "area": "Lakeview"
+              "area": "Lakeview",
+              "health": "Runner; old right hamstring strain.",
+              "pressure": "Deep",
+              "intake_on": "@today-200d"
             }
           },
           {
@@ -668,7 +683,12 @@
               "phone": "(802) 555-0166",
               "email": "saoirse.okafor@inbox-mail.net",
               "joined_on": "@today-124d",
-              "area": "Foxglove Court"
+              "area": "Foxglove Court",
+              "health": "Fibromyalgia: flare days vary, check in first.",
+              "pressure": "Light",
+              "avoid": "Abdomen",
+              "intake_on": "@today-150d",
+              "banked": 2
             }
           },
           {
@@ -681,7 +701,10 @@
               "phone": "(802) 555-0103",
               "email": "ravi.whitlock@inbox-mail.net",
               "joined_on": "@today-171d",
-              "area": "Stonebridge"
+              "area": "Stonebridge",
+              "health": "High blood pressure, on medication.",
+              "pressure": "Medium",
+              "intake_on": "@today-400d"
             }
           },
           {
@@ -694,7 +717,11 @@
               "phone": "(802) 555-0140",
               "email": "zainab.eriksen@inbox-mail.net",
               "joined_on": "@today-218d",
-              "area": "Harbor Heights"
+              "area": "Harbor Heights",
+              "health": "28 weeks pregnant, cleared by midwife.",
+              "pressure": "Light",
+              "avoid": "Deep work on the legs",
+              "intake_on": "@today-60d"
             }
           },
           {
@@ -707,7 +734,11 @@
               "phone": "(802) 555-0177",
               "email": "jamal.lowry@inbox-mail.net",
               "joined_on": "@today-265d",
-              "area": "Willow Creek"
+              "area": "Willow Creek",
+              "health": "Shoulder surgery 2 years ago, full range now.",
+              "pressure": "Medium",
+              "intake_on": "@today-90d",
+              "banked": 1
             }
           },
           {
@@ -715,12 +746,16 @@
             "values": {
               "client_name": "Liesel Valdez",
               "kind": "Referral",
-              "client_status": "Active",
+              "client_status": "Not a member",
               "plan": "plan-1",
               "phone": "(802) 555-0114",
               "email": "liesel.valdez@inbox-mail.net",
               "joined_on": "@today-312d",
-              "area": "North Ridge"
+              "area": "North Ridge",
+              "health": "Nothing to note.",
+              "pressure": "Firm",
+              "avoid": "Feet (ticklish)",
+              "intake_on": "@today-30d"
             }
           },
           {
@@ -728,12 +763,15 @@
             "values": {
               "client_name": "Okonkwo Dunmore",
               "kind": "Corporate",
-              "client_status": "Active",
+              "client_status": "Not a member",
               "plan": "plan-2",
               "phone": "(802) 555-0151",
               "email": "okonkwo.dunmore@inbox-mail.net",
               "joined_on": "@today-359d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "health": "Diabetic: check feet for sensation.",
+              "pressure": "Medium",
+              "intake_on": "@today-45d"
             }
           },
           {
@@ -741,12 +779,17 @@
             "values": {
               "client_name": "Ingrid Kowalczyk",
               "kind": "Member",
-              "client_status": "Active",
+              "client_status": "Not a member",
               "plan": "plan-3",
               "phone": "(802) 555-0188",
               "email": "ingrid.kowalczyk@inbox-mail.net",
               "joined_on": "@today-406d",
-              "area": "Maple Hollow"
+              "area": "Maple Hollow",
+              "health": "Migraines; no scents.",
+              "pressure": "Light",
+              "avoid": "Face",
+              "intake_on": "@today-120d",
+              "banked": 3
             }
           },
           {
@@ -754,12 +797,16 @@
             "values": {
               "client_name": "Basil Sandoval",
               "kind": "Single visit",
-              "client_status": "Frozen",
+              "client_status": "Paused",
               "plan": "plan-4",
               "phone": "(802) 555-0125",
               "email": "basil.sandoval@inbox-mail.net",
               "joined_on": "@today-453d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "health": "Back strain at work last spring.",
+              "pressure": "Medium",
+              "intake_on": "@today-240d",
+              "banked": 2
             }
           },
           {
@@ -772,7 +819,10 @@
               "phone": "(802) 555-0162",
               "email": "mirela.abernathy@inbox-mail.net",
               "joined_on": "@today-500d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "health": "Moved away.",
+              "pressure": "Medium",
+              "intake_on": "@today-500d"
             }
           },
           {
@@ -785,7 +835,9 @@
               "phone": "(802) 555-0199",
               "email": "winston.halvorsen@inbox-mail.net",
               "joined_on": "@today-547d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "pressure": "Firm",
+              "intake_on": "@today-380d"
             }
           },
           {
@@ -793,12 +845,14 @@
             "values": {
               "client_name": "Nadia Prescott",
               "kind": "Member",
-              "client_status": "Lead",
+              "client_status": "Not a member",
               "plan": "plan-1",
               "phone": "(802) 555-0136",
               "email": "nadia.prescott@inbox-mail.net",
               "joined_on": "@today-594d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "pressure": "Medium",
+              "intake_on": "@today-5d"
             }
           },
           {
@@ -806,7 +860,7 @@
             "values": {
               "client_name": "Emeka Zuberi",
               "kind": "Single visit",
-              "client_status": "Lead",
+              "client_status": "Not a member",
               "plan": "plan-2",
               "phone": "(802) 555-0173",
               "email": "emeka.zuberi@inbox-mail.net",
@@ -814,7 +868,8 @@
               "area": "Lakeview"
             }
           }
-        ]
+        ],
+        "datesIndependent": "The intake form is signed at or before the first session, whenever the client joined."
       },
       {
         "token": "booking",
@@ -848,7 +903,7 @@
         "fields": [
           {
             "key": "booking_name",
-            "label": "Appointment",
+            "label": "Session",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -912,6 +967,57 @@
             "relationMax": 1
           },
           {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Willow room",
+              "Cedar room",
+              "Fern room"
+            ],
+            "choiceColors": {
+              "Willow room": "blue",
+              "Cedar room": "green",
+              "Fern room": "amber"
+            }
+          },
+          {
+            "key": "focus",
+            "label": "Focus areas",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Neck and shoulders",
+              "Upper back",
+              "Low back",
+              "Hips and glutes",
+              "Legs",
+              "Feet",
+              "Arms and hands",
+              "Full body"
+            ],
+            "choiceColors": {
+              "Neck and shoulders": "blue",
+              "Upper back": "green",
+              "Low back": "amber",
+              "Hips and glutes": "violet",
+              "Legs": "teal",
+              "Feet": "orange",
+              "Arms and hands": "pink",
+              "Full body": "slate"
+            }
+          },
+          {
+            "key": "soap",
+            "label": "Session notes (SOAP)",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
             "key": "when_on",
             "label": "When",
             "parityType": "datetime",
@@ -935,15 +1041,15 @@
             "contextPolicy": "include",
             "choices": [
               "Session",
-              "Intake",
-              "Follow-up",
+              "First visit",
+              "Member session",
               "Event"
             ],
             "choiceColors": {
-              "Session": "slate",
-              "Intake": "blue",
-              "Follow-up": "amber",
-              "Event": "violet"
+              "Session": "blue",
+              "First visit": "violet",
+              "Member session": "green",
+              "Event": "amber"
             }
           },
           {
@@ -979,6 +1085,25 @@
               {
                 "kind": "max",
                 "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "tip",
+            "label": "Tip (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
               }
             ]
           },
@@ -1109,319 +1234,356 @@
           {
             "key": "bookin-1",
             "values": {
-              "booking_name": "Prenatal session - Hartigan",
+              "booking_name": "Deep work on the right hamstring",
               "status": "Completed",
               "client": "client-2",
-              "plan": "plan-5",
-              "staff": "tm-1",
+              "plan": "plan-2",
+              "staff": "tm-2",
+              "room": "Cedar room",
+              "focus": [
+                "Legs",
+                "Hips and glutes"
+              ],
               "when_on": "@today-12d",
               "visit_type": "Session",
-              "minutes": 60,
-              "price": 105,
+              "minutes": 90,
+              "price": 135,
+              "soap": "S: tight after a 15 mile run. O: trigger points mid hamstring. A: eased. P: stretch daily, back in 3 weeks.",
+              "tip": 25,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "bookin-2",
             "values": {
-              "booking_name": "60 minute session - Eriksen",
+              "booking_name": "Tension headache relief",
               "status": "Completed",
-              "client": "client-5",
-              "plan": "plan-1",
-              "staff": "tm-2",
+              "client": "client-1",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "room": "Willow room",
+              "focus": [
+                "Neck and shoulders",
+                "Upper back"
+              ],
               "when_on": "@today-9d",
-              "visit_type": "Intake",
+              "visit_type": "Member session",
               "minutes": 60,
-              "price": 95,
+              "price": 0,
+              "soap": "S: headaches 3x a week. O: suboccipitals tight. A: no headache after. P: monthly.",
+              "tip": 15,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "bookin-3",
             "values": {
-              "booking_name": "Follow-up - Dunmore",
+              "booking_name": "Prenatal, side-lying",
               "status": "Completed",
-              "client": "client-8",
-              "plan": "plan-3",
+              "client": "client-5",
+              "plan": "plan-5",
               "staff": "tm-3",
+              "room": "Fern room",
+              "focus": [
+                "Low back",
+                "Hips and glutes"
+              ],
               "when_on": "@today-7d",
-              "visit_type": "Follow-up",
-              "minutes": 75,
-              "price": 0,
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 105,
+              "soap": "S: low back ache. O: side-lying, light. A: comfortable throughout.",
+              "tip": 20,
               "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Prenatal session - Abernathy",
+              "booking_name": "Gentle full body, flare week",
               "status": "Completed",
-              "client": "client-11",
-              "plan": "plan-5",
-              "staff": "tm-4",
-              "when_on": "@today-5d",
-              "visit_type": "Event",
+              "client": "client-3",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "room": "Willow room",
+              "focus": [
+                "Full body"
+              ],
+              "when_on": "@today-6d",
+              "visit_type": "Member session",
               "minutes": 60,
-              "price": 105,
-              "completed_on": "@today-5d"
+              "price": 0,
+              "soap": "S: mild flare. O: light pressure only. A: tolerated well.",
+              "tip": 10,
+              "completed_on": "@today-6d"
             }
           },
           {
             "key": "bookin-5",
             "values": {
-              "booking_name": "60 minute session - Zuberi",
+              "booking_name": "Low back after a long drive",
               "status": "Completed",
-              "client": "client-14",
+              "client": "client-10",
               "plan": "plan-1",
-              "staff": "tm-1",
-              "when_on": "@today-3d",
+              "staff": "tm-4",
+              "room": "Cedar room",
+              "focus": [
+                "Low back"
+              ],
+              "when_on": "@today-4d",
               "visit_type": "Session",
               "minutes": 60,
               "price": 95,
-              "completed_on": "@today-3d"
+              "tip": 15,
+              "completed_on": "@today-4d"
             }
           },
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Intake - Okafor",
-              "status": "No-show",
-              "client": "client-3",
-              "plan": "plan-3",
+              "booking_name": "First visit: intake + 60",
+              "status": "Completed",
+              "client": "client-13",
+              "plan": "plan-1",
               "staff": "tm-2",
-              "when_on": "@today-4d",
-              "visit_type": "Intake",
+              "room": "Fern room",
+              "focus": [
+                "Neck and shoulders",
+                "Upper back"
+              ],
+              "when_on": "@today-5d",
+              "visit_type": "First visit",
               "minutes": 75,
-              "price": 0
+              "price": 95,
+              "soap": "First visit; intake signed.",
+              "tip": 18,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-7",
             "values": {
-              "booking_name": "Prenatal session - Lowry",
-              "status": "Cancelled",
+              "booking_name": "Focus session, shoulder",
+              "status": "No-show",
               "client": "client-6",
-              "plan": "plan-5",
-              "staff": "tm-3",
-              "when_on": "@today-2d",
-              "visit_type": "Follow-up",
-              "minutes": 60,
-              "price": 105
+              "plan": "plan-4",
+              "staff": "tm-4",
+              "room": "Willow room",
+              "focus": [
+                "Arms and hands"
+              ],
+              "when_on": "@today-3d",
+              "visit_type": "Session",
+              "minutes": 30,
+              "price": 55
             }
           },
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "60 minute session - Kowalczyk",
-              "status": "Booked",
+              "booking_name": "Member session",
+              "status": "Cancelled",
               "client": "client-9",
-              "plan": "plan-1",
-              "staff": "tm-4",
-              "when_on": "@today-1d",
-              "visit_type": "Event",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "room": "Fern room",
+              "focus": [
+                "Neck and shoulders"
+              ],
+              "when_on": "@today-2d",
+              "visit_type": "Member session",
               "minutes": 60,
-              "price": 95
+              "price": 0
             }
           },
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Session - Halvorsen",
-              "status": "Booked",
-              "client": "client-12",
-              "plan": "plan-3",
-              "staff": "tm-1",
-              "when_on": "@today-2d",
-              "visit_type": "Session",
-              "minutes": 75,
-              "price": 0
+              "booking_name": "Office wellness day, 3 hours",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-6",
+              "staff": "tm-2",
+              "room": "Willow room",
+              "focus": [
+                "Neck and shoulders"
+              ],
+              "when_on": "@today-15d",
+              "visit_type": "Event",
+              "minutes": 180,
+              "price": 210,
+              "completed_on": "@today-15d"
             }
           },
           {
             "key": "bookin-10",
             "values": {
-              "booking_name": "Prenatal session - Aldercott",
-              "status": "Checked in",
-              "client": "client-1",
-              "plan": "plan-5",
-              "staff": "tm-2",
-              "when_on": "@mon",
-              "visit_type": "Intake",
+              "booking_name": "Member session, neck and jaw",
+              "status": "Booked",
+              "client": "client-9",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "room": "Willow room",
+              "focus": [
+                "Neck and shoulders"
+              ],
+              "when_on": "@today",
+              "visit_type": "Member session",
               "minutes": 60,
-              "price": 105,
+              "price": 0,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-11",
             "values": {
-              "booking_name": "60 minute session - Whitlock",
+              "booking_name": "90 minute deep tissue",
               "status": "Booked",
-              "client": "client-4",
-              "plan": "plan-1",
-              "staff": "tm-3",
-              "when_on": "@tue",
-              "visit_type": "Follow-up",
-              "minutes": 60,
-              "price": 95
+              "client": "client-2",
+              "plan": "plan-2",
+              "staff": "tm-2",
+              "room": "Cedar room",
+              "focus": [
+                "Legs",
+                "Low back"
+              ],
+              "when_on": "@today+1d",
+              "visit_type": "Session",
+              "minutes": 90,
+              "price": 135
             }
           },
           {
             "key": "bookin-12",
             "values": {
-              "booking_name": "Event - Valdez",
-              "status": "Booked",
-              "client": "client-7",
-              "plan": "plan-3",
-              "staff": "tm-4",
-              "when_on": "@wed",
-              "visit_type": "Event",
-              "minutes": 75,
-              "price": 0,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-13",
-            "values": {
-              "booking_name": "Prenatal session - Sandoval",
-              "status": "Booked",
-              "client": "client-10",
-              "plan": "plan-5",
-              "staff": "tm-1",
-              "when_on": "@thu",
-              "visit_type": "Session",
-              "minutes": 60,
-              "price": 105
-            }
-          },
-          {
-            "key": "bookin-14",
-            "values": {
-              "booking_name": "60 minute session - Prescott",
-              "status": "Booked",
-              "client": "client-13",
-              "plan": "plan-1",
-              "staff": "tm-2",
-              "when_on": "@fri",
-              "visit_type": "Intake",
-              "minutes": 60,
-              "price": 95,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-15",
-            "values": {
-              "booking_name": "Follow-up - Hartigan",
-              "status": "Booked",
-              "client": "client-2",
-              "plan": "plan-3",
-              "staff": "tm-3",
-              "when_on": "@sat",
-              "visit_type": "Follow-up",
-              "minutes": 75,
-              "price": 0,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-16",
-            "values": {
-              "booking_name": "Prenatal session - Eriksen",
+              "booking_name": "Member session, jaw and temples",
               "status": "Booked",
               "client": "client-5",
               "plan": "plan-5",
-              "staff": "tm-4",
-              "when_on": "@sun",
-              "visit_type": "Event",
-              "minutes": 60,
-              "price": 105
-            }
-          },
-          {
-            "key": "bookin-17",
-            "values": {
-              "booking_name": "60 minute session - Dunmore",
-              "status": "Booked",
-              "client": "client-8",
-              "plan": "plan-1",
-              "staff": "tm-1",
-              "when_on": "@mon+1w",
-              "visit_type": "Session",
-              "minutes": 60,
-              "price": 95
-            }
-          },
-          {
-            "key": "bookin-18",
-            "values": {
-              "booking_name": "Intake - Abernathy",
-              "status": "Booked",
-              "client": "client-11",
-              "plan": "plan-3",
-              "staff": "tm-2",
-              "when_on": "@wed+1w",
-              "visit_type": "Intake",
-              "minutes": 75,
-              "price": 0
-            }
-          },
-          {
-            "key": "bookin-19",
-            "values": {
-              "booking_name": "Prenatal session - Zuberi",
-              "status": "Booked",
-              "client": "client-14",
-              "plan": "plan-5",
               "staff": "tm-3",
-              "when_on": "@today",
-              "visit_type": "Follow-up",
+              "room": "Fern room",
+              "focus": [
+                "Low back"
+              ],
+              "when_on": "@today+3d",
+              "visit_type": "Session",
               "minutes": 60,
               "price": 105,
               "mine": "@installer"
             }
           },
           {
-            "key": "bookin-20",
+            "key": "bookin-13",
             "values": {
-              "booking_name": "60 minute session - Okafor",
+              "booking_name": "Member session, upper back",
               "status": "Booked",
-              "client": "client-3",
-              "plan": "plan-1",
-              "staff": "tm-4",
-              "when_on": "@today+2d",
-              "visit_type": "Event",
+              "client": "client-1",
+              "plan": "plan-3",
+              "staff": "tm-1",
+              "room": "Willow room",
+              "focus": [
+                "Neck and shoulders"
+              ],
+              "when_on": "@today+5d",
+              "visit_type": "Member session",
               "minutes": 60,
+              "price": 0,
+              "mine": "@installer"
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Focus session, low back",
+              "status": "Booked",
+              "client": "client-4",
+              "plan": "plan-4",
+              "staff": "tm-4",
+              "room": "Cedar room",
+              "focus": [
+                "Low back"
+              ],
+              "when_on": "@today+6d",
+              "visit_type": "Session",
+              "minutes": 30,
+              "price": 55
+            }
+          },
+          {
+            "key": "bookin-15",
+            "values": {
+              "booking_name": "Gift certificate, first visit",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-1",
+              "staff": "tm-3",
+              "room": "Fern room",
+              "focus": [
+                "Full body"
+              ],
+              "when_on": "@today+9d",
+              "visit_type": "First visit",
+              "minutes": 75,
               "price": 95
             }
           },
           {
-            "key": "bookin-21",
+            "key": "bookin-16",
             "values": {
-              "booking_name": "Session - Lowry",
+              "booking_name": "Chair massage, staff appreciation",
               "status": "Booked",
-              "client": "client-6",
-              "plan": "plan-3",
-              "staff": "tm-1",
-              "when_on": "@today+4d",
-              "visit_type": "Session",
-              "minutes": 75,
-              "price": 0
+              "client": "client-8",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "room": "Willow room",
+              "focus": [
+                "Neck and shoulders"
+              ],
+              "when_on": "@today+13d",
+              "visit_type": "Event",
+              "minutes": 240,
+              "price": 280
             }
           },
           {
-            "key": "bookin-22",
+            "key": "bookin-17",
             "values": {
-              "booking_name": "Prenatal session - Kowalczyk",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-5",
-              "staff": "tm-2",
-              "when_on": "@today+1d",
-              "visit_type": "Intake",
+              "booking_name": "Hip and glute release",
+              "status": "Completed",
+              "client": "client-7",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "room": "Cedar room",
+              "focus": [
+                "Hips and glutes"
+              ],
+              "when_on": "@today-21d",
+              "visit_type": "Session",
               "minutes": 60,
-              "price": 105
+              "price": 95,
+              "tip": 15,
+              "completed_on": "@today-21d"
+            }
+          },
+          {
+            "key": "bookin-18",
+            "values": {
+              "booking_name": "Shoulder rehab follow-up",
+              "status": "Completed",
+              "client": "client-6",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "room": "Willow room",
+              "focus": [
+                "Arms and hands",
+                "Neck and shoulders"
+              ],
+              "when_on": "@today-30d",
+              "visit_type": "Session",
+              "minutes": 60,
+              "price": 95,
+              "tip": 20,
+              "completed_on": "@today-30d"
             }
           }
         ],
@@ -1578,138 +1740,137 @@
           {
             "key": "paymen-1",
             "values": {
-              "payment_name": "PAY-2210",
+              "payment_name": "HM-5501",
               "status": "Paid",
-              "client": "client-3",
-              "amount": 85,
-              "due_on": "@today-30d",
+              "client": "client-1",
+              "amount": 85.0,
+              "due_on": "@today-28d",
               "method": "Card on file",
-              "paid_on": "@today-30d"
+              "paid_on": "@today-28d"
             }
           },
           {
             "key": "paymen-2",
             "values": {
-              "payment_name": "PAY-2211",
+              "payment_name": "HM-5502",
               "status": "Paid",
-              "client": "client-8",
-              "amount": 135,
-              "due_on": "@today-28d",
-              "method": "Cash",
-              "paid_on": "@today-28d"
+              "client": "client-2",
+              "amount": 160.0,
+              "due_on": "@today-12d",
+              "method": "Card on file",
+              "paid_on": "@today-12d"
             }
           },
           {
             "key": "paymen-3",
             "values": {
-              "payment_name": "PAY-2212",
+              "payment_name": "HM-5503",
               "status": "Paid",
-              "client": "client-13",
-              "amount": 95,
-              "due_on": "@today-14d",
-              "method": "Insurance letter",
-              "paid_on": "@today-14d"
+              "client": "client-5",
+              "amount": 125.0,
+              "due_on": "@today-7d",
+              "method": "Card on file",
+              "paid_on": "@today-7d"
             }
           },
           {
             "key": "paymen-4",
             "values": {
-              "payment_name": "PAY-2213",
+              "payment_name": "HM-5504",
               "status": "Paid",
-              "client": "client-4",
-              "amount": 55,
-              "due_on": "@today-10d",
-              "method": "Gift card",
-              "paid_on": "@today-10d"
+              "client": "client-3",
+              "amount": 85.0,
+              "due_on": "@today-28d",
+              "method": "Card on file",
+              "paid_on": "@today-28d"
             }
           },
           {
             "key": "paymen-5",
             "values": {
-              "payment_name": "PAY-2214",
+              "payment_name": "HM-5505",
               "status": "Failed",
               "client": "client-9",
-              "amount": 85,
-              "due_on": "@today-3d",
-              "method": "Card on file"
+              "amount": 85.0,
+              "due_on": "@today-2d"
             }
           },
           {
             "key": "paymen-6",
             "values": {
-              "payment_name": "PAY-2215",
-              "status": "Failed",
-              "client": "client-14",
-              "amount": 135,
-              "due_on": "@today-1d",
-              "method": "Cash"
+              "payment_name": "HM-5506",
+              "status": "Paid",
+              "client": "client-10",
+              "amount": 110.0,
+              "due_on": "@today-4d",
+              "method": "Cash",
+              "paid_on": "@today-4d"
             }
           },
           {
             "key": "paymen-7",
             "values": {
-              "payment_name": "PAY-2216",
+              "payment_name": "HM-5507",
               "status": "Pending",
-              "client": "client-5",
-              "amount": 105,
-              "due_on": "@fri",
-              "method": "Insurance letter"
+              "client": "client-8",
+              "amount": 280.0,
+              "due_on": "@today+13d"
             }
           },
           {
             "key": "paymen-8",
             "values": {
-              "payment_name": "PAY-2217",
-              "status": "Pending",
-              "client": "client-10",
-              "amount": 55,
-              "due_on": "@today+3d",
-              "method": "Gift card"
+              "payment_name": "HM-5508",
+              "status": "Paid",
+              "client": "client-13",
+              "amount": 113.0,
+              "due_on": "@today-5d",
+              "method": "Gift card",
+              "paid_on": "@today-5d"
             }
           },
           {
             "key": "paymen-9",
             "values": {
-              "payment_name": "PAY-2218",
+              "payment_name": "HM-5509",
               "status": "Pending",
-              "client": "client-1",
-              "amount": 95,
-              "due_on": "@today+5d",
-              "method": "Card on file"
+              "client": "client-6",
+              "amount": 55.0,
+              "due_on": "@today+1d"
             }
           },
           {
             "key": "paymen-10",
             "values": {
-              "payment_name": "PAY-2219",
-              "status": "Paid",
-              "client": "client-6",
-              "amount": 70,
-              "due_on": "@today-6d",
-              "method": "Cash",
-              "paid_on": "@today-6d"
+              "payment_name": "HM-5510",
+              "status": "Refunded",
+              "client": "client-11",
+              "amount": 85.0,
+              "due_on": "@today-60d",
+              "method": "Card on file",
+              "paid_on": "@today-58d"
             }
           },
           {
             "key": "paymen-11",
             "values": {
-              "payment_name": "PAY-2220",
-              "status": "Refunded",
-              "client": "client-11",
-              "amount": 105,
-              "due_on": "@today-9d",
-              "method": "Insurance letter"
+              "payment_name": "HM-5511",
+              "status": "Pending",
+              "client": "client-1",
+              "amount": 85.0,
+              "due_on": "@today+2d"
             }
           },
           {
             "key": "paymen-12",
             "values": {
-              "payment_name": "PAY-2221",
-              "status": "Pending",
-              "client": "client-2",
-              "amount": 135,
-              "due_on": "@today+6d",
-              "method": "Gift card"
+              "payment_name": "HM-5512",
+              "status": "Paid",
+              "client": "client-8",
+              "amount": 210.0,
+              "due_on": "@today-15d",
+              "method": "Card on file",
+              "paid_on": "@today-10d"
             }
           }
         ],
@@ -1957,8 +2118,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1971,8 +2135,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1986,8 +2153,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2153,7 +2323,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2175,12 +2345,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the practice from one page. Clients, session types and payments are linked, every session is an appointment with a therapist, and each therapist sees their own list under Mine. Session notes live on each appointment page."
+              "text": "Run the practice from here. Each client card holds the signed intake date, health cautions, preferred pressure and areas to avoid. Each session holds the room, focus areas and SOAP notes. Members show banked sessions, and failed monthly charges show on the Dashboard."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2409,8 +2585,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2423,8 +2602,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2438,8 +2620,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2555,6 +2740,263 @@
             ],
             "activeViewId": "pay-b"
           }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "massage-therapy-practice-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the practice runs in this workspace. Share it with every therapist and the front desk."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Session types and memberships",
+              "bold": true
+            },
+            {
+              "text": ": what you offer, the price and length, how many you gave, and how many members are active."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": membership, usual session, health cautions, pressure, areas to avoid, intake date and banked sessions."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments",
+              "bold": true
+            },
+            {
+              "text": ": each session with therapist, room, focus areas, SOAP notes, price and tip."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payments",
+              "bold": true
+            },
+            {
+              "text": ": session payments, monthly member charges, gift cards and refunds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A session from booking to notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The front desk books the session and room, and sends the intake form for first visits."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The therapist reads the client card before the session."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the session, write the SOAP notes, press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ", and record the tip."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take payment and press "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": ". Member sessions carry no price."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's sessions, failed member charges"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: confirm tomorrow by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: linens and supplies count"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: banked sessions, no-shows, room use"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the session menu, prices and room names to your own, and delete the sample clients once you have a dozen of your own. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Confidential details"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Health history and session notes are marked confidential. Only the team sees them, and only to care for the client. Never paste them into messages or emails."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships in one paragraph"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A member pays monthly for one session. If they skip a month, the session is banked for three months. "
+            },
+            {
+              "text": "Sessions banked",
+              "bold": true
+            },
+            {
+              "text": " on the client card shows how many they have; the Dashboard lists members with banked sessions so the front desk can invite them in before any expire. Paused members are not charged."
+            }
+          ]
         }
       ]
     },
@@ -2732,7 +3174,8 @@
                 },
                 "anyOf": {
                   "status": [
-                    "Booked"
+                    "Booked",
+                    "Checked in"
                   ]
                 }
               }
@@ -2813,6 +3256,88 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c5",
+                "name": "Sessions by room",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "room",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-c5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Members with banked sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l6",
+                "name": "Banked sessions",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "client_status": "Active"
+                },
+                "sorts": [
+                  {
+                    "field": "banked",
+                    "direction": "desc"
+                  }
+                ]
+              }
+            ],
+            "activeViewId": "view-l6"
+          }
         }
       ]
     },
@@ -2828,7 +3353,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Good notes make the next session better and protect everyone."
+              "text": "Good notes keep clients safe and make every therapist in the practice as good as the one who knows the client best. Write them in plain words, the same way every time."
             }
           ],
           "background": "blue",
@@ -2851,7 +3376,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the intake form with the confirmation."
+              "text": "Send the intake form when the client books. It asks about health conditions, medications, surgeries, pregnancy, allergies to oils or scents, and what they want from the session."
             }
           ]
         },
@@ -2859,7 +3384,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Review answers and flag anything to ask in person."
+              "text": "Read it before they arrive. Copy anything that changes how you work into "
+            },
+            {
+              "text": "Health history and cautions",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Areas to avoid",
+              "bold": true
+            },
+            {
+              "text": ", and enter the date in "
+            },
+            {
+              "text": "Intake signed on",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2867,7 +3413,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Make sure consent is signed."
+              "text": "When in doubt about a condition, ask the client to check with their doctor before deep work. Never diagnose."
             }
           ]
         },
@@ -2875,7 +3421,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After each session"
+              "text": "At the start of each session"
             }
           ],
           "props": {
@@ -2883,26 +3429,169 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Write what was worked on and how the client responded."
+              "text": "Ask what has changed since last time: new injuries, medications, pregnancy, how they felt after the last session"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agree the focus areas and the pressure, and remind them they can change it at any time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Confirm any area they do not want touched"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "SOAP notes, after every session"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write them in "
+            },
+            {
+              "text": "Session notes (SOAP)",
+              "bold": true
+            },
+            {
+              "text": " within the hour:"
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Note the pressure used and any areas avoided."
+              "text": "S, what the client said",
+              "bold": true
+            },
+            {
+              "text": ": where it hurts, how long, what makes it worse."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Record the aftercare shared."
+              "text": "O, what you found",
+              "bold": true
+            },
+            {
+              "text": ": tight areas, trigger points, range of motion, skin issues you noticed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A, what you did and how it went",
+              "bold": true
+            },
+            {
+              "text": ": techniques, how the tissue responded, how they felt after."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "P, the plan",
+              "bold": true
+            },
+            {
+              "text": ": home stretches, how soon to come back, anything to try next time."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep it short and factual. Notes can be read by the client and, in some cases, by insurers or lawyers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A runner books a 90 minute session for a tight hamstring. The therapist writes: S, tight after a long run; O, trigger points mid-hamstring and tight hip flexors; A, eased with cross-fiber and stretching, no pain after; P, stretch daily, back in three weeks. Next visit, a different therapist reads it and starts in the same place."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Updating the card"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change "
+            },
+            {
+              "text": "Pressure",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Areas to avoid",
+              "bold": true
+            },
+            {
+              "text": " when the client tells you something new. Re-sign the intake once a year, or at once after surgery or pregnancy."
             }
           ]
         },
@@ -2921,7 +3610,7 @@
           "type": "text",
           "text": [
             {
-              "text": "Notes are private to the practice. Never share them without the client written consent."
+              "text": "Health details are confidential. Talk about clients only with the team, only when it helps the client, and never in the waiting area."
             }
           ]
         }
@@ -2939,7 +3628,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Reminders cut no-shows more than any policy."
+              "text": "An empty room is income you never get back. Reminders and a clear, kind cancellation policy cut no-shows to almost nothing."
             }
           ],
           "background": "blue",
@@ -2951,7 +3640,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Reminders"
             }
           ],
           "props": {
@@ -2962,7 +3651,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a reminder two days and two hours before."
+              "text": "A text when the session is booked, with the date, time, therapist and address."
             }
           ]
         },
@@ -2970,7 +3659,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the appointment No-show if the client does not arrive within 15 minutes."
+              "text": "A reminder two days before, asking them to reply to confirm."
             }
           ]
         },
@@ -2978,7 +3667,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Message the client kindly and offer the next slot."
+              "text": "A short message the morning of the session with parking tips for first visits."
             }
           ]
         },
@@ -2986,7 +3675,91 @@
           "type": "heading",
           "text": [
             {
-              "text": "Late cancel policy"
+              "text": "The cancellation policy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask for at least 24 hours' notice. Write the policy on the booking page and the intake form."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A late cancellation or no-show may be charged a part of the session, at your discretion."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Members who no-show lose that month's session unless they reschedule within the week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When someone does not come"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the session to "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": ". The client card counts them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call or text kindly the same day: \"We missed you today. Is everything all right? Shall I find you another time?\""
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After two no-shows the card says "
+            },
+            {
+              "text": "Card required to book",
+              "bold": true
+            },
+            {
+              "text": ": take a card at booking from then on."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Filling a gap"
             }
           ],
           "props": {
@@ -2997,7 +3770,137 @@
           "type": "text",
           "text": [
             {
-              "text": "Cancel with 24 hours notice at no charge. Inside 24 hours the session is charged at half price the first time."
+              "text": "Keep a short list of clients who want a sooner time. When a session is cancelled, text the list; the first to reply gets the room."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Members are charged monthly on their card on file. If a charge fails, the payment shows "
+            },
+            {
+              "text": "Failed",
+              "bold": true
+            },
+            {
+              "text": " on the Dashboard: call the member that day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Unused sessions are banked for three months; update "
+            },
+            {
+              "text": "Sessions banked",
+              "bold": true
+            },
+            {
+              "text": " when a month passes without a visit, and remind the member before one expires."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A member who wants a break can be set to "
+            },
+            {
+              "text": "Paused",
+              "bold": true
+            },
+            {
+              "text": " for up to two months rather than cancelling."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist each morning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Today's sessions confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Failed membership charges followed up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Yesterday's no-shows contacted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Waiting list ready for any cancellation"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A member's monthly charge fails on Monday. The front desk calls; her card expired. She updates it on the phone, the charge goes through, and while on the call she books her banked session for Thursday."
             }
           ]
         }
@@ -3015,7 +3918,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Clean rooms and fresh linens are half the service."
+              "text": "Clients judge a practice by the room before the first touch: clean linens, the right temperature, quiet, and nothing out of place."
             }
           ],
           "background": "blue",
@@ -3027,7 +3930,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Between clients"
+              "text": "Before every session"
             }
           ],
           "props": {
@@ -3035,36 +3938,114 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Strip, bag and replace linens."
+              "text": "Fresh face cradle cover, sheets and blanket; table warmer on ten minutes before"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Wipe table and surfaces."
+              "text": "Room at a comfortable temperature, lights dimmed, music low"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Restock oils and lotions."
+              "text": "Oils and lotions checked against the client's allergies; unscented for clients who ask"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Reset temperature and music."
+              "text": "Bolsters and, for prenatal, side-lying pillows ready"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hands washed, nails short, no strong perfume"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Between sessions"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Strip the table into the laundry bin, never on the floor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wipe the table, face cradle, bolsters, door handles and the bottle pumps"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Remake the table and reset the room"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Allow 15 minutes between sessions in the same room; book rooms with that gap"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
@@ -3078,10 +4059,117 @@
           }
         },
         {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wash sheets hot with an unscented detergent; add an oil-removing booster weekly so oil does not build up and go rancid."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Dry completely and store in a closed cabinet."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Count sets every Friday. Each room needs at least three sets per session booked that day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
-              "text": "Wash on hot with unscented detergent, count linens daily and order more when the count falls below two sets per room."
+              "text": "Use the "
+            },
+            {
+              "text": "Room",
+              "bold": true
+            },
+            {
+              "text": " column on each session so two therapists never book the same room. The Dashboard shows how much each room is used; a room used far less than the others may be a better price for a new therapist."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies to reorder"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Oils and lotions, face cradle covers, hand soap, laundry detergent and the booster, tissues, water cups. Check them every Friday with the linens."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Friday the front desk counts linens: the Fern room has two sets for four prenatal sessions on Saturday. Two sets are moved from storage and an extra wash runs that evening."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Accidents and spills"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Oil on the floor is a slip waiting to happen. Wipe it straight away and keep a non-slip mat at the table step."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "New therapists walk through this page with the owner on their first day, then reset a room on their own while the owner watches."
             }
           ]
         }
