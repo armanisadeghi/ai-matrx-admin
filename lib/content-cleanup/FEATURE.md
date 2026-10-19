@@ -2,7 +2,7 @@
 
 **Status:** `stable`
 **Tier:** `2` (shared primitive)
-**Last updated:** `2026-07-25`
+**Last updated:** `2026-10-19`
 
 ---
 
@@ -77,6 +77,21 @@ Rules on top of the shared invariants:
   are no character-range edits to re-derive; `report.regionChanges` records the
   real before/after and `buildRegionOperationCards` renders exactly that.
 
+## Escape operations (document + value engines)
+
+- `unescape-markdown` (**on** by default, both engines) — strips the backslash
+  run before ASCII punctuation (`\*\*bold\*\*` → `**bold**`, `1\.`, `\#`), the
+  re-escaped markdown AI tools and editors paste. Skips LaTeX math (`$…$`,
+  `$$…$$`, and `\(…\)` / `\[…\]` whose body carries a command, `^` or `_`).
+  In the value engine it runs before the unwrappers so `\*\*x\*\*` unwraps.
+- `decode-escape-sequences` (off, both) — literal `\n`, `\r\n`, `\t`, `\"`, `\'`,
+  `\uXXXX` text becomes the real character; an escaped backslash is skipped.
+- `decode-html-entities` (off, document engine; the value engine already has
+  `decode-html`) — named + numeric entities in one pass (`&amp;lt;` → `&lt;`),
+  `&nbsp;` → plain space, `<br>` → newline; unknown names are left alone.
+- No decoder may emit NUL, a lone surrogate, or the U+E000/U+E001 sentinels —
+  producing one would desync the protected-region unmask.
+
 ## Invariants
 
 - **An operation never guesses.** A value op returns `null` to decline; `null` is
@@ -119,6 +134,9 @@ Rules on top of the shared invariants:
 ---
 
 ## Change log
+- `2026-10-19` — Escape cleanup: `unescape-markdown` (default on, both engines),
+  `decode-escape-sequences` (both), `decode-html-entities` (document). Tests in
+  `__tests__/escape-cleanup.test.ts`.
 
 - `2026-10-11` — **`remove-blank-lines` added** (extra group, off by default): deletes
   every empty line while keeping each line on its own line (`1\n\n2` → `1\n2`). One
