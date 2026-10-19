@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 3,
+  "version": 4,
   "title": "Day Spa HQ",
-  "description": "Book treatments by room and therapist, sell gift cards, and track retail stock.",
+  "description": "For day spas: treatment rooms, therapists, gift cards, memberships and retail.",
   "forWho": "Day spas and wellness retreats",
   "icon": {
     "emoji": "🌸"
@@ -14,10 +14,12 @@
   },
   "category": "wellness",
   "tags": [
-    "spa",
-    "treatments",
-    "rooms",
-    "gift cards"
+    "esthetician",
+    "day spa",
+    "massage therapist",
+    "facials",
+    "gift cards",
+    "wellness"
   ],
   "spec": {
     "specVersion": 1,
@@ -144,70 +146,37 @@
             ]
           },
           {
-            "key": "valid_days",
-            "label": "Valid for (days)",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 730
-              }
-            ]
-          },
-          {
             "key": "includes",
-            "label": "Includes",
+            "label": "What's included",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
-            "key": "active_n",
-            "label": "Active guests",
+            "key": "times_done",
+            "label": "Given",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
+            "via": "bookings",
+            "pick": "booking_name",
             "agg": "count",
             "filter": {
-              "client_status": "Active"
+              "status": "Completed"
             }
           },
           {
-            "key": "cancelled_n",
-            "label": "Cancelled",
+            "key": "service_revenue",
+            "label": "Revenue",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
-            "agg": "count",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
             "filter": {
-              "client_status": "Cancelled"
+              "status": "Completed"
             }
-          },
-          {
-            "key": "churn",
-            "label": "Churn (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Active guests} + {Cancelled} > 0, ROUND({Cancelled} / ({Active guests} + {Cancelled}) * 100, 0), 0)"
-          },
-          {
-            "key": "recurring",
-            "label": "Recurring value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Active guests} * {Price (USD)}"
           },
           {
             "key": "added_at",
@@ -276,8 +245,7 @@
               "price": 120,
               "billing": "Per visit",
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "massage, per visit"
+              "includes": "Swedish massage, warm towels, aromatherapy choice"
             }
           },
           {
@@ -288,8 +256,7 @@
               "price": 170,
               "billing": "Per visit",
               "minutes": 90,
-              "valid_days": 1,
-              "includes": "massage, per visit"
+              "includes": "Focused deep tissue, hot stones on request"
             }
           },
           {
@@ -300,8 +267,7 @@
               "price": 105,
               "billing": "Per visit",
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "facial, per visit"
+              "includes": "Cleanse, exfoliation, extractions, mask, hydration"
             }
           },
           {
@@ -312,8 +278,7 @@
               "price": 140,
               "billing": "Per visit",
               "minutes": 75,
-              "valid_days": 1,
-              "includes": "body, per visit"
+              "includes": "Salt or sugar scrub, mineral wrap, rinse, lotion"
             }
           },
           {
@@ -324,8 +289,7 @@
               "price": 320,
               "billing": "Per visit",
               "minutes": 120,
-              "valid_days": 1,
-              "includes": "package, per visit"
+              "includes": "Two side-by-side massages, private suite, tea and fruit"
             }
           },
           {
@@ -336,8 +300,7 @@
               "price": 99,
               "billing": "Monthly",
               "minutes": 60,
-              "valid_days": 30,
-              "includes": "membership, monthly"
+              "includes": "One 60 minute treatment a month, 15% off extra treatments and retail"
             }
           }
         ]
@@ -395,26 +358,50 @@
             "contextPolicy": "include",
             "choices": [
               "Active",
-              "Frozen",
-              "Cancelled",
+              "Member",
+              "Paused member",
               "Lead"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Frozen": "blue",
-              "Cancelled": "red",
-              "Lead": "amber"
+              "Active": "green",
+              "Member": "violet",
+              "Paused member": "amber",
+              "Lead": "blue"
             },
             "default": "Active"
           },
           {
             "key": "plan",
-            "label": "Treatment",
+            "label": "Favorite treatment",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
             "relationMax": 1
+          },
+          {
+            "key": "skin_notes",
+            "label": "Skin and allergy notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "pressure",
+            "label": "Massage pressure",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Light",
+              "Medium",
+              "Firm"
+            ],
+            "choiceColors": {
+              "Light": "blue",
+              "Medium": "green",
+              "Firm": "amber"
+            }
           },
           {
             "key": "phone",
@@ -459,6 +446,19 @@
             }
           },
           {
+            "key": "spent",
+            "label": "Spent on treatments",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
             "key": "no_shows",
             "label": "No-shows",
             "parityType": "rollup",
@@ -483,27 +483,6 @@
             "filter": {
               "status": "Paid"
             }
-          },
-          {
-            "key": "failed_n",
-            "label": "Failed payments",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "payments",
-            "pick": "amount",
-            "agg": "count",
-            "filter": {
-              "status": "Failed"
-            }
-          },
-          {
-            "key": "risk",
-            "label": "Retention check",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
           },
           {
             "key": "add_booking_btn",
@@ -630,12 +609,14 @@
             "values": {
               "client_name": "Kwame Westbrook",
               "kind": "Member",
-              "client_status": "Active",
+              "client_status": "Member",
               "plan": "plan-1",
               "phone": "(928) 555-0155",
               "email": "kwame.westbrook@inbox-mail.net",
               "joined_on": "@today-30d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "skin_notes": "Sensitive skin; no retinol products",
+              "pressure": "Medium"
             }
           },
           {
@@ -648,7 +629,9 @@
               "phone": "(928) 555-0192",
               "email": "fenella.eastwick@inbox-mail.net",
               "joined_on": "@today-77d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "skin_notes": "Nut allergy: no almond oil",
+              "pressure": "Firm"
             }
           },
           {
@@ -661,7 +644,8 @@
               "phone": "(928) 555-0129",
               "email": "leopold.lindqvist@inbox-mail.net",
               "joined_on": "@today-124d",
-              "area": "Lakeview"
+              "area": "Lakeview",
+              "pressure": "Light"
             }
           },
           {
@@ -669,12 +653,14 @@
             "values": {
               "client_name": "Imelda Thackeray",
               "kind": "Couples package",
-              "client_status": "Active",
+              "client_status": "Member",
               "plan": "plan-4",
               "phone": "(928) 555-0166",
               "email": "imelda.thackeray@inbox-mail.net",
               "joined_on": "@today-171d",
-              "area": "Foxglove Court"
+              "area": "Foxglove Court",
+              "skin_notes": "Rosacea: no hot towels on face",
+              "pressure": "Medium"
             }
           },
           {
@@ -687,7 +673,8 @@
               "phone": "(928) 555-0103",
               "email": "anders.boateng@inbox-mail.net",
               "joined_on": "@today-218d",
-              "area": "Stonebridge"
+              "area": "Stonebridge",
+              "pressure": "Firm"
             }
           },
           {
@@ -700,7 +687,9 @@
               "phone": "(928) 555-0140",
               "email": "ottoline.ibarra@inbox-mail.net",
               "joined_on": "@today-265d",
-              "area": "Harbor Heights"
+              "area": "Harbor Heights",
+              "skin_notes": "Pregnant, second trimester",
+              "pressure": "Light"
             }
           },
           {
@@ -708,12 +697,13 @@
             "values": {
               "client_name": "Humphrey Rutherford",
               "kind": "Walk-in",
-              "client_status": "Active",
+              "client_status": "Member",
               "plan": "plan-1",
               "phone": "(928) 555-0177",
               "email": "humphrey.rutherford@inbox-mail.net",
               "joined_on": "@today-312d",
-              "area": "Willow Creek"
+              "area": "Willow Creek",
+              "pressure": "Medium"
             }
           },
           {
@@ -726,7 +716,9 @@
               "phone": "(928) 555-0114",
               "email": "tamsin.aldercott@inbox-mail.net",
               "joined_on": "@today-359d",
-              "area": "North Ridge"
+              "area": "North Ridge",
+              "skin_notes": "Latex allergy",
+              "pressure": "Medium"
             }
           },
           {
@@ -739,7 +731,8 @@
               "phone": "(928) 555-0151",
               "email": "desmond.hartigan@inbox-mail.net",
               "joined_on": "@today-406d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "pressure": "Firm"
             }
           },
           {
@@ -747,12 +740,13 @@
             "values": {
               "client_name": "Noor Pemberton",
               "kind": "Gift card",
-              "client_status": "Frozen",
+              "client_status": "Paused member",
               "plan": "plan-4",
               "phone": "(928) 555-0188",
               "email": "noor.pemberton@inbox-mail.net",
               "joined_on": "@today-453d",
-              "area": "Maple Hollow"
+              "area": "Maple Hollow",
+              "pressure": "Light"
             }
           },
           {
@@ -760,12 +754,14 @@
             "values": {
               "client_name": "Silas Whitlock",
               "kind": "Walk-in",
-              "client_status": "Cancelled",
+              "client_status": "Active",
               "plan": "plan-5",
               "phone": "(928) 555-0125",
               "email": "silas.whitlock@inbox-mail.net",
               "joined_on": "@today-500d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "skin_notes": "Shellfish allergy: no seaweed wrap",
+              "pressure": "Medium"
             }
           },
           {
@@ -773,12 +769,13 @@
             "values": {
               "client_name": "Kasia Eriksen",
               "kind": "Couples package",
-              "client_status": "Cancelled",
+              "client_status": "Active",
               "plan": "plan-6",
               "phone": "(928) 555-0162",
               "email": "kasia.eriksen@inbox-mail.net",
               "joined_on": "@today-547d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "pressure": "Medium"
             }
           },
           {
@@ -841,7 +838,7 @@
         "fields": [
           {
             "key": "booking_name",
-            "label": "Treatment booking",
+            "label": "Appointment",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -903,6 +900,46 @@
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "room",
+            "label": "Room",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sage room",
+              "Cedar room",
+              "Couples suite",
+              "Facial studio"
+            ],
+            "choiceColors": {
+              "Sage room": "blue",
+              "Cedar room": "green",
+              "Couples suite": "amber",
+              "Facial studio": "violet"
+            }
+          },
+          {
+            "key": "addons",
+            "label": "Add-ons",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Hot stones",
+              "Scalp massage",
+              "Eye treatment",
+              "Aromatherapy upgrade",
+              "Paraffin hands"
+            ],
+            "choiceColors": {
+              "Hot stones": "blue",
+              "Scalp massage": "green",
+              "Eye treatment": "amber",
+              "Aromatherapy upgrade": "violet",
+              "Paraffin hands": "teal"
+            }
           },
           {
             "key": "when_on",
@@ -972,6 +1009,25 @@
               {
                 "kind": "max",
                 "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "tip",
+            "label": "Tip (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
               }
             ]
           },
@@ -1102,319 +1158,312 @@
           {
             "key": "bookin-1",
             "values": {
-              "booking_name": "Body scrub and wrap - Eastwick",
+              "booking_name": "Signature massage, lavender",
               "status": "Completed",
-              "client": "client-2",
-              "plan": "plan-4",
+              "client": "client-1",
+              "plan": "plan-6",
               "staff": "tm-3",
-              "when_on": "@today-12d",
+              "room": "Sage room",
+              "when_on": "@today-10d",
               "visit_type": "Massage",
-              "minutes": 75,
-              "price": 140,
-              "completed_on": "@today-12d"
+              "minutes": 60,
+              "price": 0,
+              "addons": [
+                "Aromatherapy upgrade"
+              ],
+              "tip": 20,
+              "completed_on": "@today-10d"
             }
           },
           {
             "key": "bookin-2",
             "values": {
-              "booking_name": "Facial - Boateng",
+              "booking_name": "Deep tissue with hot stones",
               "status": "Completed",
-              "client": "client-5",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today-9d",
-              "visit_type": "Facial",
-              "minutes": 60,
-              "price": 0,
-              "completed_on": "@today-9d"
+              "client": "client-2",
+              "plan": "plan-2",
+              "staff": "tm-3",
+              "room": "Cedar room",
+              "when_on": "@today-8d",
+              "visit_type": "Massage",
+              "minutes": 90,
+              "price": 195,
+              "addons": [
+                "Hot stones"
+              ],
+              "tip": 35,
+              "completed_on": "@today-8d"
             }
           },
           {
             "key": "bookin-3",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Aldercott",
+              "booking_name": "Classic facial, hydration focus",
               "status": "Completed",
-              "client": "client-8",
-              "plan": "plan-2",
-              "staff": "tm-5",
+              "client": "client-3",
+              "plan": "plan-3",
+              "staff": "tm-4",
+              "room": "Facial studio",
               "when_on": "@today-7d",
-              "visit_type": "Body treatment",
-              "minutes": 90,
-              "price": 170,
+              "visit_type": "Facial",
+              "minutes": 60,
+              "price": 125,
+              "addons": [
+                "Eye treatment"
+              ],
+              "tip": 20,
               "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Body scrub and wrap - Whitlock",
+              "booking_name": "Anniversary couples retreat",
               "status": "Completed",
-              "client": "client-11",
-              "plan": "plan-4",
+              "client": "client-5",
+              "plan": "plan-5",
               "staff": "tm-3",
-              "when_on": "@today-5d",
+              "room": "Couples suite",
+              "when_on": "@today-6d",
               "visit_type": "Couples",
-              "minutes": 75,
-              "price": 140,
-              "completed_on": "@today-5d"
+              "minutes": 90,
+              "price": 350,
+              "addons": [
+                "Paraffin hands"
+              ],
+              "tip": 60,
+              "completed_on": "@today-6d"
             }
           },
           {
             "key": "bookin-5",
             "values": {
-              "booking_name": "Massage - Valdez",
+              "booking_name": "Gentle facial for rosacea",
               "status": "Completed",
-              "client": "client-14",
+              "client": "client-4",
               "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today-3d",
-              "visit_type": "Massage",
+              "staff": "tm-5",
+              "room": "Facial studio",
+              "when_on": "@today-5d",
+              "visit_type": "Facial",
               "minutes": 60,
               "price": 0,
-              "completed_on": "@today-3d"
+              "tip": 15,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Lindqvist",
-              "status": "No-show",
-              "client": "client-3",
-              "plan": "plan-2",
+              "booking_name": "Salt scrub and mineral wrap",
+              "status": "Completed",
+              "client": "client-8",
+              "plan": "plan-4",
               "staff": "tm-5",
+              "room": "Sage room",
               "when_on": "@today-4d",
-              "visit_type": "Facial",
-              "minutes": 90,
-              "price": 170
+              "visit_type": "Body treatment",
+              "minutes": 75,
+              "price": 140,
+              "tip": 25,
+              "completed_on": "@today-4d"
             }
           },
           {
             "key": "bookin-7",
             "values": {
-              "booking_name": "Body scrub and wrap - Ibarra",
-              "status": "Cancelled",
+              "booking_name": "Prenatal massage",
+              "status": "No-show",
               "client": "client-6",
-              "plan": "plan-4",
+              "plan": "plan-1",
               "staff": "tm-3",
-              "when_on": "@today-2d",
-              "visit_type": "Body treatment",
-              "minutes": 75,
-              "price": 140
+              "room": "Sage room",
+              "when_on": "@today-3d",
+              "visit_type": "Massage",
+              "minutes": 60,
+              "price": 120
             }
           },
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "Couples - Hartigan",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today-1d",
-              "visit_type": "Couples",
+              "booking_name": "Gift card: signature massage",
+              "status": "Cancelled",
+              "client": "client-13",
+              "plan": "plan-1",
+              "staff": "tm-3",
+              "room": "Cedar room",
+              "when_on": "@today-2d",
+              "visit_type": "Massage",
               "minutes": 60,
-              "price": 0
+              "price": 120
             }
           },
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Eriksen",
-              "status": "Booked",
-              "client": "client-12",
-              "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@today-2d",
-              "visit_type": "Massage",
-              "minutes": 90,
-              "price": 170
+              "booking_name": "Member facial, monthly",
+              "status": "Completed",
+              "client": "client-7",
+              "plan": "plan-6",
+              "staff": "tm-4",
+              "room": "Facial studio",
+              "when_on": "@today-15d",
+              "visit_type": "Facial",
+              "minutes": 60,
+              "price": 15,
+              "addons": [
+                "Eye treatment"
+              ],
+              "tip": 15,
+              "completed_on": "@today-15d"
             }
           },
           {
             "key": "bookin-10",
             "values": {
-              "booking_name": "Body scrub and wrap - Westbrook",
+              "booking_name": "Signature massage, scalp add-on",
               "status": "Checked in",
-              "client": "client-1",
-              "plan": "plan-4",
+              "client": "client-9",
+              "plan": "plan-1",
               "staff": "tm-3",
-              "when_on": "@mon",
-              "visit_type": "Facial",
-              "minutes": 75,
-              "price": 140,
+              "room": "Cedar room",
+              "when_on": "@today",
+              "visit_type": "Massage",
+              "minutes": 60,
+              "price": 135,
+              "addons": [
+                "Scalp massage"
+              ],
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-11",
             "values": {
-              "booking_name": "Body treatment - Thackeray",
+              "booking_name": "Classic facial",
               "status": "Booked",
-              "client": "client-4",
-              "plan": "plan-6",
+              "client": "client-11",
+              "plan": "plan-3",
               "staff": "tm-4",
-              "when_on": "@tue",
-              "visit_type": "Body treatment",
+              "room": "Facial studio",
+              "when_on": "@today",
+              "visit_type": "Facial",
               "minutes": 60,
-              "price": 0
+              "price": 105
             }
           },
           {
             "key": "bookin-12",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Rutherford",
+              "booking_name": "Member massage",
               "status": "Booked",
-              "client": "client-7",
-              "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@wed",
-              "visit_type": "Couples",
-              "minutes": 90,
-              "price": 170,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-13",
-            "values": {
-              "booking_name": "Body scrub and wrap - Pemberton",
-              "status": "Booked",
-              "client": "client-10",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@thu",
-              "visit_type": "Massage",
-              "minutes": 75,
-              "price": 140
-            }
-          },
-          {
-            "key": "bookin-14",
-            "values": {
-              "booking_name": "Facial - Montague",
-              "status": "Booked",
-              "client": "client-13",
+              "client": "client-1",
               "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@fri",
-              "visit_type": "Facial",
+              "staff": "tm-3",
+              "room": "Sage room",
+              "when_on": "@today+2d",
+              "visit_type": "Massage",
               "minutes": 60,
               "price": 0,
               "mine": "@installer"
             }
           },
           {
+            "key": "bookin-13",
+            "values": {
+              "booking_name": "Couples retreat, birthday",
+              "status": "Booked",
+              "client": "client-12",
+              "plan": "plan-5",
+              "staff": "tm-3",
+              "room": "Couples suite",
+              "when_on": "@today+3d",
+              "visit_type": "Couples",
+              "minutes": 90,
+              "price": 335,
+              "addons": [
+                "Aromatherapy upgrade"
+              ]
+            }
+          },
+          {
+            "key": "bookin-14",
+            "values": {
+              "booking_name": "Body scrub before a wedding",
+              "status": "Booked",
+              "client": "client-14",
+              "plan": "plan-4",
+              "staff": "tm-5",
+              "room": "Sage room",
+              "when_on": "@today+4d",
+              "visit_type": "Body treatment",
+              "minutes": 75,
+              "price": 140
+            }
+          },
+          {
             "key": "bookin-15",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Eastwick",
+              "booking_name": "Deep tissue, 90",
               "status": "Booked",
               "client": "client-2",
               "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@sat",
-              "visit_type": "Body treatment",
+              "staff": "tm-3",
+              "room": "Cedar room",
+              "when_on": "@today+6d",
+              "visit_type": "Massage",
               "minutes": 90,
-              "price": 170,
+              "price": 195,
+              "addons": [
+                "Hot stones"
+              ],
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-16",
             "values": {
-              "booking_name": "Body scrub and wrap - Boateng",
+              "booking_name": "Member facial",
               "status": "Booked",
-              "client": "client-5",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@sun",
-              "visit_type": "Couples",
-              "minutes": 75,
-              "price": 140
+              "client": "client-4",
+              "plan": "plan-6",
+              "staff": "tm-5",
+              "room": "Facial studio",
+              "when_on": "@today+9d",
+              "visit_type": "Facial",
+              "minutes": 60,
+              "price": 0
             }
           },
           {
             "key": "bookin-17",
             "values": {
-              "booking_name": "Massage - Aldercott",
+              "booking_name": "Prenatal massage, rebooked",
               "status": "Booked",
-              "client": "client-8",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@mon+1w",
+              "client": "client-6",
+              "plan": "plan-1",
+              "staff": "tm-3",
+              "room": "Sage room",
+              "when_on": "@today+5d",
               "visit_type": "Massage",
               "minutes": 60,
-              "price": 0
+              "price": 120
             }
           },
           {
             "key": "bookin-18",
             "values": {
-              "booking_name": "Deep tissue massage, 90 min - Whitlock",
+              "booking_name": "Facial, first visit",
               "status": "Booked",
-              "client": "client-11",
-              "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@wed+1w",
-              "visit_type": "Facial",
-              "minutes": 90,
-              "price": 170
-            }
-          },
-          {
-            "key": "bookin-19",
-            "values": {
-              "booking_name": "Body scrub and wrap - Valdez",
-              "status": "Booked",
-              "client": "client-14",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@today",
-              "visit_type": "Body treatment",
-              "minutes": 75,
-              "price": 140,
-              "mine": "@installer"
-            }
-          },
-          {
-            "key": "bookin-20",
-            "values": {
-              "booking_name": "Couples - Lindqvist",
-              "status": "Booked",
-              "client": "client-3",
-              "plan": "plan-6",
+              "client": "client-13",
+              "plan": "plan-3",
               "staff": "tm-4",
-              "when_on": "@today+2d",
-              "visit_type": "Couples",
-              "minutes": 60,
-              "price": 0
-            }
-          },
-          {
-            "key": "bookin-21",
-            "values": {
-              "booking_name": "Deep tissue massage, 90 min - Ibarra",
-              "status": "Booked",
-              "client": "client-6",
-              "plan": "plan-2",
-              "staff": "tm-5",
-              "when_on": "@today+4d",
-              "visit_type": "Massage",
-              "minutes": 90,
-              "price": 170
-            }
-          },
-          {
-            "key": "bookin-22",
-            "values": {
-              "booking_name": "Body scrub and wrap - Hartigan",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-4",
-              "staff": "tm-3",
-              "when_on": "@today+1d",
+              "room": "Facial studio",
+              "when_on": "@today-1d",
               "visit_type": "Facial",
-              "minutes": 75,
-              "price": 140
+              "minutes": 60,
+              "price": 105
             }
           }
         ],
@@ -1707,6 +1756,212 @@
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "giftcard",
+        "name": "Gift cards",
+        "labelSingular": "Gift card",
+        "labelPlural": "Gift cards",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "gift",
+        "titleField": "card_code",
+        "describes": "Every gift card sold: who bought it, for whom, the amount, what is left and when it expires.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "sold_on",
+            "expires_on"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "card_code",
+            "label": "Gift card code",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "buyer",
+            "label": "Bought by",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "recipient",
+            "label": "For",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "amount",
+            "label": "Amount (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "balance",
+            "label": "Balance left (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Unused",
+              "Part used",
+              "Fully used",
+              "Expired"
+            ],
+            "choiceColors": {
+              "Unused": "green",
+              "Part used": "amber",
+              "Fully used": "slate",
+              "Expired": "red"
+            }
+          },
+          {
+            "key": "sold_on",
+            "label": "Sold on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "expires_on",
+            "label": "Expires on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "gift-1",
+            "values": {
+              "card_code": "JS-24-0193",
+              "buyer": "Marisol Penhallow",
+              "recipient": "Teodor Valdez",
+              "amount": 250,
+              "balance": 250,
+              "status": "Unused",
+              "sold_on": "@today-40d",
+              "expires_on": "@today+325d"
+            }
+          },
+          {
+            "key": "gift-2",
+            "values": {
+              "card_code": "JS-24-0201",
+              "buyer": "Okafor family",
+              "recipient": "Adaeze Okafor",
+              "amount": 120,
+              "balance": 0,
+              "status": "Fully used",
+              "sold_on": "@today-90d",
+              "expires_on": "@today+275d"
+            }
+          },
+          {
+            "key": "gift-3",
+            "values": {
+              "card_code": "JS-24-0215",
+              "buyer": "Lantern Bay Realty",
+              "recipient": "Corinne Blake",
+              "amount": 500,
+              "balance": 180,
+              "status": "Part used",
+              "sold_on": "@today-60d",
+              "expires_on": "@today+305d"
+            }
+          },
+          {
+            "key": "gift-4",
+            "values": {
+              "card_code": "JS-24-0222",
+              "buyer": "Henrik Salo",
+              "recipient": "Aino Salo",
+              "amount": 320,
+              "balance": 320,
+              "status": "Unused",
+              "sold_on": "@today-12d",
+              "expires_on": "@today+353d"
+            }
+          },
+          {
+            "key": "gift-5",
+            "values": {
+              "card_code": "JS-24-0230",
+              "buyer": "Walk-in purchase",
+              "recipient": "(open)",
+              "amount": 100,
+              "balance": 100,
+              "status": "Unused",
+              "sold_on": "@today-3d",
+              "expires_on": "@today+362d"
+            }
+          },
+          {
+            "key": "gift-6",
+            "values": {
+              "card_code": "JS-23-0877",
+              "buyer": "Gwen Talbot",
+              "recipient": "Morgan Talbot",
+              "amount": 150,
+              "balance": 150,
+              "status": "Expired",
+              "sold_on": "@today-400d",
+              "expires_on": "@today-35d"
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1960,8 +2215,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1974,8 +2232,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -1989,8 +2250,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2067,6 +2331,20 @@
             "Failed"
           ]
         }
+      },
+      {
+        "token": "all_giftcard",
+        "name": "All gift cards",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "giftcard"
+      },
+      {
+        "token": "giftcard_board",
+        "name": "Gift cards by status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "giftcard"
       }
     ],
     "agent": {
@@ -2139,6 +2417,18 @@
           "surface": "booking_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open gift cards.",
+        "action": {
+          "kind": "open",
+          "surface": "giftcard_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "giftcard_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2156,7 +2446,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2178,12 +2468,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the spa from one page. Guests, treatments and payments are linked, every treatment is a booking with a therapist, and each therapist sees their own list under Mine. The treatment list shows member counts and churn."
+              "text": "Run the spa from here. Treatment bookings show the room, therapist and add-ons for every appointment; guest cards keep skin and allergy notes and preferred pressure. Gift cards tracks every card sold and what is left on it. Members get one treatment a month; their charges and any failed payments show on the Dashboard."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2412,8 +2708,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2426,8 +2725,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2441,8 +2743,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2558,6 +2863,331 @@
             ],
             "activeViewId": "pay-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gift cards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every card sold, its balance and its expiry date."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "giftcard",
+              "view": "giftcard_board"
+            },
+            "inline": true,
+            "title": "Gift cards",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "gc-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "gc-t",
+                "name": "All gift cards",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "gc-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "day-spa-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the spa runs in this workspace. Share it with the spa manager, the front desk and every therapist and esthetician."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Treatments and packages",
+              "bold": true
+            },
+            {
+              "text": ": the menu with price, length, what is included, how often each was given and the revenue."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Guests",
+              "bold": true
+            },
+            {
+              "text": ": favorite treatment, skin and allergy notes, preferred pressure, visits, no-shows and spend; members marked as such."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Treatment bookings",
+              "bold": true
+            },
+            {
+              "text": ": each appointment with therapist, room, add-ons, price and tip."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payments",
+              "bold": true
+            },
+            {
+              "text": ": treatments, member charges, gift card redemptions, refunds."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gift cards",
+              "bold": true
+            },
+            {
+              "text": ": every card sold, its balance and expiry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A treatment from booking to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The front desk books the treatment, room and therapist, and checks the guest card for allergies."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On arrival, set the booking to "
+            },
+            {
+              "text": "Checked in",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the treatment, "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ", record the tip and any retail."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take payment (card, gift card or member credit) and press "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's rooms, allergy notes for today's guests"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: confirm tomorrow by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: retail count; failed member charges"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every quarter: unused gift cards, room use, slow treatments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the menu, prices, rooms and add-ons to your own, and delete the sample guests once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Allergies come first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Skin and allergy notes are confidential and must be read before every treatment. When a guest mentions a new allergy, update the card at once."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Memberships"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Members pay monthly for one 60 minute treatment and get 15 percent off extra treatments and retail. Their monthly treatment is booked with no price. A member who wants a break is set to "
+            },
+            {
+              "text": "Paused member",
+              "bold": true
+            },
+            {
+              "text": " and is not charged."
+            }
+          ]
         }
       ]
     },
@@ -2735,7 +3365,8 @@
                 },
                 "anyOf": {
                   "status": [
-                    "Booked"
+                    "Booked",
+                    "Checked in"
                   ]
                 }
               }
@@ -2816,6 +3447,85 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Room use"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Treatment bookings",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c5",
+                "name": "Treatments by room",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "room",
+                  "op": "count"
+                }
+              }
+            ],
+            "activeViewId": "view-c5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Gift card balances outstanding"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "giftcard",
+              "view": "all_giftcard"
+            },
+            "inline": true,
+            "title": "Gift cards",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l6",
+                "name": "Unused or part used",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Unused",
+                    "Part used"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l6"
+          }
         }
       ]
     },
@@ -2831,7 +3541,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A 15 minute buffer between guests is non-negotiable. It protects the experience and the schedule."
+              "text": "A spa sells calm. Guests notice a warm table, fresh linens and an unhurried welcome, and they notice a rushed room just as fast. Turnover is a routine, not a scramble."
             }
           ],
           "background": "blue",
@@ -2843,7 +3553,137 @@
           "type": "heading",
           "text": [
             {
-              "text": "Between guests"
+              "text": "Booking rooms"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every treatment has a "
+            },
+            {
+              "text": "Room",
+              "bold": true
+            },
+            {
+              "text": ". Facials go in the facial studio; couples go in the couples suite; massage and body treatments use the Sage and Cedar rooms."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Leave 15 minutes between treatments in the same room (20 after a body wrap, which needs a shower and a full strip)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The Dashboard shows treatments by room. A room that runs far below the others is a sign to move a therapist's day or run a weekday offer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Turnover checklist, every treatment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Strip linens into the hamper; never on the floor"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Wipe the table, face cradle, bolsters, stool, door handles and bottle pumps"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fresh sheets, blanket and face cradle cover; table warmer on"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the guest card for the next treatment: allergies, pressure, pregnancy"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Swap oils or products for allergies (no almond oil for nut allergies, no seaweed for shellfish)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Reset lights, music and temperature"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hot towels and stones at temperature if the next treatment uses them"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Welcoming the guest"
             }
           ],
           "props": {
@@ -2854,7 +3694,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Strip and bag used linens."
+              "text": "Offer water or tea, show the locker room and the relaxation lounge."
             }
           ]
         },
@@ -2862,7 +3702,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Wipe surfaces and the table with disinfectant."
+              "text": "The therapist collects the guest by name, confirms the treatment, any add-ons, and the pressure they like."
             }
           ]
         },
@@ -2870,7 +3710,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set fresh linens, restock products and reset the music."
+              "text": "Ask about anything new since their last visit: skin changes, medications, injuries, pregnancy."
             }
           ]
         },
@@ -2878,7 +3718,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the temperature and the lighting."
+              "text": "Set the booking to "
+            },
+            {
+              "text": "Checked in",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2886,7 +3733,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "At the end of day"
+              "text": "Laundry"
             }
           ],
           "props": {
@@ -2897,7 +3744,52 @@
           "type": "text",
           "text": [
             {
-              "text": "Count towels in and out. Report any shortfall to the spa manager."
+              "text": "Wash hot with an unscented detergent and an oil remover; dry fully; fold and store closed. Count sets at closing; each room needs three sets for every treatment booked the next morning."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A guest with a nut allergy is booked in the Cedar room at 11 after a deep tissue at 9:30. The therapist strips the room, wipes down, swaps the almond massage oil for the fragrance-free grapeseed bottle, and has the room warm and ready at 10:55."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the treatment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Walk the guest back to the lounge, offer water, recommend one product used, and book the next visit. Then press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " and record the tip."
             }
           ]
         }
@@ -2915,7 +3807,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Gift cards are a promise. Track them as carefully as cash."
+              "text": "Gift cards are a large share of spa income, especially around holidays. Each one is a promise: track it from sale to the last dollar spent."
             }
           ],
           "background": "blue",
@@ -2927,7 +3819,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Selling a gift card"
             }
           ],
           "props": {
@@ -2938,7 +3830,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Record the card number, amount and buyer."
+              "text": "Add a row in "
+            },
+            {
+              "text": "Gift cards",
+              "bold": true
+            },
+            {
+              "text": " with the next card number, who bought it, who it is for, the amount and the sold date."
             }
           ]
         },
@@ -2946,7 +3845,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Hand over the card with the expiry rules."
+              "text": "Set "
+            },
+            {
+              "text": "Balance left",
+              "bold": true
+            },
+            {
+              "text": " to the amount and status to "
+            },
+            {
+              "text": "Unused",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2954,7 +3867,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "On redemption, subtract the amount and note the new balance."
+              "text": "Set "
+            },
+            {
+              "text": "Expires on",
+              "bold": true
+            },
+            {
+              "text": " according to your local law. Many places require gift cards to last at least five years or forbid expiry; check yours and write the rule on this page."
             }
           ]
         },
@@ -2962,7 +3882,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the balance report at the end of each month."
+              "text": "Record the sale as a payment."
             }
           ]
         },
@@ -2970,7 +3890,133 @@
           "type": "heading",
           "text": [
             {
-              "text": "Check local rules"
+              "text": "Redeeming"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Find the card by number. Check the balance and the expiry."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Take the treatment price off "
+            },
+            {
+              "text": "Balance left",
+              "bold": true
+            },
+            {
+              "text": ". If anything is left, set "
+            },
+            {
+              "text": "Part used",
+              "bold": true
+            },
+            {
+              "text": "; if nothing, "
+            },
+            {
+              "text": "Fully used",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the payment with method "
+            },
+            {
+              "text": "Gift card",
+              "bold": true
+            },
+            {
+              "text": " so the day's totals still add up."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the gift card holder as a guest; many become regulars, so take their details and preferences."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist at the desk"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Card number written on every gift card payment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Balance updated the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recipient told what the card covers, including tip or not"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Expiry date checked, never refused for a reason the law does not allow"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Holiday rush"
             }
           ],
           "props": {
@@ -2981,7 +4027,52 @@
           "type": "text",
           "text": [
             {
-              "text": "Gift card expiry and accounting differ by state. Ask your accountant before setting policy."
+              "text": "In December, gift cards can be a third of sales. Pre-print cards, keep a stack of envelopes, and add each sale to the table straight away. In January and February, expect redemptions; keep weekday openings for gift card guests."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unused balances"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Dashboard lists cards that are unused or part used. Every quarter, look at cards sold more than six months ago and still unused, and send the buyer a friendly reminder for their recipient."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A real estate office buys a $500 card for a client. Three weeks later the client books a facial and a scrub for $265; the desk takes it off the balance, leaving $235, and marks the card "
+            },
+            {
+              "text": "Part used",
+              "bold": true
+            },
+            {
+              "text": ". The client books a massage before she leaves."
             }
           ]
         }
@@ -2999,7 +4090,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A spa shelf sells when it is tidy and full. Name an inventory captain."
+              "text": "Guests trust the products their therapist used on them that day. A small, well-chosen retail shelf adds real income and keeps the result going at home."
             }
           ],
           "background": "blue",
@@ -3011,7 +4102,85 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "What to stock"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cleanser, serum and moisturizer for each main skin type you treat"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Body oil and lotion matching your signature massage scents"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A fragrance-free line for sensitive guests"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gift sets for the holidays"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recommending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The therapist names one or two products used in the treatment and why, with the guest's skin notes in mind."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No pressure: a sample size is a fine first step."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Members get 15 percent off retail."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counting and ordering"
             }
           ],
           "props": {
@@ -3022,7 +4191,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count the retail shelf and the treatment room products."
+              "text": "Every Monday the spa manager counts the shelf and the back room."
             }
           ]
         },
@@ -3030,7 +4199,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reorder when stock drops to the par level."
+              "text": "Reorder what is below two weeks of sales; order seasonal gift sets six weeks before the holidays."
             }
           ]
         },
@@ -3038,7 +4207,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Move slow sellers to a feature display or discount."
+              "text": "Check dates on serums and sunscreens; move short-dated items to the front or a gift set."
             }
           ]
         },
@@ -3046,7 +4215,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Treatment products"
+              "text": "Back-bar products"
             }
           ],
           "props": {
@@ -3057,7 +4226,108 @@
           "type": "text",
           "text": [
             {
-              "text": "Keep two boxes per room and reorder when one is left. Popular items get three."
+              "text": "Products used in treatments (massage oils, masks, scrubs) are counted with retail but kept separate. Track how many treatments a jar lasts so you can price add-ons honestly."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shelf faced and dusted daily"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Testers clean and labelled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Sold items recorded on the guest's payment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Allergy-friendly options clearly marked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A guest with rosacea enjoys her gentle facial. The esthetician recommends the fragrance-free calming serum used during the treatment and offers a sample. The guest buys the full size at checkout and asks for the same facial next month; the desk books it before she leaves."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most spas sell retail at about double their cost. Review prices when suppliers change theirs, and look at what sold in the last quarter before ordering more of anything slow."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "New team members learn the shelf in their first week: what each product does, which skin types it suits, and which guests should avoid it."
             }
           ]
         }
