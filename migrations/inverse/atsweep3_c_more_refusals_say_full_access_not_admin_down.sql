@@ -1,6 +1,15 @@
 -- INVERSE of atsweep3_c_more_refusals_say_full_access_not_admin.sql: the earlier words.
 -- chair-step: restores function bodies.
-@@BASEDON@@
+-- based-on: custom._entity_change_file(uuid, uuid, jsonb, text, uuid, text, uuid) f5a892ade9e77bedc86621b24c775c2dd75f0294d70e13e0fea636f6a0640bfd
+-- based-on: custom.field_update(uuid, uuid, jsonb) ccd08465385063e6506aa5dd16bb0845919693ac556b6d673bc2886d9ce70411
+-- based-on: custom.io_import_finish(uuid, uuid, text) bdb7b716f67ed537e4d3722495dd73532dd472ca7be02250d7ddacd8b57f67c0
+-- based-on: custom.io_import_begin(uuid, uuid, text, text, jsonb, text, jsonb, text, bigint, boolean) 1a584069ab875d6d2d15460bbd9ac77b9a3bea26ae8c414711b46b3321ab613f
+-- based-on: public.audience_share_preview(text, uuid, text) 6831c8d62c332faf56a2d7baa9006a19b47b9215acf42496dd5f9aea2224f193
+-- based-on: iam._audience_plan(text, uuid, permission_level, uuid, text[]) 431f5b4498383bf4e8f4a22ba894dda284201eae1163f48d801bcc092e783319
+-- based-on: custom.work_approval_approvers(uuid, uuid, uuid) d078f1743cf9313550484bbaa811f1e9180eee4a263a9619084626f2ceabd08e
+-- based-on: custom.work_approval_request(uuid, uuid, jsonb, text, uuid, text, uuid) 9505819f01bb9e99ba71c8067b70c692b7fa7675dbf58a7b14a545f6baad4dd4
+-- based-on: public.revoke_resource_access(text, uuid, uuid) 5b383a911188cd2ee789ae4a9b194ae85e5ad268873aa733c46c9d3cce5abf8c
+-- based-on: public.revoke_resource_org_access(text, uuid, uuid) 570339c06f2d1d1077b00b10f0b6fb4c4746b3ef91a97d10df540ed9f70b7772
 CREATE OR REPLACE FUNCTION custom._entity_change_file(p_organization_id uuid, p_subject_id uuid, p_change jsonb, p_note text, p_approver_id uuid, p_origin text, p_conversation_id uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -2081,39 +2090,3 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'message', 'Organization access revoked', 'outcome', v_res ->> 'outcome');
 END;
 $function$;
-
-CREATE OR REPLACE FUNCTION public.crm_party_purge(p_party uuid)
- RETURNS void
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-declare v_org uuid;
-begin
-  select organization_id into v_org from crm.party where id = p_party;
-  if v_org is null then
-    perform platform.refuse_not_found(format('crm_party_purge: party %s not found', p_party));
-  end if;
-  if not iam.has_access('party', p_party, 'admin') then
-    raise exception 'crm_party_purge: admin access required on the party' using errcode = '42501';
-  end if;
-
-  delete from platform.associations
-   where (source_type = 'party' and source_id = p_party) or (target_type = 'party' and target_id = p_party);
-  delete from platform.comments where entity_type = 'party' and entity_id = p_party;
-  delete from platform.user_entity_state where entity_type = 'party' and entity_id = p_party;
-  delete from crm.outreach_list_member where party_id = p_party;
-  delete from crm.interaction where party_id = p_party;
-  delete from crm.party_contact_point where party_id = p_party;
-  delete from crm.address where party_id = p_party;
-  delete from crm.affiliation where party_id = p_party or employer_party_id = p_party;
-  delete from crm.party_merge where winner_id = p_party or loser_id = p_party;
-  delete from history.row_versions where entity_type in ('party','crm_affiliation') and row_id = p_party;
-  update crm.party set canonical_id = null where canonical_id = p_party;
-  update crm.party set source_party_id = null where source_party_id = p_party;
-  update crm.party set primary_employer_party_id = null where primary_employer_party_id = p_party;
-  update crm.deal set primary_party_id = null where primary_party_id = p_party;
-  delete from crm.party where id = p_party;
-
-  perform platform.log_activity(v_org, 'crm.party.purge', 'party', p_party, '{}'::jsonb);
-end $function$;

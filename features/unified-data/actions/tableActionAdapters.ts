@@ -46,6 +46,7 @@ import {
   Lock,
   LockOpen,
   Pencil,
+  Printer,
   Settings,
   Share2,
   Split,
@@ -101,6 +102,7 @@ export const OBJECT_ACTION_ICONS: Record<ObjectActionIcon, LucideIcon> = {
   "arrow-up-from-line": ArrowUpFromLine,
   split: Split,
   eraser: Eraser,
+  printer: Printer,
 };
 
 function toCommand(action: ObjectAction): ItemMenuCommand {

@@ -178,7 +178,7 @@ export function noteRecordSummary(view: NoteRecordView): string {
   if (view.dirtyFields.length > 0) {
     lines.push(`UNSAVED CHANGES: ${view.dirtyFields.join(", ")}`);
   }
-  if (view.readOnly) lines.push("Read-only (shared at viewer level)");
+  if (view.readOnly) lines.push("Read-only (shared with View access)");
   if (lines.length > 0) lines.push("");
   lines.push(
     humanLines([

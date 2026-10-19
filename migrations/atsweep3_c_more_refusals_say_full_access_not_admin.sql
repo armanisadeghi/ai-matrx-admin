@@ -1,4 +1,4 @@
--- why: AT-SWEEP-3: eleven more refusals (found by the wider sweep: "admin on it", "Admin on this", "its admins") said Admin for the access ladder's top rung; the share screens and the vocabulary say Full access.
+-- why: AT-SWEEP-3: ten more refusals (found by the wider sweep: "admin on it", "Admin on this", "its admins") said Admin for the access ladder's top rung; the share screens and the vocabulary say Full access.
 -- Proof: scripts/campaign-tests/atsweep3_a_the_ladder_refusal_names_the_action_not_the_door.sql (PART 2). Inverse: migrations/inverse/atsweep3_c_more_refusals_say_full_access_not_admin_down.sql
 -- based-on: custom._entity_change_file(uuid, uuid, jsonb, text, uuid, text, uuid) 3ac31d5cd43641bb5be38fed17288cba767c82ce81a17a388fe2386cb2232a4a
 -- based-on: custom.field_update(uuid, uuid, jsonb) b0bf5c6ce9db23af19ede8b4497d4de6393200fabaa128da7f613d7d9ae9bd46
@@ -10,7 +10,6 @@
 -- based-on: custom.work_approval_request(uuid, uuid, jsonb, text, uuid, text, uuid) 20b131d2f638d1a92071344adceffb709e837f4f2ac7e247547aa489a4a91da5
 -- based-on: public.revoke_resource_access(text, uuid, uuid) fa0d14fe16b469dbcb07b0e4573c9a75cf6ca6304a9812f695b749352321f844
 -- based-on: public.revoke_resource_org_access(text, uuid, uuid) 9aa0aa8edf2b26bc6cd3d87bf35a28fafcfbb6264a3f0e5e4da05f25fdb327bc
--- based-on: public.crm_party_purge(uuid) 334ef355ef61e8a6294a082be210412aa20685221ca08677610c2f92f2ea429c
 CREATE OR REPLACE FUNCTION custom._entity_change_file(p_organization_id uuid, p_subject_id uuid, p_change jsonb, p_note text, p_approver_id uuid, p_origin text, p_conversation_id uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -2091,39 +2090,3 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'message', 'Organization access revoked', 'outcome', v_res ->> 'outcome');
 END;
 $function$;
-
-CREATE OR REPLACE FUNCTION public.crm_party_purge(p_party uuid)
- RETURNS void
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-declare v_org uuid;
-begin
-  select organization_id into v_org from crm.party where id = p_party;
-  if v_org is null then
-    perform platform.refuse_not_found(format('crm_party_purge: party %s not found', p_party));
-  end if;
-  if not iam.has_access('party', p_party, 'admin') then
-    raise exception 'crm_party_purge: Full access required on the party' using errcode = '42501';
-  end if;
-
-  delete from platform.associations
-   where (source_type = 'party' and source_id = p_party) or (target_type = 'party' and target_id = p_party);
-  delete from platform.comments where entity_type = 'party' and entity_id = p_party;
-  delete from platform.user_entity_state where entity_type = 'party' and entity_id = p_party;
-  delete from crm.outreach_list_member where party_id = p_party;
-  delete from crm.interaction where party_id = p_party;
-  delete from crm.party_contact_point where party_id = p_party;
-  delete from crm.address where party_id = p_party;
-  delete from crm.affiliation where party_id = p_party or employer_party_id = p_party;
-  delete from crm.party_merge where winner_id = p_party or loser_id = p_party;
-  delete from history.row_versions where entity_type in ('party','crm_affiliation') and row_id = p_party;
-  update crm.party set canonical_id = null where canonical_id = p_party;
-  update crm.party set source_party_id = null where source_party_id = p_party;
-  update crm.party set primary_employer_party_id = null where primary_employer_party_id = p_party;
-  update crm.deal set primary_party_id = null where primary_party_id = p_party;
-  delete from crm.party where id = p_party;
-
-  perform platform.log_activity(v_org, 'crm.party.purge', 'party', p_party, '{}'::jsonb);
-end $function$;
