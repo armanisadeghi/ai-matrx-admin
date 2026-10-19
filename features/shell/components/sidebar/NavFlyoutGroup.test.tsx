@@ -34,22 +34,24 @@ jest.mock("@/components/navigation/AppLink", () => ({
 const NavFlyoutGroup = (require("./NavFlyoutGroup") as typeof import("./NavFlyoutGroup")).default;
 
 const item: ShellNavItem = {
+  id: "workspace",
   label: "Workspace",
   href: "/dashboard",
   iconName: "LayoutDashboard",
   section: "primary",
   children: [
     {
+      id: "workspace.home",
       label: "Home",
       href: "/dashboard",
       iconName: "LayoutDashboard",
       children: [
-        { label: "Dashboard", href: "/dashboard", iconName: "LayoutDashboard" },
-        { label: "Launchpad", href: "/launchpad", iconName: "Rocket", openInNewTab: true },
+        { id: "workspace.home.dashboard", label: "Dashboard", href: "/dashboard", iconName: "LayoutDashboard" },
+        { id: "workspace.home.launchpad", label: "Launchpad", href: "/launchpad", iconName: "Rocket", openInNewTab: true },
       ],
     },
-    { label: "Notes", href: "/notes", iconName: "NotepadText" },
-    { label: "Studio", href: "https://studio.example.com", iconName: "Workflow", external: true },
+    { id: "workspace.notes", label: "Notes", href: "/notes", iconName: "NotepadText" },
+    { id: "workspace.studio", label: "Studio", href: "https://studio.example.com", iconName: "Workflow", external: true },
   ],
 };
 

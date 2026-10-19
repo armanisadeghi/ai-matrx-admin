@@ -9,6 +9,7 @@ import {
 } from "./is-nav-group-active";
 
 const crossNamespaceGroup: ShellNavItem = {
+  id: "knowledge",
   label: "Knowledge",
   href: "/knowledge",
   iconName: "BookOpen",
@@ -16,17 +17,20 @@ const crossNamespaceGroup: ShellNavItem = {
   ownedRoutePrefixes: ["/rag"],
   children: [
     {
+      id: "knowledge.knowledge-hub",
       label: "Knowledge Hub",
       href: "/knowledge",
       iconName: "BookOpen",
       exact: true,
     },
     {
+      id: "knowledge.data-stores",
       label: "Data stores",
       href: "/knowledge/data-stores",
       iconName: "Database",
     },
     {
+      id: "knowledge.search",
       label: "Search",
       href: "/knowledge/search",
       iconName: "Search",
@@ -51,6 +55,7 @@ describe("shell navigation route ownership", () => {
       ...crossNamespaceGroup,
       children: [
         {
+          id: "data",
           label: "Data",
           href: "/rag",
           iconName: "Database",

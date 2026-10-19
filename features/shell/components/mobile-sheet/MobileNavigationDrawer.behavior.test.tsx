@@ -61,17 +61,19 @@ const Drawer = (require("./MobileNavigationDrawer") as typeof import("./MobileNa
 
 const items: ShellNavItem[] = [
   {
+    id: "workspace",
     label: "Workspace",
     href: "/dashboard",
     iconName: "LayoutDashboard",
     section: "primary",
     children: [
-      { label: "Notes", href: "/notes", iconName: "NotepadText" },
-      { label: "Launchpad", href: "/launchpad", iconName: "Rocket", openInNewTab: true },
+      { id: "workspace.notes", label: "Notes", href: "/notes", iconName: "NotepadText" },
+      { id: "workspace.launchpad", label: "Launchpad", href: "/launchpad", iconName: "Rocket", openInNewTab: true },
     ],
   },
 ];
 const settingsItem: ShellNavItem = {
+  id: "settings",
   label: "Settings",
   href: "/user-settings",
   iconName: "Settings",
