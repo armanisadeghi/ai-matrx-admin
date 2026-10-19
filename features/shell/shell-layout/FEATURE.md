@@ -67,7 +67,8 @@ person's body wins whole, else the organization's, else the default. Inside the 
 region it does not carry is the default for that region (never the organization's). Refs the
 viewer's catalog cannot answer (unknown, or admin-only for a non-admin) are dropped from render and
 named in `problems`. Catalog entries newer than the body's `basedOnCatalogVersion` that are neither
-dismissed nor placed come back in `whatsNew` — never injected into the tree.
+dismissed nor placed come back in `whatsNew` — never injected into the tree. An empty group still renders (its
+label, and one "Add pages…" row that runs the `edit-sidebar` nav action).
 
 ## The resolved shape (for the renderers)
 
@@ -88,8 +89,12 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
   is a declared client door (definer; reads only her active memberships and her own `person:` slot).
 - **Server pick:** `(core)/layout.tsx` → `pickShellLayoutServer` → `initialReduxState.shellLayout`. No request
   of its own. `matrx_shell_view=standard` → default. Seed late + `matrx_shell=1` → the nav column renders a
-  fixed skeleton (`reserved`) until the streamed seed lands. Guests and other route groups: slice unseeded =
-  default.
+  fixed skeleton (`reserved`) until the streamed seed lands. Every sign-in path sets `matrx_shell=1` when the
+  person or any of her organizations holds a layout (`markShellLayoutDeviceAtSignIn`), so a new device reserves
+  too; a request with no cookie and a missed seed still paints the default, then swaps. Guests and other route
+  groups: slice unseeded = default.
+- **Late answers never win:** a write stamps `localWriteAt`; a store answer (`shellLayoutLoaded`, the sync
+  engine's `fromServer` fetch) carries `requestedAt` and is dropped when it was asked before the last write.
 - **Renderers:** `ShellSidebarNav`, `PrimaryMobileNavigationDrawer`, `ShellDockItems`, `ShellHeaderButtons`
   (orders the five server-rendered controls + custom 44px buttons; mandate → `useOpenMandateWindow`),
   `HeaderPhoneOverflow` rows. Default = the nav-data arrays themselves (`ShellSidebarNav.test.tsx` proves the
@@ -133,3 +138,5 @@ nav-data arrays themselves. A row with `tileId` launches a Tools-grid tile: its 
 - `2026-10-19` — claude (lane C): editor window, live preview, history, Add to my menu + current-record primitive,
   organization layout + lock knob (`personAllowed` amendment), What's new, Settings › Layout, landing on every
   sign-in path.
+- `2026-10-19` — claude (lane G): empty groups render with "Add pages…"; store answers asked before a save are
+  dropped (no default flash after Save); sign-in sets `matrx_shell`; Organization settings › Layout anchor.
