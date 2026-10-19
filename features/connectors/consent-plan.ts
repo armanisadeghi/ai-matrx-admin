@@ -348,7 +348,7 @@ export function buildConsentPlan({
   // labeled step. Only a YouTube row that ADDS scopes gets the isolated request.
   const youtubeEntry = wanted.find(({ product }) => product.key === "youtube");
   const youtubeAdds = youtubeEntry !== undefined && !youtubeEntry.renewal;
-  const isolatedProduct = youtubeEntry?.product;
+  const isolatedProduct = productByKey(provider, "youtube");
   const otherWanted = wanted.filter(({ product }) => product.key !== "youtube");
 
   // An older broad connection can already hold YouTube beside another Google
@@ -356,10 +356,13 @@ export function buildConsentPlan({
   // the exact combined scope set Google refused. Dropping the other scopes
   // would damage the existing connection; calling a new isolated grant a
   // repair would leave the old broken row in place. State that limit instead.
-  const legacyBroadYouTubeRenewal =
-    youtubeEntry?.renewal === true &&
+  const legacyBroadYouTubeAccount =
     account !== null &&
     account.connectionPurpose !== "youtube_isolated" &&
+    isolatedProduct !== undefined &&
+    requiredScopesFor(provider, isolatedProduct, rollout).some((scope) =>
+      hasGoogleGrantedScope(account.grantedScopes, scope),
+    ) &&
     provider.products
       .filter((product) => product.key !== "youtube")
       .some((product) =>
@@ -368,22 +371,21 @@ export function buildConsentPlan({
         ),
       );
   if (
-    youtubeEntry !== undefined &&
     isolatedProduct !== undefined &&
-    legacyBroadYouTubeRenewal
+    legacyBroadYouTubeAccount
   ) {
     const reason =
-      "This older connection holds YouTube with other Google products. Manage that connection first; renewing it here would repeat the scope combination Google refused.";
+      "Choose a different account, select only YouTube, then choose this login. This adds YouTube separately; it does not renew this connection.";
     return {
       request: null,
       deferred: [],
       blocked: [
         ...blocked,
-        ...wanted.map(({ product }) => ({
-          productKey: product.key,
-          productName: product.name,
+        {
+          productKey: isolatedProduct.key,
+          productName: isolatedProduct.name,
           reason,
-        })),
+        },
       ],
       alreadyGranted,
       empty: true,

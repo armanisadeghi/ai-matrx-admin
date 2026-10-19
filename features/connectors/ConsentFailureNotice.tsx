@@ -16,9 +16,16 @@
 //
 // Provider-agnostic: it takes the translated answer, never an error.
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { AlertTriangle, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@ai-matrx/design-system";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { ConsentFailureAnswer } from "./google-adapter";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 
@@ -31,16 +38,14 @@ export function ConsentFailureNotice({
   className?: string;
   action?: { label: string; onPress: () => void };
 }) {
-  const [open, setOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const failureKey = `${failure.sentence}\u0000${failure.details ?? ""}`;
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
+  const open = openKey === failureKey;
   // Both consent surfaces can be on screen at once (Settings mounts the panel's
   // own notice AND the dialog body), so the disclosure's id is per instance.
   const detailsId = useId();
-  useEffect(() => {
-    setDismissed(false);
-    setOpen(false);
-  }, [failure.details, failure.sentence]);
-  if (dismissed) return null;
+  if (dismissedKey === failureKey) return null;
   return (
     <div
       role="alert"
@@ -52,39 +57,52 @@ export function ConsentFailureNotice({
       <div className="flex min-w-0 items-start gap-1.5">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
         <p className="min-w-0 flex-1 break-words">{failure.sentence}</p>
-        <button
-          type="button"
-          onClick={() => setDismissed(true)}
-          aria-label="Dismiss error"
-          className="-mr-1 -mt-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-destructive-ink hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <X className="h-3.5 w-3.5" aria-hidden />
-        </button>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setDismissedKey(failureKey)}
+                aria-label="Dismiss error"
+                className="-mr-2 -mt-2 h-11 w-11 shrink-0 text-destructive-ink hover:bg-destructive/10"
+              >
+                <X className="h-3.5 w-3.5" aria-hidden />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Dismiss error</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       {action ? (
-        <button
+        <Button
           type="button"
+          variant="link"
+          size="sm"
           onClick={action.onPress}
-          className="mt-1 inline-flex min-h-9 items-center text-xs font-medium underline underline-offset-2"
+          className="mt-1 min-h-9 px-0 text-xs"
         >
           {action.label}
-        </button>
+        </Button>
       ) : null}
       {failure.details ? (
         <>
-          <button
+          <Button
             type="button"
-            onClick={() => setOpen((current) => !current)}
+            variant="link"
+            size="sm"
+            onClick={() => setOpenKey(open ? null : failureKey)}
             aria-expanded={open}
             aria-controls={detailsId}
-            className="mt-1 inline-flex min-h-11 items-center gap-1 text-xs underline underline-offset-2 sm:min-h-0"
+            className="mt-1 min-h-11 gap-1 px-0 text-xs sm:min-h-8"
           >
             <ChevronDown
               className={cn("h-3 w-3 transition-transform", !open && "-rotate-90")}
               aria-hidden
             />
             {open ? "Hide details" : "Show details"}
-          </button>
+          </Button>
           {open ? (
             <p
               id={detailsId}

@@ -86,6 +86,7 @@ import { ConnectorConsentBody } from "../ConnectorConsentDialog";
 import { buildConsentPlan, consentOutcomes } from "../consent-plan";
 import type { ConnectorAccount, ConnectorCapabilityRollout } from "../health";
 import { GOOGLE_CONNECTOR_PROVIDER } from "../provider-config";
+import { GOOGLE_SCOPE } from "@/lib/googleScopes";
 
 const provider = GOOGLE_CONNECTOR_PROVIDER;
 
@@ -123,12 +124,21 @@ const DEAD: ConnectorAccount = {
   activity: {},
 };
 
+const DEAD_WITHOUT_LEGACY_YOUTUBE: ConnectorAccount = {
+  ...DEAD,
+  grantedScopes: DEAD.grantedScopes.filter(
+    (scope) =>
+      scope !== GOOGLE_SCOPE.youtubeReadonly &&
+      scope !== GOOGLE_SCOPE.youtubeAnalyticsReadonly,
+  ),
+};
+
 describe("consentOutcomes after an exchange that failed", () => {
   it("grants nothing for a nine-product renewal", () => {
     const plan = buildConsentPlan({
       provider,
       selectedProductKeys: provider.products.map((product) => product.key),
-      account: DEAD,
+      account: DEAD_WITHOUT_LEGACY_YOUTUBE,
       rollout: LIVE,
     });
 // YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
@@ -137,7 +147,7 @@ describe("consentOutcomes after an exchange that failed", () => {
       provider,
       plan,
       // The account is byte-identical: the exchange changed nothing.
-      account: DEAD,
+      account: DEAD_WITHOUT_LEGACY_YOUTUBE,
       rollout: LIVE,
       exchange: { completed: false },
     });
@@ -151,13 +161,13 @@ describe("consentOutcomes after an exchange that failed", () => {
     const plan = buildConsentPlan({
       provider,
       selectedProductKeys: ["calendar"],
-      account: DEAD,
+      account: DEAD_WITHOUT_LEGACY_YOUTUBE,
       rollout: LIVE,
     });
     const outcomes = consentOutcomes({
       provider,
       plan,
-      account: DEAD,
+      account: DEAD_WITHOUT_LEGACY_YOUTUBE,
       rollout: LIVE,
       exchange: { completed: false },
     });
@@ -204,7 +214,7 @@ describe("the dialog after a renewal whose exchange failed", () => {
       mounted.render(
         <ConnectorConsentBody
           provider={provider}
-          accounts={[DEAD]}
+          accounts={[DEAD_WITHOUT_LEGACY_YOUTUBE]}
           rollout={LIVE}
           isLoading={false}
           rolloutUnavailable={false}

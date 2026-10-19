@@ -509,7 +509,7 @@ function FirstAction({
         type="button"
         data-connector-first-action={product.key}
         disabled={organizationGate.disabled}
-        aria-description={organizationGate.title}
+        aria-label={organizationGate.title ?? action.label}
         onClick={organizationGate.press(() => {})}
         className="inline-flex shrink-0 items-center gap-0.5 font-medium text-muted-foreground"
       >
@@ -742,6 +742,15 @@ export function ConnectorConsentBody({
       toast.info(sentence);
       return;
     }
+    if (continuationProductKeys && !account) {
+      const sentence = `${provider.name} approval finished, but this account is not available yet. Refresh your connections before continuing with ${continuationProductKeys
+        .map((key) => productByKey(provider, key)?.name)
+        .filter(Boolean)
+        .join(", ")}.`;
+      setAnswer(sentence);
+      toast.info(sentence);
+      return;
+    }
     if (personalOnlySelected && account?.ownerKind === "organization") {
       const sentence = `${personalOnlyName} can connect only to your own Google account. Choose your own account or connect a different one.`;
       setAnswer(sentence);
@@ -766,9 +775,20 @@ export function ConnectorConsentBody({
       const changesDisclosed = await confirmGmailChangesDisclosure(plan.request);
       if (!changesDisclosed) return;
       const options = {
-        owner: !personalOnlySelected && forOrganization && activeOrganization
-          ? { type: "organization" as const, organizationId: activeOrganization.id }
-          : { type: "user" as const },
+        owner:
+          continuationProductKeys && account
+            ? account.ownerKind === "organization" && account.organizationId
+              ? {
+                  type: "organization" as const,
+                  organizationId: account.organizationId,
+                }
+              : { type: "user" as const }
+            : !personalOnlySelected && forOrganization && activeOrganization
+              ? {
+                  type: "organization" as const,
+                  organizationId: activeOrganization.id,
+                }
+              : { type: "user" as const },
         loginHint: account?.label ?? null,
       };
       if (inThisTab) {
@@ -876,14 +896,16 @@ export function ConnectorConsentBody({
         </Button>
       )}
       {!finished ? (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => void connect(true)}
           disabled={busy || !runner.ready}
-          className="mx-auto min-h-9 rounded-full px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+          className="mx-auto min-h-9 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
         >
           Pop-ups blocked? Continue in this tab
-        </button>
+        </Button>
       ) : null}
       {presentation === "dialog" && onDone && !finished ? (
         <Button variant="ghost" onClick={onDone} className="h-10 w-full">
@@ -1118,7 +1140,14 @@ export function ConnectorConsentBody({
             <Switch
               checked={forOrganization}
               disabled={busy}
-              onCheckedChange={setForOrganization}
+              onCheckedChange={(next) => {
+                setForOrganization(next);
+                setContinuationProductKeys(null);
+                setAttempted(false);
+                setAttemptPlan(null);
+                setAttemptAccountId(null);
+                setExchangeCompleted(false);
+              }}
               aria-label={`Connect for ${activeOrganization.name}`}
             />
             <span className="min-w-0 flex-1">

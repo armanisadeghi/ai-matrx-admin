@@ -286,10 +286,7 @@ describe("buildConsentPlan", () => {
     expect(plan.empty).toBe(true);
     expect(plan.request).toBeNull();
     expect(plan.deferred).toEqual([]);
-    expect(plan.blocked.map(({ productKey }) => productKey).sort()).toEqual([
-      "gmail_read",
-      "youtube",
-    ]);
+    expect(plan.blocked.map(({ productKey }) => productKey)).toEqual(["youtube"]);
     expect(plan.blocked[0]?.reason).toContain("older connection");
   });
 

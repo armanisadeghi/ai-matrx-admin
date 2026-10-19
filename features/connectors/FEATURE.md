@@ -164,6 +164,16 @@ where every item opens at the provider.
 
 `comingSoonId` set → status is `unavailable` regardless of the connected-set, the chip is dashed + `soon`, and clicking calls `announceComingSoon(id)` against `lib/coming-soon/registry.ts`. **Never a bare "coming soon" string.** Notion no longer uses this path: it is an active MCP-backed connector.
 
+### (f) Google consent steps
+
+A mixed first connection asks for the normal Google products first and carries
+YouTube as `ConsentPlan.deferred`. Only a second, explicit press opens the
+focused `youtube_isolated` approval; a deferred product is never reported as
+blocked or complete. The continuation stays bound to the returned account and
+owner. An older broad connection that already holds YouTube is never renewed
+with its known-refused combined scopes; the screen points to a fresh isolated
+YouTube connection and states that the older connection remains unchanged.
+
 ### (g) Bringing a Google contact or task IN
 
 Both panels are the WINDOW presentation (Arman, 2026-09-17: "The default is the
