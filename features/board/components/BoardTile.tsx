@@ -660,7 +660,7 @@ export function BoardTile({
       data-board-card={id}
       data-board-title={title}
       style={overview && !focused ? FACE_RADIUS : undefined}
-      data-board-chrome={bare ? "bare" : headerless ? "headerless" : "full"}
+      data-board-tile-chrome={bare ? "bare" : headerless ? "headerless" : "full"}
       className={cn(
         "relative flex w-full flex-col",
         autoHeight ? "h-auto" : "h-full",
