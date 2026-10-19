@@ -37,7 +37,7 @@ import { normalizeUrl } from "@/features/scraper/utils/scraper-floating-helpers"
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { ErrorNotice } from "@ai-matrx/design-system";
 import { OutboundLink } from "@ai-matrx/kit/outbound-react";
-import { AdvancedReadButton } from "@/features/data-sources/advanced-read";
+import { AdvancedReadButton, useReadEntry } from "@/features/data-sources/advanced-read";
 
 export default function QuickScrapePage() {
   const { copyText } = useClipboard({
@@ -215,9 +215,12 @@ export default function QuickScrapePage() {
   ) : null;
 
   // A page that really failed can be tried with the advanced reader (priced before the click, never automatic).
+  // Once the advanced reader has read the page, the old failure is gone: only the result shows.
+  const advancedEntry = useReadEntry(readUrl ?? "");
+  const advancedRead = advancedEntry?.status === "done" && advancedEntry.item.ok;
   const failureWithAdvanced = failureNotice ? (
     <>
-      {failureNotice}
+      {advancedRead ? null : failureNotice}
       {readUrl ? <AdvancedReadButton url={readUrl} className="mt-3" /> : null}
     </>
   ) : null;

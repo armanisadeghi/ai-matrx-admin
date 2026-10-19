@@ -232,6 +232,6 @@ describe("the dialog after a renewal whose exchange failed", () => {
     const shown = container.textContent ?? "";
     expect(shown).not.toContain("Ready to use");
     // And the failure itself is on screen, in our words.
-    expect(shown).toContain("Google did not finish connecting this");
+    expect(shown).toContain("Google did not finish connecting.");
   });
 });

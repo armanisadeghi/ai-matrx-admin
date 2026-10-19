@@ -757,6 +757,14 @@ export function ConnectorConsentBody({
       toast.info(sentence);
       return;
     }
+    if (inThisTab && plan.deferred.length > 0) {
+      const sentence = `This two-step connection needs a pop-up so you can return here for ${plan.deferred
+        .map((product) => product.name)
+        .join(", ")}. Allow pop-ups, then press ${provider.dialog.cta}.`;
+      setAnswer(sentence);
+      toast.info(sentence);
+      return;
+    }
     if (!plan.request) {
       // The press is never swallowed: it says, in words, why there is nothing
       // to send to the provider — inline for the person reading the dialog and
@@ -801,12 +809,37 @@ export function ConnectorConsentBody({
       setChosenAccountId(result.connectionId);
       setExchangeCompleted(true);
       setAttempted(true);
-      await refetch();
-      setContinuationProductKeys(
-        plan.deferred.length > 0
-          ? plan.deferred.map((product) => product.key)
-          : null,
-      );
+      const refreshed = await refetch();
+      const refreshedAccount = Array.isArray(refreshed)
+        ? (refreshed as ConnectorAccount[]).find(
+            (row) => row.id === result.connectionId,
+          ) ?? null
+        : null;
+      if (refreshedAccount) {
+        const refreshedOutcomes = consentOutcomes({
+          provider,
+          plan,
+          account: refreshedAccount,
+          rollout,
+          exchange: { completed: true },
+        });
+        const refreshedStepComplete =
+          plan.request.products.length > 0 &&
+          plan.request.products.every((product) =>
+            refreshedOutcomes.some(
+              (row) =>
+                row.product.key === product.key &&
+                (row.state === "granted" || row.state === "already_granted"),
+            ),
+          );
+        if (refreshedStepComplete) {
+          setContinuationProductKeys(
+            plan.deferred.length > 0
+              ? plan.deferred.map((product) => product.key)
+              : null,
+          );
+        }
+      }
     } catch (cause) {
       if (isGoogleAuthorizationCancelled(cause)) {
         toast.info(`${provider.name} authorization canceled — nothing changed.`);
@@ -848,8 +881,22 @@ export function ConnectorConsentBody({
       : null;
   const grantedRows = resultRows?.filter((row) => row.state === "granted") ?? [];
   const hasGrantedResult = grantedRows.length > 0;
+  const requestedStepComplete =
+    resultRows !== null &&
+    (attemptPlan?.request?.products.length ?? 0) > 0 &&
+    attemptPlan?.request?.products.every((product) =>
+      resultRows.some(
+        (row) =>
+          row.product.key === product.key &&
+          (row.state === "granted" || row.state === "already_granted"),
+      ),
+    );
   const hasContinuation = (continuationProductKeys?.length ?? 0) > 0;
-  const finished = hasGrantedResult && !hasContinuation;
+  const finished =
+    requestedStepComplete &&
+    !hasContinuation &&
+    attemptPlan?.deferred.length === 0 &&
+    attemptPlan.blocked.length === 0;
   useEffect(() => {
     if (hasGrantedResult) toast.success(`${provider.name} connected.`);
   }, [hasGrantedResult, provider.name]);
@@ -1178,10 +1225,16 @@ export function ConnectorConsentBody({
         {failure ? <ConsentFailureNotice failure={failure} /> : null}
 
         {resultAccountUnavailable ? (
-          <p role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning-ink">
-            {provider.name} approval finished, but we could not confirm this account in your connections. Refresh Settings → Connectors before trying again.
-            <ErrorAlchemyMenu />
-          </p>
+          <ConsentFailureNotice
+            failure={{
+              sentence: `${provider.name} approval finished, but this account is not available yet. Refresh connections before continuing.`,
+              details: null,
+            }}
+            action={{
+              label: "Refresh connections",
+              onPress: () => void refetch(),
+            }}
+          />
         ) : null}
 
         {hasGrantedResult ? (

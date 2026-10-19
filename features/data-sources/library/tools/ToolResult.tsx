@@ -188,7 +188,7 @@ export function ToolResult({
             <ResultJson data={view.raw} showSource />
           </div>
         ) : (
-          <AnswerValueView value={view.output} emptyText="The answer came back empty." />
+          <AnswerValueView value={view.output} emptyText="The answer came back empty." offerRaw={adminView} />
         )}
       </div>
       <ToolResultTableBar callId={view.call_id} toolId={view.tool_id} toolName={view.display_name} output={view.output} finishedAt={view.finished_at} />

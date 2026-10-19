@@ -8,6 +8,7 @@
  * the canonical table. Any card opens the post drawer.
  */
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -615,6 +616,7 @@ export function AccountDetail({ platform, profileId }: { platform: string; profi
       ) : (
         <PostsPanel key={tab} posts={list} mode={tab} onOpen={openInPanel} />
       )}
+      <EntityCustomFields entityToken="social_profile" recordId={p.id} organizationId={p.organization_id} />
     </div>
   );
 }

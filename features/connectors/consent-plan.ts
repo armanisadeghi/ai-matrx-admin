@@ -371,6 +371,7 @@ export function buildConsentPlan({
         ),
       );
   if (
+    youtubeEntry !== undefined &&
     isolatedProduct !== undefined &&
     legacyBroadYouTubeAccount
   ) {

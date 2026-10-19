@@ -18,6 +18,7 @@
  * AI is user-triggered only: transcript and breakdown run from a button.
  */
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { formatCount } from "@ai-matrx/kit/format";
 import { ProviderChip } from "./ProviderFallbackNotice";
 import type { SocialProviderTrace } from "../types";
@@ -780,6 +781,7 @@ export function PostDetailPage({ postId }: { postId: string }) {
         </Button>
       </div>
       <PostDetailBody postId={postId} organizationId={brand.organizationId} brandSeg={brand.seg} host="page" />
+      <EntityCustomFields entityToken="social_post" recordId={postId} organizationId={brand.organizationId} />
     </div>
   );
 }

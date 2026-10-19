@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { usePageSandbox } from "@/features/html-pages/utils/use-page-sandbox";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -715,6 +716,7 @@ export function CmsArtifactDetail({ artifactId }: CmsArtifactDetailProps) {
             </CardContent>
           </Card>
         )}
+        <EntityCustomFields entityToken="artifact" recordId={artifact.id} organizationId={artifact.organizationId} />
       </div>
       </div>
       </div>

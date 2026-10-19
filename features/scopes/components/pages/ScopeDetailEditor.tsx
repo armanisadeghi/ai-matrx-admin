@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { UntrustedCount } from "@ai-matrx/design-system";
 import { readOf } from "@ai-matrx/design-system";
 import { useEffect, useRef, useState } from "react";
@@ -488,6 +489,8 @@ export function ScopeDetailEditor({
       </PrimaryEntityProvider>
 
       <ScopeAdvancedSection scope={scope} />
+
+      <EntityCustomFields entityToken="scope" recordId={scope.id} organizationId={orgId} />
     </div>
   );
 }

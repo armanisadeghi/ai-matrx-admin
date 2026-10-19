@@ -81,15 +81,21 @@ const LIVE: ConnectorCapabilityRollout[] = [
   ineligibleReason: null,
 }));
 
-/** Every scope the provider config declares — the account HOLDS all nine products. */
+/** Every non-YouTube scope: this suite exercises an ordinary dead credential. */
 const ALL_SCOPES = [
   ...new Set([
     ...provider.identityScopes,
-    ...provider.products.flatMap((product) => product.scopes),
+    ...provider.products
+      .filter((product) => product.key !== "youtube")
+      .flatMap((product) => product.scopes),
   ]),
 ];
 
-/** THE VERIFIER'S ACCOUNT: nine products granted, and a credential that is gone. */
+const HELD_PRODUCT_COUNT = provider.products.filter(
+  (product) => product.key !== "youtube",
+).length;
+
+/** THE VERIFIER'S ACCOUNT: ordinary products granted, and a credential that is gone. */
 const DEAD: ConnectorAccount = {
   id: "c4",
   label: "info@aimatrx.com",
@@ -155,7 +161,7 @@ describe("a dead credential, in the dialog", () => {
     expect(shown).toContain("Needs reconnecting");
     expect(shown).toContain("cannot be used");
     expect(shown).toContain(
-      `${provider.products.length} products it already has cannot be used`,
+      `${HELD_PRODUCT_COUNT} products it already has cannot be used`,
     );
   });
 
@@ -178,7 +184,7 @@ describe("a dead credential, in the dialog", () => {
     // said nine products would be approved again.
     expect(shown).toContain(
       // YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
-`approve ${provider.products.length - 1} products again`,
+      `approve ${HELD_PRODUCT_COUNT} products again`,
     );
     expect(shown).toContain("nothing new is asked for");
   });
@@ -187,11 +193,11 @@ describe("a dead credential, in the dialog", () => {
     mount(DEAD);
     const badges = visible().match(/Needs reconnecting/g) ?? [];
     // One per product row, plus the account-level line above them.
-    expect(badges.length).toBeGreaterThanOrEqual(provider.products.length);
+    expect(badges.length).toBeGreaterThanOrEqual(HELD_PRODUCT_COUNT);
     // And each row carries the account's own sentence rather than only a promise.
     const sentences =
       visible().match(/no longer holds a saved permission/g) ?? [];
-    expect(sentences.length).toBeGreaterThanOrEqual(provider.products.length);
+    expect(sentences.length).toBeGreaterThanOrEqual(HELD_PRODUCT_COUNT);
   });
 });
 

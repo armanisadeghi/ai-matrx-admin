@@ -188,3 +188,12 @@ export function aboutTime(seconds: number | null): string | null {
   if (seconds < 90) return `about ${Math.round(seconds)} s`;
   return `about ${Math.round(seconds / 60)} min`;
 }
+
+/** "Up to 12 points": the quote's most-it-can-cost, or null when the server could not price it. */
+export function upToPoints(points: number | null | undefined): string | null {
+  if (points == null || !Number.isFinite(points)) return null;
+  return `Up to ${Math.round(points).toLocaleString()} point${Math.round(points) === 1 ? "" : "s"}`;
+}
+
+/** Characters of a read page drawn at once; the rest is behind "Show more" (a huge page froze the renderer). */
+export const RENDER_CHARS = 6000;

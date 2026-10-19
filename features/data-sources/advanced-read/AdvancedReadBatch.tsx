@@ -5,7 +5,7 @@ import { Telescope } from "lucide-react";
 import { Button, Switch } from "@ai-matrx/design-system/controls";
 
 import { useLibraryOrganizationId } from "../library/hooks";
-import { aboutTime, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { aboutTime, slowCoverage, upToPoints, type AdvancedAllow, type AdvancedItem } from "./contract";
 import { readEntry, startAdvancedRead, useReadVersion } from "./store";
 import { useAdvancedQuote } from "./useAdvanced";
 
@@ -63,6 +63,11 @@ export function AdvancedReadBatch({ urls, onItem, className }: AdvancedReadBatch
         >
           {tally.running > 0 ? "Reading" : `Try all ${n}`}
         </Button>
+      ) : null}
+      {n > 0 && upToPoints(quote?.pointsUpToTotal) ? (
+        <span className="text-xs text-muted-foreground" data-advanced-read-quote="">
+          {upToPoints(quote?.pointsUpToTotal)}
+        </span>
       ) : null}
       {slowOption && n > 0 ? (
         <label className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -250,14 +250,6 @@ function ProviderConnectorsPanel({
         return;
       }
       const continuationProductKeys = plan.deferred.map((product) => product.key);
-      if (continuationProductKeys.length > 0) {
-        setCardConsent((previous) => ({
-          accountId: freshAccount.id,
-          productKeys: continuationProductKeys,
-          continuationProductKeys,
-          press: (previous?.press ?? 0) + 1,
-        }));
-      }
       const refused = consentOutcomes({
         provider,
         plan,
@@ -273,6 +265,12 @@ function ProviderConnectorsPanel({
         return;
       }
       if (continuationProductKeys.length > 0) {
+        setCardConsent((previous) => ({
+          accountId: freshAccount.id,
+          productKeys: continuationProductKeys,
+          continuationProductKeys,
+          press: (previous?.press ?? 0) + 1,
+        }));
         toast.info("Continue with YouTube in the consent panel below.");
         return;
       }

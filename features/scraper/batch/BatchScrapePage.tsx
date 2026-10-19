@@ -52,7 +52,7 @@
 // Each row shows its Source and opens it. A row that did not land
 // says why (the door's own sentence), never a silent gap.
 
-import { AdvancedReadBatch, AdvancedReadResults } from "@/features/data-sources/advanced-read";
+import { AdvancedReadBatch, AdvancedReadResults, readEntry, useReadVersion } from "@/features/data-sources/advanced-read";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -132,6 +132,8 @@ export interface BatchRow extends LadderCandidate {
   sourceNotices: BatchScrapeRow["sourceNotices"];
   /** True once the person kept this Source from this screen. */
   kept: boolean;
+  /** Set when the advanced reader read this page after our scraper could not: its text length. */
+  advancedChars?: number;
 }
 
 function toPending(url: string): BatchRow {
@@ -178,8 +180,8 @@ function fromBatchRow(row: BatchScrapeRow, requestedUrl = row.url): BatchRow {
   };
 }
 
-export function batchCharacterCount(row: Pick<BatchRow, "result">): number | null {
-  return row.result?.contentChars ?? row.result?.overview.char_count ?? null;
+export function batchCharacterCount(row: Pick<BatchRow, "result"> & { advancedChars?: number }): number | null {
+  return row.advancedChars ?? row.result?.contentChars ?? row.result?.overview.char_count ?? null;
 }
 
 /** A reading estimate derived from characters; it is never an observed word count. */
@@ -420,6 +422,15 @@ export default function BatchScrapePage() {
     [rows],
   );
 
+  // A page the advanced reader then read shows as read, with its characters: the table never keeps
+  // saying "Failed" next to a result that is on screen.
+  useReadVersion();
+  const displayRows = rows.map((row) => {
+    const entry = row.status === "failed" ? readEntry(row.url) : undefined;
+    return entry?.status === "done" && entry.item.ok
+      ? { ...row, status: "success" as const, advancedChars: (entry.item.markdown ?? entry.item.text).length }
+      : row;
+  });
   // Pages that really failed: the advanced reader can be tried on them (priced first, never automatic).
   const failedUrls = useMemo(
     () => rows.filter((row) => row.status === "failed").map((row) => row.url),
@@ -767,7 +778,7 @@ export default function BatchScrapePage() {
               {failedUrls.length > 0 ? <AdvancedReadBatch urls={failedUrls} /> : null}
               <MatrxDataTable<BatchRow>
                 tableId="scraper-batch-results"
-                data={rows}
+                data={displayRows}
                 columns={[...(columns), { id: "custom-actions", header: "Actions", sortable: false, filter: false, customActions: (row) =>
                   row.status === "failed" ? (
                     <Button

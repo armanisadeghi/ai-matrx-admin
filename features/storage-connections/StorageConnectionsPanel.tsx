@@ -212,7 +212,6 @@ export function StorageConnectionsPanel({
         </h2>
         <p className="text-sm text-muted-foreground">
           Connect an account to browse and import its files into Matrx Files.
-          Agent tool connections are listed and managed separately in the directory.
         </p>
       </header>
 

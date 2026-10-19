@@ -4,6 +4,8 @@
  * quote shown is the run billed. Unset = the server's defaults (each facet's `default_on`).
  */
 
+import { useSyncExternalStore } from "react";
+
 const chosen = new Map<string, string[]>();
 const listeners = new Set<() => void>();
 
@@ -26,4 +28,10 @@ export function onFacetChoice(listener: () => void): () => void {
 export function withFacets<T extends { kind: string }>(b: T): T & { facets?: string[] } {
   const keys = facetChoice(b.kind);
   return keys ? { ...b, facets: keys } : b;
+}
+
+/** The kind's chosen facet keys as a stable string ("" = the server's defaults), re-read on every change —
+ * part of every quote's cache key, so the price shown is always for the facets that are on. */
+export function useFacetKeys(kind: string): string {
+  return useSyncExternalStore(onFacetChoice, () => (facetChoice(kind) ?? ["(defaults)"]).join(","), () => "(defaults)");
 }

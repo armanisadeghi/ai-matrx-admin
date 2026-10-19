@@ -275,7 +275,9 @@ describe("D4 + D7 — the account is named, changeable, and can be a new one", (
     ));
     expect(container.textContent).toContain("Connecting as");
     expect(container.textContent).toContain(review.label);
-    const readingSwitch = container.querySelector('[role="switch"][title*="Gmail reading is connected"]');
+    const readingSwitch = container.querySelector(
+      '[role="switch"][aria-label="Do not connect Gmail reading"]',
+    );
     expect(readingSwitch?.getAttribute("data-state")).toBe("checked");
     run.mockResolvedValue({ connectionId: review.id });
     await act(async () => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { BrandAssists } from "@/features/marketing/brand-assists/BrandAssists";
 import { useBrandPersonas } from "@/features/marketing/data/personas";
 import { humanizeIdentifier } from "@ai-matrx/kit/text-case";
@@ -1185,6 +1186,10 @@ export function BrandWorkspace({ brandId }: { brandId: string }) {
                 />
               </div>
             </div>
+          ) : null}
+
+          {tab === "overview" ? (
+            <EntityCustomFields entityToken="web_brand" recordId={current.id} organizationId={current.organization_id} />
           ) : null}
 
           {tab === "facts" ? (

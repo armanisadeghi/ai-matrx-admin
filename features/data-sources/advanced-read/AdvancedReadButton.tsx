@@ -6,7 +6,7 @@ import { Button, Switch } from "@ai-matrx/design-system/controls";
 
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { useLibraryOrganizationId } from "../library/hooks";
-import { aboutTime, parseCoverageList, slowCoverage, type AdvancedAllow, type AdvancedItem } from "./contract";
+import { aboutTime, parseCoverageList, slowCoverage, upToPoints, type AdvancedAllow, type AdvancedItem } from "./contract";
 import { AdvancedReadResult } from "./AdvancedReadResult";
 import { startAdvancedRead, useReadEntry } from "./store";
 import { useAdvancedQuote } from "./useAdvanced";
@@ -73,6 +73,11 @@ export function AdvancedReadButton({ url, coverage, onItem, className }: Advance
         >
           {entry?.status === "failed" ? "Try again" : "Try advanced reader"}
         </Button>
+        {upToPoints(item?.pointsUpTo) ? (
+          <span className="text-xs text-muted-foreground" data-advanced-read-quote="">
+            {upToPoints(item?.pointsUpTo)}
+          </span>
+        ) : null}
         {slowOption ? (
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <Switch checked={slow} onCheckedChange={setSlow} aria-label="Include slow structured data" data-field="advanced-read-slow" />

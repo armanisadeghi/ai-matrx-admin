@@ -108,11 +108,15 @@ const LIVE: ConnectorCapabilityRollout[] = [
   ineligibleReason: null,
 }));
 
-/** Every scope the nine products need — the "all granted" half of the shape. */
+const NON_YOUTUBE_PRODUCTS = provider.products.filter(
+  (product) => product.key !== "youtube",
+);
+
+/** Every ordinary product scope; legacy broad YouTube renewals have their own guard. */
 const EVERY_SCOPE = [
   ...new Set([
     ...provider.identityScopes,
-    ...provider.products.flatMap((product) => product.scopes),
+    ...NON_YOUTUBE_PRODUCTS.flatMap((product) => product.scopes),
   ]),
 ];
 
@@ -140,7 +144,7 @@ describe("the one derivation reads the credential, not only the scopes", () => {
   it("offers a Reconnect on every granted product of a dead account", () => {
     const rows = accountHealth({ provider, account: DEAD, rollout: LIVE });
     expect(rows).toHaveLength(provider.products.length);
-    for (const row of rows) {
+    for (const row of rows.filter((row) => row.product.key !== "youtube")) {
       expect(row.state).toBe("account_unusable");
       expect(row.missingScopes).toEqual([]);
       // Before the fix this was null on all nine rows.
@@ -148,16 +152,19 @@ describe("the one derivation reads the credential, not only the scopes", () => {
       // And the repair is the ACCOUNT's, not this product's.
       expect(row.actionScope).toBe("account");
     }
+    expect(rows.find((row) => row.product.key === "youtube")?.state).toBe(
+      "not_connected",
+    );
   });
 
   it("calls every one of them a renewal", () => {
-    for (const product of provider.products) {
+    for (const product of NON_YOUTUBE_PRODUCTS) {
       expect(
         grantNeedsRenewal({ provider, product, account: DEAD, rollout: LIVE }),
       ).toBe(true);
     }
     expect(accountRenewalProductKeys({ provider, account: DEAD, rollout: LIVE })).toEqual(
-      provider.products.map((product) => product.key),
+      NON_YOUTUBE_PRODUCTS.map((product) => product.key),
     );
   });
 
@@ -194,7 +201,7 @@ describe("the plan a dead credential produces", () => {
   it("renews every granted product in ONE request and asks for nothing new", () => {
     const plan = buildConsentPlan({
       provider,
-      selectedProductKeys: provider.products.map((product) => product.key),
+      selectedProductKeys: NON_YOUTUBE_PRODUCTS.map((product) => product.key),
       account: DEAD,
       rollout: LIVE,
     });
@@ -202,13 +209,9 @@ describe("the plan a dead credential produces", () => {
     expect(plan.alreadyGranted).toEqual([]);
 // YouTube is its own labeled step beside other products (even on a renewal), so the one press renews every product except YouTube; the split makes 'every product in one request' impossible.
     expect(plan.request?.renewals.map((product) => product.key)).toEqual(
-      provider.products
-        .map((product) => product.key)
-        .filter((key) => key !== "youtube"),
+      NON_YOUTUBE_PRODUCTS.map((product) => product.key),
     );
-    expect(
-      plan.blocked.find((block) => block.productKey === "youtube")?.reason,
-    ).toContain("Step 2 of 2");
+    expect(plan.blocked).toEqual([]);
     expect(plan.request?.addedScopes).toEqual([]);
     expect(plan.request?.targetAccountId).toBe("conn-dead");
   });

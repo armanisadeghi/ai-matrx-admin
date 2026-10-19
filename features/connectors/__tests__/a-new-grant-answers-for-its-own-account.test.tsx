@@ -157,8 +157,8 @@ it("does not announce success when the returned connection is absent after refre
       await Promise.resolve();
     });
     expect(run).toHaveBeenCalledTimes(1);
-    expect(container.textContent).toContain("could not confirm this account");
-    expect(container.textContent).toContain("Settings → Connectors");
+    expect(container.textContent).toContain("account is not available yet");
+    expect(container.textContent).toContain("Refresh connections");
     expect(container.textContent).not.toContain("Ready to use");
     expect(toast.success).not.toHaveBeenCalled();
   } finally {

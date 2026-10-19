@@ -9,9 +9,9 @@ export default async function ManageShowPage({
 }) {
   const { showId } = await params;
   return (
-    <div className="h-full w-full overflow-y-auto overscroll-contain bg-textured">
+    <div className="h-full w-full overflow-y-auto overscroll-contain bg-textured" data-matrx-page-runway="">
       <ShowManageClient showId={showId} />
-      <div className="mx-auto max-w-3xl px-4 pb-16">
+      <div className="mx-auto max-w-3xl px-4 pb-[var(--matrx-page-runway)]">
         <EntityCustomFields entityToken="pc_show" recordId={showId} />
       </div>
     </div>

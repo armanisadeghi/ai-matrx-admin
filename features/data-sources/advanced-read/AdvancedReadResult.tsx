@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Copy } from "lucide-react";
 import MarkdownStream from "@ai-matrx/chat/ui/markdown-stream/MarkdownStream";
 import { Button } from "@ai-matrx/design-system/controls";
@@ -7,15 +8,23 @@ import { Button } from "@ai-matrx/design-system/controls";
 import { ErrorAlchemyMenu } from "@/components/errors/ErrorAlchemyMenu";
 import { copyToClipboard } from "@/lib/clipboard/copy";
 
-import type { AdvancedItem } from "./contract";
+import { RENDER_CHARS, type AdvancedItem } from "./contract";
 
 /**
  * What the advanced reader got for ONE page: the reader used, seconds in one muted line;
  * on success the page as markdown with Copy; on failure one plain sentence.
  */
 export function AdvancedReadResult({ item }: { item: AdvancedItem }) {
+  const [limit, setLimit] = useState(RENDER_CHARS);
   const body = item.markdown ?? item.text;
-  const facts = [item.reader ? capitalize(item.reader) : null, `${item.seconds.toFixed(1)} s`].filter(Boolean).join(" · ");
+  const shown = body.length <= limit ? body : body.slice(0, limit);
+  const facts = [
+    item.reader ? capitalize(item.reader) : null,
+    `${item.seconds.toFixed(1)} s`,
+    `${item.points.toLocaleString()} point${item.points === 1 ? "" : "s"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   if (!item.ok) {
     return (
       <div className="flex flex-col gap-1" data-advanced-read-result="failed">
@@ -39,7 +48,12 @@ export function AdvancedReadResult({ item }: { item: AdvancedItem }) {
       </div>
       {body ? (
         <div className="max-h-96 min-w-0 overflow-auto rounded-md border border-border bg-muted p-2 text-sm" data-advanced-read-content="">
-          <MarkdownStream content={body} isStreamActive={false} hideCopyButton />
+          <MarkdownStream content={shown} isStreamActive={false} hideCopyButton />
+          {shown.length < body.length ? (
+            <Button variant="quiet" onClick={() => setLimit((n) => n + RENDER_CHARS * 5)} data-action="advanced-read-more">
+              Show more
+            </Button>
+          ) : null}
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">No text came back</p>

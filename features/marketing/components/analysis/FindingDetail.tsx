@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -953,6 +954,7 @@ export function FindingDetail({ findingId }: { findingId: string }) {
           </>
         ) : null}
       </section>
+      <EntityCustomFields entityToken="web_finding" recordId={finding.id} organizationId={finding.organization_id} />
     </main>
     </SurfaceRuntimeProvider>
   );

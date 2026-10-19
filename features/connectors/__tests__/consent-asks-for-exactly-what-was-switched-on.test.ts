@@ -287,7 +287,28 @@ describe("buildConsentPlan", () => {
     expect(plan.request).toBeNull();
     expect(plan.deferred).toEqual([]);
     expect(plan.blocked.map(({ productKey }) => productKey)).toEqual(["youtube"]);
-    expect(plan.blocked[0]?.reason).toContain("older connection");
+    expect(plan.blocked[0]?.reason).toContain("select only YouTube");
+    expect(plan.blocked[0]?.reason).toContain("does not renew this connection");
+  });
+
+  it("keeps unrelated products actionable on a usable legacy broad account", () => {
+    const broad = account([
+      OPENID,
+      GMAIL_SEND,
+      YOUTUBE,
+      YOUTUBE_ANALYTICS,
+    ]);
+    const plan = buildConsentPlan({
+      provider,
+      selectedProductKeys: ["workspace_files"],
+      account: broad,
+      rollout: rollout(),
+    });
+
+    expect(plan.request?.products.map(({ key }) => key)).toEqual([
+      "workspace_files",
+    ]);
+    expect(plan.blocked).toEqual([]);
   });
 
   it("a dead credential holding only YouTube renews that same account", () => {

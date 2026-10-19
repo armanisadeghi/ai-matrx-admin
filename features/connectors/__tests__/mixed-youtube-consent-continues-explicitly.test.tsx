@@ -114,11 +114,12 @@ function ConsentFixture() {
       presentation="dialog"
       onDone={jest.fn()}
       refetch={async () => {
-        setAccounts(
+        const next =
           run.mock.calls.length > 1
             ? [broadAccount, youtubeAccount]
-            : [broadAccount],
-        );
+            : [broadAccount];
+        setAccounts(next);
+        return next;
       }}
     />
   );
@@ -194,6 +195,52 @@ it("requires two explicit presses and sends YouTube only on the second one", asy
   expect(container.textContent).toContain("Done");
 });
 
+it("does not lose deferred YouTube intent through the same-tab fallback", async () => {
+  await act(async () => root.render(<ConsentFixture />));
+
+  await act(async () => click(buttonNamed("Pop-ups blocked? Continue in this tab")));
+
+  expect(runInThisTab).not.toHaveBeenCalled();
+  expect(container.textContent).toContain("two-step connection needs a pop-up");
+  expect(container.textContent).toContain("return here for YouTube");
+});
+
+it("does not advance to YouTube when the first step is only partially granted", async () => {
+  const partialAccount: ConnectorAccount = {
+    ...broadAccount,
+    grantedScopes: [...provider.identityScopes],
+  };
+  function PartialFixture() {
+    const [accounts, setAccounts] = useState<ConnectorAccount[]>([]);
+    return (
+      <ConnectorConsentBody
+        provider={provider}
+        accounts={accounts}
+        rollout={rollout}
+        isLoading={false}
+        rolloutUnavailable={false}
+        errorMessage={null}
+        initialProductKeys={["workspace_files", "gmail_send", "youtube"]}
+        onDone={jest.fn()}
+        refetch={async () => {
+          setAccounts([partialAccount]);
+          return [partialAccount];
+        }}
+      />
+    );
+  }
+  await act(async () => root.render(<PartialFixture />));
+  await act(async () => {
+    click(buttonNamed(provider.dialog.cta));
+    await Promise.resolve();
+  });
+
+  expect(run).toHaveBeenCalledTimes(1);
+  expect(container.textContent).not.toContain("Continue with YouTube");
+  expect(container.textContent).not.toContain("Done");
+  expect(container.textContent).toContain("did not grant this one");
+});
+
 it("keeps the continuation bound until the returned account can be confirmed", async () => {
   function MissingAccountFixture() {
     return (
@@ -216,15 +263,15 @@ it("keeps the continuation bound until the returned account can be confirmed", a
     await Promise.resolve();
   });
   expect(run).toHaveBeenCalledTimes(1);
-  expect(container.textContent).toContain("Continue with YouTube");
+  expect(container.textContent).not.toContain("Continue with YouTube");
+  expect(container.textContent).toContain("not available yet");
+  expect(container.textContent).toContain("Refresh connections");
 
   await act(async () => {
-    click(buttonNamed("Continue with YouTube"));
+    click(buttonNamed("Refresh connections"));
     await Promise.resolve();
   });
   expect(run).toHaveBeenCalledTimes(1);
-  expect(container.textContent).toContain("not available yet");
-  expect(container.textContent).toContain("Refresh your connections");
 });
 
 it("keeps YouTube pending when the second approval is canceled", async () => {
@@ -316,8 +363,8 @@ it("contains long diagnostics behind dismissible, bounded details", async () => 
   expect(detailsNode?.className).toContain("max-h-40");
   expect(detailsNode?.className).toContain("overflow-y-auto");
   expect(detailsNode?.textContent).toBe(details);
-  await act(async () =>
-    click(container.querySelector('[aria-label="Dismiss error"]')!),
-  );
+  const dismiss = container.querySelector('[aria-label="Dismiss error"]');
+  if (!dismiss) throw new Error("Missing dismiss error button");
+  await act(async () => click(dismiss));
   expect(container.querySelector('[role="alert"]')).toBeNull();
 });

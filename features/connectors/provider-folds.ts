@@ -36,7 +36,7 @@ export const PROVIDER_FOLDS: Readonly<Record<string, ProviderFold>> = {
 /** What the native card's own connection is called once it shares a card. */
 export const NATIVE_ABILITY_LABELS: Readonly<Record<string, string>> = {
   notion: "Formula values in imports",
-  slack: "Automations and posting as you",
+  slack: "Automations and posting",
   dropbox: "Browse and import files",
   box: "Browse and import files",
   microsoft: "Mail, calendar and files",

@@ -139,7 +139,9 @@ const ROLLOUT: ConnectorCapabilityRollout[] = [
 const EVERY_SCOPE = [
   ...new Set([
     ...provider.identityScopes,
-    ...provider.products.flatMap((product) => product.scopes),
+    ...provider.products
+      .filter((product) => product.key !== "youtube")
+      .flatMap((product) => product.scopes),
   ]),
 ];
 

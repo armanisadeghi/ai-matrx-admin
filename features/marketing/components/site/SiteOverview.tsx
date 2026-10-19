@@ -1,5 +1,6 @@
 "use client";
 
+import { EntityCustomFields } from "@/features/unified-data/components/EntityCustomFields";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
@@ -707,6 +708,8 @@ export function SiteOverview() {
                 association. Same component as the chat header's Records
                 popover — one mechanism, one badge, one archive control. */}
             <SiteRecordsSection siteId={site.id} siteName={site.name} />
+
+            <EntityCustomFields entityToken="web_site" recordId={site.id} organizationId={site.organization_id} />
 
             <ConnectionsStrip
               statuses={statuses}

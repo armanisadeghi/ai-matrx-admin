@@ -106,7 +106,6 @@ test("provider limits distinguish file imports from hosted MCP agent tools", asy
   expect(container.textContent).toContain(
     "browse and import its files into Matrx Files",
   );
-  expect(container.textContent).toContain("Agent tool connections are listed and managed separately in the directory.");
   expect(container.textContent).toContain(
     "only the Dropbox account that owns the approved app",
   );

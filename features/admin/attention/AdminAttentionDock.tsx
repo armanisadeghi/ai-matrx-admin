@@ -87,6 +87,7 @@ import { useScheduleAlarmSource } from "./sources/useScheduleAlarmSource";
 import { useDatedChangeSource } from "./sources/useDatedChangeSource";
 import { useDeployFreshnessSource } from "./sources/useDeployFreshnessSource";
 import { useToolHealthSource } from "./sources/useToolHealthSource";
+import { useWatchtowerSource } from "./sources/useWatchtowerSource";
 import { useDevServerFreshnessSource } from "./sources/useDevServerFreshnessSource";
 import { usePackageCopiesSource } from "./sources/usePackageCopiesSource";
 import { useSpendAlarmSource } from "./sources/useSpendAlarmSource";
@@ -143,12 +144,13 @@ export default function AdminAttentionDock() {
   const datedChanges = useDatedChangeSource(canRead);
   const deploys = useDeployFreshnessSource(canRead);
   const toolHealth = useToolHealthSource(canRead);
+  const watchtower = useWatchtowerSource(canRead);
   const spendAlarms = useSpendAlarmSource(canRead);
   const spendToday = useSpendTodaySource(canRead);
   const knownDomains = useKnownDomainSource(canRead);
   const devServer = useDevServerFreshnessSource(canRead);
   const packageCopies = usePackageCopiesSource(canRead);
-  const sources = [devServer, datedChanges, spendAlarms, spendToday, schedules, outages, deploys, toolHealth, knownDomains, packageCopies];
+  const sources = [devServer, datedChanges, spendAlarms, spendToday, schedules, outages, deploys, toolHealth, watchtower, knownDomains, packageCopies];
   const triageState = useAttentionTriage(canRead);
 
   // Destructured: the React compiler treats an object carrying a `ref` as a ref, so reading its
