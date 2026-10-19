@@ -57,3 +57,25 @@ describe("View changes", () => {
     expect(f.changesFlag).toBe("some");
   });
 });
+
+describe("a table's provenance is read from the table's own job (not only the Board tile's memory)", () => {
+  it("reads the input words, values kept as text, the trimming limit and the notices off the job", () => {
+    const spec = parseSpec({
+      id: "j9",
+      source_key: "trustpilot_reviews",
+      inputs: [{ url: "https://www.trustpilot.com/review/www.amazon.com", num_of_reviews_limit: 3 }],
+      max_records: 3,
+      status: "done",
+      result: { values_as_text: 4, limit_applied: { setting: "limits.max_records_per_fetch", value: 3 }, notices: ["Record key fell back to the URL"] },
+    })!;
+    expect(spec.inputWords).toBe("trustpilot.com/review/www.amazon.com");
+    expect(spec.valuesAsText).toBe(4);
+    expect(spec.limitApplied).toEqual({ setting: "limits.max_records_per_fetch", value: 3 });
+    expect(spec.notices).toEqual(["Record key fell back to the URL"]);
+  });
+  it("search inputs read as their words; a job with no result says nothing it did not store", () => {
+    const spec = parseSpec({ id: "j8", source_key: "google_maps_search", inputs: [{ keyword: "plumbers", country: "US" }], status: "fetching" })!;
+    expect(spec.inputWords).toBe("plumbers · US");
+    expect([spec.valuesAsText, spec.limitApplied, spec.notices]).toEqual([0, null, []]);
+  });
+});

@@ -935,6 +935,7 @@ export function UserBoard({
           layout={layoutMode}
           pages={outline.pages}
           onMoveChapter={layoutMode === "page" ? pageLayout.moveChapter : undefined}
+          onRenameChapter={(id, next) => board.updateFrame(id, { title: next })}
           chapterTop={layoutMode === "page" ? pageLayout.chapterTop : undefined}
           chapterIcons={chapterIcons}
           onClose={() => outline.onOpenChange(false)}
@@ -969,7 +970,7 @@ export function UserBoard({
       >
         <div
           ref={rootRef}
-          className="relative h-full min-h-0"
+          className="relative h-full min-h-0 matrx-touch-targets"
           onDragOver={onDragOver}
           onDragLeave={(e) => {
             if (e.currentTarget === e.target) setDropping(false);

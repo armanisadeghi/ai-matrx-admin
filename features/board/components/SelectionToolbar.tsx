@@ -202,7 +202,7 @@ export function SelectionToolbarDivider() {
 
 const buttonClass = (active?: boolean) =>
   cn(
-    "flex h-8 min-w-8 items-center justify-center gap-1 rounded-md px-1.5 text-muted-foreground hover:bg-accent hover:text-foreground",
+    "flex h-8 min-w-8 max-lg:min-w-11 pointer-coarse:min-w-11 items-center justify-center gap-1 rounded-md px-1.5 text-muted-foreground hover:bg-accent hover:text-foreground",
     active && "bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink",
   );
 
@@ -240,7 +240,7 @@ export function SelectionToolbarMenu({ label, trigger, children }: { label: stri
           {trigger}
         </button>
       </PopoverTrigger>
-      <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ data-board-chrome side="top" align="center" sideOffset={8} className="w-auto p-2">
+      <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ data-board-chrome side="top" align="center" sideOffset={8} className="w-auto p-2 matrx-touch-targets">
         {children}
       </PopoverContent>
     </Popover>

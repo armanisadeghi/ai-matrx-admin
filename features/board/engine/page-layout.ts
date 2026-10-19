@@ -16,7 +16,7 @@
  */
 
 import type { Rect } from "./camera";
-import { type Placed, frameAtTop, frameOf, readingOrder } from "./arrange";
+import { type Placed, frameAtTop, frameOf, readingOrder, stackOrder } from "./arrange";
 import { sameName } from "./tile-chrome";
 
 export type BoardLayoutMode = "canvas" | "page";
@@ -90,7 +90,7 @@ export interface PagePlan {
 function stack(items: readonly Placed[], x0: number, y0: number): { placed: Placed[]; height: number } {
   const placed: Placed[] = [];
   let y = y0;
-  for (const it of readingOrder(items)) {
+  for (const it of stackOrder(items)) {
     placed.push({ id: it.id, rect: { ...it.rect, x: Math.round(x0), y: Math.round(y) } });
     y += it.rect.h + PAGE_TILE_GAP;
   }

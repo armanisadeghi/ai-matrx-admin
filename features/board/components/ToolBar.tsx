@@ -119,7 +119,7 @@ export function ToolBar({
             <Ellipsis className="h-4 w-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-44" data-board-chrome>
+        <DropdownMenuContent align="start" className="w-44 matrx-touch-targets" data-board-chrome>
           {[...mainTools.filter((t) => !PHONE_TOOLS.includes(t)), ...shapeTools].map((tool) => {
             const Icon = ICON[tool];
             return (
@@ -147,7 +147,7 @@ export function ToolBar({
             <ChevronDown className="h-3 w-3" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-44" data-board-chrome>
+        <DropdownMenuContent align="start" className="w-44 matrx-touch-targets" data-board-chrome>
           {shapeTools.map((tool: ShapeTool, i) => {
             const Icon = ICON[tool];
             return (

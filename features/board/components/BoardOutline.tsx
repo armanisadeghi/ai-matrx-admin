@@ -26,6 +26,7 @@ import {
   NotebookText,
   Palette,
   PanelLeftClose,
+  Pencil,
   Plus,
   Ruler,
   SquareDashed,
@@ -94,6 +95,8 @@ interface OutlineProps {
   pages: OutlinePages | null;
   /** Page layout only: move a chapter up or down. */
   onMoveChapter?: (id: string, dir: -1 | 1) => void;
+  /** Rename a chapter from the rail (double-click its row, or its pencil): the frame's own title. Absent = not renamable here. */
+  onRenameChapter?: (id: string, title: string) => void;
   /** Page layout only: a chapter's top as planned for this view (runs a waiting re-flow first). */
   chapterTop?: (id: string) => number | null;
   /** Each chapter's own icon, by frame id (`chapterIconName`); absent = the neutral icon. */
@@ -152,9 +155,10 @@ function useActiveChapter(
   return { active: pinned ?? active, pin: (id: string) => setPin({ id, layout }) };
 }
 
-function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterTop, chapterIcons, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
+function OutlineBody({ frames, store, layout, pages, onMoveChapter, onRenameChapter, chapterTop, chapterIcons, onClose, fill = false }: OutlineProps & { fill?: boolean }) {
   const chapters = chapterOrder(frames);
   const { active, pin } = useActiveChapter(store, chapters, layout);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const go = (f: BoardFrame) => {
     if (!store) return;
     pin(f.id);
@@ -188,9 +192,36 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterTop, 
               const Icon = iconFor(chapterIcons?.[f.id]);
               return (
               <li key={f.id} className="group relative">
+                {renamingId === f.id && onRenameChapter ? (
+                  <div className="flex h-7 w-full items-center gap-2 rounded-md bg-accent px-2">
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    {/* ui-exception: a chapter's name typed in place in the rail (as on the frame); a raw short name */}
+                    <input
+                      aria-label="Chapter name"
+                      autoFocus
+                      defaultValue={f.title}
+                      onFocus={(e) => e.currentTarget.select()}
+                      onBlur={(e) => {
+                        const next = e.currentTarget.value.trim();
+                        setRenamingId(null);
+                        if (next && next !== f.title) onRenameChapter(f.id, next);
+                      }}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === "Enter") e.currentTarget.blur();
+                        else if (e.key === "Escape") {
+                          e.currentTarget.value = f.title ?? "";
+                          e.currentTarget.blur();
+                        }
+                      }}
+                      className="min-w-0 flex-1 rounded border border-primary bg-background px-1 text-[13px] text-foreground outline-none"
+                    />
+                  </div>
+                ) : (
                 <button
                   type="button"
                   onClick={() => go(f)}
+                  onDoubleClick={onRenameChapter ? () => setRenamingId(f.id) : undefined}
                   aria-current={active === f.id ? "true" : undefined}
                   data-board-chapter-icon={typeof chapterIcons?.[f.id] === "string" ? chapterIcons?.[f.id] : "type"}
                   className={cn(
@@ -201,8 +232,21 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterTop, 
                   <Icon className="h-3.5 w-3.5 shrink-0" />
                   <span className="min-w-0 flex-1 truncate">{f.title || "Untitled frame"}</span>
                 </button>
-                {onMoveChapter && chapters.length > 1 && (
-                  <span className="absolute right-0.5 top-1/2 hidden -translate-y-1/2 items-center group-hover:flex group-focus-within:flex">
+                )}
+                {renamingId !== f.id && (onRenameChapter || (onMoveChapter && chapters.length > 1)) && (
+                  <span className="absolute right-0.5 top-1/2 hidden -translate-y-1/2 items-center group-hover:flex group-focus-within:flex pointer-coarse:flex">
+                    {onRenameChapter && (
+                      <button
+                        type="button"
+                        onClick={() => setRenamingId(f.id)}
+                        title="Rename"
+                        aria-label={`Rename ${f.title || "frame"}`}
+                        className="flex h-6 w-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                    )}
+                    {onMoveChapter && chapters.length > 1 && (<>
                     <button
                       type="button"
                       disabled={i === 0}
@@ -223,6 +267,7 @@ function OutlineBody({ frames, store, layout, pages, onMoveChapter, chapterTop, 
                     >
                       <ChevronDown className="h-3.5 w-3.5" />
                     </button>
+                    </>)}
                   </span>
                 )}
               </li>

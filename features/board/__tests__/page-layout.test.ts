@@ -152,6 +152,24 @@ describe("pageLanding — new things in page layout", () => {
     expect(placed.y).toBeGreaterThan(nB.y);
   });
 
+  it("a new item wider or taller than a SHORT last row still lands after it (a column has rows only where tiles sit side by side)", () => {
+    const short = {
+      frames: [p("frame:S", 0, 0, 1100, 400)],
+      tiles: [p("first", 8, 40, 1084, 300), p("last", 8, 348, 1084, 40)],
+    };
+    const flowed = applied(short, planPageLayout(short).moves);
+    const lastRect = flowed.tiles.find((t) => t.id === "last")!.rect;
+    // Dropped by pageLanding under the chapter: its centered x is LEFT of the short last tile's x.
+    const fresh = p("fresh", 1600, 0, 1400, 900);
+    const frame = flowed.frames[0].rect;
+    const at = pageLanding(fresh.rect, flowed.frames, frame.y + 50, frame.y + frame.h)!;
+    expect(at.x).toBeLessThan(lastRect.x);
+    const withNew = { tiles: [...flowed.tiles, { id: "fresh", rect: { ...fresh.rect, ...at } }], frames: flowed.frames };
+    const after = applied(withNew, planPageLayout(withNew).moves);
+    const y = (id: string) => after.tiles.find((t) => t.id === id)!.rect.y;
+    expect([y("first"), y("last"), y("fresh")].every((v, i, all) => i === 0 || v > all[i - 1])).toBe(true);
+  });
+
   it("with no chapter in view, starts a new section at the bottom", () => {
     const at = pageLanding({ x: 1600, y: bottom + 400, w: 400, h: 300 }, scene.frames, bottom + 2000, bottom)!;
     expect(at.y).toBeGreaterThan(bottom);

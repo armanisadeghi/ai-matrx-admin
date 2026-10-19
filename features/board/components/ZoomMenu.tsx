@@ -74,7 +74,7 @@ export function ZoomMenu({ history, className, locked = false }: { history?: His
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52" data-board-chrome>
+      <DropdownMenuContent align="end" className="w-52 matrx-touch-targets" data-board-chrome>
         {!locked && (
         <>
         <DropdownMenuItem onSelect={() => zoomTo(store.getCamera().z * 1.25)}>

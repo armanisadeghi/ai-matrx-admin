@@ -56,7 +56,7 @@ export function useFetchSpec(tableId: string) {
       const { data, error } = await createClient()
         .schema("scraper")
         .from("data_fetch_job")
-        .select("id,source_key,max_records,status,rows_created,rows_updated,finished_at,created_at,result")
+        .select("id,source_key,inputs,max_records,status,rows_created,rows_updated,finished_at,created_at,result")
         .eq("table_id", tableId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false })

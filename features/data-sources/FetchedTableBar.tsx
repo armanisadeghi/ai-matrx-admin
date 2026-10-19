@@ -153,16 +153,19 @@ function Bar({
   };
 
   const label = catalogSource?.label ?? fetched?.sourceLabel ?? sourceKey;
-  const words = fetched?.input ? inputWords(fetched.input) : "";
+  // Where the rows came from is the TABLE's own newest job; the tile's memory only fills in before that reads.
+  const words = spec?.inputWords || (fetched?.input ? inputWords(fetched.input) : "");
   // The job's own times win (they are the truth after a reload); the tile's memory is the fallback.
   const when = spec?.finishedAt ?? spec?.createdAt ?? fetched?.fetchedAt ?? "";
   const facts = barFacts({ liveRows, spec, rememberedRows: fetched?.rows ?? null, refreshCount, limit: limit?.value ?? null, runBusy: run.status === "running" });
   const { rows, busy, allCount, showAll } = facts;
   // Refresh re-fetches the stored count (the newest N); when the table holds more than that, "all" is its own honest choice.
   const noun = recordNoun(label);
-  const textValues = fetched?.valuesAsText ?? 0;
-  const trimmed = fetched?.limitApplied ?? null;
-  const notices = fetched?.notices ?? [];
+  // The notes come from the newest job that FINISHED (a running one has no result yet).
+  const finishedJob = spec ? (spec.status === "done" ? spec : (spec.lastDone ?? null)) : null;
+  const textValues = finishedJob ? finishedJob.valuesAsText : (fetched?.valuesAsText ?? 0);
+  const trimmed = finishedJob ? finishedJob.limitApplied : (fetched?.limitApplied ?? null);
+  const notices = finishedJob && finishedJob.notices.length > 0 ? finishedJob.notices : (fetched?.notices ?? []);
   const settingHref = trimmed ? limitSettingHref(organizationId, trimmed.setting) : limit ? limitSettingHref(organizationId, limit.setting) : null;
 
   if (run.status === "failed") {

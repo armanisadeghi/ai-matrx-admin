@@ -63,7 +63,9 @@ function BoardsList() {
     <>
       <RecordPageHeader record={{ name: "Boards" }} />
       {mayLoad ? (
-        <EntityListPage config={boardListConfig} headerActions={actions} emptyAction={actions} />
+        <div className="contents matrx-touch-targets">
+          <EntityListPage config={boardListConfig} headerActions={actions} emptyAction={actions} />
+        </div>
       ) : (
         <div className="flex min-h-40 items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
           <Loader2 className="h-4 w-4 animate-spin" />

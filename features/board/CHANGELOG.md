@@ -1,5 +1,15 @@
 # CHANGELOG — Board (`features/board`)
 
+## 2026-10-19 — Board pending defects: agent form by name, phone touch floor, chapters, provenance
+
+- **An agent can start a form for a named agent:** `board_add_items` takes `agent` (an agent's NAME or id) on `agent-form` and `chat` entries (`BoardItemType.startWithAgent`; `tools/board-agent-resolve.ts` resolves it through the agent catalog — exact name, else the server search; an unknown, archived or ambiguous name is refused with the candidates, never a silent pick). Manifest text updated and synced (`matrx-user/board`, `--check` passes). Guard: `__tests__/board-add-agent-form.test.tsx`.
+- **Agent form fields are never cut short:** the tile passes `uncappedVariables` to `SmartAgentInput` (`@ai-matrx/chat`; Form, Inline and Compact layouts drop their `max-h-72` box for the tile, default unchanged elsewhere).
+- **Phone touch floor:** the board canvas root, its portaled menus (Add, tools, zoom, selection, tile "…"), the Start panel and the /board list carry `matrx-touch-targets` (44px under a coarse pointer or below `lg`; desktop density unchanged); the selection bar's `min-w-8` no longer beats it. Guard: `__tests__/phone-tap-targets.test.ts`. The shell/chat-workspace header (menu, title, Comment) belongs to the shell.
+- **Chapters:** a new item dropped under a short last row stacks after it (`stackOrder`); a chapter is renamed from the outline (double-click or pencil).
+- **Get data provenance is read from the table** (`scraper.data_fetch_job`: input words, values kept as text, limit trim, notices), not only the tile's memory.
+- **Remount re-reads:** `resumeConversation` (`@ai-matrx/chat`) treats a server-hydrated conversation as live even with no messages yet, so a chat / agent-form tile waking or remounting no longer re-reads `chat.conversation`.
+- FEATURE.md: the 31 item types listed; Open #12 decided (Form stays the default, the switch stays); done Open items pruned.
+
 ## 2026-10-19 — Scroll ownership latch; generous heights
 
 - **A scroll starts and ends with what it started on:** wheel gesture latch (`WheelLatch` in `engine/wheel-input.ts`, 200 ms) replaces "wheel over a tile never moves the board". Board-started gestures pan over scrollable tiles; element-started gestures scroll the element and stop at its end; tiles with nothing to scroll belong to the board. Touch follows the same rule.

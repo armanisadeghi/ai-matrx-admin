@@ -90,7 +90,7 @@ export function TileMenu({ title, typeLabel, href, comment, actions = [], focuse
         </PopoverAnchor>
         <DropdownMenuContent
           align="end"
-          className="min-w-52"
+          className="min-w-52 matrx-touch-targets"
           onClick={(e) => e.stopPropagation()}
           onCloseAutoFocus={(e) => {
             // Opening the thread: the focus stays with the popover, not back on the trigger.
@@ -135,7 +135,7 @@ export function TileMenu({ title, typeLabel, href, comment, actions = [], focuse
         </DropdownMenuContent>
       </DropdownMenu>
       {comment && (
-        <PopoverContent sizing="content" className="max-h-96 overflow-y-auto p-3" align="end" onClick={(e) => e.stopPropagation()}>
+        <PopoverContent sizing="content" className="max-h-96 overflow-y-auto p-3 matrx-touch-targets" align="end" onClick={(e) => e.stopPropagation()}>
           {comment.note ? <p className="mb-2 truncate text-xs text-muted-foreground">{comment.note}</p> : null}
           {comment.thread}
         </PopoverContent>

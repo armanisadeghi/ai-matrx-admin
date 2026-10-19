@@ -129,7 +129,7 @@ export function AddMenu({ types, more = [], onStartNew, onBringIn, canvasTools, 
           <ChevronDown className="h-3 w-3 opacity-80" />
         </button>
       </PopoverTrigger>
-      <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ align="start" className="w-80 p-0" data-board-chrome>
+      <PopoverContent /* sizing: fixed — a fixed-measure panel on purpose; its rows truncate inside the box */ align="start" className="w-80 p-0 matrx-touch-targets" data-board-chrome>
         <Command
           shouldFilter={false}
           loop
@@ -268,7 +268,7 @@ export function StartPanel({ types, more = [], onStartNew, onBringIn, onCanvasTe
       <section
         data-board-chrome
         aria-label="Start working on your board"
-        className="pointer-events-auto max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card/95 p-6 shadow-xl backdrop-blur"
+        className="pointer-events-auto matrx-touch-targets max-h-full w-full max-w-2xl overflow-y-auto rounded-2xl border border-border bg-card/95 p-6 shadow-xl backdrop-blur"
       >
         <h2 className="text-xl font-semibold tracking-tight text-foreground">What do you want to work on?</h2>
         <p className="mt-1 text-sm text-muted-foreground">

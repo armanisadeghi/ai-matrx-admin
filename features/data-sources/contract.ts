@@ -294,6 +294,14 @@ export interface DataFetchSpec {
   createdAt: string | null;
   /** What the newest fetch changed (counts), from its stored result. */
   changes: ChangeSummary | null;
+  /** What the job asked for, in words (an address, or the search words): the table's own provenance, never the tile's memory. */
+  inputWords: string;
+  /** Values the table kept as text, from the job's stored result. */
+  valuesAsText: number;
+  /** The limit that trimmed the fetch (job result), or null. */
+  limitApplied: DataLimit | null;
+  /** The server's honest notes about the fetch (job result). */
+  notices: string[];
   /** The newest job that FINISHED (done), when the newest job is still running or was refused: "View changes" reads this one. */
   lastDone?: DataFetchSpec | null;
 }
@@ -310,6 +318,7 @@ export function parseSpec(row: unknown): DataFetchSpec | null {
   const jobId = str(r.id);
   const sourceKey = str(r.source_key);
   if (!jobId || !sourceKey) return null;
+  const result = r.result && typeof r.result === "object" ? (r.result as Record<string, unknown>) : {};
   return {
     jobId,
     sourceKey,
@@ -319,8 +328,26 @@ export function parseSpec(row: unknown): DataFetchSpec | null {
     rowsUpdated: num(r.rows_updated) ?? 0,
     finishedAt: str(r.finished_at),
     createdAt: str(r.created_at),
-    changes: parseSummary((r.result && typeof r.result === "object" ? (r.result as Record<string, unknown>) : {}).changes),
+    changes: parseSummary(result.changes),
+    inputWords: specInputWords(r.inputs),
+    valuesAsText: num(result.values_as_text) ?? 0,
+    limitApplied: limitOf(result.limit_applied),
+    notices: Array.isArray(result.notices) ? result.notices.filter((n): n is string => typeof n === "string" && n.trim() !== "") : [],
   };
+}
+
+/** The job's `inputs` (an array of objects, each an address or search words) as one line. */
+export function specInputWords(inputs: unknown): string {
+  if (!Array.isArray(inputs)) return "";
+  const words = inputs.flatMap((one) => {
+    if (!one || typeof one !== "object") return [];
+    const o = one as Record<string, unknown>;
+    const url = str(o.url);
+    if (url) return [inputWords({ url })];
+    const rest = Object.values(o).filter((v) => typeof v === "string" || typeof v === "number").join(" · ");
+    return rest ? [rest] : [];
+  });
+  return words.join(", ");
 }
 
 /** A table made by "Get data", as the Data tile of the Source input lists it. */

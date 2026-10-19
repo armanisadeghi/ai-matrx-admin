@@ -35,6 +35,32 @@ export function readingOrder(items: readonly Placed[], slop = 80): Placed[] {
 }
 
 /**
+ * Reading order for a COLUMN of cards (page layout's chapter stack): items share a row only when they
+ * really sit side by side — a top within `slop` of the row's first top AND above that first item's
+ * bottom. A thing that lands below a short last row (a new tile dropped under the chapter) is a new
+ * row, never "the same row, left of it" because its centered x happens to be smaller.
+ */
+export function stackOrder(items: readonly Placed[], slop = 80): Placed[] {
+  const byTop = [...items].sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x);
+  const out: Placed[] = [];
+  let row: Placed[] = [];
+  const flush = () => {
+    out.push(...row.sort((a, b) => a.rect.x - b.rect.x));
+    row = [];
+  };
+  for (const it of byTop) {
+    const first = row[0];
+    if (first && it.rect.y - first.rect.y <= slop && it.rect.y < first.rect.y + first.rect.h) row.push(it);
+    else {
+      flush();
+      row = [it];
+    }
+  }
+  flush();
+  return out;
+}
+
+/**
  * Lay items out. Order is reading order, so an arrangement keeps the sequence
  * people already see.
  *  - row / column: one line, `gap` apart.
