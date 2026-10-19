@@ -117,8 +117,17 @@ def _index_lock_is_stale(err):
         age = time.time() - os.path.getmtime(m.group(1))
     except OSError:
         return False  # gone already: the next try will take it
-    alive = subprocess.run(["pgrep", "-x", "git"], capture_output=True).returncode == 0
-    return not alive and age >= INDEX_LOCK_STALE_S
+    if age < INDEX_LOCK_STALE_S:
+        return False
+    # Alive = a git process whose cwd is inside THIS repository (git machine-wide is always busy).
+    root = os.path.realpath(os.path.dirname(os.path.dirname(m.group(1))))
+    pids = subprocess.run(["pgrep", "-x", "git"], capture_output=True, text=True).stdout.split()
+    for pid in pids:
+        cwd = subprocess.run(["lsof", "-a", "-p", pid, "-d", "cwd", "-Fn"], capture_output=True, text=True).stdout
+        for line in cwd.splitlines():
+            if line.startswith("n") and (os.path.realpath(line[1:]) + "/").startswith(root + "/"):
+                return False
+    return True
 
 
 def git(*args, check=True, raw=False, stdin=None):
