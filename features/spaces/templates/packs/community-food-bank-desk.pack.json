@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0554",
-  "version": 1,
+  "version": 2,
   "title": "Community Food Bank Desk",
-  "description": "Donations in, stock on hand, distribution days and households served.",
+  "description": "For food pantries and food banks: donations, stock, distribution days, partners.",
   "forWho": "Food banks and neighborhood food pantries",
   "icon": {
     "emoji": "🥫"
@@ -15,9 +15,11 @@
   "category": "nonprofit",
   "tags": [
     "food bank",
-    "pantry",
-    "inventory",
-    "distribution"
+    "food pantry",
+    "pantry coordinator",
+    "volunteers",
+    "donations",
+    "nonprofit"
   ],
   "spec": {
     "specVersion": 1,
@@ -528,6 +530,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "donor",
+            "label": "Donor",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -583,6 +592,15 @@
             ],
             "sensitivity": "internal",
             "contextPolicy": "include"
+          },
+          {
+            "key": "inkind",
+            "label": "In-kind value (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Pounds} * 1.93, 2)",
+            "description": "Pounds times $1.93, a common per-pound value for donated food. Change the rate to your own."
           },
           {
             "key": "inspected",
@@ -728,7 +746,8 @@
               "expected_on": "@today",
               "pounds": 300,
               "inspected": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "Hillcrest Market"
             }
           },
           {
@@ -740,7 +759,8 @@
               "status": "Expected",
               "expected_on": "@today+2d",
               "pounds": 500,
-              "inspected": false
+              "inspected": false,
+              "donor": "Ridgeway Orchard"
             }
           },
           {
@@ -753,7 +773,8 @@
               "expected_on": "@today+4d",
               "pounds": 260,
               "inspected": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "St. Brendan School"
             }
           },
           {
@@ -765,7 +786,8 @@
               "status": "Expected",
               "expected_on": "@today-1d",
               "pounds": 1200,
-              "inspected": false
+              "inspected": false,
+              "donor": "Lakeline Foods wholesale"
             }
           },
           {
@@ -778,7 +800,8 @@
               "expected_on": "@today+6d",
               "pounds": 180,
               "inspected": false,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "Ortiz family"
             }
           },
           {
@@ -790,7 +813,8 @@
               "status": "Expected",
               "expected_on": "@today+1d",
               "pounds": 120,
-              "inspected": false
+              "inspected": false,
+              "donor": "Milwaukee-area regional food bank"
             }
           },
           {
@@ -803,7 +827,8 @@
               "received_on": "@today-7d",
               "pounds": 310,
               "inspected": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "Hillcrest Market"
             }
           },
           {
@@ -815,7 +840,8 @@
               "status": "Received",
               "received_on": "@today-3d",
               "pounds": 45,
-              "inspected": true
+              "inspected": true,
+              "donor": "Riverside Lutheran food drive"
             }
           },
           {
@@ -828,7 +854,8 @@
               "received_on": "@today-12d",
               "pounds": 800,
               "inspected": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "Greenleaf Farm CSA"
             }
           },
           {
@@ -840,7 +867,8 @@
               "status": "Received",
               "received_on": "@today-9d",
               "pounds": 600,
-              "inspected": true
+              "inspected": true,
+              "donor": "Pell Street Grocery"
             }
           },
           {
@@ -853,7 +881,8 @@
               "received_on": "@today-5d",
               "pounds": 0,
               "inspected": true,
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "donor": "Eastbank Rotary"
             }
           }
         ]
@@ -1341,6 +1370,50 @@
             "contextPolicy": "include"
           },
           {
+            "key": "diet",
+            "label": "Dietary needs",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Halal",
+              "Vegetarian",
+              "Diabetic friendly",
+              "Low sodium",
+              "Baby formula",
+              "No pork"
+            ],
+            "choiceColors": {
+              "Halal": "blue",
+              "Vegetarian": "green",
+              "Diabetic friendly": "amber",
+              "Low sodium": "violet",
+              "Baby formula": "teal",
+              "No pork": "orange"
+            }
+          },
+          {
+            "key": "language",
+            "label": "Language",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "English",
+              "Spanish",
+              "Hmong",
+              "Arabic",
+              "Burmese"
+            ],
+            "choiceColors": {
+              "English": "blue",
+              "Spanish": "green",
+              "Hmong": "amber",
+              "Arabic": "violet",
+              "Burmese": "teal"
+            }
+          },
+          {
             "key": "zone",
             "label": "Neighborhood",
             "parityType": "select",
@@ -1485,7 +1558,7 @@
           {
             "key": "household-1",
             "values": {
-              "house_name": "Household 1041",
+              "house_name": "Okafor household (1041)",
               "status": "Active",
               "people": 4,
               "zone": "Eastbank",
@@ -1493,52 +1566,67 @@
               "next_visit": "@today",
               "needs_delivery": false,
               "phone": "(414) 555-0141",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "diet": [
+                "Halal",
+                "No pork"
+              ],
+              "language": "Arabic"
             }
           },
           {
             "key": "household-2",
             "values": {
-              "house_name": "Household 1042",
+              "house_name": "Lindgren household (1042)",
               "status": "Active",
               "people": 2,
               "zone": "Riverside",
               "last_visit": "@today-14d",
               "next_visit": "@today+2d",
               "needs_delivery": false,
-              "phone": "(414) 555-0142"
+              "phone": "(414) 555-0142",
+              "language": "English"
             }
           },
           {
             "key": "household-3",
             "values": {
-              "house_name": "Household 1043",
+              "house_name": "Ramirez-Soto household (1043)",
               "status": "Registered",
               "people": 5,
               "zone": "Hawthorne",
               "next_visit": "@today",
               "needs_delivery": false,
               "phone": "(414) 555-0143",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "diet": [
+                "Baby formula"
+              ],
+              "language": "Spanish"
             }
           },
           {
             "key": "household-4",
             "values": {
-              "house_name": "Household 1044",
+              "house_name": "Mr. and Mrs. Kowalski (1044)",
               "status": "Active",
               "people": 1,
               "zone": "Old Mill",
               "last_visit": "@today-3d",
               "next_visit": "@today+4d",
               "needs_delivery": true,
-              "phone": "(414) 555-0144"
+              "phone": "(414) 555-0144",
+              "diet": [
+                "Diabetic friendly",
+                "Low sodium"
+              ],
+              "language": "English"
             }
           },
           {
             "key": "household-5",
             "values": {
-              "house_name": "Household 1045",
+              "house_name": "Vang household (1045)",
               "status": "Active",
               "people": 3,
               "zone": "Eastbank",
@@ -1546,72 +1634,281 @@
               "next_visit": "@today-1d",
               "needs_delivery": false,
               "phone": "(414) 555-0145",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "language": "Hmong"
             }
           },
           {
             "key": "household-6",
             "values": {
-              "house_name": "Household 1046",
+              "house_name": "Ashworth household (1046)",
               "status": "Paused",
               "people": 6,
               "zone": "Riverside",
               "last_visit": "@today-60d",
               "next_visit": "@today+30d",
               "needs_delivery": false,
-              "phone": "(414) 555-0146"
+              "phone": "(414) 555-0146",
+              "diet": [
+                "Vegetarian"
+              ],
+              "language": "English"
             }
           },
           {
             "key": "household-7",
             "values": {
-              "house_name": "Household 1047",
+              "house_name": "Delgado household (1047)",
               "status": "Registered",
               "people": 2,
               "zone": "Hawthorne",
               "next_visit": "@today+3d",
               "needs_delivery": true,
               "phone": "(414) 555-0147",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "language": "Spanish"
             }
           },
           {
             "key": "household-8",
             "values": {
-              "house_name": "Household 1048",
+              "house_name": "Ms. Pryor (1048)",
               "status": "Active",
               "people": 4,
               "zone": "Eastbank",
               "last_visit": "@today-6d",
               "next_visit": "@today+1d",
               "needs_delivery": false,
-              "phone": "(414) 555-0148"
+              "phone": "(414) 555-0148",
+              "diet": [
+                "Low sodium"
+              ],
+              "language": "English"
             }
           },
           {
             "key": "household-9",
             "values": {
-              "house_name": "Household 1049",
+              "house_name": "Htoo household (1049)",
               "status": "Moved",
               "people": 3,
               "zone": "Outside service area",
               "last_visit": "@today-200d",
               "needs_delivery": false,
               "phone": "(414) 555-0149",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "diet": [
+                "Baby formula",
+                "Halal"
+              ],
+              "language": "Burmese"
             }
           },
           {
             "key": "household-10",
             "values": {
-              "house_name": "Household 1050",
+              "house_name": "Brennan household (1050)",
               "status": "Active",
               "people": 2,
               "zone": "Old Mill",
               "last_visit": "@today-10d",
               "next_visit": "@today+5d",
               "needs_delivery": false,
-              "phone": "(414) 555-0150"
+              "phone": "(414) 555-0150",
+              "language": "English"
+            }
+          }
+        ]
+      },
+      {
+        "token": "partner",
+        "name": "Partner agencies",
+        "labelSingular": "Partner",
+        "labelPlural": "Partner agencies",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "handshake",
+        "titleField": "partner_name",
+        "describes": "Shelters, senior sites, schools and smaller pantries that pick up food from you to give out.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "before": [
+          [
+            "last_pickup",
+            "next_pickup"
+          ]
+        ],
+        "fields": [
+          {
+            "key": "partner_name",
+            "label": "Partner",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "kind",
+            "label": "Kind",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Senior meal site",
+              "After-school snacks",
+              "Shelter",
+              "School backpacks",
+              "Community fridge",
+              "Mobile pantry"
+            ],
+            "choiceColors": {
+              "Senior meal site": "blue",
+              "After-school snacks": "green",
+              "Shelter": "amber",
+              "School backpacks": "violet",
+              "Community fridge": "teal",
+              "Mobile pantry": "orange"
+            }
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Applying",
+              "Active",
+              "Paused"
+            ],
+            "choiceColors": {
+              "Applying": "blue",
+              "Active": "green",
+              "Paused": "amber"
+            }
+          },
+          {
+            "key": "monthly_lb",
+            "label": "Monthly pounds",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ]
+          },
+          {
+            "key": "last_pickup",
+            "label": "Last pickup",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "next_pickup",
+            "label": "Next pickup",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "contact",
+            "label": "Contact",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "partner-1",
+            "values": {
+              "partner_name": "Hawthorne Senior Center",
+              "kind": "Senior meal site",
+              "status": "Active",
+              "monthly_lb": 1200,
+              "last_pickup": "@today-6d",
+              "next_pickup": "@today+1d",
+              "contact": "Delia Marchetti"
+            }
+          },
+          {
+            "key": "partner-2",
+            "values": {
+              "partner_name": "Riverside Youth Club",
+              "kind": "After-school snacks",
+              "status": "Active",
+              "monthly_lb": 450,
+              "last_pickup": "@today-12d",
+              "next_pickup": "@today+2d",
+              "contact": "Owen Tabor"
+            }
+          },
+          {
+            "key": "partner-3",
+            "values": {
+              "partner_name": "Old Mill Family Shelter",
+              "kind": "Shelter",
+              "status": "Active",
+              "monthly_lb": 2100,
+              "last_pickup": "@today-3d",
+              "next_pickup": "@today+4d",
+              "contact": "Priya Mendel"
+            }
+          },
+          {
+            "key": "partner-4",
+            "values": {
+              "partner_name": "St. Brendan backpack program",
+              "kind": "School backpacks",
+              "status": "Active",
+              "monthly_lb": 800,
+              "last_pickup": "@today-8d",
+              "next_pickup": "@today+6d",
+              "contact": "Sister Anne Coyle"
+            }
+          },
+          {
+            "key": "partner-5",
+            "values": {
+              "partner_name": "Eastbank Community Fridge",
+              "kind": "Community fridge",
+              "status": "Paused",
+              "monthly_lb": 300,
+              "last_pickup": "@today-40d",
+              "next_pickup": "@today+20d",
+              "contact": "Luis Ferrante"
+            }
+          },
+          {
+            "key": "partner-6",
+            "values": {
+              "partner_name": "Northgate Mobile Pantry",
+              "kind": "Mobile pantry",
+              "status": "Applying",
+              "monthly_lb": 0,
+              "last_pickup": "@today-90d",
+              "next_pickup": "@today+14d",
+              "contact": "Hana Okoro"
             }
           }
         ]
@@ -2190,6 +2487,35 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_partner",
+        "name": "All partners",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "partner"
+      },
+      {
+        "token": "partner_board",
+        "name": "Partners by status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "partner"
+      },
+      {
+        "token": "partner_next7",
+        "name": "Pickups in the next 7 days",
+        "kind": "grid",
+        "within": {
+          "next_pickup": {
+            "relative": "next_days",
+            "n": 7
+          }
+        },
+        "table": "partner",
+        "filters": {
+          "status": "Active"
+        }
       }
     ],
     "agent": {
@@ -2262,6 +2588,18 @@
           "surface": "distribution_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open partner agencies.",
+        "action": {
+          "kind": "open",
+          "surface": "partner_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "partner_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2278,7 +2616,7 @@
         "Hawthorne Row"
       ]
     },
-    "version": 1
+    "version": 2
   },
   "pages": [
     {
@@ -2300,12 +2638,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The pantry's week in one place: what is coming in, what is on the shelves, which distribution days are planned and which households are due. Start with the Dashboard each Monday. Weigh and record every donation the day it arrives, and fill in counts before volunteers leave a distribution day."
+              "text": "Run the pantry from here. Donations come in and are weighed and dated; Stock shows what is below target and what expires first; Distribution days records households served and pounds given out; Partner agencies shows who picks up this week. The Dashboard has the numbers your board and funders ask for."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2849,6 +3193,326 @@
             ],
             "activeViewId": "hou-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Partner agencies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Shelters, senior sites and school programs that pick up food from you."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "partner",
+              "view": "partner_board"
+            },
+            "inline": true,
+            "title": "Partner agencies",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pa-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "pa-n",
+                "name": "Pickups next 7 days",
+                "layout": "list",
+                "icon": "Clock",
+                "within": {
+                  "next_pickup": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "filters": {
+                  "status": "Active"
+                }
+              },
+              {
+                "id": "pa-t",
+                "name": "All partners",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pa-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "community-food-bank-desk",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the pantry runs in this workspace. Share it with the operations lead, the warehouse coordinator, the distribution day leads and donor relations."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stock",
+              "bold": true
+            },
+            {
+              "text": ": each stock line with pounds on hand, the pounds you want on hand, the soonest best-by date and the shelf."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Donations",
+              "bold": true
+            },
+            {
+              "text": ": everything expected and received, with donor, source, pounds and in-kind value."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Distribution days",
+              "bold": true
+            },
+            {
+              "text": ": each day, its site, lead, volunteers, households served and pounds given out."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Households",
+              "bold": true
+            },
+            {
+              "text": ": registered households, people in the home, neighborhood, dietary needs, language, last and next eligible visit."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Partner agencies",
+              "bold": true
+            },
+            {
+              "text": ": shelters, senior sites, schools and smaller pantries that pick up food from you."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Donations arrive and are weighed, checked and marked received."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The warehouse coordinator updates stock levels and the soonest best-by date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before each distribution day, the day lead checks stock and volunteers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the day: open doors, serve households, record households and pounds, mark done."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Partner agencies pick up on their scheduled days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, stock below target, food expiring this week"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Before each distribution: volunteers confirmed, produce pulled"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: partner pickups for next week, cooler and freezer logs"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: pounds in and out, households served, in-kind value for donor reports"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dignity first"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask families only what your program needs. Keep the household list private. Let people choose their food where you can; a client-choice table wastes less food and feels better to everyone."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename sites, neighborhoods and stock categories to match your pantry, and delete the sample rows once your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reports for funders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most funders ask for the same four numbers: households served, people served, pounds distributed and the value of donated food. The Dashboard charts and the Distribution days and Donations tables give you all four; filter them to the month or quarter you report on."
+            }
+          ]
         }
       ]
     },
@@ -3249,6 +3913,86 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pounds given out by site"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "distribution",
+              "view": "all_distribution"
+            },
+            "inline": true,
+            "title": "Distribution days",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c8",
+                "name": "Pounds by site",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "site",
+                  "op": "sum",
+                  "field": "pounds_out"
+                }
+              }
+            ],
+            "activeViewId": "view-c8"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Donations by source"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "donation",
+              "view": "all_donation"
+            },
+            "inline": true,
+            "title": "Donations",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c9",
+                "name": "Pounds by source",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "source",
+                  "op": "sum",
+                  "field": "pounds"
+                }
+              }
+            ],
+            "activeViewId": "view-c9"
+          }
         }
       ]
     },
@@ -3267,13 +4011,55 @@
           "type": "callout",
           "text": [
             {
-              "text": "Every pound that enters the building is weighed, dated and recorded. That one habit keeps shelves honest and donors thanked."
+              "text": "Every pound that comes through the door is weighed, checked and dated before it reaches a shelf. It keeps people safe and gives you the numbers funders ask for."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before it arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Expected pickups and drop-offs are on the Donations board as "
+            },
+            {
+              "text": "Expected",
+              "bold": true
+            },
+            {
+              "text": ", with the donor and the stock line they will fill."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Make sure there is room: check the Stock board for the shelf, the cooler or the freezer it needs."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For a big food drive, ask the organizer to sort by type into boxes and to leave out glass, home-canned food and open packages."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -3287,42 +4073,101 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Weigh the delivery and open the Donations table. Find the expected row or add a new one."
+              "text": "Weigh everything and write the "
+            },
+            {
+              "text": "Pounds",
+              "bold": true
+            },
+            {
+              "text": " on the donation"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Check dates, dented cans and cold-chain items. Set aside anything unsafe and write why in the notes."
+              "text": "Check the temperature of chilled food (41 F or below) and frozen food (solid, 0 F)"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Link the donation to the stock line it belongs on, or add a new stock line."
+              "text": "Look for dented seams, bulging or leaking cans, torn packages and pests"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Press Mark received. Then update Pounds on hand on the stock line."
+              "text": "Check dates; follow your regional food bank's guide for how long past best-by each item is still fine"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tick "
+            },
+            {
+              "text": "Inspected and dated",
+              "bold": true
+            },
+            {
+              "text": ", then press "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Turn away anything unsafe and set the donation to "
+            },
+            {
+              "text": "Turned away",
+              "bold": true
+            },
+            {
+              "text": ", with the reason"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Afterwards"
+              "text": "Thanking donors"
             }
           ],
           "props": {
@@ -3330,26 +4175,74 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Thank the donor the same week."
+              "text": "Thank every donor the same week. The "
+            },
+            {
+              "text": "In-kind value",
+              "bold": true
+            },
+            {
+              "text": " on each donation (pounds times a per-pound rate) gives grocery partners and food drives a number for their own reports; adjust the rate in the formula to match your regional food bank's figure. Large donors get a letter with the total for the year."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Rotate older stock to the front of the shelf."
+              "text": "Shelving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "First in, first out: new stock goes behind older stock. Write the soonest best-by date on the stock line so the Dashboard shows what to give out first. Produce and dairy go out at the next distribution day."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Keep a tally of anything turned away so you can explain why."
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Tuesday morning the grocer pickup arrives: 340 pounds of canned vegetables, bread and yogurt. A volunteer weighs each type, finds two bulging cans and discards them, checks the yogurt at 38 F, and marks the donation received. The canned vegetables line moves back to Well stocked, and the yogurt goes straight to the cooler for the afternoon distribution."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Volunteers on receiving"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Pair a new volunteer with someone experienced for their first two shifts. Lifting rules: bend the knees, two people for anything over 40 pounds, and never stack higher than shoulder height."
             }
           ]
         }
@@ -3370,7 +4263,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Distribution day is where everything the team has done meets the neighbors it was done for. The goal is a calm line and a dignified experience."
+              "text": "A good distribution day feels calm to the families in line: they know where to go, the wait is short, and nobody is made to feel ashamed. The plan below makes that happen."
             }
           ],
           "background": "blue",
@@ -3382,7 +4275,50 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before doors open"
+              "text": "The day before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the distribution day on the board: site, doors open time, the day lead and how many volunteers are scheduled."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Look at Stock for anything Low or Out and decide what to substitute."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pull produce and dairy that must go out first."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Confirm volunteers by text; you need roughly one volunteer for every 15 households expected."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setup, an hour before doors open"
             }
           ],
           "props": {
@@ -3393,7 +4329,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Open the distribution row and press Open doors"
+              "text": "Tables in a loop: check-in, then dry goods, then protein, then produce and dairy"
             }
           ],
           "props": {
@@ -3404,7 +4340,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check the cooler temperature and write it down"
+              "text": "Cooler items stay in the cooler until doors open"
             }
           ],
           "props": {
@@ -3415,7 +4351,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Set up tables from fresh to dry, so cold items go last"
+              "text": "Check-in table with the household list, a pen and a translator if one is available"
             }
           ],
           "props": {
@@ -3426,7 +4362,32 @@
           "type": "todo",
           "text": [
             {
-              "text": "Brief greeters: friendly, no questions about why someone is here"
+              "text": "Signs in the languages your households speak (see "
+            },
+            {
+              "text": "Language",
+              "bold": true
+            },
+            {
+              "text": " on Households)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Day lead presses "
+            },
+            {
+              "text": "Open doors",
+              "bold": true
+            },
+            {
+              "text": " when the first family is welcomed"
             }
           ],
           "props": {
@@ -3437,7 +4398,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "While open"
+              "text": "Check-in"
             }
           ],
           "props": {
@@ -3448,7 +4409,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check each household in using its number, not its name, where possible."
+              "text": "Find the household, confirm the number of people, and note any "
+            },
+            {
+              "text": "Dietary needs",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3456,7 +4424,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Offer choice where you can: a table with options beats a pre-packed box."
+              "text": "New households: register them with only what you need (people in the home, neighborhood, phone). Never ask for more than your program requires."
             }
           ]
         },
@@ -3464,7 +4432,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Keep a clear path for people using wheelchairs and strollers."
+              "text": "Households outside the service area are still served today and given the name of their nearest pantry."
             }
           ]
         },
@@ -3472,7 +4440,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After closing"
+              "text": "During distribution"
             }
           ],
           "props": {
@@ -3480,48 +4448,132 @@
           }
         },
         {
-          "type": "todo",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Enter households served and pounds given out"
+              "text": "Count households served as they pass the last table."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Weigh what goes out, or weigh what comes back at the end and subtract it from what went on the tables."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Watch the line: if it is longer than twenty minutes, open a second check-in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Update stock on hand for the big items"
+              "text": "Enter "
+            },
+            {
+              "text": "Households served",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Pounds given out",
+              "bold": true
+            },
+            {
+              "text": ", then press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ". The "
+            },
+            {
+              "text": "Pounds per household",
+              "bold": true
+            },
+            {
+              "text": " works itself out."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Return chilled food to the cooler within two hours of doors opening."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update each household's "
+            },
+            {
+              "text": "Last visit",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Next eligible visit",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Thank the volunteers before they leave."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
-            "checked": false
+            "level": 2
           }
         },
         {
-          "type": "todo",
+          "type": "text",
           "text": [
             {
-              "text": "Note what ran out first"
+              "text": "At the Tuesday evening distribution, 96 households come through in two hours with eight volunteers. The team gives out 2,310 pounds, about 24 pounds per household. Canned protein runs low by the end, so the day lead adds it to the next wholesale order."
             }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Thank every volunteer by name"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         }
       ]
     },
@@ -3540,7 +4592,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Safe food is not optional. Follow your local health rules; this page is a working reminder, not a replacement for them."
+              "text": "Food given out by a pantry has to be as safe as food sold in a store. These are the habits every volunteer learns on their first day."
             }
           ],
           "background": "blue",
@@ -3552,7 +4604,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Keep it cold, keep it clean"
+              "text": "Temperatures"
             }
           ],
           "props": {
@@ -3563,7 +4615,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check cooler and freezer temperatures at open and close and write them down."
+              "text": "Fridge and cooler: 41 F or colder. Freezer: 0 F or colder. Check and write the readings at the start and end of every shift."
             }
           ]
         },
@@ -3571,7 +4623,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Wash hands before handling food and after handling boxes."
+              "text": "Chilled and frozen food never sits out more than two hours, and less on a hot day."
             }
           ]
         },
@@ -3579,7 +4631,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Never give out food past a date your local rules say must be discarded."
+              "text": "If a cooler fails, move the food to another cooler right away, and throw out anything that warmed above 41 F for more than four hours."
             }
           ]
         },
@@ -3587,7 +4639,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When in doubt"
+              "text": "Storage"
             }
           ],
           "props": {
@@ -3595,83 +4647,178 @@
           }
         },
         {
-          "type": "table",
+          "type": "todo",
+          "text": [
+            {
+              "text": "Everything at least six inches off the floor and away from the walls"
+            }
+          ],
           "props": {
-            "headerRow": true,
-            "headerColumn": false,
-            "rows": [
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Situation"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "What to do"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Dented or swollen can"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Set aside and discard; note it on the donation"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Thawed frozen food"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Do not refreeze; follow local guidance or discard"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Missing date"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Ask the donor; if unknown, do not distribute"
-                    }
-                  ]
-                ]
-              },
-              {
-                "cells": [
-                  [
-                    {
-                      "text": "Allergen question"
-                    }
-                  ],
-                  [
-                    {
-                      "text": "Show the label; do not guess"
-                    }
-                  ]
-                ]
-              }
-            ]
+            "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Chemicals and cleaning products stored apart from food, and below it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "First in, first out on every shelf"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Shelves dry and clean; check for pests weekly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Handling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wash hands before work, after breaks, and after taking out trash."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gloves when handling unpackaged produce or bread."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Volunteers who are sick stay home: no blame, no exceptions."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Dates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Best-by dates are about quality, not safety, for most shelf-stable food. Use your regional food bank's guide. Baby formula is never given out past its use-by date. When in doubt, throw it out."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recalls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When a recall notice arrives, search Stock and Donations for the product, pull every unit, and record what you removed. If any went out, contact the households who received it if you can."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Allergies"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Leave food in its original packaging so the label travels with it. Never repack bulk food without writing the ingredients on the new bag."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A volunteer notices the walk-in cooler reads 46 F at the start of the Thursday shift. The day lead moves dairy and produce to the backup fridge, calls the repair company, and checks the log: the reading was 39 F at close the night before, under four hours ago by the door alarm, so the food is kept. The repair is written in the log."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Training"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every volunteer reads this page and signs the shift log. Leads take a food-handler course once a year."
+            }
+          ]
         }
       ]
     }

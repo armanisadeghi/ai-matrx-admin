@@ -303,6 +303,8 @@ export default function TranslationCellEditor({
             />
           )}
 
+          {cell ? <CellDetailPanel cell={cell} /> : null}
+
           <RuleFields
             rule={draft}
             setting={setting}
@@ -348,8 +350,6 @@ export default function TranslationCellEditor({
               ))}
             </div>
           ) : null}
-
-          {cell ? <CellDetailPanel cell={cell} /> : null}
 
           {reach > 0 ? (
             <details className="text-xs">

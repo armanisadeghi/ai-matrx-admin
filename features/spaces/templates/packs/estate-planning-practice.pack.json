@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 3,
+  "version": 4,
   "title": "Estate Planning Practice",
-  "description": "Estate plans by stage, instruments, signings and trust funding.",
-  "forWho": "Estate planning attorneys and small firms",
+  "description": "For estate planning lawyers: engagements, instruments, signings, trust funding, reviews.",
+  "forWho": "Estate planning attorneys and their paralegals",
   "icon": {
     "emoji": "📜"
   },
   "cover": {
-    "url": "gallery:photo-misty-mountains",
+    "url": "gallery:solid-gray",
     "offsetY": 50
   },
   "category": "legal",
   "tags": [
-    "estate planning",
+    "estate planning attorney",
+    "lawyer",
+    "wills",
     "trusts",
-    "documents",
-    "signing"
+    "trust funding",
+    "paralegal"
   ],
   "spec": {
     "specVersion": 1,
@@ -163,6 +165,33 @@
             ]
           },
           {
+            "key": "fee_paid",
+            "label": "Fee paid",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_due",
+            "label": "Fee still due",
+            "parityType": "formula",
+            "formula": "{Fee} - {Fee paid}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "started_on",
             "label": "Started",
             "parityType": "datetime",
@@ -196,7 +225,10 @@
             "pick": "doc_title",
             "agg": "count",
             "filter": {
-              "status": "Signed"
+              "status": [
+                "Signed",
+                "Filed"
+              ]
             }
           },
           {
@@ -209,7 +241,10 @@
             "pick": "asset_title",
             "agg": "count",
             "filter": {
-              "status": "To transfer"
+              "status": [
+                "To transfer",
+                "In progress"
+              ]
             }
           },
           {
@@ -269,72 +304,77 @@
           {
             "key": "m01",
             "values": {
-              "matter_title": "Revocable trust - Okoye family",
+              "matter_title": "Joint revocable trust and pour-over wills",
               "client": "c03",
               "package": "Revocable trust package",
               "status": "Drafting",
               "attorney": "tm-cordelia",
               "fee": 3800,
               "started_on": "@today-25d",
-              "target_sign": "@today+18d"
+              "target_sign": "@today+18d",
+              "fee_paid": 2400
             }
           },
           {
             "key": "m02",
             "values": {
-              "matter_title": "Will package - Delacroix-Hunt",
+              "matter_title": "Simple will with guardian for two children",
               "client": "c02",
               "package": "Will package",
               "status": "Gathering information",
               "attorney": "tm-barnaby",
               "fee": 1200,
               "started_on": "@today-10d",
-              "target_sign": "@today+30d"
+              "target_sign": "@today+30d",
+              "fee_paid": 600
             }
           },
           {
             "key": "m03",
             "values": {
-              "matter_title": "Trust update - Penhallow",
+              "matter_title": "Trust amendment after a move",
               "client": "c05",
               "package": "Plan update",
               "status": "Attorney review",
               "attorney": "tm-cordelia",
               "fee": 1500,
               "started_on": "@today-18d",
-              "target_sign": "@mon+5d"
+              "target_sign": "@mon+5d",
+              "fee_paid": 750
             }
           },
           {
             "key": "m04",
             "values": {
-              "matter_title": "Revocable trust - Ashgrove",
+              "matter_title": "Revocable trust for a widower",
               "client": "c04",
               "package": "Revocable trust package",
               "status": "Funding",
               "attorney": "tm-cordelia",
               "fee": 3600,
               "started_on": "@today-80d",
-              "target_sign": "@today-40d"
+              "target_sign": "@today-40d",
+              "fee_paid": 3200
             }
           },
           {
             "key": "m05",
             "values": {
-              "matter_title": "Trust with powers of attorney - Fairbairn",
+              "matter_title": "Joint trust, powers of attorney and directives",
               "client": "c01",
               "package": "Trust with powers of attorney",
               "status": "Signing",
               "attorney": "tm-cordelia",
               "fee": 4400,
               "started_on": "@today-45d",
-              "target_sign": "@mon+2d"
+              "target_sign": "@mon+2d",
+              "fee_paid": 2000
             }
           },
           {
             "key": "m06",
             "values": {
-              "matter_title": "Will package - Okonkwo-Reyes",
+              "matter_title": "Will update after a marriage",
               "client": "c07",
               "package": "Will package",
               "status": "Complete",
@@ -342,20 +382,22 @@
               "fee": 1100,
               "started_on": "@today-210d",
               "target_sign": "@today-195d",
-              "completed_on": "@today-195d"
+              "completed_on": "@today-195d",
+              "fee_paid": 950
             }
           },
           {
             "key": "m07",
             "values": {
-              "matter_title": "Business succession plan - Voorhees",
+              "matter_title": "Succession plan for the family bakery",
               "client": "c06",
               "package": "Trust with powers of attorney",
               "status": "Consultation",
               "attorney": "tm-cordelia",
               "fee": 5200,
               "started_on": "@today-4d",
-              "target_sign": "@today+60d"
+              "target_sign": "@today+60d",
+              "fee_paid": 1500
             }
           }
         ],
@@ -615,6 +657,20 @@
             }
           },
           {
+            "key": "witnesses",
+            "label": "Two witnesses booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "notary",
+            "label": "Notary booked",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -661,40 +717,46 @@
           {
             "key": "s01",
             "values": {
-              "signing_title": "Signing - Fairbairn",
+              "signing_title": "Joint trust signing, conference room",
               "matter": "m05",
               "when_at": "@mon+2d 10:00",
               "where": "Office",
               "status": "Scheduled",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "witnesses": true,
+              "notary": true
             }
           },
           {
             "key": "s02",
             "values": {
-              "signing_title": "Signing - Penhallow amendment",
+              "signing_title": "Amendment signing by video",
               "matter": "m03",
               "when_at": "@mon+5d 14:00",
               "where": "Remote",
               "status": "Scheduled",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "witnesses": false,
+              "notary": true
             }
           },
           {
             "key": "s07",
             "values": {
-              "signing_title": "Signing - Delacroix-Hunt will",
+              "signing_title": "Will signing, late afternoon",
               "matter": "m02",
               "when_at": "@today 16:00",
               "where": "Remote",
               "status": "Scheduled",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "witnesses": true,
+              "notary": true
             }
           },
           {
             "key": "s03",
             "values": {
-              "signing_title": "Signing - Okoye family",
+              "signing_title": "Trust and wills signing, both spouses",
               "matter": "m01",
               "when_at": "@today+18d 11:00",
               "where": "Client's home",
@@ -704,29 +766,33 @@
           {
             "key": "s04",
             "values": {
-              "signing_title": "Signing - Ashgrove",
+              "signing_title": "Trust signing with deed",
               "matter": "m04",
               "when_at": "@today-48d 10:30",
               "where": "Office",
               "status": "Signed",
-              "signed_on": "@today-48d"
+              "signed_on": "@today-48d",
+              "witnesses": true,
+              "notary": true
             }
           },
           {
             "key": "s05",
             "values": {
-              "signing_title": "Signing - Okonkwo-Reyes",
+              "signing_title": "Updated will signing",
               "matter": "m06",
               "when_at": "@today-198d 15:00",
               "where": "Office",
               "status": "Signed",
-              "signed_on": "@today-198d"
+              "signed_on": "@today-198d",
+              "witnesses": true,
+              "notary": true
             }
           },
           {
             "key": "s06",
             "values": {
-              "signing_title": "Signing - Fairbairn (first date)",
+              "signing_title": "First date, moved for illness",
               "matter": "m05",
               "when_at": "@today-5d 10:00",
               "where": "Office",
@@ -995,7 +1061,7 @@
           {
             "key": "d01",
             "values": {
-              "doc_title": "Revocable trust - Okoye",
+              "doc_title": "Joint revocable trust agreement",
               "matter": "m01",
               "kind": "Revocable trust",
               "status": "Drafting",
@@ -1005,7 +1071,7 @@
           {
             "key": "d02",
             "values": {
-              "doc_title": "Pour-over wills - Okoye",
+              "doc_title": "Pour-over wills for both spouses",
               "matter": "m01",
               "kind": "Will",
               "status": "Not started",
@@ -1015,7 +1081,7 @@
           {
             "key": "d03",
             "values": {
-              "doc_title": "Powers of attorney - Okoye",
+              "doc_title": "Durable financial powers of attorney",
               "matter": "m01",
               "kind": "Power of attorney",
               "status": "Not started",
@@ -1025,7 +1091,7 @@
           {
             "key": "d04",
             "values": {
-              "doc_title": "Will - Delacroix-Hunt",
+              "doc_title": "Last will naming a guardian",
               "matter": "m02",
               "kind": "Will",
               "status": "Not started",
@@ -1035,7 +1101,7 @@
           {
             "key": "d05",
             "values": {
-              "doc_title": "Trust amendment - Penhallow",
+              "doc_title": "First amendment to the trust",
               "matter": "m03",
               "kind": "Revocable trust",
               "status": "Client review",
@@ -1045,7 +1111,7 @@
           {
             "key": "d06",
             "values": {
-              "doc_title": "Trust - Ashgrove",
+              "doc_title": "Revocable trust agreement",
               "matter": "m04",
               "kind": "Revocable trust",
               "status": "Signed",
@@ -1056,7 +1122,7 @@
           {
             "key": "d07",
             "values": {
-              "doc_title": "Deed to trust - Ashgrove",
+              "doc_title": "Grant deed of the residence to the trust",
               "matter": "m04",
               "kind": "Deed",
               "status": "Signed",
@@ -1067,7 +1133,7 @@
           {
             "key": "d08",
             "values": {
-              "doc_title": "Trust - Fairbairn",
+              "doc_title": "Joint trust with schedule of assets",
               "matter": "m05",
               "kind": "Revocable trust",
               "status": "Ready to sign",
@@ -1077,7 +1143,7 @@
           {
             "key": "d09",
             "values": {
-              "doc_title": "Healthcare directives - Fairbairn",
+              "doc_title": "Advance healthcare directives, both spouses",
               "matter": "m05",
               "kind": "Healthcare directive",
               "status": "Ready to sign",
@@ -1087,7 +1153,7 @@
           {
             "key": "d10",
             "values": {
-              "doc_title": "Will - Okonkwo-Reyes",
+              "doc_title": "Will, filed in the vault",
               "matter": "m06",
               "kind": "Will",
               "status": "Filed",
@@ -1288,6 +1354,13 @@
             }
           },
           {
+            "key": "institution",
+            "label": "Institution",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1350,65 +1423,71 @@
           {
             "key": "f01",
             "values": {
-              "asset_title": "Record deed to trust - Ashgrove home",
+              "asset_title": "Record deed to the house",
               "matter": "m04",
               "kind": "Home",
               "status": "Done",
               "due_on": "@today-30d",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "institution": "County recorder"
             }
           },
           {
             "key": "f02",
             "values": {
-              "asset_title": "Retitle checking account - Ashgrove",
+              "asset_title": "Retitle the checking account",
               "matter": "m04",
               "kind": "Bank account",
               "status": "In progress",
               "due_on": "@today-2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "institution": "Harrow Valley Credit Union"
             }
           },
           {
             "key": "f03",
             "values": {
-              "asset_title": "Retitle brokerage account - Ashgrove",
+              "asset_title": "Retitle the brokerage account",
               "matter": "m04",
               "kind": "Brokerage account",
               "status": "To transfer",
               "due_on": "@mon+3d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "institution": "Stonebridge Investments"
             }
           },
           {
             "key": "f04",
             "values": {
-              "asset_title": "Update beneficiary form - Ashgrove",
+              "asset_title": "Name the trust on the life policy",
               "matter": "m04",
               "kind": "Life insurance",
               "status": "To transfer",
-              "due_on": "@today+5d"
+              "due_on": "@today+5d",
+              "institution": "Calder Life"
             }
           },
           {
             "key": "f05",
             "values": {
-              "asset_title": "Assign business interest - Voorhees",
+              "asset_title": "Assign bakery shares to the trust",
               "matter": "m07",
               "kind": "Business interest",
               "status": "To transfer",
-              "due_on": "@today+40d"
+              "due_on": "@today+40d",
+              "institution": "Company records"
             }
           },
           {
             "key": "f06",
             "values": {
-              "asset_title": "Retitle home - Fairbairn",
+              "asset_title": "Record deed to the family home",
               "matter": "m05",
               "kind": "Home",
               "status": "To transfer",
               "due_on": "@today+14d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "institution": "County recorder"
             }
           }
         ],
@@ -1530,6 +1609,13 @@
             }
           },
           {
+            "key": "minors",
+            "label": "Minor children",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "select",
@@ -1580,14 +1666,38 @@
             "format": "date"
           },
           {
+            "key": "originals",
+            "label": "Originals held",
+            "parityType": "select",
+            "choices": [
+              "Firm vault",
+              "Client",
+              "Not yet signed"
+            ],
+            "choiceColors": {
+              "Firm vault": "green",
+              "Client": "blue",
+              "Not yet signed": "gray"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "matter_count",
-            "label": "Engagements",
+            "label": "Open engagements",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "matters",
             "pick": "matter_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Complete"
+                ]
+              }
+            }
           },
           {
             "key": "matter_btn",
@@ -1615,7 +1725,9 @@
               "phone": "(303) 555-0131",
               "email": "fairbairns@mailbox-demo.net",
               "plan_signed": "@today-1500d",
-              "review_due": "@today-400d"
+              "review_due": "@today-400d",
+              "minors": false,
+              "originals": "Client"
             }
           },
           {
@@ -1625,7 +1737,9 @@
               "household": "Individual",
               "status": "Active",
               "phone": "(303) 555-0132",
-              "email": "marguerite.dh@mailbox-demo.net"
+              "email": "marguerite.dh@mailbox-demo.net",
+              "minors": true,
+              "originals": "Not yet signed"
             }
           },
           {
@@ -1635,7 +1749,9 @@
               "household": "Family with children",
               "status": "Active",
               "phone": "(303) 555-0133",
-              "email": "okoyes@mailbox-demo.net"
+              "email": "okoyes@mailbox-demo.net",
+              "minors": true,
+              "originals": "Not yet signed"
             }
           },
           {
@@ -1647,7 +1763,9 @@
               "phone": "(303) 555-0134",
               "email": "leopold.a@mailbox-demo.net",
               "plan_signed": "@today-90d",
-              "review_due": "@today+20d"
+              "review_due": "@today+20d",
+              "minors": false,
+              "originals": "Firm vault"
             }
           },
           {
@@ -1659,7 +1777,9 @@
               "phone": "(303) 555-0135",
               "email": "penhallows@mailbox-demo.net",
               "plan_signed": "@today-1800d",
-              "review_due": "@today-30d"
+              "review_due": "@today-30d",
+              "minors": false,
+              "originals": "Client"
             }
           },
           {
@@ -1669,7 +1789,9 @@
               "household": "Business owner",
               "status": "Consultation",
               "phone": "(303) 555-0136",
-              "email": "anneke.v@mailbox-demo.net"
+              "email": "anneke.v@mailbox-demo.net",
+              "minors": true,
+              "originals": "Not yet signed"
             }
           },
           {
@@ -1681,7 +1803,9 @@
               "phone": "(303) 555-0137",
               "email": "sebastian.or@mailbox-demo.net",
               "plan_signed": "@today-200d",
-              "review_due": "@mon+5d"
+              "review_due": "@mon+5d",
+              "minors": false,
+              "originals": "Firm vault"
             }
           }
         ],
@@ -2484,7 +2608,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2495,7 +2619,7 @@
         "emoji": "📜"
       },
       "cover": {
-        "url": "gallery:photo-misty-mountains",
+        "url": "gallery:solid-gray",
         "offsetY": 50
       },
       "settings": {
@@ -2559,6 +2683,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-reviews"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3555,14 +3685,14 @@
       "parent": "estate-planning-practice",
       "title": "From consultation to signing",
       "icon": {
-        "emoji": "🪜"
+        "emoji": "🧾"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Every plan follows the same stages. Move the engagement as it advances."
+              "text": "A smooth engagement takes six to ten weeks. The usual delay is the information-gathering stage, so make that step easy for clients."
             }
           ],
           "background": "blue",
@@ -3574,7 +3704,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Stages"
+              "text": "Consultation"
             }
           ],
           "props": {
@@ -3585,7 +3715,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Consultation: conflict check, fee estimate, engagement letter."
+              "text": "Learn the family: spouse or partner, children (and whether any are minors or have special needs), blended family, who they trust."
             }
           ]
         },
@@ -3593,7 +3723,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Gathering information: asset list, family details, goals."
+              "text": "Learn the assets roughly: home, accounts, retirement plans, life insurance, business interests, property in other states."
             }
           ]
         },
@@ -3601,7 +3731,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Drafting: attorney instructs, paralegal drafts."
+              "text": "Recommend a package (will, revocable trust, plan update) and explain why in plain words."
             }
           ]
         },
@@ -3609,49 +3739,29 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Attorney review, then client review."
+              "text": "Quote a flat fee. Record "
+            },
+            {
+              "text": "Fee",
+              "bold": true
+            },
+            {
+              "text": " and any deposit in "
+            },
+            {
+              "text": "Fee paid",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Signing: witnesses and notary booked."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Funding: assets moved into the trust."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Complete: originals stored and review date set."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-signing",
-      "parent": "estate-planning-practice",
-      "title": "Signing day checklist",
-      "icon": {
-        "emoji": "🖊️"
-      },
-      "blocks": [
         {
           "type": "heading",
           "text": [
             {
-              "text": "A week before"
+              "text": "Gathering information"
             }
           ],
           "props": {
@@ -3662,7 +3772,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm witnesses and notary"
+              "text": "Questionnaire sent with a return date two weeks out"
             }
           ],
           "props": {
@@ -3673,29 +3783,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Send the client what to bring"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "The day before"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Print and tab the documents"
+              "text": "Asset list with how each asset is titled and who the beneficiaries are"
             }
           ],
           "props": {
@@ -3706,29 +3794,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Confirm the time with the client"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "At the signing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check identification"
+              "text": "Copies of deeds and existing plans"
             }
           ],
           "props": {
@@ -3739,7 +3805,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Collect signature pages"
+              "text": "Choices made: executor or trustee, guardians for minor children, agents under powers of attorney, healthcare agents, who inherits what"
             }
           ],
           "props": {
@@ -3747,92 +3813,10 @@
           }
         },
         {
-          "type": "heading",
+          "type": "text",
           "text": [
             {
-              "text": "After"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Mark documents Signed"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Move the engagement to Funding"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        }
-      ]
-    },
-    {
-      "key": "sop-funding",
-      "parent": "estate-planning-practice",
-      "title": "Funding the trust",
-      "icon": {
-        "emoji": "💼"
-      },
-      "blocks": [
-        {
-          "type": "callout",
-          "text": [
-            {
-              "text": "A signed trust only works if the right assets are in it."
-            }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After signing"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add one Funding step per asset."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Give each an owner and due date."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Contact each institution and save confirmations."
+              "text": "Call clients who have not returned the questionnaire after ten days. Offer to complete it with them on a call."
             }
           ]
         },
@@ -3840,7 +3824,64 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Drafting and review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Add one instrument row per document. Draft from the firm's forms; never from a client's online template."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Attorney reviews every instrument before the client sees it."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send drafts with a one-page summary in plain language. Hold a review meeting; changes go back to drafting."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "When the client approves, press "
+            },
+            {
+              "text": "Ready to sign",
+              "bold": true
+            },
+            {
+              "text": " on each instrument and "
+            },
+            {
+              "text": "Schedule signing",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fee"
             }
           ],
           "props": {
@@ -3851,7 +3892,788 @@
           "type": "text",
           "text": [
             {
-              "text": "Review Funding open steps on the Dashboard until none remain."
+              "text": "Collect the balance ("
+            },
+            {
+              "text": "Fee still due",
+              "bold": true
+            },
+            {
+              "text": ") before or at signing, as your engagement letter says."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Okoye trust is in drafting, the pour-over wills are three days late and the powers of attorney are due in 12 days. The paralegal finishes the wills this week so the signing in 18 days holds."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common stalls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stall"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clients cannot agree on a guardian"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Suggest naming a first choice and alternate; revisit later"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missing deed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order a copy from the county recorder"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Blended family concerns"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney meeting with both spouses before drafting continues"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-signing",
+      "parent": "estate-planning-practice",
+      "title": "Signing day checklist",
+      "icon": {
+        "emoji": "✍️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A will or trust signed without the right formalities may fail when it is needed. Signing day is run from a checklist every time."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "One week before"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every instrument final and marked "
+            },
+            {
+              "text": "Ready to sign",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Two witnesses booked who are not named in the documents (tick "
+            },
+            {
+              "text": "Two witnesses booked",
+              "bold": true
+            },
+            {
+              "text": ")"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notary booked (tick "
+            },
+            {
+              "text": "Notary booked",
+              "bold": true
+            },
+            {
+              "text": ")"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client told what to bring: photo ID, glasses, and any spouse who must sign"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Room booked, or a home visit planned for clients who cannot travel"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "On the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Attorney meets the clients first, alone if there is any question of influence, and confirms they understand and agree."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk through each document's purpose, briefly."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Sign in order: trust, wills, powers of attorney, directives, deeds. Witnesses and notary sign as each document requires."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check every signature page before anyone leaves: dates, initials, witness addresses, notary seal."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark each instrument "
+            },
+            {
+              "text": "Signed",
+              "bold": true
+            },
+            {
+              "text": " and the signing "
+            },
+            {
+              "text": "Mark signed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Remote signings"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Only where your state allows remote witnessing and notarization. Follow the state's process exactly and keep the recording if required."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Originals stored as agreed; "
+            },
+            {
+              "text": "Originals held",
+              "bold": true
+            },
+            {
+              "text": " updated on the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Signed copies sent to the client with a summary letter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Funding steps created for every asset going into the trust"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deeds sent for recording"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Engagement moved to "
+            },
+            {
+              "text": "Funding",
+              "bold": true
+            },
+            {
+              "text": " (or "
+            },
+            {
+              "text": "Complete",
+              "bold": true
+            },
+            {
+              "text": " for a will-only plan)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Plan last signed",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Review due",
+              "bold": true
+            },
+            {
+              "text": " set on the client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Capacity and influence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a client seems confused, or a family member answers every question for them, the attorney stops and meets the client alone. Note what was asked and answered. A short delay is better than a plan that is challenged later."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "If someone is ill or absent"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Reschedule rather than sign without the formalities. Mark the signing "
+            },
+            {
+              "text": "Rescheduled",
+              "bold": true
+            },
+            {
+              "text": " with the reason and book a new date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Fairbairns' first signing was moved when Winston was ill. The new signing is in two days; the trust and directives are ready and both witnesses and the notary are booked."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-funding",
+      "parent": "estate-planning-practice",
+      "title": "Funding the trust",
+      "icon": {
+        "emoji": "🏦"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A revocable trust only avoids probate for assets it owns. An unfunded trust is the most common reason a carefully drafted plan fails. Funding is part of the job, not an afterthought."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Make the list at signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "For every asset on the client's asset list, add a funding step:"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Asset"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Home and other real estate"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Deed to the trustee, recorded with the county"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Bank accounts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retitle to the trust, or add a payable-on-death beneficiary"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Brokerage accounts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Retitle to the trust using the institution's form"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Life insurance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Name the trust as beneficiary where the plan calls for it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retirement accounts"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usually leave title alone; update beneficiaries as the attorney advises"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Business interests"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Assignment of shares or membership interest"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The firm records deeds and prepares assignments."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients often retitle bank and brokerage accounts themselves with a letter from the firm. Send each institution's instructions and a certificate of trust."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Due",
+              "bold": true
+            },
+            {
+              "text": " 30 days out and a follow-up call at 14 days."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly (Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Filter funding steps To transfer or In progress."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call clients about anything past due. Offer to join a call with their bank."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done only when you have written confirmation (a recorded deed, a new statement in the trust's name)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When funding is complete"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Move the engagement to "
+            },
+            {
+              "text": "Complete",
+              "bold": true
+            },
+            {
+              "text": ", send a final letter listing what is in the trust, and remind the client that new assets must be titled in the trust too."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Leopold's checking account retitle is overdue; his brokerage retitle and life policy beneficiary change are due this week. The paralegal calls him today and offers a three-way call with the credit union."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Out-of-state property"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Real estate in another state needs a deed recorded in that state, often by a local lawyer. Start it early; it is usually the slowest step."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never retitle retirement accounts into the trust without the attorney's review."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never mark a step done on the client's word alone."
             }
           ]
         }
@@ -3862,14 +4684,68 @@
       "parent": "estate-planning-practice",
       "title": "Plan reviews",
       "icon": {
-        "emoji": "🔁"
+        "emoji": "🔄"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Plans go stale: families change, laws change, assets change. Regular reviews keep plans working and bring steady, welcome work to the practice."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Every year"
+              "text": "When to review"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every three to five years as a routine."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After a marriage, divorce, birth, death, move to another state, sale of a business, large inheritance or a child turning 18."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Review due",
+              "bold": true
+            },
+            {
+              "text": " when a plan is signed. The Clients list shows who is due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly review outreach (first Monday)"
             }
           ],
           "props": {
@@ -3880,7 +4756,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Clients and look at Review due."
+              "text": "Filter clients with "
+            },
+            {
+              "text": "Review due",
+              "bold": true
+            },
+            {
+              "text": " in the next 60 days or past."
             }
           ]
         },
@@ -3888,7 +4771,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a short note offering a plan check-up."
+              "text": "Send a short letter or email with a simple checklist of life changes since signing."
             }
           ]
         },
@@ -3896,7 +4779,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Start a Plan update engagement for anyone who replies."
+              "text": "Book a 30-minute review call for anyone who replies with changes, or who has not reviewed in five years."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set status to "
+            },
+            {
+              "text": "Review due",
+              "bold": true
+            },
+            {
+              "text": " until the call happens."
             }
           ]
         },
@@ -3904,7 +4802,168 @@
           "type": "heading",
           "text": [
             {
-              "text": "Life events"
+              "text": "The review call"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Family changes: births, deaths, marriages, divorces"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fiduciaries: are the executor, trustee, guardians and agents still the right people?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Assets: new home, accounts, business, property in another state"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Beneficiary designations still match the plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Trust still funded: new assets titled in the trust"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Outcomes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Finding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Next step"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No changes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Note the call; set the next review date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Small changes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Amendment or codicil engagement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Big changes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "New plan engagement"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Penhallows' plan was signed about five years ago and they have since moved states. Their review was due 30 days ago; the amendment engagement is in attorney review with a signing set for this week."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients who moved"
             }
           ],
           "props": {
@@ -3915,7 +4974,455 @@
           "type": "text",
           "text": [
             {
-              "text": "Invite clients to call after a marriage, birth, move or sale of a business."
+              "text": "A plan signed in another state is usually still valid, but powers of attorney, healthcare directives and property rules differ by state. Treat any move as a reason for a full review, not a quick call."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep it gentle"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Clients do not like to think about this. Keep reminders short, warm and free of pressure, and make booking easy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "estate-planning-practice",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The production desk of an estate planning practice: each engagement from consultation to a funded trust, every instrument being drafted, signing appointments, the assets still to move into trusts, and clients due for a review. Drafts live in your document system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": household type, minor children, when the plan was last signed, when it is due for review, where the originals are kept and open engagements."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Engagements",
+              "bold": true
+            },
+            {
+              "text": ": the package, stage, attorney, fee, fee paid, fee still due, target signing date, instruments signed and funding steps still open."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Instruments",
+              "bold": true
+            },
+            {
+              "text": ": each will, trust, power of attorney, directive, deed and beneficiary form with its status."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Signings",
+              "bold": true
+            },
+            {
+              "text": ": date, place, witnesses and notary."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Funding steps",
+              "bold": true
+            },
+            {
+              "text": ": each asset to retitle or beneficiary to change, with the institution."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the stages run"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Consultation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fee and package agreed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Gathering information"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Questionnaire, asset list and family details complete"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Drafting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every instrument drafted"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Attorney review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney approved; client review meeting held"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Signing"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Everything signed, witnessed and notarized"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Funding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every funding step done"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Complete"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Originals stored, summary letter sent, review date set"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add attorneys and paralegals."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open engagements with their stage and target signing date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the instruments and funding steps for each."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter past clients with plan signed and review due dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": engagements by stage; anything stalled more than two weeks gets a call."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wednesday",
+              "bold": true
+            },
+            {
+              "text": ": next week's signings: witnesses and notary booked, documents final."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday",
+              "bold": true
+            },
+            {
+              "text": ": funding steps open; letters to institutions sent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly",
+              "bold": true
+            },
+            {
+              "text": ": clients with a review due."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Engagements: "
+            },
+            {
+              "text": "Add instrument",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Schedule signing",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Move to signing",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark complete",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Instruments: "
+            },
+            {
+              "text": "Ready to sign",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark signed",
+              "bold": true
+            },
+            {
+              "text": ". Signings: "
+            },
+            {
+              "text": "Mark signed",
+              "bold": true
+            },
+            {
+              "text": ". Funding: "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Leopold's trust was signed seven weeks ago, the house deed is recorded, but the checking account retitle is two days overdue. The paralegal calls the credit union today."
             }
           ]
         }

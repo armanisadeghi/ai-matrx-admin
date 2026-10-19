@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 3,
+  "version": 4,
   "title": "Hair Salon HQ",
-  "description": "Run stylists, appointments, client history, retail stock and payments in one place.",
+  "description": "For hair salons: appointments, stylist commission, color formulas, rebooking, retail.",
   "forWho": "Hair salons and stylist teams",
   "icon": {
     "emoji": "✂️"
@@ -14,10 +14,12 @@
   },
   "category": "wellness",
   "tags": [
-    "salon",
-    "stylists",
+    "hair stylist",
+    "hair salon",
+    "colorist",
     "appointments",
-    "clients"
+    "commission",
+    "retail"
   ],
   "spec": {
     "specVersion": 1,
@@ -112,19 +114,6 @@
             ]
           },
           {
-            "key": "billing",
-            "label": "Billing",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Per visit"
-            ],
-            "choiceColors": {
-              "Per visit": "slate"
-            }
-          },
-          {
             "key": "minutes",
             "label": "Minutes",
             "parityType": "number",
@@ -142,70 +131,37 @@
             ]
           },
           {
-            "key": "valid_days",
-            "label": "Valid for (days)",
-            "parityType": "number",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "rules": [
-              {
-                "kind": "min",
-                "value": 1
-              },
-              {
-                "kind": "max",
-                "value": 730
-              }
-            ]
-          },
-          {
             "key": "includes",
-            "label": "Includes",
+            "label": "What's included",
             "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
           {
-            "key": "active_n",
-            "label": "Active clients",
+            "key": "times_done",
+            "label": "Done this season",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
+            "via": "bookings",
+            "pick": "booking_name",
             "agg": "count",
             "filter": {
-              "client_status": "Active"
+              "status": "Completed"
             }
           },
           {
-            "key": "cancelled_n",
-            "label": "Cancelled",
+            "key": "service_revenue",
+            "label": "Service revenue",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "via": "members",
-            "pick": "client_name",
-            "agg": "count",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
             "filter": {
-              "client_status": "Cancelled"
+              "status": "Completed"
             }
-          },
-          {
-            "key": "churn",
-            "label": "Churn (%)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "IF({Active clients} + {Cancelled} > 0, ROUND({Cancelled} / ({Active clients} + {Cancelled}) * 100, 0), 0)"
-          },
-          {
-            "key": "recurring",
-            "label": "Recurring value (USD)",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Active clients} * {Price (USD)}"
           },
           {
             "key": "added_at",
@@ -269,49 +225,41 @@
           {
             "key": "plan-1",
             "values": {
-              "plan_name": "Cut and style",
+              "plan_name": "Women's cut and blow-dry",
               "category": "Cut",
-              "price": 68,
-              "billing": "Per visit",
+              "price": 72,
               "minutes": 60,
-              "valid_days": 1,
-              "includes": "cut, per visit"
+              "includes": "Consultation, wash, cut, blow-dry"
             }
           },
           {
             "key": "plan-2",
             "values": {
-              "plan_name": "Color touch-up",
+              "plan_name": "Root touch-up",
               "category": "Color",
-              "price": 95,
-              "billing": "Per visit",
+              "price": 98,
               "minutes": 90,
-              "valid_days": 1,
-              "includes": "color, per visit"
+              "includes": "Single-process color on regrowth up to 1 inch"
             }
           },
           {
             "key": "plan-3",
             "values": {
-              "plan_name": "Full color and gloss",
+              "plan_name": "All-over color and gloss",
               "category": "Color",
-              "price": 165,
-              "billing": "Per visit",
-              "minutes": 150,
-              "valid_days": 1,
-              "includes": "color, per visit"
+              "price": 160,
+              "minutes": 120,
+              "includes": "Single process plus a gloss to finish"
             }
           },
           {
             "key": "plan-4",
             "values": {
-              "plan_name": "Highlights",
+              "plan_name": "Partial balayage",
               "category": "Color",
-              "price": 210,
-              "billing": "Per visit",
+              "price": 215,
               "minutes": 180,
-              "valid_days": 1,
-              "includes": "color, per visit"
+              "includes": "Hand-painted lightening, toner, blow-dry"
             }
           },
           {
@@ -319,23 +267,19 @@
             "values": {
               "plan_name": "Blowout",
               "category": "Style",
-              "price": 45,
-              "billing": "Per visit",
+              "price": 48,
               "minutes": 45,
-              "valid_days": 1,
-              "includes": "style, per visit"
+              "includes": "Wash and blow-dry, smooth or curled"
             }
           },
           {
             "key": "plan-6",
             "values": {
-              "plan_name": "Deep conditioning treatment",
+              "plan_name": "Bond repair treatment",
               "category": "Treatment",
-              "price": 35,
-              "billing": "Per visit",
-              "minutes": 30,
-              "valid_days": 1,
-              "includes": "treatment, per visit"
+              "price": 38,
+              "minutes": 20,
+              "includes": "Add-on to any service"
             }
           },
           {
@@ -343,11 +287,19 @@
             "values": {
               "plan_name": "Bridal trial",
               "category": "Special",
-              "price": 120,
-              "billing": "Per visit",
+              "price": 125,
               "minutes": 90,
-              "valid_days": 1,
-              "includes": "special, per visit"
+              "includes": "Trial updo with photos for the day"
+            }
+          },
+          {
+            "key": "plan-8",
+            "values": {
+              "plan_name": "Men's cut",
+              "category": "Cut",
+              "price": 42,
+              "minutes": 30,
+              "includes": "Clipper and scissor cut, neck tidy"
             }
           }
         ]
@@ -380,7 +332,7 @@
           },
           {
             "key": "kind",
-            "label": "Type",
+            "label": "Client type",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -405,26 +357,57 @@
             "contextPolicy": "include",
             "choices": [
               "Active",
-              "Frozen",
-              "Cancelled",
+              "Due to rebook",
+              "Lapsed",
               "Lead"
             ],
             "choiceColors": {
-              "Active": "slate",
-              "Frozen": "blue",
-              "Cancelled": "red",
-              "Lead": "amber"
+              "Active": "green",
+              "Due to rebook": "amber",
+              "Lapsed": "slate",
+              "Lead": "blue"
             },
             "default": "Active"
           },
           {
             "key": "plan",
-            "label": "Service",
+            "label": "Usual service",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "plan",
             "relationMax": 1
+          },
+          {
+            "key": "stylist",
+            "label": "Preferred stylist",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "team_member",
+            "relationMax": 1
+          },
+          {
+            "key": "color_formula",
+            "label": "Color formula",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "patch_test",
+            "label": "Patch test on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "hair_notes",
+            "label": "Hair and scalp notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "phone",
@@ -469,6 +452,19 @@
             }
           },
           {
+            "key": "spent",
+            "label": "Spent on services",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "bookings",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
             "key": "no_shows",
             "label": "No-shows",
             "parityType": "rollup",
@@ -495,25 +491,12 @@
             }
           },
           {
-            "key": "failed_n",
-            "label": "Failed payments",
-            "parityType": "rollup",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "via": "payments",
-            "pick": "amount",
-            "agg": "count",
-            "filter": {
-              "status": "Failed"
-            }
-          },
-          {
-            "key": "risk",
-            "label": "Retention check",
+            "key": "deposit_flag",
+            "label": "Deposit needed",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Failed payments} > 0, \"Fix payment\", IF({No-shows} >= 2, \"Check in\", \"Fine\"))"
+            "formula": "IF({No-shows} >= 2, \"Ask for a deposit\", \"No\")"
           },
           {
             "key": "add_booking_btn",
@@ -645,7 +628,9 @@
               "phone": "(704) 555-0181",
               "email": "basil.oyelaran@inbox-mail.net",
               "joined_on": "@today-30d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "stylist": "tm-2",
+              "hair_notes": "Fine, straight; likes it to sit below the collarbone."
             }
           },
           {
@@ -658,7 +643,11 @@
               "phone": "(704) 555-0118",
               "email": "mirela.yoshida@inbox-mail.net",
               "joined_on": "@today-77d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "stylist": "tm-4",
+              "color_formula": "6N + 6.1 1:1, 20 vol, 35 min",
+              "patch_test": "@today-40d",
+              "hair_notes": "Sensitive scalp: barrier cream at the hairline."
             }
           },
           {
@@ -671,7 +660,10 @@
               "phone": "(704) 555-0155",
               "email": "winston.fairbairn@inbox-mail.net",
               "joined_on": "@today-124d",
-              "area": "Old Mill"
+              "area": "Old Mill",
+              "stylist": "tm-3",
+              "color_formula": "7G + 7N 1:1, 20 vol; gloss 9V 10 min",
+              "patch_test": "@today-80d"
             }
           },
           {
@@ -684,7 +676,9 @@
               "phone": "(704) 555-0192",
               "email": "nadia.nakamura@inbox-mail.net",
               "joined_on": "@today-171d",
-              "area": "Cedar Park"
+              "area": "Cedar Park",
+              "stylist": "tm-1",
+              "hair_notes": "Wedding next spring; trial booked."
             }
           },
           {
@@ -692,12 +686,14 @@
             "values": {
               "client_name": "Emeka Underhill",
               "kind": "Regular",
-              "client_status": "Active",
+              "client_status": "Due to rebook",
               "plan": "plan-5",
               "phone": "(704) 555-0129",
               "email": "emeka.underhill@inbox-mail.net",
               "joined_on": "@today-218d",
-              "area": "Lakeview"
+              "area": "Lakeview",
+              "stylist": "tm-2",
+              "hair_notes": "Cowlick at the crown, cut dry first."
             }
           },
           {
@@ -710,7 +706,9 @@
               "phone": "(704) 555-0166",
               "email": "solveig.carrow@inbox-mail.net",
               "joined_on": "@today-265d",
-              "area": "Foxglove Court"
+              "area": "Foxglove Court",
+              "stylist": "tm-4",
+              "hair_notes": "New: came from a referral."
             }
           },
           {
@@ -723,7 +721,11 @@
               "phone": "(704) 555-0103",
               "email": "stellan.kellerman@inbox-mail.net",
               "joined_on": "@today-312d",
-              "area": "Stonebridge"
+              "area": "Stonebridge",
+              "stylist": "tm-3",
+              "color_formula": "Lightener 30 vol in foils; toner 9V + 9A 20 min",
+              "patch_test": "@today-120d",
+              "hair_notes": "Lifts warm; always tone."
             }
           },
           {
@@ -736,7 +738,9 @@
               "phone": "(704) 555-0140",
               "email": "marisol.salazar@inbox-mail.net",
               "joined_on": "@today-359d",
-              "area": "Harbor Heights"
+              "area": "Harbor Heights",
+              "stylist": "tm-1",
+              "hair_notes": "Bridal party: mother of the bride."
             }
           },
           {
@@ -749,7 +753,10 @@
               "phone": "(704) 555-0177",
               "email": "callum.brannigan@inbox-mail.net",
               "joined_on": "@today-406d",
-              "area": "Willow Creek"
+              "area": "Willow Creek",
+              "stylist": "tm-2",
+              "color_formula": "5N 20 vol roots 30 min",
+              "patch_test": "@today-60d"
             }
           },
           {
@@ -757,12 +764,13 @@
             "values": {
               "client_name": "Lucinda Jankowski",
               "kind": "New",
-              "client_status": "Frozen",
+              "client_status": "Due to rebook",
               "plan": "plan-3",
               "phone": "(704) 555-0114",
               "email": "lucinda.jankowski@inbox-mail.net",
               "joined_on": "@today-453d",
-              "area": "North Ridge"
+              "area": "North Ridge",
+              "stylist": "tm-4"
             }
           },
           {
@@ -770,12 +778,16 @@
             "values": {
               "client_name": "Kwame Quillan",
               "kind": "Color client",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-4",
               "phone": "(704) 555-0151",
               "email": "kwame.quillan@inbox-mail.net",
               "joined_on": "@today-500d",
-              "area": "Sunset Flats"
+              "area": "Sunset Flats",
+              "stylist": "tm-3",
+              "color_formula": "6R 20 vol, 35 min",
+              "patch_test": "@today-200d",
+              "hair_notes": "Moved away."
             }
           },
           {
@@ -783,12 +795,13 @@
             "values": {
               "client_name": "Fenella Yamamoto",
               "kind": "Bridal party",
-              "client_status": "Cancelled",
+              "client_status": "Lapsed",
               "plan": "plan-5",
               "phone": "(704) 555-0188",
               "email": "fenella.yamamoto@inbox-mail.net",
               "joined_on": "@today-547d",
-              "area": "Maple Hollow"
+              "area": "Maple Hollow",
+              "stylist": "tm-1"
             }
           },
           {
@@ -801,7 +814,8 @@
               "phone": "(704) 555-0125",
               "email": "leopold.grayson@inbox-mail.net",
               "joined_on": "@today-594d",
-              "area": "Eastgate"
+              "area": "Eastgate",
+              "stylist": "tm-4"
             }
           },
           {
@@ -814,10 +828,12 @@
               "phone": "(704) 555-0162",
               "email": "imelda.navarro@inbox-mail.net",
               "joined_on": "@today-641d",
-              "area": "Riverbend"
+              "area": "Riverbend",
+              "stylist": "tm-2"
             }
           }
-        ]
+        ],
+        "datesIndependent": "A patch test can be done before or after the client first books."
       },
       {
         "token": "booking",
@@ -968,7 +984,7 @@
           },
           {
             "key": "price",
-            "label": "Price (USD)",
+            "label": "Service price (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -984,6 +1000,59 @@
                 "value": 5000
               }
             ]
+          },
+          {
+            "key": "tip",
+            "label": "Tip (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "retail",
+            "label": "Retail sold (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "commission",
+            "label": "Stylist commission (USD)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "ROUND({Service price (USD)} * 0.45 + {Retail sold (USD)} * 0.10, 2)"
+          },
+          {
+            "key": "rebooked",
+            "label": "Rebooked before leaving",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "mine",
@@ -1137,319 +1206,307 @@
           {
             "key": "bookin-1",
             "values": {
-              "booking_name": "Bridal trial - Yoshida",
+              "booking_name": "Bridal trial, low chignon",
               "status": "Completed",
-              "client": "client-2",
+              "client": "client-4",
               "plan": "plan-7",
               "staff": "tm-1",
               "when_on": "@today-12d",
-              "visit_type": "Appointment",
+              "visit_type": "Bridal",
               "minutes": 90,
-              "price": 120,
+              "price": 125,
+              "tip": 25,
+              "rebooked": true,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "bookin-2",
             "values": {
-              "booking_name": "Color touch-up - Underhill",
+              "booking_name": "Root touch-up, 6N",
               "status": "Completed",
-              "client": "client-5",
+              "client": "client-2",
               "plan": "plan-2",
-              "staff": "tm-2",
+              "staff": "tm-4",
               "when_on": "@today-9d",
-              "visit_type": "Consultation",
+              "visit_type": "Appointment",
               "minutes": 90,
-              "price": 95,
+              "price": 98,
+              "tip": 20,
+              "retail": 32,
+              "rebooked": true,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "bookin-3",
             "values": {
-              "booking_name": "Highlights - Salazar",
+              "booking_name": "Partial balayage + toner",
               "status": "Completed",
-              "client": "client-8",
+              "client": "client-7",
               "plan": "plan-4",
               "staff": "tm-3",
               "when_on": "@today-7d",
-              "visit_type": "Walk-in",
+              "visit_type": "Appointment",
               "minutes": 180,
-              "price": 210,
+              "price": 215,
+              "tip": 40,
+              "retail": 58,
+              "rebooked": true,
               "completed_on": "@today-7d"
             }
           },
           {
             "key": "bookin-4",
             "values": {
-              "booking_name": "Deep conditioning treatment - Quillan",
+              "booking_name": "Cut and blow-dry, long layers",
               "status": "Completed",
-              "client": "client-11",
-              "plan": "plan-6",
-              "staff": "tm-4",
-              "when_on": "@today-5d",
-              "visit_type": "Bridal",
-              "minutes": 30,
-              "price": 35,
-              "completed_on": "@today-5d"
+              "client": "client-1",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@today-6d",
+              "visit_type": "Appointment",
+              "minutes": 60,
+              "price": 72,
+              "tip": 15,
+              "completed_on": "@today-6d"
             }
           },
           {
             "key": "bookin-5",
             "values": {
-              "booking_name": "Cut and style - Navarro",
+              "booking_name": "Men's cut, skin fade",
               "status": "Completed",
-              "client": "client-14",
-              "plan": "plan-1",
-              "staff": "tm-1",
-              "when_on": "@today-3d",
-              "visit_type": "Appointment",
-              "minutes": 60,
-              "price": 68,
-              "completed_on": "@today-3d"
+              "client": "client-5",
+              "plan": "plan-8",
+              "staff": "tm-2",
+              "when_on": "@today-5d",
+              "visit_type": "Walk-in",
+              "minutes": 30,
+              "price": 42,
+              "tip": 8,
+              "retail": 24,
+              "completed_on": "@today-5d"
             }
           },
           {
             "key": "bookin-6",
             "values": {
-              "booking_name": "Full color and gloss - Fairbairn",
-              "status": "No-show",
+              "booking_name": "All-over color and gloss",
+              "status": "Completed",
               "client": "client-3",
               "plan": "plan-3",
-              "staff": "tm-2",
+              "staff": "tm-3",
               "when_on": "@today-4d",
-              "visit_type": "Consultation",
-              "minutes": 150,
-              "price": 165
+              "visit_type": "Appointment",
+              "minutes": 120,
+              "price": 160,
+              "tip": 30,
+              "rebooked": true,
+              "completed_on": "@today-4d"
             }
           },
           {
             "key": "bookin-7",
             "values": {
-              "booking_name": "Blowout - Carrow",
-              "status": "Cancelled",
-              "client": "client-6",
+              "booking_name": "Blowout before a gala",
+              "status": "Completed",
+              "client": "client-8",
               "plan": "plan-5",
-              "staff": "tm-3",
-              "when_on": "@today-2d",
-              "visit_type": "Walk-in",
+              "staff": "tm-4",
+              "when_on": "@today-3d",
+              "visit_type": "Appointment",
               "minutes": 45,
-              "price": 45
+              "price": 48,
+              "tip": 12,
+              "completed_on": "@today-3d"
             }
           },
           {
             "key": "bookin-8",
             "values": {
-              "booking_name": "Bridal trial - Brannigan",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-7",
-              "staff": "tm-4",
-              "when_on": "@today-1d",
-              "visit_type": "Bridal",
-              "minutes": 90,
-              "price": 120
+              "booking_name": "Color consult for a new client",
+              "status": "No-show",
+              "client": "client-14",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "when_on": "@today-2d",
+              "visit_type": "Consultation",
+              "minutes": 15,
+              "price": 0
             }
           },
           {
             "key": "bookin-9",
             "values": {
-              "booking_name": "Color touch-up - Yamamoto",
-              "status": "Booked",
-              "client": "client-12",
-              "plan": "plan-2",
-              "staff": "tm-1",
-              "when_on": "@today-2d",
+              "booking_name": "Trim and blow-dry",
+              "status": "No-show",
+              "client": "client-9",
+              "plan": "plan-1",
+              "staff": "tm-2",
+              "when_on": "@today-8d",
               "visit_type": "Appointment",
-              "minutes": 90,
-              "price": 95
+              "minutes": 60,
+              "price": 72
             }
           },
           {
             "key": "bookin-10",
             "values": {
-              "booking_name": "Highlights - Oyelaran",
-              "status": "Checked in",
-              "client": "client-1",
-              "plan": "plan-4",
-              "staff": "tm-2",
-              "when_on": "@mon",
-              "visit_type": "Consultation",
-              "minutes": 180,
-              "price": 210,
-              "mine": "@installer"
+              "booking_name": "Root touch-up, 5N",
+              "status": "Cancelled",
+              "client": "client-10",
+              "plan": "plan-2",
+              "staff": "tm-4",
+              "when_on": "@today-1d",
+              "visit_type": "Appointment",
+              "minutes": 90,
+              "price": 98
             }
           },
           {
             "key": "bookin-11",
             "values": {
-              "booking_name": "Deep conditioning treatment - Nakamura",
-              "status": "Booked",
-              "client": "client-4",
+              "booking_name": "Cut and bond repair",
+              "status": "Checked in",
+              "client": "client-6",
               "plan": "plan-6",
-              "staff": "tm-3",
-              "when_on": "@tue",
-              "visit_type": "Walk-in",
-              "minutes": 30,
-              "price": 35
+              "staff": "tm-4",
+              "when_on": "@today",
+              "visit_type": "Appointment",
+              "minutes": 80,
+              "price": 110,
+              "mine": "@installer"
             }
           },
           {
             "key": "bookin-12",
             "values": {
-              "booking_name": "Cut and style - Kellerman",
+              "booking_name": "Partial balayage, face frame",
               "status": "Booked",
-              "client": "client-7",
-              "plan": "plan-1",
-              "staff": "tm-4",
-              "when_on": "@wed",
-              "visit_type": "Bridal",
-              "minutes": 60,
-              "price": 68,
+              "client": "client-13",
+              "plan": "plan-4",
+              "staff": "tm-3",
+              "when_on": "@today",
+              "visit_type": "Appointment",
+              "minutes": 180,
+              "price": 215,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-13",
             "values": {
-              "booking_name": "Full color and gloss - Jankowski",
+              "booking_name": "Blowout, big curls",
               "status": "Booked",
-              "client": "client-10",
-              "plan": "plan-3",
-              "staff": "tm-1",
-              "when_on": "@thu",
+              "client": "client-2",
+              "plan": "plan-5",
+              "staff": "tm-5",
+              "when_on": "@today+1d",
               "visit_type": "Appointment",
-              "minutes": 150,
-              "price": 165
+              "minutes": 45,
+              "price": 48
             }
           },
           {
             "key": "bookin-14",
             "values": {
-              "booking_name": "Blowout - Grayson",
+              "booking_name": "Men's cut, scissor over comb",
               "status": "Booked",
-              "client": "client-13",
-              "plan": "plan-5",
+              "client": "client-5",
+              "plan": "plan-8",
               "staff": "tm-2",
-              "when_on": "@fri",
-              "visit_type": "Consultation",
-              "minutes": 45,
-              "price": 45,
-              "mine": "@installer"
+              "when_on": "@today+2d",
+              "visit_type": "Appointment",
+              "minutes": 30,
+              "price": 42
             }
           },
           {
             "key": "bookin-15",
             "values": {
-              "booking_name": "Bridal trial - Yoshida (2)",
+              "booking_name": "Bridal party: 4 updos",
               "status": "Booked",
-              "client": "client-2",
+              "client": "client-8",
               "plan": "plan-7",
-              "staff": "tm-3",
-              "when_on": "@sat",
-              "visit_type": "Walk-in",
-              "minutes": 90,
-              "price": 120,
+              "staff": "tm-1",
+              "when_on": "@today+5d",
+              "visit_type": "Bridal",
+              "minutes": 240,
+              "price": 480,
               "mine": "@installer"
             }
           },
           {
             "key": "bookin-16",
             "values": {
-              "booking_name": "Color touch-up - Underhill (2)",
+              "booking_name": "All-over color, warm brown",
               "status": "Booked",
-              "client": "client-5",
-              "plan": "plan-2",
-              "staff": "tm-4",
-              "when_on": "@sun",
-              "visit_type": "Bridal",
-              "minutes": 90,
-              "price": 95
+              "client": "client-9",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "when_on": "@today+6d",
+              "visit_type": "Appointment",
+              "minutes": 120,
+              "price": 160
             }
           },
           {
             "key": "bookin-17",
             "values": {
-              "booking_name": "Highlights - Salazar (2)",
+              "booking_name": "Cut and blow-dry, new bob",
               "status": "Booked",
-              "client": "client-8",
-              "plan": "plan-4",
-              "staff": "tm-1",
-              "when_on": "@mon+1w",
+              "client": "client-12",
+              "plan": "plan-1",
+              "staff": "tm-4",
+              "when_on": "@today+12d",
               "visit_type": "Appointment",
-              "minutes": 180,
-              "price": 210
+              "minutes": 60,
+              "price": 72
             }
           },
           {
             "key": "bookin-18",
             "values": {
-              "booking_name": "Deep conditioning treatment - Quillan (2)",
+              "booking_name": "Root touch-up, gray coverage",
               "status": "Booked",
-              "client": "client-11",
-              "plan": "plan-6",
-              "staff": "tm-2",
-              "when_on": "@wed+1w",
-              "visit_type": "Consultation",
-              "minutes": 30,
-              "price": 35
+              "client": "client-3",
+              "plan": "plan-2",
+              "staff": "tm-3",
+              "when_on": "@today+26d",
+              "visit_type": "Appointment",
+              "minutes": 90,
+              "price": 98
             }
           },
           {
             "key": "bookin-19",
             "values": {
-              "booking_name": "Cut and style - Navarro (2)",
-              "status": "Booked",
-              "client": "client-14",
+              "booking_name": "Cut and blow-dry",
+              "status": "Completed",
+              "client": "client-11",
               "plan": "plan-1",
-              "staff": "tm-3",
-              "when_on": "@today",
-              "visit_type": "Walk-in",
+              "staff": "tm-2",
+              "when_on": "@today-35d",
+              "visit_type": "Appointment",
               "minutes": 60,
-              "price": 68,
-              "mine": "@installer"
+              "price": 72,
+              "tip": 10,
+              "completed_on": "@today-35d"
             }
           },
           {
             "key": "bookin-20",
             "values": {
-              "booking_name": "Full color and gloss - Fairbairn (2)",
-              "status": "Booked",
-              "client": "client-3",
-              "plan": "plan-3",
-              "staff": "tm-4",
-              "when_on": "@today+2d",
-              "visit_type": "Bridal",
-              "minutes": 150,
-              "price": 165
-            }
-          },
-          {
-            "key": "bookin-21",
-            "values": {
-              "booking_name": "Blowout - Carrow (2)",
+              "booking_name": "Color correction consult",
               "status": "Booked",
               "client": "client-6",
-              "plan": "plan-5",
-              "staff": "tm-1",
-              "when_on": "@today+4d",
-              "visit_type": "Appointment",
-              "minutes": 45,
-              "price": 45
-            }
-          },
-          {
-            "key": "bookin-22",
-            "values": {
-              "booking_name": "Bridal trial - Brannigan (2)",
-              "status": "Booked",
-              "client": "client-9",
-              "plan": "plan-7",
-              "staff": "tm-2",
-              "when_on": "@today+1d",
+              "plan": "plan-3",
+              "staff": "tm-3",
+              "when_on": "@today-1d",
               "visit_type": "Consultation",
-              "minutes": 90,
-              "price": 120
+              "minutes": 30,
+              "price": 0
             }
           }
         ],
@@ -1573,13 +1630,13 @@
               "Card",
               "Cash",
               "Gift card",
-              "Prepaid package"
+              "Deposit"
             ],
             "choiceColors": {
-              "Card": "slate",
-              "Cash": "blue",
-              "Gift card": "amber",
-              "Prepaid package": "violet"
+              "Card": "blue",
+              "Cash": "green",
+              "Gift card": "pink",
+              "Deposit": "amber"
             }
           },
           {
@@ -1609,7 +1666,7 @@
               "payment_name": "PAY-2210",
               "status": "Paid",
               "client": "client-3",
-              "amount": 165,
+              "amount": 190.0,
               "due_on": "@today-30d",
               "method": "Card",
               "paid_on": "@today-30d"
@@ -1620,11 +1677,11 @@
             "values": {
               "payment_name": "PAY-2211",
               "status": "Paid",
-              "client": "client-8",
-              "amount": 68,
-              "due_on": "@today-28d",
-              "method": "Cash",
-              "paid_on": "@today-28d"
+              "client": "client-7",
+              "amount": 313.0,
+              "due_on": "@today-7d",
+              "method": "Card",
+              "paid_on": "@today-7d"
             }
           },
           {
@@ -1632,11 +1689,11 @@
             "values": {
               "payment_name": "PAY-2212",
               "status": "Paid",
-              "client": "client-13",
-              "amount": 35,
-              "due_on": "@today-14d",
-              "method": "Gift card",
-              "paid_on": "@today-14d"
+              "client": "client-1",
+              "amount": 87.0,
+              "due_on": "@today-6d",
+              "method": "Cash",
+              "paid_on": "@today-6d"
             }
           },
           {
@@ -1645,10 +1702,10 @@
               "payment_name": "PAY-2213",
               "status": "Paid",
               "client": "client-4",
-              "amount": 210,
-              "due_on": "@today-10d",
-              "method": "Prepaid package",
-              "paid_on": "@today-10d"
+              "amount": 150.0,
+              "due_on": "@today-12d",
+              "method": "Card",
+              "paid_on": "@today-12d"
             }
           },
           {
@@ -1656,10 +1713,9 @@
             "values": {
               "payment_name": "PAY-2214",
               "status": "Failed",
-              "client": "client-9",
-              "amount": 95,
-              "due_on": "@today-3d",
-              "method": "Card"
+              "client": "client-14",
+              "amount": 50.0,
+              "due_on": "@today-2d"
             }
           },
           {
@@ -1667,10 +1723,9 @@
             "values": {
               "payment_name": "PAY-2215",
               "status": "Failed",
-              "client": "client-14",
-              "amount": 120,
-              "due_on": "@today-1d",
-              "method": "Cash"
+              "client": "client-9",
+              "amount": 36.0,
+              "due_on": "@today-8d"
             }
           },
           {
@@ -1678,10 +1733,9 @@
             "values": {
               "payment_name": "PAY-2216",
               "status": "Pending",
-              "client": "client-5",
-              "amount": 45,
-              "due_on": "@fri",
-              "method": "Gift card"
+              "client": "client-8",
+              "amount": 240.0,
+              "due_on": "@today+5d"
             }
           },
           {
@@ -1689,21 +1743,21 @@
             "values": {
               "payment_name": "PAY-2217",
               "status": "Pending",
-              "client": "client-10",
-              "amount": 165,
-              "due_on": "@today+3d",
-              "method": "Prepaid package"
+              "client": "client-13",
+              "amount": 100.0,
+              "due_on": "@today"
             }
           },
           {
             "key": "paymen-9",
             "values": {
               "payment_name": "PAY-2218",
-              "status": "Pending",
-              "client": "client-1",
-              "amount": 68,
-              "due_on": "@today+5d",
-              "method": "Card"
+              "status": "Paid",
+              "client": "client-2",
+              "amount": 150.0,
+              "due_on": "@today-9d",
+              "method": "Card",
+              "paid_on": "@today-9d"
             }
           },
           {
@@ -1711,11 +1765,11 @@
             "values": {
               "payment_name": "PAY-2219",
               "status": "Paid",
-              "client": "client-6",
-              "amount": 35,
-              "due_on": "@today-6d",
+              "client": "client-5",
+              "amount": 74.0,
+              "due_on": "@today-5d",
               "method": "Cash",
-              "paid_on": "@today-6d"
+              "paid_on": "@today-5d"
             }
           },
           {
@@ -1724,9 +1778,10 @@
               "payment_name": "PAY-2220",
               "status": "Refunded",
               "client": "client-11",
-              "amount": 210,
-              "due_on": "@today-9d",
-              "method": "Gift card"
+              "amount": 82.0,
+              "due_on": "@today-35d",
+              "method": "Card",
+              "paid_on": "@today-34d"
             }
           },
           {
@@ -1734,14 +1789,275 @@
             "values": {
               "payment_name": "PAY-2221",
               "status": "Pending",
-              "client": "client-2",
-              "amount": 95,
-              "due_on": "@today+6d",
-              "method": "Prepaid package"
+              "client": "client-9",
+              "amount": 50.0,
+              "due_on": "@today+3d"
             }
           }
         ],
         "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
+      },
+      {
+        "token": "product",
+        "name": "Retail products",
+        "labelSingular": "Product",
+        "labelPlural": "Retail products",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shopping-bag",
+        "titleField": "product_name",
+        "describes": "Shampoos, treatments and styling products you sell at the desk, with cost, price and stock.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "product_name",
+            "label": "Product",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "brand",
+            "label": "Brand",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "category",
+            "label": "Category",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Shampoo",
+              "Conditioner",
+              "Treatment",
+              "Styling",
+              "Tools"
+            ],
+            "choiceColors": {
+              "Shampoo": "blue",
+              "Conditioner": "green",
+              "Treatment": "amber",
+              "Styling": "violet",
+              "Tools": "teal"
+            }
+          },
+          {
+            "key": "size",
+            "label": "Size",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "cost",
+            "label": "Cost (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "retail_price",
+            "label": "Retail price (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "on_hand",
+            "label": "On hand",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "reorder_at",
+            "label": "Reorder at",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "markup",
+            "label": "Markup (%)",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({Cost (USD)} > 0, ROUND(({Retail price (USD)} - {Cost (USD)}) / {Cost (USD)} * 100, 0), 0)"
+          },
+          {
+            "key": "reorder_flag",
+            "label": "Reorder?",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "IF({On hand} <= {Reorder at}, \"Reorder\", \"OK\")"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "prod-1",
+            "values": {
+              "product_name": "Color-safe shampoo",
+              "brand": "Larkin Botanics",
+              "category": "Shampoo",
+              "size": "300 ml",
+              "cost": 11.5,
+              "retail_price": 26,
+              "on_hand": 9,
+              "reorder_at": 6
+            }
+          },
+          {
+            "key": "prod-2",
+            "values": {
+              "product_name": "Color-safe conditioner",
+              "brand": "Larkin Botanics",
+              "category": "Conditioner",
+              "size": "300 ml",
+              "cost": 12.0,
+              "retail_price": 28,
+              "on_hand": 7,
+              "reorder_at": 6
+            }
+          },
+          {
+            "key": "prod-3",
+            "values": {
+              "product_name": "Bond repair at-home step",
+              "brand": "Fernhollow Pro",
+              "category": "Treatment",
+              "size": "100 ml",
+              "cost": 15.0,
+              "retail_price": 34,
+              "on_hand": 3,
+              "reorder_at": 4
+            }
+          },
+          {
+            "key": "prod-4",
+            "values": {
+              "product_name": "Purple toning shampoo",
+              "brand": "Fernhollow Pro",
+              "category": "Shampoo",
+              "size": "250 ml",
+              "cost": 10.0,
+              "retail_price": 24,
+              "on_hand": 12,
+              "reorder_at": 5
+            }
+          },
+          {
+            "key": "prod-5",
+            "values": {
+              "product_name": "Heat protect spray",
+              "brand": "Saltmarsh Styling",
+              "category": "Styling",
+              "size": "150 ml",
+              "cost": 8.5,
+              "retail_price": 22,
+              "on_hand": 14,
+              "reorder_at": 6
+            }
+          },
+          {
+            "key": "prod-6",
+            "values": {
+              "product_name": "Texture spray",
+              "brand": "Saltmarsh Styling",
+              "category": "Styling",
+              "size": "200 ml",
+              "cost": 9.0,
+              "retail_price": 25,
+              "on_hand": 4,
+              "reorder_at": 5
+            }
+          },
+          {
+            "key": "prod-7",
+            "values": {
+              "product_name": "Lightweight hair oil",
+              "brand": "Larkin Botanics",
+              "category": "Treatment",
+              "size": "50 ml",
+              "cost": 13.0,
+              "retail_price": 32,
+              "on_hand": 6,
+              "reorder_at": 4
+            }
+          },
+          {
+            "key": "prod-8",
+            "values": {
+              "product_name": "Round brush, 45 mm",
+              "brand": "Ashgrove Tools",
+              "category": "Tools",
+              "size": "each",
+              "cost": 9.5,
+              "retail_price": 24,
+              "on_hand": 5,
+              "reorder_at": 3
+            }
+          }
+        ]
       }
     ],
     "relationships": [
@@ -1794,6 +2110,16 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "payments"
+      },
+      {
+        "describes": "A client usually sees one stylist.",
+        "fromTable": "client",
+        "fromField": "stylist",
+        "toTable": "team_member",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "regulars"
       }
     ],
     "sharedBlocks": [
@@ -1995,8 +2321,11 @@
             "relative": "before_today"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2009,8 +2338,11 @@
             "relative": "this_week"
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2024,8 +2356,11 @@
             "n": 7
           }
         },
-        "filters": {
-          "status": "Booked"
+        "anyOf": {
+          "status": [
+            "Booked",
+            "Checked in"
+          ]
         }
       },
       {
@@ -2102,6 +2437,20 @@
             "Failed"
           ]
         }
+      },
+      {
+        "token": "all_product",
+        "name": "All products",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "product"
+      },
+      {
+        "token": "product_board",
+        "name": "Products by category",
+        "kind": "kanban",
+        "groupBy": "category",
+        "table": "product"
       }
     ],
     "agent": {
@@ -2174,6 +2523,18 @@
           "surface": "booking_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open retail products.",
+        "action": {
+          "kind": "open",
+          "surface": "product_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "product_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2191,7 +2552,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2213,12 +2574,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run the salon from one page. Clients, the service menu and payments are linked, and every appointment is a row with a stylist. Stylists find their chair under Mine. The service menu shows how many regulars book each service."
+              "text": "Run the salon from here. Appointments shows the day by stylist; each finished visit records the service price, tip, retail sold and the stylist's commission, and whether the client rebooked before leaving. Client cards keep the color formula, patch test date and hair notes, so any stylist can pick up where the last one left off."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2447,8 +2814,11 @@
                     "relative": "before_today"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2461,8 +2831,11 @@
                     "relative": "this_week"
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2476,8 +2849,11 @@
                     "n": 7
                   }
                 },
-                "filters": {
-                  "status": "Booked"
+                "anyOf": {
+                  "status": [
+                    "Booked",
+                    "Checked in"
+                  ]
                 }
               },
               {
@@ -2593,6 +2969,319 @@
             ],
             "activeViewId": "pay-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retail products"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "What is on the shelf at the desk, what it cost, what it sells for, and what to reorder."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "product",
+              "view": "product_board"
+            },
+            "inline": true,
+            "title": "Retail products",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "pr-b",
+                "name": "By category",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "category"
+              },
+              {
+                "id": "pr-t",
+                "name": "All products",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "pr-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "hair-salon-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the salon runs in this workspace. Share it with the front desk and every stylist."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Service menu",
+              "bold": true
+            },
+            {
+              "text": ": every service with its price, length and what is included, and how often it was done."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": usual service, preferred stylist, color formula, patch test date, hair notes, visits, no-shows and spend."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments",
+              "bold": true
+            },
+            {
+              "text": ": every visit, with the stylist, time, service price, tip, retail sold, commission and whether the client rebooked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Payments",
+              "bold": true
+            },
+            {
+              "text": ": what was paid, deposits taken, and anything pending or declined."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retail products",
+              "bold": true
+            },
+            {
+              "text": ": the shelf at the desk, with cost, price, markup and reorder points."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A visit from booking to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The front desk books the appointment with the right service and length. A stylist can see their own day in "
+            },
+            {
+              "text": "My appointments",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "When the client arrives, set the appointment to "
+            },
+            {
+              "text": "Checked in",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the service, the stylist updates the color formula, recommends a product and books the next visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "At checkout, enter tip and retail, press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " on the appointment and "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " on the payment."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's book, failed payments"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: confirm tomorrow by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: count the retail shelf; text clients Due to rebook"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: rebooking rate and revenue by stylist at the team meeting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change the service menu to your own prices and times, set your commission percentages in the commission formula, and delete the sample clients once you have entered a dozen of your own. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Deposits and gift cards"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Long color services and bridal parties take a deposit when booking; record it as a payment with method "
+            },
+            {
+              "text": "Deposit",
+              "bold": true
+            },
+            {
+              "text": " and take it off the final bill. Gift cards are recorded as payments by gift card, so the day's totals still add up."
+            }
+          ]
         }
       ]
     },
@@ -2770,7 +3459,8 @@
                 },
                 "anyOf": {
                   "status": [
-                    "Booked"
+                    "Booked",
+                    "Checked in"
                   ]
                 }
               }
@@ -2851,6 +3541,123 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rebooking rate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c5",
+                "name": "Rebooked before leaving",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "rebooked",
+                  "op": "count",
+                  "centerValue": true
+                }
+              }
+            ],
+            "activeViewId": "view-c5"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Service revenue by stylist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "booking",
+              "view": "all_booking"
+            },
+            "inline": true,
+            "title": "Appointments",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c6",
+                "name": "Revenue by stylist",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "staff",
+                  "op": "sum",
+                  "field": "price"
+                }
+              }
+            ],
+            "activeViewId": "view-c6"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Clients due to rebook"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "client",
+              "view": "all_client"
+            },
+            "inline": true,
+            "title": "Clients",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l6",
+                "name": "Due to rebook",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "client_status": "Due to rebook"
+                }
+              }
+            ],
+            "activeViewId": "view-l6"
+          }
         }
       ]
     },
@@ -2866,7 +3673,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "The best time to book the next visit is before the client leaves the chair."
+              "text": "The healthiest salons book the next visit before the client leaves the chair. A rebooking rate above 60 percent means a full book; under 40 means the front desk is chasing every week."
             }
           ],
           "background": "blue",
@@ -2878,7 +3685,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When a client calls to book"
             }
           ],
           "props": {
@@ -2889,7 +3696,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer the next appointment at the end of every service."
+              "text": "Find them in Clients. Their "
+            },
+            {
+              "text": "Usual service",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Preferred stylist",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Hair and scalp notes",
+              "bold": true
+            },
+            {
+              "text": " tell you what to book and with whom."
             }
           ]
         },
@@ -2897,7 +3725,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write the date on the appointment card and enter it right away."
+              "text": "Book the right length. A partial balayage is three hours, not two; the service menu lists minutes for each service. Under-booking color is the main reason a day runs late."
             }
           ]
         },
@@ -2905,7 +3733,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a reminder two days before."
+              "text": "New color clients: book a 15-minute consultation and a patch test at least 48 hours before the color appointment. Put the date in "
+            },
+            {
+              "text": "Patch test on",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2913,7 +3748,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If the client declines, add a follow-up in six weeks."
+              "text": "Clients with two or more no-shows show "
+            },
+            {
+              "text": "Ask for a deposit",
+              "bold": true
+            },
+            {
+              "text": ". Take a card deposit when booking."
             }
           ]
         },
@@ -2921,7 +3763,130 @@
           "type": "heading",
           "text": [
             {
-              "text": "Waiting list"
+              "text": "Rebooking at the chair"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The stylist suggests the next visit while finishing: \"Your roots will show in five to six weeks. Shall I hold the same time on the 14th?\""
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cut clients: four to eight weeks. Root touch-ups: four to six. Balayage: ten to fourteen."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book it before the client reaches the desk, and tick "
+            },
+            {
+              "text": "Rebooked before leaving",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If they will not commit, mark them "
+            },
+            {
+              "text": "Due to rebook",
+              "bold": true
+            },
+            {
+              "text": " and text them in two weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checkout checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Service price confirmed with the stylist, extras added (bond repair, toner, extra length)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recommend one product the stylist used, from Retail products, and add it as Retail sold"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tip recorded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next visit booked, or the client marked Due to rebook"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payment taken and Mark paid pressed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
             }
           ],
           "props": {
@@ -2932,7 +3897,52 @@
           "type": "text",
           "text": [
             {
-              "text": "Keep a short list of clients who want any cancellation. Call them first when a slot opens."
+              "text": "A color client finishes her root touch-up. While she is under the dryer, the stylist checks the book and suggests a Tuesday in five weeks. At the desk, the client buys the color-safe shampoo the stylist used. The appointment shows Rebooked, Retail sold $32, and the stylist's commission includes 10 percent of the retail."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "No-shows and late cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Text a reminder two days before and on the morning of the visit. A no-show is set as "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": " on the appointment; the client card counts them. After two, ask for a deposit when they next book. Be kind about the first one: life happens."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reading the Dashboard"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The rebooking donut shows the share of finished visits that left with a next appointment. Look at it by stylist at the monthly team meeting; the stylist with the highest rate shares how they ask."
             }
           ]
         }
@@ -2950,7 +3960,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A recorded formula is the difference between a match and a mistake."
+              "text": "A color formula on the client card is worth more than any stylist's memory. It is what lets another colorist step in when someone is sick, and what protects the salon if a result goes wrong."
             }
           ],
           "background": "blue",
@@ -2962,7 +3972,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "What to record after every color service"
             }
           ],
           "props": {
@@ -2970,26 +3980,65 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Write the brand, shade, developer and ratio on the appointment note."
+              "text": "Write it in "
+            },
+            {
+              "text": "Color formula",
+              "bold": true
+            },
+            {
+              "text": " on the client card, newest first, with the date:"
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Note processing time and the result."
+              "text": "Product line and shades, with the ratio (for example 6N + 6.1, 1 to 1)"
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Take a photo with the client permission."
+              "text": "Developer volume"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Where it went: roots only, all over, mid-lengths, foils, hand-painted"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Processing time and whether heat was used"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Toner or gloss: shades and time"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Result in your own words, and anything you would change next time"
             }
           ]
         },
@@ -3005,10 +4054,152 @@
           }
         },
         {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every new color client, and every client whose last color was more than six months ago, gets a patch test 48 hours before color."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the date in "
+            },
+            {
+              "text": "Patch test on",
+              "bold": true
+            },
+            {
+              "text": ". No date, no color: rebook the service."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any reaction: stop, note it in "
+            },
+            {
+              "text": "Hair and scalp notes",
+              "bold": true
+            },
+            {
+              "text": ", and do not color."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before you mix"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Read the formula and notes on the card"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check the patch test date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at the hair in daylight: regrowth length, previous color, porosity"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agree the result with the client, using pictures, and say what is realistic in one visit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Color corrections"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
           "type": "text",
           "text": [
             {
-              "text": "Always do a patch test for new color clients or any new product. Record the date and result."
+              "text": "Corrections take longer and cost more than the original service. Book a consultation first, price it in writing, and plan more than one visit if needed. Record each step of the formula."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A regular's colorist is out sick. Another colorist opens the client card: 7G + 7N, 20 volume, 35 minutes on the roots, then a 9V gloss for 10 minutes. The client leaves with the same color she always has and does not notice the change of hands."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Mistakes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If a result is not what was agreed, tell the owner the same day. Offer a fix at no charge within a week. Write what happened and what was done on the card. Most clients stay when it is handled quickly and kindly."
             }
           ]
         }
@@ -3026,7 +4217,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Retail is high-margin. Keep it tidy and counted."
+              "text": "Retail is the easiest money in the salon: a client who loves the result wants to keep it at home. Recommend what you used, keep the shelf stocked, and close the day the same way every night."
             }
           ],
           "background": "blue",
@@ -3038,7 +4229,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Recommending products"
             }
           ],
           "props": {
@@ -3046,26 +4237,33 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Count the shelf every Monday."
+              "text": "Recommend one or two products the stylist actually used, and explain why for this client's hair."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Reorder anything near empty."
+              "text": "Put the bottle in the client's hand at the chair, not at the desk."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Move slow items to the front."
+              "text": "Record it on the appointment as "
+            },
+            {
+              "text": "Retail sold",
+              "bold": true
+            },
+            {
+              "text": "; the stylist's commission includes 10 percent of retail sales."
             }
           ]
         },
@@ -3073,7 +4271,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Closing"
+              "text": "Keeping the shelf"
             }
           ],
           "props": {
@@ -3084,7 +4282,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Tools sanitized."
+              "text": "Every Monday the front desk counts the shelf and updates "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " in Retail products."
             }
           ]
         },
@@ -3092,7 +4297,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Towels in the wash."
+              "text": "Anything showing "
+            },
+            {
+              "text": "Reorder",
+              "bold": true
+            },
+            {
+              "text": " goes on the distributor order that day."
             }
           ]
         },
@@ -3100,7 +4312,141 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Till counted and the book updated for tomorrow."
+              "text": "Look at "
+            },
+            {
+              "text": "Markup",
+              "bold": true
+            },
+            {
+              "text": " when prices change: most salons aim to roughly double their cost."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move slow sellers to the front shelf or bundle them before they go out of date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every finished appointment marked done, with service price, tip and retail"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every payment marked paid; card and cash totals match the payments list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No-shows set as No-show"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's first appointments confirmed by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Color bowls and brushes washed, color bar wiped down, towels in the wash"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paying stylists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Stylist commission",
+              "bold": true
+            },
+            {
+              "text": " on each appointment is 45 percent of the service price plus 10 percent of retail. Change the percentages in the formula to match your own pay plan, and keep tips separate: tips belong to the stylist in full. Add up each stylist's appointments for the pay period from the appointments table."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "At the end of a busy Saturday the front desk checks that 22 appointments are marked done, adds up card and cash, and sees that the texture spray is down to four bottles, under the reorder point of five. It goes on Monday's order."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Stylists who are shy about selling usually do better with one question: \"Do you want to know what I used today?\" It is advice, not a sales pitch."
             }
           ]
         }

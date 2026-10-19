@@ -479,7 +479,8 @@
     "list_agents",
     "send_message"
    ],
-   "reasoning_effort": null
+   "reasoning_effort": null,
+   "version_may_advance": true
   },
   "verse_desk": {
    "kind": "agent",
@@ -778,7 +779,7 @@
     "value"
    ],
    "sha256": "5f31c100b1709458ecdea33f628fbd61af4677b5880191c4d91a80847ed7614f",
-   "version": 4
+   "ignore_version": true
   },
   "knob_canary_together": {
    "kind": "row",
@@ -794,7 +795,7 @@
     "value"
    ],
    "sha256": "8bd6c17f6b0291586b77925ecd09bba24375fea47324c2c3387489d2403a6afa",
-   "version": 1
+   "ignore_version": true
   },
   "block_compass": {
    "kind": "row",
@@ -840,7 +841,7 @@
     "organization_id"
    ],
    "sha256": "f2732c6ecfecb6cbb387d800da7d75bcac9f9b650468662ce2a606b032995170",
-   "version": 1
+   "ignore_version": true
   },
   "note_4466": {
    "kind": "row",
@@ -856,7 +857,7 @@
     "organization_id"
    ],
    "sha256": "9399be23f90bb30c9ee2d6d6d5b056958d999082f0605731ccb12e26c024a956",
-   "version": 5
+   "ignore_version": true
   },
   "note_kestrel": {
    "kind": "row",
@@ -872,7 +873,7 @@
     "organization_id"
    ],
    "sha256": "092c885b2d42a427c82460f74357088c94a488952e05b86f0a2ff10023e24178",
-   "version": 1
+   "ignore_version": true
   },
   "note_alder": {
    "kind": "row",
@@ -888,7 +889,7 @@
     "organization_id"
    ],
    "sha256": "6ad5d8ef977515a7208488e23ee2278c6ee6ba5e8d9517b34b4dc35b93b3e077",
-   "version": 1
+   "ignore_version": true
   },
   "page_alder": {
    "kind": "row",
@@ -904,7 +905,7 @@
     "organization_id"
    ],
    "sha256": "1a7bf841bb9216555ab44bc6f46366ced4dd910913796cba5fc9cb696928204c",
-   "version": 2
+   "ignore_version": true
   },
   "page_road_rates": {
    "kind": "row",
@@ -920,7 +921,7 @@
     "organization_id"
    ],
    "sha256": "2fc7d3994ad47db3e6c931e068a914ded7d97c1b00d4f2efbfa7ac21c6e4a16b",
-   "version": 2
+   "ignore_version": true
   },
   "file_move_4471": {
    "kind": "row",
@@ -932,12 +933,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "74e65309ff19e52f46007e5f60f53af1f77f7cd1e840cde7d0b9de15d36a03c9",
-   "version": 1
+   "sha256": "eda473c5a4462e92e558470d87125738f7e30eb4b917130f676f3a957c0cffff",
+   "ignore_version": true
   },
   "file_pdf": {
    "kind": "row",
@@ -949,12 +949,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "0ef03e540d2a04984a9a83907aa23440a7791c7e8eb42e5ecc14712d99477073",
-   "version": 2
+   "sha256": "26563622dc7f40e953e6e526f3e3a09152443ec2233122165126723123fff89e",
+   "ignore_version": true
   },
   "file_jpg": {
    "kind": "row",
@@ -966,12 +965,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "b99bdd485c81383e3d6b50138504d8bfda2b1fa2d05d44a00a4ecfe659c9a442",
-   "version": 2
+   "sha256": "32a3f3834fd362a92b2feb36f69f449823ea856954d7dfd825045e0cf859c07d",
+   "ignore_version": true
   },
   "file_csv": {
    "kind": "row",
@@ -983,12 +981,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "62cb00ba5de0e43a0d0a6a071cfa462ff67ee4a2694efff727def99d3b732532",
-   "version": 4
+   "sha256": "8cb465f01a014c79f80ff9b1cbfd662381d9e8e0a0b4a049671c2cb2ede3d408",
+   "ignore_version": true
   },
   "file_txt": {
    "kind": "row",
@@ -1000,12 +997,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "5d87aaf796b57c77d3cfebd9f922bb24c39db592cbcc43a3cd9c9b556f804251",
-   "version": 2
+   "sha256": "34647940d3e9619b9818daa2ca08ab7651eeedc9215ac874c0bd52539c49968c",
+   "ignore_version": true
   },
   "file_docx": {
    "kind": "row",
@@ -1017,12 +1013,11 @@
     "file_name",
     "checksum",
     "size_bytes",
-    "current_version",
     "deleted_at",
     "organization_id"
    ],
-   "sha256": "32f05c001cbedc20d010a2efa2d59ef0ad61cfb843ee7d28e9237eed4e1bbf28",
-   "version": 1
+   "sha256": "496593c966cbbb559fd186e70aa477ffb22301de84351311125b6175ef6771f2",
+   "ignore_version": true
   },
   "task_lodi": {
    "kind": "row",
@@ -1393,7 +1388,7 @@
     "organization_id"
    ],
    "sha256": "cec823ddc4380447c404b5a14e5895182897840e38bd567cb9b4d5d3be3dbd5d",
-   "version": 2
+   "ignore_version": true
   },
   "note_rate_sheet": {
    "kind": "row",
@@ -1409,7 +1404,7 @@
     "organization_id"
    ],
    "sha256": "d116a81ef8ad4ef0a389765e5b032ed703ad7888b36818ad58b6b92618bdbb11",
-   "version": 1
+   "ignore_version": true
   },
   "board_copy": {
    "kind": "row",
@@ -1636,5 +1631,6 @@
    "sha256": "a42de93760fd5df2c75b54a403ca80d9422f41bc8bf7141ad54bf0a9731dec7c",
    "version": 1
   }
- }
+ },
+ "rebaseline_2026-10-18": "files, workbench.notes and platform.knob_override rows compare by content only (ignore_version); a file's content checksum is its sha256 of bytes; current_version dropped from file fields"
 }

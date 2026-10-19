@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 3,
+  "version": 4,
   "title": "Personal Injury Intake and Cases",
-  "description": "Intakes, case stages, medical records requests and offers for a personal injury practice.",
-  "forWho": "Personal injury firms",
+  "description": "For injury lawyers: intakes, limitations dates, records, liens, offers and net to client.",
+  "forWho": "Personal injury attorneys and case managers",
   "icon": {
     "emoji": "🚑"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:solid-yellow",
     "offsetY": 50
   },
   "category": "legal",
   "tags": [
-    "personal injury",
-    "intake",
-    "cases",
-    "records"
+    "personal injury lawyer",
+    "attorney",
+    "case manager",
+    "medical records",
+    "settlements",
+    "liens"
   ],
   "spec": {
     "specVersion": 1,
@@ -109,6 +111,14 @@
               "Product": "violet",
               "Other": "teal"
             }
+          },
+          {
+            "key": "incident_on",
+            "label": "Date of incident",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "received_on",
@@ -225,95 +235,103 @@
           {
             "key": "i01",
             "values": {
-              "intake_title": "Auto collision - Marchetti",
+              "intake_title": "Teodoro Marchetti",
               "source": "Phone call",
               "incident": "Auto collision",
               "received_on": "@today-1d",
               "status": "New",
               "call_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "incident_on": "@today-6d"
             }
           },
           {
             "key": "i02",
             "values": {
-              "intake_title": "Slip and fall - Obuya",
+              "intake_title": "Beatrice Obuya",
               "source": "Website form",
               "incident": "Slip and fall",
               "received_on": "@today",
               "status": "New",
               "call_by": "@today",
-              "owner": "@installer"
+              "owner": "@installer",
+              "incident_on": "@today-2d"
             }
           },
           {
             "key": "i03",
             "values": {
-              "intake_title": "Workplace - Castellano",
+              "intake_title": "Ximena Castellano",
               "source": "Attorney referral",
               "incident": "Workplace",
               "received_on": "@today-3d",
               "status": "Screening",
-              "call_by": "@mon+3d"
+              "call_by": "@mon+3d",
+              "incident_on": "@today-20d"
             }
           },
           {
             "key": "i04",
             "values": {
-              "intake_title": "Auto collision - Hargrove",
+              "intake_title": "Augustin Hargrove",
               "source": "Website form",
               "incident": "Auto collision",
               "received_on": "@today-5d",
               "status": "Screening",
               "call_by": "@today-2d",
-              "owner": "@installer"
+              "owner": "@installer",
+              "incident_on": "@today-40d"
             }
           },
           {
             "key": "i05",
             "values": {
-              "intake_title": "Product - Lindqvist",
+              "intake_title": "Elof Lindqvist",
               "source": "Past client referral",
               "incident": "Product",
               "received_on": "@today-9d",
               "status": "Signed",
               "call_by": "@today-7d",
-              "signed_on": "@today-7d"
+              "signed_on": "@today-7d",
+              "incident_on": "@today-60d"
             }
           },
           {
             "key": "i06",
             "values": {
-              "intake_title": "Auto collision - Tamura",
+              "intake_title": "Kenji Tamura",
               "source": "Phone call",
               "incident": "Auto collision",
               "received_on": "@today-12d",
               "status": "Signed",
               "call_by": "@today-10d",
-              "signed_on": "@today-10d"
+              "signed_on": "@today-10d",
+              "incident_on": "@today-15d"
             }
           },
           {
             "key": "i07",
             "values": {
-              "intake_title": "Slip and fall - Abernathy",
+              "intake_title": "Rowena Abernathy",
               "source": "Website form",
               "incident": "Slip and fall",
               "received_on": "@today-15d",
               "status": "Declined",
               "call_by": "@today-13d",
-              "decided_on": "@today-13d"
+              "decided_on": "@today-13d",
+              "incident_on": "@today-900d"
             }
           },
           {
             "key": "i08",
             "values": {
-              "intake_title": "Auto collision - Nwachukwu",
+              "intake_title": "Chukwudi Nwachukwu",
               "source": "Phone call",
               "incident": "Auto collision",
               "received_on": "@today-2d",
               "status": "New",
-              "call_by": "@mon+4d"
+              "call_by": "@mon+4d",
+              "incident_on": "@today-4d"
             }
           }
         ],
@@ -321,6 +339,10 @@
           [
             "received_on",
             "call_by"
+          ],
+          [
+            "incident_on",
+            "received_on"
           ]
         ],
         "statusImplies": [
@@ -529,6 +551,103 @@
             }
           },
           {
+            "key": "incident_on",
+            "label": "Date of incident",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "sol_on",
+            "label": "Limitations date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "carrier",
+            "label": "At-fault carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "limits",
+            "label": "Policy limits",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 10000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "fee_pct",
+            "label": "Fee percent",
+            "parityType": "decimal",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "costs",
+            "label": "Costs advanced",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "liens",
+            "label": "Liens claimed",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "stage",
             "label": "Stage",
             "parityType": "status",
@@ -608,13 +727,16 @@
           },
           {
             "key": "bills",
-            "label": "Medical bills",
+            "label": "Medical bills received",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "records",
             "pick": "bills",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": "Received"
+            }
           },
           {
             "key": "records_open",
@@ -626,7 +748,11 @@
             "pick": "request_title",
             "agg": "count",
             "filter": {
-              "status": "Requested"
+              "status": [
+                "To request",
+                "Requested",
+                "Chased"
+              ]
             }
           },
           {
@@ -638,6 +764,14 @@
             "via": "offers",
             "pick": "amount",
             "agg": "max"
+          },
+          {
+            "key": "net",
+            "label": "Net to client at best offer",
+            "parityType": "formula",
+            "formula": "{Highest offer} - ROUND({Highest offer} * {Fee percent} / 100, 0) - {Costs advanced} - {Liens claimed}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "record_btn",
@@ -696,85 +830,127 @@
           {
             "key": "k01",
             "values": {
-              "case_title": "Tamura collision",
+              "case_title": "Kenji Tamura, rear-ended at a light",
               "client_name": "Haruki Tamura",
               "incident": "Auto collision",
               "stage": "Treatment",
               "attorney": "tm-rosario",
               "manager": "tm-nadia",
               "opened_on": "@today-9d",
-              "demand_due": "@today+85d"
+              "demand_due": "@today+85d",
+              "incident_on": "@today-15d",
+              "sol_on": "@today+715d",
+              "carrier": "Pellston Mutual",
+              "limits": 100000,
+              "fee_pct": 33.3,
+              "costs": 450,
+              "liens": 0
             }
           },
           {
             "key": "k02",
             "values": {
-              "case_title": "Lindqvist product claim",
+              "case_title": "Elof Lindqvist, ladder failure",
               "client_name": "Ingrid Lindqvist",
               "incident": "Product",
               "stage": "Investigation",
               "attorney": "tm-ambrose",
               "manager": "tm-nadia",
               "opened_on": "@today-8d",
-              "demand_due": "@today+120d"
+              "demand_due": "@today+120d",
+              "incident_on": "@today-60d",
+              "sol_on": "@today+670d",
+              "carrier": "Corbin Specialty Insurance",
+              "limits": 1000000,
+              "fee_pct": 40,
+              "costs": 1200,
+              "liens": 0
             }
           },
           {
             "key": "k03",
             "values": {
-              "case_title": "Brennan collision",
+              "case_title": "Niall Brennan, intersection collision",
               "client_name": "Caoimhe Brennan",
               "incident": "Auto collision",
               "stage": "Records and bills",
               "attorney": "tm-rosario",
               "manager": "tm-nadia",
               "opened_on": "@today-140d",
-              "demand_due": "@mon+4d"
+              "demand_due": "@mon+4d",
+              "incident_on": "@today-150d",
+              "sol_on": "@today+580d",
+              "carrier": "Harrowgate Auto",
+              "limits": 50000,
+              "fee_pct": 33.3,
+              "costs": 2100,
+              "liens": 3800
             }
           },
           {
             "key": "k04",
             "values": {
-              "case_title": "Okafor workplace injury",
+              "case_title": "Femi Okafor, scaffold fall on site",
               "client_name": "Chidi Okafor",
               "incident": "Workplace",
               "stage": "Demand",
               "attorney": "tm-ambrose",
               "manager": "tm-nadia",
               "opened_on": "@today-210d",
-              "demand_due": "@today-3d"
+              "demand_due": "@today-3d",
+              "incident_on": "@today-230d",
+              "sol_on": "@today+500d",
+              "carrier": "Ironbridge Casualty",
+              "limits": 500000,
+              "fee_pct": 33.3,
+              "costs": 6400,
+              "liens": 21500
             }
           },
           {
             "key": "k05",
             "values": {
-              "case_title": "Vasquez slip and fall",
+              "case_title": "Lucia Vasquez, wet floor at grocer",
               "client_name": "Elena Vasquez",
               "incident": "Slip and fall",
               "stage": "Negotiation",
               "attorney": "tm-rosario",
               "manager": "tm-nadia",
               "opened_on": "@today-300d",
-              "demand_due": "@today-60d"
+              "demand_due": "@today-60d",
+              "incident_on": "@today-320d",
+              "sol_on": "@today+410d",
+              "carrier": "Sterling Retail Indemnity",
+              "limits": 300000,
+              "fee_pct": 33.3,
+              "costs": 3900,
+              "liens": 6200
             }
           },
           {
             "key": "k06",
             "values": {
-              "case_title": "Ashworth collision",
+              "case_title": "Kwabena Ashworth, highway merge crash",
               "client_name": "Desmond Ashworth",
               "incident": "Auto collision",
               "stage": "Litigation",
               "attorney": "tm-rosario",
               "manager": "tm-nadia",
               "opened_on": "@today-480d",
-              "demand_due": "@today-250d"
+              "demand_due": "@today-250d",
+              "incident_on": "@today-500d",
+              "sol_on": "@today+230d",
+              "carrier": "Pellston Mutual",
+              "limits": 250000,
+              "fee_pct": 40,
+              "costs": 18700,
+              "liens": 14800
             }
           },
           {
             "key": "k07",
             "values": {
-              "case_title": "Pemberton collision",
+              "case_title": "Greer Pemberton, T-bone at a stop sign",
               "client_name": "Rosalind Pemberton",
               "incident": "Auto collision",
               "stage": "Resolved",
@@ -782,20 +958,34 @@
               "manager": "tm-nadia",
               "opened_on": "@today-420d",
               "demand_due": "@today-290d",
-              "resolved_on": "@today-290d"
+              "resolved_on": "@today-290d",
+              "incident_on": "@today-440d",
+              "sol_on": "@today+290d",
+              "carrier": "Harrowgate Auto",
+              "limits": 100000,
+              "fee_pct": 33.3,
+              "costs": 5200,
+              "liens": 9100
             }
           },
           {
             "key": "k08",
             "values": {
-              "case_title": "Mbeki slip and fall",
+              "case_title": "Dashiell Mbeki, fall on broken stairs",
               "client_name": "Tendai Mbeki",
               "incident": "Slip and fall",
               "stage": "Treatment",
               "attorney": "tm-ambrose",
               "manager": "tm-nadia",
               "opened_on": "@today-60d",
-              "demand_due": "@today+30d"
+              "demand_due": "@today+21d",
+              "incident_on": "@today-70d",
+              "sol_on": "@today+660d",
+              "carrier": "Larchmont Property Insurance",
+              "limits": 1000000,
+              "fee_pct": 33.3,
+              "costs": 800,
+              "liens": 0
             }
           }
         ],
@@ -807,6 +997,10 @@
           [
             "opened_on",
             "demand_due"
+          ],
+          [
+            "incident_on",
+            "opened_on"
           ]
         ],
         "statusImplies": [
@@ -1096,7 +1290,7 @@
           {
             "key": "r01",
             "values": {
-              "request_title": "Emergency room records - Tamura",
+              "request_title": "ER visit, night of the crash",
               "case": "k01",
               "provider": "Riverbend Regional Hospital",
               "requested_on": "@today-6d",
@@ -1109,7 +1303,7 @@
           {
             "key": "r02",
             "values": {
-              "request_title": "Orthopedic records - Tamura",
+              "request_title": "Orthopedic consult and MRI",
               "case": "k01",
               "provider": "Calder Orthopedic Associates",
               "requested_on": "@today-5d",
@@ -1122,7 +1316,7 @@
           {
             "key": "r03",
             "values": {
-              "request_title": "Imaging records - Brennan",
+              "request_title": "Imaging center films and reports",
               "case": "k03",
               "provider": "Ironwood Imaging Center",
               "requested_on": "@today-30d",
@@ -1135,7 +1329,7 @@
           {
             "key": "r04",
             "values": {
-              "request_title": "Physical therapy records - Brennan",
+              "request_title": "Twelve weeks of physical therapy",
               "case": "k03",
               "provider": "Cedarline Physical Therapy",
               "requested_on": "@today-25d",
@@ -1147,7 +1341,7 @@
           {
             "key": "r05",
             "values": {
-              "request_title": "Primary care records - Okafor",
+              "request_title": "Primary care, five years before",
               "case": "k04",
               "provider": "Lakeshore Family Medicine",
               "requested_on": "@today-120d",
@@ -1160,7 +1354,7 @@
           {
             "key": "r06",
             "values": {
-              "request_title": "Surgery records - Okafor",
+              "request_title": "Shoulder surgery and hospital bill",
               "case": "k04",
               "provider": "Summit Surgical Group",
               "requested_on": "@today-130d",
@@ -1173,7 +1367,7 @@
           {
             "key": "r07",
             "values": {
-              "request_title": "Emergency records - Mbeki",
+              "request_title": "Ambulance and ER records",
               "case": "k08",
               "provider": "Riverbend Regional Hospital",
               "requested_on": "@today-20d",
@@ -1186,7 +1380,7 @@
           {
             "key": "r08",
             "values": {
-              "request_title": "Chiropractic records - Vasquez",
+              "request_title": "Chiropractic treatment, eight months",
               "case": "k05",
               "provider": "Elmgate Chiropractic and Wellness",
               "requested_on": "@today-250d",
@@ -1199,7 +1393,7 @@
           {
             "key": "r09",
             "values": {
-              "request_title": "Initial records - Lindqvist",
+              "request_title": "Urgent care first visit",
               "case": "k02",
               "provider": "Pinecrest Urgent Care",
               "requested_on": "@today-1d",
@@ -1422,7 +1616,7 @@
           {
             "key": "o01",
             "values": {
-              "offer_title": "First offer - Vasquez",
+              "offer_title": "Opening offer after demand",
               "case": "k05",
               "carrier": "Northgate Mutual",
               "amount": 18000,
@@ -1433,7 +1627,7 @@
           {
             "key": "o02",
             "values": {
-              "offer_title": "Second offer - Vasquez",
+              "offer_title": "Second offer after counter",
               "case": "k05",
               "carrier": "Northgate Mutual",
               "amount": 31000,
@@ -1444,7 +1638,7 @@
           {
             "key": "o03",
             "values": {
-              "offer_title": "Third offer - Vasquez",
+              "offer_title": "Final offer before mediation",
               "case": "k05",
               "carrier": "Northgate Mutual",
               "amount": 42500,
@@ -1455,7 +1649,7 @@
           {
             "key": "o04",
             "values": {
-              "offer_title": "Offer - Ashworth",
+              "offer_title": "Policy-limits tender",
               "case": "k06",
               "carrier": "Cascade Casualty",
               "amount": 65000,
@@ -1466,7 +1660,7 @@
           {
             "key": "o05",
             "values": {
-              "offer_title": "Offer - Pemberton",
+              "offer_title": "Settlement accepted at mediation",
               "case": "k07",
               "carrier": "Harbor Mutual",
               "amount": 54000,
@@ -1477,7 +1671,7 @@
           {
             "key": "o06",
             "values": {
-              "offer_title": "Opening offer - Okafor",
+              "offer_title": "Low opening offer, under review",
               "case": "k04",
               "carrier": "Summit Surety",
               "amount": 22000,
@@ -2156,7 +2350,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -2167,7 +2361,7 @@
         "emoji": "🚑"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:solid-yellow",
         "offsetY": 50
       },
       "settings": {
@@ -2231,6 +2425,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-negotiation"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3043,7 +3243,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Collect facts and be kind. The attorney decides whether the firm can help."
+              "text": "Injured people call several firms. The firm that calls back fast, listens and explains clearly is the one they sign with. Good screening also protects the firm from cases it cannot win."
             }
           ],
           "background": "blue",
@@ -3055,7 +3255,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On the call"
+              "text": "Within one hour of the inquiry"
             }
           ],
           "props": {
@@ -3066,7 +3266,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Thank the caller and let them tell the story first."
+              "text": "Add the intake with name, source, incident type and "
+            },
+            {
+              "text": "Date of incident",
+              "bold": true
+            },
+            {
+              "text": ". Set "
+            },
+            {
+              "text": "Call by",
+              "bold": true
+            },
+            {
+              "text": " to now."
             }
           ]
         },
@@ -3074,23 +3288,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Capture the date of the incident, who was involved and who has treated them."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Flag any date-sensitive item for the attorney right away."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Run the conflict check."
+              "text": "Call back. Leave a voicemail and send a text if they do not answer; try again in two hours."
             }
           ]
         },
@@ -3098,7 +3296,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the call"
+              "text": "The screening call"
             }
           ],
           "props": {
@@ -3109,7 +3307,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Log the intake and set Call by to the next business day."
+              "text": "What happened, where and when?",
+              "bold": true
+            },
+            {
+              "text": " The date sets the limitations clock."
             }
           ]
         },
@@ -3117,7 +3319,254 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Attorney decision: send an engagement agreement or a decline letter."
+              "text": "Who was at fault?",
+              "bold": true
+            },
+            {
+              "text": " Police report number, witnesses, photos, video."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Injuries and treatment so far?",
+              "bold": true
+            },
+            {
+              "text": " ER, urgent care, primary doctor, specialists. Gaps in treatment hurt claims."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance",
+              "bold": true
+            },
+            {
+              "text": ": the at-fault party's carrier, the client's own auto policy (medical payments and uninsured motorist coverage), health insurance."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Has the client given a recorded statement or signed anything for an insurer?",
+              "bold": true
+            },
+            {
+              "text": " Advise them not to until you are retained."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Any prior injuries to the same body part?",
+              "bold": true
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Decide"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Signals"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Usually"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Clear liability, ongoing treatment, insurance in place"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sign"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Liability disputed but evidence exists"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney review same day"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "No injury treatment, or limitations date passed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Decline with a letter"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Signing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Contingency agreement explained: fee percent, how costs are handled, what happens if there is no recovery"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agreement signed; "
+            },
+            {
+              "text": "Mark signed",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Case opened with incident date and "
+            },
+            {
+              "text": "Limitations date",
+              "bold": true
+            },
+            {
+              "text": " checked by a second person"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Letters of representation sent to all carriers the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client told what to do next: keep every appointment, keep receipts, no social media posts about the accident"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Declining"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send a written non-engagement letter that states the firm is not representing them and that time limits apply to their claim. Mark the intake "
+            },
+            {
+              "text": "Declined",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kenji was rear-ended at a light 15 days ago and is seeing an orthopedist. He signed after a 20-minute call; letters went to Pellston Mutual and his own carrier the same afternoon."
             }
           ]
         }
@@ -3128,14 +3577,14 @@
       "parent": "personal-injury-case-tracker",
       "title": "Case stages",
       "icon": {
-        "emoji": "🪜"
+        "emoji": "🧭"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Every signed case moves through the same stages."
+              "text": "Every case moves through the same stages. Knowing what finishes each stage keeps cases from sitting for months without progress."
             }
           ],
           "background": "blue",
@@ -3147,7 +3596,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Stages"
+              "text": "The stages"
             }
           ],
           "props": {
@@ -3155,50 +3604,323 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Stage"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Done when"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Investigation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Liability evidence gathered: police report, photos, witness statements, vehicle damage"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Treatment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Client has finished treatment or reached maximum improvement"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Records and bills"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every provider's records and itemized bills received"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Demand"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Demand package sent to the carrier"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Negotiation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer accepted, or decision to file suit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Litigation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Suit filed; court deadlines tracked separately"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Resolved"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Settlement disbursed and file closed"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Investigation: preservation letters, scene photos, carrier details."
+              "text": "Investigation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Police or incident report ordered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos of the scene, injuries and property damage saved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Witnesses contacted while memories are fresh"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Video requested from businesses before it is overwritten (often within 30 days)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Treatment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Case managers check in with the client every two weeks: appointments kept, new providers, how they are feeling."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Treatment: check in with the client every two weeks."
+              "text": "Every new provider gets a records request row straight away."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Records and bills: requests out to every provider."
+              "text": "Demand"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The demand package tells the story: liability, injuries, treatment, bills, lost wages, how life changed, and a specific number."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Demand: package reviewed by the attorney and sent."
+              "text": "Set "
+            },
+            {
+              "text": "Demand target",
+              "bold": true
+            },
+            {
+              "text": " when treatment ends. Aim to send within 30 days of the last record arriving."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Negotiation: log every offer under Offers."
+              "text": "Negotiation and litigation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Negotiation ends with an accepted offer or a written decision to file suit. Do not let a case sit in Negotiation for more than 60 days without that decision."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Litigation or Resolved."
+              "text": "Once suit is filed, court deadlines are tracked as their own dates and the case manager keeps the client informed of each step."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Limitations dates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every Monday, filter cases with a limitations date in the next 180 days that are not resolved. For each, the attorney decides by 90 days out: settle or file."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Client updates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Call every client at least once a month at every stage, even when nothing changed. Silence is the top complaint injured clients have about their lawyers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Niall's case is at Records and bills with his therapy records chased two days ago. Once they arrive, the demand target date this week can hold."
             }
           ]
         }
@@ -3207,11 +3929,23 @@
     {
       "key": "sop-records",
       "parent": "personal-injury-case-tracker",
-      "title": "Chasing records",
+      "title": "Chasing records and bills",
       "icon": {
         "emoji": "📑"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The demand is only as strong as the records behind it, and records are the slowest part of most cases. A steady weekly chase shortens every case."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -3227,7 +3961,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Request records on the case."
+              "text": "Add a row for each provider: ER, ambulance, imaging, specialists, therapy, pharmacy."
             }
           ]
         },
@@ -3235,7 +3969,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Attach the signed authorization."
+              "text": "Send a signed authorization with a request for complete records and an itemized bill. Ask for billing codes on the bill."
             }
           ]
         },
@@ -3243,7 +3977,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set a follow-up date one week out."
+              "text": "Press "
+            },
+            {
+              "text": "Mark requested",
+              "bold": true
+            },
+            {
+              "text": " and set "
+            },
+            {
+              "text": "Follow up by",
+              "bold": true
+            },
+            {
+              "text": " for 14 days later."
             }
           ]
         },
@@ -3251,7 +3999,151 @@
           "type": "heading",
           "text": [
             {
-              "text": "Following up"
+              "text": "Follow-up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days since request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "14"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the records department; confirm they received it"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "21"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Second request in writing; mark Chased"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Ask the client to call their provider; offer a records service if the firm uses one"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Note every call on the request's page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When records arrive"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Records complete for the dates of treatment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Itemized bill received and amount entered in "
+            },
+            {
+              "text": "Bills",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pages indexed so the attorney can find key findings quickly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Mark received",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Bills and liens"
             }
           ],
           "props": {
@@ -3262,7 +4154,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Past the follow-up date, call the provider and mark Chased."
+              "text": "Health insurers, government programs and some providers will claim repayment from the settlement. Ask every client who paid their bills, and send lien inquiry letters early."
             }
           ]
         },
@@ -3270,77 +4162,22 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Escalate to the attorney after the third attempt."
+              "text": "Update "
+            },
+            {
+              "text": "Liens claimed",
+              "bold": true
+            },
+            {
+              "text": " on the case as letters come back. Final lien amounts are negotiated after settlement."
             }
           ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Enter bills as soon as records arrive."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-negotiation",
-      "parent": "personal-injury-case-tracker",
-      "title": "Logging offers",
-      "icon": {
-        "emoji": "🤝"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Every offer"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Log the amount, carrier and date"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Tell the client the same day"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Record the attorney's response"
-            }
-          ],
-          "props": {
-            "checked": false
-          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Review"
+              "text": "Records for lost wages"
             }
           ],
           "props": {
@@ -3351,7 +4188,731 @@
           "type": "text",
           "text": [
             {
-              "text": "Look at Highest offer on the case before each client update."
+              "text": "Lost wages need proof too: a letter from the employer with dates missed and pay rate, and pay stubs from before the injury. Self-employed clients need tax returns. Add these as their own request rows."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep copies of every request letter and authorization on the case."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kenji's orthopedic records were due for follow-up yesterday. The case manager calls the practice today, learns the request went to the wrong office, and resends it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A records request with no follow-up date is a request nobody is watching."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Records outstanding",
+              "bold": true
+            },
+            {
+              "text": " on each case. A case cannot move to Demand while it is above zero, unless the attorney decides to send without a provider."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-negotiation",
+      "parent": "personal-injury-case-tracker",
+      "title": "Offers and settlement",
+      "icon": {
+        "emoji": "🤝"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Every offer is logged, explained to the client in writing with the net amount, and answered in a reasonable time. The client decides; the firm advises."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When an offer arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log it under "
+            },
+            {
+              "text": "Offers",
+              "bold": true
+            },
+            {
+              "text": ": carrier, amount, date, response Pending."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Work out the net: fee, costs advanced, liens. "
+            },
+            {
+              "text": "Net to client at best offer",
+              "bold": true
+            },
+            {
+              "text": " shows it for the highest offer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call the client the same day. Follow with an email or letter showing the offer, the net and the attorney's advice."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record the client's decision and respond to the carrier: Countered, Rejected or Accepted."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Advising the client"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Compare the offer with verdicts and settlements for similar injuries in your area."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Consider policy limits: an offer at limits may be the most the carrier can pay; ask about other coverage, such as the client's own underinsured motorist policy."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Be plain about the time and risk of going to trial."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Counter-offers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Counter with a specific number and a short reason (new records, future treatment, lost wages). Avoid tiny moves; they signal the end of your range."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After acceptance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Release reviewed by the attorney before the client signs"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Settlement check deposited in the trust account"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Liens negotiated and paid"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Settlement statement signed by the client showing fee, costs, liens and net"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client paid; case marked "
+            },
+            {
+              "text": "Resolved",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Lucia's third offer came in 30 days ago after two counters. The net at that offer is shown on the case. The attorney recommends mediation, the client agrees in writing, and the response is set to Countered."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Mediation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When negotiation stalls, mediation often settles the case. Send the mediator a short statement with the key records, and prepare the client for a long day and a final number they are comfortable with."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never accept or reject an offer without the client's decision in writing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never disburse before the settlement statement is signed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "personal-injury-case-tracker",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The case desk of a personal injury practice: calls from injured people, every case with its limitations date, the medical records and bills that build the claim, and the offers that end it. Pleadings and medical files stay in your document system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Intakes",
+              "bold": true
+            },
+            {
+              "text": ": every inquiry with the incident type, date of incident and when to call back."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cases",
+              "bold": true
+            },
+            {
+              "text": ": client, incident date, "
+            },
+            {
+              "text": "Limitations date",
+              "bold": true
+            },
+            {
+              "text": ", at-fault carrier, policy limits, fee percent, costs advanced, liens, medical bills received, records outstanding, highest offer and net to client at that offer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Records requests",
+              "bold": true
+            },
+            {
+              "text": ": each provider's records and bills, requested, chased and received."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offers",
+              "bold": true
+            },
+            {
+              "text": ": every offer from a carrier and how you responded."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the money works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Medical bills received"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Total of bills from records marked Received"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Highest offer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The best offer on the case so far"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Net to client at best offer"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Highest offer, minus the fee, costs advanced and liens"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Net to client is the number clients care about. Show it to them before every decision about an offer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add attorneys and case managers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open case with its incident date and limitations date. Two people check each limitations date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add records requests already out, with follow-up dates."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every offer received with the date and amount."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": new intakes called back within the hour; records follow-ups due today."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": case stage review; limitations dates in the next 180 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thursday",
+              "bold": true
+            },
+            {
+              "text": ": liens and costs updated on cases in Demand or Negotiation."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Month end",
+              "bold": true
+            },
+            {
+              "text": ": clients updated on every case."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Intakes: "
+            },
+            {
+              "text": "Start screening",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark signed",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark declined",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cases: "
+            },
+            {
+              "text": "Request records",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Log offer",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Move to demand",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark resolved",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Records: "
+            },
+            {
+              "text": "Mark requested",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kwabena's case has 230 days left before the limitations date, a 250,000 dollar policy and liens over 14,000 dollars. If negotiation stalls, the attorney decides on filing at least 90 days before the date."
             }
           ]
         }

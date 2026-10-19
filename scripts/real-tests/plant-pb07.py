@@ -4,7 +4,8 @@
 
   plant-pb07.py --plant      turns ON the system note render_environment_note for the canary agent: its
                              agent-level knob agents.context.system_notes_disabled goes from
-                             ["render_environment_note"] to []. Prints the stored value and the UTC time.
+                             ["render_environment_note"] to []. Prints the stored value and the UTC time,
+                             and writes the grader plant record (fixture_check accepts exactly this change for 2 h).
                              The knob cache is 60 s: the runner's send must start at least 70 s later.
   plant-pb07.py --restore    writes the knob back to ["render_environment_note"] and prints it.
 
@@ -21,6 +22,20 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import fixture_check  # noqa: E402
+
+
+def write_record(playbook: str, key: str) -> None:
+    rec = fixture_check.write_plant_record(playbook, key)
+    note = "" if rec["differs_from_manifest"] else " (the planted value does not differ from the manifest: record inert)"
+    print(f"grader record written for {playbook}, expires {rec['expires_at']}{note}")
+
+
+def drop_record(playbook: str) -> None:
+    print(f"grader record for {playbook}: {'deleted' if fixture_check.delete_plant_record(playbook) else 'none present'}")
 
 _spec = importlib.util.spec_from_file_location("pb07_send", Path(__file__).resolve().parent / "pb07-send.py")
 if _spec is None or _spec.loader is None:
@@ -58,9 +73,11 @@ def main() -> None:
     now = datetime.now(timezone.utc).isoformat()
     if args.plant:
         print(f"planted at {now} (UTC): {set_notes_off(token, [])}")
+        write_record("PB-07", "knob_canary")
         print("the knob cache is 60 s: start the runner's send no earlier than 70 s after the time above")
     else:
         print(f"restored at {now} (UTC): {set_notes_off(token, BASELINE_NOTES_OFF)}")
+        drop_record("PB-07")
 
 
 if __name__ == "__main__":

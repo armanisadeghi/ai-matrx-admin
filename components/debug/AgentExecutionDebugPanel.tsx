@@ -329,7 +329,24 @@ export const AgentExecutionDebugPanel: React.FC<
   const displayMode = useAppSelector(selectDisplayMode(instanceId));
   const autoRun = useAppSelector(selectAutoRun(instanceId));
 
-  if (!instance) return null;
+  // Honest, never blank: an id whose run is not in this tab's store says so (the sweep read it as blank).
+  if (!instance)
+    return (
+      <div style={{ position: "fixed", right: "20px", top: "80px", width: "360px", zIndex: 9998 }}>
+        <Card className="shadow-2xl">
+          <div className="flex items-center justify-between gap-2 border-b border-border p-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <Database className="h-4 w-4 shrink-0" />
+              <h3 className="type-label truncate">Agent Execution State</h3>
+            </div>
+            <button onClick={onClose} className="rounded p-1 hover:bg-accent" title="Close" aria-label="Close">
+              <X size={16} />
+            </button>
+          </div>
+          <p className="p-3 text-sm text-muted-foreground">This run is not loaded in this tab.</p>
+        </Card>
+      </div>
+    );
 
   const codeBlockProps = { copiedSection, onCopy: copyToClipboard };
 

@@ -404,6 +404,51 @@ def add_accept_drift_arg(ap: argparse.ArgumentParser) -> None:
 
 # ---------------------------------------------------------------------------------------------- self-test
 
+class _FakeReader:
+    """Serves one row for the plant-record self-tests (no network)."""
+
+    def __init__(self, row: Dict[str, Any]) -> None:
+        self.row = row
+
+    def one(self, schema: str, table: str, id_: str, select: str) -> Dict[str, Any]:
+        return dict(self.row)
+
+
+def plant_self_test() -> int:
+    """check() against a fake reader and a temporary grader folder: the plant-record and version-counter cases."""
+    entry = {"kind": "row", "schema": "files", "table": "files", "id": "f1", "fields": ["file_name", "checksum"],
+             "ignore_version": True, "sha256": sha({"file_name": "a.csv", "checksum": "AAAA"})}
+    manifest = {"built_at": "t", "playbooks": {"PB-X": ["f"]}, "fixtures": {"f": entry}}
+    start = datetime(2026, 1, 1, 12, 0, tzinfo=timezone.utc)
+    planted = _FakeReader({"file_name": "a.csv", "checksum": "BBBB", "version": 9})
+    planted_hash = plant_hash(entry, live_values(planted, entry))
+    missed = 0
+
+    def case(name: str, want_ok: bool, want_accepted: int, row: Dict[str, Any], record: Optional[Dict[str, Any]], at: datetime) -> None:
+        nonlocal missed
+        with tempfile.TemporaryDirectory() as d:
+            gd = Path(d)
+            if record is not None:
+                plant_path("PB-X", gd).write_text(json.dumps(record))
+            r = check("PB-X", manifest, _FakeReader(row), grader_dir=gd, now=at)
+        ok = r["ok"] == want_ok and r["accepted"] == want_accepted
+        missed += 0 if ok else 1
+        print(f"{'ok    ' if ok else 'MISSED'} {name}: {'GREEN' if r['ok'] else 'RED'}, accepted {r['accepted']}")
+
+    def rec(h: str, expires: datetime) -> Dict[str, Any]:
+        return {"playbook": "PB-X", "fixture": "f", "expected_hash": h, "planted_at": start.isoformat(), "expires_at": expires.isoformat()}
+
+    live_ok = {"file_name": "a.csv", "checksum": "AAAA", "version": 1}
+    case("(d) version-only change, same bytes, is a MATCH", True, 0, {**live_ok, "version": 7}, None, start)
+    case("(a) planted change with a matching record is accepted", True, 1, planted.row, rec(planted_hash, start + timedelta(hours=2)), start)
+    case("(b) record with the wrong hash is refused", False, 0, planted.row, rec("0" * 64, start + timedelta(hours=2)), start)
+    case("(c) expired record is refused", False, 0, planted.row, rec(planted_hash, start + timedelta(hours=2)), start + timedelta(hours=2, seconds=1))
+    case("(e) no record, planted change is refused", False, 0, planted.row, None, start)
+    case("(f) record for another fixture is refused", False, 0, planted.row, {**rec(planted_hash, start + timedelta(hours=2)), "fixture": "other"}, start)
+    case("(g) a different change than the planted one is refused", False, 0, {"file_name": "a.csv", "checksum": "CCCC"}, rec(planted_hash, start + timedelta(hours=2)), start)
+    return missed
+
+
 def self_test() -> int:
     """Pure comparison cases. RED cases must produce at least one DIFF; GREEN cases none."""
     base = {"kind": "agent", "id": "a", "live_version": 5, "live_version_id": "v5", "model_id": "m",
@@ -442,6 +487,7 @@ def self_test() -> int:
     tool_ok = t1["tools_sha256"] != t2["tools_sha256"]
     missed += 0 if tool_ok else 1
     print(f"{'ok    ' if tool_ok else 'MISSED'} tools hash moves when a declared tool turns inactive")
+    missed += plant_self_test()
     print(f"self-test: {missed} missed")
     return 1 if missed else 0
 

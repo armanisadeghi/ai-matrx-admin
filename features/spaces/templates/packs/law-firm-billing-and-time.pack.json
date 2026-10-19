@@ -1,10 +1,10 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0412",
-  "version": 3,
+  "version": 4,
   "title": "Law Firm Billing and Time",
-  "description": "Time entries, invoices and outstanding balances for a small law firm's billing desk.",
-  "forWho": "Small law firms and billing administrators",
+  "description": "For law firm billing: time, invoices, trust payments, write-downs and collections.",
+  "forWho": "Law firm billing staff, office managers and attorneys",
   "icon": {
     "emoji": "🧮"
   },
@@ -14,8 +14,10 @@
   },
   "category": "legal",
   "tags": [
+    "lawyer",
     "legal billing",
-    "time entries",
+    "attorney",
+    "trust account",
     "invoices",
     "collections"
   ],
@@ -149,6 +151,25 @@
             "formula": "{Hours} * {Rate}"
           },
           {
+            "key": "write_down",
+            "label": "Written down",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -251,7 +272,8 @@
               "worked_on": "@today-4d",
               "hours": 3.1,
               "rate": 120,
-              "status": "On draft invoice"
+              "status": "On draft invoice",
+              "write_down": 60
             }
           },
           {
@@ -303,7 +325,8 @@
               "hours": 0.8,
               "rate": 240,
               "status": "Billed",
-              "billed_on": "@today-30d"
+              "billed_on": "@today-30d",
+              "write_down": 150
             }
           },
           {
@@ -328,7 +351,8 @@
               "worked_on": "@today-6d",
               "hours": 1.0,
               "rate": 300,
-              "status": "On draft invoice"
+              "status": "On draft invoice",
+              "write_down": 0
             }
           },
           {
@@ -485,6 +509,44 @@
             ]
           },
           {
+            "key": "from_trust",
+            "label": "Paid from trust",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "method",
+            "label": "Paid by",
+            "parityType": "select",
+            "choices": [
+              "Trust transfer",
+              "Card",
+              "Bank transfer",
+              "Check"
+            ],
+            "choiceColors": {
+              "Trust transfer": "purple",
+              "Card": "blue",
+              "Bank transfer": "green",
+              "Check": "gray"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "balance",
             "label": "Balance",
             "parityType": "formula",
@@ -588,20 +650,21 @@
           {
             "key": "v01",
             "values": {
-              "inv_title": "Invoice - Hargreave Dental, lease review",
+              "inv_title": "No. 1041, lease review",
               "client": "c01",
               "amount": 2880,
               "paid_amount": 2880,
               "issued_on": "@today-50d",
               "due_on": "@today-20d",
               "status": "Paid",
-              "paid_on": "@today-20d"
+              "paid_on": "@today-20d",
+              "method": "Bank transfer"
             }
           },
           {
             "key": "v02",
             "values": {
-              "inv_title": "Invoice - Fontaine, formation",
+              "inv_title": "No. 1052, company formation",
               "client": "c02",
               "amount": 1100,
               "paid_amount": 0,
@@ -614,7 +677,7 @@
           {
             "key": "v03",
             "values": {
-              "inv_title": "Invoice - Pinecrest, dispute month 1",
+              "inv_title": "No. 1046, contractor dispute, first month",
               "client": "c03",
               "amount": 4800,
               "paid_amount": 2000,
@@ -627,7 +690,7 @@
           {
             "key": "v04",
             "values": {
-              "inv_title": "Invoice - Bakery, supplier contract",
+              "inv_title": "No. 1057, supplier contract markup",
               "client": "c04",
               "amount": 840,
               "paid_amount": 0,
@@ -640,7 +703,7 @@
           {
             "key": "v05",
             "values": {
-              "inv_title": "Invoice - Ravenswood, tenant agreements",
+              "inv_title": "No. 1055, tenant agreement set",
               "client": "c06",
               "amount": 1950,
               "paid_amount": 0,
@@ -654,20 +717,22 @@
           {
             "key": "v06",
             "values": {
-              "inv_title": "Invoice - Ndulue, consultation",
+              "inv_title": "No. 1049, consultation",
               "client": "c05",
               "amount": 190,
               "paid_amount": 190,
               "issued_on": "@today-30d",
               "due_on": "@today-30d",
               "status": "Paid",
-              "paid_on": "@today-30d"
+              "paid_on": "@today-30d",
+              "method": "Trust transfer",
+              "from_trust": 190
             }
           },
           {
             "key": "v07",
             "values": {
-              "inv_title": "Invoice - Pinecrest, dispute month 2",
+              "inv_title": "No. 1060, contractor dispute, second month",
               "client": "c03",
               "amount": 5200,
               "paid_amount": 0,
@@ -679,27 +744,30 @@
           {
             "key": "v08",
             "values": {
-              "inv_title": "Invoice - Solheim-Park, estate",
+              "inv_title": "No. 1038, estate filings",
               "client": "c07",
               "amount": 3600,
               "paid_amount": 3600,
               "issued_on": "@today-100d",
               "due_on": "@today-70d",
               "status": "Paid",
-              "paid_on": "@today-70d"
+              "paid_on": "@today-70d",
+              "method": "Trust transfer",
+              "from_trust": 3600
             }
           },
           {
             "key": "v09",
             "values": {
-              "inv_title": "Invoice - Fontaine, follow-up",
+              "inv_title": "No. 1056, formation follow-up",
               "client": "c02",
               "amount": 420,
               "paid_amount": 200,
               "issued_on": "@today-12d",
               "due_on": "@mon+1d",
               "status": "Part paid",
-              "collector": "@installer"
+              "collector": "@installer",
+              "method": "Card"
             }
           }
         ],
@@ -940,7 +1008,10 @@
             "pick": "hours",
             "agg": "sum",
             "filter": {
-              "status": "Unbilled"
+              "status": [
+                "Unbilled",
+                "On draft invoice"
+              ]
             }
           },
           {
@@ -950,6 +1021,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "formula": "{Hours logged} * {Standard rate}"
+          },
+          {
+            "key": "budget_left",
+            "label": "Budget left",
+            "parityType": "formula",
+            "formula": "{Budget} - {Value logged}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "entry_btn",
@@ -1176,6 +1255,25 @@
             "default": "Net 30"
           },
           {
+            "key": "trust_bal",
+            "label": "Trust balance",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "inv_btn",
             "label": "Create invoice",
             "parityType": "button",
@@ -1198,7 +1296,14 @@
             "contextPolicy": "include",
             "via": "invoices",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft"
+                ]
+              }
+            }
           },
           {
             "key": "payments",
@@ -1209,6 +1314,23 @@
             "via": "invoices",
             "pick": "paid_amount",
             "agg": "sum"
+          },
+          {
+            "key": "awaiting",
+            "label": "Awaiting payment",
+            "parityType": "rollup",
+            "via": "invoices",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Sent",
+                "Part paid",
+                "Overdue"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "outstanding",
@@ -1226,7 +1348,8 @@
               "client_name": "Hargreave Dental Group",
               "status": "Active",
               "billing_email": "billing@hargravedental.net",
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "trust_bal": 0
             }
           },
           {
@@ -1235,7 +1358,8 @@
               "client_name": "Odalys Fontaine",
               "status": "Active",
               "billing_email": "odalys.f@mailbox-demo.net",
-              "terms": "Net 15"
+              "terms": "Net 15",
+              "trust_bal": 0
             }
           },
           {
@@ -1244,7 +1368,8 @@
               "client_name": "Pinecrest Builders",
               "status": "Slow payer",
               "billing_email": "ap@pinecrestbuilders.net",
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "trust_bal": 0
             }
           },
           {
@@ -1253,7 +1378,8 @@
               "client_name": "Thistle and Rowe Bakery",
               "status": "Active",
               "billing_email": "owner@thistlerowe.net",
-              "terms": "Net 15"
+              "terms": "Net 15",
+              "trust_bal": 1500
             }
           },
           {
@@ -1262,7 +1388,8 @@
               "client_name": "Emeka Ndulue",
               "status": "Active",
               "billing_email": "emeka.n@mailbox-demo.net",
-              "terms": "Due on receipt"
+              "terms": "Due on receipt",
+              "trust_bal": 0
             }
           },
           {
@@ -1271,7 +1398,8 @@
               "client_name": "Ravenswood Property Co",
               "status": "Active",
               "billing_email": "accounts@ravenswoodprop.net",
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "trust_bal": 2500
             }
           },
           {
@@ -1280,7 +1408,8 @@
               "client_name": "Ingrid Solheim-Park",
               "status": "Former",
               "billing_email": "ingrid.sp@mailbox-demo.net",
-              "terms": "Net 30"
+              "terms": "Net 30",
+              "trust_bal": 0
             }
           }
         ],
@@ -1765,7 +1894,7 @@
         "Wacker Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {
@@ -1840,6 +1969,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-month-end"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2540,7 +2675,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Good time entries get paid. Vague ones get written down."
+              "text": "Clients pay invoices they understand. Clear, prompt time entries are the base of every invoice and the best defense against fee disputes."
             }
           ],
           "background": "blue",
@@ -2552,7 +2687,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules of thumb"
+              "text": "The rules"
             }
           ],
           "props": {
@@ -2560,26 +2695,42 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Log time the same day, in tenths of an hour."
+              "text": "Enter time the same day, in tenths of an hour (6 minutes)."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Start with a verb and say what was done and why."
+              "text": "One task per entry. \"Reviewed lease amendments and called client\" is two entries."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "One task per entry."
+              "text": "Describe the work and its purpose in words a client understands."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Pick the right matter. Time on the wrong matter is the most common billing error."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record non-billable time too, with a note. It shows where effort goes."
             }
           ]
         },
@@ -2587,7 +2738,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Good and poor descriptions"
             }
           ],
           "props": {
@@ -2595,18 +2746,285 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Poor"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Good"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Research"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Researched lien rights for unpaid contractor; summary for client"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Email"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Email to client explaining formation filing steps and fees"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Meeting"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Meeting with tenant group to review draft agreement terms"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Everyone reviews their own Unbilled entries on Friday."
+              "text": "Rates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Each matter has a "
+            },
+            {
+              "text": "Standard rate",
+              "bold": true
+            },
+            {
+              "text": ". Entries default to the timekeeper's rate for that matter."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "The billing administrator lists entries older than two weeks and asks owners to confirm them."
+              "text": "Agreed discounts are applied on the invoice, not by changing rates on entries."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Statuses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Unbilled"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recorded, not yet on an invoice"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "On draft invoice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Picked up by this month's pre-bill"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "On a sent invoice"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Write-downs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the attorney decides some time should not be charged, record the amount in "
+            },
+            {
+              "text": "Written down",
+              "bold": true
+            },
+            {
+              "text": " on the entry rather than deleting it. Write-downs show where estimates and staffing need work."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Expenses"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filing fees, courier charges, transcripts and expert fees are recorded as expenses on the matter the day they are paid, with the receipt. Expenses left off a bill are rarely recovered later, and clients accept them more readily when they arrive with the month they belong to."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every timekeeper's week matches the hours they worked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No entry without a matter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Entries over 3 hours reviewed for detail"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ottoline spent 0.4 hours on a settlement call in the contractor dispute and entered it the same afternoon: \"Call with opposing counsel on settlement range; report to client.\" It goes on the next pre-bill as written."
             }
           ]
         }
@@ -2621,10 +3039,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A predictable invoicing day gets firms paid predictably. Run it on the same days every month."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Last week of the month"
+              "text": "Last week of the month: pre-bills"
             }
           ],
           "props": {
@@ -2635,7 +3065,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Time entries and filter Unbilled."
+              "text": "For each open matter, list time entries that are Unbilled; set them to "
+            },
+            {
+              "text": "On draft invoice",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2643,7 +3080,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Group by matter and send each attorney a pre-bill summary."
+              "text": "Each responsible attorney reviews their pre-bills: fix descriptions, move misplaced entries, record write-downs."
             }
           ]
         },
@@ -2651,15 +3088,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Record any write-downs and agree final amounts."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "Check each matter against "
+            },
             {
-              "text": "Create the invoice from the client and mark the entries On draft invoice."
+              "text": "Budget left",
+              "bold": true
+            },
+            {
+              "text": ". If the bill will pass the budget, the attorney calls the client before the invoice goes out."
             }
           ]
         },
@@ -2667,7 +3103,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After sending"
+              "text": "First business day: invoices"
             }
           ],
           "props": {
@@ -2675,18 +3111,238 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "todo",
           "text": [
             {
-              "text": "Mark the invoice Sent and the entries Billed."
+              "text": "One invoice per matter (or per client if the engagement letter says so)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Entries, rate, write-downs and expenses listed clearly"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Payment terms from the client's "
+            },
+            {
+              "text": "Terms",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Trust balance shown where the client has one, with what will be applied"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Invoice added under "
+            },
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": "; "
+            },
+            {
+              "text": "Mark sent",
+              "bold": true
+            },
+            {
+              "text": "; entries set to "
+            },
+            {
+              "text": "Billed",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Paying from trust"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "When the engagement letter allows it, pay a sent invoice from the client's trust deposit:"
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Set a follow-up date on the due date."
+              "text": "Transfer only the invoiced amount from the trust account to operating."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record it in "
+            },
+            {
+              "text": "Paid from trust",
+              "bold": true
+            },
+            {
+              "text": " and set Paid by to Trust transfer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update the client's trust balance from the ledger and tell the client in writing."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Never transfer before the invoice is sent, and never more than the invoice."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Flat-fee and contingency matters"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Invoice flat fees on the schedule in the engagement letter. Contingency matters get a statement, not an invoice, until there is a recovery."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Delivery"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send invoices to the billing email on file, with a short cover note naming the matter and the period. Large invoices get a call from the attorney the same day so the client hears about the work before they see the number."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist before sending"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Totals match the pre-bill the attorney approved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client billing email current"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No time from another client's matter"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The Ravenswood tenant agreements had 0.6 hours written down for an internal meeting. The pre-bill was approved on the 28th and the invoice went out on the first with 2,500 dollars noted as available in trust."
             }
           ]
         }
@@ -2704,7 +3360,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Polite, regular follow-up collects more than a single loud reminder."
+              "text": "Most unpaid invoices are forgotten, not disputed. A steady, polite routine collects them; waiting does not."
             }
           ],
           "background": "blue",
@@ -2716,7 +3372,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Cadence"
+              "text": "Every Tuesday (30 minutes)"
             }
           ],
           "props": {
@@ -2727,7 +3383,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "The day after the due date: friendly email, mark Overdue."
+              "text": "Filter invoices with status Sent, Part paid or Overdue. Clients show the same total in "
+            },
+            {
+              "text": "Awaiting payment",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2735,7 +3398,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "One week later: call the billing contact."
+              "text": "Any invoice past its due date moves to "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2743,9 +3413,88 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Two weeks later: partner calls the client."
+              "text": "Work the list by age:"
             }
           ]
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days past due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "1-7"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Friendly email with the invoice attached"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "8-30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the billing contact; ask when payment will be made; note the answer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "31-60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney calls; offer a payment plan in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "61+"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney decides: pause work (as the engagement letter allows), withdraw or write off"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         },
         {
           "type": "heading",
@@ -2762,9 +3511,185 @@
           "type": "text",
           "text": [
             {
-              "text": "Enter each payment in Paid and keep the balance visible in the invoice."
+              "text": "Record the amount in "
+            },
+            {
+              "text": "Paid",
+              "bold": true
+            },
+            {
+              "text": " and set the status to "
+            },
+            {
+              "text": "Part paid",
+              "bold": true
+            },
+            {
+              "text": ". Agree in writing when the rest will arrive."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Slow payers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark a client "
+            },
+            {
+              "text": "Slow payer",
+              "bold": true
+            },
+            {
+              "text": " after two invoices paid more than 30 days late. Slow payers get a larger trust deposit on the next matter and invoices every two weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What not to do"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Do not hold a client's file or original documents to force payment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Do not threaten action you would not take."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Do not discuss the bill with anyone other than the client."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the client disputes a bill"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Ask what they disagree with, in detail. The attorney reviews the entries, often offers a partial write-down, and confirms the agreement in writing. Many disputes come from surprises; the budget call during pre-bills prevents them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Odalys Fontaine's formation invoice is five days overdue and her follow-up invoice is part paid. The collections owner emails a reminder today and calls next Tuesday if there is no reply."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keep notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the date, who you spoke to and what was promised on the invoice's page after every contact. When the attorney takes over at 31 days, they need the history in one place, not in someone's inbox."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch monthly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Average days to pay by client"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Total overdue over 60 days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write-offs and their reasons"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     },
@@ -2777,10 +3702,187 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Thirty minutes at month end tells the partners how the firm is really doing: hours, billing, collections and trust."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Checklist"
+              "text": "Numbers to pull"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Number"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours recorded by timekeeper"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Time entries this month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Hours billed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Entries marked Billed on this month's invoices"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Written down"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Sum of write-downs this month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Collected"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invoices paid this month"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Awaiting payment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Clients list total"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Unbilled hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Matters list"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Three ratios worth watching"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Billed hours divided by recorded hours",
+              "bold": true
+            },
+            {
+              "text": " shows how much recorded work reaches an invoice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collected divided by billed",
+              "bold": true
+            },
+            {
+              "text": " shows how much billed work turns into money."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write-downs by matter",
+              "bold": true
+            },
+            {
+              "text": " shows which kinds of work are underpriced."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trust reconciliation"
             }
           ],
           "props": {
@@ -2791,7 +3893,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "All time entered for the month"
+              "text": "Trust bank statement balance matches the trust ledger"
             }
           ],
           "props": {
@@ -2802,7 +3904,14 @@
           "type": "todo",
           "text": [
             {
-              "text": "Invoices sent or scheduled"
+              "text": "Ledger balance for each client matches "
+            },
+            {
+              "text": "Trust balance",
+              "bold": true
+            },
+            {
+              "text": " here"
             }
           ],
           "props": {
@@ -2813,7 +3922,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Overdue list reviewed with the partner"
+              "text": "No client shows a negative trust balance"
             }
           ],
           "props": {
@@ -2824,7 +3933,37 @@
           "type": "todo",
           "text": [
             {
-              "text": "Clients marked Slow payer reviewed"
+              "text": "Every transfer from trust matches a sent invoice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Do this every month. Reconciliation problems found late are serious and hard to unwind."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Matter health"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Matters with no time in 30 days: still active?"
             }
           ],
           "props": {
@@ -2835,12 +3974,554 @@
           "type": "todo",
           "text": [
             {
-              "text": "Matters over budget flagged to the attorney"
+              "text": "Matters past budget: client informed?"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Closing matters: final invoice sent and trust refunded"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Task"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Owner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Pull the numbers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Billing manager"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Trust reconciliation"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Billing manager, signed off by a partner"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Matter health review"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Each responsible attorney"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Decisions on write-offs"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Managing partner"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set the review for the same morning each month and keep it short. The value is in doing it every month, not in a long meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Write a short note"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Three lines to the partners: what went well, what slipped, one change for next month. Keep notes on this page under a heading for each month so trends are easy to see."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "This month 92 percent of recorded hours were billed and 81 percent of billed work was collected. The contractor dispute had the most written down; the attorney will propose a revised budget to the client."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "law-firm-billing-and-time",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The billing office of a small firm: every hour recorded, which hours are on a draft invoice, which invoices are out, what clients still owe, and what was paid from trust. Your accounting system and trust ledger remain the books of record; this is the working desk."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Time entries",
+              "bold": true
+            },
+            {
+              "text": ": matter, timekeeper, date, hours, rate, value, any amount written down, and status (Unbilled, On draft invoice, Billed)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": client, amount, paid, paid from trust, how it was paid, balance, issue and due dates, status and who is collecting."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Matters",
+              "bold": true
+            },
+            {
+              "text": ": standard rate, budget, hours logged, unbilled hours, value logged and budget left."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": billing email, terms, trust balance, billed, payments, awaiting payment and outstanding."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The money columns"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Awaiting payment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Invoices sent, part paid or overdue"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Billed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every invoice except drafts"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Outstanding"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Billed minus payments logged"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Budget left"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Budget minus value logged on the matter"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Trust balance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Money the client has on deposit; copied from the trust ledger"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Trust and operating, kept apart"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Money in trust belongs to the client until it is earned and invoiced. Pay an invoice from trust only after the invoice is sent, record it in "
+            },
+            {
+              "text": "Paid from trust",
+              "bold": true
+            },
+            {
+              "text": ", and update the client's trust balance from the ledger. Never move trust money to pay firm expenses or another client's bill."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open matters with rate and budget."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter unbilled time from the last month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open invoice with what has been paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Copy each client's trust balance from the ledger."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": time entered by every timekeeper."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Last week of the month",
+              "bold": true
+            },
+            {
+              "text": ": pre-bills reviewed by attorneys."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "First business day",
+              "bold": true
+            },
+            {
+              "text": ": invoices sent."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every Tuesday",
+              "bold": true
+            },
+            {
+              "text": ": collections calls."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Month end",
+              "bold": true
+            },
+            {
+              "text": ": trust balances reconciled."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Mark billed",
+              "bold": true
+            },
+            {
+              "text": " on time entries; "
+            },
+            {
+              "text": "Mark sent",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " on invoices; "
+            },
+            {
+              "text": "Create invoice",
+              "bold": true
+            },
+            {
+              "text": " on clients; "
+            },
+            {
+              "text": "Add time entry",
+              "bold": true
+            },
+            {
+              "text": " on matters."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Pinecrest Builders has one overdue invoice and a second month in draft. Before the draft goes out, the attorney calls the client about the overdue one and agrees a payment date."
+            }
+          ]
         }
       ]
     }
