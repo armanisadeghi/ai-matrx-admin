@@ -38,4 +38,11 @@ describe("music choice", () => {
     expect(none.tracks.audio.music).toBeUndefined();
     expect(musicOps(base(), NO_MUSIC, 20)).toEqual([]);
   });
+
+  it("a generated bed (its file landed) still reads as the bed that was chosen", () => {
+    const doc = apply(base(), musicOps(base(), { kind: "bed", mood: "warm", tempo: "medium" }, 20));
+    const m = doc.media.music as unknown as { source: unknown };
+    m.source = { type: "file", fileId: "f1", contentHash: "h1" };
+    expect(musicOfDocument(doc as never)).toEqual({ kind: "bed", mood: "warm", tempo: "medium" });
+  });
 });

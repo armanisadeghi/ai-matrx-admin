@@ -36,6 +36,7 @@ import {
 } from "../../video/clone";
 import { useProjectVariants, useVideoProject, videoKeys } from "../../video/hooks";
 import { describeTheirs, rebasePending } from "../../video/conflict";
+import { finishedDownloadName, readVariantFiles, rememberVariantFile } from "../../video/variant-files";
 import { confirmLine, downloadName, estimateLabel, variantDownloadName, outputRows, summarizeEstimate } from "../../video/estimate";
 import { plainRenderMessage } from "../../video/render-errors";
 import { cutText } from "../../video/text";
@@ -82,6 +83,7 @@ function batchHandler(
   setSteps: (fn: (prev: RunStep[]) => RunStep[]) => void,
   setOutcome: (fn: (prev: Record<string, ItemOutcome>) => Record<string, ItemOutcome>) => void,
   labelOf: (id: string) => string,
+  rememberFile: (fileId: string, label: string) => void,
   flags: { confirm: boolean; error: string | null; failed: number },
 ) {
   return (e: LineEvent) => {
@@ -116,6 +118,7 @@ function batchHandler(
       case "render.done": {
         const out = (e.output ?? {}) as { file_id?: string };
         setOutcome((o) => ({ ...o, [vid]: { status: "rendered", fileId: out.file_id ?? null } }));
+        if (out.file_id && vid && vid !== HEAD_ITEM) rememberFile(out.file_id, labelOf(vid));
         setSteps((p) => p.map((s) => (s.id === `render-${vid}` ? { ...s, label: `${labelOf(vid)} rendered`, state: "done" } : s)));
         break;
       }
@@ -364,7 +367,7 @@ function Studio({ answer, doc }: { answer: VideoProjectAnswer; doc: Composition 
         projectId,
         kind === "render" ? { head: true, variant_ids: [], renderer, confirmed } : { variant_ids: ids, renderer, confirmed },
         { organizationId },
-        batchHandler(setSteps, setOutcome, labelOf, flags),
+        batchHandler(setSteps, setOutcome, labelOf, (f, l) => rememberVariantFile(projectId, f, l), flags),
       );
       if (flags.confirm) {
         setConfirm({ kind, ids });
@@ -625,10 +628,15 @@ function draftDefaults(doc: Composition, currentPreset: string): Draft[] {
   const other = CAPTION_PRESET_IDS.find((id) => id !== currentPreset) ?? CAPTION_PRESET_IDS[0] ?? "";
   return [
     { kind: "hook", value: "" },
-    { kind: "captions", value: other },
+    // A caption look only changes a plan that has captions.
+    ...(hasCaptions(doc) ? [{ kind: "captions" as const, value: other }] : []),
     { kind: "aspect", value: doc.timeline.aspect === "1:1" ? "4:5" : "1:1" },
   ];
 }
+
+const hasCaptions = (doc: Composition): boolean => Object.keys(doc.tracks.captions ?? {}).length > 0;
+/** A variant whose only change is a caption look. */
+const isCaptionVariant = (v: VariantAnswer): boolean => /^Captions:/i.test(v.label);
 
 function paramSet(d: Draft): ParamSet | null {
   if (d.kind === "hook") return d.value.trim() ? { label: `Hook: ${cutText(d.value.trim(), 40)}`, hook_text: d.value.trim() } : null;
@@ -666,6 +674,7 @@ function VariantsPanel({
   const currentPreset = captionTrack ? (doc.tracks.captions[captionTrack]?.style.preset ?? "") : "";
   const [drafts, setDrafts] = useState<Draft[] | null>(openDraft ? draftDefaults(doc, currentPreset) : null);
   const [creating, setCreating] = useState(false);
+  const renderable = variants.filter((v) => !(isCaptionVariant(v) && !hasCaptions(doc)));
 
   // What a click will create: the filled-in rows, minus any the project already has (same overrides = the same variant).
   const asked = (drafts ?? []).map(paramSet).filter((p): p is ParamSet => p !== null);
@@ -694,7 +703,7 @@ function VariantsPanel({
       {variants.length ? (
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-3">
           {variants.map((v) => (
-            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} projectName={projectName} />
+            <VariantCard key={v.id} v={v} doc={doc} head={head} outcome={outcome[v.id]} projectName={projectName} blocked={isCaptionVariant(v) && !hasCaptions(doc) ? "This plan has no captions, so this look can't render" : null} />
           ))}
         </div>
       ) : null}
@@ -714,7 +723,7 @@ function VariantsPanel({
                 }
                 options={[
                   { value: "hook", label: "Hook line" },
-                  { value: "captions", label: "Caption look" },
+                  ...(hasCaptions(doc) || d.kind === "captions" ? [{ value: "captions", label: "Caption look" }] : []),
                   { value: "aspect", label: "Shape" },
                 ]}
               />
@@ -752,6 +761,7 @@ function VariantsPanel({
             </Button>
           </div>
           <div className="flex flex-col gap-0.5">
+            {!hasCaptions(doc) ? <span className="type-meta text-muted-foreground">This plan has no captions, so there is no caption look to change</span> : null}
             {emptyRows > 0 ? <span className="type-meta text-muted-foreground">{`${countWord(emptyRows, "row")} left empty, so not included`}</span> : null}
             {reused.length > 0 ? <span className="type-meta text-muted-foreground">{`${reused.length} already made: ${reused.map((r) => r.label).join(", ")}`}</span> : null}
           </div>
@@ -761,9 +771,9 @@ function VariantsPanel({
           <Button variant="outline" icon={<Layers />} disabled={busy} onClick={() => setDrafts(draftDefaults(doc, currentPreset))}>
             Add variants
           </Button>
-          {variants.length ? (
-            <Button variant="primary" disabled={busy} onClick={() => onRun(variants.map((v) => v.id))}>
-              {`Render ${countWord(variants.length)}`}
+          {renderable.length ? (
+            <Button variant="primary" disabled={busy} onClick={() => onRun(renderable.map((v) => v.id))}>
+              {`Render ${countWord(renderable.length)}`}
             </Button>
           ) : null}
         </div>
@@ -772,7 +782,7 @@ function VariantsPanel({
   );
 }
 
-function VariantCard({ v, doc, head, outcome, projectName }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome; projectName: string }) {
+function VariantCard({ v, doc, head, outcome, projectName, blocked }: { v: VariantAnswer; doc: Composition; head: number; outcome?: ItemOutcome; projectName: string; blocked: string | null }) {
   // A variant made on an older version still shows its look: its overrides are laid over the current head (the render does the same).
   const rebased = v.baseVersion !== head;
   const materialized = materializeVariant(doc, (rebased ? { ...v, baseVersion: doc.version } : v) as unknown as VariantOverride);
@@ -791,6 +801,7 @@ function VariantCard({ v, doc, head, outcome, projectName }: { v: VariantAnswer;
           {rebased ? `Can't show this on v${head} (made on v${v.baseVersion}); it is rebased when rendered` : "Can't preview"}
         </div>
       )}
+      {blocked ? <span className="type-meta text-warning">{blocked}</span> : null}
       {outcome?.error ? <ErrorAlchemyMenu error={new Error(outcome.error)} operation="video variant render" /> : null}
       {outcome?.fileId ? <OutputDownload fileId={outcome.fileId} label={v.label} fileName={variantDownloadName(projectName, v.label)} /> : null}
     </div>
@@ -800,16 +811,18 @@ function VariantCard({ v, doc, head, outcome, projectName }: { v: VariantAnswer;
 // ── every finished output ───────────────────────────────────────────────────────────────────────────
 
 function Outputs({ answer, busy, onRenderAgain, onCards }: { answer: VideoProjectAnswer; busy: boolean; onRenderAgain: () => void; onCards: Set<string> }) {
+  const [labels] = useState(() => readVariantFiles(answer.project_id));
   if (!answer.output_file_ids.length) return null;
   // A variant's video has its own card with its own Download; the list holds the rest, so no card has two.
   const rows = outputRows(answer).filter((r) => !onCards.has(r.fileId));
   if (!rows.length) return null;
+  const taken = new Set<string>();
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
       <span className="type-label text-foreground">{`Finished videos (${rows.length})`}</span>
       {rows.map((r, i) => (
         <div key={r.fileId} className="flex min-w-0 flex-col gap-1">
-          <OutputDownload fileId={r.fileId} label={r.label} fileName={downloadName(`${answer.name}${r.version !== null ? ` v${r.version}` : ""}`)} />
+          <OutputDownload fileId={r.fileId} label={labels[r.fileId] ? `${labels[r.fileId]} (${r.label})` : r.label} fileName={finishedDownloadName(answer.name, r, labels, taken)} />
           {r.stale && i === 0 ? (
             <div className="flex items-center gap-2">
               <span className="type-meta text-warning">{`The video is now v${answer.head_version}; this file does not have your latest changes`}</span>

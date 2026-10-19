@@ -63,7 +63,8 @@ export function musicOfDocument(doc: JsonDoc | null | undefined): MusicChoice {
   const m = media.music;
   if (!m) return NO_MUSIC;
   const prompt = m.request?.prompt;
-  if (m.source.type === "pending" && prompt) {
+  // A generated bed keeps the request that made it after its file lands (Generate), so the request, not the source, says it is a bed.
+  if (prompt) {
     for (const mood of Object.keys(MUSIC_BED_MOODS) as MusicBedMood[]) {
       for (const tempo of Object.keys(MUSIC_BED_TEMPOS) as MusicBedTempo[]) {
         if (musicBedPrompt({ mood, tempo }) === prompt && MUSIC_BED_TEMPOS[tempo] === (m.request?.params as { bpm?: number } | undefined)?.bpm) return { kind: "bed", mood, tempo };

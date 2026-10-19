@@ -10,7 +10,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Clapperboard } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@ai-matrx/design-system/controls";
 import { useSurfaceRuntimeRegistration } from "@ai-matrx/chat/surfaces/runtime/SurfaceRuntimeContext";
 
@@ -24,6 +24,7 @@ import { marketingSeg } from "@/features/marketing/lib/keys";
 import { SocialsContext } from "@/features/marketing/social/components/SocialsContext";
 import { CloneWorkspace } from "@/features/marketing/social/components/video/VideoCloneNew";
 import { VideoProjectStudio } from "@/features/marketing/social/components/video/VideoProjectStudio";
+import { videoKeys } from "@/features/marketing/social/video/hooks";
 import { classifySocialLink } from "@/features/marketing/social/link";
 import { ingestPost } from "@/features/marketing/social/server";
 import { describeSocialFailure } from "@/features/marketing/social/failure";
@@ -86,6 +87,23 @@ function Frame({ value, children }: { value: MarketingBrandContextValue; childre
   );
 }
 
+/** The clone's far-zoom card: its name, where it stands and the link it clones, read from caches the body filled (never a fetch). */
+function VideoCloneFace({ source, title }: { source: NodeSource; title: string }) {
+  const meta = metaOf(source);
+  const projectId = source.kind === "entity" ? source.id : null;
+  const cached = useQueryClient().getQueryData<{ name?: string; status?: string; output_file_ids?: string[] }>(projectId ? videoKeys.project(projectId) : ["video-clone-tile", "none"]);
+  const stage = !projectId ? (meta.brief ? "Brief in progress" : "Not planned yet") : cached?.output_file_ids?.length ? "Rendered" : "Planned";
+  const link = (meta.url ?? "").replace(/^https?:\/\/(www\.)?/, "");
+  return (
+    <span className="absolute inset-0 flex flex-col items-center justify-center gap-[4%] bg-gradient-to-br from-muted via-muted to-accent p-[6%] text-center text-foreground/80">
+      <Clapperboard style={{ width: "min(24px, 14cqmin)", height: "min(24px, 14cqmin)" }} aria-hidden />
+      <span className="line-clamp-2 text-[min(14px,8cqmin)] font-medium leading-tight">{cached?.name || title}</span>
+      <span className="text-[min(12px,7cqmin)] leading-tight text-foreground/60">{stage}</span>
+      {link ? <span className="line-clamp-1 break-all text-[min(11px,6cqmin)] text-foreground/50">{link}</span> : null}
+    </span>
+  );
+}
+
 function CloneSurface({ projectId, name, postId }: { projectId: string | null; name: string; postId: string | null }) {
   useSurfaceRuntimeRegistration({
     surfaceName: VIDEO_CLONE_SURFACE_NAME,
@@ -136,7 +154,15 @@ function VideoCloneBody({ source, title, onSource }: ItemBodyProps) {
       ) : error ? (
         <Centered><span data-error-box>{error}<ErrorAlchemyMenu /></span></Centered>
       ) : postId ? (
-        <CloneWorkspace postId={postId} projectId={null} onProject={() => {}} base="" onFinished={(id) => onSource(entity(id, { ...meta, brand: brandId, post: postId }), title)} />
+        <CloneWorkspace
+          postId={postId}
+          projectId={null}
+          onProject={() => {}}
+          base=""
+          draft={meta.brief ?? null}
+          onDraft={(brief) => onSource(entity(null, { ...meta, brand: brandId, post: postId, brief }), title)}
+          onFinished={(id) => onSource(entity(id, { ...meta, brand: brandId, post: postId }), title)}
+        />
       ) : (
         <Centered><Spinner size="sm" className="text-muted-foreground" />Reading the post</Centered>
       )}
@@ -160,6 +186,7 @@ export const VIDEO_CLONE_ITEMS: readonly BoardItemType[] = [
     growOnFill: true,
     matches: (s) => s.kind === "entity" && s.entity === VIDEO_CLONE_KEY,
     Body: VideoCloneBody,
+    Face: VideoCloneFace,
     startNew: { label: "Video clone", icon: Clapperboard, Picker: ClonePicker },
     record: { place: (id, title) => ({ title: title?.trim() || "Video clone", source: entity(id) }) },
   },

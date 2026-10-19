@@ -46,8 +46,9 @@ import { useReferencePost, useVideoStructure, videoKeys } from "../../video/hook
 import { attachReferenceVideo, createVideoProject, deleteVideoProject, estimateProject, fetchPostWords, getVideoProject } from "../../video/server";
 import { useBrandOfferings, useFileUrls, useOfferingFacts, useReferenceVideo, useScriptWriterReady } from "../../video/studio-hooks";
 import { useSocials } from "../SocialsContext";
+import { parseBriefDraft, serializeBriefDraft } from "../../video/brief-draft";
 import { brandNameIn, hookPrefill as hookPrefillFor } from "../../video/hook-brand";
-import { cutText, nameFromCaption } from "../../video/text";
+import { cutText, joinOverlayLines, nameFromCaption } from "../../video/text";
 import { useExpiredSessionGuard } from "../../video/session";
 import { uploadBriefFile } from "../../video/upload";
 import { confirmLine, estimateLabel, summarizeEstimate } from "../../video/estimate";
@@ -127,6 +128,8 @@ export function CloneWorkspace({
   wantVariants = false,
   base,
   onFinished,
+  draft,
+  onDraft,
 }: {
   postId: string;
   projectId: string | null;
@@ -134,11 +137,14 @@ export function CloneWorkspace({
   wantVariants?: boolean;
   base: string;
   onFinished?: (projectId: string) => void;
+  /** A saved brief (JSON) to start from, and where each change goes (a Board tile keeps it across reloads). */
+  draft?: string | null;
+  onDraft?: (json: string) => void;
 }) {
   return (
     <div className="grid min-h-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <ReferencePanel postId={postId} />
-      <BriefPanel postId={postId} projectId={projectId} onProject={onProject} wantVariants={wantVariants} base={base} onFinished={onFinished} />
+      <BriefPanel postId={postId} projectId={projectId} onProject={onProject} wantVariants={wantVariants} base={base} onFinished={onFinished} draft={draft} onDraft={onDraft} />
     </div>
   );
 }
@@ -314,6 +320,8 @@ function BriefPanel({
   wantVariants,
   base,
   onFinished,
+  draft,
+  onDraft,
 }: {
   postId: string;
   projectId: string | null;
@@ -321,6 +329,8 @@ function BriefPanel({
   wantVariants: boolean;
   base: string;
   onFinished?: (projectId: string) => void;
+  draft?: string | null;
+  onDraft?: (json: string) => void;
 }) {
   const brand = useMarketingBrand();
   const { brandId, organizationId } = useSocials();
@@ -340,26 +350,39 @@ function BriefPanel({
     retry: 3,
   });
 
-  const [productKey, setProductKey] = useState<string>("");
-  const [productName, setProductName] = useState("");
-  const [productImage, setProductImage] = useState<BriefFile | null>(null);
-  const [aboutText, setAboutText] = useState<string | null>(null);
-  const [priceText, setPriceText] = useState<string | null>(null);
-  const [presenter, setPresenter] = useState<PresenterMode>("voiceover");
-  const [presenterText, setPresenterText] = useState("");
+  const [saved] = useState(() => parseBriefDraft(draft));
+  const [productKey, setProductKey] = useState<string>(saved.productKey ?? "");
+  const [productName, setProductName] = useState(saved.productName ?? "");
+  const [productImage, setProductImage] = useState<BriefFile | null>((saved.productImage as BriefFile | undefined) ?? null);
+  const [aboutText, setAboutText] = useState<string | null>(saved.aboutText ?? null);
+  const [priceText, setPriceText] = useState<string | null>(saved.priceText ?? null);
+  const [presenter, setPresenter] = useState<PresenterMode>((saved.presenter as PresenterMode | undefined) ?? "voiceover");
+  const [presenterText, setPresenterText] = useState(saved.presenterText ?? "");
   // A project made by this page (the lines preview or Plan) and not yet planned: removed again if the person leaves or the plan fails.
   const madeHere = useRef<string | null>(null);
-  const [script, setScript] = useState<string | null>(null);
-  const [hookLine, setHookLine] = useState("");
-  const [hookTouched, setHookTouched] = useState(false);
-  const [aiRewrite, setAiRewrite] = useState(false);
+  const [script, setScript] = useState<string | null>(saved.script ?? null);
+  const [hookLine, setHookLine] = useState(saved.hookLine ?? "");
+  const [hookTouched, setHookTouched] = useState(saved.hookTouched ?? false);
+  const [aiRewrite, setAiRewrite] = useState(saved.aiRewrite ?? false);
   const scriptWriterReady = useScriptWriterReady();
-  const [captionLook, setCaptionLook] = useState<string>("match");
-  const [aspect, setAspect] = useState<CloneAspect>("9:16");
-  const [takes, setTakes] = useState<Array<{ name: string; file: BriefFile }>>([]);
+  const [captionLook, setCaptionLook] = useState<string>(saved.captionLook ?? "match");
+  const [aspect, setAspect] = useState<CloneAspect>((saved.aspect as CloneAspect | undefined) ?? "9:16");
+  const [takes, setTakes] = useState<Array<{ name: string; file: BriefFile }>>((saved.takes as Array<{ name: string; file: BriefFile }> | undefined) ?? []);
   const [teleprompter, setTeleprompter] = useState<TeleprompterAnswer | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
-  const [music, setMusic] = useState<MusicChoice>(NO_MUSIC);
+  const [music, setMusic] = useState<MusicChoice>(saved.music ?? NO_MUSIC);
+
+  // Every change to the brief is handed to the host (a Board tile saves it) after a short pause.
+  const draftJson = serializeBriefDraft({ productKey, productName, productImage, aboutText, priceText, presenter, presenterText, script, hookLine, hookTouched, aiRewrite, captionLook, aspect, takes, music });
+  const [lastDraft] = useState(() => ({ json: draftJson }));
+  useEffect(() => {
+    if (!onDraft || draftJson === lastDraft.json) return;
+    const t = setTimeout(() => {
+      lastDraft.json = draftJson;
+      onDraft(draftJson);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [draftJson, onDraft, lastDraft]);
 
   const [phase, setPhase] = useState<Phase>("brief");
   const [resuming, setResuming] = useState(false);
@@ -747,7 +770,7 @@ function BriefPanel({
         <Row label="Your recordings">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <Button variant="outline" icon={<Play />} disabled={busy || !scriptText} onClick={() => void showLines()}>
+              <Button variant="outline" icon={<Play />} disabled={busy || (!scriptText && !aiRewrite)} onClick={() => void showLines()}>
                 Show my lines
               </Button>
               <FilePickButton accept="video/*" multiple icon={<Upload />} disabled={busy} onFiles={(f) => void upload(f, "take")}>
@@ -791,7 +814,7 @@ function BriefPanel({
 
       <Row label="Hook line">
         <Field
-          placeholder={structure.data?.hook?.on_screen_text || "The reference's hook is kept"}
+          placeholder={joinOverlayLines(structure.data?.hook?.on_screen_text) || "The reference's hook is kept"}
           value={hookValue}
           maxLength={120}
           onChange={(e) => {
