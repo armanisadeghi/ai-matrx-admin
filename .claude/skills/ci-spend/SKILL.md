@@ -19,13 +19,13 @@ timestamp: 2026-10-18
 <!-- rules:stamp -->
 > Rules from `common-docs/policies/ci-spend.md` — edit there, never here (`python3 common-docs/meta/scripts/one_home.py --write`).
 
-1. **Ceiling: $100 a week of real money for building and shipping software** (Arman, 2026-10-18). One total, never one service judged alone:
+1. **Ceiling: $100 a week of real money for building and shipping software**. One total, never one service judged alone:
    - GitHub Actions actually billed (`netAmount`; organization `AI-Matrix-Engine` and personal `armanisadeghi`), never list price;
    - RunsOn's AWS cost (Cost Explorer, tag `stack=runs-on`);
    - CI subscriptions as a weekly share, 52 weeks a year (monthly x 12 / 52, yearly / 52): GitHub Enterprise seats (count and price read from GitHub), GitHub Pro, the RunsOn license (from its start date).
    Each line shows its $/week and its share of the total. Every price and the cap are `billing.ci_spend.*` knobs; no lane raises the cap.
    List price only forecasts when the free GitHub minutes run out: that is a future-billing alarm, never "off track".
-2. **Cadence.** Only aidream and ai-matrx ride the ~30-minute train. Every other app releases on meaningful change. Matrx Desktop: macOS builds only on Arman's Mac (never on GitHub), Windows/Linux at most twice a week (Arman, 2026-10-15). Matrx Local: paused, no builds (Arman, 2026-10-15). Overnight releases run hourly when main changed. No package version without a real content change. Waste to hunt first: cascading package republishes from small changes.
+2. **Cadence.** Only aidream and ai-matrx ride the ~30-minute train. Every other app releases on meaningful change. Matrx Desktop: macOS builds only on Arman's Mac (never on GitHub), Windows/Linux at most twice a week. Matrx Local: paused, no builds. Overnight releases run hourly when main changed. No package version without a real content change. Waste to hunt first: cascading package republishes from small changes.
 3. **Every workflow change states its cost.** Each workflow has an entry in the repo's `.github/ci-cost.json` (trigger, runs/week, minutes, OS, $/week, benefit). `check_workflow_runner_cost.py` fails a workflow without one or with a stale one.
 4. **Cost without benefit is a defect.** Recognize it by these shapes:
    - Red runs repeated without a fix. The `ci-breaker` label pauses a workflow after 3 reds in a row.
@@ -37,7 +37,7 @@ timestamp: 2026-10-18
    - A job with no `timeout-minutes`.
    - Manual dispatch loops. Every dispatch carries `requested_by`.
 5. **Never work around a billing or spending block.** No moving the job to another repo, account or runner. Stop and tell Arman in plain English.
-6. **A spend report is the weekly total, then each component with its $/week and % of total, then the waste found and fixed** (cascading package republishes from small changes first). The agent-facing notice stays silent unless the 7-day GitHub list-price figure (`week_usd`) is at least $200; below that only Arman and the owner session see alarms (Arman, 2026-10-18).
+6. **A spend report is the weekly total, then each component with its $/week and % of total, then the waste found and fixed** (cascading package republishes from small changes first). The agent-facing notice stays silent unless the 7-day GitHub list-price figure (`week_usd`) is at least $200; below that only Arman and the owner session see alarms.
 <!-- rules:stamp-end -->
 
 The law is [ci-spend.md](/policies/ci-spend.md); read it, it is short. How to apply it:

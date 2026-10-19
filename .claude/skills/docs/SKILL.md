@@ -40,8 +40,7 @@ timestamp: 2026-10-02T00:00:00Z
    doc that contradicts his vision is drift, not truth. A doctrine document from his interviews is
    presumed right against the code and other docs; an agent who thinks a clause is wrong tells
    him, and only he amends it.
-   One exception (Arman, 2026-10-13): a feature's bug list (`<AREA>-BUGS.md`, skills `bug-list-add` /
-   `bug-list-fix`) quotes the reporter verbatim on each item; the quote leaves when the item is fixed.
+   One exception: a feature's bug list (`<AREA>-BUGS.md`, skill `bug-list`) quotes the reporter verbatim on each item; the quote leaves when the item is fixed.
 8. **Conflicts go in [/operations/conflicts.md](/operations/conflicts.md),** one or two sentences
    per entry, then ask Arman. When he answers, delete the entry (never mark it done), apply the
    answer, and tell him how many remain (show a couple unless mid-urgent work). Entries
@@ -54,7 +53,7 @@ timestamp: 2026-10-02T00:00:00Z
 10. **Arman reads the chat, not docs.** Anything for him is said in the chat.
 11. **Working documents belong here; clean up as you go.** Agents keep their working notes in their project or node, and while working collapse each finished step to a status line, delete what can be regenerated, and move Arman's words to VISION.md. A daily sweep cleans what is left. Large binaries and source data (books, datasets) go to file storage and are linked ([how](/systems/files/file-service/STATE.md#platform-work-products)). Release scripts commit everything; never hold files back.
 
-12. **One subject, one home — enforced (law 15, Arman 2026-10-18).** A subject is a domain-tree node
+12. **One subject, one home — enforced (law 15).** A subject is a domain-tree node
     (a folder under `systems/`); a policy (`policies/<name>`), an operations folder, a method that
     lives only in its skill (`skills/<name>`), or `<repo>:<dir>` for a subject only one repo has. Its one home doc
     carries `subject: <slug>` in frontmatter; nothing else for that subject does, except its skills,

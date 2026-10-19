@@ -22,7 +22,7 @@ timestamp: 2026-09-14T00:00:00Z
 1. **Benchmark first.** Every trial measures against the same job done by telling the
    agent-structure-builder agent what we want, updating that agent to Opus 5.5, fixing settings and
    making minor instruction tweaks, then running it. If Masterwork output is not better, that is
-   the finding. Only exception: where one agent cannot do it (tools, access) (Arman, 2026-09-12).
+   the finding. Only exception: where one agent cannot do it (tools, access).
 2. **Census the declared distillation methods (10-15) and drive EVERY one as a real user on the real
    UI**, one Sonnet driver per method; log and report every UI bug the way he would see it, never
    filtered as minor; fix the class. Never pick easy subjects to make a trial pass (2026-09-12).

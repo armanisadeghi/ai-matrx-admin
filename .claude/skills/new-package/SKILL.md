@@ -21,24 +21,24 @@ timestamp: 2026-08-30
 
 1. **Solved once = a package.** Code any other app could use lives in a package, never in an app.
    Every NEW package name is approved by Arman first; growing an existing one needs no approval.
-2. **A package is REAL only when all four hold** (Arman, 2026-10-11): the host imports it and no
+2. **A package is REAL only when all four hold**: the host imports it and no
    in-app copy remains; it builds, type-checks and tests alone with no app imports; app inputs
    are injected; one documented entry point per section, internals not importable.
 3. **Zero duplicate code** — no copy in any app or in another package.
-   **Proven twice** (Arman, 2026-10-15): a package is proven by deleting the code it replaces AND
+   **Proven twice**: a package is proven by deleting the code it replaces AND
    by a second app using it. Until both, it is unproven.
 4. **One capability per package, no grab-bags.** Two packages that never live apart are one
-   package (Arman, 2026-10-07). Split by capability, merge what always ships together.
+   package. Split by capability, merge what always ships together.
    Lines come from responsibility, never from today's import counts: a package is separate only if some
    app could need it without the rest, and its job is nameable in one sentence.
    Never propose a package without that one-sentence job and the design reason an app would use it
-   alone; "current consumers" is not evidence. Method (Arman, 2026-10-09): layer by layer, each with a
+   alone; "current consumers" is not evidence. Method: layer by layer, each with a
    charter (must include / never include), proof it works standalone in an empty app, and a census of
    every outside copy of its logic. A creator/consumer client split is coming, so agents/workflows
    creation stays apart from running. Program history: `projects/npm-package-extraction/HANDOFF.md`.
-5. **Few packages, many sections; pay only for what you use** (Arman, 2026-10-08). Importing one
+5. **Few packages, many sections; pay only for what you use**. Importing one
    section never loads another; unused parts cost zero, measured in a built consumer.
-   **Optional parts are sections, never separate packages** (Arman, 2026-10-15, set on sync): a
+   **Optional parts are sections, never separate packages** (set on sync): a
    part most apps never use lives as its own section of its owning package, and its heavy
    outside libraries are *optional* peer dependencies, so an app that doesn't import that
    section neither downloads nor bundles them. Proven per part: a built consumer of a sibling
