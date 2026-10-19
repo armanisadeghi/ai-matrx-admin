@@ -24,7 +24,8 @@ import {
   type BorderChoice,
 } from "@ai-matrx/office/docs/tools";
 import { EMOJI_GROUPS, SPECIAL_GROUPS, searchSymbols } from "@ai-matrx/office/docs";
-import { getLatestDocumentSnapshot, listAccessibleDocuments } from "@ai-matrx/office/docs";
+import { listAccessibleDocuments } from "@ai-matrx/office/docs";
+import { readCurrentDocument } from "@/lib/collab/current-record";
 import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 
 export type DocDialogId = "emoji" | "special" | "building-blocks" | "bookmarks" | "borders" | "compare" | "voice" | "language";
@@ -197,9 +198,8 @@ function Compare({ ops, documentId, documentName, onClose }: { ops: DocEditOps |
   const compareWith = async (other: { id: string; name: string }) => {
     setBusy(other.id);
     try {
-      const snap = await getLatestDocumentSnapshot(other.id);
-      if (!snap.success) throw new Error(snap.error);
-      const theirs = snap.data ? univerDocToMarkdown(snap.data.snapshot as never) : "";
+      const snap = await readCurrentDocument(other.id);
+      const theirs = snap.snapshot ? univerDocToMarkdown(snap.snapshot as never) : "";
       const mine = univerDocToMarkdown(ops?.snapshot() as never);
       openDiff({ original: theirs, modified: mine, originalLabel: other.name, modifiedLabel: `${documentName} (this document)`, title: `Compare: ${other.name}`, language: "markdown" });
       onClose();

@@ -26,7 +26,8 @@ import type { Deck } from "@/features/presentations/deck-model";
 import { sanitizeUniverDocSnapshot } from "@ai-matrx/office/docs";
 
 import { GoogleLinkControl, googleLinkParts, useGoogleLink, type GoogleLinkAdapter } from "./GoogleLinkControl";
-import { readLiveRoom, writeIntoLiveRoom } from "@/lib/collab/live-room-write";
+import { readCurrentDocument, readCurrentWorkbook } from "@/lib/collab/current-record";
+import { writeIntoLiveRoom } from "@/lib/collab/live-room-write";
 
 // An open editor registers its live adapter here, so the record's File menu (mounted elsewhere in
 // the page) offers the SAME Google actions over the same live content as the toolbar button.
@@ -247,12 +248,9 @@ export function savedRecordGoogleAdapter(
       recordId,
       title,
       readLocal: async () => {
-        const live = await readLiveRoom("workbook", recordId);
-        if (live) return live;
-        const res = await getLatestSnapshot(recordId);
-        if (isServiceFailure(res)) throw new Error(res.error);
-        if (!res.data) throw new Error("Open this workbook once before sending it to Google.");
-        return res.data.snapshot;
+        const current = await readCurrentWorkbook(recordId);
+        if (!current.snapshot) throw new Error("Open this workbook once before sending it to Google.");
+        return current.snapshot;
       },
       applyRemote: async (content) => {
         if (await writeIntoLiveRoom("workbook", recordId, { ...(content as object) })) return null;
@@ -276,12 +274,9 @@ export function savedRecordGoogleAdapter(
     recordId,
     title,
     readLocal: async () => {
-      const live = await readLiveRoom("udt_document", recordId);
-      if (live) return univerDocToMarkdown(live as IDocumentData);
-      const res = await getLatestDocumentSnapshot(recordId);
-      if (!res.success) throw new Error(res.error);
-      if (!res.data) throw new Error("Open this document once before sending it to Google.");
-      return univerDocToMarkdown(res.data.snapshot);
+      const current = await readCurrentDocument(recordId);
+      if (!current.snapshot) throw new Error("Open this document once before sending it to Google.");
+      return univerDocToMarkdown(current.snapshot as IDocumentData);
     },
     applyRemote: async (content) => {
       const snapshot = sanitizeUniverDocSnapshot(

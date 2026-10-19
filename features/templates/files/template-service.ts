@@ -10,15 +10,14 @@ import { supabase } from "@/utils/supabase/client";
 import { ensureOrgId } from "@/lib/organizations/ensureOrgId";
 import {
   createWorkbook,
-  getLatestSnapshot,
   saveSnapshot,
 } from "@ai-matrx/office/sheets";
 import {
   createDocument,
-  getLatestDocumentSnapshot,
   saveDocumentSnapshot,
 } from "@ai-matrx/office/docs";
 import { isServiceFailure } from "@/features/data-tables/types";
+import { readCurrentDocument, readCurrentWorkbook } from "@/lib/collab/current-record";
 import {
   createPresentation,
   getPresentation,
@@ -31,6 +30,10 @@ import {
 } from "./template-service-core";
 import { SYSTEM_ORGANIZATION_ID, type TemplateRow } from "./types";
 import { renderAndStoreThumbnail } from "./thumbnail/store-thumbnail";
+
+const asTemplateError = (err: unknown): never => {
+  throw err instanceof TemplateError ? err : new TemplateError(err instanceof Error ? err.message : String(err));
+};
 
 const table = () => supabase.schema("workbench").from("file_template");
 
@@ -94,13 +97,9 @@ const ports: TemplatePorts = {
       return res.data.deck.slides.length ? res.data.deck : null;
     }
     if (kind === "workbook") {
-      const res = await getLatestSnapshot(recordId);
-      if (isServiceFailure(res)) throw new TemplateError(res.error);
-      return res.data?.snapshot ?? null;
+      return (await readCurrentWorkbook(recordId).catch(asTemplateError)).snapshot;
     }
-    const res = await getLatestDocumentSnapshot(recordId);
-    if (isServiceFailure(res)) throw new TemplateError(res.error);
-    return res.data?.snapshot ?? null;
+    return (await readCurrentDocument(recordId).catch(asTemplateError)).snapshot;
   },
   async createRecord(kind, name, orgId, snapshot) {
     if (kind === "presentation") {

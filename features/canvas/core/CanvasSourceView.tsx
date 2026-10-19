@@ -31,8 +31,7 @@ import {
   resolveCanvasSourceFromData,
   type CanvasSourceText,
 } from "./canvasSource";
-import { getLatestDocumentSnapshot } from "@ai-matrx/office/docs";
-import { isServiceFailure } from "@/features/data-tables/types";
+import { readCurrentDocument } from "@/lib/collab/current-record";
 import { univerDocToMarkdown } from "@ai-matrx/office/docs/io";
 
 function SourceText({ source }: { source: CanvasSourceText }) {
@@ -160,13 +159,15 @@ function DocumentCanvasSourceLoad({
   React.useEffect(() => {
     let active = true;
     void (async () => {
-      const res = await getLatestDocumentSnapshot(documentId);
-      if (!active) return;
-      if (isServiceFailure(res)) {
-        setState({ phase: "error", reason: res.error });
+      let snapshot: unknown;
+      try {
+        snapshot = (await readCurrentDocument(documentId)).snapshot;
+      } catch (err) {
+        if (active) setState({ phase: "error", reason: err instanceof Error ? err.message : String(err) });
         return;
       }
-      const markdown = univerDocToMarkdown(res.data?.snapshot);
+      if (!active) return;
+      const markdown = univerDocToMarkdown(snapshot as Parameters<typeof univerDocToMarkdown>[0]);
       setState({ phase: "ready", markdown });
     })();
     return () => {

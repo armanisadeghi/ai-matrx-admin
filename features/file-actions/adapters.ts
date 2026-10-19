@@ -9,7 +9,6 @@ import { type DocumentRow, type Workbook } from "@ai-matrx/office/core";
 import {
   copyWorkbook,
   deleteWorkbook,
-  getLatestSnapshot,
   moveWorkbook,
   renameWorkbook,
   restoreWorkbook,
@@ -17,7 +16,6 @@ import {
 import {
   copyDocument,
   deleteDocument,
-  getLatestDocumentSnapshot,
   moveDocument,
   renameDocument,
   restoreDocument,
@@ -33,21 +31,21 @@ import {
   type PresentationRow,
 } from "@/features/presentations/presentation-service";
 import { deckDownloads } from "@/features/presentations/deck-export";
+import { readCurrentDocumentMarkdown, readCurrentWorkbook } from "@/lib/collab/current-record";
 import type { FileDownload, FileKindAdapter } from "./types";
 
+// A list menu has no editor, so its downloads read the record's CURRENT content: the co-edited room folded to
+// head (edits not yet saved included), or the newest snapshot when nobody is editing. Stale falls back in a toast.
 async function latestWorkbookSnapshot(id: string): Promise<unknown> {
-  const res = await getLatestSnapshot(id);
-  if (isServiceFailure(res)) throw new Error(res.error);
-  if (!res.data) throw new Error("This workbook has no saved content yet");
-  return res.data.snapshot;
+  const { snapshot } = await readCurrentWorkbook(id);
+  if (!snapshot) throw new Error("This workbook has no saved content yet");
+  return snapshot;
 }
 
 async function latestDocumentMarkdown(id: string): Promise<string> {
-  const res = await getLatestDocumentSnapshot(id);
-  if (isServiceFailure(res)) throw new Error(res.error);
-  if (!res.data) throw new Error("This document has no saved content yet");
-  const { univerDocToMarkdown } = await import("@ai-matrx/office/docs/io");
-  return univerDocToMarkdown(res.data.snapshot);
+  const markdown = await readCurrentDocumentMarkdown(id);
+  if (markdown === null) throw new Error("This document has no saved content yet");
+  return markdown;
 }
 
 export const WORKBOOK_ADAPTER: FileKindAdapter<Workbook> = {
