@@ -1,5 +1,6 @@
 ---
 name: shape-system
+subject: architecture/content-ir
 description: "The Shape System — the content_ir kind registry for structured content. Use when adding, activating, or rendering a kind/shape, writing `__kind` JSON, kind schemas or samples, XML-tag/fence detection surfaces, kind components, workflow node input_kind/output_kind, or binding agent output to a kind."
 ---
 

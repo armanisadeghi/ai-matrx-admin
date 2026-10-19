@@ -1,5 +1,6 @@
 ---
 name: server-log-analyzer
+subject: matrx-frontend:.claude/skills/server-log-analyzer
 description: "Workflow for classifying AI Matrx server log lines in features/server-logs/log-rules.ts. Use when examining raw server logs, new [ModuleName] bracket tokens appear unclassified, log categories are wrong, or adding module recognition to the log viewer."
 ---
 

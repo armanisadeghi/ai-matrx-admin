@@ -1,5 +1,6 @@
 ---
 name: compact-nav-menus
+subject: platform/ui-shell
 description: "Sizing tokens for compact sidebars, nav panels, and menu lists. Use when building or refactoring a sidebar, settings menu, category list, filter bar, or expandable nav tree, or when a sidebar looks too wide, too padded, or wastes space."
 ---
 

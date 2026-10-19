@@ -1,5 +1,6 @@
 ---
 name: live-ui-iteration
+subject: platform/ui-shell
 description: "Continuous localhost UI iteration loop with Arman, through full surface certification. Use when he asks to fix, refine, review, or iterate on a page, route, panel, overlay, or other UI while he may inspect localhost. NOT for a report-only UI audit."
 ---
 

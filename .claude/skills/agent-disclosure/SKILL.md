@@ -1,5 +1,6 @@
 ---
 name: agent-disclosure
+subject: platform/ui-shell
 description: "Disclosing a surface's existing fixed AI jobs in the shell's top Agents menu. Use when a page, panel, overlay, or window already runs a mandate behind a button, assist, automatic action, or mode; when the agent-disclosure guard names a file; or during a surface check."
 ---
 

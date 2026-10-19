@@ -1,5 +1,6 @@
 ---
 name: block-print-system
+subject: matrx-frontend:.claude/skills/block-print-system
 description: "Printing and PDF export for AI response blocks and messages via @ai-matrx/print. Use when adding a print button or BlockPrinter to a render block, wiring PrintOptionsDialog/usePrintOptions, captureBlockElement, or useDomCapturePrint, or when a print window shows no images or a print fails silently."
 ---
 

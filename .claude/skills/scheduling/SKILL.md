@@ -1,5 +1,6 @@
 ---
 name: scheduling
+subject: matrx-frontend:.claude/skills/scheduling
 description: "The cross-repo scheduling system (sch_* tables, matrx-scheduler). Use when touching features/scheduling/**, /schedules or /administration/scheduling, migrations/sch_*.sql, a scheduled agent, cron, trigger, lease, or claim, or debugging ghost tasks, missed fires, double-runs, or stuck claims."
 ---
 

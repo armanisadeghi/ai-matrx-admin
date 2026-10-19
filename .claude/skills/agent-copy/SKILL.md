@@ -1,5 +1,6 @@
 ---
 name: agent-copy
+subject: platform/ui-shell
 description: "Compact two-icon Copy / Copy-for-AI controls (components/agent-copy). Use when adding copy buttons to a row, card, list, or record; merging duplicate Copy/JSON/AI controls; continuing the copy rollout; or writing a Copy-for-AI payload. NOT for markdown content actions (use rich-document-actions)."
 ---
 

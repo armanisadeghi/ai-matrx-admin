@@ -1,5 +1,6 @@
 ---
 name: db-change
+subject: policies/database-changeover-doctrine
 description: "Entry point and shared rules for structural changes to the live Matrx database. Use before any DDL: dropping, merging, or renaming a table, changing a function, RPC, trigger, or policy, hunting straggler tables, or starting a deprecated, schema move, or canonicalization (it routes to those skills)."
 ---
 

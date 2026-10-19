@@ -1,5 +1,6 @@
 ---
 name: rich-document-actions
+subject: matrx-frontend:features/rich-document
 description: "RichDocument action toolkit for markdown and interactive content outside live chat. Use when adding an action or content source, wiring a remote action surface, putting actions on a MarkdownStream/BasicMarkdownContent preview, or touching features/rich-document/**, <RichDocument>, <RichDocumentActionSurface>, registerAction, ContentSourceAdapter, or enableContextMenu. NOT for the live chat message bar (use overlay-system)."
 ---
 

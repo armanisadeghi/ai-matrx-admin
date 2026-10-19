@@ -1,5 +1,6 @@
 ---
 name: context-assignment
+subject: data/scopes-context
 description: "Context and scope-tagging UI. Use when adding a context picker to a surface, tagging an entity to scopes, setting or filtering by the active (working) context, showing per-entity context status, prompting for context on upload, or editing context-assignment/**, active-context/**, or appContextSlice."
 ---
 

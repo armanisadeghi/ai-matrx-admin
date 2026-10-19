@@ -1,5 +1,6 @@
 ---
 name: surface-certification-loop
+subject: platform/ui-shell
 description: "Coordinator for the fleet that repairs and independently certifies registered UI surfaces through Work Loop claims. Use for pilot batches, recurring certification, repair rounds, or retroactive rechecks after surface-check rules change. NOT for one assigned surface (use surface-check)."
 ---
 

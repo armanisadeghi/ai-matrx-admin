@@ -1,5 +1,6 @@
 ---
 name: ui-reimagine
+subject: platform/ui-shell
 description: "Reimagine UI posture — bold from-scratch reinvention of a screen. Use when asked to rethink or reinvent a UI, merge screens, change its core interaction model, break the frame rather than polish, or generate surprising new concepts."
 ---
 

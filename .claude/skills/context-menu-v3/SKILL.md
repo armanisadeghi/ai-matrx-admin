@@ -1,5 +1,6 @@
 ---
 name: context-menu-v3
+subject: platform/ui-shell
 description: "The universal v3 right-click menu (EditableContextMenu / NonEditableContextMenu). Use when adding a right-click menu to a surface, fixing a fake menu with no Copy or Export, a missing Download as Markdown, or a bespoke per-surface menu. NOT for an assigned rollout shard (use context-menu-rollout)."
 ---
 

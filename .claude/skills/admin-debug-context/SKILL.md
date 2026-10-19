@@ -1,5 +1,6 @@
 ---
 name: admin-debug-context
+subject: platform/ui-shell/builder-panel
 description: "Admin debug system wiring for the floating AdminIndicator's live debug data and Copy Full Context. Use when adding debug visibility to a route or feature, wiring useDebugContext or the debug panel, capturing console errors, or enabling the copy-context workflow for a page."
 ---
 

@@ -73,7 +73,7 @@ Legend: ✓ present · ◑ partial · ✗ missing · — n/a. Action `Priority` 
 
 ## 6. Cross-cutting findings (known, pre-fill-in)
 
-- **Orphan:** `resourcePickerWindow` is registered with a component but has NO opener and NO open path — literally unreachable. Add opener OR delete (`remove-window-panel`).
+- **Orphan:** `resourcePickerWindow` is registered with a component but has NO opener and NO open path — literally unreachable. Add opener OR delete (`window-panel-authoring` removing.md).
 - **Surfacing gap:** utility panels (Tasks, Voice/VoicePad, PDF Extractor, Scraper, Cloud Files) are **Tools-Grid-only** with ~0 bespoke call sites — under-surfaced where users actually need them.
 - **Gold standard to replicate:** `agentRunWindow` (run-custom-agent-by-id via `useOpenAgentRunWindow({initialAgentId})`) is fired from 5+ surfaces (agent headers, agent item cards, code-editor context menu) — the model for distributing a panel.
 - **Tools Grid hygiene:** several "(new)" tiles point at **deprecated stub** windows; a block of agent interface-variation **demos are parked in the `admin` category** as if first-class; genuine missing tiles: `picklistManagerV1/V2`, `projectsWindow`, `quickChatWindow`.
@@ -132,7 +132,7 @@ Per-panel rows live in [`docs/inventory/`](./docs/inventory/) (code · notes-tas
   - **Declared so far (2026-08-24):** `canvasViewerWindow` → `matrx-user/canvas-viewer` · **`tableViewerWindow` → `matrx-user/table-viewer`** · **`DocumentsWorkspace` (the shell inside `workingDocumentWindow`, the context drawer, run-controls and canvas) → `matrx-user/documents-workspace`**. Each has a manifest in `features/surfaces/manifests/`, `ui_surface` + value rows, a `SurfaceRuntimeProvider` emitter, and passes `surfaceName` to its `NonEditableContextMenu`. Follow the `surface-authoring` skill for the rest.
   - 🚨 **THE `asChild` TRAP, measured live 2026-08-24:** put the `SurfaceRuntimeProvider` AROUND the menu, never between the menu and its child. `ContextMenuTrigger asChild` clones its ONE child and hands it the trigger ref + `onContextMenu`; a non-DOM component in that slot swallows them and the window's right-click menu silently stops opening.
 
-### Orphans / unreachable — delete or wire (`remove-window-panel`)
+### Orphans / unreachable — delete or wire (`window-panel-authoring` removing.md)
 
 resourcePickerWindow (DELETE — latent-crash open path) · codeWorkspaceWindow window-form (wire/retire) · quickNoteSaveWindow (retire — opener 0 consumers) · **projectsWindow (P1 — unreachable: no tile + no callers + read-only body)** · agentOptimizerWindow + agentDataStorageWindow (DELETE — empty stubs) · adminStateAnalyzer (retire — twin, 0 callers).
 

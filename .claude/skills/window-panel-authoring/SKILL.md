@@ -1,6 +1,7 @@
 ---
 name: window-panel-authoring
-description: "Recipe for creating or changing a floating window. Use when adding a window, editing a window component, declaring restore or ephemeral behavior, wiring a ?panels= link or the Tools grid, or a window fails to restore after reload. NOT for drag/resize/tray internals (use window-panels)."
+subject: platform/ui-shell
+description: "Recipe for creating or changing a floating window. Use when adding a window, deleting, killing or retiring a window or overlay ('kill this panel', 'remove the X window', consolidating X into Y and deleting X), editing a window component, declaring restore or ephemeral behavior, wiring a ?panels= link or the Tools grid, or a window fails to restore after reload. NOT for drag/resize/tray internals (use window-panels) or for opening an overlay (use overlay-system)."
 ---
 
 # Window Panel Authoring
@@ -134,4 +135,17 @@ A window survives a refresh only when its `window.preservation.dataKeys` lists w
 
 - Package guides: `../aidream/apps/shared/summon/README.md` (WindowPanel, links, persistence, handles) and `FEATURE.md` (invariants).
 - App window facts and laws: `features/window-panels/FEATURE.md`. Definitions: `features/overlays/definitions/`. Host: `features/overlays/host/`.
-- Openers, registry, mounting: `overlay-system` skill. Slots, drag, tray: `window-panels` skill. Removal: `remove-window-panel` skill.
+- Openers, registry, mounting: `overlay-system` skill. Slots, drag, tray: `window-panels` skill. Removal: [`removing.md`](removing.md) in this skill.
+
+## Removing a window panel
+
+Deleting a panel means removing it from every place its registration spreads, then proving zero residue: no shims, aliases, forwarding openers or tombstone comments. The full no-trace recipe (keystone, ten-row checklist, repoint-before-delete greps, shared infrastructure not to delete, verification) is in [`removing.md`](removing.md). Read it in full before any deletion.
+
+## Relocated
+
+| Old skill and trigger | Now |
+|---|---|
+| `remove-window-panel`: deleting, killing or retiring a window/overlay | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: consolidating X into Y and deleting X | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: "kill this panel", "remove the X window" | this skill, [`removing.md`](removing.md) |
+| `remove-window-panel`: NOT for adding or opening an overlay | `overlay-system` skill |

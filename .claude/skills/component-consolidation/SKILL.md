@@ -1,5 +1,6 @@
 ---
 name: component-consolidation
+subject: skills/one-canonical
 description: "Safe removal of a duplicate component in favor of the one being kept. Use when asked to remove a component in favor of another, eliminate duplicates, reduce two versions of something to one, or clean up redundant UI components."
 ---
 

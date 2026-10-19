@@ -1,5 +1,6 @@
 ---
 name: error-capture
+subject: matrx-frontend:.claude/skills/error-capture
 description: "The frontend Error Inspector capture system (captureError, lib/diagnostics/**). Use when wiring a new CapturedErrorSource or adapter, calling captureError from a new site, picking a red/orange/yellow tier or errorTierRules downgrade, or turning a console.error or swallowed catch into a captured error."
 ---
 

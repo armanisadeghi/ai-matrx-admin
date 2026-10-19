@@ -1,5 +1,6 @@
 ---
 name: surface-write-targets
+subject: platform/ui-shell
 description: "Recipe for making an existing surface agent-writable via manifest writeTargets. Use when asked to 'let agents write/update/fill X on this page', 'add write targets', or 'wire apply_surface_write', or for an avalanche-campaign item. NOT for a brand-new surface (use surface-authoring)."
 ---
 

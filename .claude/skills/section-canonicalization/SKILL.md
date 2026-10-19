@@ -1,5 +1,6 @@
 ---
 name: section-canonicalization
+subject: matrx-frontend:.claude/skills/section-canonicalization
 description: "Recipe for building one focused UI section out for every consumer. Use when asked to 'make this section canonical', 'productize this widget', give it 'the full treatment', or set it up 'like the SEO metadata system', or when building a new analyzer, preview, or calculator section."
 ---
 

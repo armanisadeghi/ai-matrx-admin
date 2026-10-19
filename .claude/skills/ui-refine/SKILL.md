@@ -1,5 +1,6 @@
 ---
 name: ui-refine
+subject: platform/ui-shell
 description: "Refine UI posture — improve an existing screen without reinventing it. Use when the current page is roughly right but needs polish (hierarchy, spacing, labels, loading/empty/error states, mobile breakage), or when consistency with the rest of the app matters more than novelty."
 ---
 

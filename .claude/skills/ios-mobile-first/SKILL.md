@@ -1,5 +1,6 @@
 ---
 name: ios-mobile-first
+subject: platform/ui-shell
 description: "iOS-native mobile web UX rules. Use when building any UI component, fixing mobile issues, reviewing responsive code, or touching viewport heights (dvh vs h-screen), safe areas, Dialog vs Drawer, tabs on mobile, touch targets, or input zoom."
 ---
 

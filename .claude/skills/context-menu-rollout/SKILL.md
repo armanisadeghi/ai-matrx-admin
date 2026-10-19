@@ -1,5 +1,6 @@
 ---
 name: context-menu-rollout
+subject: platform/ui-shell
 description: "Fleet worker contract for wiring assigned files to the v3 right-click menu. Use when handed files from pnpm check:context-menu, or told to 'wire the menu on X', 'do your assigned rows', or 'clear your shard'. NOT for an unassigned one-off menu wiring (use context-menu-v3)."
 ---
 

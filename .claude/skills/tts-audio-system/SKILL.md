@@ -1,5 +1,6 @@
 ---
 name: tts-audio-system
+subject: chat/voice
 description: "The TTS/STT/audio-playback system behind the one `speak()` entry point. Use when working on read-aloud, the Listen panel, voice/speed settings, transcription, mic capture, SpeakerButton, iOS playing silence, audio API routes, or files in features/audio/, features/tts/, hooks/tts/, app/api/audio/."
 ---
 

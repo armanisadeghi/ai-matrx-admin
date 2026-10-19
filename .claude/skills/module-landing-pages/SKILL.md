@@ -1,5 +1,6 @@
 ---
 name: module-landing-pages
+subject: matrx-frontend:.claude/skills/module-landing-pages
 description: "One-route pattern: public marketing landing plus signed-in workspace. Use when creating or fixing a landing page or a feature's front door, guests see an error, 'make /X work signed out', signed-in users land on a pitch, or ModuleLanding / AuthedWorkspaceCTA. NOT for (public) share viewers or free tools."
 ---
 

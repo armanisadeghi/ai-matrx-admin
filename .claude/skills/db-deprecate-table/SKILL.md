@@ -1,5 +1,6 @@
 ---
 name: db-deprecate-table
+subject: policies/database-changeover-doctrine
 description: "Retiring a dead table by moving it to the deprecated schema and clearing every reference in both repos. Use when asked to deprecate or retire a table, when a table is no longer used, or to take a table offline without dropping it. NOT for relocating a still-used table (use db-move-table-schema)."
 ---
 

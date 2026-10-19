@@ -1,5 +1,6 @@
 ---
 name: ui-bakeoff
+subject: platform/ui-shell
 description: "Orchestrator that runs one UI brief through all four ui-* posture skills in parallel, then picks and merges a winner. Use when a screen matters enough to explore several directions, or the user says 'build it a few ways', 'design options', 'bake-off', 'show me variations', or 'compare approaches'."
 ---
 

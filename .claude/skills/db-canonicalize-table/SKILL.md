@@ -1,5 +1,6 @@
 ---
 name: db-canonicalize-table
+subject: policies/database-changeover-doctrine
 description: "Bringing an existing table onto the platform base standard. Use when asked to canonicalize, retrofit, or 'Wave 3' a table, run apply_rls or an org backfill, retire a bespoke *_versions table, or move it onto platform comments/associations/permissions. NOT for a schema move (use db-move-table-schema)."
 ---
 

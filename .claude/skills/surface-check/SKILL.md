@@ -1,5 +1,6 @@
 ---
 name: surface-check
+subject: platform/ui-shell
 description: "THE full UI surface checklist (S1–S18) run on one assigned surface. Use for a named surface check, `/surface-check <surface>`, or a claimed `surface-certification` Work Loop item. NOT for fleet selection or claims (use surface-certification-loop)."
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: ui-dense
+subject: platform/ui-shell
 description: "Dense UI posture — maximum information density with clear hierarchy. Use when building or reworking admin dashboards, data tables and grids, ops or monitoring views, settings-heavy panels, debug inspectors, state or log viewers, and multi-pane tool UIs someone drives all day."
 ---
 

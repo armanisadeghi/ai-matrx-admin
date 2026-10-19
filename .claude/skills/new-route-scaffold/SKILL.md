@@ -1,5 +1,6 @@
 ---
 name: new-route-scaffold
+subject: matrx-frontend:.claude/skills/new-route-scaffold
 description: "Scaffold recipe for a new authenticated route: SSR shell, DB-derived types, Redux hydration, view sub-pages. Use when creating a new route or page, adding a feature with a sidebar/main layout, adding view modes to a route, or feature types don't match database.types.ts."
 ---
 

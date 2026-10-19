@@ -1,5 +1,6 @@
 ---
 name: picker-custom-entry
+subject: platform/ui-shell
 description: "Custom-entry fix for pickers with no way to add a choice (Select, Popover list, DropdownMenu). Use when building or touching any choice control (tier, category, tag, status, owner), `pnpm check:picker-add` names a file, running Pattern Patrol P13, or the user says 'no way to add my own' or 'why can't I type a new one'."
 ---
 

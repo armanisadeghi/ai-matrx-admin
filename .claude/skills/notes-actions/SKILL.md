@@ -1,5 +1,6 @@
 ---
 name: notes-actions
+subject: matrx-frontend:features/notes
 description: "Cross-app save-to-notes components and patterns. Use when adding save-to-notes to a feature, wiring overlay note capture, editing features/notes/actions/ or its consumers, or using QuickCaptureButton, SaveToScratchButton, SaveSelectionButton, QuickNotesSheet, CategoryNotesModal, or useOpenQuickNoteSaveOverlay."
 ---
 

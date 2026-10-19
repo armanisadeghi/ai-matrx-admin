@@ -1,5 +1,6 @@
 ---
 name: pattern-patrol
+subject: intelligence/pattern-patrols
 description: "Pattern Patrols system of recurring, certified sweeps. Use when you are a patrol run or an assignment names a P# id, you spot a registered-pattern violation off-mission (log a sighting), a mistake class keeps recurring, or you touch PATROL_REGISTRY or PATROL_SIGHTINGS. NOT for one-off bug fixes."
 ---
 

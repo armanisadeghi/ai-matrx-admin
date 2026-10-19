@@ -35,7 +35,6 @@ Read, in this order:
 3. [features/agents/redux/agent-shortcuts/slice.ts](../agents/redux/agent-shortcuts/slice.ts) — the record + dirty-tracking pattern you're copying.
 
 For route work under `app/(core)/files/`, additionally run these skills before writing code:
-- `.claude/skills/nextjs-ssr-architecture/SKILL.md`
 - `.claude/skills/ssr-zero-layout-shift/SKILL.md`
 - `.claude/skills/ios-mobile-first/SKILL.md` (for any mobile branch)
 

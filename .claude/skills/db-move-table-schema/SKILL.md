@@ -1,5 +1,6 @@
 ---
 name: db-move-table-schema
+subject: policies/database-changeover-doctrine
 description: "Relocating a live, still-used table to another Postgres schema with every reference intact. Use when asked to move or rehome a table into a schema, or to pull a table out of public into a domain schema. NOT for retiring a table (use db-deprecate-table)."
 ---
 

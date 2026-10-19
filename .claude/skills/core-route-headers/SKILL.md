@@ -1,5 +1,6 @@
 ---
 name: core-route-headers
+subject: platform/ui-shell
 description: "(core) route header and body-height conformance via PageHeader. Use when fixing a (core) page's header, title bar, breadcrumbs, sub-route nav, body height (h-page, calc(100dvh…)), mobile header, or buttons hidden behind the avatar, or on a header-conformance assignment. NOT for /administration/* routes."
 ---
 

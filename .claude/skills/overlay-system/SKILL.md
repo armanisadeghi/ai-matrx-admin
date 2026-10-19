@@ -1,5 +1,6 @@
 ---
 name: overlay-system
+subject: platform/ui-shell
 description: "Overlay system on @ai-matrx/summon: dialogs, sheets and windows declared once in features/overlays/definitions, opened by dispatch. Use when opening, adding, debugging an overlay, or touching features/overlays/**, SummonHost, defineOverlay, useOpenX. NOT for WindowPanel chrome (use window-panels)."
 ---
 

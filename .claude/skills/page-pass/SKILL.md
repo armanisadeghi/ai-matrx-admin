@@ -1,5 +1,6 @@
 ---
 name: page-pass
+subject: platform/ui-shell
 description: "The one skill for taking a page to done: its agent surface and its UI/UX, in one pass. Use when assigned pages or routes to pass, on `/page-pass <route>`, or when a campaign brief says 'do the page pass'. NOT for certification ledger writes (use surface-certification-loop)."
 ---
 

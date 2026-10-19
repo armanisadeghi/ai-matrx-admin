@@ -1,5 +1,6 @@
 ---
 name: create-tool-renderer
+subject: matrx-frontend:.claude/skills/create-tool-renderer
 description: "Custom chat display for an MCP or agent tool's result, DB-loaded from tool_ui by default. Use when adding or customizing a tool visualization, making a tool result look good, rendering MCP tool output, or authoring a renderer for a tool that shows the generic view."
 ---
 

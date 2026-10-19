@@ -1,5 +1,6 @@
 ---
 name: route-metadata-favicons
+subject: matrx-frontend:.claude/skills/route-metadata-favicons
 description: "Next.js route metadata, per-route favicons, OpenGraph, and Twitter cards. Use when adding a route or layout, adding a favicon or social share image, auditing missing metadata, naming tab titles, or touching createRouteMetadata, createDynamicRouteMetadata, generateFaviconMetadata, or titlePrefix."
 ---
 

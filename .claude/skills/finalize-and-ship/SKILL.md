@@ -1,5 +1,6 @@
 ---
 name: finalize-and-ship
+subject: matrx-frontend:.claude/skills/finalize-and-ship
 description: "End-of-task routine: health checks, fixes, then commit and push. Use when finishing a unit of work, or when the user says 'commit and push', 'ship it', 'get it ready', 'wrap up', or just 'do this' with no push instruction."
 ---
 

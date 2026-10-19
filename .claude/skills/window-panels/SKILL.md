@@ -1,5 +1,6 @@
 ---
 name: window-panels
+subject: platform/ui-shell
 description: "WindowPanel (@ai-matrx/summon/window) and its window manager. Use when a window won't drag, resize, minimize or pop out, the tray or restore is wrong, rendering <WindowPanel> on a page, or editing features/window-panels/**. NOT for opening or registering overlays (use overlay-system)."
 ---
 
@@ -17,7 +18,7 @@ Opening, registering and closing an overlay is the [`overlay-system`](../overlay
 - Tray, minimized cards, `windowManager` state, reveal, silent-render guard → [tray-and-window-manager.md](tray-and-window-manager.md)
 - Save/restore, `window.preservation`, `onCollectData`, `ephemeral`, `?panels=` links → [persistence.md](persistence.md)
 - Phone presentation (`window.mobile`) → [mobile-presentation.md](mobile-presentation.md)
-- Creating or changing a window → `window-panel-authoring` skill; deleting one → `remove-window-panel` skill.
+- Creating or changing a window → `window-panel-authoring` skill; deleting one → `window-panel-authoring` skill (removing.md).
 
 ## Mental model
 

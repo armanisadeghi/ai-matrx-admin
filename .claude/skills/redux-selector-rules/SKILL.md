@@ -1,5 +1,6 @@
 ---
 name: redux-selector-rules
+subject: matrx-frontend:.claude/skills/redux-selector-rules
 description: "Redux Toolkit selector rules against re-renders, recalculation warnings, and render loops. Use when writing useSelector/useAppSelector or createSelector, deriving state in a connected component, or seeing 'Selector returned a different result when called with the same parameters'."
 ---
 

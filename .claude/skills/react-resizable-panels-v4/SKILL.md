@@ -1,5 +1,6 @@
 ---
 name: react-resizable-panels-v4
+subject: matrx-frontend:features/resizable-panels
 description: "react-resizable-panels v4 rules for this SSR codebase. Use when importing react-resizable-panels (PanelGroup and PanelResizeHandle are v3 names), editing components/ui/resizable* or features/code/layout/, building a split-pane, sidebar, or drag-handle layout, or persisting or toggling panel sizes."
 ---
 

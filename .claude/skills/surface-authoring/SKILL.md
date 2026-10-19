@@ -1,5 +1,6 @@
 ---
 name: surface-authoring
+subject: platform/ui-shell
 description: "Lifecycle for AI Matrx agent-aware UI surfaces. Use when creating a surface in features/surfaces/manifests/, or completing or repairing one that is partial, stubbed, unregistered, missing runtime context or context menus, or not agent-wired. NOT for certifying a surface (use surface-check)."
 ---
 

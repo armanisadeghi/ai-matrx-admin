@@ -1,5 +1,6 @@
 ---
 name: create-render-block-skill
+subject: [agents/agent-skills, architecture/content-ir]
 description: "Platform agent skill and content blocks that teach agents a render block, building the block first if new. Use when asked to create the skill for a render block, skill-ify flashcards or quiz, add content blocks for a block, or add a new render block type. NOT for tool result displays (use create-tool-renderer)."
 ---
 
