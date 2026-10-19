@@ -177,4 +177,15 @@ describe("the held layouts, after boot", () => {
     expect(reducer(filled, fromServer).person).toBeNull();
     expect(reducer(late, shellLayoutLoaded(null))).toMatchObject({ status: "ready", reserved: false, person: null });
   });
+  it("a store answer asked before a save never repaints the layout from before it (editor flash after Save)", () => {
+    const first = reducer(ready, shellLayoutStored({ target: "person", stored: stored("mine", ORG_A, 1), at: 2_000 }));
+    // A revalidation asked at t=1000 (before the save) answers "no layout" at t=2500: dropped.
+    expect(labels(reducer(first, shellLayoutLoaded(null, 1_000)))).toEqual(["mine"]);
+    const staleFetch = { type: REHYDRATE_ACTION_TYPE, payload: { sliceName: "shellLayout", state: { fromServer: true, requestedAt: 1_000, person: null, organizations: {} } }, meta: { fromRehydrate: true } };
+    expect(labels(reducer(first, staleFetch))).toEqual(["mine"]);
+    // One asked after the save is the truth (a clear on another device still lands).
+    expect(reducer(first, shellLayoutLoaded(null, 3_000)).person).toBeNull();
+    const freshFetch = { ...staleFetch, payload: { ...staleFetch.payload, state: { ...staleFetch.payload.state, requestedAt: 3_000 } } };
+    expect(reducer(first, freshFetch).person).toBeNull();
+  });
 });
