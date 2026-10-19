@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0496",
-  "version": 2,
+  "version": 3,
   "title": "Design system — Trust",
   "description": "Sober navy, crisp white and conservative corners for money and law.",
   "forWho": "Finance, legal, insurance and professional services",
@@ -1273,7 +1273,7 @@
         "Calloway Square"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {

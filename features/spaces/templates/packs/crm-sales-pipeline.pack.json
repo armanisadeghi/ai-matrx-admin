@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0304",
-  "version": 5,
+  "version": 6,
   "title": "Account CRM for Consultants",
   "description": "Consultants and B2B firms: companies first, then their contacts, deals and follow-ups.",
   "forWho": "Consultants and business-to-business firms",
@@ -1892,7 +1892,7 @@
         "Merriweather Avenue"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

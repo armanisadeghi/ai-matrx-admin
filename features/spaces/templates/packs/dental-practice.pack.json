@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0400",
-  "version": 2,
+  "version": 4,
   "title": "Dental Practice",
-  "description": "Patients, appointments, treatment plans, claims and supplies for a small dental office.",
-  "forWho": "Dental offices and solo dentists",
+  "description": "For dentists and front desks: schedule, recalls, treatment plans, claims and supplies.",
+  "forWho": "Dentists, office managers and dental front desks",
   "icon": {
     "emoji": "🦷"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:gradient-sky",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
-    "dental",
-    "patients",
-    "appointments",
-    "claims"
+    "dentist",
+    "dental office",
+    "recalls",
+    "treatment plans",
+    "insurance claims",
+    "hygiene"
   ],
   "spec": {
     "specVersion": 1,
@@ -87,6 +89,42 @@
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "operatory",
+            "label": "Operatory",
+            "parityType": "select",
+            "choices": [
+              "Op 1",
+              "Op 2",
+              "Hygiene 1",
+              "Hygiene 2"
+            ],
+            "choiceColors": {
+              "Op 1": "blue",
+              "Op 2": "purple",
+              "Hygiene 1": "green",
+              "Hygiene 2": "yellow"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "minutes",
+            "label": "Chair time (min)",
+            "parityType": "integer",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 10
+              },
+              {
+                "kind": "max",
+                "value": 240
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "when_at",
@@ -196,186 +234,218 @@
           {
             "key": "a01",
             "values": {
-              "appt_title": "Hygiene visit - Fairweather",
+              "appt_title": "Six-month cleaning, bitewings due",
               "patient": "p02",
               "provider": "tm-priya",
               "when_at": "@today 09:00",
               "visit_type": "Hygiene visit",
               "status": "Checked in",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "operatory": "Hygiene 1",
+              "minutes": 60
             }
           },
           {
             "key": "a02",
             "values": {
-              "appt_title": "Filling - Hargreave",
+              "appt_title": "Fillings #14 and #15",
               "patient": "p04",
               "provider": "tm-marcus",
               "when_at": "@today 10:30",
               "visit_type": "Filling",
               "status": "Confirmed",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "operatory": "Op 2",
+              "minutes": 60
             }
           },
           {
             "key": "a03",
             "values": {
-              "appt_title": "New patient exam - Okonkwo-Reyes",
+              "appt_title": "Comprehensive exam, full-mouth X-rays",
               "patient": "p05",
               "provider": "tm-ines",
               "when_at": "@today 14:00",
               "visit_type": "New patient exam",
               "status": "Scheduled",
-              "coordinator": "@installer"
+              "coordinator": "@installer",
+              "operatory": "Op 1",
+              "minutes": 90
             }
           },
           {
             "key": "a04",
             "values": {
-              "appt_title": "Crown prep - Mbeki",
+              "appt_title": "Crown seat #30",
               "patient": "p08",
               "provider": "tm-marcus",
               "when_at": "@mon+3d 11:00",
               "visit_type": "Crown",
-              "status": "Confirmed"
+              "status": "Confirmed",
+              "operatory": "Op 2",
+              "minutes": 40
             }
           },
           {
             "key": "a05",
             "values": {
-              "appt_title": "Hygiene visit - Eklund",
+              "appt_title": "Perio maintenance",
               "patient": "p07",
               "provider": "tm-priya",
               "when_at": "@mon+4d 08:30",
               "visit_type": "Hygiene visit",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "operatory": "Hygiene 1",
+              "minutes": 60
             }
           },
           {
             "key": "a06",
             "values": {
-              "appt_title": "Consult - Solheim",
+              "appt_title": "Implant consult, missing #19",
               "patient": "p12",
               "provider": "tm-marcus",
               "when_at": "@mon+2d 15:30",
               "visit_type": "Consult",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "operatory": "Op 2",
+              "minutes": 30
             }
           },
           {
             "key": "a07",
             "values": {
-              "appt_title": "Root canal - Pruitt",
+              "appt_title": "Root canal #3, first visit",
               "patient": "p09",
               "provider": "tm-ines",
               "when_at": "@today+3d 09:30",
               "visit_type": "Root canal",
-              "status": "Confirmed"
+              "status": "Confirmed",
+              "operatory": "Op 1",
+              "minutes": 90
             }
           },
           {
             "key": "a08",
             "values": {
-              "appt_title": "Hygiene visit - Akers",
+              "appt_title": "Adult prophy and fluoride",
               "patient": "p01",
               "provider": "tm-priya",
               "when_at": "@today+5d 13:00",
               "visit_type": "Hygiene visit",
-              "status": "Scheduled"
+              "status": "Scheduled",
+              "operatory": "Hygiene 2",
+              "minutes": 60
             }
           },
           {
             "key": "a09",
             "values": {
-              "appt_title": "Emergency - Delacroix",
+              "appt_title": "Limited exam, cracked molar",
               "patient": "p10",
               "provider": "tm-marcus",
               "when_at": "@today-2d 16:15",
               "visit_type": "Emergency",
               "status": "Completed",
-              "completed_on": "@today-2d"
+              "completed_on": "@today-2d",
+              "operatory": "Op 2",
+              "minutes": 30
             }
           },
           {
             "key": "a10",
             "values": {
-              "appt_title": "Hygiene visit - Hargreave",
+              "appt_title": "Prophy and four bitewings",
               "patient": "p04",
               "provider": "tm-priya",
               "when_at": "@today-14d 10:00",
               "visit_type": "Hygiene visit",
               "status": "Completed",
-              "completed_on": "@today-14d"
+              "completed_on": "@today-14d",
+              "operatory": "Hygiene 1",
+              "minutes": 60
             }
           },
           {
             "key": "a11",
             "values": {
-              "appt_title": "Filling - Quintero",
+              "appt_title": "Occlusal filling #19",
               "patient": "p03",
               "provider": "tm-ines",
               "when_at": "@today-9d 08:00",
               "visit_type": "Filling",
-              "status": "No-show"
+              "status": "No-show",
+              "operatory": "Op 1",
+              "minutes": 45
             }
           },
           {
             "key": "a12",
             "values": {
-              "appt_title": "Crown - Nakagawa-Frost",
+              "appt_title": "Crown seat #3",
               "patient": "p11",
               "provider": "tm-marcus",
               "when_at": "@today-45d 11:30",
               "visit_type": "Crown",
               "status": "Completed",
-              "completed_on": "@today-45d"
+              "completed_on": "@today-45d",
+              "operatory": "Op 2",
+              "minutes": 40
             }
           },
           {
             "key": "a13",
             "values": {
-              "appt_title": "Hygiene visit - Pruitt",
+              "appt_title": "Periodic exam and cleaning",
               "patient": "p09",
               "provider": "tm-priya",
               "when_at": "@today-100d 09:30",
               "visit_type": "Hygiene visit",
               "status": "Completed",
-              "completed_on": "@today-100d"
+              "completed_on": "@today-100d",
+              "operatory": "Hygiene 2",
+              "minutes": 60
             }
           },
           {
             "key": "a14",
             "values": {
-              "appt_title": "Consult - Brandvold",
+              "appt_title": "Bridge consult, upper left",
               "patient": "p06",
               "provider": "tm-ines",
               "when_at": "@today-30d 14:30",
               "visit_type": "Consult",
-              "status": "Cancelled"
+              "status": "Cancelled",
+              "operatory": "Op 1",
+              "minutes": 30
             }
           },
           {
             "key": "a15",
             "values": {
-              "appt_title": "Hygiene visit - Eklund (last)",
+              "appt_title": "Scaling, lower right quadrant",
               "patient": "p07",
               "provider": "tm-priya",
               "when_at": "@today-70d 09:00",
               "visit_type": "Hygiene visit",
               "status": "Completed",
-              "completed_on": "@today-70d"
+              "completed_on": "@today-70d",
+              "operatory": "Hygiene 1",
+              "minutes": 75
             }
           },
           {
             "key": "a16",
             "values": {
-              "appt_title": "Exam - Mbeki",
+              "appt_title": "Crown prep #30, temp placed",
               "patient": "p08",
               "provider": "tm-marcus",
               "when_at": "@today-5d 13:30",
               "visit_type": "New patient exam",
               "status": "Completed",
-              "completed_on": "@today-5d"
+              "completed_on": "@today-5d",
+              "operatory": "Op 2",
+              "minutes": 90
             }
           }
         ],
@@ -593,6 +663,21 @@
             }
           },
           {
+            "key": "member_id",
+            "label": "Insurance member ID",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "verified_on",
+            "label": "Benefits verified",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "last_visit",
             "label": "Last visit",
             "parityType": "datetime",
@@ -607,6 +692,25 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "recall_interval",
+            "label": "Recall interval",
+            "parityType": "select",
+            "choices": [
+              "3 months",
+              "4 months",
+              "6 months",
+              "12 months"
+            ],
+            "choiceColors": {
+              "3 months": "red",
+              "4 months": "orange",
+              "6 months": "green",
+              "12 months": "gray"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "hygienist",
@@ -632,17 +736,24 @@
           },
           {
             "key": "billed",
-            "label": "Billed to date",
+            "label": "Claimed to date",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "claims",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft"
+                ]
+              }
+            }
           },
           {
             "key": "paid",
-            "label": "Paid to date",
+            "label": "Insurance paid",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -654,12 +765,36 @@
             }
           },
           {
-            "key": "balance",
-            "label": "Outstanding balance",
-            "parityType": "formula",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "formula": "{Billed to date} - {Paid to date}"
+            "key": "awaiting",
+            "label": "Waiting on insurance",
+            "parityType": "rollup",
+            "via": "claims",
+            "pick": "amount",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Submitted",
+                "Appealed"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "open_tx",
+            "label": "Unscheduled treatment",
+            "parityType": "rollup",
+            "via": "treatments",
+            "pick": "fee",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Proposed",
+                "Accepted"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "book_btn",
@@ -703,7 +838,10 @@
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-160d",
               "next_recall": "@today+20d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "SPD-448120931",
+              "verified_on": "@today-12d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -716,7 +854,10 @@
               "insurance": "Harbor Mutual",
               "last_visit": "@today-30d",
               "next_recall": "@today+150d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "HMU-20577413",
+              "verified_on": "@today-31d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -729,7 +870,10 @@
               "insurance": "Cascade HMO",
               "last_visit": "@today-210d",
               "next_recall": "@today-12d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "CHM-7702184",
+              "verified_on": "@today-215d",
+              "recall_interval": "4 months"
             }
           },
           {
@@ -742,7 +886,10 @@
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-14d",
               "next_recall": "@today+165d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "SPD-448207716",
+              "verified_on": "@today-16d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -753,7 +900,9 @@
               "phone": "(208) 555-0174",
               "email": "amara.or@mailbox-demo.net",
               "insurance": "Self-pay",
-              "hygienist": "tm-ines"
+              "hygienist": "tm-ines",
+              "verified_on": "@today-1d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -766,7 +915,10 @@
               "insurance": "Harbor Mutual",
               "last_visit": "@today-240d",
               "next_recall": "@today-45d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "HMU-20581196",
+              "verified_on": "@today-250d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -779,7 +931,10 @@
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-70d",
               "next_recall": "@today+110d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "SPD-448311058",
+              "verified_on": "@today-9d",
+              "recall_interval": "3 months"
             }
           },
           {
@@ -792,7 +947,10 @@
               "insurance": "Cascade HMO",
               "last_visit": "@today-5d",
               "next_recall": "@today+175d",
-              "hygienist": "tm-marcus"
+              "hygienist": "tm-marcus",
+              "member_id": "CHM-7709921",
+              "verified_on": "@today-21d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -805,7 +963,10 @@
               "insurance": "Self-pay",
               "last_visit": "@today-100d",
               "next_recall": "@mon+5d",
-              "hygienist": "tm-marcus"
+              "hygienist": "tm-marcus",
+              "member_id": "HMU-20590037",
+              "verified_on": "@today-4d",
+              "recall_interval": "4 months"
             }
           },
           {
@@ -818,7 +979,10 @@
               "insurance": "Harbor Mutual",
               "last_visit": "@today-700d",
               "next_recall": "@today-520d",
-              "hygienist": "tm-marcus"
+              "hygienist": "tm-marcus",
+              "member_id": "HMU-20511862",
+              "verified_on": "@today-700d",
+              "recall_interval": "12 months"
             }
           },
           {
@@ -831,7 +995,10 @@
               "insurance": "Summit Dental PPO",
               "last_visit": "@today-45d",
               "next_recall": "@today+4d",
-              "hygienist": "tm-priya"
+              "hygienist": "tm-priya",
+              "member_id": "SPD-448355420",
+              "verified_on": "@today-47d",
+              "recall_interval": "6 months"
             }
           },
           {
@@ -842,7 +1009,10 @@
               "phone": "(208) 555-0181",
               "email": "bene.s@mailbox-demo.net",
               "insurance": "Cascade HMO",
-              "hygienist": "tm-marcus"
+              "hygienist": "tm-marcus",
+              "member_id": "CHM-7712308",
+              "verified_on": "@today",
+              "recall_interval": "6 months"
             }
           }
         ],
@@ -1022,6 +1192,13 @@
             "relationMax": 1
           },
           {
+            "key": "teeth",
+            "label": "Teeth / area",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -1074,6 +1251,25 @@
             ]
           },
           {
+            "key": "est_ins",
+            "label": "Estimated insurance",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
             "key": "ins_claimed",
             "label": "Insurance claimed",
             "parityType": "rollup",
@@ -1081,15 +1277,23 @@
             "contextPolicy": "include",
             "via": "claims",
             "pick": "amount",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Draft",
+                  "Denied"
+                ]
+              }
+            }
           },
           {
             "key": "patient_part",
-            "label": "Fee after insurance",
+            "label": "Patient portion (est.)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Fee} - {Insurance claimed}"
+            "formula": "{Fee} - {Estimated insurance}"
           },
           {
             "key": "presented_on",
@@ -1175,114 +1379,134 @@
           {
             "key": "t01",
             "values": {
-              "plan_title": "Crown, lower right molar - Mbeki",
+              "plan_title": "Crown after fractured cusp",
               "patient": "p08",
               "status": "In progress",
               "fee": 1450,
               "presented_on": "@today-20d",
-              "urgency": "Soon"
+              "urgency": "Soon",
+              "teeth": "#30",
+              "est_ins": 940
             }
           },
           {
             "key": "t02",
             "values": {
-              "plan_title": "Two fillings - Hargreave",
+              "plan_title": "Composite fillings, upper left",
               "patient": "p04",
               "status": "Scheduled",
               "fee": 620,
               "presented_on": "@today-9d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "teeth": "#14, #15",
+              "est_ins": 465
             }
           },
           {
             "key": "t03",
             "values": {
-              "plan_title": "Root canal and crown - Pruitt",
+              "plan_title": "Root canal with build-up and crown",
               "patient": "p09",
               "status": "Scheduled",
               "fee": 2380,
               "presented_on": "@today-12d",
-              "urgency": "Urgent"
+              "urgency": "Urgent",
+              "teeth": "#3",
+              "est_ins": 1560
             }
           },
           {
             "key": "t04",
             "values": {
-              "plan_title": "Night guard - Eklund",
+              "plan_title": "Night guard for grinding",
               "patient": "p07",
               "status": "Proposed",
               "fee": 540,
               "presented_on": "@today-6d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "teeth": "Upper arch",
+              "est_ins": 0
             }
           },
           {
             "key": "t05",
             "values": {
-              "plan_title": "Whitening - Akers",
+              "plan_title": "In-office whitening",
               "patient": "p01",
               "status": "Proposed",
               "fee": 380,
               "presented_on": "@today-4d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "teeth": "Full smile",
+              "est_ins": 0
             }
           },
           {
             "key": "t06",
             "values": {
-              "plan_title": "Deep cleaning, upper arch - Quintero",
+              "plan_title": "Scaling and root planing, two quadrants",
               "patient": "p03",
               "status": "Proposed",
               "fee": 780,
               "presented_on": "@today-18d",
-              "urgency": "Soon"
+              "urgency": "Soon",
+              "teeth": "UR, LR",
+              "est_ins": 360
             }
           },
           {
             "key": "t07",
             "values": {
-              "plan_title": "Bridge, upper left - Brandvold",
+              "plan_title": "Three-unit bridge",
               "patient": "p06",
               "status": "Declined",
               "fee": 3100,
               "presented_on": "@today-60d",
-              "urgency": "Routine"
+              "urgency": "Routine",
+              "teeth": "#12-#14",
+              "est_ins": 1150
             }
           },
           {
             "key": "t08",
             "values": {
-              "plan_title": "Crown, upper right - Nakagawa-Frost",
+              "plan_title": "Porcelain crown",
               "patient": "p11",
               "status": "Completed",
               "fee": 1380,
               "presented_on": "@today-45d",
               "urgency": "Routine",
-              "completed_on": "@today-45d"
+              "completed_on": "@today-45d",
+              "teeth": "#3",
+              "est_ins": 690
             }
           },
           {
             "key": "t09",
             "values": {
-              "plan_title": "Extraction and implant consult - Delacroix",
+              "plan_title": "Extraction, graft and implant consult",
               "patient": "p10",
               "status": "Accepted",
               "fee": 2900,
               "presented_on": "@today-2d",
               "urgency": "Urgent",
-              "decided_on": "@today-2d"
+              "decided_on": "@today-2d",
+              "teeth": "#19",
+              "est_ins": 520
             }
           },
           {
             "key": "t10",
             "values": {
-              "plan_title": "Sealants - Fairweather",
+              "plan_title": "Sealants on first molars",
               "patient": "p02",
               "status": "Completed",
               "fee": 240,
               "presented_on": "@today-30d",
               "urgency": "Routine",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "teeth": "#3, #14, #19, #30",
+              "est_ins": 192
             }
           }
         ],
@@ -1480,6 +1704,13 @@
             "relationMax": 1
           },
           {
+            "key": "codes",
+            "label": "Procedure codes",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "amount",
             "label": "Amount",
             "parityType": "currency",
@@ -1508,19 +1739,22 @@
               "Draft",
               "Submitted",
               "Paid",
-              "Denied"
+              "Denied",
+              "Appealed"
             ],
             "choiceColors": {
               "Denied": "red",
               "Draft": "blue",
               "Submitted": "amber",
-              "Paid": "green"
+              "Paid": "green",
+              "Appealed": "orange"
             },
             "statusGroups": {
               "Draft": "todo",
               "Submitted": "in_progress",
               "Paid": "done",
-              "Denied": "in_progress"
+              "Denied": "in_progress",
+              "Appealed": "in_progress"
             },
             "required": true,
             "default": "Draft"
@@ -1557,6 +1791,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "denial_reason",
+            "label": "Denial reason",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "paid_btn",
             "label": "Mark paid",
             "parityType": "button",
@@ -1583,20 +1824,21 @@
           {
             "key": "c01",
             "values": {
-              "claim_ref": "Crown claim - Mbeki",
+              "claim_ref": "Crown #30 with narrative and X-ray",
               "patient": "p08",
               "plan": "t01",
               "amount": 845,
               "status": "Submitted",
               "submitted_on": "@today-12d",
               "follow_up_on": "@today+2d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "codes": "D2740"
             }
           },
           {
             "key": "c02",
             "values": {
-              "claim_ref": "Crown claim - Nakagawa-Frost",
+              "claim_ref": "Crown #3, porcelain",
               "patient": "p11",
               "plan": "t08",
               "amount": 815,
@@ -1604,25 +1846,28 @@
               "submitted_on": "@today-40d",
               "follow_up_on": "@today-12d",
               "payer": "Summit Dental PPO",
-              "paid_on": "@today-12d"
+              "paid_on": "@today-12d",
+              "codes": "D2740"
             }
           },
           {
             "key": "c03",
             "values": {
-              "claim_ref": "Emergency visit claim - Delacroix",
+              "claim_ref": "Limited exam and periapical film",
               "patient": "p10",
               "amount": 310,
-              "status": "Denied",
+              "status": "Appealed",
               "submitted_on": "@today-25d",
-              "follow_up_on": "@today-3d",
-              "payer": "Harbor Mutual"
+              "follow_up_on": "@today+6d",
+              "payer": "Harbor Mutual",
+              "codes": "D0140, D0220",
+              "denial_reason": "Missing X-ray; resent with image"
             }
           },
           {
             "key": "c04",
             "values": {
-              "claim_ref": "Sealant claim - Fairweather",
+              "claim_ref": "Sealants, four first molars",
               "patient": "p02",
               "plan": "t10",
               "amount": 235,
@@ -1630,81 +1875,88 @@
               "submitted_on": "@today-28d",
               "follow_up_on": "@today-5d",
               "payer": "Harbor Mutual",
-              "paid_on": "@today-5d"
+              "paid_on": "@today-5d",
+              "codes": "D1351 x4"
             }
           },
           {
             "key": "c05",
             "values": {
-              "claim_ref": "Filling claim - Hargreave",
+              "claim_ref": "Two composites, upper left",
               "patient": "p04",
               "plan": "t02",
               "amount": 410,
               "status": "Submitted",
               "submitted_on": "@today-8d",
               "follow_up_on": "@today-1d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "codes": "D2391, D2392"
             }
           },
           {
             "key": "c06",
             "values": {
-              "claim_ref": "Root canal statement - Pruitt",
+              "claim_ref": "Root canal #3 pre-estimate",
               "patient": "p09",
               "plan": "t03",
               "amount": 1380,
               "status": "Draft",
-              "payer": "Self-pay"
+              "payer": "Self-pay",
+              "codes": "D3330, D2950, D2740"
             }
           },
           {
             "key": "c07",
             "values": {
-              "claim_ref": "Hygiene claim - Eklund",
+              "claim_ref": "Perio maintenance visit",
               "patient": "p07",
               "amount": 190,
               "status": "Submitted",
               "submitted_on": "@today-10d",
               "follow_up_on": "@mon+4d",
-              "payer": "Summit Dental PPO"
+              "payer": "Summit Dental PPO",
+              "codes": "D4910"
             }
           },
           {
             "key": "c08",
             "values": {
-              "claim_ref": "Hygiene claim - Quintero",
+              "claim_ref": "Prophy and bitewings",
               "patient": "p03",
               "amount": 520,
               "status": "Submitted",
               "submitted_on": "@today-16d",
               "follow_up_on": "@today-4d",
-              "payer": "Cascade HMO"
+              "payer": "Cascade HMO",
+              "codes": "D1110, D0274"
             }
           },
           {
             "key": "c09",
             "values": {
-              "claim_ref": "Exam claim - Akers",
+              "claim_ref": "Periodic exam and cleaning",
               "patient": "p01",
               "amount": 140,
               "status": "Paid",
               "submitted_on": "@today-150d",
               "follow_up_on": "@today-120d",
               "payer": "Summit Dental PPO",
-              "paid_on": "@today-120d"
+              "paid_on": "@today-120d",
+              "codes": "D0120, D1110"
             }
           },
           {
             "key": "c10",
             "values": {
-              "claim_ref": "Crown follow-up claim - Mbeki",
+              "claim_ref": "Crown prep build-up",
               "patient": "p08",
               "amount": 160,
               "status": "Paid",
               "submitted_on": "@today-5d",
               "follow_up_on": "@today+9d",
               "payer": "Summit Dental PPO",
-              "paid_on": "@today-5d"
+              "paid_on": "@today-5d",
+              "codes": "D2950"
             }
           }
         ],
@@ -1922,6 +2174,14 @@
             ]
           },
           {
+            "key": "expires_on",
+            "label": "Expires",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "stock_check",
             "label": "Stock check",
             "parityType": "formula",
@@ -1950,7 +2210,8 @@
               "on_hand": 6,
               "reorder_at": 5,
               "supplier": "Pinecrest Dental Supply",
-              "unit_cost": 42
+              "unit_cost": 42,
+              "expires_on": "@today+240d"
             }
           },
           {
@@ -1983,7 +2244,8 @@
               "on_hand": 9,
               "reorder_at": 6,
               "supplier": "Pinecrest Dental Supply",
-              "unit_cost": 34
+              "unit_cost": 34,
+              "expires_on": "@today+75d"
             }
           },
           {
@@ -2005,7 +2267,8 @@
               "on_hand": 12,
               "reorder_at": 6,
               "supplier": "Pinecrest Dental Supply",
-              "unit_cost": 3
+              "unit_cost": 3,
+              "expires_on": "@today+130d"
             }
           },
           {
@@ -2038,7 +2301,8 @@
               "on_hand": 7,
               "reorder_at": 4,
               "supplier": "Pinecrest Dental Supply",
-              "unit_cost": 31
+              "unit_cost": 31,
+              "expires_on": "@today+40d"
             }
           }
         ]
@@ -2494,7 +2758,8 @@
           "status": [
             "Draft",
             "Submitted",
-            "Denied"
+            "Denied",
+            "Appealed"
           ]
         }
       },
@@ -2512,7 +2777,8 @@
           "status": [
             "Draft",
             "Submitted",
-            "Denied"
+            "Denied",
+            "Appealed"
           ]
         }
       },
@@ -2611,7 +2877,7 @@
         "Meridian Court"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2622,7 +2888,7 @@
         "emoji": "🦷"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:gradient-sky",
         "offsetY": 50
       },
       "settings": {
@@ -2666,6 +2932,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-recall"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -3116,7 +3388,8 @@
                   "status": [
                     "Draft",
                     "Submitted",
-                    "Denied"
+                    "Denied",
+                    "Appealed"
                   ]
                 }
               },
@@ -3134,7 +3407,8 @@
                   "status": [
                     "Draft",
                     "Submitted",
-                    "Denied"
+                    "Denied",
+                    "Appealed"
                   ]
                 }
               },
@@ -3476,8 +3750,10 @@
                 "layout": "list",
                 "anyOf": {
                   "status": [
+                    "Draft",
                     "Submitted",
-                    "Denied"
+                    "Denied",
+                    "Appealed"
                   ]
                 }
               }
@@ -3535,7 +3811,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "What happens between a first call and a new patient's first chair time."
+              "text": "From the first phone call to the end of the first visit. A new patient who leaves without a next appointment is the most expensive mistake a dental office makes."
             }
           ],
           "background": "blue",
@@ -3547,7 +3823,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the visit"
+              "text": "On the first call"
             }
           ],
           "props": {
@@ -3558,7 +3834,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Take the request from the form or phone and add the person under Patients with status New."
+              "text": "Ask how they heard about you and what brought them in: pain, a cleaning, a second opinion, or cosmetic work. Pain gets an emergency slot within 24 hours."
             }
           ]
         },
@@ -3566,7 +3842,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check insurance eligibility and note the plan on the patient row."
+              "text": "Add them under Patients with status "
+            },
+            {
+              "text": "New",
+              "bold": true
+            },
+            {
+              "text": ". Record phone, email, insurance carrier and the member ID from their card."
             }
           ]
         },
@@ -3574,7 +3857,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send registration paperwork at least two days before the visit."
+              "text": "Offer two specific times, not \"when works for you\". New patient exams need 90 minutes in an operatory with the panoramic machine free."
             }
           ]
         },
@@ -3582,9 +3865,68 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book a New patient exam under Appointments and confirm it the day before."
+              "text": "Send the registration and health history forms by email the same day. Ask them to bring photo ID and the insurance card."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two days before the visit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Benefits verified with the carrier: frequency limits on cleanings and X-rays, deductible met so far, annual maximum remaining, waiting periods on major work."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Benefits verified",
+              "bold": true
+            },
+            {
+              "text": " date filled in on the patient row."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prior X-rays requested from the previous dentist if taken in the last 12 months (saves the patient a duplicate exposure and saves a denied claim)."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Forms returned. If not, a reminder call."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
@@ -3601,7 +3943,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Verify photo ID and insurance card."
+              "text": "Greet by name, scan the ID and card, confirm the address and phone."
             }
           ]
         },
@@ -3609,7 +3951,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Collect signed privacy acknowledgement."
+              "text": "Review the health history with the patient, especially blood thinners, heart conditions that need premedication, and allergies to anesthetic or latex. The clinical team reads it before seating."
             }
           ]
         },
@@ -3617,7 +3959,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Agree the recall interval and book it before the person leaves."
+              "text": "Exam, full-mouth X-rays and periodontal charting happen in the chair. The dentist presents findings at the end of the visit."
             }
           ]
         },
@@ -3625,7 +3967,97 @@
           "type": "heading",
           "text": [
             {
-              "text": "After the visit"
+              "text": "Before they leave"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The dentist's findings become rows under "
+            },
+            {
+              "text": "Treatment plans",
+              "bold": true
+            },
+            {
+              "text": ", one per phase, with a fee and your insurance estimate. See Presenting a treatment plan."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the first treatment appointment while they are standing at the desk."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book the next cleaning and set "
+            },
+            {
+              "text": "Recall interval",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Next recall",
+              "bold": true
+            },
+            {
+              "text": ". Patients with gum disease go on 3 or 4 months; healthy adults on 6."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move the patient from New to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Amara called with a chipped front tooth and no dentist for three years. She was booked for a comprehensive exam the next afternoon, her benefits were checked the morning of the visit, and she left with a filling booked for Thursday and a cleaning in six months."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common misses"
             }
           ],
           "props": {
@@ -3636,7 +4068,30 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Move the patient to Active and set Next recall."
+              "text": "No member ID on file, so the first claim bounces."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "X-rays taken that the carrier will not pay for because the last dentist took a set five months ago."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A treatment plan presented and never booked. Those patients show up in the "
+            },
+            {
+              "text": "Unscheduled treatment",
+              "bold": true
+            },
+            {
+              "text": " column; call them within a week."
             }
           ]
         }
@@ -3645,16 +4100,16 @@
     {
       "key": "sop-recall",
       "parent": "dental-practice",
-      "title": "Recall and reactivation",
+      "title": "Recalls and reactivation",
       "icon": {
-        "emoji": "🔔"
+        "emoji": "🔁"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Recalls keep the schedule full. Review the Patients table every Monday."
+              "text": "Hygiene recall is the heartbeat of a practice: most restorative work is found at a cleaning. This page is how the front desk keeps every active patient on a schedule and brings back the ones who drifted."
             }
           ],
           "background": "blue",
@@ -3666,7 +4121,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly routine"
+              "text": "How recall works here"
             }
           ],
           "props": {
@@ -3674,26 +4129,61 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Open Patients, view Overdue under recall and call each person."
+              "text": "Every patient has a "
+            },
+            {
+              "text": "Recall interval",
+              "bold": true
+            },
+            {
+              "text": " (3, 4, 6 or 12 months) and a "
+            },
+            {
+              "text": "Next recall",
+              "bold": true
+            },
+            {
+              "text": " date."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Offer two appointment times and book while on the phone."
+              "text": "When a cleaning is completed, set Next recall to the visit date plus the interval and book it before the patient leaves. Pre-booked recalls are kept far more often than ones scheduled by phone later."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Log the outcome in the patient notes."
+              "text": "The Patients list has three views that matter: "
+            },
+            {
+              "text": "This week",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Next 7 days",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3701,7 +4191,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When nobody answers"
+              "text": "Weekly recall call list (Friday, 30 minutes)"
             }
           ],
           "props": {
@@ -3709,18 +4199,56 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "Try a text, then email, then a second call a week later."
+              "text": "Open Patients, Overdue view. Sort by Next recall, oldest first."
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "numbered",
           "text": [
             {
-              "text": "After three attempts over six weeks, set status to Inactive."
+              "text": "For each patient with no future appointment, call once, text once, then email. Write the outcome in the row's page so the next person does not repeat it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Patients who book: set the appointment and leave status Active."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Patients who say no or do not answer after three attempts over a month: status "
+            },
+            {
+              "text": "Recall due",
+              "bold": true
+            },
+            {
+              "text": " stays, and they go on the quarterly letter list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Patients overdue more than 18 months: move to "
+            },
+            {
+              "text": "Inactive",
+              "bold": true
+            },
+            {
+              "text": ". Do not delete them; they come back, and their history matters."
             }
           ]
         },
@@ -3728,7 +4256,41 @@
           "type": "heading",
           "text": [
             {
-              "text": "Reactivation"
+              "text": "What to say"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Hi Marisol, it's Bea from Larkspur Dental. You're due for your cleaning and Dr. Raman has Tuesday at 8 or Thursday at 4 open. Would either of those work?\""
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Specific times, the hygienist's name, and no guilt. If the patient mentions cost, check "
+            },
+            {
+              "text": "Unscheduled treatment",
+              "bold": true
+            },
+            {
+              "text": " before the call so you know whether anything else is waiting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Reactivation for lapsed patients"
             }
           ],
           "props": {
@@ -3739,9 +4301,163 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Once a quarter, call Inactive patients whose last visit was under two years ago."
+              "text": "Once a quarter, filter Patients by status Inactive and last visit within three years."
             }
           ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Send a short note: the office has missed them, their insurance probably renews in January, and a cleaning is usually covered in full."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Anyone who books returns to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            },
+            {
+              "text": " with a fresh benefits check; their carrier may have changed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for the hygienist at the end of each cleaning"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next recall date set and appointment booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recall interval reviewed (bleeding or pocketing over 4 mm moves the patient to 3 or 4 months)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "X-ray frequency noted so the next visit does not take films too early"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any new findings sent to the dentist for a treatment plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers worth watching"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Healthy range"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Patients with a future hygiene appointment"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "85% or more of active patients"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Overdue recalls"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 10% of active patients"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Recall calls per week"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Every overdue patient touched at least once a month"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -3750,6 +4466,380 @@
       "parent": "dental-practice",
       "title": "Presenting a treatment plan",
       "icon": {
+        "emoji": "🗂️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Diagnosed treatment that never gets scheduled is the largest hidden number in most offices. This is how to present plans so patients understand them, and how to follow up so they do not quietly disappear."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the conversation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The dentist enters each finding as a row under "
+            },
+            {
+              "text": "Treatment plans",
+              "bold": true
+            },
+            {
+              "text": ": what it is, the teeth involved, priority and fee."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The front desk fills in "
+            },
+            {
+              "text": "Estimated insurance",
+              "bold": true
+            },
+            {
+              "text": " from the verified benefits: percentage covered for that category (preventive, basic, major), deductible still owed and annual maximum left."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The "
+            },
+            {
+              "text": "Patient portion (est.)",
+              "bold": true
+            },
+            {
+              "text": " column works out what the patient pays. Round nothing; patients remember the number you said."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The conversation (in a quiet room, not at the counter)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Start with why: \"The crack on the back tooth will keep spreading, and a crown now avoids a root canal later.\""
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Show the X-ray or intraoral photo the dentist used."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the total, the insurance estimate and their share, in that order. Say plainly that it is an estimate until the carrier pays."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer phasing when the total is large. Urgent work in this benefit year, the rest after the maximum renews."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer the payment options the office actually has. Never invent a discount on the spot."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the conversation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Yes: press "
+            },
+            {
+              "text": "Mark accepted",
+              "bold": true
+            },
+            {
+              "text": ", then book the first appointment before they leave and set the plan to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Not yet: leave it "
+            },
+            {
+              "text": "Proposed",
+              "bold": true
+            },
+            {
+              "text": " and set a reminder seven days out on the plan's page."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "No: set "
+            },
+            {
+              "text": "Declined",
+              "bold": true
+            },
+            {
+              "text": " and write the reason (cost, fear, wants a second opinion). Declined plans are reviewed at month end; reasons tell you what to change."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow-up rhythm for Proposed plans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days since presented"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "2"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Short call: any questions after thinking it over?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "7"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send the written estimate again with available times"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dentist reviews; urgent items get a personal call from the dentist"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "90"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Raise it again at the next cleaning"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pre-estimates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "For crowns, bridges, implants and periodontal work over a few hundred dollars, send a pre-treatment estimate to the carrier first (a "
+            },
+            {
+              "text": "Draft",
+              "bold": true
+            },
+            {
+              "text": " claim row works for tracking it). Tell the patient when you expect the answer, usually two to four weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every finding from the exam has a plan row"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Insurance estimate filled in before presenting"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Patient given the written estimate"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Accepted plans have an appointment on the calendar"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Declined plans have a reason"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        }
+      ]
+    },
+    {
+      "key": "sop-claims",
+      "parent": "dental-practice",
+      "title": "Insurance verification and claims",
+      "icon": {
         "emoji": "🧾"
       },
       "blocks": [
@@ -3757,7 +4847,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A plan that is clear and priced on the day gets accepted more often."
+              "text": "Most denied claims are preventable at the front desk. Verify before the visit, attach what the carrier asks for, and chase every unpaid claim on a schedule."
             }
           ],
           "background": "blue",
@@ -3769,77 +4859,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "In the room"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Show what is proposed and why in plain words."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Give the insurance estimate and what is left for the patient side by side."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Offer payment options before the patient asks."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After the visit"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Record the decision on the plan row."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "If undecided, set a call for three days later."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "When accepted, book the visits and use Start claim on the plan."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Review"
+              "text": "Verify benefits before every visit"
             }
           ],
           "props": {
@@ -3850,37 +4870,54 @@
           "type": "text",
           "text": [
             {
-              "text": "Every month, look at Declined plans and note the most common reason."
+              "text": "For each patient on the next two days of the schedule whose "
+            },
+            {
+              "text": "Benefits verified",
+              "bold": true
+            },
+            {
+              "text": " date is more than 30 days old:"
             }
           ]
-        }
-      ]
-    },
-    {
-      "key": "sop-claims",
-      "parent": "dental-practice",
-      "title": "Claims and follow-up",
-      "icon": {
-        "emoji": "💳"
-      },
-      "blocks": [
+        },
         {
-          "type": "callout",
+          "type": "numbered",
           "text": [
             {
-              "text": "Most delays are small errors. Catch them at submission."
+              "text": "Check eligibility on the carrier's portal or by phone."
             }
-          ],
-          "background": "blue",
-          "props": {
-            "icon": "Lightbulb"
-          }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note frequency limits (cleanings twice a year, bitewings once a year, full-mouth X-rays every three to five years)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note deductible remaining, annual maximum remaining and any waiting period on major services."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Update the date on the patient row."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Submitting"
+              "text": "Sending a claim"
             }
           ],
           "props": {
@@ -3891,7 +4928,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Create the claim from the treatment plan."
+              "text": "When a visit is completed, add a row under "
+            },
+            {
+              "text": "Claims",
+              "bold": true
+            },
+            {
+              "text": " with the procedure codes, amount and payer, linked to the patient and the treatment plan."
             }
           ]
         },
@@ -3899,7 +4943,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm procedure codes match the visit note."
+              "text": "Attach what the codes need: X-rays and a short narrative for crowns, perio charting for scaling and root planing, a pre-op photo for build-ups."
             }
           ]
         },
@@ -3907,7 +4951,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set the Follow up by date ten business days out."
+              "text": "Send it the same day and press "
+            },
+            {
+              "text": "Mark submitted",
+              "bold": true
+            },
+            {
+              "text": ". Set "
+            },
+            {
+              "text": "Follow up by",
+              "bold": true
+            },
+            {
+              "text": " for 14 days later (30 days for paper claims)."
             }
           ]
         },
@@ -3915,7 +4973,49 @@
           "type": "heading",
           "text": [
             {
-              "text": "Following up"
+              "text": "Chasing unpaid claims (every Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open the claims "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": " view. These are claims past their follow-up date and still not paid."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Call or check the portal for each one. Ask: received? processed? what is missing?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Write what you learned on the claim's page and set a new follow-up date. Do not leave a claim with a date in the past."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When a claim is denied"
             }
           ],
           "props": {
@@ -3926,7 +5026,21 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Submitted past the follow-up date means call the payer that day."
+              "text": "Mark it "
+            },
+            {
+              "text": "Denied",
+              "bold": true
+            },
+            {
+              "text": " and fill in "
+            },
+            {
+              "text": "Denial reason",
+              "bold": true
+            },
+            {
+              "text": " in the carrier's words."
             }
           ]
         },
@@ -3934,7 +5048,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Denied means read the reason, fix and resubmit within a week."
+              "text": "Fix and resend when the reason is clerical (wrong member ID, missing tooth number, missing X-ray), then mark it "
+            },
+            {
+              "text": "Appealed",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3942,7 +5063,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Paid means mark paid and update the patient balance."
+              "text": "If the service is not covered, bill the patient their portion and explain it the same week, not three months later."
             }
           ]
         },
@@ -3950,7 +5071,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Month end"
+              "text": "Common denial reasons and the fix"
             }
           ],
           "props": {
@@ -3958,10 +5079,116 @@
           }
         },
         {
-          "type": "text",
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Reason"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Frequency limit exceeded"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Check the last date of service before scheduling X-rays or a cleaning"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Missing attachments"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Send X-ray and narrative with every crown and build-up"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Member not eligible on date of service"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Verify within 30 days of the visit"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Downgraded to a cheaper material"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Bill the patient the difference; mention it when presenting the plan"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
           "text": [
             {
-              "text": "Total Submitted and Denied claims and review them with the office manager."
+              "text": "What the Patients columns tell you"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Waiting on insurance",
+              "bold": true
+            },
+            {
+              "text": " is money claimed and not yet paid, including appeals. Large numbers here mean claims are going out without attachments."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance paid",
+              "bold": true
+            },
+            {
+              "text": " is what the carrier has actually sent."
             }
           ]
         }
@@ -3970,16 +5197,16 @@
     {
       "key": "sop-daily",
       "parent": "dental-practice",
-      "title": "Open and close checklist",
+      "title": "Morning huddle, open and close",
       "icon": {
-        "emoji": "✅"
+        "emoji": "☀️"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A short checklist done the same way every day."
+              "text": "Ten minutes before the first patient saves an hour of scrambling later. The huddle runs from the Today view of Appointments with the whole team standing."
             }
           ],
           "background": "blue",
@@ -3991,7 +5218,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Opening"
+              "text": "Opening (first person in)"
             }
           ],
           "props": {
@@ -4002,7 +5229,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review today's Appointments and confirm the first three patients"
+              "text": "Sterilizer cycle run and logged; spore test on the day your log says"
             }
           ],
           "props": {
@@ -4013,7 +5240,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check Supplies marked Reorder"
+              "text": "Compressor, suction and water lines on; lines flushed for two minutes"
             }
           ],
           "props": {
@@ -4024,7 +5251,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Print the schedule for each operatory"
+              "text": "Operatories set for the first patient in each"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Phones off the answering service; messages listened to and written down"
             }
           ],
           "props": {
@@ -4035,7 +5273,134 @@
           "type": "heading",
           "text": [
             {
-              "text": "Closing"
+              "text": "The huddle (10 minutes, every day)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Today's schedule",
+              "bold": true
+            },
+            {
+              "text": ": walk the Today view. Who is new, who has a medical alert, who needs premedication."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Money in the chair",
+              "bold": true
+            },
+            {
+              "text": ": for each patient today, does the Unscheduled treatment column show anything? The hygienist mentions it and the dentist stops in."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Open spots",
+              "bold": true
+            },
+            {
+              "text": ": any gaps today or tomorrow, and who from the recall list could fill them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Yesterday",
+              "bold": true
+            },
+            {
+              "text": ": anything that went wrong and who is fixing it."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Insurance",
+              "bold": true
+            },
+            {
+              "text": ": claims due for a call today and any patients whose benefits still are not verified."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Through the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " when the patient arrives so the back office sees them."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " as they leave, and do not let them leave without the next appointment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "No-shows get a call within 15 minutes; mark "
+            },
+            {
+              "text": "No-show",
+              "bold": true
+            },
+            {
+              "text": " and offer a new time."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing (last person out)"
             }
           ],
           "props": {
@@ -4046,7 +5411,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Mark every visit Completed, No-show or Cancelled"
+              "text": "Every completed visit has a claim or a self-pay receipt"
             }
           ],
           "props": {
@@ -4057,7 +5422,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Enter next visits before patients leave"
+              "text": "Tomorrow's patients confirmed by text or call; unconfirmed names flagged for a morning call"
             }
           ],
           "props": {
@@ -4068,7 +5433,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Start claims for any completed insurance visit"
+              "text": "Benefits verified for tomorrow's schedule"
             }
           ],
           "props": {
@@ -4079,12 +5444,459 @@
           "type": "todo",
           "text": [
             {
-              "text": "Update Supplies counts for anything used heavily"
+              "text": "Instruments in the sterilizer, operatories wiped down, suction traps cleaned"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Supplies used today taken off "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": "; anything at or below "
+            },
+            {
+              "text": "Reorder at",
+              "bold": true
+            },
+            {
+              "text": " goes on the order"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Alarm set and doors checked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Friday extras"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Overdue claims call list (see Insurance verification and claims)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recall calls (see Recalls and reactivation)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Supplies order placed; anything near "
+            },
+            {
+              "text": "Expires",
+              "bold": true
+            },
+            {
+              "text": " used first"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "dental-practice",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A working home for the business side of a dental office: who is in the chair today, who is overdue for a cleaning, which treatment is waiting on a yes, and which insurance money has not arrived. Clinical notes and X-rays stay in your charting software; this is where the front desk and the office manager run the day."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What each list is for"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments",
+              "bold": true
+            },
+            {
+              "text": ": every booked visit with the operatory, provider and chair time. The Today view is the morning huddle; Calendar is the week at a glance."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": ": one row per patient with insurance, the date benefits were last checked, recall interval and next recall date. The money columns show what insurance still owes and how much treatment is diagnosed but not yet booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Treatment plans",
+              "bold": true
+            },
+            {
+              "text": ": what the dentist diagnosed, the fee, your insurance estimate and the patient's share. A plan moves from Proposed to Accepted to Scheduled to Completed, or ends Declined."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Claims",
+              "bold": true
+            },
+            {
+              "text": ": one row per claim sent to a carrier, with procedure codes, follow-up date and denial reason."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Supplies",
+              "bold": true
+            },
+            {
+              "text": ": what is on the shelf, when to reorder, and anything that expires."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The first week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Replace the sample team with your dentists, hygienists and front desk (open the Team list from any provider cell)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Delete the sample patients or keep two as practice rows until everyone is comfortable, then remove them."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add tomorrow's schedule under Appointments. Pick the operatory and chair time so double-booked rooms are obvious."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For every patient on tomorrow's schedule, check benefits and fill in "
+            },
+            {
+              "text": "Benefits verified",
+              "bold": true
+            },
+            {
+              "text": ". Anyone over 30 days old gets checked again."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open treatment plans from the last three months. This is the list that pays for the workspace."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Where to look"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every morning"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Whole team, 10 minutes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Today view, Unscheduled treatment column, claims due for a call"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every afternoon"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Front desk"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Tomorrow's confirmations, benefits checks"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Every Friday"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Office manager"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Claims Overdue view, recall list, supplies to reorder"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Month end"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Dentist and manager"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Plan value by status chart, declined plans, denied claims"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons on each row"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " on appointments stamp the status and date for you."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark accepted",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": " on treatment plans record when the patient said yes and when the work was done."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark submitted",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " on claims keep the insurance list honest."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Good habits"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "One person owns each day's schedule; their name sits in Front desk owner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never leave a completed visit without a next appointment or a recall date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the denial reason on every denied claim; the patterns tell you which narratives and X-rays carriers want."
+            }
+          ]
         }
       ]
     }

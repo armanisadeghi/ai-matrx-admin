@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0503",
-  "version": 2,
+  "version": 4,
   "title": "Residential Cleaning Service HQ",
-  "description": "Schedule recurring cleans, assign teams, track supplies and invoices.",
+  "description": "For house cleaning companies: recurring cleans, teams, home details, supplies, billing.",
   "forWho": "Residential cleaning businesses",
   "icon": {
     "emoji": "🧹"
@@ -14,9 +14,11 @@
   },
   "category": "trades",
   "tags": [
-    "cleaning",
-    "recurring",
-    "teams",
+    "house cleaner",
+    "cleaning service",
+    "maid service",
+    "recurring cleans",
+    "move-out",
     "home services"
   ],
   "spec": {
@@ -73,7 +75,7 @@
           },
           {
             "key": "customer_type",
-            "label": "Type",
+            "label": "Frequency",
             "parityType": "select",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -130,6 +132,75 @@
             "contextPolicy": "include"
           },
           {
+            "key": "bedrooms",
+            "label": "Bedrooms",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "bathrooms",
+            "label": "Bathrooms",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "entry",
+            "label": "Entry",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Client home",
+              "Lockbox",
+              "Door code",
+              "Key on file",
+              "Garage code"
+            ],
+            "choiceColors": {
+              "Client home": "blue",
+              "Lockbox": "green",
+              "Door code": "amber",
+              "Key on file": "violet",
+              "Garage code": "teal"
+            }
+          },
+          {
+            "key": "pets",
+            "label": "Pets",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "instructions",
+            "label": "Home notes",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -151,6 +222,36 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Booked cleans",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New request",
+                "Scheduled",
+                "In progress"
+              ]
+            }
+          },
+          {
+            "key": "avg_rating",
+            "label": "Average rating",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "rating",
+            "agg": "avg",
+            "filter": {
+              "status": "Completed"
+            }
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +261,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +279,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -313,7 +422,12 @@
               "phone": "(208) 555-0148",
               "email": "priyanka.mbeki@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-40d"
+              "since": "@today-40d",
+              "bedrooms": 3,
+              "bathrooms": 2,
+              "entry": "Lockbox",
+              "pets": "Two cats, keep the office door shut",
+              "instructions": "Microfiber only on the marble island. Skip the kids' playroom."
             }
           },
           {
@@ -325,7 +439,12 @@
               "phone": "(208) 555-0185",
               "email": "hamza.thackeray@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-95d"
+              "since": "@today-95d",
+              "bedrooms": 4,
+              "bathrooms": 2.5,
+              "entry": "Door code",
+              "pets": "Golden retriever, friendly",
+              "instructions": "Change the guest bed linens every visit; linens in the hall closet."
             }
           },
           {
@@ -337,7 +456,11 @@
               "phone": "(208) 555-0122",
               "email": "rosalind.boateng@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-150d"
+              "since": "@today-150d",
+              "bedrooms": 2,
+              "bathrooms": 1,
+              "entry": "Client home",
+              "instructions": "Works from home on Tuesdays: start with the kitchen so the office is last."
             }
           },
           {
@@ -349,7 +472,11 @@
               "phone": "(208) 555-0159",
               "email": "jonah.jessup@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-205d"
+              "since": "@today-205d",
+              "bedrooms": 3,
+              "bathrooms": 2,
+              "entry": "Client home",
+              "instructions": "Move-out: landlord walkthrough the next morning."
             }
           },
           {
@@ -361,7 +488,12 @@
               "phone": "(208) 555-0196",
               "email": "amara.rutherford@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-260d"
+              "since": "@today-260d",
+              "bedrooms": 5,
+              "bathrooms": 3.5,
+              "entry": "Key on file",
+              "pets": "Small dog in a crate",
+              "instructions": "Fragrance-free products only (allergies). Wood floors: damp mop, never wet."
             }
           },
           {
@@ -373,7 +505,11 @@
               "phone": "(208) 555-0133",
               "email": "cormac.aldercott@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-315d"
+              "since": "@today-315d",
+              "bedrooms": 3,
+              "bathrooms": 2,
+              "entry": "Garage code",
+              "instructions": "Leave the garage door down when you leave."
             }
           },
           {
@@ -385,7 +521,11 @@
               "phone": "(208) 555-0170",
               "email": "delphine.iyer@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-370d"
+              "since": "@today-370d",
+              "bedrooms": 2,
+              "bathrooms": 2,
+              "entry": "Lockbox",
+              "pets": "Parrot in the den, do not use sprays near it"
             }
           },
           {
@@ -397,7 +537,11 @@
               "phone": "(208) 555-0107",
               "email": "mateus.pemberton@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-425d"
+              "since": "@today-425d",
+              "bedrooms": 4,
+              "bathrooms": 3,
+              "entry": "Client home",
+              "instructions": "Post-renovation: drywall dust in every room."
             }
           },
           {
@@ -409,7 +553,12 @@
               "phone": "(208) 555-0144",
               "email": "farah.whitlock@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-13d"
+              "since": "@today-13d",
+              "bedrooms": 3,
+              "bathrooms": 2.5,
+              "entry": "Door code",
+              "pets": "Two dogs",
+              "instructions": "Alarm code given by text each visit."
             }
           },
           {
@@ -421,7 +570,10 @@
               "phone": "(208) 555-0181",
               "email": "dennis.fontaine@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-14d"
+              "since": "@today-14d",
+              "bedrooms": 3,
+              "bathrooms": 1.5,
+              "entry": "Key on file"
             }
           },
           {
@@ -433,7 +585,12 @@
               "phone": "(208) 555-0118",
               "email": "yara.montague@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-15d"
+              "since": "@today-15d",
+              "bedrooms": 4,
+              "bathrooms": 2,
+              "entry": "Lockbox",
+              "pets": "Cat",
+              "instructions": "Stainless appliances: polish with the grain."
             }
           },
           {
@@ -445,7 +602,11 @@
               "phone": "(208) 555-0155",
               "email": "teodor.valdez@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-16d"
+              "since": "@today-16d",
+              "bedrooms": 1,
+              "bathrooms": 1,
+              "entry": "Client home",
+              "instructions": "Studio. Building parking pass at the front desk."
             }
           }
         ]
@@ -553,31 +714,30 @@
             }
           },
           {
-            "key": "priority",
-            "label": "Priority",
-            "parityType": "select",
-            "sensitivity": "internal",
-            "contextPolicy": "include",
-            "choices": [
-              "Routine",
-              "Urgent",
-              "Emergency"
-            ],
-            "choiceColors": {
-              "Routine": "slate",
-              "Urgent": "blue",
-              "Emergency": "amber"
-            },
-            "default": "Routine"
-          },
-          {
             "key": "tech",
-            "label": "Lead tech",
+            "label": "Team lead",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "team",
+            "label": "Team",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Teal team",
+              "Coral team",
+              "Gold team"
+            ],
+            "choiceColors": {
+              "Teal team": "teal",
+              "Coral team": "orange",
+              "Gold team": "amber"
+            }
           },
           {
             "key": "scheduled_on",
@@ -616,7 +776,7 @@
           },
           {
             "key": "parts_cost",
-            "label": "Parts cost (USD)",
+            "label": "Supplies cost (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -654,7 +814,7 @@
           },
           {
             "key": "hours",
-            "label": "Labor hours",
+            "label": "Team hours",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -670,12 +830,36 @@
             ]
           },
           {
+            "key": "rating",
+            "label": "Client rating",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "key": "reclean",
+            "label": "Re-clean requested",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "margin",
             "label": "Margin (USD)",
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "{Quote (USD)} - {Supplies cost (USD)} - {Labor cost (USD)}"
           },
           {
             "key": "margin_pct",
@@ -935,348 +1119,355 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Standard clean - Boateng",
+              "job_name": "Weekly, Mbeki: kitchen focus",
               "status": "Completed",
-              "customer": "custom-3",
-              "job_type": "Standard clean",
-              "priority": "Routine",
+              "customer": "custom-1",
+              "job_type": "Recurring weekly clean",
               "tech": "tm-3",
+              "team": "Teal team",
               "scheduled_on": "@today-21d",
-              "quote": 130,
-              "parts_cost": 10,
-              "labor_cost": 65,
-              "hours": 2.5,
+              "quote": 165,
+              "parts_cost": 9,
+              "labor_cost": 72,
+              "hours": 3,
+              "rating": 5,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Deep clean - Pemberton",
+              "job_name": "Biweekly, Thackeray + guest linens",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Deep clean",
-              "priority": "Routine",
+              "customer": "custom-2",
+              "job_type": "Standard clean",
               "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@today-16d",
-              "quote": 370,
-              "parts_cost": 30,
-              "labor_cost": 130,
-              "hours": 5,
+              "quote": 210,
+              "parts_cost": 11,
+              "labor_cost": 96,
+              "hours": 4,
+              "rating": 4,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Move-out clean - Mbeki",
+              "job_name": "Deep clean before the holidays",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Move-out clean",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-7",
+              "job_type": "Deep clean",
+              "tech": "tm-3",
+              "team": "Teal team",
               "scheduled_on": "@today-12d",
-              "quote": 525,
-              "parts_cost": 40,
-              "labor_cost": 155,
-              "hours": 6,
+              "quote": 420,
+              "parts_cost": 24,
+              "labor_cost": 180,
+              "hours": 7.5,
+              "rating": 5,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Recurring weekly clean - Aldercott",
+              "job_name": "Move-out, 3 bed apartment",
               "status": "Completed",
-              "customer": "custom-6",
-              "job_type": "Recurring weekly clean",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-4",
+              "job_type": "Move-out clean",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@today-9d",
-              "quote": 120,
-              "parts_cost": 5,
-              "labor_cost": 50,
-              "hours": 2,
+              "quote": 465,
+              "parts_cost": 26,
+              "labor_cost": 216,
+              "hours": 9,
+              "rating": 3,
+              "reclean": true,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Post-renovation clean - Montague",
+              "job_name": "Weekly, Rutherford, fragrance-free",
               "status": "Completed",
-              "customer": "custom-11",
-              "job_type": "Post-renovation clean",
-              "priority": "Urgent",
+              "customer": "custom-5",
+              "job_type": "Recurring weekly clean",
               "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@today-6d",
-              "quote": 610,
-              "parts_cost": 60,
-              "labor_cost": 180,
-              "hours": 7,
+              "quote": 245,
+              "parts_cost": 12,
+              "labor_cost": 108,
+              "hours": 4.5,
+              "rating": 5,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Oven and fridge add-on - Jessup",
+              "job_name": "Post-renovation, dust everywhere",
               "status": "Completed",
-              "customer": "custom-4",
-              "job_type": "Oven and fridge add-on",
-              "priority": "Routine",
+              "customer": "custom-8",
+              "job_type": "Post-renovation clean",
               "tech": "tm-4",
+              "team": "Teal team",
               "scheduled_on": "@today-4d",
-              "quote": 90,
-              "parts_cost": 10,
-              "labor_cost": 25,
-              "hours": 1,
+              "quote": 690,
+              "parts_cost": 38,
+              "labor_cost": 300,
+              "hours": 12.5,
+              "rating": 4,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Standard clean - Whitlock",
+              "job_name": "One-time clean, client rescheduled",
               "status": "Cancelled",
-              "customer": "custom-9",
+              "customer": "custom-12",
               "job_type": "Standard clean",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@today-8d",
-              "quote": 145,
-              "parts_cost": 10,
-              "labor_cost": 65,
-              "hours": 2.5
+              "quote": 125,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Deep clean - Thackeray",
+              "job_name": "Move-out touch-up: oven and baseboards",
               "status": "On hold",
-              "customer": "custom-2",
-              "job_type": "Deep clean",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-4",
+              "job_type": "Oven and fridge add-on",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@today-5d",
-              "quote": 415,
-              "parts_cost": 35,
-              "labor_cost": 130,
-              "hours": 5
+              "quote": 0,
+              "parts_cost": 6,
+              "labor_cost": 48,
+              "hours": 2
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Move-out clean - Iyer",
+              "job_name": "Weekly, Whitlock",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Move-out clean",
-              "priority": "Routine",
+              "customer": "custom-9",
+              "job_type": "Recurring weekly clean",
               "tech": "tm-3",
+              "team": "Teal team",
               "scheduled_on": "@today-2d",
-              "quote": 320,
-              "parts_cost": 25,
-              "labor_cost": 155,
-              "hours": 6
+              "quote": 180,
+              "parts_cost": 9,
+              "labor_cost": 72,
+              "hours": 3
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Recurring weekly clean - Valdez",
+              "job_name": "Weekly, Mbeki",
               "status": "In progress",
-              "customer": "custom-12",
+              "customer": "custom-1",
               "job_type": "Recurring weekly clean",
-              "priority": "Urgent",
-              "tech": "tm-4",
+              "tech": "tm-3",
+              "team": "Teal team",
               "scheduled_on": "@mon",
-              "quote": 130,
-              "parts_cost": 5,
-              "labor_cost": 50,
-              "hours": 2,
+              "quote": 165,
+              "parts_cost": 9,
+              "labor_cost": 72,
+              "hours": 3,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Post-renovation clean - Rutherford",
+              "job_name": "Biweekly, Aldercott",
               "status": "In progress",
-              "customer": "custom-5",
-              "job_type": "Post-renovation clean",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-6",
+              "job_type": "Standard clean",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@tue",
-              "quote": 690,
-              "parts_cost": 70,
-              "labor_cost": 180,
-              "hours": 7
+              "quote": 190,
+              "parts_cost": 10,
+              "labor_cost": 84,
+              "hours": 3.5
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Oven and fridge add-on - Fontaine",
+              "job_name": "Monthly, Iyer: inside windows too",
               "status": "Scheduled",
-              "customer": "custom-10",
-              "job_type": "Oven and fridge add-on",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-7",
+              "job_type": "Deep clean",
+              "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@wed",
-              "quote": 55,
-              "parts_cost": 5,
-              "labor_cost": 25,
-              "hours": 1,
+              "quote": 265,
+              "parts_cost": 13,
+              "labor_cost": 120,
+              "hours": 5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Standard clean - Boateng (12)",
+              "job_name": "Monthly, Boateng",
               "status": "Scheduled",
               "customer": "custom-3",
               "job_type": "Standard clean",
-              "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@thu",
-              "quote": 160,
-              "parts_cost": 10,
-              "labor_cost": 65,
+              "quote": 150,
+              "parts_cost": 8,
+              "labor_cost": 60,
               "hours": 2.5
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Deep clean - Pemberton (13)",
+              "job_name": "Weekly, Rutherford",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Deep clean",
-              "priority": "Routine",
-              "tech": "tm-4",
+              "customer": "custom-5",
+              "job_type": "Recurring weekly clean",
+              "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@fri",
-              "quote": 465,
-              "parts_cost": 35,
-              "labor_cost": 130,
-              "hours": 5,
+              "quote": 245,
+              "parts_cost": 12,
+              "labor_cost": 108,
+              "hours": 4.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Move-out clean - Mbeki (14)",
+              "job_name": "First clean, Valdez studio",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Move-out clean",
-              "priority": "Urgent",
-              "tech": "tm-5",
+              "customer": "custom-12",
+              "job_type": "Deep clean",
+              "tech": "tm-4",
+              "team": "Teal team",
               "scheduled_on": "@sat",
-              "quote": 380,
-              "parts_cost": 30,
-              "labor_cost": 155,
-              "hours": 6,
+              "quote": 160,
+              "parts_cost": 8,
+              "labor_cost": 72,
+              "hours": 3,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Recurring weekly clean - Aldercott (15)",
+              "job_name": "Quote: move-in clean, 4 bed",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Recurring weekly clean",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-10",
+              "job_type": "Move-out clean",
+              "tech": "tm-2",
+              "team": "Coral team",
               "scheduled_on": "@sun",
-              "quote": 145,
-              "parts_cost": 5,
-              "labor_cost": 50,
-              "hours": 2
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0.5
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Post-renovation clean - Montague (16)",
+              "job_name": "Biweekly, Thackeray",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Post-renovation clean",
-              "priority": "Routine",
-              "tech": "tm-3",
+              "customer": "custom-2",
+              "job_type": "Standard clean",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@tue+1w",
-              "quote": 395,
-              "parts_cost": 40,
-              "labor_cost": 180,
-              "hours": 7
+              "quote": 210,
+              "parts_cost": 11,
+              "labor_cost": 96,
+              "hours": 4
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Oven and fridge add-on - Jessup (17)",
+              "job_name": "Monthly, Montague + fridge",
               "status": "New request",
-              "customer": "custom-4",
+              "customer": "custom-11",
               "job_type": "Oven and fridge add-on",
-              "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@thu+1w",
-              "quote": 65,
-              "parts_cost": 5,
-              "labor_cost": 25,
-              "hours": 1
+              "quote": 255,
+              "parts_cost": 13,
+              "labor_cost": 108,
+              "hours": 4.5
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Standard clean - Whitlock (18)",
+              "job_name": "Weekly, Whitlock",
               "status": "Scheduled",
               "customer": "custom-9",
-              "job_type": "Standard clean",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "job_type": "Recurring weekly clean",
+              "tech": "tm-3",
+              "team": "Teal team",
               "scheduled_on": "@today",
-              "quote": 175,
-              "parts_cost": 10,
-              "labor_cost": 65,
-              "hours": 2.5,
+              "quote": 180,
+              "parts_cost": 9,
+              "labor_cost": 72,
+              "hours": 3,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Deep clean - Thackeray (19)",
+              "job_name": "Biweekly, Aldercott",
               "status": "Scheduled",
-              "customer": "custom-2",
-              "job_type": "Deep clean",
-              "priority": "Urgent",
-              "tech": "tm-6",
+              "customer": "custom-6",
+              "job_type": "Standard clean",
+              "tech": "tm-4",
+              "team": "Coral team",
               "scheduled_on": "@today+2d",
-              "quote": 295,
-              "parts_cost": 25,
-              "labor_cost": 130,
-              "hours": 5
+              "quote": 190,
+              "parts_cost": 10,
+              "labor_cost": 84,
+              "hours": 3.5
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Move-out clean - Iyer (20)",
+              "job_name": "Deep clean, Pemberton, before a party",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Move-out clean",
-              "priority": "Routine",
+              "customer": "custom-8",
+              "job_type": "Deep clean",
               "tech": "tm-3",
+              "team": "Gold team",
               "scheduled_on": "@today+4d",
-              "quote": 435,
-              "parts_cost": 35,
-              "labor_cost": 155,
-              "hours": 6
+              "quote": 380,
+              "parts_cost": 20,
+              "labor_cost": 168,
+              "hours": 7
             }
           }
         ],
@@ -1734,11 +1925,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-1040",
+              "invoice_name": "BW-2210",
               "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-3",
-              "amount": 145.6,
+              "customer": "custom-1",
+              "amount": 660.0,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1746,65 +1937,77 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-1041",
+              "invoice_name": "BW-2211",
               "status": "Paid",
               "job": "job-2",
-              "customer": "custom-8",
-              "amount": 461.6,
+              "customer": "custom-2",
+              "amount": 420.0,
               "issued_on": "@today-16d",
               "due_on": "@today-2d",
-              "paid_on": "@today-12d",
-              "method": "Check"
+              "paid_on": "@today-14d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-1042",
+              "invoice_name": "BW-2212",
               "status": "Paid",
               "job": "job-3",
-              "customer": "custom-1",
-              "amount": 651.0,
+              "customer": "custom-7",
+              "amount": 460.0,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
-              "paid_on": "@today-8d",
-              "method": "Bank transfer"
+              "paid_on": "@today-12d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-1043",
+              "invoice_name": "BW-2213",
               "status": "Sent",
               "job": "job-4",
-              "customer": "custom-6",
-              "amount": 159.4,
+              "customer": "custom-4",
+              "amount": 465.0,
               "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "due_on": "@today"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-1044",
-              "status": "Sent",
+              "invoice_name": "BW-2214",
+              "status": "Overdue",
               "job": "job-5",
-              "customer": "custom-11",
-              "amount": 719.8,
+              "customer": "custom-5",
+              "amount": 980.0,
               "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "due_on": "@today-1d"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-1045",
-              "status": "Draft",
+              "invoice_name": "BW-2215",
+              "status": "Sent",
               "job": "job-6",
-              "customer": "custom-4",
-              "amount": 136.6,
+              "customer": "custom-8",
+              "amount": 745.2,
               "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "due_on": "@today+3d"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "BW-2216",
+              "status": "Draft",
+              "job": "job-11",
+              "customer": "custom-6",
+              "amount": 380.0,
+              "issued_on": "@today-1d",
+              "due_on": "@today+13d"
             }
           }
         ]
@@ -1946,10 +2149,6 @@
             "fieldKey": "customer",
             "ask": "Who is it for?",
             "required": true
-          },
-          {
-            "fieldKey": "priority",
-            "ask": "How urgent is it?"
           },
           {
             "fieldKey": "scheduled_on",
@@ -2290,7 +2489,7 @@
         "Larkspur Avenue"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2312,12 +2511,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan the week from one page. Recurring and one-off cleans land on the Cleans board, each team lead sees their own list under Mine, and Mark done closes a clean. Supplies shows what to buy and Invoices shows who has not paid. Start on the Dashboard each Monday."
+              "text": "Run the company from here. Every client's home details (rooms, entry, pets, notes) live on their card, so any team can walk in prepared. Cleans are booked on the board by team; Mark done stamps the date, and the client's rating goes on the clean. Recurring clients are billed monthly; sent and overdue invoices both count in Awaiting payment."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2714,6 +2919,273 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "residential-cleaning-service-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the scheduler, the office manager and every team lead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": every home, with frequency, bedrooms, bathrooms, entry method, pets and home notes, plus what they owe, how many cleans are booked, and their average rating."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cleans",
+              "bold": true
+            },
+            {
+              "text": ": every visit, with the team lead and team, date, price, supplies cost, team hours, margin and the client's rating."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Supplies",
+              "bold": true
+            },
+            {
+              "text": ": chemicals, cloths and tools, and what to reorder."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": monthly bills for recurring clients and one-time cleans."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A clean from booking to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "New clients start as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": ". The scheduler sets the date, team lead and team, and moves it to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": ". A team lead can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Before leaving, the team reads the client's home notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "After the clean, "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " stamps the date. The team enters team hours."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The next day the office collects a rating and puts it on the clean."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Recurring clients are billed monthly; one-time cleans the same day. Past due becomes "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": ", and Awaiting payment counts sent and overdue. "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's cleans, overdue invoices"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: confirm tomorrow with clients by text"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: count supplies and check kits"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: ratings by team, re-cleans, and recurring bills"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename teams and clean types, add your own prices, and delete the sample clients once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keys and codes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Entry details are the most sensitive thing you hold. Keys on file are tagged with a number, never the client's name or address. Door and alarm codes are sent to the team lead by text on the day and are not written on the card. When a client leaves, return their key and note it."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "residential-cleaning-service-hq",
       "title": "Dashboard",
@@ -2972,6 +3444,123 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Re-cleans requested"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Cleans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "Re-cleans",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "reclean": true
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Ratings by team"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Cleans",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-c5",
+                "name": "Average rating by team",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "team",
+                  "op": "avg",
+                  "field": "rating"
+                }
+              }
+            ],
+            "activeViewId": "view-c5"
+          }
         }
       ]
     },
@@ -2987,7 +3576,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A first clean sets the tone for a long relationship. Take longer, take photos and ask questions."
+              "text": "The first clean takes longer than any clean after it, and it decides whether the client stays. Set expectations on the phone, take more time than you think, and write down everything about the home."
             }
           ],
           "background": "blue",
@@ -2999,7 +3588,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the visit"
+              "text": "On the phone"
             }
           ],
           "props": {
@@ -3010,7 +3599,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Read the intake notes twice."
+              "text": "Ask bedrooms, bathrooms, square footage, pets, and when it was last professionally cleaned. Fill in "
+            },
+            {
+              "text": "Bedrooms",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Bathrooms",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Pets",
+              "bold": true
+            },
+            {
+              "text": " on the client card."
             }
           ]
         },
@@ -3018,7 +3628,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm the time and access by text the day before."
+              "text": "Ask how the team gets in: client home, lockbox, door code, key on file or garage code. Set "
+            },
+            {
+              "text": "Entry",
+              "bold": true
+            },
+            {
+              "text": ". Codes go by text, never in writing on the card."
             }
           ]
         },
@@ -3026,7 +3643,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pack extra time, about 30 minutes over a normal clean."
+              "text": "Ask about products: allergies, fragrance-free, natural stone, wood floors, stainless steel."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Price the first clean as a deep clean. Explain that recurring visits cost less because the home is kept up."
             }
           ]
         },
@@ -3034,7 +3659,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "During"
+              "text": "What a first clean covers"
             }
           ],
           "props": {
@@ -3042,26 +3667,65 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Walk the home with the client if they are there and agree the priorities."
+              "text": "Kitchen: counters, backsplash, cabinet fronts, appliance fronts, inside the microwave, sink polished"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Photograph existing damage before you touch anything."
+              "text": "Bathrooms: tub and shower descaled, toilet inside and out including the base, mirrors, fixtures polished"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Clean top to bottom and back to front so you never re-walk a floor."
+              "text": "Dust top to bottom: ceiling fans, vents, door frames, baseboards, window sills, blinds"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors: vacuum including edges and under furniture that can be moved, then mop"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Beds made, trash out, a final walk-through of every room"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Add-ons quoted separately: inside the oven, inside the fridge, inside windows, laundry."
             }
           ]
         },
@@ -3069,7 +3733,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "After"
+              "text": "Team timing"
             }
           ],
           "props": {
@@ -3080,7 +3744,85 @@
           "type": "text",
           "text": [
             {
-              "text": "Send a short thank-you text and ask if anything was missed. Log what you learned in the client notes."
+              "text": "A two-person team on an average 3-bedroom, 2-bath home needs about four to five hours for a first clean and two and a half to three for a recurring one. Enter real "
+            },
+            {
+              "text": "Team hours",
+              "bold": true
+            },
+            {
+              "text": ": if first cleans keep running long, the price is wrong."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Writing the home notes"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After the first visit, the team lead writes "
+            },
+            {
+              "text": "Home notes",
+              "bold": true
+            },
+            {
+              "text": ": where supplies and linens are, anything fragile, rooms to skip, and the client's preferences. The next team reads them before they knock."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A family with a golden retriever and two kids books biweekly cleans. On the call the scheduler learns they have 4 bedrooms and 2.5 baths and want the guest bed changed every visit. The first deep clean takes the team five and a half hours; dog hair under the couches takes the most time. The team lead writes it all in the notes, and the next visit takes three hours."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Follow up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The office calls or texts the next day: \"How did we do?\" Put the score in "
+            },
+            {
+              "text": "Client rating",
+              "bold": true
+            },
+            {
+              "text": ". A 3 or below is a call from the owner the same day."
             }
           ]
         }
@@ -3098,7 +3840,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "One missed room costs more than ten good cleans earn. Check at the door and fix quickly."
+              "text": "Clients rarely complain; they just cancel. Ratings and fast re-cleans catch problems before that happens."
             }
           ],
           "background": "blue",
@@ -3110,7 +3852,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Lead walk-through"
+              "text": "Ratings after every clean"
             }
           ],
           "props": {
@@ -3121,7 +3863,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Every team lead does the walk-through before leaving."
+              "text": "The day after each clean, the office asks for a score from 1 to 5 by text."
             }
           ]
         },
@@ -3129,7 +3871,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Photograph kitchen, bathrooms and floors."
+              "text": "Put it in "
+            },
+            {
+              "text": "Client rating",
+              "bold": true
+            },
+            {
+              "text": " on the clean. The client card shows their average, and the Dashboard chart shows the average by team."
             }
           ]
         },
@@ -3137,7 +3886,23 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Fix anything you see on the spot."
+              "text": "A 5: thank them, and ask for a review once in their first month."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A 4: ask what would have made it a 5, and add it to the home notes."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A 3 or lower: the owner or office manager calls within the day."
             }
           ]
         },
@@ -3145,7 +3910,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "When a client complains"
+              "text": "When a client is unhappy"
             }
           ],
           "props": {
@@ -3156,7 +3921,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Reply the same day and apologize once."
+              "text": "Listen and write down exactly what was missed, room by room."
             }
           ]
         },
@@ -3164,7 +3929,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Offer a free re-clean within 48 hours."
+              "text": "Offer a re-clean of those areas within 48 hours at no charge. Tick "
+            },
+            {
+              "text": "Re-clean requested",
+              "bold": true
+            },
+            {
+              "text": " on the original clean."
             }
           ]
         },
@@ -3172,7 +3944,146 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Log the cause on the clean and review it at Friday huddle."
+              "text": "Send the same team if the client is happy with them, or the team lead's best pair if not."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Never argue about whether something was cleaned. Fix it, then learn from it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Spot checks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The office manager or a team lead visits a few cleans each week, unannounced to the team but with the client's agreement."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Bathrooms: no hair in drains, no water spots on fixtures, toilet base clean"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Kitchen: no crumbs on counter edges or in the sink drain, stovetop clean under the grates"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Dust: tops of door frames, baseboards in corners, ceiling fan blades"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floors: edges vacuumed, no streaks after mopping"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Home notes followed: the right products, the right rooms skipped"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learning from re-cleans"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Look at the Re-cleans list monthly. If one area keeps coming up (baseboards, shower glass), make it a five-minute lesson at the next team meeting. If one team has most of them, the team lead and owner sit down with them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A move-out client gives a 3: the landlord found grease on the range hood. The office manager calls, apologizes, and books a re-clean of the kitchen the next morning. The re-clean is free; the client tells the landlord the deposit can be released. At the team meeting, range hoods are added to the move-out checklist."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Breakage"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Accidents happen. The team lead tells the client the same day, takes a photo and writes it down. The owner decides on repair or replacement; it never comes out of a cleaner's pay."
             }
           ]
         }
@@ -3190,7 +4101,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run out of one product and a team cleans slower all week. Order every other Thursday."
+              "text": "Teams cannot clean well with an empty bottle. Each team's kit is checked weekly, and the shop shelf is counted every Friday."
             }
           ],
           "background": "blue",
@@ -3202,7 +4113,66 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "What each team kit carries"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "All-purpose cleaner, glass cleaner, disinfectant, descaler and a stone-safe cleaner"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A fragrance-free set for clients who need it"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Microfiber cloths color-coded: blue for glass, green for kitchen, red for bathrooms, never mixed"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Scrub pads, toothbrushes for grout, a squeegee, a duster with an extension pole"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vacuum with spare bags or a clean filter, a mop with fresh heads"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Gloves, trash liners, shoe covers"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly count"
             }
           ],
           "props": {
@@ -3213,7 +4183,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Count each van and the supply room."
+              "text": "Every Friday the office manager counts the shelf; team leads check their kits."
             }
           ]
         },
@@ -3221,7 +4191,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Update On hand on the Supplies list."
+              "text": "Type the count into "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": " and set "
+            },
+            {
+              "text": "Last counted",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3229,7 +4213,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Order every row marked Reorder from the supplier."
+              "text": "Anything showing "
+            },
+            {
+              "text": "Reorder",
+              "bold": true
+            },
+            {
+              "text": " goes on the order that day."
             }
           ]
         },
@@ -3237,7 +4228,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Watch-outs"
+              "text": "Laundering cloths and mop heads"
             }
           ],
           "props": {
@@ -3248,9 +4239,126 @@
           "type": "text",
           "text": [
             {
-              "text": "Never mix bleach and ammonia products. Keep original labels on every bottle and never refill an unmarked one."
+              "text": "Wash microfiber hot, without fabric softener, and air-dry or tumble low. Keep bathroom cloths in their own load. Replace cloths that stop picking up dust."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Mixing and safety"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never mix bleach with ammonia or acid cleaners."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Label every spray bottle with what is in it and the dilution."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Keep the safety sheets for every chemical in the van."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Supplies cost on each clean"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Teams enter a rough supplies cost per clean (most run between 5 and 6 percent of the price). It makes the margin honest and shows when a team is using far more product than the others."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "On Friday Team B's kit is low on descaler and the shelf shows two bottles against a reorder point of four. The row flips to Reorder. The office orders a case on Friday afternoon and it arrives on Monday, before the three hard-water homes on Team B's Tuesday list."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist when you run out on a job"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Text the office before improvising with a client's products"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Never use a client product on a surface you are not sure about"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Write it on the clean so the kit is restocked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     }

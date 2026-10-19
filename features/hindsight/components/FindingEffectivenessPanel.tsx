@@ -245,15 +245,8 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
     },
     {
       id: "revert-rate",
-      header: (
-        <span className="inline-flex items-center gap-1">
-          Revert rate
-          <InfoHint
-            text="Of the changes applied on this lever, the share a human undid; a dash means nothing was applied yet."
-            label="About revert rate"
-          />
-        </span>
-      ),
+      header: "Revert rate",
+      helpText: "Of the changes applied on this lever, the share a human undid; a dash means nothing was applied yet.",
       label: "Revert rate",
       accessorFn: (row) =>
         row.revert_rate === null || row.revert_rate === undefined
@@ -275,15 +268,8 @@ export const FINDING_EFFECTIVENESS_COLUMNS: MatrxColumnDef<FindingEffectiveness>
     },
     {
       id: "cost-move",
-      header: (
-        <span className="inline-flex items-center gap-1">
-          Cost move
-          <InfoHint
-            text="Mean spend per request after the change minus before it, over findings with traffic on both versions."
-            label="About cost move"
-          />
-        </span>
-      ),
+      header: "Cost move",
+      helpText: "Mean spend per request after the change minus before it, over findings with traffic on both versions.",
       label: "Cost move",
       accessorKey: "cost_delta_usd_avg",
       filter: "number",

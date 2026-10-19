@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0510",
-  "version": 2,
+  "version": 3,
   "title": "Yoga Studio HQ",
   "description": "Manage class passes and memberships, teachers and schedules, and payments.",
   "forWho": "Yoga and pilates studios",
@@ -2161,7 +2161,7 @@
         "Alder Walk"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

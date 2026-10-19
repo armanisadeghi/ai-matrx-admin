@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0154",
-  "formerSlugs": [
-    "spaces-sp0154"
-  ],
-  "version": 5,
+  "version": 6,
   "title": "Sales Pipeline Forecast",
   "description": "Sales managers: forecast revenue from deal stages and weighted value.",
   "forWho": "Sales managers and revenue teams",
@@ -1243,7 +1240,7 @@
         "Aspenglow Drive"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -2107,5 +2104,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0154"
+  ]
 }

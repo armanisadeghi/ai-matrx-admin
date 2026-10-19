@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0492",
-  "version": 2,
+  "version": 3,
   "title": "Design system — Editorial",
   "description": "Warm paper, ink and an oxblood accent, with serif headings made for reading.",
   "forWho": "Publishers, writers, journals and cultural brands",
@@ -1286,7 +1286,7 @@
         "Ashby Mews"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {

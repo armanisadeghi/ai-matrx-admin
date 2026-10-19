@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 2,
+  "version": 4,
   "title": "Moving Company HQ",
-  "description": "Quote moves, schedule crews and trucks, track supplies and collect final payments.",
+  "description": "For local movers: surveys, hourly quotes, crews and trucks, move day, damage claims.",
   "forWho": "Local moving companies",
   "icon": {
     "emoji": "🚚"
@@ -14,9 +14,11 @@
   },
   "category": "trades",
   "tags": [
-    "moving",
+    "movers",
+    "moving company",
+    "relocation",
+    "packing",
     "crews",
-    "quotes",
     "trucks"
   ],
   "spec": {
@@ -151,6 +153,24 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Moves booked",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "New request",
+                "Scheduled",
+                "In progress",
+                "On hold"
+              ]
+            }
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +180,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +198,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -557,31 +585,82 @@
             }
           },
           {
-            "key": "priority",
-            "label": "Priority",
-            "parityType": "select",
+            "key": "from_addr",
+            "label": "Moving from",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "to_addr",
+            "label": "Moving to",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "access",
+            "label": "Access",
+            "parityType": "multi_select",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "choices": [
-              "Routine",
-              "Urgent",
-              "Emergency"
+              "Elevator",
+              "Stairs, 2nd floor+",
+              "Long carry",
+              "Tight street parking",
+              "Loading dock"
             ],
             "choiceColors": {
-              "Routine": "slate",
-              "Urgent": "blue",
-              "Emergency": "amber"
-            },
-            "default": "Routine"
+              "Elevator": "blue",
+              "Stairs, 2nd floor+": "green",
+              "Long carry": "amber",
+              "Tight street parking": "violet",
+              "Loading dock": "teal"
+            }
           },
           {
             "key": "tech",
-            "label": "Lead tech",
+            "label": "Crew lead",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "crew_size",
+            "label": "Movers",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1
+              },
+              {
+                "kind": "max",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "key": "truck",
+            "label": "Truck",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "26 ft box truck",
+              "20 ft box truck",
+              "16 ft box truck"
+            ],
+            "choiceColors": {
+              "26 ft box truck": "blue",
+              "20 ft box truck": "green",
+              "16 ft box truck": "amber"
+            }
           },
           {
             "key": "scheduled_on",
@@ -601,7 +680,7 @@
           },
           {
             "key": "quote",
-            "label": "Quote (USD)",
+            "label": "Estimate (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -619,8 +698,34 @@
             ]
           },
           {
+            "key": "rate",
+            "label": "Hourly rate (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "key": "deposit_paid",
+            "label": "Deposit paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "parts_cost",
-            "label": "Parts cost (USD)",
+            "label": "Materials cost (USD)",
             "parityType": "currency",
             "sensitivity": "confidential",
             "contextPolicy": "include",
@@ -658,7 +763,7 @@
           },
           {
             "key": "hours",
-            "label": "Labor hours",
+            "label": "Crew hours (billed)",
             "parityType": "number",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -679,7 +784,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "{Quote (USD)} - {Parts cost (USD)} - {Labor cost (USD)}"
+            "formula": "{Estimate (USD)} - {Materials cost (USD)} - {Labor cost (USD)}"
           },
           {
             "key": "margin_pct",
@@ -687,7 +792,7 @@
             "parityType": "formula",
             "sensitivity": "internal",
             "contextPolicy": "include",
-            "formula": "IF({Quote (USD)} > 0, ROUND({Margin (USD)} / {Quote (USD)} * 100, 0), 0)"
+            "formula": "IF({Estimate (USD)} > 0, ROUND({Margin (USD)} / {Estimate (USD)} * 100, 0), 0)"
           },
           {
             "key": "margin_flag",
@@ -892,348 +997,501 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Studio or one-bedroom move - Rutherford",
+              "job_name": "3-bed house to the suburbs",
               "status": "Completed",
-              "customer": "custom-3",
-              "job_type": "Studio or one-bedroom move",
-              "priority": "Routine",
+              "customer": "custom-1",
+              "job_type": "Three-bedroom house move",
+              "from_addr": "412 Larkspur Ave",
+              "to_addr": "88 Fennel Ridge Dr",
               "tech": "tm-3",
+              "crew_size": 4,
+              "truck": "26 ft box truck",
               "scheduled_on": "@today-21d",
-              "quote": 435,
-              "parts_cost": 15,
-              "labor_cost": 215,
-              "hours": 6,
+              "quote": 1890,
+              "rate": 209,
+              "parts_cost": 185,
+              "labor_cost": 1080,
+              "hours": 9,
+              "access": [
+                "Long carry"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Two-bedroom move - Fontaine",
+              "job_name": "1-bed, 3rd floor walk-up",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Two-bedroom move",
-              "priority": "Routine",
+              "customer": "custom-2",
+              "job_type": "Studio or one-bedroom move",
+              "from_addr": "27 Tolliver St, Apt 3C",
+              "to_addr": "1150 Mercer Ct, Apt 210",
               "tech": "tm-4",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today-16d",
-              "quote": 1135,
-              "parts_cost": 45,
-              "labor_cost": 325,
-              "hours": 9,
+              "quote": 620,
+              "rate": 129,
+              "parts_cost": 25,
+              "labor_cost": 360,
+              "hours": 4.5,
+              "access": [
+                "Stairs, 2nd floor+",
+                "Elevator"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Three-bedroom house move - Carrow",
+              "job_name": "Accounting office, 12 desks",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Three-bedroom house move",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-3",
+              "job_type": "Office relocation",
+              "from_addr": "300 Quarry Plaza, Ste 400",
+              "to_addr": "19 Linden Commons, Ste 120",
+              "tech": "tm-3",
+              "crew_size": 5,
+              "truck": "26 ft box truck",
               "scheduled_on": "@today-12d",
-              "quote": 2605,
-              "parts_cost": 130,
-              "labor_cost": 575,
-              "hours": 16,
+              "quote": 3450,
+              "rate": 249,
+              "parts_cost": 310,
+              "labor_cost": 1650,
+              "hours": 11,
+              "access": [
+                "Elevator",
+                "Loading dock"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Packing service - Pemberton",
+              "job_name": "Downsizing to a 1-bed condo",
               "status": "Completed",
-              "customer": "custom-6",
+              "customer": "custom-8",
               "job_type": "Packing service",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "from_addr": "61 Harrow Lane",
+              "to_addr": "500 Brookfield Way, Unit 4D",
+              "tech": "tm-4",
+              "crew_size": 3,
+              "truck": "20 ft box truck",
               "scheduled_on": "@today-9d",
-              "quote": 365,
-              "parts_cost": 65,
-              "labor_cost": 180,
-              "hours": 5,
+              "quote": 2150,
+              "rate": 169,
+              "parts_cost": 240,
+              "labor_cost": 1040,
+              "hours": 10,
+              "access": [
+                "Elevator"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Office relocation - Eastwick",
+              "job_name": "Piano from house to church hall",
               "status": "Completed",
-              "customer": "custom-11",
-              "job_type": "Office relocation",
-              "priority": "Urgent",
+              "customer": "custom-5",
+              "job_type": "Single item delivery",
+              "from_addr": "9 Saddlebrook Ct",
+              "to_addr": "14 Wexford Rd",
               "tech": "tm-3",
+              "crew_size": 3,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today-6d",
-              "quote": 2360,
-              "parts_cost": 120,
-              "labor_cost": 650,
-              "hours": 18,
+              "quote": 480,
+              "rate": 169,
+              "parts_cost": 0,
+              "labor_cost": 180,
+              "hours": 2,
+              "access": [
+                "Long carry"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Single item delivery - Brannigan",
+              "job_name": "2-bed apartment, same building",
               "status": "Completed",
-              "customer": "custom-4",
-              "job_type": "Single item delivery",
-              "priority": "Routine",
+              "customer": "custom-6",
+              "job_type": "Two-bedroom move",
+              "from_addr": "220 Corbin St, Apt 5",
+              "to_addr": "220 Corbin St, Apt 11",
               "tech": "tm-4",
+              "crew_size": 3,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today-4d",
-              "quote": 295,
-              "parts_cost": 5,
-              "labor_cost": 70,
-              "hours": 2,
+              "quote": 540,
+              "rate": 169,
+              "parts_cost": 15,
+              "labor_cost": 330,
+              "hours": 3.5,
+              "access": [
+                "Elevator"
+              ],
+              "deposit_paid": true,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Loading help only - Montague",
+              "job_name": "Storage pickup, customer cancelled",
               "status": "Cancelled",
-              "customer": "custom-9",
-              "job_type": "Loading help only",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-10",
+              "job_type": "Storage pickup",
+              "from_addr": "Unit 118, Dellwood Storage",
+              "to_addr": "6 Prairie Ln",
+              "tech": "tm-3",
+              "crew_size": 2,
+              "truck": "20 ft box truck",
               "scheduled_on": "@today-8d",
-              "quote": 260,
-              "parts_cost": 5,
-              "labor_cost": 110,
-              "hours": 3
+              "quote": 380,
+              "rate": 129,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Storage pickup - Jessup",
+              "job_name": "House move: closing delayed",
               "status": "On hold",
-              "customer": "custom-2",
-              "job_type": "Storage pickup",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-9",
+              "job_type": "Three-bedroom house move",
+              "from_addr": "75 Wren Hollow",
+              "to_addr": "2210 Highfield Rd",
+              "tech": "tm-4",
+              "crew_size": 4,
+              "truck": "26 ft box truck",
               "scheduled_on": "@today-5d",
-              "quote": 295,
-              "parts_cost": 10,
-              "labor_cost": 90,
-              "hours": 2.5
+              "quote": 2100,
+              "rate": 209,
+              "parts_cost": 190,
+              "labor_cost": 1200,
+              "hours": 10,
+              "access": [
+                "Long carry"
+              ],
+              "deposit_paid": true
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Studio or one-bedroom move - Yamamoto",
+              "job_name": "Return trip: dresser drawer left behind",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Studio or one-bedroom move",
-              "priority": "Routine",
+              "customer": "custom-1",
+              "job_type": "Single item delivery",
+              "from_addr": "412 Larkspur Ave",
+              "to_addr": "88 Fennel Ridge Dr",
               "tech": "tm-3",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today-2d",
-              "quote": 415,
-              "parts_cost": 10,
-              "labor_cost": 215,
-              "hours": 6
+              "quote": 0,
+              "rate": 129,
+              "parts_cost": 0,
+              "labor_cost": 90,
+              "hours": 1
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Two-bedroom move - Lindqvist",
+              "job_name": "Senior move to assisted living",
               "status": "In progress",
               "customer": "custom-12",
-              "job_type": "Two-bedroom move",
-              "priority": "Urgent",
+              "job_type": "Packing service",
+              "from_addr": "18 Juniper Way",
+              "to_addr": "Maplecrest Commons, Rm 214",
               "tech": "tm-4",
+              "crew_size": 3,
+              "truck": "20 ft box truck",
               "scheduled_on": "@mon",
-              "quote": 1105,
-              "parts_cost": 45,
-              "labor_cost": 325,
-              "hours": 9,
+              "quote": 1650,
+              "rate": 169,
+              "parts_cost": 160,
+              "labor_cost": 840,
+              "hours": 8,
+              "access": [
+                "Elevator"
+              ],
+              "deposit_paid": true,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Three-bedroom house move - Iyer",
+              "job_name": "Dental office: chairs not included",
               "status": "In progress",
-              "customer": "custom-5",
-              "job_type": "Three-bedroom house move",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-7",
+              "job_type": "Office relocation",
+              "from_addr": "45 Orchard Pkwy",
+              "to_addr": "1301 Castor Ave",
+              "tech": "tm-3",
+              "crew_size": 4,
+              "truck": "26 ft box truck",
               "scheduled_on": "@tue",
-              "quote": 2550,
-              "parts_cost": 130,
-              "labor_cost": 575,
-              "hours": 16
+              "quote": 2600,
+              "rate": 209,
+              "parts_cost": 140,
+              "labor_cost": 1320,
+              "hours": 10,
+              "access": [
+                "Loading dock"
+              ],
+              "deposit_paid": true
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Packing service - Westbrook",
+              "job_name": "Studio, student move-in",
               "status": "Scheduled",
-              "customer": "custom-10",
-              "job_type": "Packing service",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-6",
+              "job_type": "Studio or one-bedroom move",
+              "from_addr": "Residence Hall B, Rm 41",
+              "to_addr": "300 Varsity Row, Apt 2",
+              "tech": "tm-4",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@wed",
-              "quote": 345,
-              "parts_cost": 60,
-              "labor_cost": 180,
-              "hours": 5,
+              "quote": 420,
+              "rate": 129,
+              "parts_cost": 20,
+              "labor_cost": 240,
+              "hours": 3,
+              "access": [
+                "Stairs, 2nd floor+"
+              ],
+              "deposit_paid": true,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Office relocation - Rutherford",
+              "job_name": "Load-only: customer drives the rental",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Office relocation",
-              "priority": "Routine",
+              "customer": "custom-11",
+              "job_type": "Loading help only",
+              "from_addr": "88 Brewer St",
+              "to_addr": "(customer's rental truck)",
               "tech": "tm-3",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@thu",
-              "quote": 2275,
-              "parts_cost": 115,
-              "labor_cost": 650,
-              "hours": 18
+              "quote": 360,
+              "rate": 129,
+              "parts_cost": 0,
+              "labor_cost": 240,
+              "hours": 3,
+              "access": [
+                "Tight street parking"
+              ]
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Single item delivery - Fontaine",
+              "job_name": "2-bed townhouse, packing day before",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Single item delivery",
-              "priority": "Routine",
+              "customer": "custom-5",
+              "job_type": "Two-bedroom move",
+              "from_addr": "9 Saddlebrook Ct",
+              "to_addr": "402 Ashby Pl",
               "tech": "tm-4",
+              "crew_size": 3,
+              "truck": "20 ft box truck",
               "scheduled_on": "@fri",
-              "quote": 285,
-              "parts_cost": 5,
-              "labor_cost": 70,
-              "hours": 2,
+              "quote": 1380,
+              "rate": 169,
+              "parts_cost": 140,
+              "labor_cost": 720,
+              "hours": 7,
+              "access": [
+                "Stairs, 2nd floor+"
+              ],
+              "deposit_paid": true,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Loading help only - Carrow",
+              "job_name": "Survey: 4-bed house, July move",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Loading help only",
-              "priority": "Urgent",
-              "tech": "tm-5",
+              "customer": "custom-4",
+              "job_type": "Three-bedroom house move",
+              "from_addr": "15 Glenmoor Dr",
+              "to_addr": "(out of state, partner hauler)",
+              "tech": "tm-2",
+              "crew_size": 1,
+              "truck": "26 ft box truck",
               "scheduled_on": "@sat",
-              "quote": 250,
-              "parts_cost": 5,
-              "labor_cost": 110,
-              "hours": 3,
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 40,
+              "hours": 0.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Storage pickup - Pemberton",
+              "job_name": "Weekend 1-bed move",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Storage pickup",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-2",
+              "job_type": "Studio or one-bedroom move",
+              "from_addr": "1150 Mercer Ct, Apt 210",
+              "to_addr": "64 Belden Ave",
+              "tech": "tm-3",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@sun",
-              "quote": 285,
-              "parts_cost": 10,
-              "labor_cost": 90,
-              "hours": 2.5
+              "quote": 560,
+              "rate": 129,
+              "parts_cost": 20,
+              "labor_cost": 320,
+              "hours": 4,
+              "access": [
+                "Elevator"
+              ]
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Studio or one-bedroom move - Eastwick",
+              "job_name": "Office furniture to storage",
               "status": "Scheduled",
-              "customer": "custom-11",
-              "job_type": "Studio or one-bedroom move",
-              "priority": "Routine",
+              "customer": "custom-3",
+              "job_type": "Storage pickup",
+              "from_addr": "19 Linden Commons, Ste 120",
+              "to_addr": "Unit 204, Dellwood Storage",
               "tech": "tm-3",
+              "crew_size": 3,
+              "truck": "26 ft box truck",
               "scheduled_on": "@tue+1w",
-              "quote": 400,
-              "parts_cost": 10,
-              "labor_cost": 215,
-              "hours": 6
+              "quote": 720,
+              "rate": 169,
+              "parts_cost": 0,
+              "labor_cost": 420,
+              "hours": 4,
+              "access": [
+                "Loading dock"
+              ],
+              "deposit_paid": true
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Two-bedroom move - Brannigan",
+              "job_name": "3-bed house, two trucks",
               "status": "New request",
-              "customer": "custom-4",
-              "job_type": "Two-bedroom move",
-              "priority": "Routine",
+              "customer": "custom-9",
+              "job_type": "Three-bedroom house move",
+              "from_addr": "75 Wren Hollow",
+              "to_addr": "2210 Highfield Rd",
               "tech": "tm-4",
+              "crew_size": 5,
+              "truck": "26 ft box truck",
               "scheduled_on": "@thu+1w",
-              "quote": 1075,
-              "parts_cost": 45,
-              "labor_cost": 325,
-              "hours": 9
+              "quote": 2350,
+              "rate": 249,
+              "parts_cost": 190,
+              "labor_cost": 1450,
+              "hours": 11,
+              "access": [
+                "Long carry"
+              ]
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Three-bedroom house move - Montague",
+              "job_name": "Packing: kitchen and books",
               "status": "Scheduled",
-              "customer": "custom-9",
-              "job_type": "Three-bedroom house move",
-              "priority": "Routine",
-              "tech": "tm-5",
+              "customer": "custom-12",
+              "job_type": "Packing service",
+              "from_addr": "18 Juniper Way",
+              "to_addr": "(same day)",
+              "tech": "tm-4",
+              "crew_size": 2,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today",
-              "quote": 2490,
-              "parts_cost": 125,
-              "labor_cost": 575,
-              "hours": 16,
+              "quote": 520,
+              "rate": 129,
+              "parts_cost": 95,
+              "labor_cost": 240,
+              "hours": 4,
+              "deposit_paid": true,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Packing service - Jessup",
+              "job_name": "Sofa and bed to a 4th-floor walk-up",
               "status": "Scheduled",
-              "customer": "custom-2",
-              "job_type": "Packing service",
-              "priority": "Urgent",
-              "tech": "tm-6",
+              "customer": "custom-11",
+              "job_type": "Single item delivery",
+              "from_addr": "88 Brewer St",
+              "to_addr": "7 Halsted Ct, Apt 4R",
+              "tech": "tm-3",
+              "crew_size": 3,
+              "truck": "16 ft box truck",
               "scheduled_on": "@today+2d",
-              "quote": 330,
-              "parts_cost": 60,
+              "quote": 390,
+              "rate": 169,
+              "parts_cost": 10,
               "labor_cost": 180,
-              "hours": 5
+              "hours": 2,
+              "access": [
+                "Stairs, 2nd floor+",
+                "Tight street parking"
+              ],
+              "deposit_paid": true
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Office relocation - Yamamoto",
+              "job_name": "2-bed apartment to a house",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Office relocation",
-              "priority": "Routine",
-              "tech": "tm-3",
+              "customer": "custom-6",
+              "job_type": "Two-bedroom move",
+              "from_addr": "220 Corbin St, Apt 11",
+              "to_addr": "31 Aldridge Rd",
+              "tech": "tm-4",
+              "crew_size": 3,
+              "truck": "20 ft box truck",
               "scheduled_on": "@today+4d",
-              "quote": 2190,
-              "parts_cost": 110,
-              "labor_cost": 650,
-              "hours": 18
+              "quote": 1190,
+              "rate": 169,
+              "parts_cost": 60,
+              "labor_cost": 600,
+              "hours": 6,
+              "access": [
+                "Elevator",
+                "Long carry"
+              ],
+              "deposit_paid": true
             }
           }
         ],
@@ -1689,11 +1947,11 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-1040",
+              "invoice_name": "SH-6610",
               "status": "Overdue",
               "job": "job-1",
-              "customer": "custom-3",
-              "amount": 487.2,
+              "customer": "custom-1",
+              "amount": 2216.0,
               "issued_on": "@today-21d",
               "due_on": "@today-7d"
             }
@@ -1701,65 +1959,268 @@
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-1041",
+              "invoice_name": "SH-6611",
               "status": "Paid",
               "job": "job-2",
-              "customer": "custom-8",
-              "amount": 1364.3,
+              "customer": "custom-2",
+              "amount": 645.0,
               "issued_on": "@today-16d",
-              "due_on": "@today-2d",
-              "paid_on": "@today-12d",
-              "method": "Check"
+              "due_on": "@today-16d",
+              "paid_on": "@today-16d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-1042",
+              "invoice_name": "SH-6612",
               "status": "Paid",
               "job": "job-3",
-              "customer": "custom-1",
-              "amount": 3230.2,
+              "customer": "custom-3",
+              "amount": 3990.0,
               "issued_on": "@today-12d",
               "due_on": "@today+2d",
-              "paid_on": "@today-8d",
+              "paid_on": "@today-5d",
               "method": "Bank transfer"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-1043",
+              "invoice_name": "SH-6613",
               "status": "Sent",
               "job": "job-4",
-              "customer": "custom-6",
-              "amount": 433.8,
+              "customer": "custom-8",
+              "amount": 2150.0,
               "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "due_on": "@today"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-1044",
-              "status": "Sent",
+              "invoice_name": "SH-6614",
+              "status": "Paid",
               "job": "job-5",
-              "customer": "custom-11",
-              "amount": 2784.8,
+              "customer": "custom-5",
+              "amount": 480.0,
               "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "due_on": "@today-6d",
+              "paid_on": "@today-6d",
+              "method": "Check"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-1045",
-              "status": "Draft",
+              "invoice_name": "SH-6615",
+              "status": "Overdue",
               "job": "job-6",
-              "customer": "custom-4",
-              "amount": 390.8,
+              "customer": "custom-6",
+              "amount": 612.5,
               "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "due_on": "@today-1d"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "SH-6616",
+              "status": "Paid",
+              "job": "job-8",
+              "customer": "custom-9",
+              "amount": 200.0,
+              "issued_on": "@today-20d",
+              "due_on": "@today-20d",
+              "paid_on": "@today-20d",
+              "method": "Card"
+            }
+          }
+        ]
+      },
+      {
+        "token": "claim",
+        "name": "Damage claims",
+        "labelSingular": "Claim",
+        "labelPlural": "Damage claims",
+        "type": "entity",
+        "display": "board",
+        "weight": "light",
+        "ordered": false,
+        "icon": "shield-alert",
+        "titleField": "claim_name",
+        "describes": "Anything reported damaged or missing after a move, what was claimed and how it was settled.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [],
+        "fields": [
+          {
+            "key": "claim_name",
+            "label": "Claim",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "move",
+            "label": "Move",
+            "parityType": "relation",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "relationTarget": "job",
+            "relationMax": 1
+          },
+          {
+            "key": "item",
+            "label": "Item",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "claimed",
+            "label": "Amount claimed (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "status",
+            "label": "Status",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Reported",
+              "Inspecting",
+              "Repaired",
+              "Paid out",
+              "Denied"
+            ],
+            "choiceColors": {
+              "Reported": "blue",
+              "Inspecting": "amber",
+              "Repaired": "teal",
+              "Paid out": "green",
+              "Denied": "slate"
+            }
+          },
+          {
+            "key": "reported_on",
+            "label": "Reported on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "settled",
+            "label": "Settled for (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 50000
+              }
+            ]
+          },
+          {
+            "key": "note",
+            "label": "What happened",
+            "parityType": "long_text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "clm-1",
+            "values": {
+              "claim_name": "Scratched dining table top",
+              "move": "job-1",
+              "item": "Walnut dining table",
+              "claimed": 650,
+              "status": "Repaired",
+              "reported_on": "@today-19d",
+              "settled": 180,
+              "note": "Refinisher fixed the scratch; customer signed off."
+            }
+          },
+          {
+            "key": "clm-2",
+            "values": {
+              "claim_name": "Cracked lamp base",
+              "move": "job-4",
+              "item": "Ceramic table lamp",
+              "claimed": 95,
+              "status": "Paid out",
+              "reported_on": "@today-8d",
+              "settled": 60,
+              "note": "Released value: paid by weight under basic coverage."
+            }
+          },
+          {
+            "key": "clm-3",
+            "values": {
+              "claim_name": "Dent in hallway drywall",
+              "move": "job-6",
+              "item": "Building hallway wall",
+              "claimed": 240,
+              "status": "Inspecting",
+              "reported_on": "@today-3d",
+              "note": "Building manager sent photos; crew lead to look on Friday."
+            }
+          },
+          {
+            "key": "clm-4",
+            "values": {
+              "claim_name": "Missing box of kitchen items",
+              "move": "job-2",
+              "item": "Box: kitchen, 'plates' label",
+              "claimed": 120,
+              "status": "Denied",
+              "reported_on": "@today-14d",
+              "settled": 0,
+              "note": "Found in the customer's storage locker."
+            }
+          },
+          {
+            "key": "clm-5",
+            "values": {
+              "claim_name": "Desk drawer runner bent",
+              "move": "job-3",
+              "item": "Office desk, 2nd floor",
+              "claimed": 85,
+              "status": "Reported",
+              "reported_on": "@today-1d"
             }
           }
         ]
@@ -1805,6 +2266,16 @@
         "cardinality": "one",
         "onDelete": "restrict",
         "inverseKey": "invoices"
+      },
+      {
+        "describes": "Each claim is about one move.",
+        "fromTable": "claim",
+        "fromField": "move",
+        "toTable": "job",
+        "flavor": "referenced",
+        "cardinality": "one",
+        "onDelete": "set_null",
+        "inverseKey": "claims"
       }
     ],
     "sharedBlocks": [
@@ -1901,10 +2372,6 @@
             "fieldKey": "customer",
             "ask": "Who is it for?",
             "required": true
-          },
-          {
-            "fieldKey": "priority",
-            "ask": "How urgent is it?"
           },
           {
             "fieldKey": "scheduled_on",
@@ -2156,6 +2623,20 @@
             "Overdue"
           ]
         }
+      },
+      {
+        "token": "all_claim",
+        "name": "All claims",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "claim"
+      },
+      {
+        "token": "claim_board",
+        "name": "Claims by status",
+        "kind": "kanban",
+        "groupBy": "status",
+        "table": "claim"
       }
     ],
     "agent": {
@@ -2228,6 +2709,18 @@
           "surface": "part_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open damage claims.",
+        "action": {
+          "kind": "open",
+          "surface": "claim_board"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "claim_board",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2245,7 +2738,7 @@
         "Depot Lane"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2267,12 +2760,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Plan the week of moves from one page. Quotes and bookings are on the Moves board, crew leads see their own list under Mine, and Mark done closes a move after the final walk-through. Supplies shows what to reorder; Invoices tracks final payments."
+              "text": "Run the company from here. A survey becomes an estimate, a deposit books the date, and the Moves board shows every crew and truck on the calendar. Mark done stamps the finish; the final bill goes out the same day. Damage claims keeps every reported scratch until it is settled. Sent and overdue invoices both count in Awaiting payment."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2665,6 +3164,338 @@
             ],
             "activeViewId": "inv-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Damage claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every item reported damaged or missing, from the first call to the settlement."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "claim_board"
+            },
+            "inline": true,
+            "title": "Damage claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "cl-b",
+                "name": "By status",
+                "layout": "kanban",
+                "icon": "SquareKanban",
+                "groupField": "status"
+              },
+              {
+                "id": "cl-t",
+                "name": "All claims",
+                "layout": "grid",
+                "icon": "Table"
+              }
+            ],
+            "activeViewId": "cl-b"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "moving-company-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the move coordinator, the office manager and each crew lead."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": households, offices and seniors downsizing, with what they owe and how many moves are booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Moves",
+              "bold": true
+            },
+            {
+              "text": ": every move with both addresses, access notes, crew lead, number of movers, truck, estimate, hourly rate, deposit, crew hours, materials and margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Supplies and equipment",
+              "bold": true
+            },
+            {
+              "text": ": boxes, paper, wrap, pads, straps and dollies, and what to reorder."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Damage claims",
+              "bold": true
+            },
+            {
+              "text": ": anything reported damaged or missing, and how it was settled."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": deposits and final bills."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A move from first call to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The call comes in; add a move as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": " and book a survey."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the estimate. When the deposit is paid, tick "
+            },
+            {
+              "text": "Deposit paid",
+              "bold": true
+            },
+            {
+              "text": ", set the date, crew lead, movers and truck, and move it to "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": ". A crew lead can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Move day: follow the move day routine."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " stamps the date; enter crew hours and materials."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the final bill. Past due becomes "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "; Awaiting payment counts sent and overdue. "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's moves, booked moves with no deposit"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: confirm tomorrow's moves, elevators and parking"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: count boxes and supplies, check trucks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: thin margins, claims, and reviews"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename trucks and move types, set your own hourly rates, and delete the sample customers once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Hourly moves and estimates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Most local moves are billed by the hour from arrival to the end of unloading, plus travel and materials. The estimate on the move is what you told the customer; the final bill uses the real hours. When the two are far apart, look at the survey: missed rooms, stairs or a long carry are the usual causes."
+            }
+          ]
         }
       ]
     },
@@ -2927,6 +3758,129 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booked without a deposit"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Moves",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "No deposit yet",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "deposit_paid": false
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Open claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "claim",
+              "view": "all_claim"
+            },
+            "inline": true,
+            "title": "Damage claims",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l5",
+                "name": "Open claims",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Reported",
+                    "Inspecting"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l5"
+          }
         }
       ]
     },
@@ -2942,7 +3896,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A good quote is based on a real inventory, not a guess."
+              "text": "Most bad moves start with a bad estimate. Ten minutes on a video call or a walk-through saves hours of arguing on move day."
             }
           ],
           "background": "blue",
@@ -2954,7 +3908,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Before the survey"
             }
           ],
           "props": {
@@ -2965,7 +3919,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask for a room-by-room inventory or do a video walkthrough."
+              "text": "Add the customer and a move as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": " with both addresses."
             }
           ]
         },
@@ -2973,7 +3934,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Note stairs, elevators, parking and long carries."
+              "text": "Ask the move date, how flexible it is, and whether the new place is ready (closing dates slip)."
             }
           ]
         },
@@ -2981,15 +3942,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Price crew hours, truck time and materials."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Add a quote range, not a single number, and explain what changes it."
+              "text": "Book a walk-through or a video survey with the move coordinator."
             }
           ]
         },
@@ -2997,7 +3950,201 @@
           "type": "heading",
           "text": [
             {
-              "text": "Following up"
+              "text": "What to look at, room by room"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every room, closets, garage, basement, attic and shed; open the closets"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Big and awkward items: pianos, safes, gym equipment, glass tabletops, TVs without boxes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "What is not going: mark it now so the crew does not load it"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Who packs: the customer, or our crew for some or all rooms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Access",
+              "bold": true
+            },
+            {
+              "text": " at both ends: stairs, elevators (book them), long carries, parking for a 26 ft truck, loading docks"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Building the estimate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Choose the "
+            },
+            {
+              "text": "Truck",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Movers",
+              "bold": true
+            },
+            {
+              "text": ": a 1-bedroom is usually two movers and a 16 ft truck; a 3-bedroom house four movers and a 26 ft truck."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Estimate hours: loading, drive, unloading, plus time for stairs and long carries. Add the travel charge from the yard."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hourly rate",
+              "bold": true
+            },
+            {
+              "text": " goes up with crew size. Write the minimum (most companies use three hours)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Packing materials: count boxes per room; a 3-bedroom house often needs 80 to 120 boxes."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Put the estimate and the costs on the move. Under 20 percent margin shows as Thin."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What the customer gets in writing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rate, minimum hours, travel charge, and what happens if it runs over"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Materials price list"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Coverage: basic coverage pays by weight; full value costs extra. Ask which they want."
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deposit amount and cancellation terms"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking the date"
             }
           ],
           "props": {
@@ -3008,7 +4155,33 @@
           "type": "text",
           "text": [
             {
-              "text": "Call the customer two days later. Most jobs are won by the second call."
+              "text": "A date is held when the deposit is paid. Tick "
+            },
+            {
+              "text": "Deposit paid",
+              "bold": true
+            },
+            {
+              "text": "; the Dashboard lists booked moves with no deposit so the office can chase them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A couple in a 2-bedroom townhouse wants to move on a Friday. On the video survey the coordinator sees a narrow stair turn, a sleeper sofa and 40 boxes of books. She books three movers and a 20 ft truck for seven hours, adds a packing day for the kitchen, and explains that the sofa may need its legs off. They pay the deposit that night."
             }
           ]
         }
@@ -3026,7 +4199,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Move day goes smoothly when everyone knows the plan before the truck leaves."
+              "text": "Move day is a performance the customer watches all day. Arrive on time, protect the house, explain before you do, and leave nothing behind."
             }
           ],
           "background": "blue",
@@ -3038,7 +4211,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "At the shop"
+              "text": "The night before"
             }
           ],
           "props": {
@@ -3049,7 +4222,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Crew lead reviews the move sheet."
+              "text": "The coordinator confirms the time, addresses, elevator bookings and parking with the customer."
             }
           ]
         },
@@ -3057,7 +4230,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Load pads, straps, dollies and boxes."
+              "text": "The crew lead checks the truck: fuel, pads, dollies, straps, tool kit, floor runners, door jamb covers, mattress bags."
             }
           ]
         },
@@ -3065,7 +4238,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the truck fuel and tires."
+              "text": "Read the move's "
+            },
+            {
+              "text": "Access",
+              "bold": true
+            },
+            {
+              "text": " and notes."
             }
           ]
         },
@@ -3073,7 +4253,151 @@
           "type": "heading",
           "text": [
             {
-              "text": "At the home"
+              "text": "On arrival"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Introduce the crew; walk the house with the customer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Agree what goes, what stays, and what is fragile or valuable (jewelry, documents and medicines travel with the customer)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Note existing damage to furniture and walls, with photos"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Floor runners and door jamb covers down before the first item moves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Start the clock and tell the customer the start time"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Loading"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Heavy and square items first (dressers, appliances), then furniture, then boxes, then fragile pieces on top."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pad and wrap every piece of wooden furniture; mattresses in bags."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tie off every tier with straps."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Disassemble only what must be disassembled; bag and label all screws."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Unloading"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask where each large piece goes before carrying it in."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Reassemble beds and tables."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A final walk with the customer through both houses and the empty truck."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing out"
             }
           ],
           "props": {
@@ -3084,7 +4408,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Walk through with the customer and point out fragile items."
+              "text": "Stop the clock, add travel and materials, and go through the bill with the customer."
             }
           ]
         },
@@ -3092,7 +4416,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Protect floors and doorways."
+              "text": "Take payment, or mark the invoice "
+            },
+            {
+              "text": "Sent",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3100,7 +4431,29 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Load heaviest first and label rooms at the destination."
+              "text": "Press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " and enter the real "
+            },
+            {
+              "text": "Crew hours",
+              "bold": true
+            },
+            {
+              "text": " and materials."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the customer to look over their things and report damage within the time your terms allow."
             }
           ]
         },
@@ -3108,7 +4461,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "At the end"
+              "text": "Example"
             }
           ],
           "props": {
@@ -3119,7 +4472,26 @@
           "type": "text",
           "text": [
             {
-              "text": "Walk the empty home with the customer, check every closet, then collect the signature on the final sheet."
+              "text": "A senior downsizing move: the crew lead walks the house with the customer and her daughter and labels every piece that goes to assisted living with blue tape. Everything else goes to the daughter's garage on a second stop. At the new room the crew hangs pictures and makes the bed. The daughter writes a review that night."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Running over"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "If the move is running past the estimate, the crew lead tells the customer by the halfway point, with a new estimate, never at the end."
             }
           ]
         }
@@ -3137,7 +4509,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Damage happens. Handling it well keeps the customer."
+              "text": "Even careful crews damage something now and then. How you handle it decides whether you get a referral or a one-star review."
             }
           ],
           "background": "blue",
@@ -3149,7 +4521,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "When a customer reports damage"
             }
           ],
           "props": {
@@ -3160,7 +4532,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Photograph the item and the packing around it."
+              "text": "Thank them and take it seriously. Ask for photos and when they noticed."
             }
           ]
         },
@@ -3168,7 +4540,28 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Ask the customer to describe it in writing."
+              "text": "Add it to "
+            },
+            {
+              "text": "Damage claims",
+              "bold": true
+            },
+            {
+              "text": ", linked to the move: item, "
+            },
+            {
+              "text": "Amount claimed",
+              "bold": true
+            },
+            {
+              "text": ", status "
+            },
+            {
+              "text": "Reported",
+              "bold": true
+            },
+            {
+              "text": ", and what the customer says happened."
             }
           ]
         },
@@ -3176,7 +4569,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Review with the owner within two business days."
+              "text": "Check the move's arrival photos. Existing damage noted on the day is not a claim."
             }
           ]
         },
@@ -3184,7 +4577,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Repair, replace or settle, and note it on the move."
+              "text": "Tell the customer what happens next and when: a call within two working days."
             }
           ]
         },
@@ -3192,7 +4585,172 @@
           "type": "heading",
           "text": [
             {
-              "text": "Prevention"
+              "text": "Looking into it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Ask the crew lead what they remember. Most crews will tell you honestly."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Move the claim to "
+            },
+            {
+              "text": "Inspecting",
+              "bold": true
+            },
+            {
+              "text": " and look at the item, or have a repairer look."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Repair first where you can. A good furniture repairer fixes most scratches and dents for far less than replacement, and customers are usually happier."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Settling"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Basic coverage",
+              "bold": true
+            },
+            {
+              "text": " pays a set amount per pound, which is small. Explain it kindly: it was on the estimate they signed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Full value",
+              "bold": true
+            },
+            {
+              "text": " coverage means repair, replace or pay current value."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Record the result in "
+            },
+            {
+              "text": "Settled for",
+              "bold": true
+            },
+            {
+              "text": " and set the status to Repaired, Paid out or Denied, with the reason in "
+            },
+            {
+              "text": "What happened",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Claim recorded the day it was reported"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos from the customer and from move day attached or described"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Crew lead's account written down"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Customer called within two working days"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Settlement in writing, accepted by the customer"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Learning from claims"
             }
           ],
           "props": {
@@ -3203,7 +4761,26 @@
           "type": "text",
           "text": [
             {
-              "text": "Wrap every item, never stack boxes over a fragile top, and use two people for anything awkward."
+              "text": "Every month, look at the claims list with the crew leads. Two dents in the same narrow hallway type means more door jamb and corner protection. Several lamp bases means a better way of packing them. Never punish a crew member for reporting damage; punish hiding it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A customer reports a cracked lamp base two days after a downsizing move. The crew lead remembers the box was packed by the customer. The office explains basic coverage, offers a goodwill amount, and the customer accepts. The claim is marked Paid out, and the team agrees to offer to repack fragile boxes packed by customers."
             }
           ]
         }

@@ -543,12 +543,8 @@ function CheckBoard({
     },
     {
       id: "scan-complete",
-      header: (
-        <span className="inline-flex items-center gap-1">
-          Scan complete
-          <InfoHint text="A partial scan has no end-of-scan marker, so items it did not see are never marked fixed." label="About a partial scan" />
-        </span>
-      ),
+      header: "Scan complete",
+      helpText: "A partial scan has no end-of-scan marker, so items it did not see are never marked fixed.",
       label: "Scan complete",
       accessorFn: (r) => (r.run ? r.run.scan_complete : null),
       filter: "boolean",

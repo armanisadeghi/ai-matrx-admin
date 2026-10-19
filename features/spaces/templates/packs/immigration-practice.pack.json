@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0409",
-  "version": 2,
+  "version": 4,
   "title": "Immigration Practice",
-  "description": "Cases, agency notices with due dates, and an evidence checklist for immigration.",
-  "forWho": "Immigration attorneys and legal practices",
+  "description": "For immigration lawyers: cases by form, receipt notices, RFEs, evidence and status dates.",
+  "forWho": "Immigration attorneys, paralegals and accredited reps",
   "icon": {
-    "emoji": "🗂️"
+    "emoji": "🛂"
   },
   "cover": {
-    "url": "gallery:photo-golden-palms",
+    "url": "gallery:solid-red",
     "offsetY": 50
   },
   "category": "legal",
   "tags": [
-    "immigration",
-    "cases",
-    "notices",
-    "documents"
+    "immigration lawyer",
+    "attorney",
+    "paralegal",
+    "visas",
+    "green card",
+    "citizenship"
   ],
   "spec": {
     "specVersion": 1,
@@ -184,7 +186,7 @@
           {
             "key": "n01",
             "values": {
-              "notice_title": "Request for evidence - Tadesse",
+              "notice_title": "RFE: proof of specialty occupation",
               "case": "k03",
               "kind": "Request for evidence",
               "received_on": "@today-20d",
@@ -196,7 +198,7 @@
           {
             "key": "n02",
             "values": {
-              "notice_title": "Biometrics appointment - Santoro",
+              "notice_title": "Biometrics, Application Support Center",
               "case": "k04",
               "kind": "Biometrics appointment",
               "received_on": "@today-10d",
@@ -208,7 +210,7 @@
           {
             "key": "n03",
             "values": {
-              "notice_title": "Interview notice - Contreras-Wilde",
+              "notice_title": "Marriage interview at field office",
               "case": "k01",
               "kind": "Interview",
               "received_on": "@today-5d",
@@ -220,7 +222,7 @@
           {
             "key": "n04",
             "values": {
-              "notice_title": "Receipt notice - Santoro",
+              "notice_title": "I-90 receipt",
               "case": "k04",
               "kind": "Receipt",
               "received_on": "@today-40d",
@@ -232,7 +234,7 @@
           {
             "key": "n05",
             "values": {
-              "notice_title": "Receipt notice - Tadesse",
+              "notice_title": "I-129 receipt",
               "case": "k03",
               "kind": "Receipt",
               "received_on": "@today-68d",
@@ -244,7 +246,7 @@
           {
             "key": "n06",
             "values": {
-              "notice_title": "Transfer notice - Contreras-Wilde",
+              "notice_title": "Case transferred to another field office",
               "case": "k01",
               "kind": "Transfer",
               "received_on": "@today-60d",
@@ -256,7 +258,7 @@
           {
             "key": "n07",
             "values": {
-              "notice_title": "Approval notice - Dimaculangan",
+              "notice_title": "I-130 approval",
               "case": "k07",
               "kind": "Approval",
               "received_on": "@today-390d",
@@ -268,7 +270,7 @@
           {
             "key": "n08",
             "values": {
-              "notice_title": "Biometrics appointment - Tadesse",
+              "notice_title": "Biometrics for H-1B dependent",
               "case": "k03",
               "kind": "Biometrics appointment",
               "received_on": "@today-8d",
@@ -280,7 +282,7 @@
           {
             "key": "n09",
             "values": {
-              "notice_title": "Receipt notice - Contreras-Wilde",
+              "notice_title": "I-130 receipt",
               "case": "k01",
               "kind": "Receipt",
               "received_on": "@today-115d",
@@ -466,6 +468,13 @@
             }
           },
           {
+            "key": "forms",
+            "label": "Forms filed",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -535,6 +544,60 @@
             "format": "date"
           },
           {
+            "key": "priority_on",
+            "label": "Priority date",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "status_ends",
+            "label": "Current status expires",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "gov_fee",
+            "label": "Government fees",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "legal_fee",
+            "label": "Legal fee",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 100000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "response_due",
             "label": "Response due",
             "parityType": "datetime",
@@ -560,7 +623,10 @@
             "pick": "notice_title",
             "agg": "count",
             "filter": {
-              "status": "Open"
+              "status": [
+                "Open",
+                "In progress"
+              ]
             }
           },
           {
@@ -573,7 +639,10 @@
             "pick": "doc_title",
             "agg": "count",
             "filter": {
-              "status": "Needed"
+              "status": [
+                "Needed",
+                "Requested"
+              ]
             }
           },
           {
@@ -633,103 +702,136 @@
           {
             "key": "k01",
             "values": {
-              "case_title": "Contreras-Wilde family petition",
+              "case_title": "Spousal petition and adjustment",
               "client": "c01",
               "kind": "Family petition",
               "status": "Filed",
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
-              "receipt_no": "RCPT-4471-0082",
-              "filed_on": "@today-120d"
+              "receipt_no": "WAC2490113520",
+              "filed_on": "@today-120d",
+              "forms": "I-130, I-485, I-765",
+              "gov_fee": 2115,
+              "legal_fee": 4500,
+              "priority_on": "@today-120d"
             }
           },
           {
             "key": "k02",
             "values": {
-              "case_title": "Pham-Abernathy citizenship application",
+              "case_title": "Naturalization",
               "client": "c02",
               "kind": "Citizenship application",
               "status": "Preparing",
               "attorney": "tm-lucio",
               "paralegal": "tm-wen",
-              "response_due": "@mon+5d"
+              "response_due": "@mon+5d",
+              "forms": "N-400",
+              "gov_fee": 760,
+              "legal_fee": 2000
             }
           },
           {
             "key": "k03",
             "values": {
-              "case_title": "Tadesse work visa",
+              "case_title": "Specialty occupation worker",
               "client": "c03",
               "kind": "Work visa",
               "status": "Request for evidence",
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
-              "receipt_no": "RCPT-4471-0127",
+              "receipt_no": "EAC2412558804",
               "filed_on": "@today-70d",
-              "response_due": "@today+18d"
+              "response_due": "@today+18d",
+              "forms": "I-129, I-907",
+              "gov_fee": 3260,
+              "legal_fee": 5500,
+              "priority_on": "@today-70d",
+              "status_ends": "@today+150d"
             }
           },
           {
             "key": "k04",
             "values": {
-              "case_title": "Santoro green card renewal",
+              "case_title": "Green card replacement",
               "client": "c04",
               "kind": "Green card renewal",
               "status": "Filed",
               "attorney": "tm-lucio",
               "paralegal": "tm-wen",
-              "receipt_no": "RCPT-4471-0163",
-              "filed_on": "@today-45d"
+              "receipt_no": "IOE0927731456",
+              "filed_on": "@today-45d",
+              "forms": "I-90",
+              "gov_fee": 465,
+              "legal_fee": 900,
+              "priority_on": "@today-45d",
+              "status_ends": "@today+90d"
             }
           },
           {
             "key": "k05",
             "values": {
-              "case_title": "Weiming student visa",
+              "case_title": "Student visa and school transfer",
               "client": "c05",
               "kind": "Student visa",
               "status": "Intake",
               "attorney": "tm-lucio",
               "paralegal": "tm-wen",
-              "response_due": "@today+9d"
+              "response_due": "@today+9d",
+              "forms": "I-20 review, DS-160",
+              "gov_fee": 350,
+              "legal_fee": 1200,
+              "status_ends": "@today+40d"
             }
           },
           {
             "key": "k06",
             "values": {
-              "case_title": "Al-Rashid asylum application",
+              "case_title": "Affirmative asylum",
               "client": "c06",
               "kind": "Asylum",
               "status": "Preparing",
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
-              "response_due": "@today-2d"
+              "response_due": "@today-2d",
+              "forms": "I-589",
+              "gov_fee": 0,
+              "legal_fee": 6500,
+              "status_ends": "@today+200d"
             }
           },
           {
             "key": "k07",
             "values": {
-              "case_title": "Dimaculangan family petition",
+              "case_title": "Parent petition",
               "client": "c07",
               "kind": "Family petition",
               "status": "Approved",
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
-              "receipt_no": "RCPT-4471-0019",
+              "receipt_no": "WAC2310088371",
               "filed_on": "@today-410d",
-              "approved_on": "@today-410d"
+              "approved_on": "@today-410d",
+              "forms": "I-130",
+              "gov_fee": 675,
+              "legal_fee": 2500,
+              "priority_on": "@today-410d"
             }
           },
           {
             "key": "k08",
             "values": {
-              "case_title": "Tadesse spouse petition",
+              "case_title": "Spouse of worker, dependent status",
               "client": "c03",
               "kind": "Family petition",
               "status": "Intake",
               "attorney": "tm-farah",
               "paralegal": "tm-wen",
-              "response_due": "@today+30d"
+              "response_due": "@today+30d",
+              "forms": "I-539, I-765",
+              "gov_fee": 890,
+              "legal_fee": 1800,
+              "status_ends": "@today+150d"
             }
           }
         ],
@@ -1036,7 +1138,7 @@
           {
             "key": "d01",
             "values": {
-              "doc_title": "Birth certificate with translation - Pham-Abernathy",
+              "doc_title": "Birth certificate with certified translation",
               "case": "k02",
               "kind": "Translation",
               "status": "Requested",
@@ -1047,7 +1149,7 @@
           {
             "key": "d02",
             "values": {
-              "doc_title": "Tax transcripts - Pham-Abernathy",
+              "doc_title": "Five years of tax transcripts",
               "case": "k02",
               "kind": "Financial",
               "status": "Needed",
@@ -1057,7 +1159,7 @@
           {
             "key": "d03",
             "values": {
-              "doc_title": "Employer letter - Tadesse",
+              "doc_title": "Employer support letter with duties",
               "case": "k03",
               "kind": "Employment",
               "status": "Received",
@@ -1069,7 +1171,7 @@
           {
             "key": "d04",
             "values": {
-              "doc_title": "Passport copy - Santoro",
+              "doc_title": "Passport biographic page",
               "case": "k04",
               "kind": "Identity",
               "status": "Verified",
@@ -1080,7 +1182,7 @@
           {
             "key": "d05",
             "values": {
-              "doc_title": "Marriage certificate - Contreras-Wilde",
+              "doc_title": "Marriage certificate",
               "case": "k01",
               "kind": "Civil record",
               "status": "Verified",
@@ -1091,7 +1193,7 @@
           {
             "key": "d06",
             "values": {
-              "doc_title": "Photos - Santoro",
+              "doc_title": "Two passport-style photos",
               "case": "k04",
               "kind": "Photo",
               "status": "Verified",
@@ -1102,7 +1204,7 @@
           {
             "key": "d07",
             "values": {
-              "doc_title": "Evidence of relationship - Tadesse spouse",
+              "doc_title": "Joint lease, bank and insurance records",
               "case": "k08",
               "kind": "Civil record",
               "status": "Needed",
@@ -1112,7 +1214,7 @@
           {
             "key": "d08",
             "values": {
-              "doc_title": "Admission letter - Weiming",
+              "doc_title": "School admission and funding letter",
               "case": "k05",
               "kind": "Employment",
               "status": "Requested",
@@ -1123,7 +1225,7 @@
           {
             "key": "d09",
             "values": {
-              "doc_title": "Country records - Al-Rashid",
+              "doc_title": "Country conditions reports and declarations",
               "case": "k06",
               "kind": "Civil record",
               "status": "Requested",
@@ -1311,14 +1413,37 @@
             "contextPolicy": "include"
           },
           {
+            "key": "a_number",
+            "label": "A-number",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "born_in",
+            "label": "Country of birth",
+            "parityType": "text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
             "key": "case_count",
-            "label": "Cases",
+            "label": "Open cases",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "cases",
             "pick": "case_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Approved",
+                  "Denied",
+                  "Closed"
+                ]
+              }
+            }
           },
           {
             "key": "case_btn",
@@ -1344,7 +1469,9 @@
               "language": "Spanish",
               "status": "Active",
               "phone": "(206) 555-0131",
-              "email": "mateo.cw@mailbox-demo.net"
+              "email": "mateo.cw@mailbox-demo.net",
+              "a_number": "A214-337-905",
+              "born_in": "Colombia"
             }
           },
           {
@@ -1354,7 +1481,9 @@
               "language": "English",
               "status": "Active",
               "phone": "(206) 555-0132",
-              "email": "linh.pa@mailbox-demo.net"
+              "email": "linh.pa@mailbox-demo.net",
+              "a_number": "A209-118-442",
+              "born_in": "Vietnam"
             }
           },
           {
@@ -1364,7 +1493,8 @@
               "language": "Amharic",
               "status": "Active",
               "phone": "(206) 555-0133",
-              "email": "yosef.t@mailbox-demo.net"
+              "email": "yosef.t@mailbox-demo.net",
+              "born_in": "Ethiopia"
             }
           },
           {
@@ -1374,7 +1504,9 @@
               "language": "English",
               "status": "Active",
               "phone": "(206) 555-0134",
-              "email": "aurelia.s@mailbox-demo.net"
+              "email": "aurelia.s@mailbox-demo.net",
+              "a_number": "A097-552-310",
+              "born_in": "Italy"
             }
           },
           {
@@ -1384,7 +1516,8 @@
               "language": "Mandarin",
               "status": "Consultation",
               "phone": "(206) 555-0135",
-              "email": "chen.w@mailbox-demo.net"
+              "email": "chen.w@mailbox-demo.net",
+              "born_in": "China"
             }
           },
           {
@@ -1394,7 +1527,8 @@
               "language": "Arabic",
               "status": "Active",
               "phone": "(206) 555-0136",
-              "email": "noor.ar@mailbox-demo.net"
+              "email": "noor.ar@mailbox-demo.net",
+              "born_in": "Syria"
             }
           },
           {
@@ -1404,7 +1538,9 @@
               "language": "Tagalog",
               "status": "Closed",
               "phone": "(206) 555-0137",
-              "email": "jocelyn.d@mailbox-demo.net"
+              "email": "jocelyn.d@mailbox-demo.net",
+              "a_number": "A221-904-118",
+              "born_in": "Philippines"
             }
           }
         ],
@@ -2070,7 +2206,7 @@
         "Alder Way"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2078,10 +2214,10 @@
       "parent": null,
       "title": "Immigration Practice",
       "icon": {
-        "emoji": "🗂️"
+        "emoji": "🛂"
       },
       "cover": {
-        "url": "gallery:photo-golden-palms",
+        "url": "gallery:solid-red",
         "offsetY": 50
       },
       "settings": {
@@ -2145,6 +2281,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-client-updates"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2948,7 +3090,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Notices arrive in many forms. Log each one the same day."
+              "text": "Every notice is logged the same day it arrives, read by two people, and given an owner. Requests for evidence and interview notices have fixed dates, and missing one can end a case."
             }
           ],
           "background": "blue",
@@ -2960,7 +3102,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Same day"
+              "text": "The day a notice arrives"
             }
           ],
           "props": {
@@ -2971,7 +3113,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Log notice on the case and choose the kind."
+              "text": "Scan it to the client's file."
             }
           ]
         },
@@ -2979,7 +3121,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Copy the due date exactly as printed on the notice."
+              "text": "Add a row under "
+            },
+            {
+              "text": "Notices",
+              "bold": true
+            },
+            {
+              "text": " linked to the case: kind, received date and "
+            },
+            {
+              "text": "Action due",
+              "bold": true
+            },
+            {
+              "text": ". For receipts, enter the receipt number on the case."
             }
           ]
         },
@@ -2987,7 +3143,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Enter it in two places: here and the firm calendar."
+              "text": "The paralegal reads it fully and writes in one line what it asks for."
             }
           ]
         },
@@ -2995,7 +3151,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Assign an owner."
+              "text": "The attorney reviews any RFE, notice of intent to deny or interview notice the same day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the client a copy with a plain-language note in their preferred language."
             }
           ]
         },
@@ -3003,7 +3167,99 @@
           "type": "heading",
           "text": [
             {
-              "text": "Before the due date"
+              "text": "Request for evidence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deadline counted from the date on the notice, with the mailing time the notice allows"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Each item requested listed as an evidence item on the case"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client told exactly what to gather and by when (two weeks before the due date)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Response drafted, reviewed by the attorney and sent with tracking; proof of delivery saved"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Notice marked "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": "; case status updated"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Biometrics"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Confirm the client can attend. If not, request a reschedule before the appointment and note it. Remind the client to bring the notice and photo ID."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Interviews"
             }
           ],
           "props": {
@@ -3014,7 +3270,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Draft the response a week ahead."
+              "text": "Prepare the client two weeks before: likely questions, original documents to bring, what to wear and when to arrive."
             }
           ]
         },
@@ -3022,7 +3278,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Attorney reviews at least three days before the due date."
+              "text": "Decide whether an attorney attends."
             }
           ]
         },
@@ -3030,7 +3286,71 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Mark Done when the filing receipt is saved."
+              "text": "Book an interpreter if allowed and needed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receipts and transfers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Check every receipt for spelling of names, dates of birth and the right form. Errors are corrected early by request; later they cause delays."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Aurelia's green card replacement biometrics notice arrived 10 days ago with the appointment today. The notice was logged that day and she was reminded yesterday; the paralegal marks it done once she confirms she attended."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Owners"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each notice has an owner (the "
+            },
+            {
+              "text": "Owner",
+              "bold": true
+            },
+            {
+              "text": " field). If the owner is away, the notice is reassigned before they leave, never after."
             }
           ]
         }
@@ -3039,96 +3359,16 @@
     {
       "key": "sop-intake",
       "parent": "immigration-practice",
-      "title": "Intake and document list",
+      "title": "Consultation and evidence checklist",
       "icon": {
-        "emoji": "📝"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "First meeting"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Book an interpreter if the client prefers another language."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Explain fees and the engagement agreement in plain language."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Create the case and attach the document checklist."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Document checklist"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Use Add evidence item for every item the client must bring."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Set Needed by dates a week before the filing target."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Mark Verified only after a second person has checked names and dates."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-deadlines",
-      "parent": "immigration-practice",
-      "title": "Two-calendar rule",
-      "icon": {
-        "emoji": "📅"
+        "emoji": "📋"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Many malpractice insurers expect deadlines to be recorded in two places."
+              "text": "A good consultation finds the right path and the risks early. A complete evidence checklist means the case is filed once, not answered twice."
             }
           ],
           "background": "blue",
@@ -3140,7 +3380,58 @@
           "type": "heading",
           "text": [
             {
-              "text": "Daily"
+              "text": "The consultation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Run a conflict check on the client and any petitioner or employer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask about the full immigration history: entries and exits, every status held, any overstay, prior applications, arrests or charges anywhere. Problems found later are much harder."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Identify the path and any alternative. Explain timelines using current published processing times, not promises."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Quote the legal fee and the government fees separately."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Record preferred language. Plan for interpretation in every meeting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Opening the case"
             }
           ],
           "props": {
@@ -3151,7 +3442,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review Notices, Overdue view"
+              "text": "Engagement agreement signed in a language the client reads"
             }
           ],
           "props": {
@@ -3162,7 +3453,33 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review Notices due this week with the attorney"
+              "text": "Case added with type, forms planned, legal and government fees"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Current status expires",
+              "bold": true
+            },
+            {
+              "text": " entered for anyone in temporary status"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Evidence items added from the checklist below"
             }
           ],
           "props": {
@@ -3173,7 +3490,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Weekly"
+              "text": "Evidence by case type (starting points)"
             }
           ],
           "props": {
@@ -3181,32 +3498,484 @@
           }
         },
         {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Compare this table with the firm calendar"
-            }
-          ],
+          "type": "table",
           "props": {
-            "checked": false
-          }
-        },
-        {
-          "type": "todo",
-          "text": [
-            {
-              "text": "Check cases without a receipt number after filing"
-            }
-          ],
-          "props": {
-            "checked": false
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Case"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Typical evidence"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Spousal petition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Marriage certificate, proof of the petitioner's status, joint finances and lease, photos over time, prior divorce decrees"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Worker petition"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Employer letter with duties, degree and evaluation, pay records, company documents"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Naturalization"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Green card, travel history, tax transcripts, any court records"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Student status"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "School admission, proof of funding, passport"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Asylum"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Identity documents, personal declaration, country conditions, witness statements"
+                    }
+                  ]
+                ]
+              }
+            ]
           }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Translations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Every document not in English needs a full certified translation. Add the translation as its own evidence item so it is not forgotten."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Collecting evidence"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark each item "
+            },
+            {
+              "text": "Requested",
+              "bold": true
+            },
+            {
+              "text": " with the date asked and "
+            },
+            {
+              "text": "Needed by",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Follow up weekly; most delays are waiting for documents."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mark "
+            },
+            {
+              "text": "Received",
+              "bold": true
+            },
+            {
+              "text": ", then "
+            },
+            {
+              "text": "Verified",
+              "bold": true
+            },
+            {
+              "text": " once the paralegal checks names, dates and translations."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Fees"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Government fees change. Check the current fee schedule on the day you prepare the filing, not the day you quoted, and tell the client in writing if it changed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Linh's naturalization case still needs tax transcripts and a translated birth certificate. Both have needed-by dates this week, so they are on Thursday's follow-up list."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-deadlines",
+      "parent": "immigration-practice",
+      "title": "Two-calendar rule and status dates",
+      "icon": {
+        "emoji": "📆"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Two people keep every deadline, on two calendars, and one of them is this workspace. It sounds slow; it is the reason careful firms do not miss dates."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What goes on both calendars"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every "
+            },
+            {
+              "text": "Action due",
+              "bold": true
+            },
+            {
+              "text": " from a notice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every interview and biometrics appointment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every "
+            },
+            {
+              "text": "Current status expires",
+              "bold": true
+            },
+            {
+              "text": " date, with a reminder 120 days and 60 days before."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Filing windows (for example, the 90-day window before a conditional green card expires)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the check works"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The person who logs a notice enters the date here."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "A second person enters it on the firm's main calendar from the notice itself, not from the first entry."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On Monday, the two lists are compared. Any difference is resolved that day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Status expiry review (every Monday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Days until status expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Action"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "120"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Confirm the extension or change of status is on track"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "60"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Filing must be prepared; attorney reviews"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "File now; tell the client what to do if it is still pending at expiry"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Past"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Attorney reviews the client's options the same day"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Priority dates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Each month, compare clients' priority dates with the published visa bulletin and tell clients whose dates became current. Note the check on the case page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When an agency deadline is impossible"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Contact the attorney immediately. Some deadlines cannot be extended; some can be met with a partial response and a request. Never let a date pass without a decision."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Chen's student status ends in 40 days. His school transfer and visa paperwork are at Intake. The case goes to the top of Monday's list, the attorney reviews it, and the client gets a written plan with the dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist"
             }
           ],
           "props": {
@@ -3217,7 +3986,40 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check approved and closed cases for follow-up work"
+              "text": "Both calendars compared this Monday"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No open case without a next date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every notice with an action due has an owner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every client in temporary status has an expiry date entered"
             }
           ],
           "props": {
@@ -3235,10 +4037,57 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Immigration clients are waiting on decisions that shape their lives. Regular, clear updates in their language prevent anxious calls and build the trust that brings referrals."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "After every notice"
+              "text": "When to update"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Within one business day of any notice, with a copy and a plain explanation."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "At least once a month for every open case, even when nothing has changed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Before any interview, biometrics appointment or filing deadline."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How to write an update"
             }
           ],
           "props": {
@@ -3249,7 +4098,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Call or message the client in their preferred language."
+              "text": "Use the client's "
+            },
+            {
+              "text": "Preferred language",
+              "bold": true
+            },
+            {
+              "text": ". Use a qualified interpreter or translator, not a family member, for anything important."
             }
           ]
         },
@@ -3257,7 +4113,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Explain what the notice means in one or two sentences, and what they must do."
+              "text": "Start with what happened, then what it means, then what the client needs to do and by when."
             }
           ]
         },
@@ -3265,7 +4121,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Note the update on the notice."
+              "text": "Keep legal terms to a minimum and explain the ones you need."
             }
           ]
         },
@@ -3273,7 +4129,70 @@
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Example update"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Your work petition received a request for more evidence about your job duties. This is common. We need a detailed letter from your employer by the 15th. We will send them a list today. Your case is still active and you can keep working.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly check-in list"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every open case has had contact this month"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients with status expiring in 120 days know the plan"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clients waiting on documents know exactly what is missing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the news is bad"
             }
           ],
           "props": {
@@ -3284,7 +4203,425 @@
           "type": "text",
           "text": [
             {
-              "text": "Send each active client a short status message, even when nothing has changed."
+              "text": "A denial or a notice of intent to deny is delivered by the attorney, by phone or in person, never by email alone. Explain the options and the time limits for each, then send a written summary."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Travel"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Tell every client with a pending case, in writing, whether they may travel. Travel during some pending applications can abandon them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After approval"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Send the approval, explain what comes next (cards in the mail, when to apply for the next step, such as removing conditions or naturalization) and set the future date on the case page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Jocelyn's parent petition was approved over a year ago. The attorney's closing letter explained the consular processing steps and set a check-in for when the visa interview is scheduled."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "immigration-practice",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The case office of an immigration practice: each client's cases by form, every notice that arrives from the agency, the evidence still to collect, and the dates that cannot be missed. Filings themselves stay in your forms software and document system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": preferred language, A-number, country of birth and open cases."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cases",
+              "bold": true
+            },
+            {
+              "text": ": case type, forms filed, receipt number, filing date, priority date, when the client's current status expires, government and legal fees, and counts of open notices and evidence still outstanding."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notices",
+              "bold": true
+            },
+            {
+              "text": ": receipts, biometrics appointments, requests for evidence, interview notices, approvals and transfers, each with an action due date."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Evidence items",
+              "bold": true
+            },
+            {
+              "text": ": every document a case needs, requested from the client or a third party, received and verified."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The three dates that matter most"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Action due on a notice"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "An RFE answer or interview date is fixed by the agency"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Current status expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The client may fall out of status if nothing is filed in time"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Priority date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Decides when an immigrant visa number is available"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "First week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add attorneys, paralegals and any accredited representatives."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter every open case with receipt number and status expiry."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Log every notice received in the last six months with its action date."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For cases still being prepared, add evidence items from the checklist for that case type."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Daily",
+              "bold": true
+            },
+            {
+              "text": ": mail and online account notices logged the same day."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": notices due in the next 30 days; status expiries in the next 120 days."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Thursday",
+              "bold": true
+            },
+            {
+              "text": ": evidence requested more than a week ago gets a follow-up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly",
+              "bold": true
+            },
+            {
+              "text": ": check published processing times and the visa bulletin for clients with priority dates."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cases: "
+            },
+            {
+              "text": "Log notice",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Add evidence item",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark filed",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark approved",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Notices: "
+            },
+            {
+              "text": "Start work",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ". Evidence: "
+            },
+            {
+              "text": "Mark requested",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark received",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Yosef's worker petition has an RFE due in 18 days, and his biometrics notice for a dependent was due two days ago. The paralegal calls about rescheduling the biometrics today and drafts the RFE outline for the attorney."
             }
           ]
         }

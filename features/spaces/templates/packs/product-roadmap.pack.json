@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0102",
-  "version": 4,
+  "version": 5,
   "title": "Product Roadmap",
   "description": "Product teams: a now, next, later roadmap with themes, releases and a status dashboard.",
   "forWho": "Product teams planning a quarter or two ahead",
@@ -1262,7 +1262,7 @@
         "Larkmoor Street"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0514",
-  "version": 2,
+  "version": 3,
   "title": "Day Spa HQ",
   "description": "Book treatments by room and therapist, sell gift cards, and track retail stock.",
   "forWho": "Day spas and wellness retreats",
@@ -2156,7 +2156,7 @@
         "Hollis Terrace"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

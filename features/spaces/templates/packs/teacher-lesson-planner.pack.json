@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0261",
-  "version": 5,
+  "version": 6,
   "title": "Teacher Lesson Planner",
   "description": "Teachers: weekly lesson plans linked to standards and resources, with reflections.",
   "forWho": "Teachers planning weekly lessons",
@@ -1463,7 +1463,7 @@
         "Orchard Finch Road"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {

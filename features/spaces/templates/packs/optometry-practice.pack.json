@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0407",
-  "version": 2,
+  "version": 4,
   "title": "Optometry Practice",
-  "description": "Patients and recalls, exams, frames inventory and optical orders for an eye care practice.",
-  "forWho": "Optometrists and optical shops",
+  "description": "For optometrists and opticians: exams, recalls, vision plans, frames and lab orders.",
+  "forWho": "Optometrists, opticians and eye care practices",
   "icon": {
     "emoji": "👓"
   },
   "cover": {
-    "url": "gallery:photo-ocean-horizon",
+    "url": "gallery:gradient-ocean",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
-    "optometry",
-    "exams",
-    "recalls",
-    "frames"
+    "optometrist",
+    "optician",
+    "eye care",
+    "vision plans",
+    "eyeglasses",
+    "recalls"
   ],
   "spec": {
     "specVersion": 1,
@@ -126,6 +128,34 @@
             }
           },
           {
+            "key": "dilated",
+            "label": "Dilated",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rx_given",
+            "label": "Prescription given",
+            "parityType": "select",
+            "choices": [
+              "Glasses",
+              "Contacts",
+              "Both",
+              "No change",
+              "None"
+            ],
+            "choiceColors": {
+              "Glasses": "blue",
+              "Contacts": "green",
+              "Both": "purple",
+              "No change": "gray",
+              "None": "brown"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -192,19 +222,20 @@
           {
             "key": "e01",
             "values": {
-              "exam_title": "Comprehensive - Rowe",
+              "exam_title": "Annual exam, new progressive wearer",
               "patient": "p01",
               "doctor": "tm-corwin",
               "when_at": "@today 09:00",
               "kind": "Comprehensive",
               "status": "In exam",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "dilated": true
             }
           },
           {
             "key": "e02",
             "values": {
-              "exam_title": "Contact lens fitting - Brannigan",
+              "exam_title": "First-time soft lens fitting",
               "patient": "p05",
               "doctor": "tm-corwin",
               "when_at": "@today 10:30",
@@ -216,7 +247,7 @@
           {
             "key": "e03",
             "values": {
-              "exam_title": "Urgent - Fenwick",
+              "exam_title": "Red, painful right eye, urgent",
               "patient": "p06",
               "doctor": "tm-neha",
               "when_at": "@today 15:15",
@@ -228,7 +259,7 @@
           {
             "key": "e04",
             "values": {
-              "exam_title": "Comprehensive - Castellane",
+              "exam_title": "Yearly exam, computer eye strain",
               "patient": "p04",
               "doctor": "tm-neha",
               "when_at": "@mon+2d 11:00",
@@ -239,7 +270,7 @@
           {
             "key": "e05",
             "values": {
-              "exam_title": "Pediatric - Kamara",
+              "exam_title": "School-age exam, squinting at the board",
               "patient": "p07",
               "doctor": "tm-corwin",
               "when_at": "@mon+4d 14:00",
@@ -250,66 +281,72 @@
           {
             "key": "e06",
             "values": {
-              "exam_title": "Comprehensive - Redd",
+              "exam_title": "Diabetic eye exam, yearly",
               "patient": "p08",
               "doctor": "tm-neha",
               "when_at": "@today+6d 09:30",
               "kind": "Comprehensive",
-              "status": "Booked"
+              "status": "Booked",
+              "dilated": true
             }
           },
           {
             "key": "e07",
             "values": {
-              "exam_title": "Comprehensive - Rowe (last)",
+              "exam_title": "Annual exam, reading trouble",
               "patient": "p01",
               "doctor": "tm-corwin",
               "when_at": "@today-20d 09:00",
               "kind": "Comprehensive",
               "status": "Completed",
-              "completed_on": "@today-20d"
+              "completed_on": "@today-20d",
+              "dilated": true,
+              "rx_given": "Glasses"
             }
           },
           {
             "key": "e08",
             "values": {
-              "exam_title": "Follow-up - Vasquez",
+              "exam_title": "Pressure recheck after drops",
               "patient": "p03",
               "doctor": "tm-corwin",
               "when_at": "@today-100d 13:00",
               "kind": "Follow-up",
               "status": "Completed",
-              "completed_on": "@today-100d"
+              "completed_on": "@today-100d",
+              "rx_given": "None"
             }
           },
           {
             "key": "e09",
             "values": {
-              "exam_title": "Comprehensive - Abara",
+              "exam_title": "Annual exam, last year",
               "patient": "p02",
               "doctor": "tm-neha",
               "when_at": "@today-390d 10:00",
               "kind": "Comprehensive",
               "status": "Completed",
-              "completed_on": "@today-390d"
+              "completed_on": "@today-390d",
+              "rx_given": "Glasses"
             }
           },
           {
             "key": "e10",
             "values": {
-              "exam_title": "Comprehensive - Kamara",
+              "exam_title": "Back-to-school exam",
               "patient": "p07",
               "doctor": "tm-corwin",
               "when_at": "@today-60d 15:00",
               "kind": "Comprehensive",
               "status": "Completed",
-              "completed_on": "@today-60d"
+              "completed_on": "@today-60d",
+              "rx_given": "Glasses"
             }
           },
           {
             "key": "e11",
             "values": {
-              "exam_title": "Contact lens fitting - Vasquez",
+              "exam_title": "Lens trial follow-up, missed",
               "patient": "p03",
               "doctor": "tm-neha",
               "when_at": "@today-8d 11:30",
@@ -320,13 +357,14 @@
           {
             "key": "e12",
             "values": {
-              "exam_title": "Follow-up - Kamara",
+              "exam_title": "Glasses adaptation check",
               "patient": "p07",
               "doctor": "tm-corwin",
               "when_at": "@today-3d 10:15",
               "kind": "Follow-up",
               "status": "Completed",
-              "completed_on": "@today-3d"
+              "completed_on": "@today-3d",
+              "rx_given": "No change"
             }
           }
         ],
@@ -490,6 +528,34 @@
             "relationMax": 1
           },
           {
+            "key": "lens",
+            "label": "Lenses",
+            "parityType": "select",
+            "choices": [
+              "Single vision",
+              "Progressive",
+              "Bifocal",
+              "Computer",
+              "Contact lens supply"
+            ],
+            "choiceColors": {
+              "Single vision": "blue",
+              "Progressive": "purple",
+              "Bifocal": "orange",
+              "Computer": "green",
+              "Contact lens supply": "pink"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "job_no",
+            "label": "Lab job number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "total",
             "label": "Total",
             "parityType": "currency",
@@ -507,6 +573,52 @@
                 "value": 2000
               }
             ]
+          },
+          {
+            "key": "plan_paid",
+            "label": "Vision plan pays",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "deposit",
+            "label": "Deposit taken",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
+            "key": "due_pickup",
+            "label": "Due at pickup",
+            "parityType": "formula",
+            "formula": "{Total} - {Vision plan pays} - {Deposit taken}",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "status",
@@ -596,100 +708,132 @@
           {
             "key": "o01",
             "values": {
-              "order_title": "Progressive lenses - Rowe",
+              "order_title": "Progressives with blue filter",
               "patient": "p01",
               "frame": "f03",
               "total": 640,
               "status": "At lab",
               "ordered_on": "@today-6d",
               "promised_by": "@mon+3d",
-              "optician": "@installer"
+              "optician": "@installer",
+              "lens": "Progressive",
+              "job_no": "LB-48211",
+              "plan_paid": 180,
+              "deposit": 150
             }
           },
           {
             "key": "o02",
             "values": {
-              "order_title": "Single vision - Vasquez",
+              "order_title": "Distance glasses, anti-glare",
               "patient": "p03",
               "frame": "f01",
               "total": 320,
               "status": "Ready for pickup",
               "ordered_on": "@today-9d",
               "promised_by": "@today",
-              "optician": "@installer"
+              "optician": "@installer",
+              "lens": "Single vision",
+              "job_no": "LB-48197",
+              "plan_paid": 130,
+              "deposit": 40
             }
           },
           {
             "key": "o03",
             "values": {
-              "order_title": "Kids glasses - Kamara",
+              "order_title": "Child's first pair, polycarbonate",
               "patient": "p07",
               "frame": "f06",
               "total": 210,
               "status": "Ordered",
               "ordered_on": "@today-1d",
-              "promised_by": "@today+8d"
+              "promised_by": "@today+8d",
+              "lens": "Single vision",
+              "job_no": "LB-48233",
+              "plan_paid": 110,
+              "deposit": 30
             }
           },
           {
             "key": "o04",
             "values": {
-              "order_title": "Single vision - Abara",
+              "order_title": "Replacement pair after a break",
               "patient": "p02",
               "frame": "f02",
               "total": 385,
               "status": "At lab",
               "ordered_on": "@today-12d",
               "promised_by": "@today-2d",
-              "optician": "@installer"
+              "optician": "@installer",
+              "lens": "Single vision",
+              "job_no": "LB-48160",
+              "plan_paid": 0,
+              "deposit": 100
             }
           },
           {
             "key": "o05",
             "values": {
-              "order_title": "Rimless - Castellane",
+              "order_title": "Rimless readers, thin lenses",
               "patient": "p04",
               "frame": "f05",
               "total": 520,
               "status": "Ordered",
               "ordered_on": "@today-3d",
-              "promised_by": "@mon+4d"
+              "promised_by": "@mon+4d",
+              "lens": "Single vision",
+              "job_no": "LB-48226",
+              "plan_paid": 150,
+              "deposit": 120
             }
           },
           {
             "key": "o06",
             "values": {
-              "order_title": "Single vision - Redd",
+              "order_title": "Computer glasses for the office",
               "patient": "p08",
               "frame": "f08",
               "total": 290,
               "status": "Ready for pickup",
               "ordered_on": "@today-8d",
-              "promised_by": "@today-1d"
+              "promised_by": "@today-1d",
+              "lens": "Computer",
+              "job_no": "LB-48204",
+              "plan_paid": 100,
+              "deposit": 60
             }
           },
           {
             "key": "o07",
             "values": {
-              "order_title": "Round frames - Fenwick",
+              "order_title": "Spare pair, tinted",
               "patient": "p06",
               "frame": "f07",
               "total": 340,
               "status": "Picked up",
               "ordered_on": "@today-25d",
-              "promised_by": "@today-15d"
+              "promised_by": "@today-15d",
+              "lens": "Single vision",
+              "job_no": "LB-48011",
+              "plan_paid": 0,
+              "deposit": 140
             }
           },
           {
             "key": "o08",
             "values": {
-              "order_title": "Cat-eye frames - Brannigan",
+              "order_title": "Six-month daily lens supply",
               "patient": "p05",
               "frame": "f04",
               "total": 405,
               "status": "Picked up",
               "ordered_on": "@today-30d",
-              "promised_by": "@today-20d"
+              "promised_by": "@today-20d",
+              "lens": "Contact lens supply",
+              "job_no": "CL-90377",
+              "plan_paid": 130,
+              "deposit": 0
             }
           }
         ],
@@ -910,6 +1054,14 @@
             }
           },
           {
+            "key": "materials_ok",
+            "label": "Plan covers frames again",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "last_exam",
             "label": "Last exam",
             "parityType": "datetime",
@@ -924,6 +1076,14 @@
             "sensitivity": "internal",
             "contextPolicy": "include",
             "format": "date"
+          },
+          {
+            "key": "rx_expires",
+            "label": "Prescription expires",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "doctor",
@@ -949,13 +1109,37 @@
           },
           {
             "key": "order_total",
-            "label": "Optical orders",
+            "label": "Optical sales",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "orders",
             "pick": "total",
-            "agg": "sum"
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Ordered"
+                ]
+              }
+            }
+          },
+          {
+            "key": "waiting",
+            "label": "Orders not picked up",
+            "parityType": "rollup",
+            "via": "orders",
+            "pick": "order_title",
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Ordered",
+                "At lab",
+                "Ready for pickup"
+              ]
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "exam_btn",
@@ -999,7 +1183,9 @@
               "vision_plan": "ClearPath Vision",
               "last_exam": "@today-20d",
               "recall_due": "@today+345d",
-              "doctor": "tm-corwin"
+              "doctor": "tm-corwin",
+              "materials_ok": "@today+710d",
+              "rx_expires": "@today+345d"
             }
           },
           {
@@ -1012,7 +1198,9 @@
               "vision_plan": "Meridian Eye Benefits",
               "last_exam": "@today-390d",
               "recall_due": "@today-25d",
-              "doctor": "tm-neha"
+              "doctor": "tm-neha",
+              "materials_ok": "@today-30d",
+              "rx_expires": "@today-25d"
             }
           },
           {
@@ -1025,7 +1213,9 @@
               "vision_plan": "Employer plan",
               "last_exam": "@today-100d",
               "recall_due": "@today+265d",
-              "doctor": "tm-corwin"
+              "doctor": "tm-corwin",
+              "materials_ok": "@today+265d",
+              "rx_expires": "@today+265d"
             }
           },
           {
@@ -1038,7 +1228,8 @@
               "vision_plan": "Self-pay",
               "last_exam": "@today-370d",
               "recall_due": "@mon+2d",
-              "doctor": "tm-neha"
+              "doctor": "tm-neha",
+              "rx_expires": "@today+2d"
             }
           },
           {
@@ -1062,7 +1253,9 @@
               "vision_plan": "Meridian Eye Benefits",
               "last_exam": "@today-800d",
               "recall_due": "@today-435d",
-              "doctor": "tm-neha"
+              "doctor": "tm-neha",
+              "materials_ok": "@today-200d",
+              "rx_expires": "@today-435d"
             }
           },
           {
@@ -1075,7 +1268,9 @@
               "vision_plan": "ClearPath Vision",
               "last_exam": "@today-60d",
               "recall_due": "@today+305d",
-              "doctor": "tm-corwin"
+              "doctor": "tm-corwin",
+              "materials_ok": "@today+305d",
+              "rx_expires": "@today+305d"
             }
           },
           {
@@ -1088,7 +1283,9 @@
               "vision_plan": "Employer plan",
               "last_exam": "@today-360d",
               "recall_due": "@today+5d",
-              "doctor": "tm-neha"
+              "doctor": "tm-neha",
+              "materials_ok": "@today+5d",
+              "rx_expires": "@today+5d"
             }
           }
         ],
@@ -1099,6 +1296,10 @@
           [
             "last_exam",
             "recall_due"
+          ],
+          [
+            "last_exam",
+            "rx_expires"
           ]
         ],
         "rowTemplates": [
@@ -1247,6 +1448,13 @@
             }
           },
           {
+            "key": "size",
+            "label": "Size (eye-bridge-temple)",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "qty",
             "label": "On hand",
             "parityType": "integer",
@@ -1345,7 +1553,8 @@
               "qty": 6,
               "reorder_at": 3,
               "cost": 62,
-              "retail": 189
+              "retail": 189,
+              "size": "52-18-140"
             }
           },
           {
@@ -1357,7 +1566,8 @@
               "qty": 9,
               "reorder_at": 4,
               "cost": 58,
-              "retail": 175
+              "retail": 175,
+              "size": "55-17-145"
             }
           },
           {
@@ -1369,7 +1579,8 @@
               "qty": 3,
               "reorder_at": 3,
               "cost": 71,
-              "retail": 215
+              "retail": 215,
+              "size": "54-17-140"
             }
           },
           {
@@ -1381,7 +1592,8 @@
               "qty": 5,
               "reorder_at": 2,
               "cost": 66,
-              "retail": 199
+              "retail": 199,
+              "size": "51-18-140"
             }
           },
           {
@@ -1393,7 +1605,8 @@
               "qty": 2,
               "reorder_at": 2,
               "cost": 84,
-              "retail": 260
+              "retail": 260,
+              "size": "53-16-140"
             }
           },
           {
@@ -1405,7 +1618,8 @@
               "qty": 11,
               "reorder_at": 5,
               "cost": 38,
-              "retail": 115
+              "retail": 115,
+              "size": "44-15-125"
             }
           },
           {
@@ -1417,7 +1631,8 @@
               "qty": 1,
               "reorder_at": 3,
               "cost": 60,
-              "retail": 185
+              "retail": 185,
+              "size": "49-21-145"
             }
           },
           {
@@ -1429,7 +1644,8 @@
               "qty": 7,
               "reorder_at": 4,
               "cost": 55,
-              "retail": 169
+              "retail": 169,
+              "size": "56-16-145"
             }
           }
         ]
@@ -1958,7 +2174,7 @@
         "Piedmont Row"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -1969,7 +2185,7 @@
         "emoji": "👓"
       },
       "cover": {
-        "url": "gallery:photo-ocean-horizon",
+        "url": "gallery:gradient-ocean",
         "offsetY": 50
       },
       "settings": {
@@ -2033,6 +2249,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-inventory"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2843,14 +3065,14 @@
       "parent": "optometry-practice",
       "title": "Annual recall routine",
       "icon": {
-        "emoji": "🔔"
+        "emoji": "🔁"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "Most exams are repeat exams. A steady recall routine fills the schedule."
+              "text": "Most patients need an eye exam every year or two, and many forget until something goes wrong. A steady recall routine keeps the schedule full and catches problems early."
             }
           ],
           "background": "blue",
@@ -2862,7 +3084,56 @@
           "type": "heading",
           "text": [
             {
-              "text": "Monday"
+              "text": "Setting recall dates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After every completed exam, set "
+            },
+            {
+              "text": "Recall due",
+              "bold": true
+            },
+            {
+              "text": " (12 months for most adults, contact lens wearers, children and anyone with diabetes; 24 months for healthy adults when the doctor says so)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Prescription expires",
+              "bold": true
+            },
+            {
+              "text": " from the prescription. Contact lens prescriptions usually expire after one year."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book the next exam before the patient leaves when you can."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monday recall list (30 minutes)"
             }
           ],
           "props": {
@@ -2873,7 +3144,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Patients and use the Next 30 days view of Recall due."
+              "text": "Open "
+            },
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": " and filter for recall due in the next 30 days or already past."
             }
           ]
         },
@@ -2881,7 +3159,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Call or text each patient and offer two times."
+              "text": "Patients with diabetes, glaucoma or a pending follow-up come first; they are medical, not optional."
             }
           ]
         },
@@ -2889,7 +3167,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the exam and set status to Current once it is done."
+              "text": "Send a reminder in the patient's preferred way, then call those who do not reply within a week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book them and move status to "
+            },
+            {
+              "text": "Current",
+              "bold": true
+            },
+            {
+              "text": " after the exam."
             }
           ]
         },
@@ -2897,7 +3190,26 @@
           "type": "heading",
           "text": [
             {
-              "text": "After three tries"
+              "text": "What to say"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Hi Kingsley, it's been just over a year since your last eye exam and your vision plan covers a new one now. Dr. Neha has Tuesday at 10 or Thursday at 3. Would either work?\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contact lens wearers"
             }
           ],
           "props": {
@@ -2908,9 +3220,173 @@
           "type": "text",
           "text": [
             {
-              "text": "Leave the patient as Recall due, then Lapsed after six months."
+              "text": "Patients can only buy lenses with a current prescription. Remind them a month before "
+            },
+            {
+              "text": "Prescription expires",
+              "bold": true
+            },
+            {
+              "text": ", and mention you can order a year's supply after the exam."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Lapsed patients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Patients more than two years past their recall date move to "
+            },
+            {
+              "text": "Lapsed",
+              "bold": true
+            },
+            {
+              "text": ". Once a quarter, send a short note; lapsed patients often come back when their glasses break."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist after each exam"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Recall due set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Prescription expiry set"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next exam booked or reminder planned"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Optical order started if a new prescription was given"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Numbers to watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Target"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Recalls booked before leaving"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "60% or more"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Patients past recall"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Under 15% of active patients"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Exams that lead to an optical order"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "More than half when a new prescription is given"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
@@ -2923,154 +3399,10 @@
       },
       "blocks": [
         {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Before every exam"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Check eligibility the day before."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Note the exam allowance and frame allowance on the exam."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Tell the patient what to expect to pay at check-in."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "If coverage is unclear"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "text",
-          "text": [
-            {
-              "text": "Offer a self-pay estimate and let the patient decide before the exam."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-dispensing",
-      "parent": "optometry-practice",
-      "title": "Dispensing and optical orders",
-      "icon": {
-        "emoji": "🕶️"
-      },
-      "blocks": [
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "At the dispensary"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Press Start optical order on the patient."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Pick a frame from Frames and confirm the price."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
-            {
-              "text": "Collect the deposit and set a Promised by date."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "Lab tracking"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Press Sent to lab when the order leaves."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Press Ready for pickup when it arrives and notify the patient."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Overdue orders appear under Overdue on the Optical orders table."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "key": "sop-inventory",
-      "parent": "optometry-practice",
-      "title": "Frame inventory",
-      "icon": {
-        "emoji": "📦"
-      },
-      "blocks": [
-        {
           "type": "callout",
           "text": [
             {
-              "text": "Check frames every other week."
+              "text": "Vision plans pay for exams and glasses on their own schedule, often every 12 or 24 months, with allowances for frames and lenses. Checking before the visit avoids surprises at the optical counter."
             }
           ],
           "background": "blue",
@@ -3082,7 +3414,49 @@
           "type": "heading",
           "text": [
             {
-              "text": "Count"
+              "text": "For every patient on tomorrow's schedule"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check eligibility on the plan's portal: exam covered, frame allowance, lens benefit, contact lens allowance and the copays."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Note the date the plan next covers frames in "
+            },
+            {
+              "text": "Plan covers frames again",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "If the patient comes for a medical reason (red eye, diabetes, floaters, glaucoma), the visit may be billed to their medical insurance instead. Ask for that card too."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "At check-in"
             }
           ],
           "props": {
@@ -3093,7 +3467,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Update On hand for sold and received frames"
+              "text": "Insurance card scanned, subscriber and date of birth confirmed"
             }
           ],
           "props": {
@@ -3104,7 +3478,18 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review anything marked Reorder under Stock check"
+              "text": "Copays explained before the exam"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Patient told what the plan covers for glasses or contacts today"
             }
           ],
           "props": {
@@ -3115,7 +3500,296 @@
           "type": "heading",
           "text": [
             {
-              "text": "Display"
+              "text": "At the optical counter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Show frames within the allowance first, then upgrades with their extra cost."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lens add-ons (anti-glare, blue filter, thinner lenses, photochromic) are usually partly covered; explain the patient's share for each."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Fill in "
+            },
+            {
+              "text": "Vision plan pays",
+              "bold": true
+            },
+            {
+              "text": " on the order so "
+            },
+            {
+              "text": "Due at pickup",
+              "bold": true
+            },
+            {
+              "text": " is right."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Common plan rules"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Rule"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it means at the counter"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Exam every 12 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Book on or after the anniversary, not a week early"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Frames every 24 months"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a second pair at a discount instead"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Contacts instead of glasses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Many plans cover one or the other in a benefit period"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Out-of-network"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Patient pays and submits the receipt; give an itemized receipt"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Medical or vision?"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A routine check of how well someone sees is a vision visit. A visit for an eye problem (infection, injury, flashes and floaters, diabetes, glaucoma follow-up) is usually medical. Decide at booking, tell the patient which card you will bill, and write it on the exam page so the claim goes to the right place."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Claims"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Submit the exam and materials claim the day of the visit, with the lab job number for glasses. Check unpaid claims every two weeks."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kingsley's plan renewed 30 days ago. The front desk sees it during the morning check, calls him, and books his exam and frames for the same visit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-dispensing",
+      "parent": "optometry-practice",
+      "title": "Dispensing and lab orders",
+      "icon": {
+        "emoji": "🔍"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Glasses are measured, ordered, checked and fitted. Each step has a chance to go wrong, and patients remember a late or wrong pair far longer than a good exam."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Taking the order"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Help the patient pick a frame that fits: size, bridge, temple length and lens type. Progressives need enough frame height."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Measure pupillary distance and, for progressives, fitting heights."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the row under "
+            },
+            {
+              "text": "Optical orders",
+              "bold": true
+            },
+            {
+              "text": ": frame, lenses, total, what the plan pays and the deposit. Set "
+            },
+            {
+              "text": "Promised by",
+              "bold": true
+            },
+            {
+              "text": " honestly (7 to 10 business days for most single vision, longer for progressives and specialty lenses)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send to the lab, enter the "
+            },
+            {
+              "text": "Lab job number",
+              "bold": true
+            },
+            {
+              "text": " and press "
+            },
+            {
+              "text": "Sent to lab",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When glasses arrive"
             }
           ],
           "props": {
@@ -3126,7 +3800,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Rotate slow styles to the front"
+              "text": "Check the prescription in the lenses against the order"
             }
           ],
           "props": {
@@ -3137,12 +3811,899 @@
           "type": "todo",
           "text": [
             {
-              "text": "Send one order per brand"
+              "text": "Check the pupillary distance and fitting heights"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check for scratches and the right coatings"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Ready for pickup",
+              "bold": true
+            },
+            {
+              "text": " and call or text the patient the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The pickup"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Adjust the frame on the patient's face; check comfort behind the ears and on the nose."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "For progressives, show how to find the reading and distance zones; book a check in two weeks."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Collect "
+            },
+            {
+              "text": "Due at pickup",
+              "bold": true
+            },
+            {
+              "text": " and press "
+            },
+            {
+              "text": "Picked up",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When something is wrong"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Problem"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Fix"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Lab late past promised date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call the patient before they call you; new date in writing"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Patient cannot adapt to new glasses"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recheck within two weeks; lab remake if the doctor confirms"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Frame breaks under warranty"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Order a replacement under the frame warranty"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Contact lens orders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Order only against a current contact lens prescription. Note the brand, power and supply length on the order, and ship a year's supply to the patient's home when they prefer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filter optical orders by "
+            },
+            {
+              "text": "At lab",
+              "bold": true
+            },
+            {
+              "text": " with Promised by before today. Call the lab for each, then the patient."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Kingsley's single vision pair was promised two days ago and is still at the lab. The optician calls the lab, gets a new date, and texts Kingsley before he has to ask."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sop-inventory",
+      "parent": "optometry-practice",
+      "title": "Frame board and stock",
+      "icon": {
+        "emoji": "🕶️"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The frame board is the store window. Too many slow frames tie up cash; gaps in popular styles and sizes lose sales."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly count (first Friday)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count each frame on the board and in the drawers and update "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Stock check",
+              "bold": true
+            },
+            {
+              "text": " says Reorder at or below the reorder point. Reorder popular styles in the sizes that sell."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check "
+            },
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": "; frames with a thin margin need a reason to stay (a plan-covered option, a children's frame)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What a good board has"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Options within each common vision plan allowance, for men, women and children."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A range of sizes, not just one size per style."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Kids' frames that are sturdy, with spring hinges."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A few higher-priced frames for patients who want them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Slow sellers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Frames that have not sold in six months move to a sale tray or go back to the vendor if your agreement allows returns. Write the date you moved them on the frame's page."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receiving frames"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Count against the packing slip"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cost and retail price entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Size recorded (eye, bridge, temple)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Frame tagged with price and size before it goes on the board"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Keep a simple rule, for example retail at two and a half to three times cost, and apply it consistently. Patients compare prices; a frame that costs more than a similar one on the board needs a clear reason."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist each quarter"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Board layout refreshed with new arrivals at eye level"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Children's section checked for gaps before school starts"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Returns sent back before the vendor's deadline"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who owns it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "One optician owns the board: counts, reorders, returns and pricing. Everyone else tells them when a frame sells out or a patient asks for something you do not carry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The children's Tumble frame is down to two on hand with back-to-school exams booked all next week. The optician reorders six in the two most common sizes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "optometry-practice",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The front of an eye care practice: today's exams, patients due back, what each vision plan covers, frames on the board and glasses at the lab. Exam records stay in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Exams",
+              "bold": true
+            },
+            {
+              "text": ": each appointment with type, doctor, whether the patient was dilated and what prescription was given."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients",
+              "bold": true
+            },
+            {
+              "text": ": vision plan, when the plan covers new frames again, last exam, recall date, prescription expiry, optical sales and orders not yet picked up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Optical orders",
+              "bold": true
+            },
+            {
+              "text": ": every pair of glasses or contact lens supply with lens type, lab job number, total, what the plan pays, deposit and the amount due at pickup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Frames",
+              "bold": true
+            },
+            {
+              "text": ": the frame board with size, style, cost, retail price, margin and stock."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The columns that earn money"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Use it to"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Plan covers frames again"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Call patients whose benefits have renewed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Prescription expires"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Remind contact lens wearers before they run out"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Orders not picked up"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Chase glasses sitting in the drawer"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Due at pickup"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Know what to collect before handing glasses over"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add your doctors and opticians to the team list."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter patients booked in the next two weeks, with plan and last exam."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter open optical orders with lab job numbers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count the frame board and enter cost and retail."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every morning",
+              "bold": true
+            },
+            {
+              "text": ": Today's exams; plan eligibility checked for each."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every afternoon",
+              "bold": true
+            },
+            {
+              "text": ": orders promised today; call patients whose glasses are ready."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monday",
+              "bold": true
+            },
+            {
+              "text": ": recalls due this month and patients whose plans renewed."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Month end",
+              "bold": true
+            },
+            {
+              "text": ": frames to reorder; slow sellers moved to the sale tray."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Exams: "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Orders: "
+            },
+            {
+              "text": "Sent to lab",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Ready for pickup",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Picked up",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Patients: "
+            },
+            {
+              "text": "Book exam",
+              "bold": true
+            },
+            {
+              "text": ", "
+            },
+            {
+              "text": "Start optical order",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Thelonius is due for his diabetic eye exam in six days and his plan covers new frames again the same week. The front desk books the exam and mentions he can choose new frames afterwards."
+            }
+          ]
         }
       ]
     }

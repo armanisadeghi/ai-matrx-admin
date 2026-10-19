@@ -15,12 +15,21 @@ What is compared, per fixture kind (the manifest's ``hash_rule`` says the same):
                  prompt blocks, output schema, skills, model tiers, name, active/deleted, organization)
   agent_version  a version row a binding pins: the same four hashes and model id (version rows can be patched
                  in place, as on 2026-10-16)
-  row            one database row: its ``version`` column and sha256 of the named fields
+  row            one database row: its ``version`` column and sha256 of the named fields. An entry marked
+                 ``"ignore_version": true`` (files, notes, knob overrides: things a restore re-writes) is compared
+                 by sha256 of its named fields only; a version counter that moved over identical content is a match.
+                 A file's named fields carry its identity and content checksum (sha256 of the bytes), never
+                 ``current_version``
   value          one stored value (custom.value_read): its value_version and sha256 of the value
   pick_list      a pick list (custom.pick_list_get): sha256 of its sorted (label, description) pairs
   presence       the fixture exists and is not deleted; used only where the sender itself writes the fixture
                  every run and verifies its start state (PB-04's three between-turn sources)
   tool           a tool.definition row: name and active flag
+
+Grader plant records: a grader who plants a blind fault (plant-pb04/05/07/08.py) writes
+~/.matrx/real-tests-grader/planted-<PB>.json (playbook, fixture key, expected hash, 2 h expiry). A difference is
+accepted only when its fixture and the hash of its differing values equal an unexpired record; the output then says
+only "fixture check: N difference(s) accepted (grader record)". The plant script's --restore deletes the record.
 
 Every difference prints as ``DIFF <fixture> <field>: manifest <a> | live <b>``. A read that fails is a
 difference (fail closed). An entry marked ``"drifted": true`` is always a difference until an owner
@@ -38,9 +47,11 @@ import argparse
 import hashlib
 import json
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
@@ -162,9 +173,10 @@ def live_values(reader: Reader, entry: Dict[str, Any]) -> Dict[str, Any]:
         live.update(agent_hashes(row, reader.tools(row.get("tools") or [])))
         return live
     if kind == "row":
-        row = reader.one(entry["schema"], entry["table"], entry["id"], ",".join(["id", *entry["fields"], *(["version"] if entry.get("has_version", True) else [])]))
+        versioned = entry.get("has_version", True) and not entry.get("ignore_version")
+        row = reader.one(entry["schema"], entry["table"], entry["id"], ",".join(["id", *entry["fields"], *(["version"] if versioned else [])]))
         live = {"sha256": sha({f: row.get(f) for f in entry["fields"]})}
-        if entry.get("has_version", True):
+        if versioned:
             live["version"] = row.get("version")
         return live
     if kind == "value":
@@ -219,6 +231,8 @@ def compare(key: str, entry: Dict[str, Any], live: Optional[Dict[str, Any]], err
         entry = {**entry, "present": True}
     may_advance = entry["kind"] == "agent" and entry.get("version_may_advance")
     for f in fields:
+        if f == "version" and entry["kind"] == "row" and entry.get("ignore_version"):
+            continue  # a restore re-writes the counter; the content hash must still match exactly
         if f not in entry:
             out.append(f"DIFF {key} {f}: manifest has no value for this field | live {live.get(f)!r}")
             continue
@@ -237,16 +251,85 @@ def compare(key: str, entry: Dict[str, Any], live: Optional[Dict[str, Any]], err
     return out
 
 
+# ---------------------------------------------------------------------------------------------- grader plant records
+
+GRADER_DIR = Path.home() / ".matrx" / "real-tests-grader"
+PLANT_TTL = timedelta(hours=2)
+
+
+def differing_values(entry: Dict[str, Any], live: Dict[str, Any]) -> Dict[str, Any]:
+    """The live values of exactly the compared fields that differ from the manifest (what a plant changed)."""
+    out: Dict[str, Any] = {}
+    for f in COMPARED.get(entry["kind"], ()):
+        if f == "version" and entry["kind"] == "row" and entry.get("ignore_version"):
+            continue
+        if entry["kind"] == "agent" and entry.get("version_may_advance") and f in ("live_version", "live_version_id"):
+            continue
+        want = entry.get("present", True) if (entry["kind"] == "presence" and f == "present") else entry.get(f)
+        if want != live.get(f):
+            out[f] = live.get(f)
+    return out
+
+
+def plant_hash(entry: Dict[str, Any], live: Dict[str, Any]) -> str:
+    """Hash of the differing live values; the plant script stores it, the check recomputes and compares it."""
+    return sha(differing_values(entry, live))
+
+
+def plant_path(playbook: str, grader_dir: Optional[Path] = None) -> Path:
+    return (grader_dir or GRADER_DIR) / f"planted-{playbook}.json"
+
+
+def write_plant_record(playbook: str, key: str, manifest: Optional[Dict[str, Any]] = None, reader: Optional[Reader] = None,
+                       grader_dir: Optional[Path] = None, now: Optional[datetime] = None) -> Dict[str, Any]:
+    """Called by a plant script AFTER it planted: reads the fixture live and records the hash of what differs."""
+    manifest = manifest or load_manifest()
+    entry = manifest["fixtures"][key]
+    live = live_values(reader or Reader(), entry)
+    now = now or datetime.now(timezone.utc)
+    rec = {"playbook": playbook, "fixture": key, "expected_hash": plant_hash(entry, live),
+           "planted_at": now.isoformat(), "expires_at": (now + PLANT_TTL).isoformat(),
+           "differs_from_manifest": bool(differing_values(entry, live))}
+    path = plant_path(playbook, grader_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(rec, indent=1))
+    return rec
+
+
+def delete_plant_record(playbook: str, grader_dir: Optional[Path] = None) -> bool:
+    path = plant_path(playbook, grader_dir)
+    if path.exists():
+        path.unlink()
+        return True
+    return False
+
+
+def load_plant_record(playbook: str, grader_dir: Optional[Path] = None, now: Optional[datetime] = None) -> Optional[Dict[str, Any]]:
+    """The unexpired plant record of a playbook, or None (missing, unreadable, malformed or expired = no record)."""
+    try:
+        rec = json.loads(plant_path(playbook, grader_dir).read_text())
+        if rec.get("playbook") != playbook or not rec.get("fixture") or not rec.get("expected_hash"):
+            return None
+        if (now or datetime.now(timezone.utc)) >= datetime.fromisoformat(rec["expires_at"]):
+            return None
+        return rec
+    except Exception:
+        return None
+
+
 def load_manifest(path: Path = MANIFEST) -> Dict[str, Any]:
     return json.loads(path.read_text())
 
 
 def check(playbook: str, manifest: Optional[Dict[str, Any]] = None, reader: Optional[Reader] = None,
-          reader_factory: Callable[[], Reader] = Reader) -> Dict[str, Any]:
+          reader_factory: Callable[[], Reader] = Reader, grader_dir: Optional[Path] = None,
+          now: Optional[datetime] = None) -> Dict[str, Any]:
     """Compare every fixture of one playbook. Returns {ok, differences, fixtures: {key: live values}}."""
     manifest = manifest or load_manifest()
     keys = manifest["playbooks"].get(playbook)
-    result: Dict[str, Any] = {"playbook": playbook, "manifest_built_at": manifest.get("built_at"), "differences": [], "fixtures": {}}
+    result: Dict[str, Any] = {"playbook": playbook, "manifest_built_at": manifest.get("built_at"), "differences": [], "fixtures": {},
+                              "accepted": 0}
+    plant = load_plant_record(playbook, grader_dir, now)
     if not keys:
         result["differences"].append(f"DIFF {playbook} playbook: no fixture list in the manifest")
         result["ok"] = False
@@ -268,7 +351,12 @@ def check(playbook: str, manifest: Optional[Dict[str, Any]] = None, reader: Opti
         except Exception as exc:
             err = f"{type(exc).__name__}: {exc}"
         result["fixtures"][key] = {"kind": entry["kind"], "id": entry.get("id"), "live": live, "error": err}
-        result["differences"].extend(compare(key, entry, live, err))
+        diffs = compare(key, entry, live, err)
+        if (diffs and plant and plant["fixture"] == key and err is None and live is not None and not entry.get("drifted")
+                and plant["expected_hash"] == plant_hash(entry, live)):
+            result["accepted"] += sum(1 for d in diffs if d.startswith("DIFF"))  # the grader planted exactly this
+            diffs = []
+        result["differences"].extend(diffs)
     result["ok"] = not result["differences"]
     return result
 
@@ -278,6 +366,8 @@ def print_result(result: Dict[str, Any]) -> None:
     print(f"fixture check {pb}: manifest built {result.get('manifest_built_at')}, {len(result['fixtures'])} fixtures read")
     for line in result["differences"]:
         print(f"fixture check {pb}: {line}")
+    if result.get("accepted"):
+        print(f"fixture check: {result['accepted']} difference(s) accepted (grader record)")
     n = sum(1 for d in result["differences"] if d.startswith("DIFF"))
     print(f"fixture check {pb}: {'MATCH, every fixture equals the manifest' if result['ok'] else f'{n} difference(s)'}")
 

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "app": "matrx-frontend",
-  "routeCount": 1557,
+  "routeCount": 1558,
   "routes": [
     {
       "pattern": "/",
@@ -1032,6 +1032,11 @@
       "pattern": "/administration/intelligence/mandates/window",
       "status": "live",
       "source": "app/(admin)/administration/intelligence/mandates/window/page.tsx"
+    },
+    {
+      "pattern": "/administration/intelligence/system-processes",
+      "status": "live",
+      "source": "app/(admin)/administration/intelligence/system-processes/page.tsx"
     },
     {
       "pattern": "/administration/knowledge",

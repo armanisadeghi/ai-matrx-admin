@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0158",
-  "formerSlugs": [
-    "spaces-sp0158"
-  ],
-  "version": 4,
+  "version": 5,
   "title": "Lead Tracker",
   "description": "Small sales teams: capture leads, follow up on time and turn the best into deals.",
   "forWho": "Small sales teams and agencies",
@@ -991,7 +988,7 @@
         "Peachtree Hollow"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {
@@ -1739,5 +1736,8 @@
       ]
     }
   ],
-  "waivers": []
+  "waivers": [],
+  "formerSlugs": [
+    "spaces-sp0158"
+  ]
 }

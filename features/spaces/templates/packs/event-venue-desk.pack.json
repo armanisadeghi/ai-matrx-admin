@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 3,
+  "version": 4,
   "title": "Event Venue Desk",
   "description": "Spaces, inquiries and tours, bookings with deposits, and setup checklists for a venue.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -2157,7 +2157,7 @@
         "Weir Lane"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

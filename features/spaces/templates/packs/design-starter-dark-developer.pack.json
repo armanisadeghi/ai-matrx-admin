@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0495",
-  "version": 2,
+  "version": 3,
   "title": "Design system — Dark-first developer tool",
   "description": "Dark by default: near-black panels, a mint action and mono details. Dense.",
   "forWho": "Developer tools, consoles, data and infrastructure products",
@@ -1277,7 +1277,7 @@
         "Foundry Alley"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {

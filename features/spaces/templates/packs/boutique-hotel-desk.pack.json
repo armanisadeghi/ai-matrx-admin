@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0465",
-  "version": 3,
+  "version": 4,
   "title": "Boutique Hotel Desk",
   "description": "Rooms, reservations, housekeeping and repairs for a boutique hotel or bed and breakfast.",
   "forWho": "Boutique hotels, inns and bed and breakfasts",
@@ -2005,7 +2005,7 @@
         "Cobbler's Green"
       ]
     },
-    "version": 3
+    "version": 4
   },
   "pages": [
     {

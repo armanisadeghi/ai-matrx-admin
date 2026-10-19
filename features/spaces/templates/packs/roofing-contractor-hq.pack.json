@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 2,
+  "version": 4,
   "title": "Roofing Contractor HQ",
-  "description": "Move roofing leads from inspection to estimate to crew day, with orders and invoices.",
+  "description": "For roofing companies: leads, inspections, estimates by the square, crews, claims.",
   "forWho": "Roofing contractors and exterior remodelers",
   "icon": {
     "emoji": "🏠"
@@ -14,10 +14,12 @@
   },
   "category": "trades",
   "tags": [
+    "roofer",
     "roofing",
-    "estimates",
-    "crews",
-    "jobs"
+    "roof replacement",
+    "storm damage",
+    "insurance claims",
+    "trades"
   ],
   "spec": {
     "specVersion": 1,
@@ -130,6 +132,30 @@
             "contextPolicy": "include"
           },
           {
+            "key": "roof_year",
+            "label": "Roof installed (year)",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 1950
+              },
+              {
+                "kind": "max",
+                "value": 2100
+              }
+            ]
+          },
+          {
+            "key": "carrier",
+            "label": "Insurance carrier",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "since",
             "label": "Customer since",
             "parityType": "datetime",
@@ -151,6 +177,24 @@
             }
           },
           {
+            "key": "open_jobs",
+            "label": "Open jobs",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "jobs",
+            "pick": "job_name",
+            "agg": "count",
+            "filter": {
+              "status": {
+                "not": [
+                  "Completed",
+                  "Cancelled"
+                ]
+              }
+            }
+          },
+          {
             "key": "billed",
             "label": "Billed to date",
             "parityType": "rollup",
@@ -160,7 +204,12 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Paid"
+              "status": {
+                "not": [
+                  "Draft",
+                  "Void"
+                ]
+              }
             }
           },
           {
@@ -173,7 +222,10 @@
             "pick": "amount",
             "agg": "sum",
             "filter": {
-              "status": "Sent"
+              "status": [
+                "Sent",
+                "Overdue"
+              ]
             }
           },
           {
@@ -313,7 +365,9 @@
               "phone": "(402) 555-0159",
               "email": "desmond.vasquez@inbox-mail.net",
               "area": "Stonebridge",
-              "since": "@today-40d"
+              "since": "@today-40d",
+              "roof_year": 2004,
+              "carrier": "Prairie Mutual"
             }
           },
           {
@@ -325,7 +379,9 @@
               "phone": "(402) 555-0196",
               "email": "noor.delacroix@inbox-mail.net",
               "area": "Harbor Heights",
-              "since": "@today-95d"
+              "since": "@today-95d",
+              "roof_year": 1999,
+              "carrier": "Heartland Home"
             }
           },
           {
@@ -337,7 +393,9 @@
               "phone": "(402) 555-0133",
               "email": "silas.kellerman@inbox-mail.net",
               "area": "Willow Creek",
-              "since": "@today-150d"
+              "since": "@today-150d",
+              "roof_year": 2008,
+              "carrier": "Prairie Mutual"
             }
           },
           {
@@ -349,7 +407,8 @@
               "phone": "(402) 555-0170",
               "email": "kasia.tennant@inbox-mail.net",
               "area": "North Ridge",
-              "since": "@today-205d"
+              "since": "@today-205d",
+              "roof_year": 2001
             }
           },
           {
@@ -361,7 +420,9 @@
               "phone": "(402) 555-0107",
               "email": "tobias.castellanos@inbox-mail.net",
               "area": "Sunset Flats",
-              "since": "@today-260d"
+              "since": "@today-260d",
+              "roof_year": 2011,
+              "carrier": "Plainsview Insurance"
             }
           },
           {
@@ -373,7 +434,9 @@
               "phone": "(402) 555-0144",
               "email": "greta.jankowski@inbox-mail.net",
               "area": "Maple Hollow",
-              "since": "@today-315d"
+              "since": "@today-315d",
+              "roof_year": 2006,
+              "carrier": "Heartland Home"
             }
           },
           {
@@ -385,7 +448,9 @@
               "phone": "(402) 555-0181",
               "email": "percival.rosenthal@inbox-mail.net",
               "area": "Eastgate",
-              "since": "@today-370d"
+              "since": "@today-370d",
+              "roof_year": 2003,
+              "carrier": "Prairie Mutual"
             }
           },
           {
@@ -397,7 +462,8 @@
               "phone": "(402) 555-0118",
               "email": "bronwyn.zielinski@inbox-mail.net",
               "area": "Riverbend",
-              "since": "@today-425d"
+              "since": "@today-425d",
+              "roof_year": 1997
             }
           },
           {
@@ -409,7 +475,9 @@
               "phone": "(402) 555-0155",
               "email": "idris.grayson@inbox-mail.net",
               "area": "Old Mill",
-              "since": "@today-13d"
+              "since": "@today-13d",
+              "roof_year": 2012,
+              "carrier": "Plainsview Insurance"
             }
           },
           {
@@ -421,7 +489,8 @@
               "phone": "(402) 555-0192",
               "email": "priyanka.oyelaran@inbox-mail.net",
               "area": "Cedar Park",
-              "since": "@today-14d"
+              "since": "@today-14d",
+              "roof_year": 2009
             }
           },
           {
@@ -433,7 +502,9 @@
               "phone": "(402) 555-0129",
               "email": "hamza.yoshida@inbox-mail.net",
               "area": "Lakeview",
-              "since": "@today-15d"
+              "since": "@today-15d",
+              "roof_year": 2002,
+              "carrier": "Heartland Home"
             }
           },
           {
@@ -445,7 +516,8 @@
               "phone": "(402) 555-0166",
               "email": "rosalind.fairbairn@inbox-mail.net",
               "area": "Foxglove Court",
-              "since": "@today-16d"
+              "since": "@today-16d",
+              "roof_year": 2000
             }
           }
         ]
@@ -557,6 +629,64 @@
             }
           },
           {
+            "key": "material",
+            "label": "Roof system",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Architectural asphalt",
+              "3-tab asphalt",
+              "Standing seam metal",
+              "TPO flat roof",
+              "Cedar shake"
+            ],
+            "choiceColors": {
+              "Architectural asphalt": "blue",
+              "3-tab asphalt": "green",
+              "Standing seam metal": "amber",
+              "TPO flat roof": "violet",
+              "Cedar shake": "teal"
+            }
+          },
+          {
+            "key": "squares",
+            "label": "Squares",
+            "parityType": "decimal",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Roof area in squares (100 sq ft each).",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 400
+              }
+            ]
+          },
+          {
+            "key": "pitch",
+            "label": "Pitch",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Flat",
+              "Low (to 4/12)",
+              "Walkable (5-7/12)",
+              "Steep (8/12+)"
+            ],
+            "choiceColors": {
+              "Flat": "blue",
+              "Low (to 4/12)": "green",
+              "Walkable (5-7/12)": "amber",
+              "Steep (8/12+)": "violet"
+            }
+          },
+          {
             "key": "priority",
             "label": "Priority",
             "parityType": "select",
@@ -576,12 +706,44 @@
           },
           {
             "key": "tech",
-            "label": "Lead tech",
+            "label": "Foreman",
             "parityType": "relation",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "relationTarget": "team_member",
             "relationMax": 1
+          },
+          {
+            "key": "crew",
+            "label": "Crew",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Crew A",
+              "Crew B",
+              "Repair crew"
+            ],
+            "choiceColors": {
+              "Crew A": "blue",
+              "Crew B": "green",
+              "Repair crew": "amber"
+            }
+          },
+          {
+            "key": "claim_no",
+            "label": "Claim number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "callback",
+            "label": "Leak callback",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "description": "Came back for a leak on our own work."
           },
           {
             "key": "scheduled_on",
@@ -903,348 +1065,432 @@
           {
             "key": "job-1",
             "values": {
-              "job_name": "Roof repair - Kellerman",
+              "job_name": "Tear-off + architectural, 2-story colonial",
               "status": "Completed",
-              "customer": "custom-3",
-              "job_type": "Roof repair",
+              "customer": "custom-1",
+              "job_type": "Full roof replacement",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
               "tech": "tm-3",
+              "crew": "Crew A",
               "scheduled_on": "@today-21d",
-              "quote": 500,
-              "parts_cost": 125,
-              "labor_cost": 240,
-              "hours": 5,
+              "quote": 16800,
+              "parts_cost": 6950,
+              "labor_cost": 4900,
+              "hours": 96,
+              "squares": 28,
               "completed_on": "@today-21d"
             }
           },
           {
             "key": "job-2",
             "values": {
-              "job_name": "Full roof replacement - Zielinski",
+              "job_name": "Hail claim: full replacement",
               "status": "Completed",
-              "customer": "custom-8",
-              "job_type": "Full roof replacement",
-              "priority": "Routine",
+              "customer": "custom-3",
+              "job_type": "Storm damage patch",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
+              "priority": "Urgent",
               "tech": "tm-4",
+              "crew": "Crew B",
               "scheduled_on": "@today-16d",
-              "quote": 12265,
-              "parts_cost": 6130,
-              "labor_cost": 1920,
-              "hours": 40,
+              "quote": 18900,
+              "parts_cost": 7700,
+              "labor_cost": 5400,
+              "hours": 104,
+              "squares": 31,
+              "claim_no": "PM-55-210384",
               "completed_on": "@today-16d"
             }
           },
           {
             "key": "job-3",
             "values": {
-              "job_name": "Storm damage patch - Vasquez",
+              "job_name": "Flashing leak at the chimney",
               "status": "Completed",
-              "customer": "custom-1",
-              "job_type": "Storm damage patch",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "customer": "custom-5",
+              "job_type": "Chimney flashing repair",
+              "material": "Architectural asphalt",
+              "pitch": "Steep (8/12+)",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today-12d",
-              "quote": 1695,
-              "parts_cost": 475,
-              "labor_cost": 290,
-              "hours": 6,
+              "quote": 780,
+              "parts_cost": 95,
+              "labor_cost": 320,
+              "hours": 5,
+              "squares": 0.5,
               "completed_on": "@today-12d"
             }
           },
           {
             "key": "job-4",
             "values": {
-              "job_name": "Gutter and fascia - Jankowski",
+              "job_name": "Two skylights, kitchen addition",
               "status": "Completed",
-              "customer": "custom-6",
-              "job_type": "Gutter and fascia",
+              "customer": "custom-9",
+              "job_type": "Skylight install",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
+              "crew": "Repair crew",
               "scheduled_on": "@today-9d",
-              "quote": 1245,
-              "parts_cost": 560,
-              "labor_cost": 480,
+              "quote": 3150,
+              "parts_cost": 1380,
+              "labor_cost": 760,
               "hours": 10,
+              "squares": 1,
               "completed_on": "@today-9d"
             }
           },
           {
             "key": "job-5",
             "values": {
-              "job_name": "Skylight install - Yoshida",
+              "job_name": "Fourplex: seamless gutters and fascia",
               "status": "Completed",
-              "customer": "custom-11",
-              "job_type": "Skylight install",
-              "priority": "Urgent",
-              "tech": "tm-4",
+              "customer": "custom-6",
+              "job_type": "Gutter and fascia",
+              "material": "3-tab asphalt",
+              "pitch": "Low (to 4/12)",
+              "priority": "Routine",
+              "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today-6d",
-              "quote": 2000,
-              "parts_cost": 1000,
-              "labor_cost": 430,
-              "hours": 9,
+              "quote": 2640,
+              "parts_cost": 890,
+              "labor_cost": 820,
+              "hours": 12,
               "completed_on": "@today-6d"
             }
           },
           {
             "key": "job-6",
             "values": {
-              "job_name": "Roof inspection - Tennant",
+              "job_name": "Clubhouse flat roof recoat",
               "status": "Completed",
-              "customer": "custom-4",
-              "job_type": "Roof inspection",
+              "customer": "custom-8",
+              "job_type": "Flat roof recoat",
+              "material": "TPO flat roof",
+              "pitch": "Flat",
               "priority": "Routine",
-              "tech": "tm-6",
+              "tech": "tm-4",
+              "crew": "Crew B",
               "scheduled_on": "@today-4d",
-              "quote": 295,
-              "parts_cost": 5,
-              "labor_cost": 70,
-              "hours": 1.5,
+              "quote": 8400,
+              "parts_cost": 2900,
+              "labor_cost": 2350,
+              "hours": 40,
+              "squares": 22,
               "completed_on": "@today-4d"
             }
           },
           {
             "key": "job-7",
             "values": {
-              "job_name": "Flat roof recoat - Grayson",
+              "job_name": "Wind-lifted shingles, back slope",
               "status": "Cancelled",
-              "customer": "custom-9",
-              "job_type": "Flat roof recoat",
+              "customer": "custom-10",
+              "job_type": "Roof repair",
+              "material": "3-tab asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
               "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today-8d",
-              "quote": 4025,
-              "parts_cost": 2095,
-              "labor_cost": 865,
-              "hours": 18
+              "quote": 650,
+              "parts_cost": 0,
+              "labor_cost": 0,
+              "hours": 0,
+              "squares": 1
             }
           },
           {
             "key": "job-8",
             "values": {
-              "job_name": "Chimney flashing repair - Delacroix",
+              "job_name": "Hail claim: waiting on supplement",
               "status": "On hold",
-              "customer": "custom-2",
-              "job_type": "Chimney flashing repair",
-              "priority": "Emergency",
+              "customer": "custom-7",
+              "job_type": "Storm damage patch",
+              "material": "Architectural asphalt",
+              "pitch": "Steep (8/12+)",
+              "priority": "Routine",
               "tech": "tm-4",
+              "crew": "Crew A",
               "scheduled_on": "@today-5d",
-              "quote": 790,
-              "parts_cost": 175,
-              "labor_cost": 190,
-              "hours": 4
+              "quote": 22400,
+              "parts_cost": 8900,
+              "labor_cost": 6600,
+              "hours": 120,
+              "squares": 34,
+              "claim_no": "HH-23-771902"
             }
           },
           {
             "key": "job-9",
             "values": {
-              "job_name": "Roof repair - Rosenthal",
+              "job_name": "Drip at the pipe boot again",
               "status": "Scheduled",
-              "customer": "custom-7",
+              "customer": "custom-1",
               "job_type": "Roof repair",
-              "priority": "Routine",
-              "tech": "tm-6",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
+              "priority": "Urgent",
+              "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today-2d",
-              "quote": 460,
-              "parts_cost": 115,
-              "labor_cost": 240,
-              "hours": 5
+              "quote": 0,
+              "parts_cost": 18,
+              "labor_cost": 120,
+              "hours": 2,
+              "squares": 0.2,
+              "callback": true
             }
           },
           {
             "key": "job-10",
             "values": {
-              "job_name": "Full roof replacement - Fairbairn",
+              "job_name": "Standing seam, lake cabin",
               "status": "In progress",
-              "customer": "custom-12",
+              "customer": "custom-9",
               "job_type": "Full roof replacement",
-              "priority": "Urgent",
-              "tech": "tm-3",
+              "material": "Standing seam metal",
+              "pitch": "Steep (8/12+)",
+              "priority": "Routine",
+              "tech": "tm-4",
+              "crew": "Crew B",
               "scheduled_on": "@mon",
-              "quote": 11935,
-              "parts_cost": 5970,
-              "labor_cost": 1920,
-              "hours": 40,
+              "quote": 27800,
+              "parts_cost": 12600,
+              "labor_cost": 7200,
+              "hours": 130,
+              "squares": 19,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-11",
             "values": {
-              "job_name": "Storm damage patch - Castellanos",
+              "job_name": "Rental duplex re-roof",
               "status": "In progress",
-              "customer": "custom-5",
-              "job_type": "Storm damage patch",
+              "customer": "custom-2",
+              "job_type": "Full roof replacement",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
-              "tech": "tm-4",
+              "tech": "tm-3",
+              "crew": "Crew A",
               "scheduled_on": "@tue",
-              "quote": 1640,
-              "parts_cost": 460,
-              "labor_cost": 290,
-              "hours": 6
+              "quote": 13900,
+              "parts_cost": 5900,
+              "labor_cost": 4100,
+              "hours": 80,
+              "squares": 24
             }
           },
           {
             "key": "job-12",
             "values": {
-              "job_name": "Gutter and fascia - Oyelaran",
+              "job_name": "Free inspection after the storm",
               "status": "Scheduled",
-              "customer": "custom-10",
-              "job_type": "Gutter and fascia",
+              "customer": "custom-11",
+              "job_type": "Roof inspection",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
-              "tech": "tm-6",
+              "tech": "tm-2",
+              "crew": "Repair crew",
               "scheduled_on": "@wed",
-              "quote": 1185,
-              "parts_cost": 535,
-              "labor_cost": 480,
-              "hours": 10,
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 60,
+              "hours": 1,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-13",
             "values": {
-              "job_name": "Skylight install - Kellerman",
+              "job_name": "HOA building C, gutters",
               "status": "Scheduled",
-              "customer": "custom-3",
-              "job_type": "Skylight install",
+              "customer": "custom-12",
+              "job_type": "Gutter and fascia",
+              "material": "Architectural asphalt",
+              "pitch": "Low (to 4/12)",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-4",
+              "crew": "Repair crew",
               "scheduled_on": "@thu",
-              "quote": 1940,
-              "parts_cost": 970,
-              "labor_cost": 430,
-              "hours": 9
+              "quote": 3900,
+              "parts_cost": 1350,
+              "labor_cost": 1150,
+              "hours": 16
             }
           },
           {
             "key": "job-14",
             "values": {
-              "job_name": "Roof inspection - Zielinski",
+              "job_name": "Adjuster meeting on the roof",
               "status": "Scheduled",
-              "customer": "custom-8",
-              "job_type": "Roof inspection",
-              "priority": "Routine",
-              "tech": "tm-4",
+              "customer": "custom-11",
+              "job_type": "Storm damage patch",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
+              "priority": "Urgent",
+              "tech": "tm-2",
+              "crew": "Crew B",
               "scheduled_on": "@fri",
-              "quote": 290,
-              "parts_cost": 5,
-              "labor_cost": 70,
-              "hours": 1.5,
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 60,
+              "hours": 1,
+              "squares": 30,
+              "claim_no": "PV-24-008817",
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-15",
             "values": {
-              "job_name": "Flat roof recoat - Vasquez",
+              "job_name": "Tarp over a tree strike",
               "status": "New request",
-              "customer": "custom-1",
-              "job_type": "Flat roof recoat",
+              "customer": "custom-5",
+              "job_type": "Storm damage patch",
+              "material": "Architectural asphalt",
+              "pitch": "Steep (8/12+)",
               "priority": "Emergency",
-              "tech": "tm-6",
+              "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@sat",
-              "quote": 3880,
-              "parts_cost": 2020,
-              "labor_cost": 865,
-              "hours": 18,
+              "quote": 590,
+              "parts_cost": 60,
+              "labor_cost": 280,
+              "hours": 3,
+              "squares": 2,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-16",
             "values": {
-              "job_name": "Chimney flashing repair - Jankowski",
+              "job_name": "Estimate: 3-tab to architectural",
               "status": "New request",
-              "customer": "custom-6",
-              "job_type": "Chimney flashing repair",
+              "customer": "custom-4",
+              "job_type": "Roof inspection",
+              "material": "3-tab asphalt",
+              "pitch": "Walkable (5-7/12)",
               "priority": "Routine",
-              "tech": "tm-3",
+              "tech": "tm-2",
+              "crew": "Repair crew",
               "scheduled_on": "@sun",
-              "quote": 760,
-              "parts_cost": 165,
-              "labor_cost": 190,
-              "hours": 4
+              "quote": 0,
+              "parts_cost": 0,
+              "labor_cost": 60,
+              "hours": 1,
+              "squares": 26
             }
           },
           {
             "key": "job-17",
             "values": {
-              "job_name": "Roof repair - Yoshida",
+              "job_name": "Garage roof: replace soft decking",
               "status": "Scheduled",
-              "customer": "custom-11",
+              "customer": "custom-6",
               "job_type": "Roof repair",
+              "material": "3-tab asphalt",
+              "pitch": "Low (to 4/12)",
               "priority": "Routine",
               "tech": "tm-4",
+              "crew": "Repair crew",
               "scheduled_on": "@tue+1w",
-              "quote": 420,
-              "parts_cost": 105,
-              "labor_cost": 240,
-              "hours": 5
+              "quote": 2350,
+              "parts_cost": 640,
+              "labor_cost": 780,
+              "hours": 9,
+              "squares": 4
             }
           },
           {
             "key": "job-18",
             "values": {
-              "job_name": "Full roof replacement - Tennant",
+              "job_name": "HOA building D, full replacement",
               "status": "New request",
-              "customer": "custom-4",
+              "customer": "custom-12",
               "job_type": "Full roof replacement",
+              "material": "Architectural asphalt",
+              "pitch": "Low (to 4/12)",
               "priority": "Routine",
-              "tech": "tm-6",
+              "tech": "tm-2",
+              "crew": "Crew A",
               "scheduled_on": "@thu+1w",
-              "quote": 11605,
-              "parts_cost": 5800,
-              "labor_cost": 1920,
-              "hours": 40
+              "quote": 23600,
+              "parts_cost": 9800,
+              "labor_cost": 6900,
+              "hours": 150,
+              "squares": 42
             }
           },
           {
             "key": "job-19",
             "values": {
-              "job_name": "Storm damage patch - Grayson",
+              "job_name": "Active leak over the bedroom",
               "status": "Scheduled",
-              "customer": "custom-9",
-              "job_type": "Storm damage patch",
-              "priority": "Routine",
+              "customer": "custom-3",
+              "job_type": "Roof repair",
+              "material": "Architectural asphalt",
+              "pitch": "Walkable (5-7/12)",
+              "priority": "Emergency",
               "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today",
-              "quote": 1580,
-              "parts_cost": 440,
-              "labor_cost": 290,
-              "hours": 6,
+              "quote": 540,
+              "parts_cost": 45,
+              "labor_cost": 240,
+              "hours": 3,
+              "squares": 0.5,
               "assigned_to": "@installer"
             }
           },
           {
             "key": "job-20",
             "values": {
-              "job_name": "Gutter and fascia - Delacroix",
+              "job_name": "Ridge vent and attic airflow",
               "status": "Scheduled",
-              "customer": "custom-2",
-              "job_type": "Gutter and fascia",
-              "priority": "Urgent",
+              "customer": "custom-7",
+              "job_type": "Roof repair",
+              "material": "Architectural asphalt",
+              "pitch": "Steep (8/12+)",
+              "priority": "Routine",
               "tech": "tm-4",
+              "crew": "Repair crew",
               "scheduled_on": "@today+2d",
-              "quote": 1125,
-              "parts_cost": 505,
-              "labor_cost": 480,
-              "hours": 10
+              "quote": 1180,
+              "parts_cost": 260,
+              "labor_cost": 420,
+              "hours": 6,
+              "squares": 1
             }
           },
           {
             "key": "job-21",
             "values": {
-              "job_name": "Skylight install - Rosenthal",
+              "job_name": "Annual roof check, office park",
               "status": "Scheduled",
-              "customer": "custom-7",
-              "job_type": "Skylight install",
+              "customer": "custom-8",
+              "job_type": "Roof inspection",
+              "material": "TPO flat roof",
+              "pitch": "Flat",
               "priority": "Routine",
-              "tech": "tm-6",
+              "tech": "tm-3",
+              "crew": "Repair crew",
               "scheduled_on": "@today+4d",
-              "quote": 1880,
-              "parts_cost": 940,
-              "labor_cost": 430,
-              "hours": 9
+              "quote": 350,
+              "parts_cost": 0,
+              "labor_cost": 120,
+              "hours": 2
             }
           }
         ],
@@ -1528,6 +1774,19 @@
               "supplier": "Missouri Valley Metals",
               "counted_on": "@today-21d"
             }
+          },
+          {
+            "key": "part-11",
+            "values": {
+              "part_name": "Roof harness and lanyard",
+              "category": "Safety",
+              "unit": "each",
+              "unit_cost": 145,
+              "on_hand": 7,
+              "reorder_at": 8,
+              "supplier": "Plains Safety Supply",
+              "counted_on": "@today-2d"
+            }
           }
         ]
       },
@@ -1708,77 +1967,117 @@
           {
             "key": "invoic-1",
             "values": {
-              "invoice_name": "INV-1040",
-              "status": "Overdue",
+              "invoice_name": "SR-5120",
+              "status": "Paid",
               "job": "job-1",
-              "customer": "custom-3",
-              "amount": 560.0,
-              "issued_on": "@today-21d",
-              "due_on": "@today-7d"
+              "customer": "custom-1",
+              "amount": 5600.0,
+              "issued_on": "@today-30d",
+              "due_on": "@today-23d",
+              "paid_on": "@today-27d",
+              "method": "Check"
             }
           },
           {
             "key": "invoic-2",
             "values": {
-              "invoice_name": "INV-1041",
-              "status": "Paid",
-              "job": "job-2",
-              "customer": "custom-8",
-              "amount": 14497.7,
-              "issued_on": "@today-16d",
-              "due_on": "@today-2d",
-              "paid_on": "@today-12d",
-              "method": "Check"
+              "invoice_name": "SR-5121",
+              "status": "Overdue",
+              "job": "job-1",
+              "customer": "custom-1",
+              "amount": 13450.0,
+              "issued_on": "@today-21d",
+              "due_on": "@today-7d"
             }
           },
           {
             "key": "invoic-3",
             "values": {
-              "invoice_name": "INV-1042",
+              "invoice_name": "SR-5122",
               "status": "Paid",
-              "job": "job-3",
-              "customer": "custom-1",
-              "amount": 2101.8,
-              "issued_on": "@today-12d",
-              "due_on": "@today+2d",
-              "paid_on": "@today-8d",
-              "method": "Bank transfer"
+              "job": "job-2",
+              "customer": "custom-3",
+              "amount": 9450.0,
+              "issued_on": "@today-16d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-9d",
+              "method": "Check"
             }
           },
           {
             "key": "invoic-4",
             "values": {
-              "invoice_name": "INV-1043",
+              "invoice_name": "SR-5123",
               "status": "Sent",
-              "job": "job-4",
-              "customer": "custom-6",
-              "amount": 1419.4,
-              "issued_on": "@today-9d",
-              "due_on": "@fri"
+              "job": "job-2",
+              "customer": "custom-3",
+              "amount": 9450.0,
+              "issued_on": "@today-5d",
+              "due_on": "@today+25d"
             }
           },
           {
             "key": "invoic-5",
             "values": {
-              "invoice_name": "INV-1044",
-              "status": "Sent",
-              "job": "job-5",
-              "customer": "custom-11",
-              "amount": 2360.0,
-              "issued_on": "@today-6d",
-              "due_on": "@today+4d"
+              "invoice_name": "SR-5124",
+              "status": "Paid",
+              "job": "job-3",
+              "customer": "custom-5",
+              "amount": 780.0,
+              "issued_on": "@today-12d",
+              "due_on": "@today+2d",
+              "paid_on": "@today-11d",
+              "method": "Card"
             }
           },
           {
             "key": "invoic-6",
             "values": {
-              "invoice_name": "INV-1045",
+              "invoice_name": "SR-5125",
+              "status": "Sent",
+              "job": "job-4",
+              "customer": "custom-9",
+              "amount": 3150.0,
+              "issued_on": "@today-9d",
+              "due_on": "@today"
+            }
+          },
+          {
+            "key": "invoic-7",
+            "values": {
+              "invoice_name": "SR-5126",
+              "status": "Overdue",
+              "job": "job-5",
+              "customer": "custom-6",
+              "amount": 2990.0,
+              "issued_on": "@today-6d",
+              "due_on": "@today-1d"
+            }
+          },
+          {
+            "key": "invoic-8",
+            "values": {
+              "invoice_name": "SR-5127",
               "status": "Draft",
               "job": "job-6",
-              "customer": "custom-4",
-              "amount": 390.8,
-              "issued_on": "@today-4d",
-              "due_on": "@today+12d"
+              "customer": "custom-8",
+              "amount": 4200.0,
+              "issued_on": "@today-3d",
+              "due_on": "@today+27d"
+            }
+          },
+          {
+            "key": "invoic-9",
+            "values": {
+              "invoice_name": "SR-5128",
+              "status": "Paid",
+              "job": "job-10",
+              "customer": "custom-9",
+              "amount": 9300.0,
+              "issued_on": "@today-9d",
+              "due_on": "@today-2d",
+              "paid_on": "@today-6d",
+              "method": "Bank transfer"
             }
           }
         ]
@@ -2254,7 +2553,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -2276,12 +2575,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "Track every roof from first call to final payment. Jobs move across the board, the crew foreman sees their own list under Mine, and Mark done closes the job after the final walk. Materials shows the yard stock; Invoices shows who has not paid."
+              "text": "Run the company from here. A lead becomes an inspection, the inspection becomes an estimate priced by the square, and a signed estimate becomes a crew day on the Roof jobs board. Insurance jobs carry the claim number. Deposits and final bills live in Invoices; sent and overdue both count in a customer's Awaiting payment."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -2678,6 +2983,278 @@
       ]
     },
     {
+      "key": "start-here",
+      "parent": "roofing-contractor-hq",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of how the company's work flows through this workspace. Share it with the estimator, the production manager and each foreman."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Customers",
+              "bold": true
+            },
+            {
+              "text": ": homeowners, landlords, HOAs and insurance customers, with roof age, insurance carrier, what they owe, and open jobs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Roof jobs",
+              "bold": true
+            },
+            {
+              "text": ": inspections, repairs, replacements and storm work, with squares, pitch, roof system, foreman and crew, claim number, price and margin."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Materials",
+              "bold": true
+            },
+            {
+              "text": ": shingles, underlayment, flashing, vents, fasteners and safety gear, and what needs ordering."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Invoices",
+              "bold": true
+            },
+            {
+              "text": ": deposits, insurance first checks, depreciation and final bills."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "A job from first call to paid"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The call comes in; add the customer and a Roof job as "
+            },
+            {
+              "text": "New request",
+              "bold": true
+            },
+            {
+              "text": ", work type Roof inspection."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The estimator inspects, measures and prices it. A signed estimate becomes a replacement or repair job, "
+            },
+            {
+              "text": "Scheduled",
+              "bold": true
+            },
+            {
+              "text": " with a crew. A foreman can press "
+            },
+            {
+              "text": "Assign to me",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Send the deposit invoice when it is signed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "On the day, the crew works the production checklist."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": " stamps the completion date. Send the final invoice that day."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Past-due invoices go to "
+            },
+            {
+              "text": "Overdue",
+              "bold": true
+            },
+            {
+              "text": "; the customer's Awaiting payment counts sent and overdue. "
+            },
+            {
+              "text": "Mark paid",
+              "bold": true
+            },
+            {
+              "text": " stamps the payment date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: Dashboard, today's crews, overdue invoices"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every afternoon: tomorrow's material drops and dumpsters"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Friday: count materials and safety gear"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: callbacks and thin margins"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Change roof systems, crews and work types to match your company, and delete the sample customers once a dozen of your own are in. Type in any cell or drag cards between columns; every total updates by itself."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Change orders and allowances"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Replacement estimates carry allowances, such as a number of decking sheets. When the crew finds more, the foreman photographs it and the office tells the homeowner before the work is done. The extra goes on the final invoice with the photos, which is why a final bill can be higher than the original quote. Keep the quote on the job as signed, so the margin compares what you sold with what it cost."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "key": "dashboard",
       "parent": "roofing-contractor-hq",
       "title": "Dashboard",
@@ -2936,6 +3513,130 @@
             ],
             "activeViewId": "view-l2"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Awaiting payment (sent and overdue)"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "invoice",
+              "view": "all_invoice"
+            },
+            "inline": true,
+            "title": "Invoices",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l3",
+                "name": "Awaiting payment",
+                "layout": "list",
+                "icon": "Table",
+                "anyOf": {
+                  "status": [
+                    "Sent",
+                    "Overdue"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l3"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Crew schedule, next 7 days"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Roof jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l4",
+                "name": "Next 7 days",
+                "layout": "list",
+                "icon": "Table",
+                "within": {
+                  "scheduled_on": {
+                    "relative": "next_days",
+                    "n": 7
+                  }
+                },
+                "anyOf": {
+                  "status": [
+                    "New request",
+                    "Scheduled",
+                    "In progress"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "view-l4"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Leak callbacks"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "job",
+              "view": "all_job"
+            },
+            "inline": true,
+            "title": "Roof jobs",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "view-l5",
+                "name": "Callbacks",
+                "layout": "list",
+                "icon": "Table",
+                "filters": {
+                  "callback": true
+                }
+              }
+            ],
+            "activeViewId": "view-l5"
+          }
         }
       ]
     },
@@ -2951,13 +3652,55 @@
           "type": "callout",
           "text": [
             {
-              "text": "Speed wins roofing leads. Send the estimate within two days of the inspection."
+              "text": "Roofs are sold on the roof, not on the phone. A careful inspection and a clear estimate win the job and protect your margin."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Booking the inspection"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the lead as a customer. Ask the age of the roof, any leaks inside, and whether there was a recent storm. If yes, ask whether they have already called their insurer."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Book it as a Roof job with work type "
+            },
+            {
+              "text": "Roof inspection",
+              "bold": true
+            },
+            {
+              "text": " and give it to the estimator."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask for gate codes, dogs, and whether someone will be home to see the attic."
+            }
+          ]
         },
         {
           "type": "heading",
@@ -2971,34 +3714,87 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Photograph every slope, vent, flashing point and any damage."
+              "text": "Photos of every slope, ridge, valley, penetration and gutter run, plus a wide shot of the house"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Measure the area in squares and record the pitch."
+              "text": "Count layers at an edge; two layers means a full tear-off"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Note the decking condition and anything hidden."
+              "text": "Walk the decking for soft spots and note where"
             }
-          ]
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Check flashing at chimneys, walls, skylights and pipe boots"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Look at ventilation: intake at the soffits, exhaust at the ridge"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "In the attic: daylight, stains, wet insulation, mold, bathroom fans venting into the attic"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Storm work: test squares on each slope, marked hits on soft metals and vents"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Back at the office"
+              "text": "Measuring"
             }
           ],
           "props": {
@@ -3006,26 +3802,142 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "text",
           "text": [
             {
-              "text": "Price materials from the yard list, then labor hours at the crew rate."
+              "text": "Measure each plane, add them, and enter the total in "
+            },
+            {
+              "text": "Squares",
+              "bold": true
+            },
+            {
+              "text": " (one square is 100 square feet). Add waste: about 10 percent on a simple gable, 15 percent or more on a cut-up hip roof. Set "
+            },
+            {
+              "text": "Pitch",
+              "bold": true
+            },
+            {
+              "text": ": steep roofs need more labor, safety gear and time, and you price them that way."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "heading",
           "text": [
             {
-              "text": "Add dumpster, permit and overhead lines."
+              "text": "Building the estimate"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Materials by the square for the chosen "
+            },
+            {
+              "text": "Roof system",
+              "bold": true
+            },
+            {
+              "text": ", plus underlayment, ice and water shield in valleys and eaves, drip edge, starter, ridge cap and vents."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send the estimate with photos and two options when it makes sense."
+              "text": "Tear-off and disposal by the square and by the layer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Decking replacement priced per sheet, with an allowance written on the estimate."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Labor by the square, adjusted for pitch and stories."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Permit, if your city requires one."
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter the quote, material cost, labor cost and hours. The "
+            },
+            {
+              "text": "Margin",
+              "bold": true
+            },
+            {
+              "text": " column should land between 30 and 40 percent on a replacement; under 20 shows as Thin."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Presenting it"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Show the homeowner the photos first, then the options: repair, replace with standard shingles, replace with a better system. Leave a written estimate with what is and is not included and a deposit amount. For insurance jobs, write the "
+            },
+            {
+              "text": "Claim number",
+              "bold": true
+            },
+            {
+              "text": " on the job and do not quote a price before the adjuster has scoped the loss."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After a hailstorm, the estimator inspects a 1999 roof on a two-story home: 31 squares, walkable pitch, hits on every slope and the box vents. She photographs test squares, the homeowner files the claim, and the job waits for the adjuster meeting. The adjuster approves a full replacement, and the job moves to Scheduled with Crew B."
             }
           ]
         }
@@ -3043,7 +3955,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A full replacement should finish in one to two days. Prepare the day before."
+              "text": "A replacement is a one or two day operation with a lot of moving parts. The crew that starts with a plan finishes on time, leaves a clean yard, and does not get a callback."
             }
           ],
           "background": "blue",
@@ -3066,7 +3978,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm delivery of shingles and the dumpster."
+              "text": "The production manager confirms the material drop: shingles, underlayment, flashing and vents on the driveway or the roof, not the lawn."
             }
           ]
         },
@@ -3074,7 +3986,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the forecast and move the job on rain."
+              "text": "Book the dumpster and confirm where it goes."
             }
           ]
         },
@@ -3082,7 +3994,15 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Text the customer the crew start time."
+              "text": "Call the homeowner: start time, noise, cars out of the driveway, pets inside, valuables off the attic shelves and walls."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Check the forecast. Do not tear off more than the crew can dry in that day."
             }
           ]
         },
@@ -3090,7 +4010,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "On the day"
+              "text": "Morning checklist"
             }
           ],
           "props": {
@@ -3098,26 +4018,215 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "todo",
           "text": [
             {
-              "text": "Tarp landscaping and protect the attic."
+              "text": "Harnesses, anchors and ladders inspected; roof anchors set before anyone works an edge"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tarps over landscaping, plywood against windows and AC units"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Magnetic sweeper on the truck"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Foreman walks the roof with the crew and points out soft decking and problem flashing"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "During tear-off and install"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Tear off one slope at a time; dry it in with underlayment before moving on."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Strip, deck check, underlayment, flashing, shingles, vents, cleanup."
+              "text": "Replace soft decking and write down how many sheets: it goes on the final invoice."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Foreman photographs each stage and enters hours."
+              "text": "Ice and water shield in valleys and at the eaves, drip edge on eaves before underlayment and on rakes after."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "New flashing at walls and chimneys; never reuse old step flashing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Nail pattern by the manufacturer's sheet, especially in high-wind areas."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the crew leaves"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every penetration flashed and sealed, every vent installed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Gutters cleaned of granules and nails"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Yard, driveway and beds swept with the magnet twice"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos of the finished roof from every side"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Foreman walks the job with the homeowner"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing it out"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Enter real material cost and hours on the job and press "
+            },
+            {
+              "text": "Mark done",
+              "bold": true
+            },
+            {
+              "text": ". Send the final invoice the same day. If the homeowner calls about a leak later, open a new job, tick "
+            },
+            {
+              "text": "Leak callback",
+              "bold": true
+            },
+            {
+              "text": ", and send the foreman who did the work. Review callbacks monthly: most come from flashing and pipe boots."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Crew A tears off a 24-square duplex roof. At noon the foreman finds six soft sheets over the back porch, photographs them and calls the office, which tells the owner before they are replaced. The roof is dried in by four, shingled by noon the next day, and the yard is swept twice. Six sheets are added to the final bill exactly as the estimate's allowance said."
             }
           ]
         }
@@ -3135,7 +4244,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "After a storm the phones ring for a week. Triage, not panic."
+              "text": "After a hailstorm or windstorm the phones ring for weeks. The companies that do well keep the same standards on the hundredth call as on the first, and keep claims organized."
             }
           ],
           "background": "blue",
@@ -3147,7 +4256,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Triage"
+              "text": "The first 48 hours"
             }
           ],
           "props": {
@@ -3158,7 +4267,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Emergency tarps for open roofs first."
+              "text": "Make a list of every customer in the storm path from Customers, starting with roofs older than 15 years."
             }
           ]
         },
@@ -3166,7 +4275,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Then leaks, then inspections."
+              "text": "Emergency calls first: active leaks and tree strikes. Tarp them the same day and mark the job "
+            },
+            {
+              "text": "Emergency",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3174,7 +4290,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark each call with a priority and a date."
+              "text": "Book free inspections in order. Do not promise a date you cannot keep."
             }
           ]
         },
@@ -3182,7 +4298,138 @@
           "type": "heading",
           "text": [
             {
-              "text": "Staying fair"
+              "text": "Working with insurance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The homeowner files the claim; you never sign for them or promise a payout."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Write the "
+            },
+            {
+              "text": "Claim number",
+              "bold": true
+            },
+            {
+              "text": " on the job and the carrier on the customer."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Be on the roof for the adjuster meeting with your photos and test squares."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If the approved scope misses items (drip edge, code upgrades, damaged vents), send a supplement with photos, and put the job "
+            },
+            {
+              "text": "On hold",
+              "bold": true
+            },
+            {
+              "text": " until it is answered."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Insurance jobs usually pay in two parts: the first check before work, the depreciation after the final invoice and photos. Bill them as two invoices."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Tarping checklist"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photos before the tarp goes on"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tarp wide enough to go over the ridge"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Battens screwed, not nailed through the tarp"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Interior: buckets, and furniture moved away from drips"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Customer told the tarp is temporary and how long it will hold"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Keeping control of the schedule"
             }
           ],
           "props": {
@@ -3193,7 +4440,61 @@
           "type": "text",
           "text": [
             {
-              "text": "Never promise insurance outcomes. Offer to meet the adjuster and share your photos. Keep prices the same as before the storm."
+              "text": "Use the job calendar and the crew field. Two replacement crews can do roughly eight to ten average roofs a week in good weather; book to that number, not to the number of calls. Put the next available date in writing for every customer."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch out for"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Out-of-town crews knocking doors in your area. Your advantage is being local and still here next year: say so."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Overloading the repair crew with inspections; give the estimator the inspections and keep the crew on tarps and repairs."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Cash flow: you buy materials before insurance pays. Keep an eye on Awaiting payment on the Dashboard."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A June hailstorm hits the north side of town. The office finds 40 customers in the path and calls the oldest roofs first. Over the next two weeks the estimator inspects 30 roofs, 18 claims are opened, and each job carries its claim number. Three supplements are sent; two are paid within a month."
             }
           ]
         }

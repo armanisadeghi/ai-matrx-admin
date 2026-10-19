@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0404",
-  "version": 2,
+  "version": 4,
   "title": "Veterinary Clinic",
-  "description": "Owners, pets, appointments and vaccine reminders for a small animal clinic.",
-  "forWho": "Veterinary clinics and animal hospitals",
+  "description": "For vets and clinic staff: appointments, pets, owners, vaccine reminders and phone triage.",
+  "forWho": "Veterinarians, vet techs and animal hospital front desks",
   "icon": {
     "emoji": "🐾"
   },
   "cover": {
-    "url": "gallery:photo-pine-forest",
+    "url": "gallery:solid-green",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
-    "veterinary",
+    "veterinarian",
+    "vet clinic",
+    "animal hospital",
+    "vaccines",
     "pets",
-    "appointments",
-    "vaccines"
+    "reminders"
   ],
   "spec": {
     "specVersion": 1,
@@ -128,6 +130,25 @@
             }
           },
           {
+            "key": "estimate",
+            "label": "Estimate given",
+            "parityType": "currency",
+            "unit": "USD",
+            "format": "currency",
+            "sensitivity": "confidential",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ],
+            "contextPolicy": "include"
+          },
+          {
             "key": "status",
             "label": "Status",
             "parityType": "status",
@@ -194,43 +215,46 @@
           {
             "key": "a01",
             "values": {
-              "appt_title": "Wellness exam - Biscuit",
+              "appt_title": "Annual exam and heartworm test",
               "pet": "pt01",
               "vet": "tm-aurelia",
               "when_at": "@today 09:00",
               "reason": "Wellness exam",
               "status": "In exam",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "estimate": 185
             }
           },
           {
             "key": "a02",
             "values": {
-              "appt_title": "Sick visit - Mochi",
+              "appt_title": "Vomiting since last night",
               "pet": "pt02",
               "vet": "tm-joaquin",
               "when_at": "@today 10:30",
               "reason": "Sick visit",
               "status": "Booked",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "estimate": 240
             }
           },
           {
             "key": "a03",
             "values": {
-              "appt_title": "Dental cleaning - Juniper",
+              "appt_title": "Dental cleaning with two extractions",
               "pet": "pt03",
               "vet": "tm-aurelia",
               "when_at": "@today 13:00",
               "reason": "Dental cleaning",
               "status": "Checked in",
-              "front_desk": "@installer"
+              "front_desk": "@installer",
+              "estimate": 890
             }
           },
           {
             "key": "a04",
             "values": {
-              "appt_title": "Vaccination - Atlas",
+              "appt_title": "Puppy booster and kennel cough",
               "pet": "pt05",
               "vet": "tm-joaquin",
               "when_at": "@mon+2d 11:00",
@@ -241,29 +265,31 @@
           {
             "key": "a05",
             "values": {
-              "appt_title": "Follow-up - Juniper",
+              "appt_title": "Dental recheck, sutures",
               "pet": "pt03",
               "vet": "tm-aurelia",
               "when_at": "@mon+4d 15:00",
               "reason": "Follow-up",
-              "status": "Booked"
+              "status": "Booked",
+              "estimate": 0
             }
           },
           {
             "key": "a06",
             "values": {
-              "appt_title": "Wellness exam - Pickles",
+              "appt_title": "Senior wellness with bloodwork",
               "pet": "pt04",
               "vet": "tm-joaquin",
               "when_at": "@today+4d 09:30",
               "reason": "Wellness exam",
-              "status": "Booked"
+              "status": "Booked",
+              "estimate": 310
             }
           },
           {
             "key": "a07",
             "values": {
-              "appt_title": "Wellness exam - Noodle",
+              "appt_title": "Yearly exam, weight check",
               "pet": "pt07",
               "vet": "tm-aurelia",
               "when_at": "@today+6d 14:00",
@@ -274,7 +300,7 @@
           {
             "key": "a08",
             "values": {
-              "appt_title": "Vaccination - Mochi (last)",
+              "appt_title": "Kitten series, final booster",
               "pet": "pt02",
               "vet": "tm-joaquin",
               "when_at": "@today-40d 10:00",
@@ -286,19 +312,20 @@
           {
             "key": "a09",
             "values": {
-              "appt_title": "Surgery - Willow",
+              "appt_title": "Mass removal, left flank",
               "pet": "pt06",
               "vet": "tm-aurelia",
               "when_at": "@today-12d 08:00",
               "reason": "Surgery",
               "status": "Completed",
-              "completed_on": "@today-12d"
+              "completed_on": "@today-12d",
+              "estimate": 1450
             }
           },
           {
             "key": "a10",
             "values": {
-              "appt_title": "Follow-up - Willow",
+              "appt_title": "Incision check, day 10",
               "pet": "pt06",
               "vet": "tm-joaquin",
               "when_at": "@today-3d 16:00",
@@ -310,7 +337,7 @@
           {
             "key": "a11",
             "values": {
-              "appt_title": "Sick visit - Noodle",
+              "appt_title": "Limping on right hind leg",
               "pet": "pt07",
               "vet": "tm-joaquin",
               "when_at": "@today-18d 12:00",
@@ -321,7 +348,7 @@
           {
             "key": "a12",
             "values": {
-              "appt_title": "Wellness exam - Atlas",
+              "appt_title": "First visit after adoption",
               "pet": "pt05",
               "vet": "tm-aurelia",
               "when_at": "@today-60d 10:00",
@@ -333,7 +360,7 @@
           {
             "key": "a13",
             "values": {
-              "appt_title": "Wellness exam - Biscuit (last)",
+              "appt_title": "Annual exam, last year",
               "pet": "pt01",
               "vet": "tm-aurelia",
               "when_at": "@today-365d 09:00",
@@ -345,7 +372,7 @@
           {
             "key": "a14",
             "values": {
-              "appt_title": "Vaccination - Ferris",
+              "appt_title": "Rabies booster, rescheduled",
               "pet": "pt08",
               "vet": "tm-joaquin",
               "when_at": "@today-200d 11:30",
@@ -534,6 +561,30 @@
             }
           },
           {
+            "key": "term",
+            "label": "Term",
+            "parityType": "select",
+            "choices": [
+              "1 year",
+              "3 years",
+              "6 months"
+            ],
+            "choiceColors": {
+              "1 year": "blue",
+              "3 years": "green",
+              "6 months": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lot",
+            "label": "Lot number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "given_on",
             "label": "Given",
             "parityType": "datetime",
@@ -610,113 +661,133 @@
           {
             "key": "x01",
             "values": {
-              "vax_title": "Rabies - Biscuit",
+              "vax_title": "Biscuit's rabies booster",
               "pet": "pt01",
               "vaccine": "Rabies",
               "given_on": "@today-350d",
               "due_on": "@today+15d",
               "status": "Reminder sent",
-              "owner": "@installer"
+              "owner": "@installer",
+              "term": "1 year",
+              "lot": "RB-77210"
             }
           },
           {
             "key": "x02",
             "values": {
-              "vax_title": "DHPP - Juniper",
+              "vax_title": "Juniper's distemper combo",
               "pet": "pt03",
               "vaccine": "DHPP",
               "given_on": "@today-380d",
               "due_on": "@today-15d",
               "status": "Lapsed",
-              "owner": "@installer"
+              "owner": "@installer",
+              "term": "1 year",
+              "lot": "DH-40881"
             }
           },
           {
             "key": "x03",
             "values": {
-              "vax_title": "Bordetella - Atlas",
+              "vax_title": "Atlas's kennel cough",
               "pet": "pt05",
               "vaccine": "Bordetella",
               "given_on": "@today-170d",
               "due_on": "@mon+3d",
-              "status": "Booked"
+              "status": "Booked",
+              "term": "6 months",
+              "lot": "BD-11954"
             }
           },
           {
             "key": "x04",
             "values": {
-              "vax_title": "FVRCP - Mochi",
+              "vax_title": "Mochi's feline combo",
               "pet": "pt02",
               "vaccine": "FVRCP",
               "given_on": "@today-40d",
               "due_on": "@today+325d",
-              "status": "Current"
+              "status": "Current",
+              "term": "3 years",
+              "lot": "FV-23016"
             }
           },
           {
             "key": "x05",
             "values": {
-              "vax_title": "Rabies - Willow",
+              "vax_title": "Willow's rabies, lapsed",
               "pet": "pt06",
               "vaccine": "Rabies",
               "given_on": "@today-390d",
               "due_on": "@today-25d",
-              "status": "Lapsed"
+              "status": "Lapsed",
+              "term": "1 year",
+              "lot": "RB-75532"
             }
           },
           {
             "key": "x06",
             "values": {
-              "vax_title": "Leptospirosis - Noodle",
+              "vax_title": "Noodle's lepto booster",
               "pet": "pt07",
               "vaccine": "Leptospirosis",
               "given_on": "@today-355d",
               "due_on": "@today+10d",
-              "status": "Reminder sent"
+              "status": "Reminder sent",
+              "term": "1 year",
+              "lot": "LP-60417"
             }
           },
           {
             "key": "x07",
             "values": {
-              "vax_title": "Rabies - Atlas",
+              "vax_title": "Atlas's first rabies",
               "pet": "pt05",
               "vaccine": "Rabies",
               "given_on": "@today-60d",
               "due_on": "@today+305d",
-              "status": "Current"
+              "status": "Current",
+              "term": "1 year",
+              "lot": "RB-78003"
             }
           },
           {
             "key": "x08",
             "values": {
-              "vax_title": "DHPP - Biscuit",
+              "vax_title": "Biscuit's distemper combo",
               "pet": "pt01",
               "vaccine": "DHPP",
               "given_on": "@today-100d",
               "due_on": "@today+265d",
-              "status": "Current"
+              "status": "Current",
+              "term": "3 years",
+              "lot": "DH-41267"
             }
           },
           {
             "key": "x09",
             "values": {
-              "vax_title": "Bordetella - Noodle",
+              "vax_title": "Noodle's kennel cough",
               "pet": "pt07",
               "vaccine": "Bordetella",
               "given_on": "@today-200d",
               "due_on": "@today+5d",
-              "status": "Reminder sent"
+              "status": "Reminder sent",
+              "term": "6 months",
+              "lot": "BD-12290"
             }
           },
           {
             "key": "x10",
             "values": {
-              "vax_title": "FVRCP - Willow",
+              "vax_title": "Willow's feline combo",
               "pet": "pt06",
               "vaccine": "FVRCP",
               "given_on": "@today-370d",
               "due_on": "@today-5d",
-              "status": "Reminder sent"
+              "status": "Reminder sent",
+              "term": "1 year",
+              "lot": "FV-22874"
             }
           }
         ],
@@ -885,6 +956,56 @@
             "contextPolicy": "include"
           },
           {
+            "key": "sex",
+            "label": "Sex",
+            "parityType": "select",
+            "choices": [
+              "Male, neutered",
+              "Female, spayed",
+              "Male, intact",
+              "Female, intact"
+            ],
+            "choiceColors": {
+              "Male, neutered": "blue",
+              "Female, spayed": "pink",
+              "Male, intact": "purple",
+              "Female, intact": "orange"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "weight",
+            "label": "Weight (lb)",
+            "parityType": "decimal",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 300
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "microchip",
+            "label": "Microchip",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "alerts",
+            "label": "Handling alerts",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "born_on",
             "label": "Born",
             "parityType": "datetime",
@@ -925,13 +1046,19 @@
           },
           {
             "key": "vax_count",
-            "label": "Vaccines on file",
+            "label": "Vaccines due or lapsed",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "vaccines",
             "pick": "vax_title",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": [
+                "Reminder sent",
+                "Lapsed"
+              ]
+            }
           },
           {
             "key": "book_btn",
@@ -973,7 +1100,11 @@
               "species": "Dog",
               "breed": "Beagle mix",
               "born_on": "@today-5y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Male, neutered",
+              "weight": 62.4,
+              "microchip": "985141002318764",
+              "alerts": "Pulls on leash at the scale"
             }
           },
           {
@@ -984,7 +1115,10 @@
               "species": "Cat",
               "breed": "Domestic shorthair",
               "born_on": "@today-3y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Female, spayed",
+              "weight": 9.8,
+              "microchip": "985141002319220"
             }
           },
           {
@@ -995,7 +1129,11 @@
               "species": "Dog",
               "breed": "Labrador retriever",
               "born_on": "@today-8y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Female, spayed",
+              "weight": 48.1,
+              "microchip": "985141002301553",
+              "alerts": "Senior, slow on stairs"
             }
           },
           {
@@ -1006,7 +1144,10 @@
               "species": "Rabbit",
               "breed": "Holland lop",
               "born_on": "@today-2y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Male, neutered",
+              "weight": 11.2,
+              "alerts": "Fear-free handling; towel wrap"
             }
           },
           {
@@ -1017,7 +1158,10 @@
               "species": "Dog",
               "breed": "German shepherd",
               "born_on": "@today-1y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Male, intact",
+              "weight": 38.5,
+              "microchip": "985141002327416"
             }
           },
           {
@@ -1028,7 +1172,11 @@
               "species": "Cat",
               "breed": "Maine coon",
               "born_on": "@today-11y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Female, spayed",
+              "weight": 10.6,
+              "microchip": "985141002288031",
+              "alerts": "Hisses at exam, gentle"
             }
           },
           {
@@ -1039,7 +1187,10 @@
               "species": "Dog",
               "breed": "Dachshund",
               "born_on": "@today-6y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Male, neutered",
+              "weight": 22.9,
+              "microchip": "985141002295877"
             }
           },
           {
@@ -1050,7 +1201,10 @@
               "species": "Bird",
               "breed": "Cockatiel",
               "born_on": "@today-4y",
-              "status": "Active"
+              "status": "Active",
+              "sex": "Male, neutered",
+              "weight": 13.4,
+              "alerts": "Muzzle for nail trims"
             }
           },
           {
@@ -1061,7 +1215,9 @@
               "species": "Cat",
               "breed": "Tabby",
               "born_on": "@today-14y",
-              "status": "Inactive"
+              "status": "Inactive",
+              "sex": "Female, spayed",
+              "weight": 7.1
             }
           }
         ],
@@ -1200,13 +1356,16 @@
           },
           {
             "key": "pet_count",
-            "label": "Pets",
+            "label": "Active pets",
             "parityType": "rollup",
             "sensitivity": "internal",
             "contextPolicy": "include",
             "via": "pets",
             "pick": "pet_name",
-            "agg": "count"
+            "agg": "count",
+            "filter": {
+              "status": "Active"
+            }
           },
           {
             "key": "pet_btn",
@@ -1808,7 +1967,7 @@
         "Tamarack Road"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -1819,7 +1978,7 @@
         "emoji": "🐾"
       },
       "cover": {
-        "url": "gallery:photo-pine-forest",
+        "url": "gallery:solid-green",
         "offsetY": 50
       },
       "settings": {
@@ -1883,6 +2042,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-daily"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2612,7 +2777,7 @@
     {
       "key": "sop-reminders",
       "parent": "veterinary-clinic",
-      "title": "Vaccine reminder routine",
+      "title": "Vaccine reminders",
       "icon": {
         "emoji": "💉"
       },
@@ -2621,7 +2786,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Reminders are how a clinic keeps animals protected and the schedule full."
+              "text": "Reminders bring pets back for the preventive care that keeps them healthy and keeps the clinic busy. Done well, they feel like care, not marketing."
             }
           ],
           "background": "blue",
@@ -2633,7 +2798,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Each Monday"
+              "text": "Every Monday (20 minutes)"
             }
           ],
           "props": {
@@ -2644,7 +2809,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Open Vaccines and look at the Next 30 days view."
+              "text": "Open "
+            },
+            {
+              "text": "Vaccines",
+              "bold": true
+            },
+            {
+              "text": " and filter for next due in the next 30 days with status Current."
             }
           ]
         },
@@ -2652,7 +2824,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Message each owner by their preferred method and mark the record Reminder sent."
+              "text": "Check the pet is still "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            },
+            {
+              "text": ". A pet set to Remembered never gets a reminder; a reminder for a pet who has died is one of the most painful mistakes a clinic can make."
             }
           ]
         },
@@ -2660,7 +2839,22 @@
           "type": "numbered",
           "text": [
             {
-              "text": "When they book, link the visit and mark the record Booked."
+              "text": "Send the reminder in the owner's preferred way (text, email or phone call). Group all the pet's due vaccines into one message, and all the owner's pets into one message where you can."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark reminded",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2668,7 +2862,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Lapsed records"
+              "text": "What to say"
             }
           ],
           "props": {
@@ -2676,20 +2870,243 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "quote",
           "text": [
             {
-              "text": "Call owners with Lapsed records and offer the next opening."
+              "text": "\"Hi Seraphina, Noodle is due for his lepto and kennel cough boosters next week. We have Thursday at 9:30 or Saturday at 11 with Dr. Joaquin. Reply with a time and we'll hold it.\""
             }
           ]
         },
         {
-          "type": "bulleted",
+          "type": "heading",
           "text": [
             {
-              "text": "Log the call on the record."
+              "text": "Second and third reminders"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Due date passes, not booked"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Second message, different channel"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks past due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Phone call from the front desk"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "30 days past due"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Status Lapsed; note on the pet; ask at the next visit for any reason"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the owner books"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark booked",
+              "bold": true
+            },
+            {
+              "text": " and add the appointment. If the pet is also due for an annual exam, book them together."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rabies is different"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rabies is required by law in most places, and boarding, grooming and daycare will ask for proof. Make rabies reminders the first priority and offer to email the certificate after the visit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Recording a vaccine"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Vaccine, term and "
+            },
+            {
+              "text": "lot number",
+              "bold": true
+            },
+            {
+              "text": " entered the same day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Next due date set from the term"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Certificate or tag given for rabies"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Any reaction noted on the pet's page and in "
+            },
+            {
+              "text": "Handling alerts",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Checklist for the month end"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "No vaccine has a next due date blank"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Lapsed vaccines all have at least two attempts noted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Inactive pets and Remembered pets have no open reminders"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
         }
       ]
     },
@@ -2698,9 +3115,72 @@
       "parent": "veterinary-clinic",
       "title": "Check-in and check-out",
       "icon": {
-        "emoji": "🧾"
+        "emoji": "🏥"
       },
       "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A calm check-in sets the tone for an anxious pet and owner. A clear check-out means the owner understands the bill and the next step."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Before the owner arrives"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Today's appointments reviewed for "
+            },
+            {
+              "text": "Handling alerts",
+              "bold": true
+            },
+            {
+              "text": " and anything the vet needs in the room (scale, muzzle, cat-friendly room)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Estimates prepared for planned procedures"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Records requested from the previous clinic for new patients"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
         {
           "type": "heading",
           "text": [
@@ -2716,7 +3196,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Greet the owner and confirm the pet's name and reason."
+              "text": "Greet the owner and the pet by name."
             }
           ]
         },
@@ -2724,7 +3204,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Check in so the vet sees who is waiting."
+              "text": "Confirm phone, email and preferred contact."
             }
           ]
         },
@@ -2732,7 +3212,79 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Confirm phone number and preferred reminders."
+              "text": "Weigh the pet and update "
+            },
+            {
+              "text": "Weight (lb)",
+              "bold": true
+            },
+            {
+              "text": "; a change of more than ten percent goes to the vet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Ask the reason for the visit in the owner's words and any changes since the last visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": ". Dogs and cats wait apart where you can."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Estimates"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give a written estimate before any procedure or diagnostic work over a set amount. Record it in "
+            },
+            {
+              "text": "Estimate given",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give a range, not a single number, for surgery and dentals; extractions are often found under anesthesia."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The owner signs the estimate and the consent for anesthesia before drop-off."
             }
           ]
         },
@@ -2751,7 +3303,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Mark the visit Completed."
+              "text": "The tech or vet explains the findings and home care, with written instructions."
             }
           ]
         },
@@ -2759,7 +3311,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Book the follow-up or next wellness exam before the owner leaves."
+              "text": "Go through the invoice line by line against the estimate."
             }
           ]
         },
@@ -2767,7 +3319,96 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add any vaccines given under Vaccines with the next due date."
+              "text": "Book the next visit: rechecks, suture removal, the next vaccine or the annual exam."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Press "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Surgical and dental drop-offs"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fasted since the night before (confirm the time of the last meal)"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Consent and estimate signed; a phone number where the owner can be reached all day"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Pick-up time agreed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "After surgery: a call to the owner when the pet is awake"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Juniper's dental estimate was 890 dollars for a cleaning with two likely extractions. The owner signed the range and the anesthesia consent at drop-off; the vet called at 11:40 to say she was awake, and her recheck was booked for next week."
             }
           ]
         }
@@ -2778,14 +3419,14 @@
       "parent": "veterinary-clinic",
       "title": "Phone triage for sick pets",
       "icon": {
-        "emoji": "📞"
+        "emoji": "☎️"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A short, consistent script keeps emergencies from waiting. Decisions on care belong to the vet."
+              "text": "The front desk is not diagnosing. The job is to decide quickly whether a pet needs to be seen now, today, or can wait for a regular appointment, and to write down what the owner said."
             }
           ],
           "background": "blue",
@@ -2797,7 +3438,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "What to collect"
+              "text": "Come in now or go to emergency"
             }
           ],
           "props": {
@@ -2805,10 +3446,10 @@
           }
         },
         {
-          "type": "bulleted",
+          "type": "text",
           "text": [
             {
-              "text": "Pet name, species, age and owner's phone."
+              "text": "If the clinic cannot see them within minutes, give the address of the nearest emergency hospital."
             }
           ]
         },
@@ -2816,7 +3457,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "What is happening and for how long."
+              "text": "Trouble breathing, blue or very pale gums"
             }
           ]
         },
@@ -2824,7 +3465,47 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Whether the pet is eating, drinking and moving as usual."
+              "text": "Collapse, seizures, or unable to stand"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Swollen, hard belly with retching and nothing coming up (especially large dogs)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Known poisoning: chocolate, xylitol, antifreeze, rat bait, lilies for cats, human medication"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Hit by a car or a fall, even if the pet seems fine"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Male cat straining in the litter box and producing nothing"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Heavy bleeding that does not stop with pressure"
             }
           ]
         },
@@ -2832,7 +3513,93 @@
           "type": "heading",
           "text": [
             {
-              "text": "Routing"
+              "text": "Seen today"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vomiting or diarrhea more than three times, or with blood"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Not eating for more than a day (cats) or two days (dogs)"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Limping without putting weight on the leg"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Eye injury or squinting"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Wound or bite"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Can wait for the next appointment"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A lump that has been there for weeks and is not changing"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Mild itching or ear scratching without pain"
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Bad breath or tartar"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Questions to ask on every sick call"
             }
           ],
           "props": {
@@ -2843,7 +3610,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "If the owner describes an emergency, put them through to the vet on duty at once."
+              "text": "What is the pet doing right now?"
             }
           ]
         },
@@ -2851,7 +3618,85 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Otherwise book the earliest Sick visit and note the call on the appointment."
+              "text": "When did it start and is it getting worse?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Eating, drinking, urinating, passing stool?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Any chance they ate something they should not?"
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Age, weight and existing conditions?"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Write the answers on the appointment page so the vet reads them before walking in."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Mochi's owner called: vomiting four times since last night, still drinking. That is \"seen today\", so she was booked at 10:30 with Dr. Joaquin and told to come straight in if Mochi stopped drinking."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Never"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never suggest a human medicine to give at home."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Never say \"it is probably nothing\"."
             }
           ]
         }
@@ -2862,14 +3707,26 @@
       "parent": "veterinary-clinic",
       "title": "Opening and closing",
       "icon": {
-        "emoji": "✅"
+        "emoji": "☀️"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A short routine at each end of the day keeps patients safe and the next day ready."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Open"
+              "text": "Opening"
             }
           ],
           "props": {
@@ -2880,7 +3737,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Review today's Appointments"
+              "text": "Hospitalized patients checked and their overnight notes read"
             }
           ],
           "props": {
@@ -2891,7 +3748,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Print the schedule for exam rooms"
+              "text": "Phones taken off the answering service; messages returned in order of urgency"
             }
           ],
           "props": {
@@ -2902,7 +3759,29 @@
           "type": "todo",
           "text": [
             {
-              "text": "Check Vaccines marked Lapsed"
+              "text": "Today's appointments reviewed: alerts, estimates, surgical patients fasted"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Exam rooms cleaned and stocked: muzzles, towels, treats, thermometers, gloves"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Fridge temperature logged for vaccines (2 to 8 degrees Celsius)"
             }
           ],
           "props": {
@@ -2913,7 +3792,54 @@
           "type": "heading",
           "text": [
             {
-              "text": "Close"
+              "text": "Through the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " on arrival, weights recorded."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Sick calls triaged using the triage page."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Surgical owners called when their pet wakes up."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every completed visit has the next appointment or a reminder date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Closing"
             }
           ],
           "props": {
@@ -2924,7 +3850,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Mark every visit Completed or No-show"
+              "text": "Every appointment completed, cancelled or marked no-show"
             }
           ],
           "props": {
@@ -2935,7 +3861,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Book follow-ups before the owner leaves"
+              "text": "No-shows called with a new time"
             }
           ],
           "props": {
@@ -2946,12 +3872,521 @@
           "type": "todo",
           "text": [
             {
-              "text": "Return phone messages"
+              "text": "Vaccines given today recorded with lot numbers and next due dates"
             }
           ],
           "props": {
             "checked": false
           }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Tomorrow's appointments confirmed by text or call"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Hospitalized patients handed over with written instructions"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Controlled drug log balanced and signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Answering service on with the emergency hospital's number"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "When the day goes sideways"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "An emergency walks in: the front desk tells waiting owners plainly that a critical patient arrived and offers anyone who cannot wait a new time the same week."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "A vet is out sick: call the day's routine visits first (wellness and vaccines move easily), keep sick visits and rechecks, and ask the remaining vet to take a longer list with a tech doing weights and histories."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "The system or phones are down: keep a paper list of arrivals and calls, then enter it the same afternoon so reminders and estimates are not lost."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vaccine reminders (Monday)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Lapsed vaccine calls (Friday)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Stock check on vaccines and preventives; nothing close to expiry left at the back."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "At close, the front desk notices Atlas's kennel cough booster is due on Wednesday and he is booked; Pickles is due for his senior wellness on Friday and is not confirmed, so he goes on the morning call list."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "veterinary-clinic",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "The front desk and reminder system of a small animal clinic: who is coming in today, which pets are due or overdue for vaccines, and the owners behind them. Medical records stay in your practice software; this is where the day is run."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments",
+              "bold": true
+            },
+            {
+              "text": ": each visit with the pet, vet, reason, status and the estimate given to the owner."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pets",
+              "bold": true
+            },
+            {
+              "text": ": species, breed, sex and whether altered, weight, microchip and handling alerts the team should know before walking into the room."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Owners",
+              "bold": true
+            },
+            {
+              "text": ": contact details and how each owner prefers to hear from you."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vaccines",
+              "bold": true
+            },
+            {
+              "text": ": every vaccine given, its term (six months, one year, three years), lot number and the next due date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "How the reminder columns work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Column"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Shows"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Vaccines due or lapsed (on a pet)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Vaccines with a reminder sent or already lapsed"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Active pets (on an owner)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pets still under your care"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Visits completed (on a pet)"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Completed appointments"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Replace the sample vets and techs with your own team."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter owners and pets for the next two weeks of appointments first; the rest can come in as they visit."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the last vaccine of each type for those pets with its term. The next due date is the date given plus the term."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add "
+            },
+            {
+              "text": "Handling alerts",
+              "bold": true
+            },
+            {
+              "text": " for any pet that needs a muzzle, a towel wrap, a quiet room or a sedative before visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every morning",
+              "bold": true
+            },
+            {
+              "text": ": Today view; alerts and weights checked before each room."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every Monday",
+              "bold": true
+            },
+            {
+              "text": ": Vaccines due in the next 30 days get a reminder in the owner's preferred way."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every Friday",
+              "bold": true
+            },
+            {
+              "text": ": Lapsed vaccines get a second reminder or a call."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Monthly",
+              "bold": true
+            },
+            {
+              "text": ": pets with no visit in 18 months are reviewed; pets who have passed are set to "
+            },
+            {
+              "text": "Remembered",
+              "bold": true
+            },
+            {
+              "text": " so no reminder ever goes out for them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments: "
+            },
+            {
+              "text": "Check in",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Vaccines: "
+            },
+            {
+              "text": "Mark reminded",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark booked",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Pets: "
+            },
+            {
+              "text": "Book visit",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Log vaccine",
+              "bold": true
+            },
+            {
+              "text": ". Owners: "
+            },
+            {
+              "text": "Add pet",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Willow's rabies lapsed 25 days ago and her feline combo five days ago. Her owner prefers texts, so the reminder goes by text today, with two appointment times this week."
+            }
+          ]
         }
       ]
     }

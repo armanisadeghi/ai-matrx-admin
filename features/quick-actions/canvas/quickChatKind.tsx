@@ -24,6 +24,8 @@ export { QUICK_CHAT_KIND, freshQuickChatData };
 export interface QuickChatTabData {
   conversationId: string | null;
   agentId: string | null;
+  /** The mandate the conversation runs through — a page guide's tab keeps following the page after a reload. */
+  mandateKey: string | null;
   /** The conversation history column is open. */
   history: boolean;
   /** Bumped by the header's New chat button. */
@@ -36,6 +38,7 @@ export function readQuickChatData(data: CanvasJson | undefined | null): QuickCha
   return {
     conversationId: canvasText(data, "conversationId"),
     agentId: canvasText(data, "agentId"),
+    mandateKey: canvasText(data, "mandateKey"),
     history: record.history === true,
     newChat: typeof record.newChat === "number" ? record.newChat : 0,
   };
@@ -45,13 +48,20 @@ export function readQuickChatData(data: CanvasJson | undefined | null): QuickCha
 export function patchQuickChatData(
   canvas: CanvasController,
   itemId: CanvasItemId,
-  patch: { conversationId?: string | null; agentId?: string | null; history?: boolean; newChat?: number },
+  patch: {
+    conversationId?: string | null;
+    agentId?: string | null;
+    mandateKey?: string | null;
+    history?: boolean;
+    newChat?: number;
+  },
 ) {
   const current = readQuickChatData(canvas.getState().items[itemId]?.data);
   const next = { ...current, ...patch };
   if (
     current.conversationId === next.conversationId &&
     current.agentId === next.agentId &&
+    current.mandateKey === next.mandateKey &&
     current.history === next.history &&
     current.newChat === next.newChat
   ) {

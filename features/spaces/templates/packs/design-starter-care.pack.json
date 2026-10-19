@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0497",
-  "version": 2,
+  "version": 3,
   "title": "Design system — Care",
   "description": "Calm lagoon blue, warm peach, 17px text and 44px targets, accessible by default.",
   "forWho": "Healthcare, clinics, therapy, wellness and care services",
@@ -1268,7 +1268,7 @@
         "Larkspur Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {

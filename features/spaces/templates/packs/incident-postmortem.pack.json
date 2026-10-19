@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0109",
-  "version": 7,
+  "version": 8,
   "title": "Incident Postmortems",
   "description": "Engineering and ops teams: log incidents, write blameless postmortems, track the fixes.",
   "forWho": "Engineering and operations teams",
@@ -1502,7 +1502,7 @@
         "Cobalt Ridge Drive"
       ]
     },
-    "version": 7
+    "version": 8
   },
   "pages": [
     {

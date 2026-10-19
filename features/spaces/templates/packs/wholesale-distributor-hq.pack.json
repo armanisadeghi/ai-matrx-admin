@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0518",
-  "version": 2,
+  "version": 3,
   "title": "Wholesale Distributor HQ",
   "description": "Run wholesale accounts, sales orders, stock and supplier purchasing in one workspace.",
   "forWho": "Small wholesale distributors and suppliers",
@@ -1965,7 +1965,7 @@
         "Warehouse Road"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {

@@ -1,10 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0201",
-  "formerSlugs": [
-    "spaces-task-manager"
-  ],
-  "version": 5,
+  "version": 6,
   "title": "Personal To-Do List",
   "description": "Anyone with a long to-do list: capture tasks, sort by priority, use smart lists.",
   "forWho": "Anyone with a long to-do list",
@@ -984,7 +981,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 6
   },
   "pages": [
     {
@@ -1788,5 +1785,8 @@
         }
       ]
     }
+  ],
+  "formerSlugs": [
+    "spaces-task-manager"
   ]
 }

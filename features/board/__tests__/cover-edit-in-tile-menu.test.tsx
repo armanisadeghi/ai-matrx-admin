@@ -7,11 +7,12 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { COVER_ITEMS, coverSource } from "../items/cover-items";
 
-jest.mock("@ai-matrx/chat/ui/markdown-stream/MarkdownStream", () => ({
-  __esModule: true,
-  default: ({ content }: { content: string }) => <div>{content}</div>,
+// The cover's prose is the board's one prose renderer (needs a live board viewport); this test is about the menu.
+jest.mock("../tiles/MarkdownTileBody", () => ({ MarkdownTileBody: ({ text }: { text: string }) => <div>{text}</div> }));
+jest.mock("@ai-matrx/records-ui/html-frame", () => ({
+  HtmlSampleFrame: () => <div data-hero="" />,
+  TokenScope: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-jest.mock("@ai-matrx/records-ui/html-frame", () => ({ HtmlSampleFrame: () => <div data-hero="" /> }));
 jest.mock("@/components/official/ProTextarea", () => ({
   ProTextarea: (p: { "aria-label": string; value: string }) => <textarea aria-label={p["aria-label"]} value={p.value} readOnly />,
 }));

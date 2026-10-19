@@ -703,3 +703,5 @@ operation was aborted."`) instead of throwing, so it took the
   listeners; added the sidebar Administration entry (desktop + mobile).
 - 2026-06-26 — Initial build: Supabase capture proxy + module store + admin
   window + floating badge + Copy-for-AI.
+
+**Badge = list (L32).** The sidebar, header and floating badges count the red tier (orange-only is a dot). The inspector opens on the tier the badge is counting (`badgeTierFor` in `lib/diagnostics/errorInspectorView.ts`), and its title count is the listed rows. Guard: `__tests__/badge-count-equals-list.test.tsx`.

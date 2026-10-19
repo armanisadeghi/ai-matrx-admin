@@ -1,23 +1,25 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0403",
-  "version": 2,
+  "version": 4,
   "title": "Med Spa",
-  "description": "Clients, appointments, memberships with credits and inventory for a med spa.",
-  "forWho": "Medical spas and aesthetic clinics",
+  "description": "For med spas and aesthetic nurses: bookings, consents, memberships, units and lots.",
+  "forWho": "Med spa owners, injectors and aesthetic clinics",
   "icon": {
-    "emoji": "💆"
+    "emoji": "💉"
   },
   "cover": {
-    "url": "gallery:photo-lavender-dusk",
+    "url": "gallery:gradient-peach",
     "offsetY": 50
   },
   "category": "healthcare",
   "tags": [
     "med spa",
+    "aesthetics",
+    "injector",
     "memberships",
-    "appointments",
-    "clients"
+    "laser",
+    "skincare"
   ],
   "spec": {
     "specVersion": 1,
@@ -124,6 +126,8 @@
               "Laser hair removal",
               "Microneedling",
               "Injectables consult",
+              "Neurotoxin",
+              "Dermal filler",
               "Body contouring",
               "Chemical peel"
             ],
@@ -133,8 +137,41 @@
               "Microneedling": "amber",
               "Injectables consult": "violet",
               "Body contouring": "teal",
-              "Chemical peel": "red"
+              "Chemical peel": "red",
+              "Neurotoxin": "purple",
+              "Dermal filler": "pink"
             }
+          },
+          {
+            "key": "units",
+            "label": "Units / syringes",
+            "parityType": "decimal",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 200
+              }
+            ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "lot",
+            "label": "Product lot",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "photos",
+            "label": "Before photos taken",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
           },
           {
             "key": "price",
@@ -222,7 +259,7 @@
           {
             "key": "a01",
             "values": {
-              "appt_title": "Facial - Ashgrove",
+              "appt_title": "Hydrating facial, monthly credit",
               "client": "c01",
               "membership": "m01",
               "provider": "tm-darius",
@@ -230,26 +267,28 @@
               "service": "Facial",
               "price": 165,
               "status": "In room",
-              "concierge": "@installer"
+              "concierge": "@installer",
+              "photos": true
             }
           },
           {
             "key": "a02",
             "values": {
-              "appt_title": "Microneedling - Okoro",
+              "appt_title": "Microneedling, session 2 of 3",
               "client": "c03",
               "provider": "tm-darius",
               "when_at": "@today 11:00",
               "service": "Microneedling",
               "price": 320,
               "status": "Confirmed",
-              "concierge": "@installer"
+              "concierge": "@installer",
+              "photos": true
             }
           },
           {
             "key": "a03",
             "values": {
-              "appt_title": "Injectables consult - Castellano",
+              "appt_title": "First injectables consult and exam",
               "client": "c06",
               "provider": "tm-solveig",
               "when_at": "@today 15:00",
@@ -262,7 +301,7 @@
           {
             "key": "a04",
             "values": {
-              "appt_title": "Chemical peel - Tanaka-Lowe",
+              "appt_title": "Medium-depth peel, quarterly credit",
               "client": "c04",
               "membership": "m02",
               "provider": "tm-darius",
@@ -275,7 +314,7 @@
           {
             "key": "a05",
             "values": {
-              "appt_title": "Laser session - Halvorsen",
+              "appt_title": "Underarm laser, session 3 of 6",
               "client": "c07",
               "provider": "tm-solveig",
               "when_at": "@mon+4d 13:30",
@@ -287,7 +326,7 @@
           {
             "key": "a06",
             "values": {
-              "appt_title": "Facial - Adekunle",
+              "appt_title": "Signature facial before an event",
               "client": "c08",
               "membership": "m03",
               "provider": "tm-darius",
@@ -300,7 +339,7 @@
           {
             "key": "a07",
             "values": {
-              "appt_title": "Facial - Ashgrove (last)",
+              "appt_title": "Hydrating facial with LED",
               "client": "c01",
               "membership": "m01",
               "provider": "tm-darius",
@@ -308,26 +347,28 @@
               "service": "Facial",
               "price": 165,
               "status": "Completed",
-              "completed_on": "@today-30d"
+              "completed_on": "@today-30d",
+              "photos": true
             }
           },
           {
             "key": "a08",
             "values": {
-              "appt_title": "Microneedling - Okoro (last)",
+              "appt_title": "Microneedling, session 1 of 3",
               "client": "c03",
               "provider": "tm-darius",
               "when_at": "@today-45d 11:00",
               "service": "Microneedling",
               "price": 320,
               "status": "Completed",
-              "completed_on": "@today-45d"
+              "completed_on": "@today-45d",
+              "photos": true
             }
           },
           {
             "key": "a09",
             "values": {
-              "appt_title": "Body contouring - Adekunle",
+              "appt_title": "Abdomen contouring, treatment 2",
               "client": "c08",
               "membership": "m03",
               "provider": "tm-solveig",
@@ -335,13 +376,14 @@
               "service": "Body contouring",
               "price": 480,
               "status": "Completed",
-              "completed_on": "@today-14d"
+              "completed_on": "@today-14d",
+              "photos": true
             }
           },
           {
             "key": "a10",
             "values": {
-              "appt_title": "Laser session - Halvorsen (first)",
+              "appt_title": "Underarm laser, session 2 of 6",
               "client": "c07",
               "provider": "tm-solveig",
               "when_at": "@today-28d 13:30",
@@ -354,7 +396,7 @@
           {
             "key": "a11",
             "values": {
-              "appt_title": "Facial - Marchand",
+              "appt_title": "Brightening facial",
               "client": "c05",
               "provider": "tm-darius",
               "when_at": "@today-120d 10:00",
@@ -367,7 +409,7 @@
           {
             "key": "a12",
             "values": {
-              "appt_title": "Chemical peel - Tanaka-Lowe (last)",
+              "appt_title": "Lactic peel, first of the series",
               "client": "c04",
               "membership": "m02",
               "provider": "tm-darius",
@@ -381,21 +423,24 @@
           {
             "key": "a13",
             "values": {
-              "appt_title": "Facial - Adekunle (last)",
+              "appt_title": "Neurotoxin, forehead and frown lines",
               "client": "c08",
               "membership": "m03",
               "provider": "tm-darius",
               "when_at": "@today-40d 12:00",
-              "service": "Facial",
-              "price": 165,
+              "service": "Neurotoxin",
+              "price": 416,
               "status": "Completed",
-              "completed_on": "@today-40d"
+              "completed_on": "@today-40d",
+              "units": 32,
+              "lot": "NT-24C118",
+              "photos": true
             }
           },
           {
             "key": "a14",
             "values": {
-              "appt_title": "Facial - Okoro",
+              "appt_title": "Express facial, missed",
               "client": "c03",
               "provider": "tm-darius",
               "when_at": "@today-8d 16:00",
@@ -623,6 +668,45 @@
             "relationMax": 1
           },
           {
+            "key": "consent_on",
+            "label": "Consent signed",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "gfe_until",
+            "label": "Medical clearance until",
+            "parityType": "datetime",
+            "format": "date",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "skin_type",
+            "label": "Skin type (I-VI)",
+            "parityType": "select",
+            "choices": [
+              "I",
+              "II",
+              "III",
+              "IV",
+              "V",
+              "VI"
+            ],
+            "choiceColors": {
+              "I": "gray",
+              "II": "yellow",
+              "III": "orange",
+              "IV": "brown",
+              "V": "purple",
+              "VI": "blue"
+            },
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "visits",
             "label": "Visits completed",
             "parityType": "rollup",
@@ -647,6 +731,22 @@
             "filter": {
               "status": "Completed"
             }
+          },
+          {
+            "key": "booked",
+            "label": "Booked ahead",
+            "parityType": "rollup",
+            "via": "appointments",
+            "pick": "price",
+            "agg": "sum",
+            "filter": {
+              "status": [
+                "Booked",
+                "Confirmed"
+              ]
+            },
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
           },
           {
             "key": "book_btn",
@@ -688,7 +788,10 @@
               "phone": "(305) 555-0141",
               "email": "philomena.a@mailbox-demo.net",
               "heard": "Friend referral",
-              "provider": "tm-solveig"
+              "provider": "tm-solveig",
+              "consent_on": "@today-200d",
+              "gfe_until": "@today+165d",
+              "skin_type": "II"
             }
           },
           {
@@ -699,7 +802,10 @@
               "phone": "(305) 555-0142",
               "email": "dominic.v@mailbox-demo.net",
               "heard": "Instagram",
-              "provider": "tm-darius"
+              "provider": "tm-darius",
+              "consent_on": "@today-400d",
+              "gfe_until": "@today-35d",
+              "skin_type": "III"
             }
           },
           {
@@ -710,7 +816,10 @@
               "phone": "(305) 555-0143",
               "email": "anneliese.o@mailbox-demo.net",
               "heard": "Google search",
-              "provider": "tm-darius"
+              "provider": "tm-darius",
+              "consent_on": "@today-45d",
+              "gfe_until": "@today+320d",
+              "skin_type": "IV"
             }
           },
           {
@@ -721,7 +830,10 @@
               "phone": "(305) 555-0144",
               "email": "bea.tl@mailbox-demo.net",
               "heard": "Event",
-              "provider": "tm-solveig"
+              "provider": "tm-solveig",
+              "consent_on": "@today-150d",
+              "gfe_until": "@today+215d",
+              "skin_type": "I"
             }
           },
           {
@@ -732,7 +844,10 @@
               "phone": "(305) 555-0145",
               "email": "lucien.m@mailbox-demo.net",
               "heard": "Walk-in",
-              "provider": "tm-darius"
+              "provider": "tm-darius",
+              "consent_on": "@today-500d",
+              "gfe_until": "@today-135d",
+              "skin_type": "III"
             }
           },
           {
@@ -743,7 +858,8 @@
               "phone": "(305) 555-0146",
               "email": "ximena.c@mailbox-demo.net",
               "heard": "Instagram",
-              "provider": "tm-solveig"
+              "provider": "tm-solveig",
+              "skin_type": "V"
             }
           },
           {
@@ -754,7 +870,10 @@
               "phone": "(305) 555-0147",
               "email": "rod.h@mailbox-demo.net",
               "heard": "Friend referral",
-              "provider": "tm-darius"
+              "provider": "tm-darius",
+              "consent_on": "@today-28d",
+              "gfe_until": "@today+337d",
+              "skin_type": "VI"
             }
           },
           {
@@ -765,7 +884,10 @@
               "phone": "(305) 555-0148",
               "email": "temi.a@mailbox-demo.net",
               "heard": "Instagram",
-              "provider": "tm-solveig"
+              "provider": "tm-solveig",
+              "consent_on": "@today-300d",
+              "gfe_until": "@today+65d",
+              "skin_type": "IV"
             }
           }
         ],
@@ -860,6 +982,12 @@
               ]
             }
           }
+        ],
+        "before": [
+          [
+            "consent_on",
+            "gfe_until"
+          ]
         ]
       },
       {
@@ -1015,7 +1143,7 @@
           {
             "key": "m01",
             "values": {
-              "member_title": "Glow monthly - Ashgrove",
+              "member_title": "Glow monthly, Philomena",
               "client": "c01",
               "plan": "Glow monthly",
               "monthly_fee": 149,
@@ -1027,7 +1155,7 @@
           {
             "key": "m02",
             "values": {
-              "member_title": "Skin reset quarterly - Tanaka-Lowe",
+              "member_title": "Skin reset, Beatrix",
               "client": "c04",
               "plan": "Skin reset quarterly",
               "monthly_fee": 89,
@@ -1039,7 +1167,7 @@
           {
             "key": "m03",
             "values": {
-              "member_title": "Body annual - Adekunle",
+              "member_title": "Body annual, Temitope",
               "client": "c08",
               "plan": "Body annual",
               "monthly_fee": 199,
@@ -1051,7 +1179,7 @@
           {
             "key": "m04",
             "values": {
-              "member_title": "Glow monthly - Marchand",
+              "member_title": "Glow monthly, Lucien (ended)",
               "client": "c05",
               "plan": "Glow monthly",
               "monthly_fee": 149,
@@ -1063,7 +1191,7 @@
           {
             "key": "m05",
             "values": {
-              "member_title": "Skin reset quarterly - Valcourt",
+              "member_title": "Skin reset, Dominic (on pause)",
               "client": "c02",
               "plan": "Skin reset quarterly",
               "monthly_fee": 89,
@@ -1258,6 +1386,13 @@
             "contextPolicy": "include"
           },
           {
+            "key": "lot",
+            "label": "Lot number",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "stock_check",
             "label": "Stock check",
             "parityType": "formula",
@@ -1275,7 +1410,8 @@
               "on_hand": 18,
               "reorder_at": 8,
               "expires_on": "@today+210d",
-              "supplier": "Aurelian Beauty Supply"
+              "supplier": "Aurelian Beauty Supply",
+              "lot": "VC-3021"
             }
           },
           {
@@ -1286,7 +1422,8 @@
               "on_hand": 4,
               "reorder_at": 5,
               "expires_on": "@today+25d",
-              "supplier": "Aurelian Beauty Supply"
+              "supplier": "Aurelian Beauty Supply",
+              "lot": "HM-7718"
             }
           },
           {
@@ -1297,7 +1434,8 @@
               "on_hand": 3,
               "reorder_at": 2,
               "expires_on": "@today+18d",
-              "supplier": "Calder Clinical Wholesale"
+              "supplier": "Calder Clinical Wholesale",
+              "lot": "PS15-0442"
             }
           },
           {
@@ -1308,7 +1446,8 @@
               "on_hand": 6,
               "reorder_at": 4,
               "expires_on": "@today+400d",
-              "supplier": "Calder Clinical Wholesale"
+              "supplier": "Calder Clinical Wholesale",
+              "lot": "MN-55190"
             }
           },
           {
@@ -1319,7 +1458,8 @@
               "on_hand": 22,
               "reorder_at": 10,
               "expires_on": "@today+300d",
-              "supplier": "Aurelian Beauty Supply"
+              "supplier": "Aurelian Beauty Supply",
+              "lot": "SPF-2203"
             }
           },
           {
@@ -1330,7 +1470,8 @@
               "on_hand": 9,
               "reorder_at": 6,
               "expires_on": "@today+28d",
-              "supplier": "Aurelian Beauty Supply"
+              "supplier": "Aurelian Beauty Supply",
+              "lot": "SB-1187"
             }
           },
           {
@@ -1352,7 +1493,8 @@
               "on_hand": 7,
               "reorder_at": 4,
               "expires_on": "@today-5d",
-              "supplier": "Calder Clinical Wholesale"
+              "supplier": "Calder Clinical Wholesale",
+              "lot": "NC-0915"
             }
           }
         ]
@@ -1820,7 +1962,7 @@
         "Marlow Esplanade"
       ]
     },
-    "version": 2
+    "version": 4
   },
   "pages": [
     {
@@ -1828,10 +1970,10 @@
       "parent": null,
       "title": "Med Spa",
       "icon": {
-        "emoji": "💆"
+        "emoji": "💉"
       },
       "cover": {
-        "url": "gallery:photo-lavender-dusk",
+        "url": "gallery:gradient-peach",
         "offsetY": 50
       },
       "settings": {
@@ -1895,6 +2037,12 @@
                   "type": "page",
                   "props": {
                     "spaceId": "page:sop-rebook"
+                  }
+                },
+                {
+                  "type": "page",
+                  "props": {
+                    "spaceId": "page:how-to-use"
                   }
                 }
               ]
@@ -2674,14 +2822,14 @@
       "parent": "med-spa",
       "title": "Consultation to first treatment",
       "icon": {
-        "emoji": "🧴"
+        "emoji": "💬"
       },
       "blocks": [
         {
           "type": "callout",
           "text": [
             {
-              "text": "A good first visit makes the second one easy to book."
+              "text": "The consultation is where trust is built and where the legal groundwork for treatment is laid. Rushing it costs more than it saves."
             }
           ],
           "background": "blue",
@@ -2693,7 +2841,58 @@
           "type": "heading",
           "text": [
             {
-              "text": "Consultation"
+              "text": "Before the consultation"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Client added under "
+            },
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": " with phone, email and how they heard about you"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Intake form returned: medications, allergies, pregnancy, history of cold sores, keloids, recent isotretinoin or blood thinners"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Photo ID and age confirmed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "In the room (30 minutes)"
             }
           ],
           "props": {
@@ -2704,7 +2903,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send the consultation form before the visit."
+              "text": "Ask what they want to change and why now. Write it in their words on the appointment page."
             }
           ]
         },
@@ -2712,7 +2911,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Review goals and previous treatments with the client."
+              "text": "The provider examines and explains what is realistic, how many sessions it takes, downtime and the risks."
             }
           ]
         },
@@ -2720,7 +2919,44 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Have consent forms signed before any treatment."
+              "text": "Set "
+            },
+            {
+              "text": "Skin type",
+              "bold": true
+            },
+            {
+              "text": ". It decides laser settings and peel strength, and higher skin types need a test spot for lasers."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "For injectables and lasers, the medical provider completes the good faith exam. Fill in "
+            },
+            {
+              "text": "Medical clearance until",
+              "bold": true
+            },
+            {
+              "text": " (usually one year)."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The client reads and signs the consent for the service category. Fill in "
+            },
+            {
+              "text": "Consent signed",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -2728,34 +2964,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Treatment day"
-            }
-          ],
-          "props": {
-            "level": 2
-          }
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Confirm the person and the treatment on the appointment."
-            }
-          ]
-        },
-        {
-          "type": "bulleted",
-          "text": [
-            {
-              "text": "Give the aftercare sheet and write the date of the next visit on it."
-            }
-          ]
-        },
-        {
-          "type": "heading",
-          "text": [
-            {
-              "text": "After"
+              "text": "Before photos"
             }
           ],
           "props": {
@@ -2766,25 +2975,250 @@
           "type": "text",
           "text": [
             {
-              "text": "Mark the appointment Completed so spend and credits update."
+              "text": "Take standard photos at every first treatment and every few sessions after: same light, same angle, no makeup. Tick "
+            },
+            {
+              "text": "Before photos taken",
+              "bold": true
+            },
+            {
+              "text": ". Photos settle most \"it didn't work\" conversations."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing and booking"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Give the price per session and the series price in writing."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Offer a membership if the plan includes repeat visits; show the monthly saving."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Book the first treatment before they leave. Series treatments get every session on the calendar at the right spacing (microneedling about four weeks apart, laser hair removal four to eight weeks)."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Injectables on the day"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Clearance current and consent signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Units or syringes recorded on the appointment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Product "
+            },
+            {
+              "text": "lot",
+              "bold": true
+            },
+            {
+              "text": " recorded on the appointment"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Aftercare sheet given and a two-week check booked"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Ximena came in for an injectables consult at 3 pm. Her medical clearance and consent were done in the room; her first neurotoxin visit was booked for the following week with a two-week touch-up check after it."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Step"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Intake and booking"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Concierge"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Exam and clearance"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Medical provider"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Treatment and notes"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Injector or aesthetician"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Follow-up call at 48 hours"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Concierge"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
     {
       "key": "sop-memberships",
       "parent": "med-spa",
-      "title": "Membership management",
+      "title": "Memberships and credits",
       "icon": {
-        "emoji": "🎟️"
+        "emoji": "💳"
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Memberships smooth out income and keep clients on a schedule. They go wrong when credits pile up unused or renewals surprise people."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Starting a membership"
+              "text": "Selling a membership"
             }
           ],
           "props": {
@@ -2795,7 +3229,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Press Start membership on the client."
+              "text": "Match the plan to the client's goal: monthly facials, quarterly skin resets or an annual body plan."
             }
           ]
         },
@@ -2803,7 +3237,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Choose the plan, monthly fee and credits included."
+              "text": "Explain what a credit buys, whether unused credits roll over, how to pause, and the notice needed to cancel."
             }
           ]
         },
@@ -2811,7 +3245,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Set the renewal date."
+              "text": "Press "
+            },
+            {
+              "text": "Start membership",
+              "bold": true
+            },
+            {
+              "text": " on the client and fill in plan, monthly fee, credits included and the renewal date."
             }
           ]
         },
@@ -2819,7 +3260,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Monthly"
+              "text": "Using credits"
             }
           ],
           "props": {
@@ -2830,7 +3271,21 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check Credits left and tell clients who have unused credits."
+              "text": "Link each member visit to their membership. "
+            },
+            {
+              "text": "Credits used",
+              "bold": true
+            },
+            {
+              "text": " counts completed visits and "
+            },
+            {
+              "text": "Credits left",
+              "bold": true
+            },
+            {
+              "text": " shows what remains."
             }
           ]
         },
@@ -2838,7 +3293,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Renewals in the next 30 days appear in the Next 30 days view."
+              "text": "Retail discounts for members are applied at checkout; note them on the appointment."
             }
           ]
         },
@@ -2846,27 +3301,257 @@
           "type": "heading",
           "text": [
             {
-              "text": "Pausing and ending"
+              "text": "Before each renewal (every Friday)"
             }
           ],
           "props": {
             "level": 2
           }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "List memberships renewing in the next seven days."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clients with credits left get a call to book them now."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clients who have not visited in 60 days get a check-in call. A member who does not come in will cancel soon."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pauses and cancellations"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Request"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to do"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Travel or illness"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Pause up to two months; status Paused; move the renewal date"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cost"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Offer a lighter plan before cancelling"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cancel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Press Cancel membership; book their last credits; ask one question about why"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Rules worth writing down"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "How many credits may roll over (one month is common)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Whether credits can be shared with a family member."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "What happens to credits after cancellation."
+            }
+          ]
         },
         {
           "type": "text",
           "text": [
             {
-              "text": "Set status to Paused or Cancelled and note the reason."
+              "text": "Put these on the signed membership agreement and apply them the same way for everyone."
             }
           ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Dominic paused his skin reset plan while travelling. The pause ended two days ago and he has not rebooked. The concierge calls with two times and a reminder that his credits are waiting."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Monthly numbers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Measure"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Why"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Active members"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Recurring income"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Credits left at renewal"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Too many means members are drifting"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Cancellations and reasons"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What to change in the offer"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
         }
       ]
     },
     {
       "key": "sop-inventory",
       "parent": "med-spa",
-      "title": "Inventory and expiry",
+      "title": "Inventory, lots and expiry",
       "icon": {
         "emoji": "📦"
       },
@@ -2875,7 +3560,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Run this once a week, always on the same day."
+              "text": "Treatment products expire, injectables need lot tracking, and retail skincare ties up cash. A weekly count keeps all three under control."
             }
           ],
           "background": "blue",
@@ -2887,7 +3572,56 @@
           "type": "heading",
           "text": [
             {
-              "text": "Count"
+              "text": "What to track"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Every injectable, peel solution, numbing cream and treatment consumable, with "
+            },
+            {
+              "text": "Lot number",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Best before",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Retail products by size and shade."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Disposables (cartridges, headbands, gloves) by case."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Receiving stock"
             }
           ],
           "props": {
@@ -2898,7 +3632,7 @@
           "type": "todo",
           "text": [
             {
-              "text": "Update On hand for anything used"
+              "text": "Count matches the packing slip"
             }
           ],
           "props": {
@@ -2909,7 +3643,29 @@
           "type": "todo",
           "text": [
             {
-              "text": "Look at Stock check for items marked Reorder"
+              "text": "Lot number and best-before date entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Cold-chain products straight into the fridge; temperature log signed"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Older stock moved to the front"
             }
           ],
           "props": {
@@ -2920,7 +3676,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Expiry"
+              "text": "Weekly count (Friday, 20 minutes)"
             }
           ],
           "props": {
@@ -2928,43 +3684,53 @@
           }
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Open Inventory, Next 30 days view"
+              "text": "Count each item and update "
+            },
+            {
+              "text": "On hand",
+              "bold": true
+            },
+            {
+              "text": "."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Move short-dated items to the front"
+              "text": "Stock check",
+              "bold": true
+            },
+            {
+              "text": " says Reorder when on hand is at or below the reorder point. Order those."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
         },
         {
-          "type": "todo",
+          "type": "numbered",
           "text": [
             {
-              "text": "Retire anything past its best-before date"
+              "text": "Look at anything with a best-before date in the next 30 days. Use it first, or move it into a promotion if it is retail."
             }
-          ],
-          "props": {
-            "checked": false
-          }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Expired treatment products are removed and logged, never used."
+            }
+          ]
         },
         {
           "type": "heading",
           "text": [
             {
-              "text": "Order"
+              "text": "Lots and recalls"
             }
           ],
           "props": {
@@ -2975,7 +3741,151 @@
           "type": "text",
           "text": [
             {
-              "text": "Send one order per supplier and note the date."
+              "text": "Every injectable visit records the product lot on the appointment. If a manufacturer issues a recall, filter Appointments by that lot and you have the list of clients to contact the same day."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Setting reorder points"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Item"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Rule of thumb"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Injectables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Two weeks of typical use"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Peel solutions"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One bottle in reserve"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Retail best sellers"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Four weeks of sales"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Disposables"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "One case in reserve"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Retail shelf"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Face the shelf daily and keep testers clean and dated."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Recommend retail only when it supports the treatment plan; a client using the right cleanser and sunscreen gets better results and trusts the advice."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Note retail sold on the appointment so the provider sees what the client is using at home."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "The numbing cream on the shelf passed its best-before date five days ago. It is pulled, logged and replaced from the next order; the hydrating mask count is under the reorder point, so it goes on the same order."
             }
           ]
         }
@@ -2990,10 +3900,22 @@
       },
       "blocks": [
         {
+          "type": "callout",
+          "text": [
+            {
+              "text": "Most aesthetic results need a series or regular upkeep. A client who leaves without the next visit is a client you may not see again."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
           "type": "heading",
           "text": [
             {
-              "text": "Rebooking"
+              "text": "At checkout"
             }
           ],
           "props": {
@@ -3004,7 +3926,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Offer the next appointment before the client leaves."
+              "text": "Book the next session at the right spacing before payment: neurotoxin every three to four months, facials monthly, laser every four to eight weeks, microneedling every four weeks in a series."
             }
           ]
         },
@@ -3012,7 +3934,15 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Mention the membership if they have booked three or more visits."
+              "text": "Offer two times, not an open question."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "If they will not book, ask permission to text a reminder at the right time, and note it on the client's page."
             }
           ]
         },
@@ -3020,7 +3950,103 @@
           "type": "heading",
           "text": [
             {
-              "text": "Win-back"
+              "text": "Follow-up calls"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "When"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Who"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "48 hours after injectables or a peel"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Concierge"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "How are you feeling? Any questions?"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Two weeks after neurotoxin"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Injector"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Touch-up check"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "After the last session of a series"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Provider"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "Results review and maintenance plan"
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Win-back (first Monday of the month)"
             }
           ],
           "props": {
@@ -3031,7 +4057,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Filter Clients by status Lapsed."
+              "text": "Filter Clients by status Lapsed or no completed visit in 120 days."
             }
           ]
         },
@@ -3039,7 +4065,7 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Send a short personal message offering a free add-on."
+              "text": "Look at what they had last time and when it would be due again."
             }
           ]
         },
@@ -3047,7 +4073,450 @@
           "type": "numbered",
           "text": [
             {
-              "text": "After two tries, leave the client Lapsed and move on."
+              "text": "Send a short, personal note from their provider with one specific suggestion. Avoid blanket discounts; they teach clients to wait for sales."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Clients who book return to "
+            },
+            {
+              "text": "Active",
+              "bold": true
+            },
+            {
+              "text": ". Those who do not reply after two notes stay Lapsed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "VIP clients"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Clients marked "
+            },
+            {
+              "text": "VIP",
+              "bold": true
+            },
+            {
+              "text": " get first access to new services and their provider's personal number for rebooking. Review the VIP list each quarter by lifetime spend and visits."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Lucien last came in four months ago for a brightening facial and his membership ended. His aesthetician sends a note suggesting a peel before the winter; he books for next week and his status moves back to Active."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Phrases that work"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "\"Your forehead should look its best for about three months. Shall I hold the second week of March with Solveig? I'll text you a reminder a week before.\""
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Watch"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rebooking rate at checkout (aim for 70% or more)."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients with "
+            },
+            {
+              "text": "Booked ahead",
+              "bold": true
+            },
+            {
+              "text": " above zero; that is next month's revenue."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "how-to-use",
+      "parent": "med-spa",
+      "title": "Using this workspace",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A home for the operations of a med spa: who is booked, who has signed consent and medical clearance, how many membership credits each client has left, and which products are close to expiry. Charting and photos stay in your clinical system."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The lists"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments",
+              "bold": true
+            },
+            {
+              "text": ": each booking with service, provider, price, units or syringes used, product lot and whether before photos were taken."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients",
+              "bold": true
+            },
+            {
+              "text": ": contact details, how they found you, consent date, medical clearance date, skin type, lifetime spend and the value of what is already booked."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Memberships",
+              "bold": true
+            },
+            {
+              "text": ": plan, monthly fee, credits included, credits used and credits left."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Inventory",
+              "bold": true
+            },
+            {
+              "text": ": retail and treatment products with on-hand count, reorder point, lot number and best-before date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Two dates that protect the business"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "table",
+          "props": {
+            "headerRow": true,
+            "headerColumn": false,
+            "rows": [
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Date"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "What it means"
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Consent signed"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The client signed the consent for the service category. No treatment without it."
+                    }
+                  ]
+                ]
+              },
+              {
+                "cells": [
+                  [
+                    {
+                      "text": "Medical clearance until"
+                    }
+                  ],
+                  [
+                    {
+                      "text": "The good faith exam by your medical provider is current. Injectables and lasers need it."
+                    }
+                  ]
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Filter Clients by Medical clearance until before today each Friday and book a short exam for anyone with an upcoming injectable or laser visit."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Getting started"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Replace the sample providers with your injectors, aestheticians and medical director."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter your active members with their plan and credits."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add next week's bookings. Link member visits to their membership so credits count down."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Enter injectable and treatment stock with lot numbers."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Daily and weekly"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Morning",
+              "bold": true
+            },
+            {
+              "text": ": Today view; check consent and clearance for every injectable and laser client."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "After each injectable",
+              "bold": true
+            },
+            {
+              "text": ": units and lot on the appointment."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Friday",
+              "bold": true
+            },
+            {
+              "text": ": memberships renewing next week, credits about to roll over, stock at reorder level or near expiry."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Buttons"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Appointments: "
+            },
+            {
+              "text": "In room",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Mark completed",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Clients: "
+            },
+            {
+              "text": "Book appointment",
+              "bold": true
+            },
+            {
+              "text": " and "
+            },
+            {
+              "text": "Start membership",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Memberships: "
+            },
+            {
+              "text": "Cancel membership",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "quote",
+          "text": [
+            {
+              "text": "Temitope's body membership renews in 11 days with credits still unused. The concierge calls this week to book them, rather than letting her pay for a month she did not use."
             }
           ]
         }

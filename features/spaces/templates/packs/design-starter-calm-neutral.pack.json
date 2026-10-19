@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0491",
-  "version": 2,
+  "version": 3,
   "title": "Design system — Calm neutral",
   "description": "Cool grays, an indigo action and soft cards: the modern software look.",
   "forWho": "Software products and SaaS teams",
@@ -1275,7 +1275,7 @@
         "Brannock Street"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [],
   "board": {
