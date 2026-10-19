@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0157",
-  "version": 6,
+  "version": 5,
   "title": "SEO Hub",
   "description": "SEO and content teams: research keywords, brief posts and track rankings.",
   "forWho": "SEO and content teams",
@@ -669,6 +669,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "writer",
             "label": "Writer",
             "parityType": "relation",
@@ -775,7 +783,8 @@
               "writer": "tm-03",
               "views": 14200,
               "comments": 36,
-              "shares": 410
+              "shares": 410,
+              "published_on": "@today-72d"
             }
           },
           {
@@ -790,7 +799,8 @@
               "writer": "tm-03",
               "views": 9800,
               "comments": 22,
-              "shares": 260
+              "shares": 260,
+              "published_on": "@today-54d"
             }
           },
           {
@@ -805,7 +815,8 @@
               "writer": "tm-02",
               "views": 7400,
               "comments": 18,
-              "shares": 190
+              "shares": 190,
+              "published_on": "@today-40d"
             }
           },
           {
@@ -820,7 +831,8 @@
               "writer": "tm-03",
               "views": 6100,
               "comments": 14,
-              "shares": 150
+              "shares": 150,
+              "published_on": "@today-25d"
             }
           },
           {
@@ -835,7 +847,8 @@
               "writer": "tm-02",
               "views": 3300,
               "comments": 9,
-              "shares": 82
+              "shares": 82,
+              "published_on": "@today-12d"
             }
           },
           {
@@ -1028,7 +1041,7 @@
               "Published"
             ],
             "filled": [
-              "publish_on"
+              "published_on"
             ]
           }
         ]
@@ -1144,7 +1157,7 @@
             "value": "Published"
           },
           {
-            "field": "publish_on",
+            "field": "published_on",
             "set": "value",
             "value": "@today"
           }
@@ -1397,7 +1410,7 @@
         "Switchback Road"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

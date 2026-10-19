@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0151",
-  "version": 6,
+  "version": 5,
   "title": "Content Calendar",
   "description": "Content teams: plan blog posts, emails and videos across channels on one calendar.",
   "forWho": "Marketers, creators and small content teams",
@@ -361,6 +361,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_out",
             "label": "Days until publish",
             "parityType": "formula",
@@ -470,7 +478,8 @@
                 "Seeds",
                 "Containers"
               ],
-              "brief": "Practical list for beginners with one photo per herb."
+              "brief": "Practical list for beginners with one photo per herb.",
+              "published_on": "@today-21d"
             }
           },
           {
@@ -487,7 +496,8 @@
                 "Seeds",
                 "Seasonal"
               ],
-              "brief": "Month-by-month table for zones 4 to 6."
+              "brief": "Month-by-month table for zones 4 to 6.",
+              "published_on": "@today-11d"
             }
           },
           {
@@ -503,7 +513,8 @@
               "topics": [
                 "Containers"
               ],
-              "brief": "Carousel of five images."
+              "brief": "Carousel of five images.",
+              "published_on": "@today-8d"
             }
           },
           {
@@ -536,7 +547,8 @@
               "topics": [
                 "Community"
               ],
-              "brief": "Short note on a new format."
+              "brief": "Short note on a new format.",
+              "published_on": "@today-4d"
             }
           },
           {
@@ -876,7 +888,7 @@
               "Published"
             ],
             "filled": [
-              "publish_on"
+              "published_on"
             ]
           }
         ]
@@ -1006,7 +1018,7 @@
             "value": "Published"
           },
           {
-            "field": "publish_on",
+            "field": "published_on",
             "set": "value",
             "value": "@today"
           }
@@ -1247,7 +1259,7 @@
         "Larkin Court"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

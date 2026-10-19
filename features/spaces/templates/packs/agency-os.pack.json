@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0306",
-  "version": 6,
+  "version": 5,
   "title": "Agency OS",
   "description": "Small agencies: clients, retainers, projects, capacity and proposals in one place.",
   "forWho": "Small design, marketing and dev agencies",
@@ -1638,7 +1638,7 @@
             ],
             "filled": [
               "sent_on",
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -1706,8 +1706,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1788,7 +1788,7 @@
               "stage": "Won",
               "value": 11800,
               "sent_on": "@today-26d",
-              "closed_on": "@today-26d"
+              "decided_on": "@today-26d"
             }
           },
           {
@@ -1799,7 +1799,7 @@
               "stage": "Lost",
               "value": 6200,
               "sent_on": "@today-40d",
-              "closed_on": "@today-40d"
+              "decided_on": "@today-40d"
             }
           },
           {
@@ -2381,7 +2381,7 @@
             "value": "Won"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2400,7 +2400,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2725,7 +2725,7 @@
         "Ketterick Wharf"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

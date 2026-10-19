@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0156",
-  "version": 5,
+  "version": 4,
   "title": "Newsletter Planner",
   "description": "Newsletter editors: keep an idea bank and a send calendar for every issue.",
   "forWho": "Newsletter editors and small publishers",
@@ -1076,7 +1076,7 @@
         "Salt Marsh Court"
       ]
     },
-    "version": 5
+    "version": 4
   },
   "pages": [
     {

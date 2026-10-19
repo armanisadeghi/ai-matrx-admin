@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0520",
-  "version": 3,
+  "version": 2,
   "title": "Print on Demand Shop HQ",
   "description": "Track designs, print partners, orders, quality issues and returns.",
   "forWho": "Print-on-demand store owners and merch creators",
@@ -1931,7 +1931,7 @@
         "Inkwell Alley"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0464",
-  "version": 4,
+  "version": 3,
   "title": "Catering Business Desk",
   "description": "Clients, catered events, menu items, prep lists and event staffing for a caterer.",
   "forWho": "Caterers and event food companies",
@@ -2178,7 +2178,7 @@
         "Millrace Drive"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

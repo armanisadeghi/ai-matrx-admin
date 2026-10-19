@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0300",
-  "version": 6,
+  "version": 5,
   "title": "Freelancer OS",
   "description": "Solo freelancers: clients, projects, tasks, time and invoices from one home page.",
   "forWho": "Solo freelancers and independent consultants",
@@ -2144,8 +2144,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -2250,7 +2250,7 @@
               "value": 3100,
               "follow_up": "@today+14d",
               "email": "front@marlowclimb.net",
-              "closed_on": "@today-11d"
+              "decided_on": "@today-11d"
             }
           },
           {
@@ -2262,7 +2262,7 @@
               "value": 2900,
               "follow_up": "@today-9d",
               "email": "orders@tessalytea.net",
-              "closed_on": "@today-9d"
+              "decided_on": "@today-9d"
             }
           }
         ],
@@ -2273,7 +2273,7 @@
               "Won"
             ],
             "filled": [
-              "closed_on"
+              "decided_on"
             ]
           },
           {
@@ -2282,7 +2282,7 @@
               "Lost"
             ],
             "filled": [
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -2537,7 +2537,7 @@
             "value": "Won"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2556,7 +2556,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2953,7 +2953,7 @@
         "Alderwick Lane"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

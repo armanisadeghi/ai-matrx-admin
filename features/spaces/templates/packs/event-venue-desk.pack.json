@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0466",
-  "version": 4,
+  "version": 3,
   "title": "Event Venue Desk",
   "description": "Spaces, inquiries and tours, bookings with deposits, and setup checklists for a venue.",
   "forWho": "Event venues, halls and barn and loft rental spaces",
@@ -427,8 +427,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -511,7 +511,7 @@
               "Lost"
             ],
             "filled": [
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -703,7 +703,7 @@
               "space": "space-4",
               "owner": "tm-2",
               "owner_me": "@installer",
-              "closed_on": "@today-9d"
+              "decided_on": "@today-9d"
             }
           },
           {
@@ -1711,7 +1711,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2157,7 +2157,7 @@
         "Weir Lane"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

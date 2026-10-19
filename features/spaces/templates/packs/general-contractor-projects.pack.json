@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0416",
-  "version": 3,
+  "version": 2,
   "title": "General Contractor Projects",
   "description": "Jobs, subcontractors, phases, change orders and punch lists for a builder.",
   "forWho": "General contractors and remodelers",
@@ -983,8 +983,8 @@
             "format": "date"
           },
           {
-            "key": "approved_on",
-            "label": "Approved on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -1066,7 +1066,7 @@
               "requested_on": "@today-25d",
               "decide_by": "@today-20d",
               "status": "Approved",
-              "approved_on": "@today-20d"
+              "decided_on": "@today-20d"
             }
           },
           {
@@ -1078,7 +1078,7 @@
               "requested_on": "@today-40d",
               "decide_by": "@today-35d",
               "status": "Approved",
-              "approved_on": "@today-35d"
+              "decided_on": "@today-35d"
             }
           },
           {
@@ -1113,7 +1113,7 @@
               "requested_on": "@today-130d",
               "decide_by": "@today-125d",
               "status": "Approved",
-              "approved_on": "@today-125d"
+              "decided_on": "@today-125d"
             }
           },
           {
@@ -1124,7 +1124,8 @@
               "amount": 2750,
               "requested_on": "@today-60d",
               "decide_by": "@today-55d",
-              "status": "Rejected"
+              "status": "Rejected",
+              "decided_on": "@today-55d"
             }
           }
         ],
@@ -1145,7 +1146,7 @@
             ],
             "filled": [
               "amount",
-              "approved_on"
+              "decided_on"
             ]
           },
           {
@@ -1154,7 +1155,8 @@
               "Rejected"
             ],
             "filled": [
-              "amount"
+              "amount",
+              "decided_on"
             ]
           }
         ],
@@ -2081,7 +2083,7 @@
             "value": "Approved"
           },
           {
-            "field": "approved_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2098,6 +2100,11 @@
             "field": "status",
             "set": "value",
             "value": "Rejected"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ]
       },
@@ -2586,7 +2593,7 @@
         "Quarry Road"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

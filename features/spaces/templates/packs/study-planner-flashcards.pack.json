@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0258",
-  "version": 8,
+  "version": 7,
   "title": "Study Planner & Flashcards",
   "description": "Students preparing for exams: plan study blocks backwards and drill flashcards.",
   "forWho": "Students preparing for exams",
@@ -1480,7 +1480,7 @@
         "Foxglove Parade"
       ]
     },
-    "version": 8
+    "version": 7
   },
   "pages": [
     {

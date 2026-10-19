@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0508",
-  "version": 3,
+  "version": 2,
   "title": "Moving Company HQ",
   "description": "Quote moves, schedule crews and trucks, track supplies and collect final payments.",
   "forWho": "Local moving companies",
@@ -2245,7 +2245,7 @@
         "Depot Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

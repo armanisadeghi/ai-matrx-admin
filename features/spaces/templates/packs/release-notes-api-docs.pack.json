@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0111",
-  "version": 6,
+  "version": 5,
   "title": "Release Notes & API Docs",
   "description": "Product and developer teams: release notes, a public changelog and an API reference.",
   "forWho": "Product and developer-experience teams",
@@ -425,6 +425,14 @@
             "format": "date"
           },
           {
+            "key": "released_on",
+            "label": "Released on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "highlights",
             "label": "Highlights",
             "parityType": "text",
@@ -493,7 +501,8 @@
               "kind": "Minor",
               "audience": "Public",
               "release_on": "@today-75d",
-              "highlights": "Address validation and label reprints."
+              "highlights": "Address validation and label reprints.",
+              "released_on": "@today-75d"
             }
           },
           {
@@ -504,7 +513,8 @@
               "kind": "Patch",
               "audience": "Public",
               "release_on": "@today-58d",
-              "highlights": "Fixes for time zones on tracking events."
+              "highlights": "Fixes for time zones on tracking events.",
+              "released_on": "@today-58d"
             }
           },
           {
@@ -515,7 +525,8 @@
               "kind": "Minor",
               "audience": "Public",
               "release_on": "@today-21d",
-              "highlights": "Batch shipments and webhook signing."
+              "highlights": "Batch shipments and webhook signing.",
+              "released_on": "@today-21d"
             }
           },
           {
@@ -548,10 +559,11 @@
               "Released"
             ],
             "filled": [
-              "release_on"
+              "released_on"
             ]
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "endpoint",
@@ -1214,7 +1226,7 @@
             "value": "Released"
           },
           {
-            "field": "release_on",
+            "field": "released_on",
             "set": "value",
             "value": "@today"
           }
@@ -1414,7 +1426,7 @@
         "Larchmont Street"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0462",
-  "version": 4,
+  "version": 3,
   "title": "Event Planning Company Desk",
   "description": "Clients, events, vendors, bookings and planning tasks for an event planning company.",
   "forWho": "Event planners and event production companies",
@@ -2259,7 +2259,7 @@
         "Harbor Lantern Road"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

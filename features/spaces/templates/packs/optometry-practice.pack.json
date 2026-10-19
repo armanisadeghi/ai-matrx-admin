@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0407",
-  "version": 3,
+  "version": 2,
   "title": "Optometry Practice",
   "description": "Patients and recalls, exams, frames inventory and optical orders for an eye care practice.",
   "forWho": "Optometrists and optical shops",
@@ -1958,7 +1958,7 @@
         "Piedmont Row"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0410",
-  "version": 3,
+  "version": 2,
   "title": "Personal Injury Intake and Cases",
   "description": "Intakes, case stages, medical records requests and offers for a personal injury practice.",
   "forWho": "Personal injury firms",
@@ -2156,7 +2156,7 @@
         "Beale Avenue"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

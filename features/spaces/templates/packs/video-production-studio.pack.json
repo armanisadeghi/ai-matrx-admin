@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0454",
-  "version": 4,
+  "version": 3,
   "title": "Video Production Studio",
   "description": "Clients, productions, shot lists, bookings and edit versions for a video company.",
   "forWho": "Video and film production companies",
@@ -439,6 +439,14 @@
             "format": "date"
           },
           {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "budget",
             "label": "Budget (USD)",
             "parityType": "currency",
@@ -630,7 +638,7 @@
               "Delivered"
             ],
             "filled": [
-              "delivery_on"
+              "delivered_on"
             ]
           }
         ],
@@ -791,7 +799,8 @@
               "delivery_on": "@today-40d",
               "budget": 8500,
               "client": "client-1",
-              "producer": "tm-2"
+              "producer": "tm-2",
+              "delivered_on": "@today-40d"
             }
           },
           {
@@ -805,7 +814,8 @@
               "budget": 4200,
               "client": "client-4",
               "producer": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "delivered_on": "@today-380d"
             }
           }
         ]
@@ -1809,7 +1819,7 @@
             "value": "Delivered"
           },
           {
-            "field": "delivery_on",
+            "field": "delivered_on",
             "set": "value",
             "value": "@today"
           }
@@ -2197,7 +2207,7 @@
         "Tannery Row"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

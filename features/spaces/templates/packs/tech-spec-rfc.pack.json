@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0108",
-  "version": 6,
+  "version": 5,
   "title": "Tech Spec & RFC Library",
   "description": "Engineering teams: write technical proposals, get them reviewed and log the decision.",
   "forWho": "Engineering teams that review designs before building",
@@ -1173,7 +1173,7 @@
         "Edgewater Quay"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

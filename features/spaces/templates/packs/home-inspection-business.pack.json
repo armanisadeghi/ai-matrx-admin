@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0418",
-  "version": 3,
+  "version": 2,
   "title": "Home Inspection Business",
   "description": "Inspections, referral partners, invoices and licence renewals for an inspector.",
   "forWho": "Home inspectors and inspection companies",
@@ -1985,7 +1985,7 @@
         "Wharf Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0210",
-  "version": 8,
+  "version": 7,
   "title": "Workout Log",
   "description": "Lifters and runners: log sessions, exercises and sets, with totals and personal bests.",
   "forWho": "Lifters and runners",
@@ -1695,7 +1695,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 8
+    "version": 7
   },
   "pages": [
     {

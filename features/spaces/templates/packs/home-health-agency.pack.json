@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0406",
-  "version": 3,
+  "version": 2,
   "title": "Home Health Agency",
   "description": "Referrals, clients, shifts with hours and caregiver credentials for a home care agency.",
   "forWho": "Home care and home health agencies",
@@ -2061,7 +2061,7 @@
         "Juniper Hollow"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

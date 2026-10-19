@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0515",
-  "version": 3,
+  "version": 2,
   "title": "Massage Therapy Practice HQ",
   "description": "Book sessions by therapist and room, keep session notes, memberships and payments.",
   "forWho": "Massage therapists and small bodywork practices",
@@ -2153,7 +2153,7 @@
         "Wicker Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

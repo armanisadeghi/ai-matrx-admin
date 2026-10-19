@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0417",
-  "version": 3,
+  "version": 2,
   "title": "Interior Design Studio",
   "description": "Clients, projects by phase, furnishings procurement, approvals and fee invoices.",
   "forWho": "Interior designers and design studios",
@@ -2700,7 +2700,7 @@
         "Congress Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

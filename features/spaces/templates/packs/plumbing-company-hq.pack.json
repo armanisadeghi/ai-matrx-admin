@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0501",
-  "version": 3,
+  "version": 2,
   "title": "Plumbing Company HQ",
   "description": "Dispatch plumbing calls, quote and cost jobs, track van stock and chase unpaid invoices.",
   "forWho": "Plumbing companies and drain and pipe contractors",
@@ -2241,7 +2241,7 @@
         "Kettle Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

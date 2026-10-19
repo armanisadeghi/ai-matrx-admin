@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0458",
-  "version": 4,
+  "version": 3,
   "title": "Consulting Practice Desk",
   "description": "Clients, proposals, engagements, deliverables and consultant days for a consulting firm.",
   "forWho": "Management and operations consulting practices",
@@ -482,8 +482,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -552,7 +552,7 @@
             ],
             "filled": [
               "sent_on",
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -646,7 +646,7 @@
               "decide_by": "@today-40d",
               "client": "client-2",
               "lead": "tm-1",
-              "closed_on": "@today-40d"
+              "decided_on": "@today-40d"
             }
           },
           {
@@ -660,7 +660,7 @@
               "decide_by": "@today-100d",
               "client": "client-1",
               "lead": "tm-2",
-              "closed_on": "@today-100d"
+              "decided_on": "@today-100d"
             }
           },
           {
@@ -712,7 +712,7 @@
               "decide_by": "@today-170d",
               "client": "client-4",
               "lead": "tm-1",
-              "closed_on": "@today-170d"
+              "decided_on": "@today-170d"
             }
           },
           {
@@ -1852,7 +1852,7 @@
             "value": "Won"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -1871,7 +1871,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2318,7 +2318,7 @@
         "Halsey Avenue"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

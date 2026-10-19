@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0450",
-  "version": 4,
+  "version": 3,
   "title": "Digital Marketing Agency HQ",
   "description": "Clients, retainers, campaigns, deliverables and monthly reports for a marketing agency.",
   "forWho": "Digital marketing agencies and growth studios",
@@ -2932,7 +2932,7 @@
         "Alder Quay"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0402",
-  "version": 3,
+  "version": 2,
   "title": "Chiropractic Office",
   "description": "Inquiries, patients, visits and prepaid packages for a chiropractic office.",
   "forWho": "Chiropractors and wellness clinics",
@@ -1984,7 +1984,7 @@
         "Pecan Street"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

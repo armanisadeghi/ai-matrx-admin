@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0252",
-  "version": 4,
+  "version": 5,
   "title": "Applicant Tracker",
   "description": "Recruiters and hiring managers: roles, candidates and interviews on a hiring board.",
   "forWho": "Recruiters and hiring managers",
@@ -447,6 +447,14 @@
             "format": "date"
           },
           {
+            "key": "decided_on",
+            "label": "Decided on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "rating",
             "label": "Rating",
             "parityType": "select",
@@ -610,7 +618,8 @@
               "applied_on": "@today-30d",
               "email": "anjali.d@mailbox-demo.net",
               "phone": "(312) 555-0184",
-              "reject_reason": "Skills gap"
+              "reject_reason": "Skills gap",
+              "decided_on": "@today-30d"
             }
           },
           {
@@ -687,7 +696,8 @@
               "applied_on": "@today-26d",
               "email": "rosalind.a@mailbox-demo.net",
               "phone": "(312) 555-0190",
-              "reject_reason": "Skills gap"
+              "reject_reason": "Skills gap",
+              "decided_on": "@today-26d"
             }
           },
           {
@@ -727,7 +737,8 @@
               "applied_on": "@today-75d",
               "email": "bastien.fournier@mailbox-demo.net",
               "phone": "(312) 555-0193",
-              "reject_reason": "Position filled"
+              "reject_reason": "Position filled",
+              "decided_on": "@today-75d"
             }
           },
           {
@@ -847,7 +858,19 @@
               ]
             }
           }
-        ]
+        ],
+        "statusImplies": [
+          {
+            "field": "stage",
+            "when": [
+              "Rejected"
+            ],
+            "filled": [
+              "decided_on"
+            ]
+          }
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "interview",
@@ -1370,6 +1393,11 @@
             "field": "stage",
             "set": "value",
             "value": "Rejected"
+          },
+          {
+            "field": "decided_on",
+            "set": "value",
+            "value": "@today"
           }
         ],
         "confirm": true,
@@ -1588,7 +1616,7 @@
         "Larkmoor Terrace"
       ]
     },
-    "version": 4
+    "version": 5
   },
   "pages": [
     {

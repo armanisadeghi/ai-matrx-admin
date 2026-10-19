@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0213",
-  "version": 5,
+  "version": 4,
   "title": "Wedding Planner",
   "description": "Couples: tasks, guest list, vendors, budget and seating for your wedding.",
   "forWho": "Couples planning a wedding",
@@ -1803,7 +1803,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 4
   },
   "pages": [
     {

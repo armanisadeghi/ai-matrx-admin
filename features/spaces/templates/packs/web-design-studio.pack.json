@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0451",
-  "version": 4,
+  "version": 3,
   "title": "Web Design Studio HQ",
   "description": "Clients, site projects, page inventory, revision requests and invoices for a web studio.",
   "forWho": "Web design and development studios",
@@ -512,6 +512,14 @@
             "format": "date"
           },
           {
+            "key": "launched_on",
+            "label": "Launched on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "budget",
             "label": "Fixed fee (USD)",
             "parityType": "currency",
@@ -711,7 +719,7 @@
               "Launched"
             ],
             "filled": [
-              "launch_on"
+              "launched_on"
             ]
           }
         ],
@@ -832,7 +840,8 @@
               "budget": 1800,
               "client": "client-3",
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "launched_on": "@today-360d"
             }
           },
           {
@@ -872,7 +881,8 @@
               "launch_on": "@today-45d",
               "budget": 2400,
               "client": "client-6",
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "launched_on": "@today-45d"
             }
           },
           {
@@ -899,7 +909,8 @@
               "launch_on": "@today-880d",
               "budget": 4900,
               "client": "client-8",
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "launched_on": "@today-880d"
             }
           },
           {
@@ -2148,7 +2159,7 @@
             "value": "Launched"
           },
           {
-            "field": "launch_on",
+            "field": "launched_on",
             "set": "value",
             "value": "@today"
           }
@@ -2608,7 +2619,7 @@
         "Pemberly Row"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

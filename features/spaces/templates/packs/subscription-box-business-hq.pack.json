@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0519",
-  "version": 3,
+  "version": 2,
   "title": "Subscription Box Business HQ",
   "description": "Plan each box cycle, track subscribers and churn, stock and shipments in one place.",
   "forWho": "Subscription box and curated gift businesses",
@@ -1953,7 +1953,7 @@
         "Dovecote Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

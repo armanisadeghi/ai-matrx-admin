@@ -1013,43 +1013,6 @@
         ]
       }
     },
-    "oauth": {
-      "_files": [
-        "page.tsx"
-      ],
-      "app_callback": {
-        "_files": [],
-        "[provider]": {
-          "_files": [
-            "page.tsx"
-          ]
-        }
-      },
-      "components": {
-        "_files": [
-          "DirectSlackApp.tsx",
-          "OAuthProvider.tsx",
-          "SlackManager.tsx",
-          "TokenDisplay.tsx"
-        ]
-      },
-      "providers": {
-        "_files": [
-          "providers.tsx"
-        ]
-      },
-      "types": {
-        "_files": [
-          "oauth.ts"
-        ]
-      },
-      "utils": {
-        "_files": [
-          "oauth.ts",
-          "slackUtils.ts"
-        ]
-      }
-    },
     "qr-labels": {
       "_files": [
         "config.ts",
@@ -1111,40 +1074,6 @@
           "JsonBuilder.tsx",
           "page.tsx"
         ]
-      }
-    },
-    "slack": {
-      "_files": [
-        "page.tsx",
-        "slackClientUtils.ts"
-      ],
-      "components": {
-        "_files": [
-          "FileUpload.tsx",
-          "SlackManager.tsx"
-        ]
-      },
-      "login": {
-        "_files": [
-          "page.tsx"
-        ]
-      },
-      "with-brokers": {
-        "_files": [
-          "layout.tsx",
-          "page.tsx"
-        ],
-        "components": {
-          "_files": [
-            "BrokerFileUploader.tsx",
-            "BrokerForm.tsx",
-            "BrokerSlackClient.tsx",
-            "BrokerSlackManager.tsx",
-            "ChannelSelector.tsx",
-            "SlackAuthentication.tsx",
-            "TokenManager.tsx"
-          ]
-        }
       }
     },
     "socket-tests": {

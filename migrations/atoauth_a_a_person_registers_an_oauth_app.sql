@@ -1,5 +1,3 @@
--- draft: AT-OAUTH lane (4aca9d01, stopped on spend limit 2026-10-18) — unfinished: new table is hand DDL with no organization_id; must go through platform.create_entity_table + iam.apply_rls and pass iam.canonical_certify_ok before it may apply
--- additive: yes
 -- AT-OAUTH / Airtable parity "Personal access tokens / OAuth apps". A person registers an OAuth app that other people can
 -- authorize against AI Matrx (Supabase's own OAuth 2.1 server, already on: auth.oauth_clients). The client itself is made by
 -- aidream through Supabase's admin API (the secret is shown once and never stored here); this table remembers WHO owns it
@@ -8,28 +6,30 @@
 -- declared, under the authorizing person's own access. Tokens of clients NOT in this table (the MCP clients, first-party apps)
 -- are untouched. Inverse: migrations/inverse/atoauth_a_a_person_registers_an_oauth_app_down.sql
 
-create table iam.oauth_app (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null unique,
-  owner_id uuid not null references iam.users(id),
-  name text not null check (length(btrim(name)) between 1 and 120),
-  redirect_uris text[] not null check (cardinality(redirect_uris) between 1 and 10),
-  scopes text[] not null check (cardinality(scopes) >= 1 and scopes <@ array[
-    'data.records:read', 'data.records:write', 'schema.bases:read', 'schema.bases:write']::text[]),
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  archived_at timestamptz
-);
-comment on table iam.oauth_app is 'An OAuth app a person registered (client in auth.oauth_clients) and the data scopes it declared. Written only by aidream (server pool); read by its owner through iam.oauth_app_list and by an authorizing person through iam.oauth_app_consent.';
-create index oauth_app_owner_idx on iam.oauth_app (owner_id) where archived_at is null;
+-- The table comes from the provisioner (canonical base: organization_id, created_by = the owner, deleted_at = removed),
+-- RLS from iam.apply_rls inside it. aidream writes organization_id and created_by explicitly (the organization the person
+-- registered the app in); visibility 'personal' keeps every other member out.
+do $$
+begin
+  if to_regclass('iam.oauth_app') is null then
+    perform platform.create_entity_table(
+      p_schema => 'iam', p_table => 'oauth_app',
+      p_token => 'iam_oauth_app', p_label => 'OAuth app',
+      p_fields => array[
+        'client_id uuid NOT NULL',
+        'name text NOT NULL CHECK (length(btrim(name)) BETWEEN 1 AND 120)',
+        'redirect_uris text[] NOT NULL CHECK (cardinality(redirect_uris) BETWEEN 1 AND 10)',
+        'scopes text[] NOT NULL CHECK (cardinality(scopes) >= 1 AND scopes <@ ARRAY[''data.records:read'', ''data.records:write'', ''schema.bases:read'', ''schema.bases:write'']::text[])'
+      ],
+      p_variant => 'entity', p_versioned => false, p_soft_delete => true,
+      p_visibility => 'personal', p_category => false, p_listed => false,
+      p_org_default => false, p_gin_jsonb => false,
+      p_parents => null, p_data_class => 'organization', p_default_list_scope => 'mine');
+  end if;
+end $$;
 
-alter table iam.oauth_app enable row level security;
-revoke all on iam.oauth_app from anon, authenticated;
-insert into platform.entity_types (token, schema_name, table_name, label, audit_class, audit_class_reason, table_ref, type)
-values ('iam_oauth_app', 'iam', 'oauth_app', 'OAuth app', 'machinery',
-        'Register of person-owned OAuth clients and their declared scopes; written only by aidream, read by people only through iam.oauth_app_list / iam.oauth_app_consent.',
-        'iam.oauth_app'::regclass, 'system')
-on conflict (token) do nothing;
+create unique index if not exists oauth_app_client_id_uidx on iam.oauth_app (client_id);
+comment on table iam.oauth_app is 'An OAuth app a person registered (client in auth.oauth_clients) and the data scopes it declared. created_by = the owner; written by aidream (server pool); read by its owner through iam.oauth_app_list and by an authorizing person through iam.oauth_app_consent.';
 
 -- The owner's own apps (never the secret: it is not stored anywhere on our side).
 create function iam.oauth_app_list()
@@ -44,7 +44,7 @@ as $function$
            'scopes', to_jsonb(a.scopes), 'created_at', a.created_at
          ) order by a.created_at desc), '[]'::jsonb)
     from iam.oauth_app a
-   where auth.uid() is not null and a.owner_id = auth.uid() and a.archived_at is null;
+   where auth.uid() is not null and a.created_by = auth.uid() and a.deleted_at is null;
 $function$;
 
 -- What the consent screen says about an app: its name and the data scopes it asked for. Null for a client that is not a
@@ -58,7 +58,7 @@ create function iam.oauth_app_consent(p_client_id uuid)
 as $function$
   select jsonb_build_object('name', a.name, 'scopes', to_jsonb(a.scopes))
     from iam.oauth_app a
-   where auth.uid() is not null and a.client_id = p_client_id and a.archived_at is null;
+   where auth.uid() is not null and a.client_id = p_client_id and a.deleted_at is null;
 $function$;
 
 -- Server lane: the Tables API asks which scopes a verified token's client_id holds.
@@ -70,7 +70,7 @@ create function iam.oauth_app_scopes(p_client_id uuid)
  security definer
  set search_path to 'pg_catalog'
 as $function$
-  select case when a.archived_at is null then to_jsonb(a.scopes) else '[]'::jsonb end
+  select case when a.deleted_at is null then to_jsonb(a.scopes) else '[]'::jsonb end
     from iam.oauth_app a
    where a.client_id = p_client_id;
 $function$;

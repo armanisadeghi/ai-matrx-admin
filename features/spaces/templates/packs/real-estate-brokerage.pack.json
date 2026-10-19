@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0413",
-  "version": 3,
+  "version": 2,
   "title": "Real Estate Brokerage",
   "description": "Leads, listings, transactions and closing milestones for a small brokerage.",
   "forWho": "Real estate brokerages and teams",
@@ -175,8 +175,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -356,7 +356,7 @@
               "source": "Website",
               "agent": "tm-aiyana",
               "follow_up_on": "@today-40d",
-              "closed_on": "@today-40d"
+              "decided_on": "@today-40d"
             }
           }
         ],
@@ -380,7 +380,7 @@
             ],
             "filled": [
               "kind",
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -1772,7 +1772,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -2218,7 +2218,7 @@
         "Tamarind Way"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

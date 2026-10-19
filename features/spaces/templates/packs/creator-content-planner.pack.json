@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0301",
-  "version": 7,
+  "version": 6,
   "title": "Creator Content Planner",
   "description": "Solo creators: script and schedule videos, podcasts, posts and emails in one plan.",
   "forWho": "Solo creators with YouTube, podcast and newsletter",
@@ -422,6 +422,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "days_to",
             "label": "Days to publish",
             "parityType": "formula",
@@ -541,7 +549,8 @@
               "priority": "High",
               "campaign": "ca1",
               "reach": 1840,
-              "asset_link": "https://drive.fernhollowplants.net/co01"
+              "asset_link": "https://drive.fernhollowplants.net/co01",
+              "published_on": "@today-9d"
             }
           },
           {
@@ -556,7 +565,8 @@
               "priority": "High",
               "campaign": "ca1",
               "reach": 1250,
-              "asset_link": "https://drive.fernhollowplants.net/co02"
+              "asset_link": "https://drive.fernhollowplants.net/co02",
+              "published_on": "@today-3d"
             }
           },
           {
@@ -721,7 +731,8 @@
               "priority": "Medium",
               "campaign": "ca3",
               "reach": 1100,
-              "asset_link": "https://drive.fernhollowplants.net/co13"
+              "asset_link": "https://drive.fernhollowplants.net/co13",
+              "published_on": "@today-55d"
             }
           },
           {
@@ -736,7 +747,8 @@
               "priority": "Medium",
               "campaign": "ca3",
               "reach": 380,
-              "asset_link": "https://drive.fernhollowplants.net/co14"
+              "asset_link": "https://drive.fernhollowplants.net/co14",
+              "published_on": "@today-60d"
             }
           }
         ],
@@ -750,7 +762,7 @@
               "Published"
             ],
             "filled": [
-              "publish_on"
+              "published_on"
             ]
           }
         ],
@@ -892,7 +904,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "idea",
@@ -1210,7 +1223,7 @@
             "value": "Published"
           },
           {
-            "field": "publish_on",
+            "field": "published_on",
             "set": "value",
             "value": "@today"
           }
@@ -1442,7 +1455,7 @@
         "Marrow Street"
       ]
     },
-    "version": 7
+    "version": 6
   },
   "pages": [
     {

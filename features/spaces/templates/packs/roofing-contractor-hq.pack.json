@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0506",
-  "version": 3,
+  "version": 2,
   "title": "Roofing Contractor HQ",
   "description": "Move roofing leads from inspection to estimate to crew day, with orders and invoices.",
   "forWho": "Roofing contractors and exterior remodelers",
@@ -2254,7 +2254,7 @@
         "Quarry Hill"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

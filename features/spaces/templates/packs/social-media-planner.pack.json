@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0153",
-  "version": 5,
+  "version": 4,
   "title": "Social Media Planner",
   "description": "Social managers and small brands: schedule posts on one calendar, with hashtag sets.",
   "forWho": "Social managers, creators and small brands",
@@ -324,6 +324,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "owner",
             "label": "Owner",
             "parityType": "relation",
@@ -459,7 +467,8 @@
               "caption": "Slow pan across the pier at sunset.",
               "reach": 18400,
               "likes": 1320,
-              "saves": 410
+              "saves": 410,
+              "published_on": "@today-20d"
             }
           },
           {
@@ -476,7 +485,8 @@
               "caption": "Swipe through the shot list.",
               "reach": 9200,
               "likes": 780,
-              "saves": 640
+              "saves": 640,
+              "published_on": "@today-17d"
             }
           },
           {
@@ -493,7 +503,8 @@
               "caption": "Fast cut of the kit.",
               "reach": 41000,
               "likes": 3900,
-              "saves": 950
+              "saves": 950,
+              "published_on": "@today-15d"
             }
           },
           {
@@ -510,7 +521,8 @@
               "caption": "Three steps, no jargon.",
               "reach": 6100,
               "likes": 290,
-              "saves": 120
+              "saves": 120,
+              "published_on": "@today-12d"
             }
           },
           {
@@ -527,7 +539,8 @@
               "caption": "Twelve-minute tutorial.",
               "reach": 12700,
               "likes": 1010,
-              "saves": 380
+              "saves": 380,
+              "published_on": "@today-10d"
             }
           },
           {
@@ -544,7 +557,8 @@
               "caption": "First stretch of the road trip.",
               "reach": 15800,
               "likes": 1140,
-              "saves": 520
+              "saves": 520,
+              "published_on": "@today-7d"
             }
           },
           {
@@ -561,7 +575,8 @@
               "caption": "Wins from the week.",
               "reach": 2300,
               "likes": 98,
-              "saves": 12
+              "saves": 12,
+              "published_on": "@today-6d"
             }
           },
           {
@@ -750,7 +765,7 @@
               "Posted"
             ],
             "filled": [
-              "publish_on"
+              "published_on"
             ]
           }
         ],
@@ -895,7 +910,8 @@
               ]
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       }
     ],
     "relationships": [
@@ -1012,7 +1028,7 @@
             "value": "Posted"
           },
           {
-            "field": "publish_on",
+            "field": "published_on",
             "set": "value",
             "value": "@today"
           }
@@ -1242,7 +1258,7 @@
         "Driftwood Row"
       ]
     },
-    "version": 5
+    "version": 4
   },
   "pages": [
     {

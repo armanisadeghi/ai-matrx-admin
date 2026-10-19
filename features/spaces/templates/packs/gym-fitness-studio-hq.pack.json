@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0509",
-  "version": 3,
+  "version": 2,
   "title": "Gym and Fitness Studio HQ",
   "description": "Track memberships, freezes and churn, classes and trainers, and failed payments.",
   "forWho": "Gyms and boutique fitness studios",
@@ -2172,7 +2172,7 @@
         "Mercer Street"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

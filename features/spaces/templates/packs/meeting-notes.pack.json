@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0003",
-  "version": 8,
+  "version": 7,
   "title": "Meeting Notes",
   "description": "Teams that meet weekly: notes, decisions and action items for every meeting.",
   "forWho": "Teams that meet every week and want nothing to slip",
@@ -1380,7 +1380,7 @@
         "Larkspur Bend"
       ]
     },
-    "version": 8
+    "version": 7
   },
   "pages": [
     {

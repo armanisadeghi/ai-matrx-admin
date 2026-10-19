@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0468",
-  "version": 4,
+  "version": 3,
   "title": "Food Truck Operations",
   "description": "Service stops and sales, permits, commissary prep and private bookings for a food truck.",
   "forWho": "Food trucks, mobile kitchens and pop-up vendors",
@@ -1944,7 +1944,7 @@
         "Depot Street"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

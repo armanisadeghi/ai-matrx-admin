@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0263",
-  "version": 6,
+  "version": 5,
   "title": "Team Offsite Planner",
   "description": "Team leads: plan a retreat with agenda, venues, attendees and budget.",
   "forWho": "People teams and team leads planning retreats",
@@ -1739,7 +1739,7 @@
         "Cormorant Steps"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

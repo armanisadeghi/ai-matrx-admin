@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0150",
-  "version": 8,
+  "version": 7,
   "title": "Sales CRM",
   "description": "Small sales teams: a deal pipeline board, a contact book and every call logged.",
   "forWho": "Small sales teams and solo sellers",
@@ -645,8 +645,8 @@
             "format": "date"
           },
           {
-            "key": "closed_on",
-            "label": "Closed on",
+            "key": "decided_on",
+            "label": "Decided on",
             "parityType": "datetime",
             "sensitivity": "internal",
             "contextPolicy": "include",
@@ -780,7 +780,7 @@
               "owner": "tm-03",
               "expected_close": "@today-9d",
               "priority": "High",
-              "closed_on": "@today-9d"
+              "decided_on": "@today-9d"
             }
           },
           {
@@ -820,7 +820,7 @@
               "owner": "tm-04",
               "expected_close": "@today-30d",
               "priority": "Low",
-              "closed_on": "@today-30d"
+              "decided_on": "@today-30d"
             }
           },
           {
@@ -834,7 +834,7 @@
               "owner": "tm-03",
               "expected_close": "@today-21d",
               "priority": "Medium",
-              "closed_on": "@today-21d"
+              "decided_on": "@today-21d"
             }
           },
           {
@@ -858,7 +858,7 @@
               "Won"
             ],
             "filled": [
-              "closed_on"
+              "decided_on"
             ]
           },
           {
@@ -867,7 +867,7 @@
               "Lost"
             ],
             "filled": [
-              "closed_on"
+              "decided_on"
             ]
           }
         ],
@@ -1570,7 +1570,7 @@
             "value": "Won"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -1589,7 +1589,7 @@
             "value": "Lost"
           },
           {
-            "field": "closed_on",
+            "field": "decided_on",
             "set": "value",
             "value": "@today"
           }
@@ -1890,7 +1890,7 @@
         "Thornapple Lane"
       ]
     },
-    "version": 8
+    "version": 7
   },
   "pages": [
     {

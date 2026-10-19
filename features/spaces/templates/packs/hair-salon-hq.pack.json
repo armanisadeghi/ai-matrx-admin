@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0512",
-  "version": 3,
+  "version": 2,
   "title": "Hair Salon HQ",
   "description": "Run stylists, appointments, client history, retail stock and payments in one place.",
   "forWho": "Hair salons and stylist teams",
@@ -2191,7 +2191,7 @@
         "Ladybird Lane"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

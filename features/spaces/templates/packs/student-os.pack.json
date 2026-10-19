@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0250",
-  "version": 6,
+  "version": 5,
   "title": "Student OS",
   "description": "Students: classes, tasks, notes and study time in one dashboard for the term.",
   "forWho": "Students in high school and college",
@@ -1621,7 +1621,7 @@
         "Alder Quill Court"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

@@ -1,3 +1,4 @@
+-- chair-step: drops the AT-OAUTH registered-app table and its three doors; registered apps stop being scope-limited (their tokens then reach as the person).
 -- INVERSE of atoauth_a_a_person_registers_an_oauth_app.sql. The Supabase OAuth clients the registered apps made stay in
 -- auth.oauth_clients; delete them through Supabase's admin API first if they should stop working.
 delete from platform.client_callable_door where declared_by = 'migrations/atoauth_a_a_person_registers_an_oauth_app.sql (lane AT-OAUTH)';

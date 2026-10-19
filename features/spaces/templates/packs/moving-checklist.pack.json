@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0214",
-  "version": 5,
+  "version": 4,
   "title": "Moving Checklist",
   "description": "Anyone moving house: a timeline checklist, box inventory and address-change tracker.",
   "forWho": "Anyone moving house",
@@ -1351,7 +1351,7 @@
         "Marrow Lane"
       ]
     },
-    "version": 5
+    "version": 4
   },
   "pages": [
     {

@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0502",
-  "version": 3,
+  "version": 2,
   "title": "Landscaping and Lawn Care HQ",
   "description": "Plan mowing routes, price seasonal projects, track materials and invoices.",
   "forWho": "Landscaping and lawn care companies",
@@ -2247,7 +2247,7 @@
         "Orchard Gate"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

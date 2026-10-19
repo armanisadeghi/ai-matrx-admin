@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0163",
-  "version": 5,
+  "version": 4,
   "title": "Marketing OS",
   "description": "Marketing teams: one home for campaigns, content, SEO, assets and leads.",
   "forWho": "Marketing teams that want everything in one place",
@@ -374,6 +374,14 @@
             "format": "date"
           },
           {
+            "key": "published_on",
+            "label": "Published on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "author",
             "label": "Author",
             "parityType": "relation",
@@ -431,7 +439,8 @@
               "due_on": "@today-20d",
               "publish_on": "@today-16d",
               "author": "tm-02",
-              "cost": 600
+              "cost": 600,
+              "published_on": "@today-16d"
             }
           },
           {
@@ -444,7 +453,8 @@
               "due_on": "@today-14d",
               "publish_on": "@today-12d",
               "author": "tm-02",
-              "cost": 150
+              "cost": 150,
+              "published_on": "@today-12d"
             }
           },
           {
@@ -520,7 +530,8 @@
               "due_on": "@today-30d",
               "publish_on": "@today-26d",
               "author": "tm-01",
-              "cost": 200
+              "cost": 200,
+              "published_on": "@today-26d"
             }
           },
           {
@@ -533,7 +544,8 @@
               "due_on": "@today-22d",
               "publish_on": "@today-18d",
               "author": "tm-02",
-              "cost": 500
+              "cost": 500,
+              "published_on": "@today-18d"
             }
           },
           {
@@ -582,7 +594,7 @@
               "Published"
             ],
             "filled": [
-              "publish_on"
+              "published_on"
             ]
           }
         ]
@@ -1271,7 +1283,7 @@
             "value": "Published"
           },
           {
-            "field": "publish_on",
+            "field": "published_on",
             "set": "value",
             "value": "@today"
           }
@@ -1567,7 +1579,7 @@
         "Piñon Wash Lane"
       ]
     },
-    "version": 5
+    "version": 4
   },
   "pages": [
     {

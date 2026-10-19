@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0469",
-  "version": 4,
+  "version": 3,
   "title": "Brewery Taproom Desk",
   "description": "Batches, kegs, tap list, wholesale orders and taproom events for a small brewery.",
   "forWho": "Craft breweries, cideries and taproom operators",
@@ -1030,6 +1030,14 @@
             "format": "date"
           },
           {
+            "key": "delivered_on",
+            "label": "Delivered on",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
             "key": "kegs_ordered",
             "label": "Kegs ordered",
             "parityType": "number",
@@ -1103,7 +1111,7 @@
               "Delivered"
             ],
             "filled": [
-              "delivery_on"
+              "delivered_on"
             ]
           }
         ],
@@ -1151,7 +1159,8 @@
               "delivery_on": "@today-3d",
               "kegs_ordered": 2,
               "total": 520,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "delivered_on": "@today-3d"
             }
           },
           {
@@ -1163,7 +1172,8 @@
               "delivery_on": "@today-10d",
               "kegs_ordered": 3,
               "total": 690,
-              "rep": "tm-4"
+              "rep": "tm-4",
+              "delivered_on": "@today-10d"
             }
           },
           {
@@ -1214,7 +1224,8 @@
               "rep": "tm-4"
             }
           }
-        ]
+        ],
+        "datesIndependent": "Planned dates are set ahead of time; the stamped dates are filled when someone presses the button, and can fall before or after them."
       },
       {
         "token": "event",
@@ -1704,7 +1715,7 @@
             "value": "Delivered"
           },
           {
-            "field": "delivery_on",
+            "field": "delivered_on",
             "set": "value",
             "value": "@today"
           }
@@ -2142,7 +2153,7 @@
         "Foundry Row"
       ]
     },
-    "version": 4
+    "version": 3
   },
   "pages": [
     {

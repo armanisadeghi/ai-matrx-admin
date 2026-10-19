@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0505",
-  "version": 3,
+  "version": 2,
   "title": "Electrician Business HQ",
   "description": "Quote electrical jobs, track permits and inspections, parts stock, margins and invoices.",
   "forWho": "Electrical contractors and electricians",
@@ -2254,7 +2254,7 @@
         "Anvil Court"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

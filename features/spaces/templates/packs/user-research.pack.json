@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0352",
-  "version": 6,
+  "version": 5,
   "title": "User Research Repository",
   "description": "Researchers: studies, sessions, participants and insights linked to their evidence.",
   "forWho": "Product and research teams",
@@ -1666,7 +1666,7 @@
         "Wren Hollow Street"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

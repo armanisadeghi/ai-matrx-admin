@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0411",
-  "version": 3,
+  "version": 2,
   "title": "Estate Planning Practice",
   "description": "Estate plans by stage, instruments, signings and trust funding.",
   "forWho": "Estate planning attorneys and small firms",
@@ -2484,7 +2484,7 @@
         "Aspen Mews"
       ]
     },
-    "version": 3
+    "version": 2
   },
   "pages": [
     {

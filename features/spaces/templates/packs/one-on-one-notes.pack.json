@@ -1,7 +1,7 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0257",
-  "version": 6,
+  "version": 5,
   "title": "1:1 Meeting Notes",
   "description": "Managers: recurring one-to-ones with mood, agenda and action items per person.",
   "forWho": "Managers and their direct reports",
@@ -1166,7 +1166,7 @@
         "Marrowby Court"
       ]
     },
-    "version": 6
+    "version": 5
   },
   "pages": [
     {

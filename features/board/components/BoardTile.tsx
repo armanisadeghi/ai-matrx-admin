@@ -71,6 +71,7 @@ import type { BoardAccent } from "../items/types";
 import { ConnectHandles, type ConnectPoint } from "./ConnectHandles";
 import { OverviewCard, StatusChip } from "./TileFace";
 import { TileMenu, type TileMenuProps } from "./TileMenu";
+import { tileContentReady } from "../engine/content-ready";
 import { FIT_MIN_SCROLLER_H, FULL_CHROME, type ScrollerBox, type TileChrome, autoHeightChange, growStep, innerSlack } from "../engine/tile-chrome";
 
 /**
@@ -525,8 +526,9 @@ export function BoardTile({
   const overview = tier === "overview";
 
   // Auto height: the card lays out at its content's height and the tile follows it. Only a real
-  // change of a real measurement is written (a hidden or skipped body measures 0), debounced, so a
-  // write never feeds another measure.
+  // change of a READY measurement is written (`tileContentReady`: never a skeleton, a loading table, an
+  // empty lazy body, a hidden page or an unlaid card — saving those collapsed whole boards), debounced, so
+  // a write never feeds another measure. Becoming ready (loading ends, the page shows) measures again.
   const autoHeight = chrome.autoHeight && !focused && !overview;
   const onAutoHeightRef = useRef(onAutoHeight);
   useEffect(() => {
@@ -538,16 +540,24 @@ export function BoardTile({
     let timer: ReturnType<typeof setTimeout> | null = null;
     const write = () => {
       timer = null;
+      if (!tileContentReady(card)) return;
       const next = autoHeightChange(rectRef.current.h, card.offsetHeight);
       if (next !== null) onAutoHeightRef.current?.(id, next);
     };
-    const ro = new ResizeObserver(() => {
+    const schedule = () => {
       if (timer) clearTimeout(timer);
       timer = setTimeout(write, AUTO_HEIGHT_MS);
-    });
+    };
+    const ro = new ResizeObserver(schedule);
     ro.observe(card);
+    // Loading ending (a skeleton leaving, `aria-busy` clearing) may not change the card's size.
+    const mo = new MutationObserver(schedule);
+    mo.observe(card, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-busy"] });
+    document.addEventListener("visibilitychange", schedule);
     return () => {
       ro.disconnect();
+      mo.disconnect();
+      document.removeEventListener("visibilitychange", schedule);
       if (timer) clearTimeout(timer);
     };
   }, [autoHeight, id]);
@@ -568,6 +578,8 @@ export function BoardTile({
     const unfit: HTMLElement[] = [];
     const measure = () => {
       timer = null;
+      // Never grow or shrink to a body still loading or not laid out (`tileContentReady`).
+      if (!tileContentReady(card)) return;
       const boxes: ScrollerBox[] = [];
       for (const el of card.querySelectorAll<HTMLElement>("*")) {
         const fitted = el.dataset.boardFitScroll === "1";
@@ -612,11 +624,13 @@ export function BoardTile({
     const mo = new MutationObserver(schedule);
     mo.observe(card, { childList: true, subtree: true, characterData: true });
     card.addEventListener("input", schedule, true);
+    document.addEventListener("visibilitychange", schedule);
     schedule();
     return () => {
       ro.disconnect();
       mo.disconnect();
       card.removeEventListener("input", schedule, true);
+      document.removeEventListener("visibilitychange", schedule);
       if (timer) clearTimeout(timer);
       for (const el of unfit) {
         delete el.dataset.boardFitScroll;
