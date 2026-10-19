@@ -1,9 +1,9 @@
 {
   "packVersion": 1,
   "catalogueId": "SP0553",
-  "version": 2,
+  "version": 3,
   "title": "Faith Community Operations Hub",
-  "description": "Members, services, rooms, care requests and volunteers for a congregation.",
+  "description": "For congregations: members, attendance, giving, care requests, rooms and volunteers.",
   "forWho": "Churches, temples, mosques and other faith communities",
   "icon": {
     "emoji": "🕊️"
@@ -14,11 +14,12 @@
   },
   "category": "nonprofit",
   "tags": [
+    "pastor",
+    "church administrator",
     "congregation",
-    "events",
-    "rooms",
-    "care",
-    "members"
+    "pastoral care",
+    "attendance",
+    "volunteers"
   ],
   "spec": {
     "specVersion": 1,
@@ -136,6 +137,72 @@
                 "value": 20
               }
             ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "children",
+            "label": "Children at home",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 12
+              }
+            ]
+          },
+          {
+            "key": "groups",
+            "label": "Groups",
+            "parityType": "multi_select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Small group",
+              "Choir",
+              "Youth",
+              "Men's breakfast",
+              "Women's circle",
+              "Seniors lunch"
+            ],
+            "choiceColors": {
+              "Small group": "blue",
+              "Choir": "violet",
+              "Youth": "green",
+              "Men's breakfast": "amber",
+              "Women's circle": "pink",
+              "Seniors lunch": "teal"
+            }
+          },
+          {
+            "key": "giving",
+            "label": "Giving",
+            "parityType": "select",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "choices": [
+              "Weekly envelope",
+              "Online, monthly",
+              "Occasional",
+              "Not yet"
+            ],
+            "choiceColors": {
+              "Weekly envelope": "blue",
+              "Online, monthly": "green",
+              "Occasional": "amber",
+              "Not yet": "slate"
+            }
+          },
+          {
+            "key": "serves",
+            "label": "Serves on a team",
+            "parityType": "checkbox",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -376,7 +443,14 @@
               "joined_on": "@today-1500d",
               "follow_up_on": "@today+20d",
               "shepherd": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "children": 2,
+              "giving": "Online, monthly",
+              "serves": true,
+              "groups": [
+                "Small group",
+                "Youth"
+              ]
             }
           },
           {
@@ -389,7 +463,14 @@
               "people": 1,
               "joined_on": "@today-3000d",
               "follow_up_on": "@today+5d",
-              "shepherd": "tm-2"
+              "shepherd": "tm-2",
+              "children": 0,
+              "giving": "Weekly envelope",
+              "serves": false,
+              "groups": [
+                "Seniors lunch",
+                "Women's circle"
+              ]
             }
           },
           {
@@ -403,7 +484,13 @@
               "joined_on": "@today-45d",
               "follow_up_on": "@today",
               "shepherd": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "children": 1,
+              "giving": "Not yet",
+              "serves": false,
+              "groups": [
+                "Small group"
+              ]
             }
           },
           {
@@ -416,7 +503,14 @@
               "people": 2,
               "joined_on": "@today-900d",
               "follow_up_on": "@today+30d",
-              "shepherd": "tm-2"
+              "shepherd": "tm-2",
+              "children": 0,
+              "giving": "Weekly envelope",
+              "serves": true,
+              "groups": [
+                "Choir",
+                "Men's breakfast"
+              ]
             }
           },
           {
@@ -430,7 +524,10 @@
               "joined_on": "@today-6d",
               "follow_up_on": "@today+3d",
               "shepherd": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "children": 0,
+              "giving": "Not yet",
+              "serves": false
             }
           },
           {
@@ -443,7 +540,13 @@
               "people": 5,
               "joined_on": "@today-20d",
               "follow_up_on": "@today-2d",
-              "shepherd": "tm-1"
+              "shepherd": "tm-1",
+              "children": 3,
+              "giving": "Occasional",
+              "serves": false,
+              "groups": [
+                "Youth"
+              ]
             }
           },
           {
@@ -457,7 +560,14 @@
               "joined_on": "@today-4000d",
               "follow_up_on": "@today+9d",
               "shepherd": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "children": 0,
+              "giving": "Weekly envelope",
+              "serves": true,
+              "groups": [
+                "Men's breakfast",
+                "Seniors lunch"
+              ]
             }
           },
           {
@@ -470,7 +580,13 @@
               "people": 4,
               "joined_on": "@today-700d",
               "follow_up_on": "@today+60d",
-              "shepherd": "tm-1"
+              "shepherd": "tm-1",
+              "children": 2,
+              "giving": "Online, monthly",
+              "serves": false,
+              "groups": [
+                "Small group"
+              ]
             }
           },
           {
@@ -484,7 +600,10 @@
               "joined_on": "@today-2d",
               "follow_up_on": "@today+6d",
               "shepherd": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "children": 1,
+              "giving": "Not yet",
+              "serves": false
             }
           },
           {
@@ -497,7 +616,14 @@
               "people": 3,
               "joined_on": "@today-1100d",
               "follow_up_on": "@today+14d",
-              "shepherd": "tm-2"
+              "shepherd": "tm-2",
+              "children": 1,
+              "giving": "Online, monthly",
+              "serves": true,
+              "groups": [
+                "Choir",
+                "Small group"
+              ]
             }
           }
         ]
@@ -612,6 +738,39 @@
                 "value": 1000
               }
             ],
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "rental_fee",
+            "label": "Rental fee (USD)",
+            "parityType": "currency",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "deposit_paid",
+            "label": "Deposit paid",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "setup",
+            "label": "Room setup",
+            "parityType": "text",
             "sensitivity": "internal",
             "contextPolicy": "include"
           },
@@ -832,7 +991,8 @@
               "starts_at": "@today+3d 10:00",
               "expected": 180,
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "setup": "Chairs as usual, livestream camera on"
             }
           },
           {
@@ -844,7 +1004,8 @@
               "status": "Confirmed",
               "starts_at": "@today+2d 18:30",
               "expected": 22,
-              "lead": "tm-1"
+              "lead": "tm-1",
+              "setup": "Couches in a circle, games cupboard open"
             }
           },
           {
@@ -857,7 +1018,8 @@
               "starts_at": "@today 17:00",
               "expected": 90,
               "lead": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "setup": "Six serving tables in a U, coffee urns"
             }
           },
           {
@@ -869,7 +1031,10 @@
               "status": "Planned",
               "starts_at": "@today+5d 19:00",
               "expected": 40,
-              "lead": "tm-4"
+              "lead": "tm-4",
+              "setup": "Theater rows for 40, microphone",
+              "rental_fee": 200,
+              "deposit_paid": true
             }
           },
           {
@@ -882,7 +1047,8 @@
               "starts_at": "@today+1d 19:00",
               "expected": 24,
               "lead": "tm-3",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "setup": "Risers out, piano tuned"
             }
           },
           {
@@ -894,7 +1060,10 @@
               "status": "Planned",
               "starts_at": "@today+6d 14:00",
               "expected": 110,
-              "lead": "tm-2"
+              "lead": "tm-2",
+              "setup": "Round tables for 110, photo table at the door",
+              "rental_fee": 0,
+              "deposit_paid": false
             }
           },
           {
@@ -907,7 +1076,8 @@
               "starts_at": "@today+4d 10:30",
               "expected": 12,
               "lead": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "setup": "Rug and floor cushions"
             }
           },
           {
@@ -919,7 +1089,8 @@
               "status": "Done",
               "starts_at": "@today-4d 10:00",
               "expected": 175,
-              "lead": "tm-3"
+              "lead": "tm-3",
+              "setup": "Chairs as usual"
             }
           },
           {
@@ -932,7 +1103,8 @@
               "starts_at": "@today-1d 13:00",
               "expected": 14,
               "lead": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "setup": "Two long tables near the windows"
             }
           },
           {
@@ -944,7 +1116,38 @@
               "status": "Cancelled",
               "starts_at": "@today-9d 09:00",
               "expected": 30,
-              "lead": "tm-4"
+              "lead": "tm-4",
+              "setup": "Booth tables along the walls"
+            }
+          },
+          {
+            "key": "event-11",
+            "values": {
+              "event_name": "Lindgren-Achebe wedding reception",
+              "room": "room-2",
+              "kind": "Rental",
+              "status": "Confirmed",
+              "starts_at": "@today+12d 17:00",
+              "expected": 95,
+              "lead": "tm-4",
+              "rental_fee": 600,
+              "deposit_paid": true,
+              "setup": "Round tables for 96, dance floor cleared"
+            }
+          },
+          {
+            "key": "event-12",
+            "values": {
+              "event_name": "Riverside piano recital",
+              "room": "room-1",
+              "kind": "Rental",
+              "status": "Planned",
+              "starts_at": "@today+19d 15:00",
+              "expected": 70,
+              "lead": "tm-3",
+              "rental_fee": 350,
+              "deposit_paid": false,
+              "setup": "Piano center front, first two rows reserved"
             }
           }
         ]
@@ -1043,6 +1246,23 @@
                 "Planned",
                 "Confirmed"
               ]
+            }
+          },
+          {
+            "key": "rental_income",
+            "label": "Rental income booked (USD)",
+            "parityType": "rollup",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "via": "events",
+            "pick": "rental_fee",
+            "agg": "sum",
+            "filter": {
+              "status": {
+                "not": [
+                  "Cancelled"
+                ]
+              }
             }
           },
           {
@@ -1546,6 +1766,20 @@
             "contextPolicy": "include"
           },
           {
+            "key": "notes",
+            "label": "Care notes",
+            "parityType": "long_text",
+            "sensitivity": "confidential",
+            "contextPolicy": "include"
+          },
+          {
+            "key": "prayer",
+            "label": "On the prayer list (with permission)",
+            "parityType": "checkbox",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          },
+          {
             "key": "btn_scheduled",
             "label": "Mark scheduled",
             "parityType": "button",
@@ -1656,7 +1890,9 @@
               "status": "Scheduled",
               "visit_by": "@today",
               "assigned": "tm-2",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notes": "Lives alone; enjoys hearing about the choir.",
+              "prayer": false
             }
           },
           {
@@ -1667,7 +1903,9 @@
               "kind": "Meal",
               "status": "Requested",
               "visit_by": "@today+2d",
-              "assigned": "tm-2"
+              "assigned": "tm-2",
+              "notes": "Surgery on the 14th. Gluten free meals, drop at the side door.",
+              "prayer": true
             }
           },
           {
@@ -1679,7 +1917,9 @@
               "status": "Scheduled",
               "visit_by": "@today+1d",
               "assigned": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notes": "Physical therapy Tuesdays and Thursdays at 10.",
+              "prayer": false
             }
           },
           {
@@ -1690,7 +1930,9 @@
               "kind": "Visit",
               "status": "Requested",
               "visit_by": "@today-2d",
-              "assigned": "tm-1"
+              "assigned": "tm-1",
+              "notes": "New in town, two young children.",
+              "prayer": false
             }
           },
           {
@@ -1702,7 +1944,9 @@
               "status": "Requested",
               "visit_by": "@today+5d",
               "assigned": "tm-4",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notes": "Moving to a smaller apartment across town.",
+              "prayer": false
             }
           },
           {
@@ -1713,7 +1957,9 @@
               "kind": "Hospital visit",
               "status": "Scheduled",
               "visit_by": "@today+3d",
-              "assigned": "tm-2"
+              "assigned": "tm-2",
+              "notes": "Asked for a visit and communion.",
+              "prayer": true
             }
           },
           {
@@ -1725,7 +1971,9 @@
               "status": "Requested",
               "visit_by": "@today+4d",
               "assigned": "tm-1",
-              "owner_me": "@installer"
+              "owner_me": "@installer",
+              "notes": "Came twice with a friend from work.",
+              "prayer": false
             }
           },
           {
@@ -1736,7 +1984,367 @@
               "kind": "Meal",
               "status": "Done",
               "visit_by": "@today-20d",
-              "assigned": "tm-2"
+              "assigned": "tm-2",
+              "notes": "Seven meals delivered.",
+              "prayer": true
+            }
+          }
+        ]
+      },
+      {
+        "token": "attendance",
+        "name": "Attendance and offering",
+        "labelSingular": "Service count",
+        "labelPlural": "Attendance and offering",
+        "type": "entity",
+        "display": "grid",
+        "weight": "light",
+        "ordered": false,
+        "icon": "chart-column",
+        "titleField": "service_name",
+        "describes": "Headcount at every service, in person and online, first-time guests and the offering.",
+        "subject": "thing",
+        "statusImplies": [],
+        "rowTemplates": [
+          {
+            "name": "New service count",
+            "values": {
+              "service_name": "Sunday 9:00"
+            },
+            "default": true,
+            "body": {
+              "v": 1,
+              "blocks": [
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Counted by"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Two ushers count separately at the start of the message and agree a number."
+                    }
+                  ]
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Offering"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Counted by two unrelated people"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "todo",
+                  "text": [
+                    {
+                      "text": "Deposit slip signed by both"
+                    }
+                  ],
+                  "props": {
+                    "checked": false
+                  }
+                },
+                {
+                  "type": "heading",
+                  "text": [
+                    {
+                      "text": "Notes"
+                    }
+                  ],
+                  "props": {
+                    "level": 2
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": [
+                    {
+                      "text": "Weather, holidays or anything that changed the count."
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "fields": [
+          {
+            "key": "service_name",
+            "label": "Service",
+            "parityType": "text",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "required": true
+          },
+          {
+            "key": "service_on",
+            "label": "Date",
+            "parityType": "datetime",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "format": "date"
+          },
+          {
+            "key": "service",
+            "label": "Gathering",
+            "parityType": "select",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "choices": [
+              "Sunday 9:00",
+              "Sunday 11:00",
+              "Wednesday evening",
+              "Special service"
+            ],
+            "choiceColors": {
+              "Sunday 9:00": "blue",
+              "Sunday 11:00": "violet",
+              "Wednesday evening": "teal",
+              "Special service": "amber"
+            }
+          },
+          {
+            "key": "adults",
+            "label": "Adults in the room",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "key": "kids",
+            "label": "Children in the room",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 2000
+              }
+            ]
+          },
+          {
+            "key": "online",
+            "label": "Watching online",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 20000
+              }
+            ]
+          },
+          {
+            "key": "guests",
+            "label": "First-time guests",
+            "parityType": "integer",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 500
+              }
+            ]
+          },
+          {
+            "key": "in_room",
+            "label": "In the room",
+            "parityType": "formula",
+            "sensitivity": "internal",
+            "contextPolicy": "include",
+            "formula": "{Adults in the room} + {Children in the room}"
+          },
+          {
+            "key": "offering",
+            "label": "Offering (USD)",
+            "parityType": "currency",
+            "sensitivity": "confidential",
+            "contextPolicy": "include",
+            "unit": "USD",
+            "format": "currency",
+            "rules": [
+              {
+                "kind": "min",
+                "value": 0
+              },
+              {
+                "kind": "max",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "key": "added_at",
+            "label": "Added",
+            "parityType": "created_time",
+            "sensitivity": "internal",
+            "contextPolicy": "include"
+          }
+        ],
+        "rows": [
+          {
+            "key": "attendance-1",
+            "values": {
+              "service_name": "Sunday 9:00, last week",
+              "service_on": "@today-8d",
+              "service": "Sunday 9:00",
+              "adults": 96,
+              "kids": 22,
+              "online": 41,
+              "guests": 3,
+              "offering": 4120
+            }
+          },
+          {
+            "key": "attendance-2",
+            "values": {
+              "service_name": "Sunday 11:00, last week",
+              "service_on": "@today-8d",
+              "service": "Sunday 11:00",
+              "adults": 88,
+              "kids": 14,
+              "online": 57,
+              "guests": 5,
+              "offering": 3685
+            }
+          },
+          {
+            "key": "attendance-3",
+            "values": {
+              "service_name": "Wednesday evening, last week",
+              "service_on": "@today-5d",
+              "service": "Wednesday evening",
+              "adults": 34,
+              "kids": 9,
+              "online": 12,
+              "guests": 0,
+              "offering": 410
+            }
+          },
+          {
+            "key": "attendance-4",
+            "values": {
+              "service_name": "Sunday 9:00, two weeks ago",
+              "service_on": "@today-15d",
+              "service": "Sunday 9:00",
+              "adults": 101,
+              "kids": 25,
+              "online": 38,
+              "guests": 2,
+              "offering": 4390
+            }
+          },
+          {
+            "key": "attendance-5",
+            "values": {
+              "service_name": "Sunday 11:00, two weeks ago",
+              "service_on": "@today-15d",
+              "service": "Sunday 11:00",
+              "adults": 82,
+              "kids": 11,
+              "online": 63,
+              "guests": 4,
+              "offering": 3250
+            }
+          },
+          {
+            "key": "attendance-6",
+            "values": {
+              "service_name": "Wednesday evening, two weeks ago",
+              "service_on": "@today-12d",
+              "service": "Wednesday evening",
+              "adults": 29,
+              "kids": 7,
+              "online": 15,
+              "guests": 1,
+              "offering": 365
+            }
+          },
+          {
+            "key": "attendance-7",
+            "values": {
+              "service_name": "Sunday 9:00, three weeks ago",
+              "service_on": "@today-22d",
+              "service": "Sunday 9:00",
+              "adults": 92,
+              "kids": 19,
+              "online": 44,
+              "guests": 6,
+              "offering": 3980
+            }
+          },
+          {
+            "key": "attendance-8",
+            "values": {
+              "service_name": "Sunday 11:00, three weeks ago",
+              "service_on": "@today-22d",
+              "service": "Sunday 11:00",
+              "adults": 79,
+              "kids": 12,
+              "online": 61,
+              "guests": 2,
+              "offering": 3105
+            }
+          },
+          {
+            "key": "attendance-9",
+            "values": {
+              "service_name": "Harvest festival service",
+              "service_on": "@today-29d",
+              "service": "Special service",
+              "adults": 184,
+              "kids": 46,
+              "online": 90,
+              "guests": 17,
+              "offering": 6720
             }
           }
         ]
@@ -2378,6 +2986,21 @@
         "me": [
           "owner_me"
         ]
+      },
+      {
+        "token": "all_attendance",
+        "name": "All services",
+        "kind": "grid",
+        "isDefault": true,
+        "table": "attendance"
+      },
+      {
+        "token": "attendance_cal",
+        "name": "Calendar",
+        "kind": "calendar",
+        "dateField": "service_on",
+        "allDay": true,
+        "table": "attendance"
       }
     ],
     "agent": {
@@ -2450,6 +3073,18 @@
           "surface": "room_board",
           "minItems": 3
         }
+      },
+      {
+        "says": "Open attendance and offering.",
+        "action": {
+          "kind": "open",
+          "surface": "attendance_cal"
+        },
+        "expect": {
+          "kind": "renders",
+          "surface": "attendance_cal",
+          "minItems": 3
+        }
       }
     ],
     "foundation": [],
@@ -2466,7 +3101,7 @@
         "Kestrel Avenue"
       ]
     },
-    "version": 2
+    "version": 3
   },
   "pages": [
     {
@@ -2488,12 +3123,18 @@
           "type": "callout",
           "text": [
             {
-              "text": "The week of a congregation in one place: who has joined, which rooms are booked, who is serving and who needs care. Start with the Dashboard each Thursday. Keep personal notes brief and kind, and only record what the person has agreed to share."
+              "text": "The church office in one place. Households holds every family and visitor with their groups and follow-up; Care requests is the pastoral care list; Events and Rooms keep the calendar and rentals straight; Volunteer roles shows what is unfilled; Attendance and offering is the weekly count. Read Start here first."
             }
           ],
           "background": "blue",
           "props": {
             "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "page",
+          "props": {
+            "spaceId": "page:start-here"
           }
         },
         {
@@ -3086,6 +3727,321 @@
             ],
             "activeViewId": "car-b"
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Attendance and offering"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The weekly count, in person and online, with first-time guests and the offering."
+            }
+          ]
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendance",
+              "view": "all_attendance"
+            },
+            "inline": true,
+            "title": "Attendance and offering",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "at-t",
+                "name": "All services",
+                "layout": "grid",
+                "icon": "Table",
+                "sorts": [
+                  {
+                    "field": "service_on",
+                    "direction": "desc"
+                  }
+                ]
+              },
+              {
+                "id": "at-c",
+                "name": "Calendar",
+                "layout": "calendar",
+                "icon": "Calendar",
+                "dateField": "service_on"
+              }
+            ],
+            "activeViewId": "at-t"
+          }
+        }
+      ]
+    },
+    {
+      "key": "start-here",
+      "parent": "faith-community-operations",
+      "title": "Start here: how this workspace runs",
+      "icon": {
+        "emoji": "🧭"
+      },
+      "blocks": [
+        {
+          "type": "callout",
+          "text": [
+            {
+              "text": "A ten-minute tour of the church office in this workspace. Share it with the pastor, the administrator, the care coordinator, the worship lead and the facilities steward."
+            }
+          ],
+          "background": "blue",
+          "props": {
+            "icon": "Lightbulb"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "What lives where"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Households",
+              "bold": true
+            },
+            {
+              "text": ": every family, member and visitor, the people and children at home, their groups, giving and a follow-up date with a shepherd."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Events",
+              "bold": true
+            },
+            {
+              "text": ": services, classes, youth nights, meals, funerals, weddings and rentals, each in a room with its setup."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Rooms",
+              "bold": true
+            },
+            {
+              "text": ": every space with its capacity, rental rate, bookings and rental income."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Volunteer roles",
+              "bold": true
+            },
+            {
+              "text": ": greeters, nursery, sound, kitchen and setup for each event, open or filled."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Care requests",
+              "bold": true
+            },
+            {
+              "text": ": visits, meals, rides and calls, confidential notes, and the prayer list."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Attendance and offering",
+              "bold": true
+            },
+            {
+              "text": ": the weekly count in the room and online, first-time guests and the offering."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Monday: Sunday's counts and offering entered; visitors added and assigned."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Tuesday: the care meeting; requests assigned for the week."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Wednesday: next Sunday's volunteer roles filled; rentals for the weekend confirmed."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Friday: the facilities steward walks the room setups for the weekend."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Your rhythm"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every morning: care requests due today and overdue"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every Monday: visitors to follow up, attendance entered"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every month: households who have not been seen, rental income, open volunteer roles"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every season: newcomers class and the attendance trend for the board"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Who does what"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The pastor leads care and welcome. The administrator owns the calendar, rentals and the weekly counts. The care coordinator runs the care list and meal trains. The worship lead fills Sunday roles, and the facilities steward owns rooms and setups."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Privacy"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Care notes, phone numbers and giving are confidential. Share this workspace with staff and the care team only. Children's details stay minimal."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Making it yours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rename gatherings, groups, rooms and volunteer areas to match your congregation and delete the sample rows once your own are in. Edit any cell in place, drag cards between columns, and every count updates on its own."
+            }
+          ]
         }
       ]
     },
@@ -3487,6 +4443,98 @@
               }
             ]
           }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Attendance"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "attendance",
+              "view": "all_attendance"
+            },
+            "inline": true,
+            "title": "Attendance by gathering",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "da-1",
+                "name": "In the room by gathering",
+                "layout": "chart",
+                "icon": "ChartColumn",
+                "chart": {
+                  "type": "bar",
+                  "groupBy": "service",
+                  "op": "avg",
+                  "field": "in_room"
+                }
+              },
+              {
+                "id": "da-2",
+                "name": "Guests by gathering",
+                "layout": "chart",
+                "icon": "ChartPie",
+                "chart": {
+                  "type": "donut",
+                  "groupBy": "service",
+                  "op": "sum",
+                  "field": "guests"
+                }
+              }
+            ],
+            "activeViewId": "da-1"
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Visitors to follow up"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "database",
+          "props": {
+            "source": {
+              "kind": "template",
+              "table": "household",
+              "view": "all_household"
+            },
+            "inline": true,
+            "title": "Visitors and people exploring",
+            "linked": true,
+            "showTitle": false,
+            "views": [
+              {
+                "id": "dh-1",
+                "name": "Visitors and exploring",
+                "layout": "list",
+                "icon": "UserPlus",
+                "anyOf": {
+                  "status": [
+                    "Visitor",
+                    "Exploring"
+                  ]
+                }
+              }
+            ],
+            "activeViewId": "dh-1"
+          }
         }
       ]
     },
@@ -3505,7 +4553,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A room is booked only when it is on the Events table with a start time. Hallway promises are how double bookings happen."
+              "text": "The building is busy all week. One calendar, one person who says yes, and a written agreement for every outside group keeps it that way without double bookings or surprises."
             }
           ],
           "background": "blue",
@@ -3517,7 +4565,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Steps"
+              "text": "Booking for the congregation"
             }
           ],
           "props": {
@@ -3528,7 +4576,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Check the Rooms table for capacity and the Events calendar for the same hour."
+              "text": "Check the room on the Events calendar first. Look at the room's "
+            },
+            {
+              "text": "Capacity",
+              "bold": true
+            },
+            {
+              "text": " against "
+            },
+            {
+              "text": "Expected attendance",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3536,7 +4598,21 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Add an Event, link the room and set the start time and expected attendance."
+              "text": "Add the event with its room, lead, start time and the "
+            },
+            {
+              "text": "Room setup",
+              "bold": true
+            },
+            {
+              "text": " you need, as "
+            },
+            {
+              "text": "Planned",
+              "bold": true
+            },
+            {
+              "text": "."
             }
           ]
         },
@@ -3544,15 +4620,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "For a rental, send the house rules and agree the rate before pressing Confirm."
-            }
-          ]
-        },
-        {
-          "type": "numbered",
-          "text": [
+              "text": "The administrator confirms it within two days and sets it to "
+            },
             {
-              "text": "Add volunteer roles for setup, hosting and clean-up."
+              "text": "Confirmed",
+              "bold": true
+            },
+            {
+              "text": ". Kitchen use always needs the facilities steward's yes."
             }
           ]
         },
@@ -3560,7 +4635,126 @@
           "type": "heading",
           "text": [
             {
-              "text": "Rules of the house"
+              "text": "Renting to neighbors"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Weddings, recitals, neighborhood meetings and family celebrations bring in income and new faces."
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rental agreement signed, with the date, hours, room and guest count"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Proof of event insurance for groups over 50 people"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Deposit paid, then tick "
+            },
+            {
+              "text": "Deposit paid",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rental fee",
+              "bold": true
+            },
+            {
+              "text": " entered; the room's "
+            },
+            {
+              "text": "Rental income booked",
+              "bold": true
+            },
+            {
+              "text": " adds it up"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Key or door code arranged with the facilities steward"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Rules sent: no open flames, how to use the kitchen, when the building closes"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Pricing"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Set one public rate per room and a lower rate for members and nonprofits. Funerals for members are never charged. Write the rate on the room so everyone quotes the same price."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The week before"
             }
           ],
           "props": {
@@ -3571,7 +4765,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Leave the kitchen cleaner than you found it."
+              "text": "The facilities steward walks the room list for the coming week and checks every setup."
             }
           ]
         },
@@ -3579,7 +4773,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Candles, open flames and amplified sound need the facilities steward's approval."
+              "text": "Heating or cooling is set for the event times."
             }
           ]
         },
@@ -3587,7 +4781,87 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Keys go back to the office the same day."
+              "text": "Volunteer roles for the event are filled or marked not needed."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "After the event"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Walk the room: damage, lost property, kitchen clean."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Return the deposit, or keep the part needed for repairs with a written note."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set the event to "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            },
+            {
+              "text": "."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Conflicts"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Services and funerals come first, then congregation events, then rentals. When a funeral needs a room that is rented, call the renter the same day and offer another room or date with an apology and a discount."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "A couple asks for the fellowship hall for a reception of 95 guests. The administrator checks the calendar, sends the agreement, takes a deposit and records the $600 fee. Ten days before, the steward confirms round tables and a cleared dance floor; the hall's rental income for the quarter updates on its own."
             }
           ]
         }
@@ -3608,7 +4882,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "A first visit is a question: is there a place for me here? The follow-up answers it."
+              "text": "Most first-time guests decide within ten minutes whether to come back, and most of that is decided in the parking lot and at the door. Welcome is a team's job, not just the pastor's."
             }
           ],
           "background": "blue",
@@ -3620,7 +4894,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "The first week"
+              "text": "On Sunday"
             }
           ],
           "props": {
@@ -3628,26 +4902,26 @@
           }
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Add a Household row from the visitor card within two days."
+              "text": "Greeters at every door, ten minutes before and after the service."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Send a short, personal note from the contact person."
+              "text": "A clear welcome table with a simple card asking only for a name and an email or phone."
             }
           ]
         },
         {
-          "type": "numbered",
+          "type": "bulleted",
           "text": [
             {
-              "text": "Invite them to one small thing, not everything."
+              "text": "Someone sits near new faces and walks them to coffee afterward. Do not single anyone out from the front."
             }
           ]
         },
@@ -3655,7 +4929,78 @@
           "type": "heading",
           "text": [
             {
-              "text": "The first month"
+              "text": "Within 48 hours"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Add the household to "
+            },
+            {
+              "text": "Households",
+              "bold": true
+            },
+            {
+              "text": " as "
+            },
+            {
+              "text": "Visitor",
+              "bold": true
+            },
+            {
+              "text": ", with how many people came and any children."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Set "
+            },
+            {
+              "text": "Follow up on",
+              "bold": true
+            },
+            {
+              "text": " to the next day or two and assign a shepherd."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "The pastor or a lay leader sends a short personal note. No newsletter yet."
+            }
+          ]
+        },
+        {
+          "type": "numbered",
+          "text": [
+            {
+              "text": "Count them in "
+            },
+            {
+              "text": "First-time guests",
+              "bold": true
+            },
+            {
+              "text": " on the service's attendance row."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The next month"
             }
           ],
           "props": {
@@ -3666,7 +5011,7 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Check in by phone once without asking for anything."
+              "text": "A second visit is the sign that matters. Invite them to one thing that fits: a small group, the youth night, the seniors lunch."
             }
           ]
         },
@@ -3674,7 +5019,14 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Introduce them to a host family or small group."
+              "text": "After two or three visits, move them to "
+            },
+            {
+              "text": "Exploring",
+              "bold": true
+            },
+            {
+              "text": " and offer coffee with the pastor."
             }
           ]
         },
@@ -3682,7 +5034,122 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "When they say they are ready, press Mark member."
+              "text": "Add their "
+            },
+            {
+              "text": "Groups",
+              "bold": true
+            },
+            {
+              "text": " as they join them."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Becoming members"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Hold a short newcomers class each season: what the congregation believes, how it is run, how to serve and how to give. Those who join become "
+            },
+            {
+              "text": "Member",
+              "bold": true
+            },
+            {
+              "text": " with their joined date."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Children"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Families with children need to know their kids are safe. Check-in for children's rooms, two screened adults in every room, and a clear pickup rule. Record only what you need about children here, and never photographs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Weekly check"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Every visitor from Sunday has a note and a follow-up date"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Exploring households have been invited to one group"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Households overdue for follow-up have been called"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "The Lindahl-Basu family visits with their toddler. A greeter shows them the nursery, someone sits with them, and they fill in a card. Monday, the administrator adds them as visitors; Tuesday, the pastor emails; two weeks later they join a small group and move to Exploring."
             }
           ]
         }
@@ -3703,7 +5170,7 @@
           "type": "callout",
           "text": [
             {
-              "text": "Care works when it is steady, private and shared across a team so one volunteer is never carrying it all."
+              "text": "Care is the heart of congregational life, and it fails quietly when a request lives in one person's memory. Every request goes on the list, has a person and a date, and is closed when it is done."
             }
           ],
           "background": "blue",
@@ -3726,7 +5193,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Write what the person asked for in their own words, with their permission."
+              "text": "Add it in "
+            },
+            {
+              "text": "Care requests",
+              "bold": true
+            },
+            {
+              "text": " with the household, the kind of care, a date to act by and who will do it."
             }
           ]
         },
@@ -3734,7 +5208,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "Pick a volunteer who is a good fit and press Mark scheduled."
+              "text": "Write only what the care team needs in "
+            },
+            {
+              "text": "Care notes",
+              "bold": true
+            },
+            {
+              "text": ". These are confidential: never medical detail beyond what the family has shared to be passed on."
             }
           ]
         },
@@ -3742,7 +5223,14 @@
           "type": "numbered",
           "text": [
             {
-              "text": "After the visit, add two lines of notes and press Mark done."
+              "text": "Ask the family before anything goes on the prayer list. Tick "
+            },
+            {
+              "text": "On the prayer list",
+              "bold": true
+            },
+            {
+              "text": " only with their permission."
             }
           ]
         },
@@ -3750,7 +5238,7 @@
           "type": "heading",
           "text": [
             {
-              "text": "Privacy"
+              "text": "Kinds of care"
             }
           ],
           "props": {
@@ -3761,7 +5249,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Share health details only with the people directly caring for them."
+              "text": "Hospital visit",
+              "bold": true
+            },
+            {
+              "text": ": the pastor or care coordinator within a day; call the family first."
             }
           ]
         },
@@ -3769,7 +5261,11 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Never put sensitive details in an event or role row."
+              "text": "Meal",
+              "bold": true
+            },
+            {
+              "text": ": a meal train for a week or two after surgery, a birth or a death. One coordinator, a shared sign-up, food dropped at a set time."
             }
           ]
         },
@@ -3777,7 +5273,159 @@
           "type": "bulleted",
           "text": [
             {
-              "text": "Ask each person how they would like to be contacted."
+              "text": "Ride",
+              "bold": true
+            },
+            {
+              "text": ": to appointments, to services, to the grocery store. Two drivers per person so nobody is stranded."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Phone call",
+              "bold": true
+            },
+            {
+              "text": ": weekly to members who live alone or cannot come."
+            }
+          ]
+        },
+        {
+          "type": "bulleted",
+          "text": [
+            {
+              "text": "Practical help",
+              "bold": true
+            },
+            {
+              "text": ": moving boxes, yard work, small repairs."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "The weekly care meeting"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Fifteen minutes with the pastor, care coordinator and a lay leader:"
+            }
+          ]
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Overdue and today's requests: who is going?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Anything new since Sunday"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Members who have not been seen in a month: who will call?"
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "todo",
+          "text": [
+            {
+              "text": "Requests done this week: mark them "
+            },
+            {
+              "text": "Done",
+              "bold": true
+            }
+          ],
+          "props": {
+            "checked": false
+          }
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Grief"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "After a death, plan care for a year, not a week: calls at one month, three months, the first holidays and the anniversary. Add each one as its own request with a date so none is forgotten."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Caring for the carers"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Rotate visitors so nobody carries too much. Give the care team a place to talk after hard visits, with confidentiality."
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": [
+            {
+              "text": "Example"
+            }
+          ],
+          "props": {
+            "level": 2
+          }
+        },
+        {
+          "type": "text",
+          "text": [
+            {
+              "text": "Gus has knee surgery on Thursday. Pilar mentions it after the service. The care coordinator adds a meal request for Friday and a ride for his physical therapy, asks Pilar whether Gus would like to be on the prayer list (he would), and lines up three families for meals. Each request is marked done as it happens."
             }
           ]
         }
